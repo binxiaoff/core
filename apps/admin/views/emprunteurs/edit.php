@@ -1,34 +1,37 @@
 <script type="text/javascript">
-    $(document).ready(function () {
+    function jumpIBAN(field) {
+        if (field.id == 'iban7') {
+            field.value = field.value.substring(0, 3);
+        }
+
+        if (field.value.length == 4) {
+            field.nextElementSibling.value = '';
+            field.nextElementSibling.focus();
+        }
+    }
+
+    $(function() {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
         $(".mandats").tablesorter({headers: {}});
-<?
-if ($this->nb_lignes != '') {
-    ?>
+
+        <?php if ($this->nb_lignes != '') : ?>
             $(".listeProjets").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
             $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?= $this->nb_lignes ?>});
-    <?
-}
-?>
-    });
-<?
-if (isset($_SESSION['freeow'])) {
-    ?>
-        $(document).ready(function () {
-            var title, message, opts, container;
-            title = "<?= $_SESSION['freeow']['title'] ?>";
-            message = "<?= $_SESSION['freeow']['message'] ?>";
-            opts = {};
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
             opts.classes = ['smokey'];
             $('#freeow-tr').freeow(title, message, opts);
-        });
-    <?
-    unset($_SESSION['freeow']);
-}
-?>
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
+    });
 </script>
 <style>
-    #infos_client{display:none;border:1 px solid #2F86B2; padding:15px;}
+    #infos_client{display:none; border:1px solid #2F86B2; padding:15px;}
 </style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
@@ -40,21 +43,16 @@ if (isset($_SESSION['freeow'])) {
 
     <h1>Detail emprunteur : <?= $this->clients->nom . ' ' . $this->clients->prenom ?></h1>
 
-    <?
-    if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') {
-        ?>
+    <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
-        <?
-        unset($_SESSION['error_email_exist']);
-    }
-    ?>
+        <?php unset($_SESSION['error_email_exist']); ?>
+    <?php endif; ?>
 
     <form method="post" name="edit_emprunteur" id="edit_emprunteur" enctype="multipart/form-data" action="<?= $this->lurl ?>/emprunteurs/edit/<?= $this->clients->id_client ?>" target="_parent">
         <table class="formColor" style="width: 775px;margin:auto;">
             <tr>
                 <th><label for="nom">Nom :</label></th>
                 <td><input type="text" name="nom" id="nom" class="input_large" value="<?= $this->clients->nom ?>"/></td>
-
                 <th><label for="prenom">Prénom :</label></th>
                 <td><input type="text" name="prenom" id="prenom" class="input_large" value="<?= $this->clients->prenom ?>"/></td>
             </tr>
@@ -67,16 +65,12 @@ if (isset($_SESSION['freeow'])) {
             <tr>
                 <th><label for="societe">Société :</label></th>
                 <td><input type="text" name="societe" id="societe" class="input_large" value="<?= $this->companies->name ?>"/></td>
-
                 <th><label for="secteur">Secteur :</label></th>
                 <td>
                     <select name="secteur" id="secteur" class="select">
-                        <?
-                        foreach ($this->lSecteurs as $k => $s) {
-                            ?><option <?= ($this->companies->sector == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option><?
-                        }
-                        ?>
-
+                        <?php foreach ($this->lSecteurs as $k => $s) : ?>
+                            <option<?= ($this->companies->sector == $k + 1 ? ' selected' : '') ?> value="<?= $k + 1 ?>"><?= $s ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </td>
             </tr>
@@ -87,26 +81,12 @@ if (isset($_SESSION['freeow'])) {
             <tr>
                 <th><label for="cp">Code postal :</label></th>
                 <td><input type="text" name="cp" id="cp" class="input_large" value="<?= $this->clients_adresses->cp ?>"/></td>
-
                 <th><label for="ville">Ville :</label></th>
                 <td><input type="text" name="ville" id="ville" class="input_large" value="<?= $this->clients_adresses->ville ?>"/></td>
             </tr>
             <tr>
                 <th><label for="iban">IBAN :</label></th>
                 <td colspan="3">
-                    <script>
-                        function jumpIBAN(field) {
-                            if (field.id == "iban7")
-                            {
-                                field.value = field.value.substring(0, 3);
-                            }
-                            if (field.value.length == 4)
-                            {
-                                field.nextElementSibling.value = '';
-                                field.nextElementSibling.focus();
-                            }
-                        }
-                    </script>
                     <input type="text" name="iban1" id="iban1" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 0, 4) ?>" />
                     <input type="text" name="iban2" id="iban2" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 4, 4) ?>" />
                     <input type="text" name="iban3" id="iban3" onkeyup="jumpIBAN(this)" style="width: 78px;" size="4" class="input_big" value="<?= substr($this->companies->iban, 8, 4) ?>" />
@@ -138,7 +118,6 @@ if (isset($_SESSION['freeow'])) {
                     <?= $this->clients->cni_passeport ?><br>
                     <input type="file" name="cni_passeport" id="cni_passeport" value="<?= $this->clients->cni_passeport ?>"/>
                 </td>
-
                 <th><label for="signature">Signature :</label></th>
                 <td>
                     <?= $this->clients->signature ?><br>
@@ -156,7 +135,7 @@ if (isset($_SESSION['freeow'])) {
 
     <br /><br />
 
-    <?php if ($this->clients->history != ''): ?>
+    <?php if ($this->clients->history != '') : ?>
         <div id="edit_history" >
             <h2>Historique :</h2>
             <table class="histo_status_client tablesorter">
@@ -169,9 +148,7 @@ if (isset($_SESSION['freeow'])) {
     <?php endif; ?>
 
     <h2>Liste des projets</h2>
-    <?
-    if (count($this->lprojects) > 0) {
-        ?>
+    <?php if (count($this->lprojects) > 0) : ?>
         <table class="tablesorter listeProjets">
             <thead>
                 <tr>
@@ -184,45 +161,32 @@ if (isset($_SESSION['freeow'])) {
                 </tr>
             </thead>
             <tbody>
-                <?
-                $i = 1;
-                foreach ($this->lprojects as $p) {
-
-
-                    // on recupe le nom du statut
-                    $this->projects_status->getLastStatut($p['id_project']);
-                    ?>
-                    <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $p['id_project'] ?></td>
-                        <td><?= $p['title'] ?></td>
+                <?php foreach ($this->lprojects as $iIndex => $aProject) : ?>
+                    <?php $this->projects_status->getLastStatut($aProject['id_project']); ?>
+                    <tr<?= (++$iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
+                        <td><?= $aProject['id_project'] ?></td>
+                        <td><?= $aProject['title'] ?></td>
                         <td><?= $this->projects_status->label ?></td>
-                        <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
+                        <td><?= $this->ficelle->formatNumber($aProject['amount']) ?> €</td>
                         <td>
-                            <?
-                            if ($this->projects_pouvoir->get($p['id_project'], 'id_project')) {
-                                ?><a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a><?
-                            }
-                            echo '&nbsp;&nbsp;';
-                            if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $p['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) {
-                                ?><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a><?
-                            }
-                            ?>
+                            <?php if ($this->projects_pouvoir->get($aProject['id_project'], 'id_project')) : ?>
+                                <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
+                            <?php endif; ?>
+                            &nbsp;&nbsp;
+                            <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
+                                <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a>
+                            <?php endif; ?>
                         </td>
                         <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
+                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Détails" />
                             </a>
                         </td>
                     </tr>
-                    <?
-                    $i++;
-                }
-                ?>
+                <?php endforeach; ?>
             </tbody>
         </table>
-        <?
-        if ($this->nb_lignes != '') {
-            ?>
+        <?php if ($this->nb_lignes != '') : ?>
             <table>
                 <tr>
                     <td id="pager">
@@ -237,125 +201,90 @@ if (isset($_SESSION['freeow'])) {
                     </td>
                 </tr>
             </table>
-            <?
-        }
-    }
-    ?>
+        <?php endif; ?>
+    <?php endif; ?>
 </div>
 
 <script>
-
-    function RIBediting()
-    {
-
+    function RIBediting() {
         var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val(),
             bic = $('#bic').val();
 
-        // si vide on ne tient pas compte
-        if (iban != "")
-        {
-            if (validateIban(iban) == false && iban != "")
-            {
-                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_iban_lightbox/'});
-                return false;
-            }
-            else if (check_bic(bic) == false){
-                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_bic_lightbox/'});
-                return false;
-            }
-            else{
-                // si on a deja les memes infos deja 'enregistré on valide
-                if (iban == "<?= $this->companies->iban ?>" && bic == "<?= $this->companies->bic ?>") {
-                    return true;
-                }
-
-                List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, bic, <?= $this->clients->id_client ?>);
-
-                if (List_compagnie_meme_iban != "none")
-                {
-                    $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
-                    return false;
-                }
-
-                if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
-                {
-                    $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
-                    return false;
-                }
-                else if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0)
-                {
-                    return true;
-                }
-
-                $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
-                    return false;
-            };;
+        if (iban == '') {
+            return true;
         }
-        else
-        {
+        if (validateIban(iban) == false) {
+            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_iban_lightbox/'});
+            return false;
+        }
+        if (check_bic(bic) == false) {
+            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/error_bic_lightbox/'});
+            return false;
+        }
+        // si on a deja les memes infos deja 'enregistré on valide
+        if (iban == "<?= $this->companies->iban ?>" && bic == "<?= $this->companies->bic ?>") {
             return true;
         }
 
-    }
+        List_compagnie_meme_iban = CheckIfIbanExistDeja(iban, bic, <?= $this->clients->id_client ?>);
 
-    function verif(id, champ)
-    {
+        if (List_compagnie_meme_iban != 'none') {
+            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIB_iban_existant/'+List_compagnie_meme_iban});
+            return false;
+        }
+        if (<?= count($this->loadData('prelevements')->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0) {
+            $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox_no_prelev/<?= $this->clients->id_client ?>'});
+            return false;
+        }
+        if (<?= count($this->loadData('prelevements')->select('date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]))); ?> == 0) {
+            return true;
+        }
+
+        $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
+        return false;
+    };;
+
+    function verif(id, champ) {
         // Bic
-        if (champ == 1)
-        {
-
-            if (check_bic($("#" + id).val()) == false)
-                    //if($("#"+id).val().length < 8 || $("#"+id).val().length > 11)
-                    {
-                        $("#" + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                    }
-            else {
-                $("#" + id).css('border', '1px solid #A1A5A7').css('color', '#B10366').css('background-color', '#ECECEC');
+        if (champ == 1) {
+            if (check_bic($('#' + id).val()) == false) {
+                $('#' + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+            } else {
+                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#B10366').css('background-color', '#ECECEC');
             }
         }
-        // IBAN
-        if (champ == 2)
-        {
-             var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
 
-            if (validateIban($("#" + id).val()) == false)
-                    //if($("#"+id).val().length != 27)
-                    {
-                        $("#" + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-                    }
-            else {
-                $("#" + id).css('border', '1px solid #A1A5A7').css('color', '#B10366').css('background-color', '#ECECEC');
+        // IBAN
+        if (champ == 2) {
+            var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() +$('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
+
+            if (validateIban($('#' + id).val()) == false) {
+                $('#' + id).css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+            } else {
+                $('#' + id).css('border', '1px solid #A1A5A7').css('color', '#B10366').css('background-color', '#ECECEC');
             }
         }
     }
 
-    $("#edit_emprunteur").submit(function (event) {
-        var form_ok = true;
+    $(function() {
+        $('#edit_emprunteur').submit(function(event) {
+            if ($('#bic').val() != '' && check_bic($('#bic').val()) == false) {
+                event.preventDefault();
+                $('#bic').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+            }
 
-        if (check_bic($("#bic").val()) == false && $("#bic").val() != "")
-        {
-            form_ok = false;
-            $("#bic").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+            var iban = $('#iban1').val() + $('#iban2').val() + $('#iban3').val() + $('#iban4').val() + $('#iban5').val() + $('#iban6').val() + $('#iban7').val();
 
-        }
-
-        var iban = document.getElementById('iban1').value + document.getElementById('iban2').value + document.getElementById('iban3').value + document.getElementById('iban4').value + document.getElementById('iban5').value + document.getElementById('iban6').value + document.getElementById('iban7').value;
-
-        if (validateIban(iban) == false && iban != "")
-        {
-            form_ok = false;
-            $("#iban1").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            $("#iban2").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            $("#iban3").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            $("#iban4").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            $("#iban5").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            $("#iban6").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-            $("#iban7").css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
-        }
-
-        if (form_ok == false)
-        {
-            event.preventDefault();
-        }
+            if (iban != '' && validateIban(iban) == false) {
+                event.preventDefault();
+                $('#iban1').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+                $('#iban2').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+                $('#iban3').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+                $('#iban4').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+                $('#iban5').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+                $('#iban6').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+                $('#iban7').css('border', '1px solid #E3BCBC').css('color', '#C84747').css('background-color', '#FFE8E8');
+            }
+        });
     });
 </script>
