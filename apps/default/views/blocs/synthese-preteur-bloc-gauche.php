@@ -190,8 +190,7 @@
                 }
 
                 $iSumbids = $this->bids->counter('id_project = ' . $f['id_project']);
-                $oBids    = $this->bids;
-                $avgRate  = $this->projects->calculateAvgInterestRate($oBids, $this->loans, $f['id_project'], $this->projects_status->status);
+                $avgRate  = $this->projects->getAverageInterestRate($f['id_project'], $this->projects_status->status);
                 ?>
                 <div class="post-box clearfix">
                     <h3><?= $f['title'] ?>,

@@ -60,16 +60,14 @@
                         $this->companies->get($project['id_company'], 'id_company');
                         $this->companies_details->get($project['id_company'], 'id_company');
 
-                        // date fin 21h a chaque fois
                         $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']);
                         if ($inter['mois'] > 0)
                             $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
                         else
-                            $dateRest = '';
+                            $dateRest = 'Terminé';
 
                         $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-                        $oBids    = $this->bids;
-                        $avgRate  = $this->projects->calculateAvgInterestRate($oBids, $this->loans, $project['id_project'], $this->projects_status->status);
+                        $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                         // dates pour le js
                         $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
@@ -175,8 +173,7 @@
                     $dateRest = '';
 
                 $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-                $oBids    = $this->bids;
-                $avgRate  = $this->projects->calculateAvgInterestRate($oBids, $this->loans, $project['id_project'], $this->projects_status->status);
+                $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                 // dates pour le js
                 $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
