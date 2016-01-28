@@ -68,25 +68,18 @@
                 <tr>
                     <th width="auto"><span><br>Offres et Projets</span></th>
                     <th width="100px"><br>Immédiatement</th>
-                    <th width="100px">
-                        <p>Synthèse<br>quotidienne</p>
-                    </th>
-                    <th width="100px">
-                        <p>Synthèse<br>hebdomadaire</p>
-                    </th>
-                    <th width="100px">
-                        <p>Synthèse<br>Mensuelle</p>
-                    </th>
-                    <th width="100px">
-                        <p>Uniquement<br>notification</p>
-                    </th>
+                    <th width="100px"><p>Synthèse<br>quotidienne</p></th>
+                    <th width="100px"><p>Synthèse<br>hebdomadaire</p></th>
+                    <th width="100px"><p>Synthèse<br>Mensuelle</p></th>
+                    <th width="100px"><p>Uniquement<br>notification</p></th>
                 </tr>
                 <?php foreach ($this->aTypesOfNotifications as $aNotificationType) :
                     if (in_array($aNotificationType['id_client_gestion_type_notif'], array(
                         \clients_gestion_type_notif::TYPE_NEW_PROJECT,
                         \clients_gestion_type_notif::TYPE_BID_PLACED,
                         \clients_gestion_type_notif::TYPE_BID_REJECTED,
-                        \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
+                        \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                        \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
                     ))) : ?>
                         <tr>
                             <td><p><?= $aNotificationType['nom'] ?></p></td>
@@ -95,14 +88,17 @@
                                     disabled/>
                             </td>
                             <td>
+                                <?php if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
                                 <input type="checkbox" <?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['quotidienne'] ? 'checked' : '') ?>
                                     disabled/>
+                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php
                                 if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
                                         \clients_gestion_type_notif::TYPE_BID_PLACED,
-                                        \clients_gestion_type_notif::TYPE_BID_REJECTED
+                                        \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                                        \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
                                     ))
                                 ) : ?>
                                     <input type="checkbox" <?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['hebdomadaire'] ? 'checked' : '') ?>
@@ -111,7 +107,10 @@
                             </td>
                             <td>
                                 <?php
-                                if ($aNotificationType['id_client_gestion_type_notif'] == \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED) : ?>
+                                if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(\clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                                        \clients_gestion_type_notif::TYPE_BID_PLACED,
+                                        \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                                        \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))) : ?>
                                     <input type="checkbox" <?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['mensuelle'] ? 'checked' : '') ?>
                                            disabled/>
                                 <?php endif; ?>
