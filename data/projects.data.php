@@ -233,7 +233,7 @@ class projects extends projects_crud
             WHERE ' . $sWhereClause . '
             ORDER BY ' . $order .
             ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-var_dump($sql);
+
         $result        = array();
         $resultat      = $this->bdd->query($sql);
         $positionStart = $start + $nb;
