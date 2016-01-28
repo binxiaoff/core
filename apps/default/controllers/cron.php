@@ -2899,8 +2899,6 @@ class cronController extends bootstrap
                                             break;
                                         }
                                     }
-
-                                    $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::PROBLEME, $this->projects->id_project);
                                 }
                             }
                         }
@@ -5066,7 +5064,7 @@ class cronController extends bootstrap
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
                     }
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $this->clients_status_history->content);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $this->clients_status_history->content);
                 }
             }
 
@@ -5084,13 +5082,13 @@ class cronController extends bootstrap
                 $timestamp_date              = $this->dates->formatDateMySqlToTimeStamp($p['added_status']);
                 if ($timestamp_date <= $timeMoins8 && $numero_relance == 0 && date('w') == 6) {// Relance J+15 && samedi
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 2);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 2);
                 } elseif ($timestamp_date <= $timeMoins8 && $numero_relance == 2 && date('w') == 6) {// Relance J+30
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 3);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 3);
                 } elseif ($timestamp_date <= $timeMoins30 && $numero_relance == 3 && date('w') == 6) {// Relance J+60
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 4);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 4);
                 }
 
                 if ($op_pour_relance) {
@@ -5266,20 +5264,20 @@ class cronController extends bootstrap
             $emprunteurs = $this->loadData('clients');
 
             $aRepaymentNoInvoice = $factures->selectEcheancesRembAndNoFacture();
-            foreach ($aRepaymentNoInvoice as $r) {
-                $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
+            foreach ($aRepaymentNoInvoice as $aRepayment) {
+                $oCommandPdf = new Command('pdf', 'facture_ER', array($aRepayment['hash'], $aRepayment['id_project'], $aRepayment['ordre']), $this->language);
                 $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre'], false);
+                $oPdf->_facture_ER($aRepayment['hash'], $aRepayment['id_project'], $aRepayment['ordre'], false);
             }
 
             $aProjectsInRepayment = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
-            foreach ($aProjectsInRepayment as $projet) {
-                if (false === $factures->exist($projet['id_project'], 'type_commission = 1 AND id_project')) {
-                    $companies->get($projet['id_company'], 'id_company');
+            foreach ($aProjectsInRepayment as $aProject) {
+                if (false === $factures->exist($aProject['id_project'], 'type_commission = 1 AND id_project')) {
+                    $companies->get($aProject['id_company'], 'id_company');
                     $emprunteurs->get($companies->id_client_owner, 'id_client');
-                    $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
+                    $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $aProject['id_project']), $this->language);
                     $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project'], false);
+                    $oPdf->_facture_EF($emprunteurs->hash, $aProject['id_project'], false);
                 }
             }
             $this->stopCron();

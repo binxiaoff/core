@@ -203,8 +203,8 @@
                     <th><label for="phone-societe">Tribunal de commerce :</label></th>
                     <td><input type="text" class="input_large" name="tribunal_com" id="tribunal_com" value="<?= $this->companies->tribunal_com ?>"></td>
 
-                    <th><label for="rcs">RCS :</label></th>
-                    <td><input type="text" class="input_large" name="rcs" id="rcs" value="<?= $this->companies->rcs ?>"></td>
+            <th></th>
+            <td></td>
 
                 </tr>
 

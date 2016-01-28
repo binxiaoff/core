@@ -63,7 +63,7 @@
                             <td class="col-3">
                                 <!-- Row -->
                                 <div class="row">
-                                    <div class="text-box"><?= ($this->entreprise == false ? $this->clients->nom . ' ' . $this->clients->prenom : $this->companies->name . ' / R.C.S. ' . $this->companies->rcs) ?></div>
+                                    <div class="text-box"><?= ($this->entreprise == false ? $this->clients->nom . ' ' . $this->clients->prenom : $this->companies->name . ' / SIREN ' . $this->companies->siren) ?></div>
                                     <span class="small-text">Nom / Prénoms du débiteur</span>
                                 </div>
                                 <!-- End Row -->

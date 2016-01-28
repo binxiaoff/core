@@ -34,7 +34,11 @@ class dossiersController extends bootstrap
         $this->projects        = $this->loadData('projects');
 
         $this->lProjects_status = $this->projects_status->select('', ' status ASC ');
-        $this->lUsers           = $this->users->select('status = 1 AND id_user_type = 2');
+        $this->aAnalysts        = $this->users->select('status = 1 AND id_user_type = 2');
+        $this->aSalesPersons    = $this->users->select('status = 1 AND id_user_type = 3');
+
+        $this->oUserAnalyst     = $this->loadData('users');
+        $this->oUserSalesPerson = $this->loadData('users');
 
         if (isset($_POST['form_search_dossier'])) {
             if ($_POST['date1'] != '') {
@@ -52,7 +56,7 @@ class dossiersController extends bootstrap
             }
             $iNbStartPagination = (isset($_POST['nbLignePagination'])) ? (int) $_POST['nbLignePagination'] : 0;
             $this->nb_lignes    = (isset($this->nb_lignes)) ? (int) $this->nb_lignes : 100;
-            $this->lProjects    = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'], null, $iNbStartPagination, $this->nb_lignes);
+            $this->lProjects    = $this->projects->searchDossiers($date1, $date2, $_POST['montant'], $_POST['duree'], $_POST['status'], $_POST['analyste'], $_POST['siren'], $_POST['id'], $_POST['raison-sociale'], null, $_POST['commercial'], $iNbStartPagination, $this->nb_lignes);
         } elseif (isset($this->params[0])) {
             $this->lProjects = $this->projects->searchDossiers('', '', '', '', $this->params[0]);
         }
@@ -326,9 +330,18 @@ class dossiersController extends bootstrap
             $this->aAttachments     = $this->projects->getAttachments();
 
             $this->completude_wording = array();
-            foreach ($this->attachment_type->getAllTypesForProjects($this->language, false) as $aAttachment) {
-                $this->completude_wording[] = $aAttachment['label'];
+            $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
+            $oTextes                  = $this->loadData('textes');
+            $aTranslations            = $oTextes->selectFront('projet', $this->language);
+
+            foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
+                if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {
+                    $this->completude_wording[] = $aAttachment['label'] . ' ' . $aTranslations['completude-photos'];
+                } else {
+                    $this->completude_wording[] = $aAttachment['label'];
+                }
             }
+            $this->completude_wording[] = $aTranslations['completude-charge-affaires'];
 
             $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC');
 
@@ -711,9 +724,6 @@ class dossiersController extends bootstrap
                             if ($companies->bic == '') {
                                 $mess .= '<li>BIC entreprise</li>';
                             }
-                            if ($companies->rcs == '') {
-                                $mess .= '<li>RCS entreprise</li>';
-                            }
                             if ($companies->tribunal_com == '') {
                                 $mess .= '<li>Tribunal de commerce entreprise</li>';
                             }
@@ -780,7 +790,6 @@ class dossiersController extends bootstrap
                     $this->companies->siren           = $_POST['siren'];
                     $this->companies->siret           = $_POST['siret'];
                     $this->companies->name            = $_POST['societe'];
-                    $this->companies->rcs             = $_POST['rcs'];
                     $this->companies->sector          = $_POST['sector'];
                     $this->companies->id_client_owner = $_POST['id_client'];
                     $this->companies->code_naf        = $_POST['code_naf'];
