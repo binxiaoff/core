@@ -5145,14 +5145,16 @@ class cronController extends bootstrap
 
             $aProjectStatuses = array(
                 \projects_status::EN_FUNDING,
-                \projects_status::REMBOURSEMENT,
-                \projects_status::PROBLEME,
                 \projects_status::FUNDE,
                 \projects_status::FUNDING_KO,
-                \projects_status::PROBLEME_J_X
+                \projects_status::REMBOURSEMENT,
+                \projects_status::PROBLEME,
+                \projects_status::PROBLEME_J_X,
+                \projects_status::PROCEDURE_SAUVEGARDE,
+                \projects_status::REDRESSEMENT_JUDICIAIRE,
+                \projects_status::LIQUIDATION_JUDICIAIRE
             );
             $aProjects = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
-
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
@@ -5160,9 +5162,9 @@ class cronController extends bootstrap
                 $oCompanies->get($aProject['id_company'], 'id_company');
 
                 if ($aProject['status'] === \projects_status::EN_FUNDING) {
-                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount'));
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount');
                 } else {
-                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount'));
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount');
                 }
                 $iTotalbids = ($iTotalbids / 100);
                 if ($iTotalbids > $aProject['amount']) {
@@ -5176,6 +5178,9 @@ class cronController extends bootstrap
                     case projects_status::REMBOURSEMENT:
                     case projects_status::FUNDE:
                     case projects_status::PROBLEME_J_X:
+                    case projects_status::PROCEDURE_SAUVEGARDE:
+                    case projects_status::REDRESSEMENT_JUDICIAIRE:
+                    case projects_status::LIQUIDATION_JUDICIAIRE :
                         $sProjectsuccess = "OUI";
                         break ;
                     case projects_status::FUNDING_KO:
