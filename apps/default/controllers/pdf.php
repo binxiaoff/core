@@ -788,6 +788,9 @@ class pdfController extends bootstrap
             die;
         }
 
+        $this->settings->get('TVA', 'type');
+        $this->tva = $this->settings->value;
+
         $this->num_facture        = $aInvoices[0]['num_facture'];
         $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
         $this->taxes              = $aInvoices[0]['tva'] / 100;
@@ -843,6 +846,9 @@ class pdfController extends bootstrap
             header('Location: ' . $this->lurl);
             die;
         }
+
+        $this->settings->get('TVA', 'type');
+        $this->tva = $this->settings->value;
 
         $this->num_facture        = $aInvoices[0]['num_facture'];
         $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
