@@ -1745,19 +1745,22 @@ class preteursController extends bootstrap
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-        if (in_array($this->clients->type, array(2, 4))) {
+        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
         }
 
-        $this->lSumLoans               = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'next_echeance ASC');
-        $this->arrayDeclarationCreance = $this->projects->getProjectsInDebt();
+        $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account);
+        $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
+
+        $this->IRRValue = null;
+        $this->IRRDate  = null;
 
         $oLenderAccountStats = $this->loadData('lenders_account_stats');
         $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
 
         if ($aIRR) {
             $this->IRRValue = $aIRR['tri_value'];
-            $this->IRRDate = $aIRR['tri_date'];
+            $this->IRRDate  = $aIRR['tri_date'];
         }
 
         $statusOk                = array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::PRET_REFUSE, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::REMBOURSEMENT_ANTICIPE);
@@ -1765,43 +1768,6 @@ class preteursController extends bootstrap
         $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
         $this->problProjects     = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
         $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
-    }
-
-    public function _contratPdf()
-    {
-        $this->loadGestionData();
-        $iloan = $this->params[1];
-
-        $this->clients->get($this->params[0], 'hash');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
-        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-        $this->loans->get($iloan, 'id_loan');
-        $this->projects->get($this->loans->id_project, 'id_project');
-
-        $oCommandPdf = new Command('pdf', 'contrat', $this->params, $this->language);
-        $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-        $oPdf->_contrat();
-    }
-
-    public function _creancesPdf()
-    {
-        $this->loadGestionData();
-        $iloan = $this->params[1];
-
-        $this->clients->get($this->params[0], 'hash');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
-        $this->lenders_accounts->get($this->client->id_client, 'id_client_owner');
-        $this->loans->get($iloan, 'id_loan');
-
-        $oCommandPdf             = new Command('pdf', 'declaration_de_creances', array($this->clients->hash, $iloan), $this->language);
-        $oPdf                    = new pdfController($oCommandPdf, $this->Config, 'default');
-        $oPdf->clients           = $this->clients;
-        $oPdf->projects          = $this->projects;
-        $oPdf->oLenders_accounts = $this->lenders_accounts;
-        $oPdf->clients_adresses  = $this->clients_adresses;
-        $oPdf->params            = $this->params;
-        $oPdf->companies         = $this->companies;
-        $oPdf->_declaration_de_creances();
     }
 
     public function _control_fiscal_city()

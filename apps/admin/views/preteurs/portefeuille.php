@@ -1,6 +1,6 @@
 <?php if (isset($_SESSION['freeow'])): ?>
     <script type="text/javascript">
-        $(function() {
+        $(function () {
             var title = "<?=$_SESSION['freeow']['title']?>",
                 message = "<?=$_SESSION['freeow']['message']?>",
                 opts = {},
@@ -20,15 +20,15 @@
         <li>Portefeuille & Performances</li>
     </ul>
 
-    <?php if ($this->clients_status->status == 10): // a controler ?>
+    <?php if ($this->clients_status->status == \clients_status::TO_BE_CHECKED): ?>
         <div class="attention">
             Attention : compte non validé - créé le <?= date('d/m/Y', $this->timeCreate) ?>
         </div>
-    <?php elseif (in_array($this->clients_status->status, array(20, 30, 40))): // completude ?>
+    <?php elseif (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REPLY, \clients_status::COMPLETENESS_REMINDER))): ?>
         <div class="attention" style="background-color:#F9B137">
             Attention : compte en complétude - créé le <?= date('d/m/Y', $this->timeCreate) ?>
         </div>
-    <?php elseif (in_array($this->clients_status->status, array(50))): // modification ?>
+    <?php elseif (in_array($this->clients_status->status, array(\clients_status::MODIFICATION))): ?>
         <div class="attention" style="background-color:#F2F258">
             Attention : compte en modification - créé le <?= date('d/m/Y', $this->timeCreate) ?>
         </div>
@@ -36,24 +36,25 @@
 
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
-        <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
-        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter
+            Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>"
+           class="btn_link">Modifier Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>"
+           class="btn_link">Historique des emails</a>
     </div>
 
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?= empty($this->IRRValue) === false ? $this->IRRValue.'%' : 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' ?>
-            à date <?= empty($this->IRRdate) === false ? $this->dates->formatDateMysqltoShortFR($this->IRRdate): '' ?></h3>
-
-        <h3>Nombre de projets à probleme dans le portefeuille :  <?= $this->problProjects ?></h3>
+        <h3>TRI du portefeuille : <?= ($this->IRRValue) ? $this->IRRValue . '%' : 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' ?>
+            <?= ($this->IRRDate) ? '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRRDate) . ')' : '' ?>
+        </h3>
+        <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
         <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?><h2>
     </div>
-
     <br/>
-
     <h2>Prêts</h2>
     <div class="table-filter clearfix">
         <p class="left">Historique des projets financés depuis le compte Unilend n°<?= $this->clients->id_client ?></p>
@@ -62,7 +63,8 @@
         <table class="tablesorter">
             <thead>
             <tr>
-                <th style="text-align: left">Projet</th>
+                <th style="text-align: left">ID Projet</th>
+                <th style="text-align: left">Client</th>
                 <th style="text-align: left">Note</th>
                 <th style="text-align: left">Montant prêté</th>
                 <th style="text-align: left">Taux d'intérêt</th>
@@ -73,112 +75,69 @@
                 <th style="text-align: left">Documents <br> à télécharger</th>
             </tr>
             </thead>
-            <?php if ($this->lSumLoans != false): ?>
-                <?php $i = 1; ?>
-                <?php foreach ($this->lSumLoans as $k => $l): ?>
+            <tbody>
+            <?php
+            foreach ($this->lSumLoans as $iLoanIndex => $aProjectLoans): ?>
+                <tr class="<?= $iLoanIndex % 2 ? '' : 'odd' ?>">
+                    <td><?= $aProjectLoans['id_project'] ?></td>
+                    <td><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
+                    <td><?= $aProjectLoans['risk'] ?></td>
+                    <td><?= $this->ficelle->formatNumber($aProjectLoans['amount']) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($aProjectLoans['rate']) ?> %</td>
+                    <?php if (in_array($aProjectLoans['project_status'], array(projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) : ?>
+                        <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                        <td colspan="3"><p>Remboursé intégralementle <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y') ?></p></td>
+                    <?php else: ?>
+                        <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
+                        <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
+                        <td><?= $this->ficelle->formatNumber($aProjectLoans['mensuel']) ?> € / mois</td>
+                    <?php endif; ?>
+                    <td>
+                        <?php if ($aProjectLoans['nb_loan'] == 1): ?>
+                            <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
+                                <a href="<?= $this->surl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">
+                                    <?= ($aProjectLoans['id_type_contract'] == \loans::TYPE_CONTRACT_IFP) ? 'Contrat IFP' : 'Bon de Caisse' ?>
+                                </a>
+                            <?php endif; ?>
+                            <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
+                                <a href="<?= $this->surl ?>/pdf/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aProjectLoans['id_loan_if_one_loan'] ?>">Declaration de créances</a>
+                            <?php endif; ?>
+                        <?php else: ?>
+                            &nbsp;
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <?php if ($aProjectLoans['nb_loan'] > 1): ?>
+                    <tr>
                     <?php
-                    $Le_projects = $this->loadData('projects');
-                    $Le_projects->get($l['id_project']);
-                    $this->projects_status->getLastStatut($l['id_project']);
-
-                    //si un seul loan sur le projet
-                    if ($l['nb_loan'] == 1) {
+                    foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan):
+                        $SumAremb = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'], 'ordre ASC', 0, 1);
+                        $fLoanAmount = $SumAremb[0]['montant'] / 100 - $SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds'];
                         ?>
-                        <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?>">
-                            <td><h5><a href="/dossiers/edit/<?= $l['id_project'] ?>"><?= $l['name'] ?></a></h5></td>
-                            <td><?= $l['risk'] ?></td>
-                            <td><?= $this->ficelle->formatNumber($l['amount']) ?> €</td>
-                            <td><?= $this->ficelle->formatNumber($l['rate']) ?> %</td>
-                            <?php if ($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE): ?>
-                                <td><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></td>
-                                <td colspan="3"><p>Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y') ?></p></td>
-                            <?php else: ?>
-                                <td><?=$this->dates->formatDate($l['debut'], 'd/m/Y')?></td>
-                                <td><?=$this->dates->formatDate($l['next_echeance'], 'd/m/Y')?></td>
-                                <td><?=$this->dates->formatDate($l['fin'], 'd/m/Y')?></td>
-                                <td><?=$this->ficelle->formatNumber($l['mensuel'])?> €/mois</td>
-                            <?php endif; ?>
+                        <tr style="background-color: #f6f6f6;">
+                            <td style="background-color: #f6f6f6;"></td>
+                            <td style="background-color: #f6f6f6;"></td>
+                            <td style="background-color: #f6f6f6;"></td>
+                            <td style="white-space: nowrap; background-color: #f6f6f6;"><?= $this->ficelle->formatNumber($aLoan['amount'] / 100, 2) ?> €</td>
+                            <td style="white-space: nowrap; background-color: #f6f6f6;"><?= $this->ficelle->formatNumber($aLoan['rate'], 2) ?> %</td>
+                            <td style="background-color: #f6f6f6;" colspan="3"></td>
+                            <td style="white-space: nowrap; background-color: #f6f6f6;"><?= $this->ficelle->formatNumber($fLoanAmount) ?> € / mois</td>
                             <td>
-                                <?php if ($this->projects_status->status >=projects_status::REMBOURSEMENT): ?>
-                                    <a href="<?= $this->lurl . '/preteurs/contratPdf/' . $this->clients->hash . '/' . $l['id_loan_if_one_loan'] ?>">Contrat PDF</a><br>
-                                    <?php if (in_array($l['id_project'], $this->arrayDeclarationCreance)): ?>
-                                        <a href="<?= $this->lurl . '/preteurs/creancesPdf/' . $this->clients->hash . '/' . $l['id_loan_if_one_loan'] ?>">Créances PDF</a>
-                                    <?php endif; ?>
+                                <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
+                                    <a href="<?= $this->surl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
+                                        <?= ($aLoan['id_type_contract'] == \loans::TYPE_CONTRACT_IFP) ? 'Contrat IFP' : 'Bon de Caisse' ?>
+                                    </a>
                                 <?php endif; ?>
-                           </td>
+                                <?php if (in_array($aProjectLoans['id_project'], $this->aProjectsInDebt)): ?>
+                                    <a href="<?= $this->lurl ?>/pdf/declaration_de_creances/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">Declaration de créances</a>
+                                <?php endif; ?>
+                            </td>
                         </tr>
-                        <?php
-                    } else {
-                        ?>
-                        <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?>">
-                            <td><h5><a href="/dossiers/edit/<?= $l['id_project'] ?>"><?= $l['name'] ?></a></h5></td>
-                            <td><?= $l['risk'] ?></td>
-                            <td><?= $this->ficelle->formatNumber($l['amount']) ?> €</td>
-                            <td><?= $this->ficelle->formatNumber($l['rate']) ?> %</td>
-                            <?php if ($l['project_status'] == projects_status::REMBOURSEMENT_ANTICIPE): ?>
-                                <td><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></td>
-                                <td colspan="3"><p>Remboursé intégralement le <?= $this->dates->formatDate($l['status_change'], 'd/m/Y') ?></p></td>
-                            <?php else: ?>
-                                <td><?= $this->dates->formatDate($l['debut'], 'd/m/Y') ?></td>
-                                <td><?= $this->dates->formatDate($l['next_echeance'], 'd/m/Y') ?></td>
-                                <td><?= $this->dates->formatDate($l['fin'], 'd/m/Y') ?></td>
-                                <td><?= $this->ficelle->formatNumber($l['mensuel']) ?> €/mois</td>
-                            <?php endif; ?>
-                            <td></td>
-                        </tr>
-                        <?php
-                            $a = 0;
-                            $listeLoans = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $l['id_project']);
-
-                            foreach ($listeLoans as $loan) {
-                                $SumAremb = $this->echeanciers->select('id_loan = '.$loan['id_loan'] . ' AND status = 0', 'ordre ASC', 0, 1);
-                                $fiscal   = $SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds'];
-                                $b        = $a + 1;
-                                ?>
-                                <tr style="background-color: #e3e4e5; color: black;">
-                                    <td style="text-align: right; background-color: #e3e4e5; color: black;">Détail loan</td>
-                                    <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
-                                    <td style="background-color: #e3e4e5; color: black;"><?= $this->ficelle->formatNumber($loan['amount'] / 100, 0) ?> €</td>
-                                    <td style="background-color: #e3e4e5; color: black;"><?= $this->ficelle->formatNumber($loan['rate']) ?>%</td>
-                                    <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
-                                    <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
-                                    <td style="text-align: right; background-color: #e3e4e5; color: black;"></td>
-                                    <td style="background-color: #e3e4e5; color: black;"><?= $this->ficelle->formatNumber($SumAremb[0]['montant'] / 100 - $fiscal) ?> €/mois</td>
-                                    <td>
-                                    <?php if ($this->projects_status->status >= \projects_status::REMBOURSEMENT): ?>
-                                        <a style="background-color: #e3e4e5; color: black;" href="<?= $this->lurl . '/preteurs/contratPdf/' . $this->clients->hash . '/' . $loan['id_loan'] ?>">Contrat PDF</a><br>
-                                        <?php if (in_array($l['id_project'], $this->arrayDeclarationCreance)): ?>
-                                            <a style="background-color: #e3e4e5; color: black;" href="<?= $this->lurl . '/pdf/declaration_de_creances/' . $this->clients->hash . '/' . $loan['id_loan'] ?>">Créances PDF</a>
-                                        <?php endif; ?>
-                                    <?php endif; ?>
-                                    </td>
-                                </tr>
-                                <script type="text/javascript">
-                                    $(".btn-detailLoans_<?= $k ?>").click(function() {
-                                        $(".loans_<?= $k ?>").slideToggle();
-
-                                        if ($(".btn-detailLoans_<?= $k ?>").hasClass("on_display")) {
-                                            $(".btn-detailLoans_<?= $k ?>").html('+');
-                                            $(".btn-detailLoans_<?= $k ?>").addClass("off_display");
-                                            $(".btn-detailLoans_<?= $k ?>").removeClass("on_display");
-                                        } else {
-                                            $(".btn-detailLoans_<?= $k ?>").html('-');
-                                            $(".btn-detailLoans_<?= $k ?>").addClass("on_display");
-                                            $(".btn-detailLoans_<?= $k ?>").removeClass("off_display");
-                                        }
-                                    });
-                                </script>
-                                <?php
-                                $a++;
-                            }
-                        ?>
-                        </tr>
-                        <?php
-                        $i++;
-                    }
-                ?>
-                <?php endforeach; ?>
-            <?php endif; ?>
+                    <?php endforeach; ?>
+                <?php endif;
+            endforeach; ?>
+            </tbody>
         </table>
     </div>
 </div>
