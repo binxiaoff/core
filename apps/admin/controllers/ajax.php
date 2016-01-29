@@ -401,10 +401,9 @@ class ajaxController extends bootstrap
                     $this->clients_history->status    = 3; // statut depot de dossier validé
                     $this->clients_history->create();
 
-                    // statut emprunteur online
-                    $this->clients->status = 1;
-                    // on retire l'etape de transition
+                    $this->clients->status            = 1;
                     $this->clients->status_transition = 0;
+                    $this->clients->update();
 
                     $this->mails_text->get('emprunteur-dossier-valide', 'lang = "' . $this->language . '" AND type');
                 } elseif ($this->params[0] == 30) {
@@ -471,8 +470,6 @@ class ajaxController extends bootstrap
                 } else {
                     $this->lProjects_status = array();
                 }
-                // on met a jour le statut de l'emprunteur
-                $this->clients->update();
                 $this->bloc_statut = 'ok';
             } else {
                 echo 'nok';
@@ -1400,8 +1397,6 @@ class ajaxController extends bootstrap
                 } else {
                     $update = false;
                 }
-                // On recup le title du projet
-                $title = $this->projects->title;
 
                 // on maj le statut
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
@@ -1590,8 +1585,6 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-                    // on passe l'emprunteur en offline
-                    $this->clients->update();
                 }
 
                 echo json_encode(array('liste' => $select, 'etape_6' => $etape_6));
@@ -1729,9 +1722,6 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-
-                    // on passe l'emprunteur en offline
-                    $this->clients->update();
                 }
 
                 //on recup le statut courant
@@ -2075,9 +2065,6 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-
-                    // on passe l'emprunteur en offline
-                    $this->clients->update();
                 } elseif ($_POST['status'] == 4) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects->id_project);
 
