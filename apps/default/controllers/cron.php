@@ -7175,30 +7175,28 @@ class cronController extends bootstrap
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
 
-                            $compteur_factures      = $this->loadData('compteur_factures');
-                            $echeanciers            = $this->loadData('echeanciers');
-                            $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-                            $factures               = $this->loadData('factures');
+                            $oInvoiceCounter            = $this->loadData('compteur_factures');
+                            $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
+                            $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                            $oInvoice                   = $this->loadData('factures');
 
                             $this->settings->get('Commission remboursement', 'type');
                             $fCommissionRate = $this->settings->value;
 
-                            $aLenderRepayment = $echeanciers->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
+                            $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
 
-                            if ($echeanciers_emprunteur->get($projects->id_project, 'ordre = ' . $e['ordre'] . '  AND id_project')) {
-                                $compteur = $compteur_factures->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']);
-
-                                $factures->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($compteur, 5, '0', STR_PAD_LEFT);
-                                $factures->date            = $aLenderRepayment[0]['date_echeance_reel'];
-                                $factures->id_company      = $companies->id_company;
-                                $factures->id_project      = $projects->id_project;
-                                $factures->ordre           = $r['ordre'];
-                                $factures->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                                $factures->commission      = $fCommissionRate * 100;
-                                $factures->montant_ht      = $echeanciers_emprunteur->commission;
-                                $factures->tva             = $echeanciers_emprunteur->tva;
-                                $factures->montant_ttc     = $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
-                                $factures->create();
+                            if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $e['ordre'] . '  AND id_project')) {
+                                $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
+                                $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
+                                $oInvoice->id_company      = $companies->id_company;
+                                $oInvoice->id_project      = $projects->id_project;
+                                $oInvoice->ordre           = $r['ordre'];
+                                $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                                $oInvoice->commission      = $fCommissionRate * 100;
+                                $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
+                                $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
+                                $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
+                                $oInvoice->create();
                             }
 
                             $lesRembEmprun = $bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $r['id_project']);
