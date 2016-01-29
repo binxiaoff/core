@@ -777,7 +777,8 @@ class pdfController extends bootstrap
     {
         $this->lng['pdf-facture'] = $this->ln->selectFront('pdf-facture', $this->language, $this->App);
 
-        $this->factures = $this->loadData('factures');
+        $this->factures                = $this->loadData('factures');
+        $this->projects_status_history = $this->loadData('projects_status_history');
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
@@ -791,6 +792,8 @@ class pdfController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
+        $aRepaymentDate           = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
+        $this->dateRemb           = $aRepaymentDate[0]['added'];
         $this->num_facture        = $aInvoices[0]['num_facture'];
         $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
         $this->taxes              = $aInvoices[0]['tva'] / 100;
