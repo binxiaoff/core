@@ -105,42 +105,36 @@ class cronController extends bootstrap
             $bids                    = $this->loadData('bids');
             $prelevements            = $this->loadData('prelevements');
 
-            // FB
             $this->settings->get('Facebook', 'type');
-
-            // Twitter
             $this->settings->get('Twitter', 'type');
 
-            // Date du jour
             $today = date('Y-m-d');
 
             // projets en remboursement
-            $aProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT); // non, les dossiers en procédure collective doivent etre exclus de ce mailing
+            $aProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
             foreach ($aProjects as $project) {
-
                 $this->projects->get($project['id_project'],'id_project');
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-                $aEcheancesEmp = $echeanciers_emprunteur->select('id_project = ' . $project['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
-                $echeance = array_shift($aEcheancesEmp);
+                $aRepayments = $echeanciers_emprunteur->select('id_project = ' . $project['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
+                $aFirstRepayment = array_shift($aRepayments);
 
-                // en cas de retard de paiement sur les mois precedents, les afficher
+                // display delayed repayments
                 $i = 0;
-                $sEcheances = '';
-                foreach ($aEcheancesEmp as $echeance) {
+                $sRepayment = '';
+                foreach ($aRepayments as $aRepayment) {
                     if (++$i === 1) {
-                        if (count($aEcheancesEmp) > 1) {
-                            $sEcheances = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; les mensualit&eacute;s des mois suivants :</div>';
-                        }
-                        else {
-                            $sEcheances = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; la mensualit&eacute; du mois suivant :</div>';
+                        if (count($aRepayments) > 1) {
+                            $sRepayment = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; les mensualit&eacute;s des mois suivants :</div>';
+                        } else {
+                            $sRepayment = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; la mensualit&eacute; du mois suivant :</div>';
                         }
                     }
-                    $sGetmonth = strftime("%B %Y", strtotime($echeance['date_echeance_emprunteur'] . ' - '. $i .' month'));
+                    $sRepaymentMonth = strftime("%B %Y", strtotime($aRepayment['date_echeance_emprunteur'] . ' - '. $i .' month'));
 
-                    $sEcheances .= '<div>';
-                    $sEcheances .= 'Mois de '. $sGetmonth .', montant : ' . $echeance['montant'] / 100 . ' euros.';
-                    $sEcheances .= '</div><br/><br/>';
+                    $sRepayment .= '<div>';
+                    $sRepayment .= 'Mois de '. $sRepaymentMonth .', montant : ' . $aRepayment['montant'] / 100 . ' euros.';
+                    $sRepayment .= '</div><br/><br/>';
                 }
 
                 $destinaire = $this->settings->value;
@@ -148,9 +142,9 @@ class cronController extends bootstrap
 
                 $iBids = $bids->select('id_project = ' . $project['id_project'] . ' AND status = 1'); // non
                 $aMail = array(
-                    'retardpaiement' => $sEcheances,
+                    'retardpaiement' => $sRepayment,
                     'bids'           => count($iBids),
-                    'echeance'       => $echeance['montant'] / 100,
+                    'echeance'       => $aFirstRepayment['montant'] / 100,
                     'nextmonth'      => strftime("1er %B", date("m") + 1),
                     'surl'           => $this->surl,
                     'url'            => $this->furl,
@@ -162,7 +156,7 @@ class cronController extends bootstrap
                     'lien_fb'        => $this->like_fb,
                     'lien_tw'        => $this->twitter
                 );
-                $aVars    = $this->tnmp->constructionVariablesServeur($aMail);
+                $aVars      = $this->tnmp->constructionVariablesServeur($aMail);
                 $sujetMail  = strtr(utf8_decode($this->mails_text->subject), $aVars);
                 $texteMail  = strtr(utf8_decode($this->mails_text->content), $aVars);
                 $exp_name   = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
