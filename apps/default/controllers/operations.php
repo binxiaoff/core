@@ -121,7 +121,7 @@ class operationsController extends bootstrap
         $oActiveSheet->setCellValue('G1', 'Date dernier remboursement');
         $oActiveSheet->setCellValue('H1', 'Capital perçu');
         $oActiveSheet->setCellValue('I1', 'Intérêts perçus');
-        $oActiveSheet->setCellValue('J1', 'Capital restant du');
+        $oActiveSheet->setCellValue('J1', 'Capital restant dû');
 
         foreach ($this->lSumLoans as $iRowIndex => $aProjectLoans) {
             $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);

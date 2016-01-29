@@ -112,24 +112,35 @@ class echeanciers extends echeanciers_crud
 
     // retourne la somme des echeances a rembourser d'un preteur
     // sur les prêts acceptés.
-    public function getSumARemb($id_lender, $champ = 'montant', $sType = null)
+    public function getSumARemb($id_lender, $champ = 'montant')
     {
-        if (false === is_null($sType) && 'dashboard' == $sType) {
-            $sql = "
-                SELECT SUM(e.$champ)
-                FROM echeanciers e
-                INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
-                INNER JOIN accepted_bids ab ON ab.id_loan = l.id_loan
-                INNER JOIN bids b ON b.id_bid = ab.id_bid
-                WHERE e.status = 0
-                    AND e.id_lender = $id_lender
-                    AND b.status = 1";
-        } else {
-            $sql = "SELECT SUM($champ) FROM `echeanciers` WHERE status = 0 AND id_lender = $id_lender";
-        }
+        $result = $this->bdd->query("
+            SELECT SUM(e.$champ)
+            FROM echeanciers e
+            INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
+            WHERE e.status = 0
+                AND e.id_lender = $id_lender
+                AND l.status = 0"
+        );
+        return (int) $this->bdd->result($result, 0, 0) / 100;
+    }
 
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0) / 100);
+    public function getProblematicProjects($iLenderId)
+    {
+        $rResult = $this->bdd->query('
+            SELECT ROUND(SUM(e.capital) / 100, 2) AS capital, COUNT(DISTINCT(e.id_project)) AS projects
+            FROM echeanciers e
+            LEFT JOIN echeanciers unpaid ON unpaid.id_echeancier = e.id_echeancier AND unpaid.status = 0 AND DATEDIFF(NOW(), unpaid.date_echeance) > 180
+            INNER JOIN loans l ON l.id_lender = e.id_lender AND l.id_loan = e.id_loan
+            WHERE e.id_lender = ' . $iLenderId . '
+                AND e.status = 0
+                AND l.status = 0
+                AND (
+                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.added DESC, psh.id_project_status_history LIMIT 1) IN (' . implode(', ', array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
+                    OR unpaid.date_echeance IS NOT NULL
+                )'
+        );
+        return $this->bdd->fetch_assoc($rResult);
     }
 
     // retourne la somme des revenues fiscale des echeances deja remboursés d'un preteur

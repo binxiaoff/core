@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class preteursController extends bootstrap
 {
     /**
@@ -439,7 +437,7 @@ class preteursController extends bootstrap
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
-            $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '20', $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]));
+            $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::COMPLETENESS, $this->clients->id_client, utf8_encode($_SESSION['content_email_completude'][$this->clients->id_client]));
 
             unset($_SESSION['content_email_completude'][$this->clients->id_client]);
 
@@ -551,8 +549,11 @@ class preteursController extends bootstrap
 
                 // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) $create = false;
-                    else $create = true;
+                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
+                        $create = false;
+                    } else {
+                        $create = true;
+                    }
 
                     $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
                     if ($this->upload->doUpload('mandat')) {
@@ -561,11 +562,13 @@ class preteursController extends bootstrap
                         $this->clients_mandats->id_client     = $this->clients->id_client;
                         $this->clients_mandats->id_universign = 'no_universign';
                         $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                        $this->clients_mandats->status        = 1;
+                        $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
 
-                        if ($create == true) $this->clients_mandats->create();
-                        else $this->clients_mandats->update();
-
+                        if ($create == true) {
+                            $this->clients_mandats->create();
+                        } else {
+                            $this->clients_mandats->update();
+                        }
                     }
                 }
 
@@ -656,7 +659,7 @@ class preteursController extends bootstrap
                         /////////// FIN OFFRE DE BIENVENUE ///////////
                     }
 
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '60', $this->clients->id_client);
+                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
 
                     // gestion alert notification //
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
@@ -768,7 +771,6 @@ class preteursController extends bootstrap
                 $this->companies->siret   = $_POST['siret']; //(19/11/2014)
                 $this->companies->phone   = str_replace(' ', '', $_POST['phone-societe']);
 
-                $this->companies->rcs          = $_POST['rcs'];
                 $this->companies->tribunal_com = $_POST['tribunal_com'];
 
                 ////////////////////////////////////
@@ -888,8 +890,11 @@ class preteursController extends bootstrap
 
                 // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
-                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) $create = false;
-                    else $create = true;
+                    if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
+                        $create = false;
+                    } else {
+                        $create = true;
+                    }
 
                     $this->upload->setUploadDir($this->path, 'protected/pdf/mandat/');
                     if ($this->upload->doUpload('mandat')) {
@@ -898,11 +903,13 @@ class preteursController extends bootstrap
                         $this->clients_mandats->id_client     = $this->clients->id_client;
                         $this->clients_mandats->id_universign = 'no_universign';
                         $this->clients_mandats->url_pdf       = '/pdf/mandat/' . $this->clients->hash . '/';
-                        $this->clients_mandats->status        = 1;
+                        $this->clients_mandats->status        = \clients_mandats::STATUS_SIGNED;
 
-                        if ($create == true) $this->clients_mandats->create();
-                        else $this->clients_mandats->update();
-
+                        if ($create == true) {
+                            $this->clients_mandats->create();
+                        } else {
+                            $this->clients_mandats->update();
+                        }
                     }
                 }
 
@@ -918,17 +925,12 @@ class preteursController extends bootstrap
                 // On met a jour l'adresse client
                 $this->clients_adresses->update();
 
-
                 // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(3, 'modif info preteur personne morale', $_SESSION['user']['id_user'], $serialize);
 
                 if (isset($_POST['statut_valider_preteur']) && $_POST['statut_valider_preteur'] == 1) {
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '60', $this->clients->id_client);
-
-                    // Mail au client  societe//
-
-                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], '60', $this->clients->id_client);
+                    $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
 
                     // modif ou inscription
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) $modif = true;
@@ -1217,7 +1219,6 @@ class preteursController extends bootstrap
                         $backup_companies->iban                                = $this->companies->iban;
                         $backup_companies->bic                                 = $this->companies->bic;
                         $backup_companies->execices_comptables                 = $this->companies->execices_comptables;
-                        $backup_companies->rcs                                 = $this->companies->rcs;
                         $backup_companies->tribunal_com                        = $this->companies->tribunal_com;
                         $backup_companies->activite                            = $this->companies->activite;
                         $backup_companies->lieu_exploi                         = $this->companies->lieu_exploi;
@@ -1693,21 +1694,44 @@ class preteursController extends bootstrap
 
     public function _email_history()
     {
-        $this->loadGestionData();
+        if (isset($_POST['send_dates'])) {
+            $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
+            $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
+
+            header('Location: ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
+            die;
+        }
+
+        $this->clients                = $this->loadData('clients');
+        $this->clients_status         = $this->loadData('clients_status');
+        $this->lenders_accounts       = $this->loadData('lenders_accounts');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+        $this->clients_status->getLastStatut($this->clients->id_client);
 
-        if (in_array($this->clients->type, array(2, 4))) {
-            $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
+        $oClientsNotifications       = $this->loadData('clients_gestion_notifications');
+        $oTypesOfClientNotifications = $this->loadData('clients_gestion_type_notif');
+        $this->aTypesOfNotifications = $oTypesOfClientNotifications->select();
+        $this->aClientsNotifications = $oClientsNotifications->getNotifs($this->clients->id_client);
+
+        if (isset($_SESSION['FilterMails'])) {
+            $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
+            $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['EndDate']);
+
+            unset($_SESSION['FilterMails']);
+        } else {
+            $oDateTimeStart = new \DateTime('NOW - 1 year');
+            $oDateTimeEnd   = new \DateTime('NOW');
         }
 
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
+        $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
+        $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
+        $sStartDate                  = $oDateTimeStart->format('Y-m-d');
+        $sEndDate                    = $oDateTimeEnd->format('Y-m-d');
 
-        $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-        $this->NotifC      = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+        $oMailsFiler               = $this->loadData('mails_filer');
+        $this->aEmailsSentToClient = $oMailsFiler->getListOfEmails($this->clients->email, $sStartDate, $sEndDate);
     }
 
     public function _portefeuille()
@@ -1796,6 +1820,27 @@ class preteursController extends bootstrap
         /** @var lenders_accounts $oLenders */
         $oLenders = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
+    }
+
+    public function _email_history_preview()
+    {
+        $this->hideDecoration();
+        $_SESSION['request_url'] = $this->url;
+
+        $this->oMail = $this->loadData('mails_filer');
+        $this->oMail->get($this->params[0]);
+    }
+
+    public function _email_history_preview_iframe()
+    {
+        $this->hideDecoration();
+        $_SESSION['request_url'] = $this->url;
+
+        $this->oMail = $this->loadData('mails_filer');
+        $this->oMail->get($this->params[0]);
+
+        echo stripslashes($this->oMail->content);
+        $this->autoFireView = false;
     }
 
     private function foreignerTax($oClients, $oLendersAccounts, $oClientsAdresses)

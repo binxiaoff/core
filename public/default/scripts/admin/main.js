@@ -26,14 +26,6 @@ function setNewIdParent(id)
     document.getElementById('id_parent').value = id;
 }
 
-/* Changer l'onglet de la page produit */
-function changeOngletProduit(divon,divoff)
-{
-    document.getElementById('lien_'+divoff).className = '';
-    document.getElementById('lien_'+divon).className = 'active';
-    document.getElementById(divoff).style.display = 'none';
-    document.getElementById(divon).style.display = 'block';
-}
 /* Chack formulaire edition user */
 function checkFormModifUser()
 {

@@ -130,10 +130,6 @@ class projectsController extends bootstrap
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
 
-            // Cron fin funding minutes suplémentaires avant traitement
-            $this->settings->get('Cron fin funding minutes suplémentaires avant traitement', 'type');
-            $this->minutesEnPlus = $this->settings->value;
-
             // Liste deroulante secteurs
             $this->settings->get('Liste deroulante secteurs', 'type');
             $lSecteurs = explode(';', $this->settings->value);

@@ -204,161 +204,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    /* Fonction AJAX ajout produit complementaire */
-    public function _ajoutProduitComp()
-    {
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->produits_crosseling = $this->loadData('produits_crosseling');
-            $this->produits_elements   = $this->loadData('produits_elements');
-            $this->produits            = $this->loadData('produits', array(
-                'url'               => $this->url,
-                'surl'              => $this->surl,
-                'produits_elements' => $this->produits_elements,
-                'upload'            => $this->upload,
-                'spath'             => $this->spath
-            ));
-
-            // Ajout du produit complementaire pour le produit
-            $this->produits_crosseling->id_produit    = $this->params[0];
-            $this->produits_crosseling->id_crosseling = $this->params[1];
-            $this->produits_crosseling->ordre         = $this->produits->getMaxOrdreComp($this->params[0]);
-            $this->produits_crosseling->create();
-
-            // Recuperation de la liste des produits complementaires
-            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"',
-                'ordre ASC');
-
-            // Chargement de la vue
-            $this->setView('produitComplementaire');
-        }
-    }
-
-    /* Fonction AJAX move produit complementaire */
-    public function _moveProduitComp()
-    {
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->produits_crosseling = $this->loadData('produits_crosseling');
-            $this->produits_elements   = $this->loadData('produits_elements');
-            $this->produits            = $this->loadData('produits', array(
-                'url'               => $this->url,
-                'surl'              => $this->surl,
-                'produits_elements' => $this->produits_elements,
-                'upload'            => $this->upload,
-                'spath'             => $this->spath
-            ));
-
-            // en fonction du mouvement on applique la fonction
-            if ($this->params[2] == 'up') {
-                $this->produits->moveUp($this->params[0], $this->params[1]);
-            } elseif ($this->params[2] == 'down') {
-                $this->produits->moveDown($this->params[0], $this->params[1]);
-            }
-
-            // Recuperation de la liste des produits complementaires
-            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"',
-                'ordre ASC');
-
-            // Chargement de la vue
-            $this->setView('produitComplementaire');
-        }
-    }
-
-    /* Fonction AJAX delete produit complementaire */
-    public function _deleteProduitComp()
-    {
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->produits_crosseling = $this->loadData('produits_crosseling');
-            $this->produits_elements   = $this->loadData('produits_elements');
-            $this->produits            = $this->loadData('produits', array(
-                'url'               => $this->url,
-                'surl'              => $this->surl,
-                'produits_elements' => $this->produits_elements,
-                'upload'            => $this->upload,
-                'spath'             => $this->spath
-            ));
-
-            // Ajout du produit complementaire pour le produit
-            $this->produits_crosseling->delete(array(
-                'id_produit'    => $this->params[0],
-                'id_crosseling' => $this->params[1]
-            ));
-
-            // Reordenancement des produits comp
-            $this->produits->reordreComp($this->params[0]);
-
-            // Recuperation de la liste des produits complementaires
-            $this->lProduitCrosseling = $this->produits_crosseling->select('id_produit = "' . $this->params[0] . '"',
-                'ordre ASC');
-
-            // Chargement de la vue
-            $this->setView('produitComplementaire');
-        }
-    }
-
-    /* Fonction AJAX suppression d'une image produit */
-    public function _deleteImageFicheProduit()
-    {
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->produits_images   = $this->loadData('produits_images');
-            $this->produits_elements = $this->loadData('produits_elements');
-            $this->produits          = $this->loadData('produits', array(
-                'url'               => $this->url,
-                'surl'              => $this->surl,
-                'produits_elements' => $this->produits_elements,
-                'upload'            => $this->upload,
-                'spath'             => $this->spath
-            ));
-
-            // On recupere l'image
-            $this->produits_images->get($this->params[1], 'id_image');
-
-            // On supprime le fichier sur le serveur
-            @unlink($this->spath . 'images/produits/' . $this->produits_images->fichier);
-
-            // On supprime le fichier de la base
-            $this->produits_images->delete($this->params[1], 'id_image');
-
-            // Reordenancement des images
-            $this->produits->reordre($this->params[0]);
-
-            // Recuperation de la liste des images pour le produit
-            $this->lImages = $this->produits_images->select('id_produit = "' . $this->params[0] . '"', 'ordre ASC');
-
-            // Chargement de la vue
-            $this->setView('imagesProduits');
-        }
-    }
-
-    /* Fonction AJAX placement en principal d'une image produit */
-    public function _moveImageToFirstOne()
-    {
-        if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->produits_images   = $this->loadData('produits_images');
-            $this->produits_elements = $this->loadData('produits_elements');
-            $this->produits          = $this->loadData('produits', array(
-                'url'               => $this->url,
-                'surl'              => $this->surl,
-                'produits_elements' => $this->produits_elements,
-                'upload'            => $this->upload,
-                'spath'             => $this->spath
-            ));
-
-            // Attribution de l'ordre zero pour l'img
-            $this->produits_images->get($this->params[1], 'id_image');
-            $this->produits_images->ordre = 0;
-            $this->produits_images->update();
-
-            // Reordenancement des images
-            $this->produits->reordre($this->params[0]);
-
-            // Recuperation de la liste des images pour le produit
-            $this->lImages = $this->produits_images->select('id_produit = "' . $this->params[0] . '"', 'ordre ASC');
-
-            // Chargement de la vue
-            $this->setView('imagesProduits');
-        }
-    }
-
     /* Fonction AJAX change le statut d'un dossier*/
     public function _status_dossier()
     {
@@ -398,15 +243,6 @@ class ajaxController extends bootstrap
         $this->clients_history         = $this->loadData('clients_history');
 
         if (isset($this->params[0]) && isset($this->params[1])) {
-            // On retourne le statut
-
-            // on verifie
-            // montant
-            // taux cible
-            // niveau de risque
-            // durée
-            // date publication
-            // date retrait
             if ($this->projects->get($this->params[1], 'id_project') &&
                 $this->projects->amount > 0 &&
                 $this->projects->target_rate != '0' &&
@@ -420,23 +256,8 @@ class ajaxController extends bootstrap
                 $this->companies->get($this->projects->id_company, 'id_company') &&
                 $this->params[0] == 30
             ) {
-                // On recup le title du projet
-                $title = $this->projects->title;
-
-                /*$date_publication = $this->params[2];
-
-                $date_publication = str_replace('-','/',$date_publication);
-                $date_publication = $this->dates->formatDateFrToMysql($date_publication);
-
-                $this->projects->date_publication = $date_publication;
-                $this->projects->update();*/
-
-                // on maj le statut (40 ou 30)
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $this->params[0], $this->projects->id_project);
-
-                // On recup le client
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-
 
                 //*****************************************//
                 //*** ENVOI DU MAIL Validation ou rejet ***//
@@ -493,9 +314,6 @@ class ajaxController extends bootstrap
                         }
                         if ($companies->bic == '') {
                             $mess .= '<li>BIC entreprise</li>';
-                        }
-                        if ($companies->rcs == '') {
-                            $mess .= '<li>RCS entreprise</li>';
                         }
                         if ($companies->tribunal_com == '') {
                             $mess .= '<li>Tribunal de commerce entreprise</li>';
@@ -570,8 +388,6 @@ class ajaxController extends bootstrap
                             mail($to, $subject, $message, $headers);
                         }
                     }
-
-
                     // si inscription
                     if ($this->clients->status_transition == 1) {
                         $this->clients_history->id_client = $this->clients->id_client;
@@ -585,24 +401,13 @@ class ajaxController extends bootstrap
                     $this->clients_history->status    = 3; // statut depot de dossier validé
                     $this->clients_history->create();
 
-                    // statut emprunteur online
-                    $this->clients->status = 1;
-                    // on retire l'etape de transition
+                    $this->clients->status            = 1;
                     $this->clients->status_transition = 0;
-
-                    // Creation du mot de passe client
-                    //$lemotdepasse = $this->ficelle->generatePassword(8);
-                    //$this->clients->password = md5($lemotdepasse);
-
+                    $this->clients->update();
 
                     $this->mails_text->get('emprunteur-dossier-valide', 'lang = "' . $this->language . '" AND type');
-                } // rejeté
-                elseif ($this->params[0] == 30) {
+                } elseif ($this->params[0] == 30) {
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
-
-                    // statut emprunteur offline
-                    $this->clients->status = 0;
-                    //$lemotdepasse = '';
                 }
 
                 // FB
@@ -665,10 +470,6 @@ class ajaxController extends bootstrap
                 } else {
                     $this->lProjects_status = array();
                 }
-
-                // on met a jour le statut de l'emprunteur
-                $this->clients->update();
-
                 $this->bloc_statut = 'ok';
             } else {
                 echo 'nok';
@@ -1596,8 +1397,6 @@ class ajaxController extends bootstrap
                 } else {
                     $update = false;
                 }
-                // On recup le title du projet
-                $title = $this->projects->title;
 
                 // on maj le statut
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
@@ -1786,9 +1585,6 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-                    // on passe l'emprunteur en offline
-                    $this->clients->status = 0;
-                    $this->clients->update();
                 }
 
                 echo json_encode(array('liste' => $select, 'etape_6' => $etape_6));
@@ -1926,10 +1722,6 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-
-                    // on passe l'emprunteur en offline
-                    $this->clients->status = 0;
-                    $this->clients->update();
                 }
 
                 //on recup le statut courant
@@ -2273,10 +2065,6 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-
-                    // on passe l'emprunteur en offline
-                    $this->clients->status = 0;
-                    $this->clients->update();
                 } elseif ($_POST['status'] == 4) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects->id_project);
 
