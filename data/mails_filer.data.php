@@ -41,13 +41,11 @@ class mails_filer extends mails_filer_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql      = 'SELECT * FROM `mails_filer`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query('SELECT * FROM mails_filer' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
-
         return $result;
     }
 
@@ -57,52 +55,44 @@ class mails_filer extends mails_filer_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `mails_filer` ' . $where;
+        $result = $this->bdd->query('SELECT COUNT(*) FROM mails_filer ' . $where);
 
-        $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_filermails')
     {
-        $sql    = 'SELECT * FROM `mails_filer` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM mails_filer WHERE ' . $field . ' = "' . $id . '"');
 
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getListOfEmails($sEmail, $sStartDate = null , $sEndDate = null )
+    public function getListOfEmails($sEmail, $sStartDate = '2013-01-01', $sEndDate = null)
     {
-        if (null === $sStartDate) {
-            $sStartDate = '2013-01-01';
-        }
-
         if (null === $sEndDate) {
             $sEndDate = 'NOW()';
         } else {
-            $sEndDate = str_pad($sEndDate,12,'"', STR_PAD_BOTH);
+            $sEndDate = str_pad($sEndDate, 12, '"', STR_PAD_BOTH);
         }
 
-        $sql = 'SELECT
-                    mf.id_filermails,
-                    mt.name,
-                    mf.subject,
-                    mf.added
-                FROM
-                    mails_filer mf
-                    LEFT JOIN mails_text mt ON mf.id_textemail = mt.id_textemail
-                WHERE `email_nmp` LIKE "' . $sEmail . '"
-                AND DATE(mf.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
+        $sql = '
+            SELECT
+                mf.id_filermails,
+                mt.name,
+                mf.subject,
+                mf.added
+            FROM mails_filer mf
+            LEFT JOIN mails_text mt ON mf.id_textemail = mt.id_textemail
+            WHERE email_nmp LIKE "' . $sEmail . '"
+            AND DATE(mf.added) BETWEEN "' . $sStartDate . '" AND ' . $sEndDate . '
                 AND (mf.to = "" OR mf.to IS NULL)
-                ORDER BY mf.added DESC';
+            ORDER BY mf.added DESC';
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
-
         return $result;
     }
 }

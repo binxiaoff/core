@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class preteursController extends bootstrap
 {
     /**
@@ -1695,7 +1693,7 @@ class preteursController extends bootstrap
     {
         if (isset($_POST['send_dates'])) {
             $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
-            $_SESSION['FilterMails']['EndDate'] = $_POST['fin'];
+            $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
 
             header('Location: ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
             die;
@@ -1714,14 +1712,14 @@ class preteursController extends bootstrap
         $this->aTypesOfNotifications = $oTypesOfClientNotifications->select();
         $this->aClientsNotifications = $oClientsNotifications->getNotifs($this->clients->id_client);
 
-        $oMailsFiler                 = $this->loadData('mails_filer');
-
         if (isset($_SESSION['FilterMails'])) {
-            $oDateTimeStart              = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
-            $oDateTimeEnd                = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['EndDate']);
+            $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
+            $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['EndDate']);
+
+            unset($_SESSION['FilterMails']);
         } else {
-            $oDateTimeStart              = new \datetime('NOW - 1 year');
-            $oDateTimeEnd                = new \datetime('NOW');
+            $oDateTimeStart = new \DateTime('NOW - 1 year');
+            $oDateTimeEnd   = new \DateTime('NOW');
         }
 
         $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
@@ -1729,9 +1727,8 @@ class preteursController extends bootstrap
         $sStartDate                  = $oDateTimeStart->format('Y-m-d');
         $sEndDate                    = $oDateTimeEnd->format('Y-m-d');
 
-        $this->aEmailsSentToClient   = $oMailsFiler->getListOfEmails($this->clients->email, $sStartDate, $sEndDate);
-
-        unset($_SESSION['FilterMails']);
+        $oMailsFiler               = $this->loadData('mails_filer');
+        $this->aEmailsSentToClient = $oMailsFiler->getListOfEmails($this->clients->email, $sStartDate, $sEndDate);
     }
 
     public function _portefeuille()
