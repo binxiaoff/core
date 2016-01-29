@@ -100,51 +100,35 @@ class cronController extends bootstrap
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 1)) {
-            $projects                = $this->loadData('projects');
-            $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
-            $bids                    = $this->loadData('bids');
-            $prelevements            = $this->loadData('prelevements');
+            $oProjects        = $this->loadData('projects');
+            $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
+            $oLoans           = $this->loadData('loans');
 
             $this->settings->get('Facebook', 'type');
             $this->settings->get('Twitter', 'type');
 
-            $today = date('Y-m-d');
-
             // projets en remboursement
-            $aProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
+            $aProjects = $oProjects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
             foreach ($aProjects as $project) {
-                $this->projects->get($project['id_project'],'id_project');
+                $this->projects->get($project['id_project'], 'id_project');
                 $this->companies->get($this->projects->id_company, 'id_company');
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-                $aRepayments = $echeanciers_emprunteur->select('id_project = ' . $project['id_project'] . ' AND  	status_emprunteur = 0 AND date_echeance_emprunteur < "' . $today . ' 00:00:00"');
-                $aFirstRepayment = array_shift($aRepayments);
 
-                // display delayed repayments
-                $i = 0;
-                $sRepayment = '';
-                foreach ($aRepayments as $aRepayment) {
-                    if (++$i === 1) {
-                        if (count($aRepayments) > 1) {
-                            $sRepayment = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; les mensualit&eacute;s des mois suivants :</div>';
-                        } else {
-                            $sRepayment = '<div>Vous n&apos;avez toujours pas r&eacute;gl&eacute; la mensualit&eacute; du mois suivant :</div>';
-                        }
-                    }
-                    $sRepaymentMonth = strftime("%B %Y", strtotime($aRepayment['date_echeance_emprunteur'] . ' - '. $i .' month'));
-
-                    $sRepayment .= '<div>';
-                    $sRepayment .= 'Mois de '. $sRepaymentMonth .', montant : ' . $aRepayment['montant'] / 100 . ' euros.';
-                    $sRepayment .= '</div><br/><br/>';
+                $aPaymentSchedule = $oPaymentSchedule->select('id_project = ' . $project['id_project'] . ' AND  status_emprunteur = 0 AND date_echeance_emprunteur < "' . date('Y-m-d') . ' 00:00:00"');
+                if (1 === count($aPaymentSchedule)) {
+                    $aPaymentSchedule = array_shift($oPaymentSchedule->select('id_project = ' . $project['id_project'], 'ordre DESC', 0, 1));
+                } else {
+                    $aPaymentSchedule = array_shift($aPaymentSchedule);
                 }
+                $iRepayment = $aPaymentSchedule['montant'] / 100;
 
-                $destinaire = $this->settings->value;
+                $sRecipient = $this->settings->value;
                 $this->mails_text->get('mail-prelevement-mensuel', 'lang = "' . $this->language . '" AND type');
 
-                $iBids = $bids->select('id_project = ' . $project['id_project'] . ' AND status = 1'); // non
-                $aMail = array(
-                    'retardpaiement' => $sRepayment,
-                    'bids'           => count($iBids),
-                    'echeance'       => $aFirstRepayment['montant'] / 100,
+                $iNumberOfLendersForProject = $oLoans->getNbPreteurs($project['id_project']);
+                $aMail                      = array(
+                    'lenders'        => $iNumberOfLendersForProject,
+                    'echeance'       => $iRepayment,
                     'nextmonth'      => strftime("1er %B", date("m") + 1),
                     'surl'           => $this->surl,
                     'url'            => $this->furl,
@@ -156,10 +140,10 @@ class cronController extends bootstrap
                     'lien_fb'        => $this->like_fb,
                     'lien_tw'        => $this->twitter
                 );
-                $aVars      = $this->tnmp->constructionVariablesServeur($aMail);
-                $sujetMail  = strtr(utf8_decode($this->mails_text->subject), $aVars);
-                $texteMail  = strtr(utf8_decode($this->mails_text->content), $aVars);
-                $exp_name   = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+                $aVars                      = $this->tnmp->constructionVariablesServeur($aMail);
+                $sujetMail                  = strtr(utf8_decode($this->mails_text->subject), $aVars);
+                $texteMail                  = strtr(utf8_decode($this->mails_text->content), $aVars);
+                $exp_name                   = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
 
                 $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -170,7 +154,7 @@ class cronController extends bootstrap
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                     $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
-                    $this->email->addRecipient(trim($destinaire));
+                    $this->email->addRecipient(trim($sRecipient));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
