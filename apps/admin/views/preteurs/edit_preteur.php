@@ -354,7 +354,6 @@
             } else {
                 ?>
                 <!-- fin particulier -->
-
                 <!-- societe -->
                 <tr class="societe">
                     <th colspan="4" style="text-align:left;"><br/>Vous êtes :</th>
@@ -371,7 +370,6 @@
                     <td colspan="4"><input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/><label for="enterprise3"> Je suis
                             un conseil externe de l'entreprise </label></td>
                 </tr>
-                <!---->
                 <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant_e3 societe">
                     <th><label for="status_conseil_externe_entreprise">Expert comptable :</label></th>
                     <td>
@@ -389,7 +387,6 @@
                     <td><input type="text" name="preciser_conseil_externe_entreprise" id="preciser_conseil_externe_entreprise" class="input_large"
                                value="<?= $this->companies->preciser_conseil_externe_entreprise ?>"/></td>
                 </tr>
-                <!---->
                 <tr class="societe">
                     <th colspan="4" style="text-align:left;"><br/>Vos coordonnées :</th>
                 </tr>
@@ -423,8 +420,6 @@
                     <th></th>
                     <td></td>
                 </tr>
-
-                <!---->
                 <tr <?= ($this->companies->status_client == 1 ? 'style="display:none;"' : '') ?> class="statut_dirigeant_e societe">
                     <th colspan="4" style="text-align:left;"><br/>Identification du dirigeant :</th>
                 </tr>
@@ -458,7 +453,6 @@
                     <th></th>
                     <td></td>
                 </tr>
-                <!---->
                 <!-- fin societe -->
                 <?php
             }
@@ -471,7 +465,6 @@
             <tr>
                 <th><label for="bic">BIC :</label></th>
                 <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->lenders_accounts->bic ?>"/></td>
-
             </tr>
             <tr>
                 <th><label for="iban1">IBAN :</label></th>
@@ -514,10 +507,9 @@
                     </tr>
                     <tr class="particulier">
                         <td colspan="2">
-
-                            <div id="row_precision" style="display:none;"><input type="text" id="preciser" name="preciser"
-                                                                                 value="<?= ($this->lenders_accounts->precision != '' ? $this->lenders_accounts->precision : '') ?>"
-                                                                                 class="input_large"></div>
+                            <div id="row_precision" style="display:none;">
+                                <input type="text" id="preciser" name="preciser" value="<?= ($this->lenders_accounts->precision != '' ? $this->lenders_accounts->precision : '') ?>" class="input_large" />
+                            </div>
                         </td>
                     </tr>
                     <?php
@@ -660,8 +652,10 @@
                     </td>
                 </tr>
                 <?php
-                //if(in_array($this->clients_status->status,array(60,20)))
-                if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true || $_SESSION['compte_valide'] == true) {
+                if (
+                    isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true
+                    || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide'] == true
+                ) {
                     ?>
                     <tr>
                         <td><a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a></td>
@@ -680,24 +674,17 @@
 
                 <div class="liwording">
                     <table>
-                        <?php
-                        for ($i = 1; $i <= $this->nbWordingCompletude; $i++) {
-
-                            ?>
+                        <?php for ($i = 1; $i <= $this->nbWordingCompletude; $i++) : ?>
                             <tr>
-                            <td>
-                                <img class="add" id="add-<?= $i ?>" src="<?= $this->surl ?>/images/admin/add.png">
-                            </td>
-                            <td>
-                                <span class="content-add-<?= $i ?>"><?= $this->completude_wording['cas-' . $i] ?></span>
-                            </td>
+                                <td><img class="add" id="add-<?= $i ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
+                                <td><span class="content-add-<?= $i ?>"><?= $this->completude_wording['cas-' . $i] ?></span></td>
                             </tr>
-                            <?php
-                            if (in_array($i, array(3, 6, 11))) {
-                                echo '<tr><td colspan="2">&nbsp;</td></tr>';
-                            }
-                        }
-                        ?>
+                            <?php if (in_array($i, array(3, 6, 11))) : ?>
+                                <tr>
+                                    <td colspan="2">&nbsp;</td>
+                                </tr>
+                            <?php endif; ?>
+                        <?php endfor; ?>
                     </table>
                 </div>
                 <br/>
@@ -713,9 +700,7 @@
 
                             <td>
                                 <label for="id">Saisir votre message :</label>
-                                <textarea name="content_email_completude" id="content_email_completude"><?= $text = str_replace(array("<br>", "<br />"), "",
-                                        $_SESSION['content_email_completude'][$this->params[0]]) ?></textarea>
-                                <?php /*?> <script type="text/javascript">var cked = CKEDITOR.replace('content_email_completude');</script><?php */ ?>
+                                <textarea name="content_email_completude" id="content_email_completude"><?= $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) ?></textarea>
                             </td>
                         </tr>
                         <tr>
@@ -729,7 +714,6 @@
                 </fieldset>
                 <br/><br/>
             </div>
-
         </div>
         <div class="clear"></div>
 
@@ -737,9 +721,7 @@
 
         <div class="content_cgv_accept">
             <h2>Acceptation CGV</h2>
-            <?php
-            if (count($this->lAcceptCGV) > 0) {
-                ?>
+            <?php if (count($this->lAcceptCGV) > 0) { ?>
                 <table class="tablesorter cgv_accept">
                     <thead>
                     <tr>
@@ -753,7 +735,6 @@
                     <tbody>
                     <?php
                     foreach ($this->lAcceptCGV as $a) {
-
                         $this->tree->get(array('id_tree' => $a['id_legal_doc'], 'id_langue' => $this->language));
                         ?>
                         <tr>
