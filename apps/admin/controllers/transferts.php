@@ -902,7 +902,6 @@ class transfertsController extends bootstrap
         $echeanciers             = $this->loadData('echeanciers');
         $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
         $projects_remb           = $this->loadData('projects_remb');
-        $projects_status_history = $this->loadData('projects_status_history');
 
         if (
             isset($_POST['id_project'], $_POST['id_reception'])
@@ -965,8 +964,6 @@ class transfertsController extends bootstrap
                     break;
                 }
             }
-
-            $projects_status_history->addStatus(-1, \projects_status::PROBLEME, $projects->id_project);
 
             echo 'ok';
         }

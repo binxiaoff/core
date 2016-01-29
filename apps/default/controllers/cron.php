@@ -1582,13 +1582,11 @@ class cronController extends bootstrap
     public function _prelevements()
     {
         if (true === $this->startCron('prelevements', 5)) {
-
             $this->prelevements            = $this->loadData('prelevements');
             $this->clients                 = $this->loadData('clients');
             $this->lenders_accounts        = $this->loadData('lenders_accounts');
             $this->compteur_transferts     = $this->loadData('compteur_transferts');
             $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-            $echeanciers                   = $this->loadData('echeanciers');
             $clients_mandats               = $this->loadData('clients_mandats');
 
             // Virement - BIC
@@ -1818,7 +1816,6 @@ class cronController extends bootstrap
                     }
                 }
 
-                //echo date('d/m/Y',$date_execution).'<bR>';
                 // On recup le mandat
                 $clients_mandats->get($p['id_client'], 'id_project = 0 AND id_client');
 
@@ -2902,8 +2899,6 @@ class cronController extends bootstrap
                                             break;
                                         }
                                     }
-
-                                    $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::PROBLEME, $this->projects->id_project);
                                 }
                             }
                         }
@@ -5069,7 +5064,7 @@ class cronController extends bootstrap
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
                     }
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $this->clients_status_history->content);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $this->clients_status_history->content);
                 }
             }
 
@@ -5087,13 +5082,13 @@ class cronController extends bootstrap
                 $timestamp_date              = $this->dates->formatDateMySqlToTimeStamp($p['added_status']);
                 if ($timestamp_date <= $timeMoins8 && $numero_relance == 0 && date('w') == 6) {// Relance J+15 && samedi
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 2);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 2);
                 } elseif ($timestamp_date <= $timeMoins8 && $numero_relance == 2 && date('w') == 6) {// Relance J+30
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 3);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 3);
                 } elseif ($timestamp_date <= $timeMoins30 && $numero_relance == 3 && date('w') == 6) {// Relance J+60
                     $op_pour_relance = true;
-                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, 30, $p['id_client'], $data_clients_status_history['content'], 4);
+                    $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 4);
                 }
 
                 if ($op_pour_relance) {
@@ -5253,38 +5248,6 @@ class cronController extends bootstrap
             $xml .= '</partenaire>';
             file_put_contents($this->spath . 'fichiers/045.xml', $xml);
             file_put_contents($this->spath . 'fichiers/045_historique.xml', $xml, FILE_APPEND);
-            $this->stopCron();
-        }
-        die;
-    }
-
-    // passe a 1h du matin tous les jours
-    // check les remb qui n'ont pas de factures
-    public function _genere_factures()
-    {
-        if (true === $this->startCron('genereFacture', 5)) {
-            $projects    = $this->loadData('projects');
-            $factures    = $this->loadData('factures');
-            $companies   = $this->loadData('companies');
-            $emprunteurs = $this->loadData('clients');
-
-            $aRepaymentNoInvoice = $factures->selectEcheancesRembAndNoFacture();
-            foreach ($aRepaymentNoInvoice as $r) {
-                $oCommandPdf = new Command('pdf', 'facture_ER', array($r['hash'], $r['id_project'], $r['ordre']), $this->language);
-                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->_facture_ER($r['hash'], $r['id_project'], $r['ordre'], false);
-            }
-
-            $aProjectsInRepayment = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
-            foreach ($aProjectsInRepayment as $projet) {
-                if (false === $factures->exist($projet['id_project'], 'type_commission = 1 AND id_project')) {
-                    $companies->get($projet['id_company'], 'id_company');
-                    $emprunteurs->get($companies->id_client_owner, 'id_client');
-                    $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $r['id_project']), $this->language);
-                    $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_EF($emprunteurs->hash, $r['id_project'], false);
-                }
-            }
             $this->stopCron();
         }
         die;
@@ -7063,7 +7026,7 @@ class cronController extends bootstrap
             if (date('H:i') == $paramDebut) {
                 $this->check_remboursement_preteurs();
             } elseif ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
-                $lProjetsAremb = $projects_remb->select('status = 0 AND LEFT(date_remb_preteurs,10) <= "' . date('Y-m-d') . '"', '', 0, 1);
+                $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
                 if ($lProjetsAremb != false) {
                     foreach ($lProjetsAremb as $r) {
                         $projects_remb_log->id_project          = $r['id_project'];
@@ -7201,12 +7164,36 @@ class cronController extends bootstrap
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
-                            if ($this->Config['env'] == 'prod') {
+                            if ($this->Config['env'] === 'prod') {
                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                             } else {
                                 $this->email->addRecipient(trim($companies->email_facture));
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                            }
+
+                            $oInvoiceCounter            = $this->loadData('compteur_factures');
+                            $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
+                            $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                            $oInvoice                   = $this->loadData('factures');
+
+                            $this->settings->get('Commission remboursement', 'type');
+                            $fCommissionRate = $this->settings->value;
+
+                            $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
+
+                            if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $e['ordre'] . '  AND id_project')) {
+                                $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
+                                $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
+                                $oInvoice->id_company      = $companies->id_company;
+                                $oInvoice->id_project      = $projects->id_project;
+                                $oInvoice->ordre           = $r['ordre'];
+                                $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                                $oInvoice->commission      = $fCommissionRate * 100;
+                                $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
+                                $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
+                                $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
+                                $oInvoice->create();
                             }
 
                             $lesRembEmprun = $bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $r['id_project']);

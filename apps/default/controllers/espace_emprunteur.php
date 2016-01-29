@@ -97,7 +97,7 @@ class espace_emprunteurController extends Bootstrap
 
         foreach ($this->tree_elements->select('id_tree = 47 AND id_langue = "' . $this->language . '"') as $elt) {
             $this->elements->get($elt['id_element']);
-            $this->content[ $this->elements->slug ] = $elt['value'];
+            $this->content[$this->elements->slug] = $elt['value'];
         }
 
         $aContactRequest       = isset($_SESSION['forms']['contact-emprunteur']['values']) ? $_SESSION['forms']['contact-emprunteur']['values'] : array();
@@ -169,7 +169,7 @@ class espace_emprunteurController extends Bootstrap
                 '[nom]'       => $_POST['nom'],
                 '[email]'     => $_POST['email'],
                 '[telephone]' => $_POST['telephone'],
-                '[demande]'   => $this->aRequestSubjects[ $_POST['demande'] ]['label'],
+                '[demande]'   => $this->aRequestSubjects[$_POST['demande']]['label'],
                 '[message]'   => $_POST['message'],
                 '[SURL]'      => $this->surl
             );
@@ -219,13 +219,15 @@ class espace_emprunteurController extends Bootstrap
 
             foreach ($this->aClientsProjects[$iKey]['mandat'] as $iMandatKey => $aMandat) {
                 switch ($aMandat['status']) {
-                    case clients_mandats::STATUS_EN_COURS:
-                        $this->aClientsProjects[$iKey]['mandat'][ $iMandatKey ]['status-trad'] = 'mandat-en-cours';
+                    case \clients_mandats::STATUS_PENDING:
+                        $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'mandat-en-cours';
                         break;
-                    case clients_mandats::STATUS_SIGNE:
-                    case clients_mandats::STATUS_ANNULE:
-                    case clients_mandats::STATUS_FAIL:
-                        $this->aClientsProjects[$iKey]['mandat'][ $iMandatKey ]['status-trad'] = 'void';
+                    case \clients_mandats::STATUS_SIGNED:
+                    case \clients_mandats::STATUS_CANCELED:
+                    case \clients_mandats::STATUS_FAILED:
+                    case \clients_mandats::STATUS_ARCHIVED:
+                    default:
+                        $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'void';
                         break;
                 }
             }
@@ -492,20 +494,20 @@ class espace_emprunteurController extends Bootstrap
 
         foreach ($aData as $key => $row) {
             if (empty($row['name']) === false) {
-                $aData[ $key ]['nom']    = $row['name'];
-                $aData[ $key ]['prenom'] = null;
+                $aData[$key]['nom']    = $row['name'];
+                $aData[$key]['prenom'] = null;
             }
-            $aData[ $key ]['name'] = $sType;
-            $aData[ $key ]['date'] = $this->dates->formatDate($row['date']);
+            $aData[$key]['name'] = $sType;
+            $aData[$key]['date'] = $this->dates->formatDate($row['date']);
 
             if (empty($row['amount']) === false) {
-                $aData[ $key ]['amount'] = $row['amount'] / 100;
+                $aData[$key]['amount'] = $row['amount'] / 100;
             }
 
             if (empty($row['montant']) === false) {
-                $aData[ $key ]['montant'] = $row['montant'] / 100;
-                $aData[ $key ]['capital'] = $row['capital'] / 100;
-                $aData[ $key ]['interets'] = $row['interets'] / 100;
+                $aData[$key]['montant'] = $row['montant'] / 100;
+                $aData[$key]['capital'] = $row['capital'] / 100;
+                $aData[$key]['interets'] = $row['interets'] / 100;
             }
         }
 
@@ -528,7 +530,7 @@ class espace_emprunteurController extends Bootstrap
 
         foreach ($aBorrowerOperations as $aOperation) {
             $aData[] = array(
-                $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ],
+                $this->lng['espace-emprunteur']['operations-type-' . $aOperation['type']],
                 $aOperation['id_project'],
                 $this->dates->formatDateMysqltoShortFR($aOperation['date']),
                 number_format($aOperation['montant'], 2, ',', ''),
@@ -577,7 +579,7 @@ class espace_emprunteurController extends Bootstrap
 
         foreach ($aContent as $aElement) {
             $this->elements->get($aElement['id_element']);
-            $this->content[ $this->elements->slug ] = $aElement['value'];
+            $this->content[$this->elements->slug] = $aElement['value'];
         }
     }
 

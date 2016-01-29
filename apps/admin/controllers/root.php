@@ -142,13 +142,8 @@ class rootController extends bootstrap
         // Controle d'acces à la rubrique
         $this->users->checkAccess('edition');
 
-        // Activation du menu
         $this->menu_admin = 'edition';
 
-        // Chargement de la class de recherche
-        $this->se = $this->loadLib('elgoog', array($this->bdd));
-
-        // Mise en session du message
         $_SESSION['freeow']['title']   = 'Indexation du site';
         $_SESSION['freeow']['message'] = 'Le site a bien &eacute;t&eacute; index&eacute; !';
 
