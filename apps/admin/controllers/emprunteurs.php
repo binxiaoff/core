@@ -519,10 +519,10 @@ class emprunteursController extends bootstrap
         foreach ($aProjectInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
                 case factures::TYPE_COMMISSION_FINANCEMENT :
-                    $aProjectInvoices[$iKey]['url'] = $this->url . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    $aProjectInvoices[$iKey]['url'] = $this->surl . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
                 case factures::TYPE_COMMISSION_REMBOURSEMENT:
-                    $aProjectInvoices[$iKey]['url'] = $this->url . '/pdf/facture_ER/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    $aProjectInvoices[$iKey]['url'] = $this->surl . '/pdf/facture_ER/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
                     break;
             }
         }

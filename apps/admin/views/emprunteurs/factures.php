@@ -25,8 +25,8 @@
                     <tr>
                         <td><?= $aProjectInvoice['num_facture'] ?></td>
                         <td><?= $this->dates->formatDateMysqltoFr($aProjectInvoice['date']) ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProjectInvoice['montant_ht']) ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProjectInvoice['montant_ttc']) ?></td>
+                        <td><?= $this->ficelle->formatNumber($aProjectInvoice['montant_ht']/100) ?> € </td>
+                        <td><?= $this->ficelle->formatNumber($aProjectInvoice['montant_ttc']/100) ?> € </td>
                         <td align="center">
                             <a href="<?= $aProjectInvoice['url'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/pdf.png" alt="télécharger la facture"/>
