@@ -5253,38 +5253,6 @@ class cronController extends bootstrap
         die;
     }
 
-    // passe a 1h du matin tous les jours
-    // check les remb qui n'ont pas de factures
-    public function _genere_factures()
-    {
-        if (true === $this->startCron('genereFacture', 5)) {
-            $projects    = $this->loadData('projects');
-            $factures    = $this->loadData('factures');
-            $companies   = $this->loadData('companies');
-            $emprunteurs = $this->loadData('clients');
-
-            $aRepaymentNoInvoice = $factures->selectEcheancesRembAndNoFacture();
-            foreach ($aRepaymentNoInvoice as $aRepayment) {
-                $oCommandPdf = new Command('pdf', 'facture_ER', array($aRepayment['hash'], $aRepayment['id_project'], $aRepayment['ordre']), $this->language);
-                $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                $oPdf->_facture_ER($aRepayment['hash'], $aRepayment['id_project'], $aRepayment['ordre'], false);
-            }
-
-            $aProjectsInRepayment = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
-            foreach ($aProjectsInRepayment as $aProject) {
-                if (false === $factures->exist($aProject['id_project'], 'type_commission = 1 AND id_project')) {
-                    $companies->get($aProject['id_company'], 'id_company');
-                    $emprunteurs->get($companies->id_client_owner, 'id_client');
-                    $oCommandPdf = new Command('pdf', 'facture_EF', array($emprunteurs->hash, $aProject['id_project']), $this->language);
-                    $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                    $oPdf->_facture_EF($emprunteurs->hash, $aProject['id_project'], false);
-                }
-            }
-            $this->stopCron();
-        }
-        die;
-    }
-
     // 1 fois par jour et on check les transactions non validés sur une journée (00:30)
     public function _check_alim_cb()
     {
@@ -7058,7 +7026,7 @@ class cronController extends bootstrap
             if (date('H:i') == $paramDebut) {
                 $this->check_remboursement_preteurs();
             } elseif ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
-                $lProjetsAremb = $projects_remb->select('status = 0 AND LEFT(date_remb_preteurs,10) <= "' . date('Y-m-d') . '"', '', 0, 1);
+                $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
                 if ($lProjetsAremb != false) {
                     foreach ($lProjetsAremb as $r) {
                         $projects_remb_log->id_project          = $r['id_project'];
@@ -7196,12 +7164,36 @@ class cronController extends bootstrap
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
-                            if ($this->Config['env'] == 'prod') {
+                            if ($this->Config['env'] === 'prod') {
                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                             } else {
                                 $this->email->addRecipient(trim($companies->email_facture));
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                            }
+
+                            $oInvoiceCounter            = $this->loadData('compteur_factures');
+                            $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
+                            $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                            $oInvoice                   = $this->loadData('factures');
+
+                            $this->settings->get('Commission remboursement', 'type');
+                            $fCommissionRate = $this->settings->value;
+
+                            $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
+
+                            if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $e['ordre'] . '  AND id_project')) {
+                                $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
+                                $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
+                                $oInvoice->id_company      = $companies->id_company;
+                                $oInvoice->id_project      = $projects->id_project;
+                                $oInvoice->ordre           = $r['ordre'];
+                                $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                                $oInvoice->commission      = $fCommissionRate * 100;
+                                $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
+                                $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
+                                $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
+                                $oInvoice->create();
                             }
 
                             $lesRembEmprun = $bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $r['id_project']);
