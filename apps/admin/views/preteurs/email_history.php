@@ -41,19 +41,7 @@
         <li>Portefeuille & Performances</li>
     </ul>
 
-    <?php if ($this->clients_status->status == \clients_status::TO_BE_CHECKED) : ?>
-        <div class="attention">
-            Attention : compte non validé - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php elseif (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) : ?>
-        <div class="attention" style="background-color:#F9B137">
-            Attention : compte en complétude - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php elseif (in_array($this->clients_status->status, array(\clients_status::MODIFICATION))) : ?>
-        <div class="attention" style="background-color:#F2F258">
-            Attention : compte en modification - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php endif; ?>
+    <div><?= $this->sClientStatusMessage ?></div>
 
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <h2>Préférences Notifications</h2>
@@ -94,8 +82,7 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php
-                                if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
+                                <?php if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
                                         \clients_gestion_type_notif::TYPE_BID_PLACED,
                                         \clients_gestion_type_notif::TYPE_BID_REJECTED,
                                         \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
@@ -105,8 +92,7 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <?php
-                                if (
+                                <?php if (
                                     false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
                                         \clients_gestion_type_notif::TYPE_NEW_PROJECT,
                                         \clients_gestion_type_notif::TYPE_BID_PLACED,
@@ -151,8 +137,7 @@
                 <tr>
                     <th><span>Mouvements sur le compte</span></th>
                 </tr>
-                <?php
-                foreach ($this->aTypesOfNotifications as $aNotificationType) :
+                <?php foreach ($this->aTypesOfNotifications as $aNotificationType) :
                     if (
                         in_array($aNotificationType['id_client_gestion_type_notif'], array(
                             \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
@@ -171,10 +156,8 @@
                                 <input type="radio"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['uniquement_notif'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                         </tr>
-                        <?php
-                    endif;
-                endforeach;
-                ?>
+                        <?php endif; ?>
+                <?php endforeach; ?>
             </table>
         </div>
     </div>

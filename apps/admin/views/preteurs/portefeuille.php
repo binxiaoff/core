@@ -20,19 +20,7 @@
         <li>Portefeuille & Performances</li>
     </ul>
 
-    <?php if ($this->clients_status->status == 10): // a controler ?>
-        <div class="attention">
-            Attention : compte non validé - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php elseif (in_array($this->clients_status->status, array(20, 30, 40))): // completude ?>
-        <div class="attention" style="background-color:#F9B137">
-            Attention : compte en complétude - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php elseif (in_array($this->clients_status->status, array(50))): // modification ?>
-        <div class="attention" style="background-color:#F2F258">
-            Attention : compte en modification - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php endif; ?>
+    <div><?= $this->sClientStatusMessage ?></div>
 
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">

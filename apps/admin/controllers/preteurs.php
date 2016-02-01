@@ -155,9 +155,6 @@ class preteursController extends bootstrap
         $this->clients_adresses = $this->loadData('clients_adresses');
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-        $this->clients_status = $this->loadData('clients_status');
-        $this->clients_status->getLastStatut($this->clients->id_client);
-
         $this->companies = $this->loadData('companies');
         if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
@@ -226,16 +223,12 @@ class preteursController extends bootstrap
             22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
             23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
 
-        $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->lActions               = $this->clients_status_history->select('id_client = ' . $this->clients->id_client, 'added DESC');
-        $timeCreate                   = ($this->lActions[0]['added'] != false) ? strtotime($this->lActions[0]['added']) : $timeCreate = strtotime($this->clients->added);
-        $this->timeCreate             = $timeCreate;
+        $this->getMessageAboutClientStatus();
     }
 
     public function _edit_preteur()
     {
         $this->loadJs('default/jquery-ui-1.10.3.custom.min');
-
 
         $this->clients_mandats         = $this->loadData('clients_mandats');
         $this->nationalites            = $this->loadData('nationalites_v2');
@@ -341,11 +334,7 @@ class preteursController extends bootstrap
         );
         $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client . ' AND id_client_status IN ( SELECT cs.id_client_status FROM  clients_status cs WHERE cs.status IN (' . implode(',', $aLenderStatusForQuery) . '))', 'added DESC');
 
-        if ($this->lActions[0]['added'] != false) {
-            $this->timeCreate = strtotime($this->lActions[0]['added']);
-        } else {
-            $this->timeCreate = strtotime($this->clients->added);
-        }
+        $this->getMessageAboutClientStatus();
 
         $this->attachment       = $this->loadData('attachment');
         $this->attachment_type  = $this->loadData('attachment_type');
@@ -1158,181 +1147,6 @@ class preteursController extends bootstrap
         $this->sumDispoPourOffresSelonMax = (($this->montant_limit * 100) - $sumOffresTransac);
     }
 
-    public function _script_rattrapage_offre_bienvenue()
-    {
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-        $sended_count         = 0;
-        $string               = "15737,24896,24977,24998,25065,25094,25151,25211,25243,25351,25376,25382,25385,25426,25573,25748,25795,25830,25833,25845,25868,25905,26053,26236,26265,26328,26401,26414,26673,26738,26754,26766";//ids clients
-        $tab_ligne            = explode(',', $string);
-
-        foreach ($tab_ligne as $ligne) {
-            //$tab_champs = explode(';',$ligne);
-            $id_client = $ligne;//$tab_champs[0];
-            //$email 		= $tab_champs[3];
-
-            // on check si le compte est en completude OK
-            $clients_status        = $this->loadData('clients_status');
-            $clients_status_client = $this->loadData('clients_status');
-            $clients               = $this->loadData('clients');
-            $transactions          = $this->loadData('transactions');
-
-            $clients_status_client->getLastStatut($id_client);
-
-            print_r($id_client);
-
-            if ($clients_status_client->status == 60) {
-                print_r(" -> Valid&eacute;");
-                //die;
-                if ($transactions->counter("id_client = " . $id_client . " AND type_transaction = 16") == 0) {
-                    print_r(" -> Pas d'offre");
-                    // pour que le client passe dans notre script create offre on doit lui attribuer un origine = 1
-                    $clients->get($id_client, 'id_client');
-                    print_r(" -> " . $clients->email);
-                    $clients->origine = 1;
-                    $clients->update();
-                    $this->create_offre_bienvenue_sans_date_de_fin($id_client);
-                    $sended_count++;
-                }
-            }
-            print_r("<br />");
-        }
-        print_r("<br />" . $sended_count);
-    }
-
-    // OFFRE DE BIENVENUE utilisé pour le ratrappage et sans vérification si l'offre de bienvenue est encore valide
-    public function create_offre_bienvenue_sans_date_de_fin($id_client)
-    {
-
-        $this->clients = $this->loadData('clients');
-
-        // si le client existe et qu'il vient de la page offre bienvenue
-        if ($this->clients->get($id_client, 'id_client') && $this->clients->origine == 1) {
-            print_r(" -> #1");
-            // Load Datas
-            $offres_bienvenues         = $this->loadData('offres_bienvenues');
-            $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
-            $transactions              = $this->loadData('transactions');
-            $wallets_lines             = $this->loadData('wallets_lines');
-            $lenders_accounts          = $this->loadData('lenders_accounts');
-            $bank_unilend              = $this->loadData('bank_unilend');
-
-            // Offre de bienvenue
-            if ($offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue')) {
-                print_r(" -> #2");
-                $sumOffres          = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
-                $sumOffresPlusOffre = ($sumOffres + $offres_bienvenues->montant);
-
-                // Somme des virements unilend offre de bienvenue
-                $sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18', 'montant');
-                // Somme des offres utilisé
-                $sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)', 'montant');
-                // Somme reel dispo
-                $sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
-                echo " -> strtotime($offres_bienvenues->debut) <= time()";
-                var_dump(strtotime($offres_bienvenues->debut) <= time());
-                echo " -> $sumOffresPlusOffre <= $offres_bienvenues->montant_limit";
-                var_dump($sumOffresPlusOffre <= $offres_bienvenues->montant_limit);
-                echo " -> $sumDispoPourOffres >= $offres_bienvenues->montant";
-                var_dump($sumDispoPourOffres >= $offres_bienvenues->montant);
-
-                // On regarde que l'offre soit pas terminé
-                if (strtotime($offres_bienvenues->debut) <= time() && $sumOffresPlusOffre <= $offres_bienvenues->montant_limit && $sumDispoPourOffres >= $offres_bienvenues->montant) {
-                    print_r(" -> #3");
-                    // Motif
-                    $this->settings->get("Offre de bienvenue motif", 'type');
-                    $this->motifOffreBienvenue = $this->settings->value;
-
-
-                    // Lender
-                    $lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-                    // offres_bienvenues_details (on génère l'offre pour le preteur)
-                    $offres_bienvenues_details->id_offre_bienvenue        = $offres_bienvenues->id_offre_bienvenue;
-                    $offres_bienvenues_details->motif                     = $this->motifOffreBienvenue;
-                    $offres_bienvenues_details->id_client                 = $this->clients->id_client;
-                    $offres_bienvenues_details->montant                   = $offres_bienvenues->montant;
-                    $offres_bienvenues_details->status                    = 0;
-                    $offres_bienvenues_details->id_offre_bienvenue_detail = $offres_bienvenues_details->create();
-
-                    // transactions
-                    $transactions->id_client                 = $this->clients->id_client;
-                    $transactions->montant                   = $offres_bienvenues->montant;
-                    $transactions->id_offre_bienvenue_detail = $offres_bienvenues_details->id_offre_bienvenue_detail;
-                    $transactions->id_langue                 = 'fr';
-                    $transactions->date_transaction          = date('Y-m-d H:i:s');
-                    $transactions->status                    = '1';
-                    $transactions->etat                      = '1';
-                    $transactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
-                    $transactions->type_transaction          = 16; // Offre de bienvenue
-                    $transactions->transaction               = 2; // transaction virtuelle
-                    $transactions->id_transaction            = $transactions->create();
-
-                    // wallet
-                    $wallets_lines->id_lender                = $lenders_accounts->id_lender_account;
-                    $wallets_lines->type_financial_operation = 30; // alimentation
-                    $wallets_lines->id_transaction           = $transactions->id_transaction;
-                    $wallets_lines->status                   = 1;
-                    $wallets_lines->type                     = 1;
-                    $wallets_lines->amount                   = $offres_bienvenues->montant;
-                    $wallets_lines->id_wallet_line           = $wallets_lines->create();
-
-                    // bank unilend
-                    $bank_unilend->id_transaction = $transactions->id_transaction;
-                    $bank_unilend->montant        = '-' . $offres_bienvenues->montant;  // on retire cette somme du total dispo
-                    $bank_unilend->type           = 4; // Unilend offre de bienvenue
-                    $bank_unilend->create();
-
-
-                    // EMAIL //
-                    $this->mails_text->get('offre-de-bienvenue', 'lang = "' . $this->language . '" AND type');
-
-                    // FB
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    // Twitter
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $this->clients->prenom,
-                        'projets'         => $this->furl . '/projets-a-financer',
-                        'offre_bienvenue' => $this->ficelle->formatNumber($offres_bienvenues->montant / 100),
-                        'lien_fb'         => $lien_fb,
-                        'lien_tw'         => $lien_tw);
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        print_r(" -> #4.1");
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        // Injection du mail NMP dans la queue
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        print_r(" -> #4.2");
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
-                    ////////////////////
-
-                }
-            }
-        }
-    }
-
     // OFFRE DE BIENVENUE
     public function create_offre_bienvenue($id_client)
     {
@@ -1486,12 +1300,10 @@ class preteursController extends bootstrap
         }
 
         $this->clients                = $this->loadData('clients');
-        $this->clients_status         = $this->loadData('clients_status');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-        $this->clients_status->getLastStatut($this->clients->id_client);
 
         $oClientsNotifications       = $this->loadData('clients_gestion_notifications');
         $oTypesOfClientNotifications = $this->loadData('clients_gestion_type_notif');
@@ -1515,6 +1327,7 @@ class preteursController extends bootstrap
 
         $oMailsFiler               = $this->loadData('mails_filer');
         $this->aEmailsSentToClient = $oMailsFiler->getListOfEmails($this->clients->email, $sStartDate, $sEndDate);
+        $this->getMessageAboutClientStatus();
     }
 
     public function _portefeuille()
@@ -1548,6 +1361,8 @@ class preteursController extends bootstrap
         $this->projectsPublished = $this->projects->countProjectsSinceLendersubscription($this->clients->id_client, array_merge($statusOk, $statusKo));
         $this->problProjects     = $this->projects->countProjectsByStatusAndLender($this->lenders_accounts->id_lender_account, $statusKo);
         $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
+
+        $this->getMessageAboutClientStatus();
     }
 
     public function _contratPdf()
@@ -2010,6 +1825,42 @@ class preteursController extends bootstrap
             $this->email->addRecipient(trim($this->clients->email));
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
         }
+    }
 
+    private function getMessageAboutClientStatus()
+    {
+        $oClientsStatus        = $this->loadData('clients_status');
+        $oClientsStatusHistory = $this->loadData('clients_status_history');
+        $aLastClientHistory    = $oClientsStatusHistory->select('id_client = ' . $this->clients->id_client, 'added DESC', 'LIMIT 1');
+        $sTimeCreate           = (false === is_null($aLastClientHistory[0]['added'])) ? strtotime($aLastClientHistory[0]['added']) : $timeCreate = strtotime($this->clients->added);
+        $oClientsStatus->getLastStatut($this->clients->id_client);
+
+        $this->sClientStatusMessage = '';
+
+        switch ($oClientsStatus->status) {
+            case \clients_status::TO_BE_CHECKED :
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte non validé - créé le '. date('d/m/Y', $sTimeCreate) . '</div>';
+                break;
+            case \clients_status::COMPLETENESS :
+            case \clients_status::COMPLETENESS_REMINDER:
+            case \clients_status::COMPLETENESS_REPLY:
+                $this->sClientStatusMessage = '<div class="attention" style="background-color:#F9B137">Attention : compte en complétude - créé le ' . date('d/m/Y', $sTimeCreate) . ' </div>';
+                break;
+            case \clients_status::MODIFICATION:
+                $this->sClientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $sTimeCreate) . '</div>';
+                break;
+            case \clients_status::CLOSED_LENDER_REQUEST:
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé à la demande du prêteur</div>';
+                break;
+            case \clients_status::CLOSED_BY_UNILEND:
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé par Unilend</div>';
+                break;
+            case \clients_status::VALIDATED:
+                $this->sClientStatusMessage = '';
+                break;
+            default;
+                trigger_error('Unknown Client Status', E_USER_NOTICE);
+                break;
+        }
     }
 }

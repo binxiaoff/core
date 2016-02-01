@@ -44,8 +44,7 @@
 
     });
 
-    <?php
-    if (isset($_SESSION['freeow'])) : ?>
+    <?php if (isset($_SESSION['freeow'])) : ?>
     $(document).ready(function () {
         var title, message, opts, container;
         title = "<?=$_SESSION['freeow']['title']?>";
@@ -54,9 +53,8 @@
         opts.classes = ['smokey'];
         $('#freeow-tr').freeow(title, message, opts);
     });
-    <?php
-    unset($_SESSION['freeow']);
-    endif; ?>
+    <?php unset($_SESSION['freeow']); ?>
+    <?php endif; ?>
 </script>
 
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
@@ -68,54 +66,21 @@
         <li><a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" title="Gestion prêteurs">Détail prêteurs</a> -</li>
         <li>Informations prêteur</li>
     </ul>
-    <?php
-    switch ($this->clients_status->status) {
-        case \clients_status::TO_BE_CHECKED : ?>
-            <div class="attention">
-                Attention : compte non validé - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-            </div>
-            <?php break;
-        case \clients_status::COMPLETENESS :
-        case \clients_status::COMPLETENESS_REMINDER:
-        case \clients_status::COMPLETENESS_REPLY: ?>
-            <div class="attention" style="background-color:#F9B137">
-                Attention : compte en complétude - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-            </div>
-            <?php break;
-        case \clients_status::MODIFICATION: ?>
-            <div class="attention" style="background-color:#F2F258">
-                Attention : compte en modification - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-            </div>
-            <?php break;
-        case \clients_status::CLOSED_LENDER_REQUEST: ?>
-            <div class="attention">
-                Attention : compte clôturé à la demande du prêteur
-            </div>
-            <?php break;
-        case \clients_status::CLOSED_BY_UNILEND: ?>
-            <div class="attention">
-                Attention : compte clôturé par Unilend
-            </div>
-            <?php break;
-    } ?>
+    <div><?= $this->sClientStatusMessage ?></div>
     <h1>Informations prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
         <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
         <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a>
     </div>
-    <?php
-    if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
+    <?php if (isset($_SESSION['error_email_exist']) && $_SESSION['error_email_exist'] != '') : ?>
         <p style="color:#c84747;text-align:center;font-size:14px;font-weight:bold;"><?= $_SESSION['error_email_exist'] ?></p>
-        <?php
-        unset($_SESSION['error_email_exist']);
-    endif;
-    ?>
+        <?php unset($_SESSION['error_email_exist']); ?>
+    <?php endif; ?>
     <form action="" method="post" enctype="multipart/form-data" id="form_etape1">
         <h2>Etape 1</h2>
         <table class="form" style="margin: auto;">
-            <?php
-            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
                 <tr class="particulier">
                     <th>Civilite :</th>
                     <td colspan="3">
@@ -227,17 +192,14 @@
                 <th><label for="cp">Code postal :</label></th>
                 <td><input type="text" class="input_large" name="cp" id="cp" value="<?= $this->zip_fiscal ?>" data-autocomplete="post_code"></td>
             </tr>
-            <?php
-            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
                 <tr>
                     <th><label for="id_pays_fiscal">Pays fiscal :</label></th>
                     <td>
                         <select name="id_pays_fiscal" id="id_pays_fiscal" class="select">
-                            <?php
-                            foreach ($this->lPays as $p) : ?>
+                            <?php foreach ($this->lPays as $p) : ?>
                                 <option <?= ($this->clients_adresses->id_pays_fiscal == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                            <?php
-                            endforeach; ?>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                     <th></th>
@@ -249,8 +211,7 @@
                     <th></th>
                     <td></td>
                 </tr>
-                <?php
-            endif; ?>
+                <?php endif; ?>
             <tr>
                 <td colspan="4"><input type="checkbox" name="meme-adresse" id="meme-adresse" <?= ($this->meme_adresse_fiscal == 1 ? 'checked' : '') ?>><label for="meme-adresse">Mon adresse de
                         correspondance est identique à mon adresse de fiscale </label></td>
@@ -265,25 +226,21 @@
                 <th><label for="cp2">Code postal :</label></th>
                 <td><input type="text" class="input_large" name="cp2" id="cp2" value="<?= $this->clients_adresses->cp ?>" data-autocomplete="post_code"></td>
             </tr>
-            <?php
-            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
                 <tr class="meme-adresse" style="display:none;">
                     <th><label for="id_pays">Pays :</label></th>
                     <td>
                         <select name="id_pays" id="id_pays" class="select">
-                            <?php
-                            foreach ($this->lPays as $p) : ?>
+                            <?php foreach ($this->lPays as $p) : ?>
                                 <option <?= ($this->clients_adresses->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                            <?php
-                            endforeach; ?>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                     <th></th>
                     <td></td>
                 </tr>
-                <?php
-            endif;
-            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
+                <?php endif; ?>
+            <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
                 <tr class="particulier">
                     <th><label for="phone">Téléphone :</label></th>
                     <td><input type="text" class="input_large" name="phone" id="phone"
@@ -300,11 +257,9 @@
                     <th><label for="nationalite">Nationalité :</label></th>
                     <td>
                         <select name="nationalite" id="nationalite" class="select">
-                            <?php
-                            foreach ($this->lNatio as $p) : ?>
+                            <?php foreach ($this->lNatio as $p) : ?>
                                 <option <?= ($this->clients->id_nationalite == $p['id_nationalite'] ? 'selected' : '') ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
-                                <?php
-                            endforeach; ?>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                 </tr>
@@ -312,11 +267,9 @@
                     <th><label for="id_pays_naissance">Pays de naissance :</label></th>
                     <td>
                         <select name="id_pays_naissance" id="id_pays_naissance" class="select">
-                            <?php
-                            foreach ($this->lPays as $p) : ?>
+                            <?php foreach ($this->lPays as $p) : ?>
                                 <option <?= ($this->clients->id_pays_naissance == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                                <?php
-                            endforeach; ?>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                     <th></th>
@@ -344,11 +297,9 @@
                     <td>
                         <select name="status_conseil_externe_entreprise" id="status_conseil_externe_entreprise" class="select">
                             <option value="0">Choisir</option>
-                            <?php
-                            foreach ($this->conseil_externe as $k => $conseil_externe) : ?>
+                            <?php foreach ($this->conseil_externe as $k => $conseil_externe) : ?>
                                 <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option>
-                                <?php
-                            endforeach; ?>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                     <th><label for="preciser_conseil_externe_entreprise">Autre (préciser) :</label></th>
@@ -420,8 +371,7 @@
                     <th></th>
                     <td></td>
                 </tr>
-                <?php
-            endif; ?>
+                <?php endif; ?>
         </table>
         <h2>Etape 2</h2>
         <table class="form" style="margin: auto;">
@@ -445,9 +395,8 @@
                     </table>
                 </td>
             </tr>
-            <?php
-            if ($this->origine_fonds[0] != false) :
-                if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
+            <?php if ($this->origine_fonds[0] != false) : ?>
+                <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER, \clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
                     <tr class="particulier">
                         <th colspan="2" style="text-align:left;"><label for="origines">Quelle est l'origine des fonds que vous déposer sur Unilend ?</label></th>
                     </tr>
@@ -455,11 +404,9 @@
                         <td colspan="2">
                             <select name="origine_des_fonds" id="origine_des_fonds" class="select">
                                 <option value="0">Choisir</option>
-                                <?php
-                                foreach ($this->origine_fonds as $k => $origine_fonds) : ?>
+                                <?php foreach ($this->origine_fonds as $k => $origine_fonds) : ?>
                                     <option <?= ($this->lenders_accounts->origine_des_fonds == $k + 1 ? 'selected' : '') ?> value="<?= $k + 1 ?>" ><?= $origine_fonds ?></option>
-                                    <?php
-                                endforeach; ?>
+                                <?php endforeach; ?>
                                 <option <?= ($this->lenders_accounts->origine_des_fonds == 1000000 ? 'selected' : '') ?> value="1000000">Autre</option>
                             </select>
                         </td>
@@ -473,10 +420,8 @@
                             </div>
                         </td>
                     </tr>
-                    <?php
-                endif;
-            endif;
-            ?>
+                <?php endif; ?>
+            <?php endif; ?>
         </table>
         <br/><br/>
         <div class="gauche">
@@ -495,29 +440,24 @@
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $this->attachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->attachments[$sAttachmentType['id']]['path']) ?>">
                                     <?= $this->attachments[$sAttachmentType['id']]['path'] ?>
                                 </a>
-                            <?php
-                            endif; ?>
+                            <?php endif; ?>
                         </td>
                         <td><input type="file" name="<?= $sAttachmentType['id'] ?>" id="fichier_project_<?= $sAttachmentType['id'] ?>"/></td>
                     </tr>
-                <?php
-                endforeach; ?>
+                <?php endforeach; ?>
                 <tr>
                     <th>Mandat</th>
                     <td>
-                        <?php
-                        if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
+                        <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
                             <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
-                        <?php
-                        endif; ?>
+                        <?php endif; ?>
                     </td>
                     <td><input type="file" name="mandat"></td>
                 </tr>
             </table>
             <br/><br/>
             <h2>Historique :</h2>
-            <?php
-            if (false === empty($this->lActions)) : ?>
+            <?php if (false === empty($this->lActions)) : ?>
                 <style>
                     .histo_status_client li {
                         margin-left: 15px;
@@ -525,8 +465,7 @@
                     }
                 </style>
                 <table class="tablesorter histo_status_client">
-                <?php
-                foreach ($this->lActions as $a) {
+                <?php foreach ($this->lActions as $a) {
                     $this->oClientsStatusForHistory->get($a['id_client_status'], 'id_client_status');
                     $this->users->get($a['id_user'], 'id_user');
 
@@ -598,19 +537,18 @@
         <div class="droite">
             <table class="tabLesStatuts">
                 <tr>
-                    <?php
-                    if ($this->clients_status->status != clients_status::VALIDATED) : ?>
+                    <?php if ($this->clients_status->status != clients_status::VALIDATED) : ?>
                         <td><input type="button" id="valider_preteur" class="btn" value="Valider le prêteur"></td>
                     <?php endif; ?>
                 </tr>
                 <tr>
+                    <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
                     <td>
-                        <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
                         <input type="button"
                                onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur ?')){window.location = '<?= $this->lurl ?>/preteurs/gestion/deactivate/<?= $this->clients->id_client ?>/<?= \clients::STATUS_OFFLINE ?>';}"
                                class="btnRouge" value="Clôturer le compte">
-                        <?php endif; ?>
                     </td>
+                    <?php endif; ?>
                     <td><input type="button"
                                onclick="if(confirm('Voulez vous <?= ($this->clients->status == \clients::STATUS_ONLINE ? 'Passer hors ligne' : 'Passer en ligne') ?> ce prêteur ?')){window.location = '<?= $this->lurl ?>/preteurs/gestion/status/<?= $this->clients->id_client ?>/<?= $this->clients->status == \clients::STATUS_ONLINE ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ?>';}"
                                class="<?= (\clients::STATUS_ONLINE == $this->clients->status ? 'btnRouge' : 'btn') ?>"
@@ -624,31 +562,23 @@
                     </td>
                     <?php endif; ?>
                     <td>
-                        <?php
-                        if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true) : ?>
+                        <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true) : ?>
                             <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email" style="position: relative; top: 7px;"/>
                             <span style="color:green;">Votre email a été envoyé</span>
-                        <?php
-                        endif;
-                        ?>
+                        <?php endif; ?>
                     </td>
                 </tr>
-                <?php
-                if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true || $_SESSION['compte_valide'] == true) : ?>
-                if (
+                <?php if (
                     isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true
                     || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide'] == true
-                ) {
-                    ?>
+                ) : ?>
                     <tr>
                         <td><a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a></td>
                         <td></td>
                     </tr>
-                    <?php
-                    unset($_SESSION['email_completude_confirm']);
-                    unset($_SESSION['compte_valide']);
-                endif;
-                ?>
+                    <?php unset($_SESSION['email_completude_confirm']); ?>
+                    <?php unset($_SESSION['compte_valide']); ?>
+                <?php endif; ?>
             </table>
             <br/>
             <div class="message_completude">
@@ -656,17 +586,15 @@
 
                 <div class="liwording">
                     <table>
-                        <?php
-                        for ($i = 1; $i <= $this->nbWordingCompletude; $i++) : ?>
+                        <?php for ($i = 1; $i <= $this->nbWordingCompletude; $i++) : ?>
                             <tr>
                                 <td><img class="add" id="add-<?= $i ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
                                 <td><span class="content-add-<?= $i ?>"><?= $this->completude_wording['cas-' . $i] ?></span></td>
                             </tr>
-                            <?php
-                            if (in_array($i, array(3, 6, 11))) :
-                                echo '<tr><td colspan="2">&nbsp;</td></tr>';
-                            endif;
-                        endfor; ?>
+                            <?php if (in_array($i, array(3, 6, 11))) : ?>
+                                <tr><td colspan="2">&nbsp;</td></tr>
+                            <?php endif; ?>
+                        <?php endfor; ?>
                     </table>
                 </div>
                 <br/>
@@ -696,8 +624,7 @@
         <br/><br/>
         <div class="content_cgv_accept">
             <h2>Acceptation CGV</h2>
-            <?php
-            if (count($this->lAcceptCGV) > 0) : ?>
+            <?php if (count($this->lAcceptCGV) > 0) : ?>
                 <table class="tablesorter cgv_accept">
                     <thead>
                     <tr>
@@ -708,8 +635,7 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <?php
-                    foreach ($this->lAcceptCGV as $a) :
+                    <?php foreach ($this->lAcceptCGV as $a) :
                         $this->tree->get(array('id_tree' => $a['id_legal_doc'], 'id_langue' => $this->language));
                         ?>
                         <tr>
@@ -718,14 +644,12 @@
                             <td><a target="_blank" href="<?= $this->furl . '/' . $this->tree->slug ?>"><?= $this->furl . '/' . $this->tree->slug ?></a></td>
                             <td><?= date('d/m/Y H:i:s', strtotime($a['updated'])) ?></td>
                         </tr>
-                        <?php
-                    endforeach; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
-                <?php
-             else :
-                echo '<p style="text-align:center;" >Aucun CGV signé</p>';
-            endif; ?>
+                <?php else : ?>
+                <p style="text-align:center;" >Aucun CGV signé</p>
+            <?php endif; ?>
         </div>
         <br/><br/><br/><br/>
         <input type="hidden" name="statut_valider_preteur" id="statut_valider_preteur" value="0"/>
