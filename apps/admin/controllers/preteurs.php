@@ -1752,8 +1752,8 @@ class preteursController extends bootstrap
         $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account);
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
 
-        $this->IRRValue = '';
-        $this->IRRDate  = '';
+        $this->IRRValue = null;
+        $this->IRRDate  = null;
 
         $oLenderAccountStats = $this->loadData('lenders_account_stats');
         $aIRR                = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);

@@ -11,12 +11,6 @@
         <?php unset($_SESSION['freeow']); ?>
     </script>
 <?php endif; ?>
-<style>
-    .sub_loan tr, .sub_loan td{
-        background-color: #f6f6f6;
-        text-align: right;
-    }
-</style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
@@ -53,8 +47,8 @@
     <div>
         <h2>Portefeuille</h2>
 
-        <h3>TRI du portefeuille : <?= (empty($this->IRRValue)) ? 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' : $this->IRRValue . '%' ?>
-            <?= (empty($this->IRRDate)) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRRDate) . ')' ?>
+        <h3>TRI du portefeuille : <?= (is_null($this->IRRValue)) ? 'Ce prêteur est trop récent. Son TRI n\'a pas encore été calculé.' : $this->IRRValue . '%' ?>
+            <?= (is_null($this->IRRDate)) ? '' : '(calculé le ' . $this->dates->formatDateMysqltoShortFR($this->IRRDate) . ')' ?>
         </h3>
         <h3>Nombre de projets à probleme dans le portefeuille : <?= $this->problProjects ?></h3>
         <h3>Nombre de projets total dans le portefeuille : <?= $this->totalProjects ?></h3>
@@ -84,18 +78,18 @@
             <tbody>
             <?php foreach ($this->lSumLoans as $iLoanIndex => $aProjectLoans): ?>
                 <tr class="<?= $iLoanIndex % 2 ? '' : 'odd' ?>">
-                    <td><?= $aProjectLoans['id_project'] ?></td>
-                    <td><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
-                    <td><?= $aProjectLoans['risk'] ?></td>
+                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['id_project'] ?></td>
+                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><h5><a href="/dossiers/edit/<?= $aProjectLoans['id_project'] ?>"><?= $aProjectLoans['name'] ?></a></h5></td>
+                    <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $aProjectLoans['risk'] ?></td>
                     <td><?= $this->ficelle->formatNumber($aProjectLoans['amount'], 0) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($aProjectLoans['rate'], 1) ?> %</td>
                     <?php if (in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) : ?>
-                        <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
-                        <td colspan="3"><p>Remboursé intégralementle <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y') ?></p></td>
+                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?> colspan="3"><p>Remboursé intégralementle <?= $this->dates->formatDate($aProjectLoans['status_change'], 'd/m/Y') ?></p></td>
                     <?php else: ?>
-                        <td><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
-                        <td><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
-                        <td><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
+                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y') ?></td>
+                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></td>
+                        <td<?php if ($aProjectLoans['nb_loan'] > 1): ?> rowspan="<?= ($aProjectLoans['nb_loan'] + 1) ?>" <?php endif; ?>><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($aProjectLoans['mensuel']) ?> € / mois</td>
                     <?php endif; ?>
                     <td>
@@ -125,18 +119,15 @@
                     </td>
                 </tr>
                 <?php if ($aProjectLoans['nb_loan'] > 1): ?>
-                    <tr>
                     <?php foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan):
-                        $SumAremb = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'], 'ordre ASC', 0, 1);
-                        $fLoanAmount = $SumAremb[0]['montant'] / 100 - $SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds']; ?>
-                        <tr class="sub_loan">
-                            <td></td>
-                            <td></td>
-                            <td></td>
+                        $SumAremb    = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND status = 0', 'ordre ASC', 0, 1);
+                        $fLoanAmount = round($SumAremb[0]['montant'] / 100, 2) - round($SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds'], 2); ?>
+                        <tr class="sub_loan<?= $iLoanIndex % 2 ? '' : ' odd' ?>">
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount']/100, 0) ?> €</td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>
-                            <td colspan="3"></td>
-                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($fLoanAmount) ?> € / mois</td>
+                            <?php if (false === in_array($aProjectLoans['project_status'], array(\projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::REMBOURSE))) : ?>
+                                <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($fLoanAmount) ?> € / mois</td>
+                            <?php endif; ?>
                             <td>
                                 <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
                                     <a href="<?= $this->furl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>">
