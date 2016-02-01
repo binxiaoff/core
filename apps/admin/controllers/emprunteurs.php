@@ -518,11 +518,14 @@ class emprunteursController extends bootstrap
 
         foreach ($aProjectInvoices as $iKey => $aInvoice) {
             switch ($aInvoice['type_commission']) {
-                case factures::TYPE_COMMISSION_FINANCEMENT :
-                    $aProjectInvoices[$iKey]['url'] = $this->surl . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                case \factures::TYPE_COMMISSION_FINANCEMENT :
+                    $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'];
                     break;
-                case factures::TYPE_COMMISSION_REMBOURSEMENT:
-                    $aProjectInvoices[$iKey]['url'] = $this->surl . '/pdf/facture_ER/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                case \factures::TYPE_COMMISSION_REMBOURSEMENT:
+                    $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_ER/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    break;
+                default :
+                    trigger_error('Commission type for invoice unknown', E_USER_NOTICE);
                     break;
             }
         }

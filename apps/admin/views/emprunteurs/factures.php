@@ -3,7 +3,7 @@
         white-space: nowrap;
     }
 </style>
-<div id="popup">
+<div id="popup" width="80%">
     <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
     <div id="popup-content">
         <?php if (empty($this->aProjectInvoices)) : ?>
@@ -34,9 +34,7 @@
                         </td>
                         <td><?= $aProjectInvoice['type_commission'] == \factures::TYPE_COMMISSION_FINANCEMENT ? 'Financement' : 'Remboursement' ?></td>
                     </tr>
-                    <?php
-                endforeach;
-                ?>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         <?php endif; ?>
