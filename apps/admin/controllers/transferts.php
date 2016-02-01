@@ -987,7 +987,9 @@ class transfertsController extends bootstrap
         $this->loadData('transactions_types');
         $this->loadData('clients_status');
 
-        $oLendersAccounts->get($this->params[0]);
+        if (isset($this->params[0])) {
+            $oLendersAccounts->get($this->params[0]);
+        }
         $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
 
         $this->settings->get('Offre de bienvenue motif', 'type');

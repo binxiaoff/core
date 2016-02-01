@@ -7,7 +7,7 @@
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'
+            yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
         $("#datepik_2").datepicker({
             showOn: 'both',
@@ -15,14 +15,12 @@
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?=(date('Y')-10)?>:<?=(date('Y')+10)?>'
+            yearRange: '<?=(date('Y') - 10)?>:<?=(date('Y') + 10)?>'
         });
 
     });
-    <?
-    if(isset($_SESSION['freeow']))
-    {
-    ?>
+    <?php
+    if(isset($_SESSION['freeow'])) : ?>
     $(document).ready(function () {
         var title, message, opts, container;
         title = "<?=$_SESSION['freeow']['title']?>";
@@ -31,9 +29,8 @@
         opts.classes = ['smokey'];
         $('#freeow-tr').freeow(title, message, opts);
     });
-    <?
-    }
-    ?>
+    <?php
+    endif; ?>
 </script>
 <style>
     .datepicker_table {
@@ -76,19 +73,18 @@
                     <tr>
                         <td><label for="id">ID ou liste d'IDs (séparés par virgules):</label><br/>
                             <input type="text" name="id" id="id" class="input_large"
-                                   value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd'])) ? $_POST['id'] : '' ?>"/>
+                                   value="<?= (empty($_POST['dateStart']) && empty($_POST['dateEnd']) && false === empty($_POST['id'])) ? $_POST['id'] : '' ?>"/>
                         </td>
-
                         <td><label>Date debut</label><br/>
                             <input type="text" name="dateStart"
                                    id="datepik_1"
                                    class="input_dp"
-                                   value="<?= empty($_POST['id']) ? $_POST['dateStart'] : '' ?>"/>
+                                   value="<?= (empty($_POST['id']) && false === empty($_POST['dateStart'])) ? $_POST['dateStart'] : '' ?>"/>
                         </td>
                         <td><label>Date fin</label><br/>
                             <input type="text" name="dateEnd"
                                    id="datepik_2" class="input_dp"
-                                   value="<?= empty($_POST['id']) ? $_POST['dateEnd'] : '' ?>"/>
+                                   value="<?= (empty($_POST['id']) && false === empty($_POST['dateEnd'])) ? $_POST['dateEnd'] : '' ?>"/>
                         </td>
                         <td><br>
                             <input type="hidden" name="spy_search" id="spy_search"/>
@@ -100,10 +96,12 @@
             </fieldset>
         </form>
     </div>
-
-    <?php if (false === empty($this->aLenders)) : ?>
+    <?php
+    if (empty($this->aLenders)) : ?>
+        <p>Il n'y a aucun utilisateur pour le moment.</p>
+        <?php
+    else: ?>
         <div class="table">
-
             <table class="tablesorter">
                 <thead>
                 <tr>
@@ -116,8 +114,8 @@
                 </tr>
                 </thead>
                 <tbody>
-
-                <?php foreach ($this->aLenders as $aLender) : ?>
+                <?php
+                foreach ($this->aLenders as $aLender) : ?>
                     <tr>
                         <td><?= $aLender['id_lender'] ?></td>
                         <td><?= empty($aLender['company']) ? $aLender['nom'] : $aLender['company'] ?></td>
@@ -125,22 +123,21 @@
                         <td><?= $this->dates->formatDateMysqltoShortFR($aLender['date_creation']) ?></td>
                         <td><?= (false === empty($aLender['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : '' ?></td>
                         <td>
-                            <?php if (false === empty($aLender['date_validation'])) : ?>
+                            <?php
+                            if (false === empty($aLender['date_validation'])) : ?>
                                 <a href="<?= $this->lurl ?>/transferts/affect_welcome_offer/<?= $aLender['id_lender'] ?>"
-                                   class="link thickbox"><img alt="Modifier "
-                                                              src="https://dev.www.unilend.fr/images/admin/edit.png"></a>
-                            <?php endif; ?>
+                                   class="link thickbox"><img alt="Modifier " src="<?= $this->surl ?>/images/admin/edit.png"></a>
+                                <?php
+                            endif; ?>
                         </td>
                     </tr>
-                <?php endforeach; ?>
+                    <?php
+                endforeach; ?>
                 </tbody>
             </table>
         </div>
-    <?php else : ?>
-
-        <p>Il n'y a aucun utilisateur pour le moment.</p>
-
-    <?php endif; ?>
-
+        <?php
+    endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>
+<?php
+unset($_SESSION['freeow']); ?>

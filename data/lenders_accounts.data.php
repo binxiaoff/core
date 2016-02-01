@@ -283,7 +283,7 @@ class lenders_accounts extends lenders_accounts_crud
     public function getLendersWithNoWelcomeOffer($iLenderId = null, $sStartDate = null, $sEndDate = null)
     {
         if (null === $sStartDate) {
-            $sStartDate = '2013-01-01 00:00:00';
+            $sStartDate = '2013-01-01';
         }
 
         if (null === $sEndDate) {
@@ -294,6 +294,8 @@ class lenders_accounts extends lenders_accounts_crud
 
         if (false === is_null($iLenderId)) {
             $sWhereID = 'AND la.id_lender_account IN (' . $iLenderId . ')';
+        } else {
+            $sWhereID = '';
         }
 
         $sql = 'SELECT
