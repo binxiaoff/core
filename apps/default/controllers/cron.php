@@ -2624,7 +2624,7 @@ class cronController extends bootstrap
                                 }
                             } elseif ($type === 2 && $status_virement === 1) { // Virements reçus
                                 if (
-                                    1 === preg_match('/RA-([0-9]+)/', $r['libelleOpe3'], $aMatches)
+                                    1 === preg_match('/RA-?([0-9]+)/', $r['libelleOpe3'], $aMatches)
                                     && $this->projects->get((int) $aMatches[1])
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                 ) {
