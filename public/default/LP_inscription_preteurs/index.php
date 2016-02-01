@@ -1443,6 +1443,13 @@ if ($page == 'lexpress') {
                             if (parsedDate.reponse == 'OK') {
                                 var url = parsedDate.URL;
 
+                                dataLayer.push ({
+                                    'email_lead': email,
+                                    'source1_lead': utm_source,
+                                    'source2_lead': utm_source2,
+                                    'event': 'signupPreteurStep2OK'
+                                });
+
                                 if (idSubmit == "inscription_submit2") {
                                     $(location).attr('href', url);
                                 }
