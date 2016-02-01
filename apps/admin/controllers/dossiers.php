@@ -931,8 +931,12 @@ class dossiersController extends bootstrap
                     /////////////////
                     // REMBOURSEMENT //
                     // si on a le pouvoir
-                    if ($this->projects_pouvoir->get($this->projects->id_project, 'id_project') && $this->projects_pouvoir->status_remb == 0) {
-                        $this->projects_pouvoir->status_remb = $_POST['satut_pouvoir'];
+                    if (
+                        isset($_POST['statut_pouvoir'])
+                        && $this->projects_pouvoir->get($this->projects->id_project, 'id_project')
+                        && 0 == $this->projects_pouvoir->status_remb
+                    ) {
+                        $this->projects_pouvoir->status_remb = $_POST['statut_pouvoir'];
                         $this->projects_pouvoir->update();
 
                         $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers');
@@ -1232,7 +1236,6 @@ class dossiersController extends bootstrap
                                 //********************************//
                                 //*** ENVOI DU MAIL FACTURE EF ***//
                                 //********************************//
-                                // Recuperation du modele de mail
                                 $this->mails_text->get('facture-emprunteur', 'lang = "' . $this->language . '" AND type');
 
                                 $leProject   = $this->loadData('projects');
@@ -1243,11 +1246,9 @@ class dossiersController extends bootstrap
                                 $laCompanie->get($leProject->id_company, 'id_company');
                                 $lemprunteur->get($laCompanie->id_client_owner, 'id_client');
 
-                                // FB
                                 $this->settings->get('Facebook', 'type');
                                 $lien_fb = $this->settings->value;
 
-                                // Twitter
                                 $this->settings->get('Twitter', 'type');
                                 $lien_tw = $this->settings->value;
 
@@ -1276,18 +1277,46 @@ class dossiersController extends bootstrap
 
                                 $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                if ($this->Config['env'] == 'prod') {
+                                if ($this->Config['env'] === 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
                                 }
                                 $this->email->setSubject(stripslashes($sujetMail));
                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                if ($this->Config['env'] == 'prod') {
+                                if ($this->Config['env'] === 'prod') {
                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($laCompanie->email_facture), $tabFiler);
                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                 } else {
                                     $this->email->addRecipient(trim($laCompanie->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
+
+                                $aRepaymentHistory = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
+
+                                if (false === empty($aRepaymentHistory)) {
+                                    $oInvoiceCounter = $this->loadData('compteur_factures');
+                                    $oInvoice        = $this->loadData('factures');
+
+                                    $this->transactions->get($this->projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = 1 AND etat = 1 AND id_project');
+
+                                    $this->settings->get('TVA', 'type');
+                                    $fVATRate = $this->settings->value;
+
+                                    $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
+                                    $fCommission        = $this->transactions->montant_unilend;
+                                    $fVATFreeCommission = $fCommission / ($fVATRate + 1);
+
+                                    $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($oInvoiceCounter->compteurJournalier($this->projects->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
+                                    $oInvoice->date            = $sDateFirstPayment;
+                                    $oInvoice->id_company      = $this->companies->id_company;
+                                    $oInvoice->id_project      = $this->projects->id_project;
+                                    $oInvoice->ordre           = 0;
+                                    $oInvoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
+                                    $oInvoice->commission      = round($fVATFreeCommission / (abs($this->transactions->montant) + $fCommission) * 100, 0);
+                                    $oInvoice->montant_ttc     = $fCommission;
+                                    $oInvoice->montant_ht      = $fVATFreeCommission;
+                                    $oInvoice->tva             = ($fCommission - $fVATFreeCommission);
+                                    $oInvoice->create();
                                 }
 
                                 $settingsControleRemb->value = 1;
@@ -1300,7 +1329,7 @@ class dossiersController extends bootstrap
 
                     $_SESSION['freeow']['message'] .= 'La sauvegarde du r&eacute;sum&eacute; a bien &eacute;t&eacute; faite !';
 
-                    header('Location:' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
                     die;
                 }
             }
@@ -2626,15 +2655,12 @@ class dossiersController extends bootstrap
                     $settingsControleRemb->value = 0;
                     $settingsControleRemb->update();
 
-                    //mail('d.courtier@equinoa.com','alerte demande remb BO','un remb a ete demande sur le projet '.$this->params[0].' par '.$_SESSION['user']['id_user']);
                     /////////////////////
                     // Remb emprunteur //
                     /////////////////////
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
@@ -2688,11 +2714,9 @@ class dossiersController extends bootstrap
                                         // Partie pour l'etat sur un remb preteur
                                         $etat = $e['prelevements_obligatoires'] + $e['retenues_source'] + $e['csg'] + $e['prelevements_sociaux'] + $e['contributions_additionnelles'] + $e['prelevements_solidarite'] + $e['crds'];
 
-                                        //echo 'Preteur '.$e['id_lender'].' remb net : '.$rembNet.' €<br>';
                                         // Partie on enregistre les mouvements
                                         // On regarde si on a pas deja
                                         if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
-
                                             // On recup lenders_accounts
                                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
                                             // On recup le client
@@ -2746,7 +2770,6 @@ class dossiersController extends bootstrap
                                                 //*******************************************//
                                                 //*** ENVOI DU MAIL RECOUVRE PRETEUR ***//
                                                 //*******************************************//
-                                                // Recuperation du modele de mail
                                                 $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
                                                 $this->companies->get($this->projects->id_company, 'id_company');
 
@@ -2775,7 +2798,7 @@ class dossiersController extends bootstrap
                                                 $this->email->setSubject(stripslashes($sujetMail));
                                                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                                if ($this->Config['env'] == 'prod') {
+                                                if ($this->Config['env'] === 'prod') {
                                                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                                                 } else {
@@ -2987,6 +3010,7 @@ class dossiersController extends bootstrap
                                     'datedelafacture' => $dateRemb,
                                     'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
                                     'annee'           => date('Y'),
+                                    'montantRemb'     => $this->ficelle->formatNumber($rembNetTotal),
                                     'lien_fb'         => $lien_fb,
                                     'lien_tw'         => $lien_tw
                                 );
@@ -2999,7 +3023,7 @@ class dossiersController extends bootstrap
 
                                 $this->email = $this->loadLib('email');
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                if ($this->Config['env'] == 'prod') {
+                                if ($this->Config['env'] === 'prod') {
                                     $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
                                 }
 
@@ -3012,6 +3036,30 @@ class dossiersController extends bootstrap
                                 } else {
                                     $this->email->addRecipient(trim($companies->email_facture));
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
+
+                                $oInvoiceCounter            = $this->loadData('compteur_factures');
+                                $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
+                                $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                                $oInvoice                   = $this->loadData('factures');
+
+                                $this->settings->get('Commission remboursement', 'type');
+                                $fCommissionRate = $this->settings->value;
+
+                                $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $e['ordre'], '', 0, 1);
+
+                                if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $e['ordre'] . '  AND id_project')) {
+                                    $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
+                                    $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
+                                    $oInvoice->id_company      = $companies->id_company;
+                                    $oInvoice->id_project      = $projects->id_project;
+                                    $oInvoice->ordre           = $e['ordre'];
+                                    $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                                    $oInvoice->commission      = $fCommissionRate * 100;
+                                    $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
+                                    $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
+                                    $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
+                                    $oInvoice->create();
                                 }
 
                                 $_SESSION['freeow']['title']   = 'Remboursement prêteur';

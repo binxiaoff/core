@@ -1694,21 +1694,44 @@ class preteursController extends bootstrap
 
     public function _email_history()
     {
-        $this->loadGestionData();
+        if (isset($_POST['send_dates'])) {
+            $_SESSION['FilterMails']['StartDate'] = $_POST['debut'];
+            $_SESSION['FilterMails']['EndDate']   = $_POST['fin'];
+
+            header('Location: ' . $this->lurl . '/preteurs/email_history/' . $this->params[0]);
+            die;
+        }
+
+        $this->clients                = $this->loadData('clients');
+        $this->clients_status         = $this->loadData('clients_status');
+        $this->lenders_accounts       = $this->loadData('lenders_accounts');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+        $this->clients_status->getLastStatut($this->clients->id_client);
 
-        if (in_array($this->clients->type, array(2, 4))) {
-            $this->companies->get($this->lenders_accounts->id_company_owner, 'id_company');
+        $oClientsNotifications       = $this->loadData('clients_gestion_notifications');
+        $oTypesOfClientNotifications = $this->loadData('clients_gestion_type_notif');
+        $this->aTypesOfNotifications = $oTypesOfClientNotifications->select();
+        $this->aClientsNotifications = $oClientsNotifications->getNotifs($this->clients->id_client);
+
+        if (isset($_SESSION['FilterMails'])) {
+            $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
+            $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['EndDate']);
+
+            unset($_SESSION['FilterMails']);
+        } else {
+            $oDateTimeStart = new \DateTime('NOW - 1 year');
+            $oDateTimeEnd   = new \DateTime('NOW');
         }
 
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
+        $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
+        $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
+        $sStartDate                  = $oDateTimeStart->format('Y-m-d');
+        $sEndDate                    = $oDateTimeEnd->format('Y-m-d');
 
-        $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-        $this->NotifC      = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+        $oMailsFiler               = $this->loadData('mails_filer');
+        $this->aEmailsSentToClient = $oMailsFiler->getListOfEmails($this->clients->email, $sStartDate, $sEndDate);
     }
 
     public function _portefeuille()
@@ -1797,6 +1820,27 @@ class preteursController extends bootstrap
         /** @var lenders_accounts $oLenders */
         $oLenders = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
+    }
+
+    public function _email_history_preview()
+    {
+        $this->hideDecoration();
+        $_SESSION['request_url'] = $this->url;
+
+        $this->oMail = $this->loadData('mails_filer');
+        $this->oMail->get($this->params[0]);
+    }
+
+    public function _email_history_preview_iframe()
+    {
+        $this->hideDecoration();
+        $_SESSION['request_url'] = $this->url;
+
+        $this->oMail = $this->loadData('mails_filer');
+        $this->oMail->get($this->params[0]);
+
+        echo stripslashes($this->oMail->content);
+        $this->autoFireView = false;
     }
 
     private function foreignerTax($oClients, $oLendersAccounts, $oClientsAdresses)
