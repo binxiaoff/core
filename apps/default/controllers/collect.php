@@ -130,43 +130,41 @@ class collectController extends bootstrap
             $this->clients_adresses        = $this->loadData('clients_adresses');
             $this->lenders_accounts        = $this->loadData('lenders_accounts');
 
+            $utm_source    = isset($_POST['utm_source']) ? trim($_POST['utm_source']) : '';
+            $utm_source2   = isset($_POST['utm_source2']) ? trim($_POST['utm_source2']) : '';
+            $utm_source3   = isset($_POST['utm_source3']) ? trim($_POST['utm_source3']) : '';
+            $slug_origine  = isset($_POST['slug_origine']) ? trim($_POST['slug_origine']) : '';
+            $forme_preteur = isset($_POST['forme_preteur']) ? trim($_POST['forme_preteur']) : '';
+            $civilite      = isset($_POST['civilite']) ? trim($_POST['civilite']) : '';
+            $nom           = isset($_POST['nom']) ? trim($_POST['nom']) : '';
+            $nom_usage     = isset($_POST['nom_usage']) ? trim($_POST['nom_usage']) : '';
+            $prenom        = isset($_POST['prenom']) ? trim($_POST['prenom']) : '';
+            $email         = isset($_POST['email']) ? trim($_POST['email']) : '';
+            $password      = isset($_POST['password']) ? trim($_POST['password']) : '';
+            $question      = isset($_POST['question']) ? trim($_POST['question']) : '';
+            $reponse       = isset($_POST['reponse']) ? trim($_POST['reponse']) : '';
 
-            $form_ok = true;
+            $adresse_fiscale = isset($_POST['adresse_fiscale']) ? trim($_POST['adresse_fiscale']) : '';
+            $ville_fiscale   = isset($_POST['ville_fiscale']) ? trim($_POST['ville_fiscale']) : '';
+            $cp_fiscale      = isset($_POST['cp_fiscale']) ? trim($_POST['cp_fiscale']) : '';
+            $id_pays_fiscale = isset($_POST['id_pays_fiscale']) ? trim($_POST['id_pays_fiscale']) : '';
 
-            $utm_source    = trim($_POST['utm_source']);
-            $utm_source2   = trim($_POST['utm_source2']);
-            $utm_source3   = trim($_POST['utm_source3']);
-            $slug_origine  = trim($_POST['slug_origine']);
-            $forme_preteur = trim($_POST['forme_preteur']);
-            $civilite      = trim($_POST['civilite']);
-            $nom           = trim($_POST['nom']);
-            $nom_usage     = trim($_POST['nom_usage']);
-            $prenom        = trim($_POST['prenom']);
-            $email         = trim($_POST['email']);
-            $password      = trim($_POST['password']);
-            $question      = trim($_POST['question']);
-            $reponse       = trim($_POST['reponse']);
+            $adresse = isset($_POST['adresse']) ? trim($_POST['adresse']) : '';
+            $ville   = isset($_POST['ville']) ? trim($_POST['ville']) : '';
+            $cp      = isset($_POST['cp']) ? trim($_POST['cp']) : '';
+            $id_pays = isset($_POST['id_pays']) ? trim($_POST['id_pays']) : '';
 
-            $adresse_fiscale = trim($_POST['adresse_fiscale']);
-            $ville_fiscale   = trim($_POST['ville_fiscale']);
-            $cp_fiscale      = trim($_POST['cp_fiscale']);
-            $id_pays_fiscale = trim($_POST['id_pays_fiscale']);
-
-            $adresse = trim($_POST['adresse']);
-            $ville   = trim($_POST['ville']);
-            $cp      = trim($_POST['cp']);
-            $id_pays = trim($_POST['id_pays']);
-
-            $telephone         = trim($_POST['telephone']);
-            $id_nationalite    = trim($_POST['id_nationalite']);
-            $date_naissance    = trim($_POST['date_naissance']);
-            $commune_naissance = trim($_POST['commune_naissance']);
-            $id_pays_naissance = trim($_POST['id_pays_naissance']);
-            $signature_cgv     = trim($_POST['signature_cgv']);
-            $date              = trim($_POST['date']);
+            $telephone         = isset($_POST['telephone']) ? trim($_POST['telephone']) : '';
+            $id_nationalite    = isset($_POST['id_nationalite']) ? trim($_POST['id_nationalite']) : '';
+            $date_naissance    = isset($_POST['date_naissance']) ? trim($_POST['date_naissance']) : '';
+            $commune_naissance = isset($_POST['commune_naissance']) ? trim($_POST['commune_naissance']) : '';
+            $id_pays_naissance = isset($_POST['id_pays_naissance']) ? trim($_POST['id_pays_naissance']) : '';
+            $signature_cgv     = isset($_POST['signature_cgv']) ? trim($_POST['signature_cgv']) : '';
+            $date              = isset($_POST['date']) ? trim($_POST['date']) : '';
             $insee_birth       = isset($_POST['insee_birth']) ? trim($_POST['insee_birth']) : '';
 
             $form_ok = true;
+            $form_update = false;
 
             $erreur = '';
 
@@ -241,7 +239,7 @@ class collectController extends bootstrap
             }
             // Verif cp fiscale
             $oVilles = $this->loadData('villes');
-            if (false === isset($cp_fiscale) || false === $oVilles->exist($_POST['postal'], 'cp')) {
+            if (false === isset($cp_fiscale) || false === $oVilles->exist($cp_fiscale, 'cp')) {
                 $form_ok = false;
                 $erreur .= 'Code postal fiscale;';
             }
@@ -320,7 +318,7 @@ class collectController extends bootstrap
                 if ('' == $insee_birth) {
                     $oVilles = $this->loadData('villes');
                     //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
-                    if (false === $oVilles->get($_POST['naissance'], 'ville')) {
+                    if (false === $oVilles->get($commune_naissance, 'ville')) {
                         $form_ok = false;
                         $erreur .= 'Code INSEE de naissance;';
                     } else {
@@ -593,3 +591,4 @@ class collectController extends bootstrap
         die;
     }
 }
+

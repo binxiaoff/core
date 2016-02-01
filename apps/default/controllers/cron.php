@@ -5145,14 +5145,20 @@ class cronController extends bootstrap
 
             $aProjectStatuses = array(
                 \projects_status::EN_FUNDING,
-                \projects_status::REMBOURSEMENT,
-                \projects_status::PROBLEME,
                 \projects_status::FUNDE,
                 \projects_status::FUNDING_KO,
-                \projects_status::PROBLEME_J_X
+                \projects_status::REMBOURSEMENT,
+                \projects_status::REMBOURSE,
+                \projects_status::REMBOURSEMENT_ANTICIPE,
+                \projects_status::PROBLEME,
+                \projects_status::PROBLEME_J_X,
+                \projects_status::RECOUVREMENT,
+                \projects_status::PROCEDURE_SAUVEGARDE,
+                \projects_status::REDRESSEMENT_JUDICIAIRE,
+                \projects_status::LIQUIDATION_JUDICIAIRE,
+                \projects_status::DEFAUT
             );
-            $aProjects = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
-
+            $aProjects = $oProjects->selectProjectsByStatus(implode(',', $aProjectStatuses));
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
@@ -5160,11 +5166,11 @@ class cronController extends bootstrap
                 $oCompanies->get($aProject['id_company'], 'id_company');
 
                 if ($aProject['status'] === \projects_status::EN_FUNDING) {
-                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount'));
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount') / 100;
                 } else {
-                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount'));
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount') / 100;
                 }
-                $iTotalbids = ($iTotalbids / 100);
+
                 if ($iTotalbids > $aProject['amount']) {
                     $iTotalbids = $aProject['amount'];
                 }
@@ -5174,15 +5180,22 @@ class cronController extends bootstrap
                     case projects_status::EN_FUNDING:
                     case projects_status::PROBLEME:
                     case projects_status::REMBOURSEMENT:
+                    case projects_status::REMBOURSE:
+                    case projects_status::REMBOURSEMENT_ANTICIPE:
                     case projects_status::FUNDE:
                     case projects_status::PROBLEME_J_X:
-                        $sProjectsuccess = "OUI";
+                    case projects_status::RECOUVREMENT:
+                    case projects_status::PROCEDURE_SAUVEGARDE:
+                    case projects_status::REDRESSEMENT_JUDICIAIRE:
+                    case projects_status::LIQUIDATION_JUDICIAIRE:
+                    case projects_status::DEFAUT:
+                        $sProjectsuccess = 'OUI';
                         break ;
                     case projects_status::FUNDING_KO:
-                        $sProjectsuccess = "NON";
+                        $sProjectsuccess = 'NON';
                         break ;
                     default:
-                        $sProjectsuccess = "";
+                        $sProjectsuccess = '';
                         break ;
                 }
 
@@ -5226,7 +5239,7 @@ class cronController extends bootstrap
                 $xml .= '<impact_environnemental>NON</impact_environnemental>';
                 $xml .= '<impact_culturel>NON</impact_culturel>';
                 $xml .= '<impact_eco>OUI</impact_eco>';
-                $xml .= '<categorie><categorie1>'. $sSector .'</categorie1></categorie>';
+                $xml .= '<categorie><categorie1>' . $sSector . '</categorie1></categorie>';
                 $xml .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>';
                 $xml .= '<mode_financement>PRR</mode_financement>';
                 $xml .= '<type_porteur_projet>ENT</type_porteur_projet>';
@@ -5240,14 +5253,16 @@ class cronController extends bootstrap
                 $xml .= '<date_debut_collecte>' . $aProject['date_publication'] . '</date_debut_collecte>';
                 $xml .= '<date_fin_collecte>' . $aProject['date_retrait'] . '</date_fin_collecte>';
                 $xml .= '<montant_recherche>' . $aProject['amount'] . '</montant_recherche>';
-                $xml .= '<montant_collecte>' . $iTotalbids . '</montant_collecte>';
-                $xml .= '<nb_contributeurs>'. $iLenders .'</nb_contributeurs>';
-                $xml .= '<succes>'. $sProjectsuccess .'</succes>';
+                $xml .= '<montant_collecte>' . number_format($iTotalbids, 0, ',', '') . '</montant_collecte>';
+                $xml .= '<nb_contributeurs>' . $iLenders . '</nb_contributeurs>';
+                $xml .= '<succes>' . $sProjectsuccess . '</succes>';
                 $xml .= '</projet>';
             }
             $xml .= '</partenaire>';
+
             file_put_contents($this->spath . 'fichiers/045.xml', $xml);
             file_put_contents($this->spath . 'fichiers/045_historique.xml', $xml, FILE_APPEND);
+
             $this->stopCron();
         }
         die;
