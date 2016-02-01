@@ -4007,6 +4007,7 @@ class cronController extends bootstrap
     public function _echeances_par_mois()
     {
         if (true === $this->startCron('echeances_par_mois', 5)) {
+            ini_set('memory_limit', '1G');
 
             $dateMoins1Mois = mktime(date("H"), date("i"), 0, date("m") - 1, date("d"), date("Y"));
             $dateMoins1Mois = date('Y-m', $dateMoins1Mois);
