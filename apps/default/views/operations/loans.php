@@ -108,7 +108,7 @@
                         <?php
                             foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan):
                                 $SumAremb    = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND status = 0', 'ordre ASC', 0, 1);
-                                $fLoanAmount = $SumAremb[0]['montant'] / 100 - $SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds'];
+                                $fLoanAmount = round($SumAremb[0]['montant'] / 100, 2) - round($SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds'], 2);
                                 ?>
                                 <tr>
                                     <td class="col-status"></td>
