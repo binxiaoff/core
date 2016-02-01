@@ -41,10 +41,9 @@ class compteur_factures extends compteur_factures_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `compteur_factures`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query('SELECT * FROM compteur_factures' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -57,23 +56,29 @@ class compteur_factures extends compteur_factures_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `compteur_factures` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM compteur_factures ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_compteur_facture')
     {
-        $sql    = 'SELECT * FROM `compteur_factures` WHERE ' . $field . ' = "' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM compteur_factures WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function compteurJournalier($id_project, $date)
+    /**
+     * @param int $iProjectId
+     * @param string $sDate
+     * @return int
+     */
+    public function compteurJournalier($iProjectId, $sDate)
     {
-        $this->ordre      = 1 + $this->counter('LEFT(added,10) = "' . date('Y-m-d', strtotime($date)) . '"');
-        $this->id_project = $id_project;
+        $sDate   = date('Y-m-d', strtotime($sDate));
+        $rResult = $this->bdd->query('SELECT IFNULL(MAX(ordre) + 1, 1) FROM compteur_factures WHERE `date` = "' . $sDate . '"');
+
+        $this->id_project = $iProjectId;
+        $this->ordre      = $this->bdd->result($rResult, 0, 0);
+        $this->date       = $sDate;
         $this->create();
 
         return $this->ordre;

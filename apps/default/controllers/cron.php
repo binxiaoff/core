@@ -4002,6 +4002,7 @@ class cronController extends bootstrap
     public function _echeances_par_mois()
     {
         if (true === $this->startCron('echeances_par_mois', 5)) {
+            ini_set('memory_limit', '1G');
 
             $dateMoins1Mois = mktime(date("H"), date("i"), 0, date("m") - 1, date("d"), date("Y"));
             $dateMoins1Mois = date('Y-m', $dateMoins1Mois);
@@ -4009,58 +4010,54 @@ class cronController extends bootstrap
             $csv = "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
 
             $sql = '
-		SELECT
-			c.id_client,
-		   la.id_lender_account,
-		   c.type,
-		   (IFNULL
-		   		(
-				   (IFNULL	(
-								(
-									SELECT p.iso
-									FROM lenders_imposition_history lih
-										JOIN pays_v2 p ON p.id_pays = lih.id_pays
-									WHERE lih.added <= e.date_echeance_reel
-									AND lih.id_lender = e.id_lender
-									ORDER BY lih.added DESC
-									LIMIT 1
-								)
-
-								,p.iso
-							)
-					), "FR"
-				)
-			)as iso_pays,
-		   la.exonere,
-		   la.debut_exoneration,
-		   la.fin_exoneration,
-		   e.id_project,
-		   e.id_loan,
-		   e.ordre,
-		   e.montant,
-		   e.capital,
-		   e.interets,
-		   e.prelevements_obligatoires,
-		   e.retenues_source,
-		   e.csg,
-		   e.prelevements_sociaux,
-		   e.contributions_additionnelles,
-		   e.prelevements_solidarite,
-		   e.crds,
-		   e.date_echeance,
-		   e.date_echeance_reel,
-		   e.status,
-		   e.date_echeance_emprunteur,
-		   e.date_echeance_emprunteur_reel
-		FROM echeanciers e
-		LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
-		LEFT JOIN clients c ON c.id_client = la.id_client_owner
-		LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
-
-		LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
-		WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '"
-                AND e.status = 1
-                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
+                SELECT
+                    c.id_client,
+                    la.id_lender_account,
+                    c.type,
+                    IFNULL(
+                        (
+                            IFNULL(
+                                (
+                                    SELECT p.iso
+                                    FROM lenders_imposition_history lih
+                                    JOIN pays_v2 p ON p.id_pays = lih.id_pays
+                                    WHERE lih.added <= e.date_echeance_reel
+                                    AND lih.id_lender = e.id_lender
+                                    ORDER BY lih.added DESC
+                                    LIMIT 1
+                                ), p.iso
+                            )
+                        ), "FR"
+                    ) AS iso_pays,
+                    la.exonere,
+                    la.debut_exoneration,
+                    la.fin_exoneration,
+                    e.id_project,
+                    e.id_loan,
+                    e.ordre,
+                    e.montant,
+                    e.capital,
+                    e.interets,
+                    e.prelevements_obligatoires,
+                    e.retenues_source,
+                    e.csg,
+                    e.prelevements_sociaux,
+                    e.contributions_additionnelles,
+                    e.prelevements_solidarite,
+                    e.crds,
+                    e.date_echeance,
+                    e.date_echeance_reel,
+                    e.status,
+                    e.date_echeance_emprunteur,
+                    e.date_echeance_emprunteur_reel
+                FROM echeanciers e
+                LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
+                LEFT JOIN clients c ON c.id_client = la.id_client_owner
+                LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
+                LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
+                WHERE LEFT(e.date_echeance_reel, 7) = "' . $dateMoins1Mois . '"
+                    AND e.status = 1
+                    AND e.status_ra = 0
                 ORDER BY e.date_echeance ASC';
 
             $resultat = $this->bdd->query($sql);
@@ -5145,14 +5142,20 @@ class cronController extends bootstrap
 
             $aProjectStatuses = array(
                 \projects_status::EN_FUNDING,
-                \projects_status::REMBOURSEMENT,
-                \projects_status::PROBLEME,
                 \projects_status::FUNDE,
                 \projects_status::FUNDING_KO,
-                \projects_status::PROBLEME_J_X
+                \projects_status::REMBOURSEMENT,
+                \projects_status::REMBOURSE,
+                \projects_status::REMBOURSEMENT_ANTICIPE,
+                \projects_status::PROBLEME,
+                \projects_status::PROBLEME_J_X,
+                \projects_status::RECOUVREMENT,
+                \projects_status::PROCEDURE_SAUVEGARDE,
+                \projects_status::REDRESSEMENT_JUDICIAIRE,
+                \projects_status::LIQUIDATION_JUDICIAIRE,
+                \projects_status::DEFAUT
             );
-            $aProjects = $oProjects->selectProjectsByStatus(implode($aProjectStatuses, ','));
-
+            $aProjects = $oProjects->selectProjectsByStatus(implode(',', $aProjectStatuses));
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
@@ -5160,11 +5163,11 @@ class cronController extends bootstrap
                 $oCompanies->get($aProject['id_company'], 'id_company');
 
                 if ($aProject['status'] === \projects_status::EN_FUNDING) {
-                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount'));
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 0', 'amount') / 100;
                 } else {
-                    $iTotalbids = $this->ficelle->formatNumber($oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount'));
+                    $iTotalbids = $oBids->sum('id_project = ' . $aProject['id_project'] . ' AND status = 1', 'amount') / 100;
                 }
-                $iTotalbids = ($iTotalbids / 100);
+
                 if ($iTotalbids > $aProject['amount']) {
                     $iTotalbids = $aProject['amount'];
                 }
@@ -5174,15 +5177,22 @@ class cronController extends bootstrap
                     case projects_status::EN_FUNDING:
                     case projects_status::PROBLEME:
                     case projects_status::REMBOURSEMENT:
+                    case projects_status::REMBOURSE:
+                    case projects_status::REMBOURSEMENT_ANTICIPE:
                     case projects_status::FUNDE:
                     case projects_status::PROBLEME_J_X:
-                        $sProjectsuccess = "OUI";
+                    case projects_status::RECOUVREMENT:
+                    case projects_status::PROCEDURE_SAUVEGARDE:
+                    case projects_status::REDRESSEMENT_JUDICIAIRE:
+                    case projects_status::LIQUIDATION_JUDICIAIRE:
+                    case projects_status::DEFAUT:
+                        $sProjectsuccess = 'OUI';
                         break ;
                     case projects_status::FUNDING_KO:
-                        $sProjectsuccess = "NON";
+                        $sProjectsuccess = 'NON';
                         break ;
                     default:
-                        $sProjectsuccess = "";
+                        $sProjectsuccess = '';
                         break ;
                 }
 
@@ -5226,7 +5236,7 @@ class cronController extends bootstrap
                 $xml .= '<impact_environnemental>NON</impact_environnemental>';
                 $xml .= '<impact_culturel>NON</impact_culturel>';
                 $xml .= '<impact_eco>OUI</impact_eco>';
-                $xml .= '<categorie><categorie1>'. $sSector .'</categorie1></categorie>';
+                $xml .= '<categorie><categorie1>' . $sSector . '</categorie1></categorie>';
                 $xml .= '<mots_cles_nomenclature_operateur></mots_cles_nomenclature_operateur>';
                 $xml .= '<mode_financement>PRR</mode_financement>';
                 $xml .= '<type_porteur_projet>ENT</type_porteur_projet>';
@@ -5240,14 +5250,16 @@ class cronController extends bootstrap
                 $xml .= '<date_debut_collecte>' . $aProject['date_publication'] . '</date_debut_collecte>';
                 $xml .= '<date_fin_collecte>' . $aProject['date_retrait'] . '</date_fin_collecte>';
                 $xml .= '<montant_recherche>' . $aProject['amount'] . '</montant_recherche>';
-                $xml .= '<montant_collecte>' . $iTotalbids . '</montant_collecte>';
-                $xml .= '<nb_contributeurs>'. $iLenders .'</nb_contributeurs>';
-                $xml .= '<succes>'. $sProjectsuccess .'</succes>';
+                $xml .= '<montant_collecte>' . number_format($iTotalbids, 0, ',', '') . '</montant_collecte>';
+                $xml .= '<nb_contributeurs>' . $iLenders . '</nb_contributeurs>';
+                $xml .= '<succes>' . $sProjectsuccess . '</succes>';
                 $xml .= '</projet>';
             }
             $xml .= '</partenaire>';
+
             file_put_contents($this->spath . 'fichiers/045.xml', $xml);
             file_put_contents($this->spath . 'fichiers/045_historique.xml', $xml, FILE_APPEND);
+
             $this->stopCron();
         }
         die;
@@ -7884,7 +7896,7 @@ class cronController extends bootstrap
                                     GROUP BY id_project');
             $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
 
-            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 800;
+            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 400;
             $oDateTime               = new DateTime('NOW');
             $fTimeStart              = microtime(true);
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
