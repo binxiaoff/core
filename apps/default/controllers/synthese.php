@@ -206,9 +206,9 @@ class syntheseController extends bootstrap
             for ($i = 1; $i <= 12; $i++) {
                 $a                                            = $i;
                 $a                                            = ($i < 10 ? '0' . $a : $a);
-                $this->sumRembParMois[$annee][$i]             = $this->ficelle->formatNumber(isset($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0); // capital remboursé / mois
-                $this->sumIntbParMois[$annee][$i]             = $this->ficelle->formatNumber(isset($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0); // interets net / mois
-                $this->sumRevenuesfiscalesParMois[$annee][$i] = $this->ficelle->formatNumber(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0); // prelevements fiscaux
+                $this->sumRembParMois[$annee][$i]             = number_format(isset($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0, 2, '.', ''); // capital remboursé / mois
+                $this->sumIntbParMois[$annee][$i]             = number_format(isset($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // interets net / mois
+                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // prelevements fiscaux
 
                 // on organise l'affichage
                 if ($d == 3) {

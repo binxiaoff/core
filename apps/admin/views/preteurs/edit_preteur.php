@@ -197,8 +197,10 @@
                 <tr class="societe">
                     <th><label for="phone-societe">Tribunal de commerce :</label></th>
                     <td><input type="text" class="input_large" name="tribunal_com" id="tribunal_com" value="<?= $this->companies->tribunal_com ?>"></td>
-                    <th><label for="rcs">RCS :</label></th>
-                    <td><input type="text" class="input_large" name="rcs" id="rcs" value="<?= $this->companies->rcs ?>"></td>
+
+            <th></th>
+            <td></td>
+
                 </tr>
                 <tr class="societe">
                     <th></th>
@@ -633,6 +635,11 @@
                 </tr>
                 <?php
                 if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true || $_SESSION['compte_valide'] == true) : ?>
+                if (
+                    isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true
+                    || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide'] == true
+                ) {
+                    ?>
                     <tr>
                         <td><a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a></td>
                         <td></td>
@@ -652,12 +659,8 @@
                         <?php
                         for ($i = 1; $i <= $this->nbWordingCompletude; $i++) : ?>
                             <tr>
-                            <td>
-                                <img class="add" id="add-<?= $i ?>" src="<?= $this->surl ?>/images/admin/add.png">
-                            </td>
-                            <td>
-                                <span class="content-add-<?= $i ?>"><?= $this->completude_wording['cas-' . $i] ?></span>
-                            </td>
+                                <td><img class="add" id="add-<?= $i ?>" src="<?= $this->surl ?>/images/admin/add.png"></td>
+                                <td><span class="content-add-<?= $i ?>"><?= $this->completude_wording['cas-' . $i] ?></span></td>
                             </tr>
                             <?php
                             if (in_array($i, array(3, 6, 11))) :
@@ -675,8 +678,7 @@
                         <tr>
                             <td>
                                 <label for="id">Saisir votre message :</label>
-                                <textarea name="content_email_completude" id="content_email_completude"><?= $text = str_replace(array("<br>", "<br />"), "",
-                                        $_SESSION['content_email_completude'][$this->params[0]]) ?></textarea>
+                                <textarea name="content_email_completude" id="content_email_completude"><?= $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) ?></textarea>
                             </td>
                         </tr>
                         <tr>

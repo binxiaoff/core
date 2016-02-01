@@ -70,6 +70,10 @@ class attachment_type extends attachment_type_crud
     const CNI_BENEFICIAIRE_EFFECTIF_VERSO_3    = 49;
     const SITUATION_COMPTABLE_INTERMEDIAIRE    = 50;
     const DERNIERS_COMPTES_CONSOLIDES          = 51;
+    const PRESENTATION_PROJET                  = 52;
+    const DERNIERE_LIASSE_FISCAL_HOLDING       = 53;
+    const KBIS_HOLDING                         = 54;
+    const PHOTOS_ACTIVITE                      = 55;
 
     public function __construct($bdd, $params = '')
     {
@@ -149,6 +153,11 @@ class attachment_type extends attachment_type_crud
             self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
             self::SITUATION_COMPTABLE_INTERMEDIAIRE,
             self::DERNIERS_COMPTES_CONSOLIDES,
+            self::STATUTS,
+            self::PRESENTATION_PROJET,
+            self::DERNIERE_LIASSE_FISCAL_HOLDING,
+            self::KBIS_HOLDING,
+            self::PHOTOS_ACTIVITE,
             self::AUTRE1,
             self::AUTRE2,
             self::AUTRE3,
@@ -211,5 +220,31 @@ class attachment_type extends attachment_type_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    /**
+     * Changes the label of an attachment with a dynamic content
+     * @param $aTypes array with attachments
+     * @return $aTypes array with attachments
+     */
+    public function changeLabelWithDynamicContent($aTypes)
+    {
+        foreach ($aTypes as $iKey => $aAttachmentType) {
+            switch ($aAttachmentType['id']) {
+                case \attachment_type::DERNIERE_LIASSE_FISCAL:
+                    $aTypes[$iKey]['label'] = 'Liasse fiscale ' . (date('Y') - 1);
+                    break;
+                case \attachment_type::LIASSE_FISCAL_N_1:
+                    $aTypes[$iKey]['label'] = 'Liasse fiscale ' . (date('Y') - 2);
+                    break;
+                case \attachment_type::LIASSE_FISCAL_N_2:
+                    $aTypes[$iKey]['label'] = 'Liasse fiscale ' . (date('Y') - 3);
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        return $aTypes;
     }
 }

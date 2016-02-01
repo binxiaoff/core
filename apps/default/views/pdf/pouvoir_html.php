@@ -56,10 +56,10 @@
                     </li>
                     <li>
                         <div class="col-long">
-                            R.C.S.
+                            SIREN
                         </div>
                         <div class="col-small">
-                            <?= $this->companies->rcs ?>
+                            <?= $this->companies->siren ?>
                         </div>
                     </li>
                 </ul>
@@ -465,25 +465,20 @@
 
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-3">
-                        <?
-                        if ($var == 0) {
-
-                            ?>
+                        <?php if ($var == 0) : ?>
                             <tr>
                                 <th><?= $this->bloc_pouvoir['nom'] ?><br/> <?= $this->bloc_pouvoir['raison-sociale'] ?></th>
-                                <th><?= $this->bloc_pouvoir['prenom'] ?><br/> <?= $this->bloc_pouvoir['rcs'] ?></th>
+                                <th><?= $this->bloc_pouvoir['prenom'] ?><br/> <?= $this->bloc_pouvoir['siren'] ?></th>
                                 <th><?= $this->bloc_pouvoir['adresse'] ?></th>
                                 <th><?= $this->bloc_pouvoir['code'] ?><br/> <?= $this->bloc_pouvoir['postal'] ?></th>
                                 <th><?= $this->bloc_pouvoir['ville'] ?></th>
                                 <th><?= $this->bloc_pouvoir['montant-172'] ?></th>
                                 <th><?= $this->bloc_pouvoir['taux'] ?><br/> <?= $this->bloc_pouvoir['interet-174'] ?></th>
                             </tr>
-                            <?
-                        }
-
+                        <?php endif; ?>
+                        <?php
                         $i = 0;
                         foreach ($this->lLenders as $key => $l) {
-
                             if ($var == $key) {
                                 if ($i <= 26) {
                                     $this->oLendersAccounts->get($l['id_lender'], 'id_lender_account');
@@ -497,7 +492,7 @@
                                         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
                                         $nom    = $this->companies->name;
-                                        $prenom = $this->companies->rcs;
+                                        $prenom = $this->companies->siren;
                                     }
 
                                     ?>
@@ -511,12 +506,11 @@
                                             class="nowrap"><?= $this->ficelle->formatNumber($l['amount'] / 100) ?> &euro;</td>
                                         <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($l['rate']) ?> %</td>
                                     </tr>
-                                    <?
+                                    <?php
                                     $var++;
                                     $i++;
                                 }
                             }
-
                         }
                         ?>
                     </table>
