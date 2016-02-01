@@ -986,14 +986,13 @@ class transfertsController extends bootstrap
 
         if (isset($this->params[0])) {
             $oLendersAccounts->get($this->params[0]);
+            $this->clients->get($oLendersAccounts->id_client_owner);
+            $this->companies->get($oLendersAccounts->id_company_owner);
         }
         $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
 
         $this->settings->get('Offre de bienvenue motif', 'type');
         $sWelcomeOfferMotive = $this->settings->value;
-
-        $this->clients->get($oLendersAccounts->id_client_owner);
-        $this->companies->get($oLendersAccounts->id_company_owner);
 
         unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
@@ -1044,7 +1043,7 @@ class transfertsController extends bootstrap
                 $_SESSION['freeow']['message'] = 'Il n\'y a plus d\'offre valide en cours !';
             }
 
-            if ($iSumOfAllWelcomeOffersDistributed <= $this->offres_bienvenues->montant_limit && $iAvailableAmountForWelcomeOffers >= $this->offres_bienvenue->montant) {
+            if ($iSumOfAllWelcomeOffersDistributed <= $this->offres_bienvenues->montant_limit && $iAvailableAmountForWelcomeOffers >= $this->offres_bienvenues->montant) {
                 $bEnoughMoneyLeft = true;
             } else {
                 $_SESSION['freeow']['title']   = 'Offre de bienvenue non cr&eacute;dit&eacute;';
@@ -1192,15 +1191,15 @@ class transfertsController extends bootstrap
     {
         $this->hideDecoration();
 
-        $this->offres_bienvenues = $this->loadData('offres_bienvenues');
-        $this->clients           = $this->loadData('clients');
-        $this->companies         = $this->loadData('companies');
-        $oLendersAccounts        = $this->loadData('lenders_accounts');
+        $this->oWelcomeOffer = $this->loadData('offres_bienvenues');
+        $this->oClient          = $this->loadData('clients');
+        $this->oCompany         = $this->loadData('companies');
+        $this->oLendersAccounts        = $this->loadData('lenders_accounts');
 
-        $oLendersAccounts->get($this->params[0]);
-        $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
+        $this->oLendersAccounts ->get($this->params[0]);
+        $this->oWelcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue');
 
-        $this->clients->get($oLendersAccounts->id_client_owner);
-        $this->companies->get($oLendersAccounts->id_company_owner);
+        $this->oClient->get($this->oLendersAccounts->id_client_owner);
+        $this->oCompany ->get($this->oLendersAccounts->id_company_owner);
     }
 }

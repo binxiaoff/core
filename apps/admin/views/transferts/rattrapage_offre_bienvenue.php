@@ -62,8 +62,7 @@
     <h1>Rattrapage offre de bienvenue</h1>
 
     <div class="csv">
-        <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn colorAdd">Recuperation du
-            CSV</a>
+        <a href="<?= $this->lurl ?>/transferts/csv_rattrapage_offre_bienvenue/" class="btn colorAdd">Recuperation du CSV</a>
     </div>
 
     <div class="datepicker_table">
@@ -96,16 +95,14 @@
             </fieldset>
         </form>
     </div>
-    <?php
-    if (empty($this->aLenders)) : ?>
+    <?php if (empty($this->aLenders)) : ?>
         <p>Il n'y a aucun utilisateur pour le moment.</p>
-        <?php
-    else: ?>
+    <?php else: ?>
         <div class="table">
             <table class="tablesorter">
                 <thead>
                 <tr>
-                    <th>Id</th>
+                    <th title="ID prêteur, celle qui est dans l'URL du BO pêteur">Id Prêteur</th>
                     <th>Nom</th>
                     <th>Pr&eacute;nom</th>
                     <th>Date de création</th>
@@ -114,8 +111,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <?php
-                foreach ($this->aLenders as $aLender) : ?>
+                <?php foreach ($this->aLenders as $aLender) : ?>
                     <tr>
                         <td><?= $aLender['id_lender'] ?></td>
                         <td><?= empty($aLender['company']) ? $aLender['nom'] : $aLender['company'] ?></td>
@@ -123,21 +119,16 @@
                         <td><?= $this->dates->formatDateMysqltoShortFR($aLender['date_creation']) ?></td>
                         <td><?= (false === empty($aLender['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : '' ?></td>
                         <td>
-                            <?php
-                            if (false === empty($aLender['date_validation'])) : ?>
+                            <?php if (false === empty($aLender['date_validation'])) : ?>
                                 <a href="<?= $this->lurl ?>/transferts/affect_welcome_offer/<?= $aLender['id_lender'] ?>"
                                    class="link thickbox"><img alt="Modifier " src="<?= $this->surl ?>/images/admin/edit.png"></a>
-                                <?php
-                            endif; ?>
+                            <?php endif; ?>
                         </td>
                     </tr>
-                    <?php
-                endforeach; ?>
+                    <?php endforeach; ?>
                 </tbody>
             </table>
         </div>
-        <?php
-    endif; ?>
+    <?php endif; ?>
 </div>
-<?php
-unset($_SESSION['freeow']); ?>
+<?php unset($_SESSION['freeow']); ?>
