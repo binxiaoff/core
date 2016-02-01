@@ -7896,7 +7896,7 @@ class cronController extends bootstrap
                                     GROUP BY id_project');
             $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
 
-            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 800;
+            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 400;
             $oDateTime               = new DateTime('NOW');
             $fTimeStart              = microtime(true);
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
