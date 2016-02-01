@@ -981,8 +981,8 @@ class pdfController extends bootstrap
                 $this->date = date('d/m/Y', strtotime($this->projects_status_history_details->date));
             }
 
-            $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(date_echeance) >= "2015-04-19" AND DATE(date_echeance) <= "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'montant');
-            $this->echoir       = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(date_echeance) > "' . date('Y-m-d') . '" AND id_loan = ' . $this->oLoans->id_loan, 'capital');
+            $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(e.date_echeance) >= "2015-04-19" AND DATE(e.date_echeance) <= "' . date('Y-m-d') . '" AND l.id_loan = ' . $this->oLoans->id_loan, 'montant');
+            $this->echoir       = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(e.date_echeance) > "' . date('Y-m-d') . '" AND l.id_loan = ' . $this->oLoans->id_loan, 'capital');
             $this->total        = $this->echu + $this->echoir;
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
