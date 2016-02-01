@@ -4015,58 +4015,54 @@ class cronController extends bootstrap
             $csv = "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
 
             $sql = '
-		SELECT
-			c.id_client,
-		   la.id_lender_account,
-		   c.type,
-		   (IFNULL
-		   		(
-				   (IFNULL	(
-								(
-									SELECT p.iso
-									FROM lenders_imposition_history lih
-										JOIN pays_v2 p ON p.id_pays = lih.id_pays
-									WHERE lih.added <= e.date_echeance_reel
-									AND lih.id_lender = e.id_lender
-									ORDER BY lih.added DESC
-									LIMIT 1
-								)
-
-								,p.iso
-							)
-					), "FR"
-				)
-			)as iso_pays,
-		   la.exonere,
-		   la.debut_exoneration,
-		   la.fin_exoneration,
-		   e.id_project,
-		   e.id_loan,
-		   e.ordre,
-		   e.montant,
-		   e.capital,
-		   e.interets,
-		   e.prelevements_obligatoires,
-		   e.retenues_source,
-		   e.csg,
-		   e.prelevements_sociaux,
-		   e.contributions_additionnelles,
-		   e.prelevements_solidarite,
-		   e.crds,
-		   e.date_echeance,
-		   e.date_echeance_reel,
-		   e.status,
-		   e.date_echeance_emprunteur,
-		   e.date_echeance_emprunteur_reel
-		FROM echeanciers e
-		LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
-		LEFT JOIN clients c ON c.id_client = la.id_client_owner
-		LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
-
-		LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
-		WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '"
-                AND e.status = 1
-                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
+                SELECT
+                    c.id_client,
+                    la.id_lender_account,
+                    c.type,
+                    IFNULL(
+                        (
+                            IFNULL(
+                                (
+                                    SELECT p.iso
+                                    FROM lenders_imposition_history lih
+                                    JOIN pays_v2 p ON p.id_pays = lih.id_pays
+                                    WHERE lih.added <= e.date_echeance_reel
+                                    AND lih.id_lender = e.id_lender
+                                    ORDER BY lih.added DESC
+                                    LIMIT 1
+                                ), p.iso
+                            )
+                        ), "FR"
+                    ) AS iso_pays,
+                    la.exonere,
+                    la.debut_exoneration,
+                    la.fin_exoneration,
+                    e.id_project,
+                    e.id_loan,
+                    e.ordre,
+                    e.montant,
+                    e.capital,
+                    e.interets,
+                    e.prelevements_obligatoires,
+                    e.retenues_source,
+                    e.csg,
+                    e.prelevements_sociaux,
+                    e.contributions_additionnelles,
+                    e.prelevements_solidarite,
+                    e.crds,
+                    e.date_echeance,
+                    e.date_echeance_reel,
+                    e.status,
+                    e.date_echeance_emprunteur,
+                    e.date_echeance_emprunteur_reel
+                FROM echeanciers e
+                LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
+                LEFT JOIN clients c ON c.id_client = la.id_client_owner
+                LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
+                LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
+                WHERE LEFT(e.date_echeance_reel, 7) = "' . $dateMoins1Mois . '"
+                    AND e.status = 1
+                    AND e.status_ra = 0
                 ORDER BY e.date_echeance ASC';
 
             $resultat = $this->bdd->query($sql);
