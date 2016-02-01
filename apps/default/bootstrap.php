@@ -14,6 +14,11 @@ class bootstrap extends Controller
      */
     public $projects;
 
+    /**
+     * @var array
+     */
+    public $aDataLayer = array();
+
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -51,6 +56,8 @@ class bootstrap extends Controller
         $this->accept_cookies          = $this->loadData('accept_cookies');
         $this->companies               = $this->loadData('companies');
         $this->projects                = $this->loadData('projects');
+        $this->lenders_accounts        = $this->loadData('lenders_accounts');
+        $this->projects_status         = $this->loadData('projects_status');
 
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
@@ -183,7 +190,7 @@ class bootstrap extends Controller
         // Recuperation du bloc nos-partenaires
         $sKey      = $this->oCache->makeKey('Blocs_Partenaires', $this->blocs->id_bloc, $this->language);
         $aElements = $this->oCache->get($sKey);
-        if(false === $aElements) {
+        if (false === $aElements) {
             $this->blocs->get('nos-partenaires', 'slug');
             $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
             foreach ($lElements as $b_elt) {
@@ -206,7 +213,7 @@ class bootstrap extends Controller
         //Recuperation des element de traductions
         $sKey      = $this->oCache->makeKey('Trad_Header_Footer_home');
         $aElements = $this->oCache->get($sKey);
-        if(false === $aElements) {
+        if (false === $aElements) {
             $aElements = array(
                 'TradHeader' => $this->ln->selectFront('header', $this->language, $this->App),
                 'TradFooter' => $this->ln->selectFront('footer', $this->language, $this->App),
@@ -224,9 +231,9 @@ class bootstrap extends Controller
         //gestion du captcha
         if (isset($_POST["captcha"])) {
             if (isset($_SESSION["securecode"]) && $_SESSION["securecode"] == strtolower($_POST["captcha"])) {
-                $content_captcha = 'ok';
+                $bCaptchaOk = true;
             } else {
-                $content_captcha           = 'ko';
+                $bCaptchaOk                = false;
                 $this->displayCaptchaError = true;
             }
         }
@@ -238,7 +245,7 @@ class bootstrap extends Controller
 
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
-            if (isset($_POST["captcha"]) && $content_captcha == "ko") {
+            if (isset($bCaptchaOk) && $bCaptchaOk === false) {
                 //on trace la tentative
                 $this->login_log              = $this->loadData('login_log');
                 $this->login_log->pseudo      = $_POST['login'];
@@ -250,28 +257,19 @@ class bootstrap extends Controller
 
                 $_SESSION['login']['displayCaptchaError'] = $this->displayCaptchaError;
             } else {
-                $no_error     = true;
-                $captcha_vrai = true;
+                $bErrorLogin = false;
 
                 if ($_POST['login'] == '' || $_POST['password'] == '') {
-                    $no_error = false;
+                    $bErrorLogin = true;
                 } elseif ($this->clients->exist($_POST['login'], 'email') == false) {
-                    $no_error = false;
+                    $bErrorLogin = true;
                 } elseif ($this->clients->login($_POST['login'], $_POST['password']) == false) {
-                    $no_error = false;
+                    $bErrorLogin = true;
                 }
 
-                // Si erreur on affiche le message
-                if ($no_error) {
-                    // On recupere le formulaire de connexion s'il est passé
+                if ($bErrorLogin === false) {
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
-                        //vidage des trackeurs d'echec en session
                         unset($_SESSION['login']);
-
-                        $this->clients_history->id_client = $_SESSION['client']['id_client'];
-                        $this->clients_history->type      = $_SESSION['client']['status_pre_emp'];
-                        $this->clients_history->status    = 1; // statut login
-                        $this->clients_history->create();
 
                         if (isset($_COOKIE['acceptCookies'])) {
                             $this->create_cookies = false;
@@ -282,182 +280,45 @@ class bootstrap extends Controller
                             }
                         }
 
-                        $statut_preteur = false;
+                        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
+                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
+                        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
-                        // On renvoi chez le preteur
-                        if ($_SESSION['client']['status_pre_emp'] == 1) {
-                            $statut_preteur = true;
-                        } // On renvoi chez l'emprunteur
-                        elseif ($_SESSION['client']['status_pre_emp'] == 2) {
-                            header('Location:' . $this->lurl . '/synthese_emprunteur');
-                            die;
-                        } elseif ($_SESSION['client']['status_pre_emp'] == 3) {
-                            $_SESSION['status_pre_emp'] = 1;
-                            $statut_preteur             = true;
+                        $this->clients_history->id_client = $_SESSION['client']['id_client'];
+                        $this->clients_history->type      = ($this->bIsBorrowerAndLender) ? 3 : ($this->bIsLender) ? 1 : ($this->bIsBorrower) ? 2 : 0;
+                        $this->clients_history->status    = 1; // statut login
+                        $this->clients_history->create();
+
+                        if ($this->bIsLender) {
+                            $this->loginLender();
+                        } elseif ($this->bIsBorrower) {
+                            $this->loginBorrower();
                         }
-
-                        // On est un preteur
-                        if ($statut_preteur == true) {
-
-                            /// creation de champs en bdd pour la gestion des mails de notifiaction ////
-
-                            $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                            $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
-
-                            ////// Liste des notifs //////
-                            $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
-                            $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $_SESSION['client']['id_client']);
-
-                            if ($this->lNotifs == false) {
-                                foreach ($this->lTypeNotifs as $n) {
-                                    $this->clients_gestion_notifications->id_client = $_SESSION['client']['id_client'];
-                                    $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
-                                    $id_notif                                       = $n['id_client_gestion_type_notif'];
-                                    // immediatement
-                                    if (in_array($id_notif, array(3, 6, 7, 8))) {
-                                        $this->clients_gestion_notifications->immediatement = 1;
-                                    } else {
-                                        $this->clients_gestion_notifications->immediatement = 0;
-                                    }
-                                    // quotidienne
-                                    if (in_array($id_notif, array(1, 2, 4, 5))) {
-                                        $this->clients_gestion_notifications->quotidienne = 1;
-                                    } else {
-                                        $this->clients_gestion_notifications->quotidienne = 0;
-                                    }
-                                    // hebdomadaire
-                                    if (in_array($id_notif, array(1, 4))) {
-                                        $this->clients_gestion_notifications->hebdomadaire = 1;
-                                    } else {
-                                        $this->clients_gestion_notifications->hebdomadaire = 0;
-                                    }
-                                    // mensuelle
-                                    $this->clients_gestion_notifications->mensuelle = 0;
-                                    $this->clients_gestion_notifications->create();
-                                }
-                            }
-
-                            ////////////////////////////////////////////////////////////////////////////
-
-                            // Si on est en cours d'inscription on redirige sur le formulaire d'inscription
-                            if ($_SESSION['client']['etape_inscription_preteur'] < 3) {
-                                $etape = ($_SESSION['client']['etape_inscription_preteur'] + 1);
-                                header('Location:' . $this->lurl . '/inscription_preteur/etape' . $etape);
-                                die;
-                            } // Sinon
-                            else {
-
-                                // on check le statut du preteur pour voir si on doit le rediriger sur la page des doc à uploader
-                                $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
-                                if (in_array($this->clients_status->status, array(20, 30))) {
-
-                                    if (in_array($_SESSION['client']['type'], array(1, 3))) {
-                                        $lapage = 'particulier_doc';
-                                    } else {
-                                        $lapage = 'societe_doc';
-                                    }
-
-                                    header('Location:' . $this->lurl . '/profile/' . $lapage);
-                                    die;
-                                } // Sinon
-                                else {
-
-                                    // On regarde le CGU du preteur pour voir si il est signé ou pas (cgv particulier et entreprise ont le mm contenu)
-                                    $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-                                    // cgu societe
-                                    if (in_array($this->clients->type, array(2, 4))) {
-                                        $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
-                                        $this->lienConditionsGenerales = $this->settings->value;
-                                    } // cgu particulier
-                                    else {
-                                        $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
-                                        $this->lienConditionsGenerales = $this->settings->value;
-                                    }
-
-                                    // liste des cgv accepté
-                                    $listeAccept = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
-
-                                    // On cherche si on a déjà le cgv (si pas signé on redirige sur la page synthèse pour qu'il signe)
-                                    if (! in_array($this->lienConditionsGenerales, $listeAccept)) {
-                                        header('Location:' . $this->lurl . '/synthese');
-                                        die;
-                                    } // Sinon
-                                    else {
-                                        // On va sur la session de redirection
-                                        if (isset($_SESSION['redirection_url']) && $_SESSION['redirection_url'] != '' && $_SESSION['redirection_url'] != 'login' && $_SESSION['redirection_url'] != 'captcha') {
-                                            // on redirige que si on vient de projects
-                                            $redirect = explode('/', $_SESSION['redirection_url']);
-                                            if ($redirect[1] == 'projects') {
-                                                header('location:' . $_SESSION['redirection_url']);
-                                                die;
-                                            } else {
-                                                header('Location:' . $this->lurl . '/synthese');
-                                                die;
-                                            }
-                                        } // Sinon page synthese si pas de session
-                                        else {
-                                            header('Location:' . $this->lurl . '/synthese');
-                                            die;
-                                        }
-                                    }
-
-                                }
-
-                            }
-
-
-                        }
-
                     } else {
                         $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
                 } else {
-                    /* A chaque tentative on double le temps d'attente entre 2 demande.
+                    $oDateTime           = new \datetime('NOW - 10 minutes');
+                    $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
 
-                    - tentative 2 = 1seconde d'attente
-                    - tentative 3 = 2 sec
-                    - tentative 4 = 4 sec
-                    - etc...
+                    $this->login_log      = $this->loadData('login_log');
+                    $this->iPreviousTrys  = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $sNowMinusTenMinutes . '" AND statut = 0');
+                    $this->iWaitingPeriod = 0;
+                    $iPreviousResult      = 1;
 
-                    Au bout de 10 demandes (avec la même IP) DANS LES 10 min
-                    - Ajout d'un captcha + @ admin
-
-                    */
-
-                    // H - 10min
-                    $h_moins_dix_min = date('Y-m-d H:i:s', mktime(date('H'), date('i') - 10, 0, date('m'), date('d'), date('Y')));
-
-                    //on récupère le nombre de tentative déjà faite avec l'ip du user
-                    $this->login_log                 = $this->loadData('login_log');
-                    $this->nb_tentatives_precedentes = $this->login_log->counter('IP = "' . $_SERVER["REMOTE_ADDR"] . '" AND date_action >= "' . $h_moins_dix_min . '" AND statut = 0');
-
-                    $this->duree_waiting = 0;
-
-                    //parametrage de la boucle de temps
-                    $coef_multiplicateur = 2;
-                    $resultat_precedent  = 1;
-
-                    if ($this->nb_tentatives_precedentes > 0 && $this->nb_tentatives_precedentes < 1000) // 1000 pour ne pas bloquer le site
-                    {
-                        for ($i = 1; $i <= $this->nb_tentatives_precedentes; $i++) {
-                            $this->duree_waiting = $resultat_precedent * $coef_multiplicateur;
-                            $resultat_precedent  = $this->duree_waiting;
+                    if ($this->iPreviousTrys > 0 && $this->iPreviousTrys < 1000) { // 1000 pour ne pas bloquer le site
+                        for ($i = 1; $i <= $this->iPreviousTrys; $i++) {
+                            $this->iWaitingPeriod = $iPreviousResult * 2;
+                            $iPreviousResult      = $this->iWaitingPeriod;
                         }
                     }
 
-                    // DEBUG
-                    //$this->duree_waiting = 1;
-
-                    //retour
                     $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
 
-                    //mise en session
-                    $_SESSION['login']['duree_waiting']             = $this->duree_waiting;
-                    $_SESSION['login']['nb_tentatives_precedentes'] = $this->nb_tentatives_precedentes;
+                    $_SESSION['login']['duree_waiting']             = $this->iWaitingPeriod;
+                    $_SESSION['login']['nb_tentatives_precedentes'] = $this->iPreviousTrys;
                     $_SESSION['login']['displayCaptchaError']       = $this->displayCaptchaError;
 
-
-                    //on trace la tentative
                     $this->login_log              = $this->loadData('login_log');
                     $this->login_log->pseudo      = $_POST['login'];
                     $this->login_log->IP          = $_SERVER["REMOTE_ADDR"];
@@ -469,81 +330,24 @@ class bootstrap extends Controller
             }
         }
 
-        $this->connect_ok = false;
         if ($this->clients->checkAccess()) {
-            $this->connect_ok = true;
-
-            // On recupere les infos du client si il est connecté
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            // si emprunteur
-            if ($this->clients->status_pre_emp > 1) {
-                // si si statut transition = 1 c'est qu'on est en transition
-                if ($this->clients->status_transition == 1) {
-                    $this->etape_transition = true;
-                }
+            $this->addDataLayer('id_client', $this->clients->id_client);
+            $this->addDataLayer('email_client', $this->clients->email);
 
-                $this->companies->get($this->clients->id_client, 'id_client_owner');
-                $this->nbProjets = $this->projects->countSelectProjectsByStatus('30,50,60,70,80', ' AND id_company = ' . $this->companies->id_company . ' AND p.status = 0 AND p.display = 0');
+            $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
+            $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
+            $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
-                // pour les emprunteurs donc satut 2 ou 3
-                // Lien conditions generales depot dossier
-                $this->settings->get('Lien conditions generales depot dossier', 'type');
-                $this->cguDepotDossier = $this->settings->value;
-
-                // Recuperation du contenu de la page
-                $contenu = $this->tree_elements->select('id_tree = "' . $this->cguDepotDossier . '" AND id_langue = "' . $this->language . '"');
-                foreach ($contenu as $elt) {
-                    $this->elements->get($elt['id_element']);
-                    $this->contentCGUDepotDossier[$this->elements->slug]    = $elt['value'];
-                    $this->complementCGUDepotDossier[$this->elements->slug] = $elt['complement'];
-                }
+            if ($this->bIsBorrower) {
+                $this->getDataBorrower();
             }
 
-            // preteur ou les deux mais pas que les emprunteurs
-            if ($this->clients->status_pre_emp == 1 || $this->clients->status_pre_emp == 3) {
-                // particulier
-                if ($this->clients->type == 1) {
-                    // cgu particulier
-                    $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
-                    $this->lienConditionsGenerales = $this->settings->value;
-                } // morale
-                else {
-                    // cgu societe
-                    $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
-                    $this->lienConditionsGenerales = $this->settings->value;
-                }
-
-                // Recuperation du contenu de la page
-                $contenu = $this->tree_elements->select('id_tree = "' . $this->lienConditionsGenerales . '" AND id_langue = "' . $this->language . '"');
-                foreach ($contenu as $elt) {
-                    $this->elements->get($elt['id_element']);
-                    $this->contentCGU[$this->elements->slug]    = $elt['value'];
-                    $this->complementCGU[$this->elements->slug] = $elt['complement'];
-                }
-
-                $this->lenders_accounts = $this->loadData('lenders_accounts');
-                $this->notifications    = $this->loadData('notifications');
-                $this->bids             = $this->loadData('bids');
-                $this->projects_notifs  = $this->loadData('projects');
-                $this->companies_notifs = $this->loadData('companies');
-                $this->loans            = $this->loadData('loans');
-
-                $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
-                $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', $this->language, $this->App);
-
-
-                $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-                $this->nbNotifdisplay = 10;
-                $this->lNotifHeader  = $this->notifications->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'added DESC', 0, $this->nbNotifdisplay);
-                $this->NbNotifHeader = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0');
-                $this->NbNotifHeaderEnTout = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account);
+            if ($this->bIsLender) {
+                $this->getDataLender();
             }
-
-            // Solde du compte preteur
-            $this->solde = $this->transactions->getSolde($this->clients->id_client);
         }
 
         // page projet tri
@@ -559,9 +363,9 @@ class bootstrap extends Controller
         // Afficher les projets terminés ? (1 : oui | 0 : non)
         $this->settings->get('Afficher les projets termines', 'type');
         if ($this->settings->value == 1) {
-            $this->tabProjectDisplay = '50,60,70,80,90,100,110,130';
+            $this->tabProjectDisplay = implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::FUNDING_KO, \projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE));
         } else {
-            $this->tabProjectDisplay = '50';
+            $this->tabProjectDisplay = \projects_status::EN_FUNDING;
         }
 
         $this->create_cookies = true;
@@ -663,10 +467,10 @@ class bootstrap extends Controller
 
 
                     // On regarde si on trouve un partenaire
-                    if ($partenaires->get($params[$indexPart], 'hash')) {
+                    if ($partenaires->get($params[ $indexPart ], 'hash')) {
                         // on controle qu'on a pas un double clique
-                        if (! isset($_SESSION['partenaire_click'][$partenaires->id_partenaire]) || $_SESSION['partenaire_click'][$partenaires->id_partenaire] != $partenaires->id_partenaire) {
-                            $_SESSION['partenaire_click'][$partenaires->id_partenaire] = $partenaires->id_partenaire;
+                        if (!isset($_SESSION['partenaire_click'][ $partenaires->id_partenaire ]) || $_SESSION['partenaire_click'][ $partenaires->id_partenaire ] != $partenaires->id_partenaire) {
+                            $_SESSION['partenaire_click'][ $partenaires->id_partenaire ] = $partenaires->id_partenaire;
 
                             // On ajoute un clic
                             if ($partenaires_clics->get(array('id_partenaire' => $partenaires->id_partenaire, 'date' => date('Y-m-d')))) {
@@ -699,8 +503,8 @@ class bootstrap extends Controller
                         setcookie('izicom_partenaire', $partenaires->hash, time() + 3153600, '/');
 
                         // On regarde si le dernier param commence par ?
-                        if (substr($params[count($params) - 1], 0, 1) == '?') {
-                            $gogole = $params[count($params) - 1];
+                        if (substr($params[ count($params) - 1 ], 0, 1) == '?') {
+                            $gogole = $params[ count($params) - 1 ];
                         }
 
                         // On rebidouille l'url
@@ -717,7 +521,7 @@ class bootstrap extends Controller
             }
 
             // Si il a rien trouvé on regarde si on a un cookie et pas de session
-            if (! isset($_SESSION['partenaire']['id_partenaire']) && isset($_COOKIE['izicom_partenaire']) && ! $getta) {
+            if (!isset($_SESSION['partenaire']['id_partenaire']) && isset($_COOKIE['izicom_partenaire']) && !$getta) {
                 // On regarde si on trouve toujours un partenaire
                 if ($partenaires->get($_COOKIE['izicom_partenaire'], 'hash')) {
                     // On met le partenaire en session
@@ -725,5 +529,208 @@ class bootstrap extends Controller
                 }
             }
         }
+    }
+
+    private function loginLender()
+    {
+        $this->bDisplayLender = true;
+
+        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
+
+        $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
+        $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $_SESSION['client']['id_client']);
+
+        if ($this->lNotifs == false) {
+            foreach ($this->lTypeNotifs as $n) {
+                $this->clients_gestion_notifications->id_client = $_SESSION['client']['id_client'];
+                $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
+                $id_notif                                       = $n['id_client_gestion_type_notif'];
+
+                if (
+                    in_array(
+                        $id_notif,
+                        array(
+                            \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
+                            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
+                            \clients_gestion_type_notif::TYPE_DEBIT
+                        )
+                    )
+                ) {
+                    $this->clients_gestion_notifications->immediatement = 1;
+                } else {
+                    $this->clients_gestion_notifications->immediatement = 0;
+                }
+
+                if (
+                    in_array(
+                        $id_notif,
+                        array(
+                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                            \clients_gestion_type_notif::TYPE_BID_PLACED,
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                            \clients_gestion_type_notif::TYPE_REPAYMENT
+                        )
+                    )
+                ) {
+                    $this->clients_gestion_notifications->quotidienne = 1;
+                } else {
+                    $this->clients_gestion_notifications->quotidienne = 0;
+                }
+
+                if (
+                    in_array(
+                        $id_notif,
+                        array(
+                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
+                        )
+                    )
+                ) {
+                    $this->clients_gestion_notifications->hebdomadaire = 1;
+                } else {
+                    $this->clients_gestion_notifications->hebdomadaire = 0;
+                }
+
+                $this->clients_gestion_notifications->mensuelle = 0;
+                $this->clients_gestion_notifications->create();
+            }
+        }
+
+        if ($_SESSION['client']['etape_inscription_preteur'] < 3) {
+            $etape = ($_SESSION['client']['etape_inscription_preteur'] + 1);
+            header('Location:' . $this->lurl . '/inscription_preteur/etape' . $etape);
+            die;
+        } else {
+            $this->clients_status->getLastStatut($_SESSION['client']['id_client']);
+            if (in_array($this->clients_status->status, array(clients_status::COMPLETENESS, clients_status::COMPLETENESS_REMINDER))) {
+
+                if (in_array($_SESSION['client']['type'], array(clients::TYPE_PERSON, clients::TYPE_PERSON_FOREIGNER))) {
+                    $lapage = 'particulier_doc';
+                } else {
+                    $lapage = 'societe_doc';
+                }
+                header('Location:' . $this->lurl . '/profile/' . $lapage);
+                die;
+            } else {
+
+                $this->clients->get($_SESSION['client']['id_client'], 'id_client');
+                if (in_array($this->clients->type, array(clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+                    $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
+                    $this->lienConditionsGenerales = $this->settings->value;
+                }
+                else {
+                    $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
+                    $this->lienConditionsGenerales = $this->settings->value;
+                }
+
+                $listeAccept = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
+
+                if (!in_array($this->lienConditionsGenerales, $listeAccept)) {
+                    header('Location:' . $this->lurl . '/synthese');
+                    die;
+                } else {
+                    if (isset($_SESSION['redirection_url']) &&
+                        $_SESSION['redirection_url'] != '' &&
+                        $_SESSION['redirection_url'] != 'login' &&
+                        $_SESSION['redirection_url'] != 'captcha'
+                    ) {
+                        $redirect = explode('/', $_SESSION['redirection_url']);
+
+                        if ($redirect[1] == 'projects') {
+                            header('Location:' . $_SESSION['redirection_url']);
+                            die;
+                        } else {
+                            header('Location:' . $this->lurl . '/synthese');
+                            die;
+                        }
+                    } else {
+                        header('Location:' . $this->lurl . '/synthese');
+                        die;
+                    }
+                }
+            }
+        }
+    }
+
+    private function loginBorrower()
+    {
+        $this->bDisplayBorrower = true;
+        $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
+
+        $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
+
+        if ((int)$aAllCompanyProjects[0]['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects[0]['project_status'] < projects_status::PREP_FUNDING) {
+            header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
+            die;
+        } else {
+            header('Location:' . $this->lurl . '/espace_emprunteur');
+            die;
+        }
+    }
+
+    private function getDataLender()
+    {
+        $this->bDisplayLender = true;
+        // particulier
+        if ($this->clients->type == clients::TYPE_PERSON) {
+            // cgu particulier
+            $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
+            $this->lienConditionsGenerales = $this->settings->value;
+        } // morale
+        else {
+            // cgu societe
+            $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
+            $this->lienConditionsGenerales = $this->settings->value;
+        }
+
+        // Recuperation du contenu de la page
+        $contenu = $this->tree_elements->select('id_tree = "' . $this->lienConditionsGenerales . '" AND id_langue = "' . $this->language . '"');
+        foreach ($contenu as $elt) {
+            $this->elements->get($elt['id_element']);
+            $this->contentCGU[ $this->elements->slug ]    = $elt['value'];
+            $this->complementCGU[ $this->elements->slug ] = $elt['complement'];
+        }
+
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->notifications    = $this->loadData('notifications');
+        $this->bids             = $this->loadData('bids');
+        $this->projects_notifs  = $this->loadData('projects');
+        $this->companies_notifs = $this->loadData('companies');
+        $this->loans            = $this->loadData('loans');
+
+        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+        $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', $this->language, $this->App);
+
+
+        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+
+        $this->nbNotifdisplay      = 10;
+        $this->lNotifHeader        = $this->notifications->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'added DESC', 0, $this->nbNotifdisplay);
+        $this->NbNotifHeader       = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0');
+        $this->NbNotifHeaderEnTout = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account);
+
+
+        // Solde du compte preteur
+        $this->solde = $this->transactions->getSolde($this->clients->id_client);
+
+    }
+
+    private function getDataBorrower()
+    {
+        $this->bDisplayBorrower = true;
+        $this->oCompanyDisplay = $this->loadData('companies');
+        $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
+
+    }
+
+    /**
+     * @param string $sKey DataLayer parameter name
+     * @param mixed $mValue Parameter value
+     */
+    protected function addDataLayer($sKey, $mValue)
+    {
+        $this->aDataLayer[$sKey] = $mValue;
     }
 }

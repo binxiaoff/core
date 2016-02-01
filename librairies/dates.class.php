@@ -737,6 +737,11 @@ class dates
         return $nb_jours;
     }
 
+    function nbJours($debut, $fin)
+    {
+        return round((strtotime($fin) - strtotime($debut)) / (60 * 60 * 24));
+    }
+
     function dateDiff($date1, $date2)
     {
         $diff   = abs($date1 - $date2);

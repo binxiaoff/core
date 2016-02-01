@@ -87,26 +87,22 @@
                         $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
 
                         $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
-                        //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
+
                         // moyenne pondéré
                         $montantHaut = 0;
                         $montantBas = 0;
-                        // si fundé ou remboursement
-                        if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+
+                        if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                             foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
                                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                                 $montantBas += ($b['amount'] / 100);
                             }
-                        }
-                        // funding ko
-                        elseif ($this->projects_status->status == 70) {
+                        } elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
                             foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
                                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                                 $montantBas += ($b['amount'] / 100);
                             }
-                        }
-                        // emprun refusé
-                        elseif ($this->projects_status->status == 75) {
+                        } elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
                             foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
                                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                                 $montantBas += ($b['amount'] / 100);
@@ -133,7 +129,7 @@
                         <tr class="unProjet" id="project<?= $pf['id_project'] ?>">
                             <td>
                                 <?
-                                if ($this->projects_status->status >= 60) {
+                                if ($this->projects_status->status >= \projects_status::FUNDE) {
                                     $dateRest = $this->lng['preteur-projets']['termine'];
                                 } else {
                                     $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
@@ -188,7 +184,7 @@
                                 </a>
                             </td>
                             <td>
-                                <?php if ($this->projects_status->status >= 60) { ?>
+                                <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
                                     <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                                 <?php } else { ?>
                                     <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['preteur-projets']['pretez'] ?></a>
@@ -229,26 +225,22 @@
                     $dateRest = '';
 
                 $CountEnchere = $this->bids->counter('id_project = ' . $pf['id_project']);
-                //$avgRate = $this->bids->getAVG($pf['id_project'],'rate');
+
                 // moyenne pondéré
                 $montantHaut = 0;
                 $montantBas = 0;
-                // si fundé ou remboursement
-                if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+
+                if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
                     foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
                         $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                         $montantBas += ($b['amount'] / 100);
                     }
-                }
-                // funding ko
-                elseif ($this->projects_status->status == 70) {
+                } elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
                     foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
                         $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                         $montantBas += ($b['amount'] / 100);
                     }
-                }
-                // emprun refusé
-                elseif ($this->projects_status->status == 75) {
+                } elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
                     foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
                         $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                         $montantBas += ($b['amount'] / 100);
@@ -275,7 +267,7 @@
                     $favori = '';
                 }
 
-                if ($this->projects_status->status >= 60) {
+                if ($this->projects_status->status >= \projects_status::FUNDE) {
                     $dateRest = $this->lng['preteur-projets']['termine'];
                 } else {
                     $heure_retrait = date('H:i', strtotime($pf['date_retrait_full']));
@@ -316,7 +308,7 @@
                             <strong id="min_val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong>
                         </h5>
                         <p>
-                            <?php if ($this->projects_status->status >= 60) { ?>
+                            <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                             <?php } else { ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['preteur-projets']['pretez'] ?></a>
@@ -355,7 +347,7 @@
                 $('.loadmore').show();
 
                 //On lance la fonction ajax
-                var val = {last: last_id, positionStart: $('#positionStart').html(), ordreProject: $('#ordreProject').html(), where: $('#where').html(), type: $('#valType').html()}
+                var val = {last: last_id, positionStart: $('#positionStart').html(), ordreProject: $('#ordreProject').html(), where: $('#where').html(), type: $('#valType').html()};
                 $.post(add_url + '/ajax/load_project', val).done(function (data) {
                     obj = JSON.parse(data);
                     var positionStart = obj.positionStart;

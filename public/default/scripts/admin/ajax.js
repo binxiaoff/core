@@ -16,7 +16,7 @@ function AjaxObject() {
     }
     else {
         alert('Votre navigateur ne supporte pas les objets XMLHTTPRequest...');
-        return;
+
     }
 }
 
@@ -35,7 +35,7 @@ function deleteImageElement(id_elt, slug) {
             document.getElementById(slug + '-old').value = '';
             document.getElementById('nom_' + slug).value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteImageElement/' + id_elt + '/' + param, true);
     xhr_object.send(null);
 }
@@ -55,7 +55,7 @@ function deleteFichierElement(id_elt, slug) {
             document.getElementById(slug + '-old').value = '';
             document.getElementById('nom_' + slug).value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteFichierElement/' + id_elt + '/' + param, true);
     xhr_object.send(null);
 }
@@ -75,7 +75,7 @@ function deleteFichierProtectedElement(id_elt, slug) {
             document.getElementById(slug + '-old').value = '';
             document.getElementById('nom_' + slug).value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteFichierProtectedElement/' + id_elt + '/' + param, true);
     xhr_object.send(null);
 }
@@ -95,7 +95,7 @@ function deleteImageElementBloc(id_elt, slug) {
             document.getElementById(slug + '-old').value = '';
             document.getElementById('nom_' + slug).value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteImageElementBloc/' + id_elt + '/' + param, true);
     xhr_object.send(null);
 }
@@ -115,7 +115,7 @@ function deleteFichierElementBloc(id_elt, slug) {
             document.getElementById(slug + '-old').value = '';
             document.getElementById('nom_' + slug).value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteFichierElementBloc/' + id_elt + '/' + param, true);
     xhr_object.send(null);
 }
@@ -135,7 +135,7 @@ function deleteFichierProtectedElementBloc(id_elt, slug) {
             document.getElementById(slug + '-old').value = '';
             document.getElementById('nom_' + slug).value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteFichierProtectedElementBloc/' + id_elt + '/' + param, true);
     xhr_object.send(null);
 }
@@ -154,7 +154,7 @@ function deleteImageTree(id_tree, lng) {
             document.getElementById('deleteImageTree_' + lng).innerHTML = reponse;
             document.getElementById('img_menu_' + lng + '-old').value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteImageTree/' + id_tree + '/' + lng + '/' + param, true);
     xhr_object.send(null);
 }
@@ -173,7 +173,7 @@ function deleteVideoTree(id_tree, lng) {
             document.getElementById('deleteVideoTree_' + lng).innerHTML = reponse;
             document.getElementById('video_' + lng + '-old').value = '';
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/deleteVideoTree/' + id_tree + '/' + lng + '/' + param, true);
     xhr_object.send(null);
 }
@@ -195,7 +195,7 @@ function loadNomTexte(section) {
                 document.getElementById('listeNomTraduction').innerHTML = reponse;
                 document.getElementById('elementTraduction').innerHTML = '';
             }
-        }
+        };
         xhr_object.open('GET', add_url + '/ajax/loadNomTexte/' + section + '/' + param, true);
         xhr_object.send(null);
     }
@@ -220,7 +220,7 @@ function loadTradTexte(nom, section) {
                 var reponse = xhr_object.responseText;
                 document.getElementById('elementTraduction').innerHTML = reponse;
             }
-        }
+        };
         xhr_object.open('GET', add_url + '/ajax/loadTradTexte/' + nom + '/' + section + '/' + param, true);
         xhr_object.send(null);
     }
@@ -239,101 +239,11 @@ function activeUserZone(id_user, id_zone, zone) {
             var reponse = xhr_object.responseText;
             document.getElementById(zone).src = reponse;
         }
-    }
+    };
     xhr_object.open('GET', add_url + '/ajax/activeUserZone/' + id_user + '/' + id_zone + '/' + param, true);
     xhr_object.send(null);
 }
 
-/* Fonction AJAX ajout produit complementaire */
-function ajoutProduitComp(id_prod, id_crosseling) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('bloc_comp_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('bloc_comp_produit').innerHTML = reponse;
-            document.getElementById('id_crosseling').value = 0;
-        }
-    }
-    xhr_object.open('GET', add_url + '/ajax/ajoutProduitComp/' + id_prod + '/' + id_crosseling + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX move produit complementaire */
-function moveProduitComp(sens, id_prod, id_crosseling) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('bloc_comp_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('bloc_comp_produit').innerHTML = reponse;
-        }
-    }
-    xhr_object.open('GET', add_url + '/ajax/moveProduitComp/' + id_prod + '/' + id_crosseling + '/' + sens + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX suppression produit complementaire */
-function deleteProduitComp(id_prod, id_crosseling) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('bloc_comp_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('bloc_comp_produit').innerHTML = reponse;
-        }
-    }
-    xhr_object.open('GET', add_url + '/ajax/deleteProduitComp/' + id_prod + '/' + id_crosseling + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX suppression d'une image produit */
-function deleteImageFicheProduit(id_img, id_prod) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('bloc_images_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('bloc_images_produit').innerHTML = reponse;
-        }
-    }
-    xhr_object.open('GET', add_url + '/ajax/deleteImageFicheProduit/' + id_prod + '/' + id_img + '/' + param, true);
-    xhr_object.send(null);
-}
-
-/* Fonction AJAX placement en principal d'une image produit */
-function moveImageToFirstOne(id_img, id_prod) {
-    xhr_object = AjaxObject();
-    var param = no_cache();
-
-    xhr_object.onreadystatechange = function () {
-        if (xhr_object.readyState != 4) {
-            document.getElementById('bloc_images_produit').innerHTML = '<img src="' + add_surl + '/images/admin/ajax-loader.gif">';
-        }
-        if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-            var reponse = xhr_object.responseText;
-            document.getElementById('bloc_images_produit').innerHTML = reponse;
-        }
-    }
-    xhr_object.open('GET', add_url + '/ajax/moveImageToFirstOne/' + id_prod + '/' + id_img + '/' + param, true);
-    xhr_object.send(null);
-}
 /* Fonction AJAX change le statut d'un dossier*/
 function check_status_dossier(surl, status, id_project) {
     if (status == 40) {
@@ -362,73 +272,17 @@ function check_status_dossier(surl, status, id_project) {
                     $('#status_dossier').remove();
                 }
             }
-        }
+        };
         xhr_object.open('GET', add_url + '/ajax/check_status_dossier/' + status + '/' + id_project + '/' + date_pub + '/' + param, false);
         xhr_object.send(null);
 
-
-        /*xhr_object = AjaxObject();
-         var param = no_cache();
-
-         xhr_object.onreadystatechange = function()
-         {
-         if(xhr_object.readyState == 4 && xhr_object.status == 200)
-         {
-         var reponse = xhr_object.responseText;
-         if(reponse == 'nok')
-         {
-
-         }
-         else
-         {
-         document.getElementById('status_dossier').innerHTML = reponse;
-         }
-         }
-         }
-         xhr_object.open('GET',add_url + '/ajax/status_dossier/' + id_project + '/' + param ,false);
-         xhr_object.send(null);
-         */
-
-
-        /*xhr_object = AjaxObject();
-         var param = no_cache();
-
-         xhr_object.onreadystatechange = function()
-         {
-         if(xhr_object.readyState == 4 && xhr_object.status == 200)
-         {
-         var reponse = xhr_object.responseText;
-         if(reponse == 'nok')
-         {
-
-         }
-         else
-         {
-         document.getElementById('date_publication').innerHTML = reponse;
-
-         var demain=new Date();
-         demain.setTime(demain.getTime() + 24 * 3600 * 1000);
-
-         $("#date_pub").datepicker({
-         showOn: 'both',
-         buttonImage: surl+'/images/admin/calendar.gif',
-         buttonImageOnly: true,
-         changeMonth: true,
-         changeYear: true,
-         minDate: demain
-         });
-         }
-         }
-         }
-         xhr_object.open('GET',add_url + '/ajax/date_publication/' + id_project + '/' + param ,false);
-         xhr_object.send(null);*/
     }
 }
 
 
 function addMemo(id, type) {
     var content_memo = $('#content_memo').val();
-    var val = {content_memo: content_memo, id: id, type: type}
+    var val = {content_memo: content_memo, id: id, type: type};
     $.post(add_url + '/ajax/addMemo', val).done(function (data) {
         $("#table_memo").html(data);
     });
@@ -436,7 +290,7 @@ function addMemo(id, type) {
 
 function deleteMemo(id_project_comment, id_project) {
     if (confirm('Etes vous sur de vouloir supprimer ?') == true) {
-        var val = {id_project_comment: id_project_comment, id_project: id_project}
+        var val = {id_project_comment: id_project_comment, id_project: id_project};
         $.post(add_url + '/ajax/deleteMemo', val).done(function (data) {
             $("#table_memo").html(data);
         });
@@ -451,13 +305,13 @@ function valid_etape1(id_project) {
         siren_etape1: $("#siren_etape1").val(),
         id_project: id_project,
         etape: 1
-    }
+    };
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#siren").val($("#siren_etape1").val());
-        $("#montant").val($("#montant_etape1").val())
+        $("#montant").val($("#montant_etape1").val());
         $('#duree option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
 
-        $("#montant_etape3").val($("#montant_etape1").val())
+        $("#montant_etape3").val($("#montant_etape1").val());
         $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
 
         $("#valid_etape1").slideDown();
@@ -483,7 +337,7 @@ function valid_etape1(id_project) {
 // Creation du client apres saisi de l'email dans l'etape 2 de la creation de dossier
 
 function create_client(id_project) {
-    var val = {email: $("#email_etape2").val(), id_client: $("#id_client").val(), id_project: id_project}
+    var val = {email: $("#email_etape2").val(), id_client: $("#id_client").val(), id_project: id_project};
     $.post(add_url + '/ajax/create_client', val).done(function (data) {
 
         obj = jQuery.parseJSON(data);
@@ -516,7 +370,7 @@ function create_client(id_project) {
 }
 
 function valid_create(id_project) {
-    var val = {id_project: id_project}
+    var val = {id_project: id_project};
     $.post(add_url + '/ajax/valid_create', val).done(function (data) {
 
         $(location).attr('href', add_url + '/dossiers');
@@ -567,7 +421,7 @@ function valid_etape2(id_project) {
         id_prescripteur: $("#id_prescripteur").val(),
         has_prescripteur: $('#enterprise3_etape2').attr('checked'),
         etape: 2
-    }
+    };
 
     if (false === val.has_prescripteur) {
         $("#civilite_prescripteur").html('');
@@ -615,7 +469,7 @@ function valid_etape3(id_project) {
         comments_etape3: $("#comments_etape3").val(),
         id_project: id_project,
         etape: 3
-    }
+    };
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#montant").val($("#montant_etape3").val());
         $("#montant_etape1").val($("#montant_etape3").val());
@@ -751,7 +605,7 @@ function valid_etape4(id_project) {
 
         id_project: id_project,
         etape: 4
-    }
+    };
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#valid_etape4").slideDown();
 
@@ -766,7 +620,7 @@ function refeshEtape4(id_project) {
 
     var val = {
         id_project: id_project
-    }
+    };
     $.post(add_url + '/ajax/refeshEtape4', val).done(function (data) {
         if (data != 'nok') {
             $("#contenu_etape4").html(data);
@@ -786,7 +640,7 @@ function valid_etape6(id_project) {
         question3: $("#question3").val(),
         id_project: id_project,
         etape: 6
-    }
+    };
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#valid_etape6").slideDown();
 
@@ -801,7 +655,7 @@ function recapdashboard(month, annee) {
     var val = {
         month: month,
         annee: annee
-    }
+    };
     $.post(add_url + '/ajax/recapdashboard', val).done(function (data) {
 
 
@@ -814,7 +668,7 @@ function ratioDashboard(month, annee) {
     var val = {
         month: month,
         annee: annee
-    }
+    };
     $.post(add_url + '/ajax/ratioDashboard', val).done(function (data) {
 
 
@@ -828,7 +682,7 @@ function generer_le_mdp(id_client) {
 
     var val = {
         id_client: id_client
-    }
+    };
     $.post(add_url + '/ajax/generer_mdp', val).done(function (data) {
         if (data != 'nok') {
 
@@ -841,10 +695,28 @@ function generer_le_mdp(id_client) {
     });
 }
 
+function send_email_borrower_area(id_client, type) {
+
+    var val = {
+        id_client: id_client,
+        type: type
+    };
+    $.post(add_url + '/ajax/send_email_borrower_area', val).done(function (data) {
+        if (data != 'nok') {
+
+            $(".reponse_email").slideDown();
+
+            setTimeout(function () {
+                $(".reponse_email").slideUp();
+            }, 3000);
+        }
+    });
+}
+
 function loadDashYear(annee) {
     var val = {
         annee: annee
-    }
+    };
     $.post(add_url + '/ajax/loadDashYear', val).done(function (data) {
         if (data != 'nok') {
 

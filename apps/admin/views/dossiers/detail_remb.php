@@ -2,16 +2,19 @@
     $(function () {
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
-        <?php if ($this->nb_lignes != '') { ?>
+        <?php
+        if ($this->nb_lignes != '') : ?>
         $(".tablesorter").tablesorterPager({
             container: $("#pager"),
             positionFixed: false,
             size: <?= $this->nb_lignes ?>
         });
-        <?php } ?>
+        <?php
+        endif; ?>
     });
 
-    <?php if (isset($_SESSION['freeow'])) { ?>
+    <?php
+    if (isset($_SESSION['freeow'])) : ?>
     $(document).ready(function () {
         var title, message, opts, container;
         title = "<?= $_SESSION['freeow']['title'] ?>";
@@ -20,8 +23,9 @@
         opts.classes = ['smokey'];
         $('#freeow-tr').freeow(title, message, opts);
     });
-    <?php unset($_SESSION['freeow']); ?>
-    <?php } ?>
+    <?php
+    unset($_SESSION['freeow']);
+    endif; ?>
 </script>
 
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -33,7 +37,8 @@
     </ul>
     <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title_bo ?></h1>
     <div class="btnDroite">
-        <a style="margin-right:10px;" target="_blank" href="<?= $this->lurl ?>/dossiers/echeancier_emprunteur/<?= $this->projects->id_project ?>" class="btn_link">Echeancier Emprunteur</a>
+        <a style="margin-right:10px;" target="_blank"
+           href="<?= $this->lurl ?>/dossiers/echeancier_emprunteur/<?= $this->projects->id_project ?>" class="btn_link">Echeancier Emprunteur</a>
         <a target="_blank" href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>" class="btn_link">Voir le dossier</a>
     </div>
 
@@ -82,84 +87,85 @@
             <td></td>
         </tr>
     </table>
-    <br><br>
-    <?php if ($this->nbRembEffet > 0) { ?>
-        <table class="form form2" style="margin: auto;">
+    <br /><br />
+    <table class="form form2" style="margin: auto;">
+        <tr>
+            <td colspan="4"><h2>Remboursement</h2></td>
+        </tr>
+        <tr>
+            <th>Remboursements effectué :</th>
+            <td><?= $this->nbRembEffet ?></td>
+            <th>Montant remboursé :</th>
+            <td><?= $this->ficelle->formatNumber($this->totalEffet / 100) ?> €</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <th></th>
+            <td>
+                <i><?= $this->ficelle->formatNumber($this->interetEffet / 100) ?> € d'intérêts
+                    - <?= $this->ficelle->formatNumber($this->capitalEffet / 100) ?> € de capital
+                    - <?= $this->ficelle->formatNumber($this->commissionEffet / 100) ?> € de commissions
+                    - <?= $this->ficelle->formatNumber($this->tvaEffet / 100) ?> € de TVA</i>
+            </td>
+        </tr>
+        <tr style="height:30px;">
+            <td colspan="4"></td>
+        </tr>
+        <tr>
+            <th>Remboursements à venir :</th>
+            <td><?= $this->nbRembaVenir ?></td>
+            <th>Montant à percevoir :</th>
+            <td><?= $this->ficelle->formatNumber($this->totalaVenir / 100) ?> €</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>
+                <i><?= $this->ficelle->formatNumber($this->interetaVenir / 100) ?> € d'intérêts
+                    - <?= $this->ficelle->formatNumber($this->capitalaVenir / 100) ?> € de capital
+                    - <?= $this->ficelle->formatNumber($this->commissionaVenir / 100) ?> € de commissions
+                    - <?= $this->ficelle->formatNumber($this->tvaaVenir / 100) ?> € de TVA</i>
+            </td>
+        </tr>
+        <?php
+        if (false === $this->remb_anticipe_effectue) : ?>
             <tr>
-                <td colspan="4"><h2>Remboursement</h2></td>
-            </tr>
-            <tr>
-                <th>Remboursements effectué :</th>
-                <td><?= $this->nbRembEffet ?></td>
-                <th>Montant remboursé :</th>
-                <td><?= $this->ficelle->formatNumber($this->totalEffet / 100) ?> €</td>
-            </tr>
-            <tr>
+                <th>Prochain remboursement :</th>
+                <td><?= $this->dates->formatDate($this->nextRemb, 'd/m/Y') ?></td>
                 <td></td>
                 <td></td>
-                <th></th>
-                <td>
-                    <i><?= $this->ficelle->formatNumber($this->interetEffet / 100) ?> € d'intérêts - <?= $this->ficelle->formatNumber($this->capitalEffet / 100) ?> € de capital - <?= $this->ficelle->formatNumber($this->commissionEffet / 100) ?> € de commissions - <?= $this->ficelle->formatNumber($this->tvaEffet / 100) ?> € de TVA</i>
-                </td>
             </tr>
-            <tr style="height:30px;">
-                <td colspan="4"></td>
-            </tr>
-            <tr>
-                <th>Remboursements à venir :</th>
-                <td><?= $this->nbRembaVenir ?></td>
-                <th>Montant à percevoir :</th>
-                <td><?= $this->ficelle->formatNumber($this->totalaVenir / 100) ?> €</td>
-            </tr>
-            <tr>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                    <i><?= $this->ficelle->formatNumber($this->interetaVenir / 100) ?> € d'intérêts - <?= $this->ficelle->formatNumber($this->capitalaVenir / 100) ?> € de capital - <?= $this->ficelle->formatNumber($this->commissionaVenir / 100) ?> € de commissions - <?= $this->ficelle->formatNumber($this->tvaaVenir / 100) ?> € de TVA</i>
-                </td>
-            </tr>
-            <?php if (! $this->remb_anticipe_effectue) { ?>
-                <tr>
-                    <th>Prochain remboursement :</th>
-                    <td><?= $this->dates->formatDate($this->nextRemb, 'd/m/Y') ?></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-            <?php } ?>
-        </table>
-        <?php if (! $this->remb_anticipe_effectue) { ?>
-            <br/><br/>
-            <div style="border: 1px solid #b10366; height: 60px; padding: 5px; width: 280px;">
-                <form action="" method="post">
-                    <b>Remboursement automatique : </b>
-                    <input type="radio" name="remb_auto" value="0" <?= ($this->projects->remb_auto == 0 ? 'checked' : '') ?>>Oui
-                    <input type="radio" name="remb_auto" value="1" <?= ($this->projects->remb_auto == 1 ? 'checked' : '') ?>>Non
-                    <br/>
-                    <input type="hidden" name="send_remb_auto"/>
-                    <input style="margin-top:5px;" type="submit" value="Valider" name="valider_remb_auto" class="btn"/>
-                </form>
-            </div>
-            <br/><br/>
-            <?php if ($this->projects->remb_auto == 1) { ?>
-                <a style="display:block; margin: auto;width: 180px;" href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->projects->id_project ?>/remb" class="btn_link">Valider & Rembourser</a><br/>
-                <a style="display:block; margin: auto;width: 180px;" href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->projects->id_project ?>/remb/regul" class="btn_link">régularisation de remboursement en retard</a>
-            <?php
-            }
-        }
-    }
-    ?>
-    <br>
-    <div class="btnDroite">
-        <a style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" href="<?= $this->lurl ?>/dossiers/detail_remb_preteur/<?= $this->projects->id_project ?>" class="btn_link">Voir le détail prêteur</a>
+        <?php
+        endif; ?>
+    </table>
+    <br/><br/>
+    <div style="border: 1px solid #b10366; height: 60px; padding: 5px; width: 280px;">
+        <form action="" method="post">
+            <b>Remboursement automatique : </b>
+            <input type="radio" name="remb_auto" value="0" <?= ($this->projects->remb_auto == 0 ? 'checked' : '') ?>>Oui
+            <input type="radio" name="remb_auto" value="1" <?= ($this->projects->remb_auto == 1 ? 'checked' : '') ?>>Non
+            <br/>
+            <input type="hidden" name="send_remb_auto"/>
+            <input style="margin-top:5px;" type="submit" value="Valider" name="valider_remb_auto" class="btn"/>
+        </form>
     </div>
-
+    <br/><br/>
     <?php
-    if ($this->projects_status->status == 100) {
-        echo 'PROBLEME <-------';
-    }
-    ?>
-    <br><br>
+    if (1 == $this->projects->remb_auto) : ?>
+        <a style="display:block; margin: auto;width: 180px;"
+           href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->projects->id_project ?>/remb" class="btn_link">Valider & Rembourser</a><br/>
+        <a class="btn_link" style="display:block; margin: auto;width: 180px;"
+           href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $this->projects->id_project ?>/remb/regul">régularisation de remboursement en retard</a>
+        <?php
+    endif; ?>
+    <br/>
+    <div class="btnDroite">
+        <a style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;"
+           href="<?= $this->lurl ?>/dossiers/detail_remb_preteur/<?= $this->projects->id_project ?>" class="btn_link">Voir le détail prêteur</a>
+    </div>
+    <br/><br/>
     <h2>Remboursement anticipé / Information</h2>
     <table class="form" style="width: 538px; border: 1px solid #B10366;">
         <tr>
@@ -168,67 +174,54 @@
                 <label for="statut"><?= $this->phrase_resultat ?></label>
             </td>
         </tr>
-        <?php if ($this->virement_recu) { ?>
+        <?php
+        if ($this->virement_recu) : ?>
             <tr>
                 <th>Virement reçu le :</th>
-                <td>
-                    <label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></label>
-                </td>
+                <td><label for="statut"><?= $this->dates->formatDateMysqltoFr_HourOut($this->receptions->added) ?></label></td>
             </tr>
             <tr>
                 <th>Identification virement :</th>
-                <td>
-                    <label for="statut"><?= $this->receptions->id_reception ?></label>
-                </td>
+                <td><label for="statut"><?= $this->receptions->id_reception ?></label></td>
             </tr>
             <tr>
                 <th>Montant virement :</th>
-                <td>
-                    <label for="statut"><?= ($this->receptions->montant / 100) ?> €</label>
-                </td>
+                <td><label for="statut"><?= ($this->receptions->montant / 100) ?> €</label></td>
             </tr>
             <tr>
                 <th>Motif du virement :</th>
-                <td>
-                    <label for="statut"><?= $this->receptions->motif ?></label>
-                </td>
+                <td><label for="statut"><?= $this->receptions->motif ?></label></td>
             </tr>
-        <?php } else { ?>
+        <?php
+        else : ?>
             <tr>
                 <th>Virement à émettre avant le :</th>
-                <td>
-                    <label for="statut"><?= $this->date_next_echeance_4jouvres_avant ?></label>
-                </td>
+                <td><label for="statut"><?= $this->date_next_echeance_4jouvres_avant ?></label></td>
             </tr>
-        <?php } ?>
+        <?php
+        endif; ?>
         <tr>
             <th>Montant CRD (*) :</th>
-            <td>
-                <label for="statut"><?= $this->montant_restant_du_preteur ?>€</label>
-            </td>
+            <td><label for="statut"><?= $this->montant_restant_du_preteur ?>€</label></td>
         </tr>
         <?php
-        // on check si toutes les autres echeances on été remb avant de faire le remb anticipe
-        //$L_echeance = $this->echeanciers_emprunteur->select(" id_project = " . $this->projects->id_project . " AND status_emprunteur  = 0 AND ordre < " . $this->ordre_echeance_ra);
-
         // on ne se base plus sur l'echeancier emprunteur mais preteur comme pour le calcul du CRD
         $L_echeance = $this->echeanciers->select(" id_project = " . $this->projects->id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra, 'ordre ASC');
 
-        if (count($L_echeance) > 0 && false) {
-            ?>
+        if (count($L_echeance) > 0 && false) : ?>
             <tr>
                 <th>Actions :</th>
                 <td>
-                    <label for="statut">Le remboursement anticipé n'est pour le moment pas possible car les échéances précédentes ne sont pas encore réglée</label>
+                    <label for="statut">Le remboursement anticipé n'est pour le moment pas possible car les échéances
+                        précédentes ne sont pas encore réglée</label>
                 </td>
             </tr>
             <?php
-        } else {
-            if (! $this->remb_anticipe_effectue) {
-                if ($this->virement_recu) {
-                    if ($this->virement_recu_ok) {
-                        if ($this->ra_possible_all_payed) {
-                            ?>
+        else :
+            if (false === $this->remb_anticipe_effectue) :
+                if ($this->virement_recu) :
+                    if ($this->virement_recu_ok) :
+                        if ($this->ra_possible_all_payed) : ?>
                             <tr>
                                 <th>Actions :</th>
                                 <td>
@@ -241,28 +234,23 @@
                                 </td>
                             </tr>
                             <?php
-                        }
-                    }
-                } else {
-                    ?>
+                        endif;
+                    endif;
+                else : ?>
                     <tr>
                         <th>Motif à indiquer sur le virement :</th>
-                        <td>
-                            <label for="statut">RA-<?= $this->projects->id_project ?></label>
-                        </td>
+                        <td><label for="statut">RA-<?= $this->projects->id_project ?></label></td>
                     </tr>
                     <?php
-                }
-            }
-        }
-        ?>
+                endif;
+            endif;
+        endif; ?>
     </table>
     <?php
-    if (! $this->virement_recu && ! $this->remb_anticipe_effectue) {
-        ?>
+    if (false === $this->virement_recu && false === $this->remb_anticipe_effectue) : ?>
         * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
         <?php
-    }
+    endif;
     ?>
-    <br><br><br><br>
+    <br/><br/><br/><br/>
 </div>
