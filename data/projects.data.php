@@ -40,7 +40,7 @@ class projects extends projects_crud
         parent::projects($bdd, $params);
     }
 
-    public function create()
+    public function create($cs = '')
     {
         $this->id_project            = $this->bdd->escape_string($this->id_project);
         $this->hash                  = $this->bdd->escape_string($this->hash);
