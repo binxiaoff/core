@@ -985,9 +985,8 @@ class transfertsController extends bootstrap
         $this->loadData('clients_status');
 
         if (isset($this->params[0])) {
-            $oLendersAccounts->get($this->params[0]);
-            $this->clients->get($oLendersAccounts->id_client_owner);
-            $this->companies->get($oLendersAccounts->id_company_owner);
+            $this->clients->get($this->params[0]);
+            $this->companies->get('id_client_owner', $this->clients->id_client);
         }
         $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
 
@@ -1005,9 +1004,9 @@ class transfertsController extends bootstrap
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'] = $sStartDateSQL;
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']   = $sEndDateSQL;
 
-                $this->aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer(null, $sStartDateSQL, $sEndDateSQL);
+                $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer(null, $sStartDateSQL, $sEndDateSQL);
             } elseif (false === empty($_POST['id'])) {
-                $this->aLenders          = $oLendersAccounts->getLendersWithNoWelcomeOffer($_POST['id']);
+                $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
             } else {
                 $_SESSION['freeow']['title']   = 'Recherche non abouti';
@@ -1120,11 +1119,11 @@ class transfertsController extends bootstrap
 
     public function _csv_rattrapage_offre_bienvenue()
     {
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $aLenders = array();
+        $oClients = $this->loadData('clients');
+        $aClientsWithoutWelcomeOffer = array();
 
         if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL']) && isset($_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL'])) {
-            $aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer(
+            $aClientsWithoutWelcomeOffer = $oClients->getClientsWithNoWelcomeOffer(
                 null,
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sStartDateSQL'],
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['sEndDateSQL']
@@ -1132,20 +1131,20 @@ class transfertsController extends bootstrap
         }
 
         if (isset($_SESSION['forms']['rattrapage_offre_bienvenue']['id'])) {
-            $aLenders = $oLendersAccounts->getLendersWithNoWelcomeOffer($_SESSION['forms']['rattrapage_offre_bienvenue']['id']);
+            $aClientsWithoutWelcomeOffer = $oClients->getClientsWithNoWelcomeOffer($_SESSION['forms']['rattrapage_offre_bienvenue']['id']);
         }
 
         $sFileName      = 'ratrappage_offre_bienvenue';
-        $aColumnHeaders = array('ID Lender', 'Nom ou Raison Sociale', 'Prénom', 'Date de création', 'Date de validation');
+        $aColumnHeaders = array('ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Date de création', 'Date de validation');
         $aData          = array();
 
-        foreach ($aLenders as $key =>$aLender) {
+        foreach ($aClientsWithoutWelcomeOffer as $key =>$aClient) {
             $aData[] = array(
-                $aLender['id_lender'],
-                empty($aLender['company']) ? $aLender['nom'] : $aLender['company'],
-                empty($aLender['company']) ? $aLender['prenom'] : '',
-                $this->dates->formatDateMysqltoShortFR($aLender['date_creation']),
-                (false === empty($aLender['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aLender['date_validation']) : ''
+                $aClient['id_client'],
+                empty($aClient['company']) ? $aClient['nom'] : $aClient['company'],
+                empty($aClient['company']) ? $aClient['prenom'] : '',
+                $this->dates->formatDateMysqltoShortFR($aClient['date_creation']),
+                (false === empty($aClient['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aClient['date_validation']) : ''
             );
         }
         $this->exportCSV($aColumnHeaders, $aData, $sFileName);
@@ -1192,14 +1191,11 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
 
         $this->oWelcomeOffer = $this->loadData('offres_bienvenues');
-        $this->oClient          = $this->loadData('clients');
-        $this->oCompany         = $this->loadData('companies');
-        $this->oLendersAccounts        = $this->loadData('lenders_accounts');
+        $this->oClient       = $this->loadData('clients');
+        $this->oCompany      = $this->loadData('companies');
 
-        $this->oLendersAccounts ->get($this->params[0]);
+        $this->oClient->get($this->params[0]);
+        $this->oCompany->get('id_client_owner', $this->oClient->id_client);
         $this->oWelcomeOffer->get(1, 'status = 0 AND id_offre_bienvenue');
-
-        $this->oClient->get($this->oLendersAccounts->id_client_owner);
-        $this->oCompany ->get($this->oLendersAccounts->id_company_owner);
     }
 }

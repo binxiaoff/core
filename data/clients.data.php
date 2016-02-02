@@ -1050,4 +1050,61 @@ class clients extends clients_crud
 
         return $result;
     }
+
+    public function getClientsWithNoWelcomeOffer($iClientId = null, $sStartDate = null, $sEndDate = null)
+    {
+        if (null === $sStartDate) {
+            $sStartDate = '2013-01-01';
+        }
+
+        if (null === $sEndDate) {
+            $sEndDate = 'NOW()';
+        } else {
+            $sEndDate = str_pad($sEndDate,12,'"', STR_PAD_BOTH);
+        }
+
+        if (false === is_null($iClientId)) {
+            $sWhereID = 'AND c.id_client IN (' . $iClientId . ')';
+        } else {
+            $sWhereID = '';
+        }
+
+        $sql = 'SELECT
+                    c.id_client,
+                    c.nom,
+                    c.prenom,
+                    companies.name,
+                    DATE(c.added) AS date_creation,
+                    (
+                    SELECT
+                            DATE(csh.added)
+                        FROM
+                            clients_status_history csh
+                            LEFT JOIN clients ON clients.id_client = csh.id_client
+                            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+                        WHERE
+                            cs.status = ' . \clients_status::VALIDATED . '
+                            AND c.id_client = csh.id_client
+                        ORDER BY
+                            csh.added DESC
+                        LIMIT
+                            1
+                    ) AS date_validation
+                FROM
+                    clients c
+                    LEFT JOIN companies ON c.id_client = companies.id_client_owner
+                WHERE
+                    NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
+                    AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
+
+        $resultat = $this->bdd->query($sql);
+
+        $aClientsWithoutWelcomeOffer = array();
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $aClientsWithoutWelcomeOffer[] = $record;
+        }
+
+        return $aClientsWithoutWelcomeOffer;
+    }
 }
