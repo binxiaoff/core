@@ -1,6 +1,6 @@
 <?php if ($this->bIsBorrowerAndLender) { ?>
     <div class="change espace" style="float: right; padding-top:  24px;  position:  relative;  margin-left: 5px; ">
-        <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post">
+        <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post">
             <input type="hidden"
                    name="<?= ($this->bDisplayLender) ? 'acceder-espace-emprunteur' : 'acceder-espace-preteur' ?>">
             <input type="submit" class="btn btn small" style="float: right; "
