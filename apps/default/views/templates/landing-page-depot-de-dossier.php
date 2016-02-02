@@ -105,7 +105,7 @@
         </section>
         <aside class="signup right">
             <h2><?= $this->content['lp-titre-formulaire'] ?></h2>
-            <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="depot_de_dossier" name="depot_de_dossier">
+            <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" id="depot_de_dossier" name="depot_de_dossier">
                 <?php if (isset($this->aForm['response'])) { ?>
                     <div class="form-row error" style="display:inline;"><?= $this->aForm['response'] ?></div>
                 <?php } ?>

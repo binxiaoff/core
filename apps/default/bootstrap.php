@@ -103,10 +103,16 @@ class bootstrap extends Controller
         $this->meta_description = '';
         $this->meta_keywords    = '';
 
-        // Lutte contre le XSS
-        if (is_array($_POST)) {
+        // XSS protection
+        if (false === empty($_POST)) {
             foreach ($_POST as $key => $value) {
                 $_POST[$key] = htmlspecialchars(strip_tags($value));
+            }
+        }
+
+        if (false === empty($_GET)) {
+            foreach ($_GET as $key => $value) {
+                $_GET[$key] = htmlspecialchars(strip_tags($value));
             }
         }
 

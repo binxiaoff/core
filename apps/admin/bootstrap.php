@@ -194,10 +194,6 @@ class bootstrap extends Controller
             $this->lZonesHeader  = $this->users_zones->selectZonesUser($_SESSION['user']['id_user']);
         }
 
-        if ($_SERVER['REMOTE_ADDR'] == '93.26.42.99') {
-            $this->equinoa = true;
-        }
-
         // On vérifie ici si le mot de passe du user date de moins de 3 mois sinon on le redirige sur la page d'édition de mot de passe
         if (
             $this->current_function != 'edit_password'
