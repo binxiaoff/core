@@ -133,10 +133,10 @@ class ajaxController extends bootstrap
         $_SESSION['ordreProject'] = $_POST['ordreProject'];
 
         // sort projects by rate
-        $aOrderField = array();
+        $aRateRange = array();
         if (isset($_SESSION['tri']['taux'])) {
             $key                = $_SESSION['tri']['taux'];
-            $aOrderField        = explode('-', $this->triPartxInt[$key - 1]);
+            $aRateRange         = explode('-', $this->triPartxInt[$key - 1]);
             $this->ordreProject = 3;
 
             // where pour le js
@@ -148,7 +148,7 @@ class ajaxController extends bootstrap
             $where = ' AND p.date_fin < "' . date('Y-m-d') . '"';
         }
 
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aOrderField, $_POST['positionStart'], 10);
+        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, $_POST['positionStart'], 10);
         $affichage             = '';
 
         foreach ($this->lProjetsFunding as $project) {
@@ -309,7 +309,8 @@ class ajaxController extends bootstrap
                     \projects_status::PROBLEME,
                     \projects_status::PROBLEME_J_X,
                     \projects_status::REDRESSEMENT_JUDICIAIRE,
-                    \projects_status::LIQUIDATION_JUDICIAIRE
+                    \projects_status::LIQUIDATION_JUDICIAIRE,
+                    \projects_status::DEFAUT
                 );
                 $sStatusProject = implode(', ', $aStatusproject);
             }
@@ -317,17 +318,17 @@ class ajaxController extends bootstrap
             $_SESSION['ordreProject'] = $this->ordreProject;
 
             // sort projects by rate
-            $aOrderField = array();
+            $aRateRange = array();
             if (isset($_SESSION['tri']['taux'])) {
                 $key                = $_SESSION['tri']['taux'];
-                $aOrderField        = explode('-', $this->triPartxInt[$key - 1]);
+                $aRateRange         = explode('-', $this->triPartxInt[$key - 1]);
                 $this->ordreProject = 3;
 
                 // where pour le js
                 $this->where = $key;
             }
 
-            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, $where . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], $aOrderField, 0, 10);
+            $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, $where . ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], $aRateRange, 0, 10);
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ',' . \projects_status::PRET_REFUSE, $where . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;

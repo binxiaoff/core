@@ -210,7 +210,7 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function selectProjectsByStatus($status, $where = '', $order = '', $aOrderField = '', $start = '', $nb = '')
+    public function selectProjectsByStatus($status, $where = '', $order = '', $aRateRange = array(), $start = '', $nb = '')
     {
         $sWhereClause = 'projects_status.status IN (' . $status . ')';
 
@@ -229,7 +229,7 @@ class projects extends projects_crud
                 ELSE "2"
               END AS lestatut ';
 
-        if (2 === count($aOrderField)) {
+        if (2 === count($aRateRange)) {
             $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
         }
 
@@ -238,15 +238,15 @@ class projects extends projects_crud
             INNER JOIN projects_status_history USING (id_project_status_history)
             INNER JOIN projects_status USING (id_project_status) ";
 
-        if (2 === count($aOrderField)) {
+        if (2 === count($aRateRange)) {
             $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
         }
 
         $sql .= 'WHERE '. $sWhereClause;
 
-        if (2 === count($aOrderField)) {
+        if (2 === count($aRateRange)) {
             $sql .= ' GROUP BY p.id_project';
-            $sql .= ' HAVING avg_rate BETWEEN "'. $aOrderField[0] .'" AND "'. $aOrderField[1] .'"';
+            $sql .= ' HAVING avg_rate BETWEEN "'. $aRateRange[0] .'" AND "'. $aRateRange[1] .'"';
         }
 
         $sql .= " ORDER BY " . $order .
@@ -602,8 +602,13 @@ class projects extends projects_crud
             case \projects_status::REMBOURSEMENT:
             case \projects_status::REMBOURSE:
             case \projects_status::PROBLEME:
+            case \projects_status::PROBLEME_J_X:
             case \projects_status::RECOUVREMENT:
             case \projects_status::REMBOURSEMENT_ANTICIPE:
+            case \projects_status::PROCEDURE_SAUVEGARDE:
+            case \projects_status::REDRESSEMENT_JUDICIAIRE:
+            case \projects_status::LIQUIDATION_JUDICIAIRE:
+            case \projects_status::DEFAUT:
                 $rResult = $this->bdd->query('
                     SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
                     FROM loans
@@ -611,7 +616,6 @@ class projects extends projects_crud
                 );
                 return round($this->bdd->result($rResult, 0, 0), 2);
             case \projects_status::PRET_REFUSE:
-            case \projects_status::DEFAUT:
             case \projects_status::EN_FUNDING:
                 $rResult = $this->bdd->query('
                     SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
