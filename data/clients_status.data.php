@@ -28,7 +28,6 @@
 
 class clients_status extends clients_status_crud
 {
-
     const TO_BE_CHECKED         = 10;
     const COMPLETENESS          = 20;
     const COMPLETENESS_REMINDER = 30;

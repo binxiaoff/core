@@ -96,15 +96,12 @@
                                 }
                             });
                         </script>
-                    <?php
-                    endif; ?>
+                    <?php endif; ?>
                     <div style="clear:both;"></div>
                     <a class="popup-link lienHeader" style="margin-right:65px;" href="<?= $this->lurl ?>/thickbox/pop_up_mdp"><?= $this->lng['header']['mot-de-passe-oublie'] ?></a>
                     <a class="lienHeader" style="margin-right:75px;" href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>"><?= $this->lng['header']['se-creer-un-compte'] ?></a>
                 </div><!-- /.login-panel -->
-                <?php
-            endif;
-            ?>
+            <?php endif; ?>
             <div class="navigation">
                 <div class="shell clearfix">
                     <div class="nav-toggle"></div>

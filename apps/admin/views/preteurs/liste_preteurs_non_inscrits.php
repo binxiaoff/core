@@ -1,25 +1,20 @@
 <script type="text/javascript">
-    $(document).ready(function () {
+    $(function () {
         $(".tablesorter").tablesorter({headers: {7: {sorter: false}}});
-        <?php
-        if(false === empty($this->nb_lignes)) : ?>
-        $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
+        <?php if (false === empty($this->nb_lignes)) : ?>
+            $(".tablesorter").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
+        <?php endif; ?>
+
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
         <?php endif; ?>
     });
-    <?php
-    if(isset($_SESSION['freeow'])) : ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php
-        unset($_SESSION['freeow']);
-        endif;
-    ?>
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
@@ -81,8 +76,7 @@
                     </script>
                 </td>
             </tr>
-            <?php
-        endforeach; ?>
+        <?php endforeach; ?>
         </tbody>
     </table>
         <?php if (false === empty($this->nb_lignes)) : ?>
@@ -101,13 +95,11 @@
                 </tr>
             </table>
         <?php else : ?>
-            <?php
-            if (isset($_POST['form_search_client'])) : ?>
+            <?php if (isset($_POST['form_search_client'])) : ?>
                 <p>Il n'y a aucun prêteur non inscrit pour cette recherche.</p>
             <?php else: ?>
                 <p>Il n'y a aucun prêteur non inscrit pour le moment.</p>
             <?php endif; ?>
-        <?php endif;
-    endif; ?>
+        <?php endif; ?>
+    <?php endif; ?>
 </div>
-<?php unset($_SESSION['freeow']); ?>

@@ -45,7 +45,6 @@ class clients extends clients_crud
     const STATUS_OFFLINE = 0;
     const STATUS_ONLINE  = 1;
 
-
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);

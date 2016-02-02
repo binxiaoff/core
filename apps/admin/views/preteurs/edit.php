@@ -1,6 +1,5 @@
 <script type="text/javascript">
-    $(document).ready(function(){
-
+    $(function() {
         jQuery.tablesorter.addParser({ id: "fancyNumber", is: function(s) { return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s); }, format: function(s) { return jQuery.tablesorter.formatFloat( s.replace(/,/g,'').replace(' €','').replace(' ','') ); }, type: "numeric" });
 
         $(".encheres").tablesorter({headers: {6: {sorter: false}}});
@@ -8,26 +7,24 @@
         $(".bidsEncours").tablesorter({headers: {6: {sorter: false}}});
         $(".transac").tablesorter({headers: {}});
         $(".favoris").tablesorter({headers: {3: {sorter: false}}});
-        <?php
-        if($this->nb_lignes != '') : ?>
+        <?php if ($this->nb_lignes != '') : ?>
         $(".encheres").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
         $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
         <?php endif; ?>
         $("#annee").change(function () {
             $('#changeDate').attr('href', "<?=$this->lurl?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
         });
+
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?=$_SESSION['freeow']['title']?>",
+                message = "<?=$_SESSION['freeow']['message']?>",
+                opts = {},
+                container;
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
     });
-    <?php if(isset($_SESSION['freeow'])) : ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php unset($_SESSION['freeow']); ?>
-    <?php endif; ?>
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
@@ -66,9 +63,9 @@
             <th>Adresse fiscale :</th>
             <?php if ($this->clients->type == 1) : ?>
                 <td colspan="5"><?= $this->clients_adresses->adresse_fiscal ?> <?= $this->clients_adresses->cp_fiscal ?> <?= $this->clients_adresses->ville_fiscal ?></td>
-                <?php else : ?>
+            <?php else : ?>
                 <td colspan="5"><?= $this->companies->adresse1 ?> <?= $this->companies->zip ?> <?= $this->companies->city ?></td>
-                <?php endif; ?>
+            <?php endif; ?>
         </tr>
         <tr>
             <th>Téléphone :</th>
@@ -293,7 +290,7 @@
                         </td>
                     </tr>
                 </table>
-                <?php endif; ?>
+            <?php endif; ?>
         <?php endif; ?>
     </div>
 
@@ -370,7 +367,7 @@
         var val = {
             id_client: <?=$this->clients->id_client?>,
             year: $(this).val()
-        }
+        };
         $.post(add_url + '/ajax/loadMouvTransac', val).done(function (data) {
             if (data != 'nok') {
                 $(".MouvTransac").html(data);
@@ -383,7 +380,7 @@
             var val = {
                 id_bid: id_bid,
                 id_lender: <?=$this->lenders_accounts->id_lender_account?>
-            }
+            };
             $.post(add_url + '/ajax/deleteBidPreteur', val).done(function (data) {
                 if (data != 'nok') {
                     $(".lesbidsEncours").html(data);

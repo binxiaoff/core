@@ -28,7 +28,6 @@
 
 class bank_unilend extends bank_unilend_crud
 {
-
     const TYPE_THREE_PERCENT_VAT = 0;
     const TYPE_REPAYMENT_BORROWER = 1;
     const TYPE_REPAYMENT_LENDER = 3;
@@ -87,9 +86,6 @@ class bank_unilend extends bank_unilend_crud
         }
 
         $sql = 'SELECT SUM(' . $sum . ') FROM `bank_unilend` WHERE LEFT(added,10) = "' . $date . '" ' . $where;
-
-        //$result = $this->bdd->query($sql);
-        //return (int)($this->bdd->result($result,0,0));
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result, 0, 0);

@@ -7945,7 +7945,7 @@ class cronController extends bootstrap
             $iNumberOfUnusedWelcomeOffers = 0;
 
             foreach ($aUnusedWelcomeOffers as $aWelcomeOffer) {
-                $oAdded    = DateTime::createFromFormat('Y-m-d H:m:s', $aWelcomeOffer['added']);
+                $oAdded    = DateTime::createFromFormat('Y-m-d H:i:s', $aWelcomeOffer['added']);
                 $oInterval = $oDateTime->diff($oAdded);
 
                 if ($oInterval->days >= $sOfferValidity) {
@@ -7976,7 +7976,7 @@ class cronController extends bootstrap
                     $oWalletsLines->create();
 
                     $oBankUnilend->id_transaction = $oTransactions->id_transaction;
-                    $oBankUnilend->montant        = '+' . $oWelcomeOfferDetails->montant;
+                    $oBankUnilend->montant        = abs($oWelcomeOfferDetails->montant);
                     $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                     $oBankUnilend->create();
 

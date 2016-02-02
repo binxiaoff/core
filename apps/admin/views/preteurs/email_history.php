@@ -156,7 +156,7 @@
                                 <input type="radio"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['uniquement_notif'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                         </tr>
-                        <?php endif; ?>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </table>
         </div>

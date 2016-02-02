@@ -1,6 +1,5 @@
 <script type="text/javascript">
-    $(document).ready(function () {
-
+    $(function() {
         $(".histo_status_client").tablesorter({headers: {8: {sorter: false}}});
 
         $(".cgv_accept").tablesorter({headers: {}});
@@ -42,19 +41,16 @@
         initAutocompleteCity($('#ville2'), $('#cp2'));
         initAutocompleteCity($('#com-naissance'), $('#insee_birth'));
 
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?=$_SESSION['freeow']['title']?>",
+                message = "<?=$_SESSION['freeow']['message']?>",
+                opts = {},
+                container;
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
     });
-
-    <?php if (isset($_SESSION['freeow'])) : ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?php unset($_SESSION['freeow']); ?>
-    <?php endif; ?>
 </script>
 
 <script type="text/javascript" src="<?= $this->url ?>/ckeditor/ckeditor.js"></script>
@@ -162,10 +158,8 @@
                 <tr class="societe">
                     <th><label for="phone-societe">Tribunal de commerce :</label></th>
                     <td><input type="text" class="input_large" name="tribunal_com" id="tribunal_com" value="<?= $this->companies->tribunal_com ?>"></td>
-
-            <th></th>
-            <td></td>
-
+                    <th></th>
+                    <td></td>
                 </tr>
                 <tr class="societe">
                     <th></th>
@@ -239,7 +233,7 @@
                     <th></th>
                     <td></td>
                 </tr>
-                <?php endif; ?>
+            <?php endif; ?>
             <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
                 <tr class="particulier">
                     <th><label for="phone">Téléphone :</label></th>
@@ -275,7 +269,7 @@
                     <th></th>
                     <td></td>
                 </tr>
-                <?php else : ?>
+            <?php else : ?>
                 <!-- societe -->
                 <tr class="societe">
                     <th colspan="4" style="text-align:left;"><br/>Vous êtes :</th>
@@ -371,7 +365,7 @@
                     <th></th>
                     <td></td>
                 </tr>
-                <?php endif; ?>
+            <?php endif; ?>
         </table>
         <h2>Etape 2</h2>
         <table class="form" style="margin: auto;">
@@ -531,8 +525,10 @@
                             </tr>
                             <?php break;
                     }
-                }?>
-</table><?php endif; ?>
+                }
+                ?>
+                </table>
+            <?php endif; ?>
         </div>
         <div class="droite">
             <table class="tabLesStatuts">
@@ -647,7 +643,7 @@
                         <?php endforeach; ?>
                     </tbody>
                 </table>
-                <?php else : ?>
+            <?php else : ?>
                 <p style="text-align:center;" >Aucun CGV signé</p>
             <?php endif; ?>
         </div>

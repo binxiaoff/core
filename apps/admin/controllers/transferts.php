@@ -1119,6 +1119,9 @@ class transfertsController extends bootstrap
 
     public function _csv_rattrapage_offre_bienvenue()
     {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
         $oClients = $this->loadData('clients');
         $aClientsWithoutWelcomeOffer = array();
 
@@ -1182,8 +1185,6 @@ class transfertsController extends bootstrap
         $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
-
-        die;
     }
 
     public function _affect_welcome_offer()

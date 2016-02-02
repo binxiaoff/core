@@ -28,9 +28,9 @@
 
 class wallets_lines extends wallets_lines_crud
 {
-
-    /*
+    /**
      * Types of financial operations
+     * @var int
      */
     const TYPE_LENDER_SUBSCRIPTION = 10;
     const TYPE_BID                 = 20;
