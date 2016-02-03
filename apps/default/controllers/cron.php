@@ -139,7 +139,6 @@ class cronController extends bootstrap
         die;
     }
 
-    // Crontab : 1 week before next payment
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 1)) {
