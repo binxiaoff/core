@@ -164,8 +164,8 @@ class cronController extends bootstrap
                 $oNextPayment = DateTime::createFromFormat('Y-m-d h:i:s', $aPaymentSchedule[0]['date_echeance_emprunteur']);
                 $oToday = new DateTime('Now');
 
-                $interval = $oNextPayment->diff($oToday);
-                if (7 != $interval->d || $oToday > $oNextPayment) {
+                $oInterval = $oNextPayment->diff($oToday);
+                if (7 != $oInterval->d || $oToday > $oNextPayment) {
                     continue;
                 }
 
