@@ -202,9 +202,6 @@ class profileController extends bootstrap
             // Histo client //
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
             $this->clients_history_actions->histo(4, 'info perso profile', $this->clients->id_client, $serialize);
-            ////////////////
-
-
             // fr/resident etranger
             if ($_POST['nationalite'] == 1 && $_POST['pays1'] > 1) {
                 $this->etranger = 1;
@@ -215,25 +212,16 @@ class profileController extends bootstrap
                 $this->etranger = 0;
             }
 
-            // on recup la valeur deja existante //
-
-
-            // adresse fiscal
-            $adresse_fiscal = $this->clients_adresses->adresse_fiscal;
-            $ville_fiscal   = $this->clients_adresses->ville_fiscal;
-            $cp_fiscal      = $this->clients_adresses->cp_fiscal;
-            $id_pays_fiscal = $this->clients_adresses->id_pays_fiscal;
-
-            // adresse client
-            $adresse1 = $this->clients_adresses->adresse1;
-            $ville    = $this->clients_adresses->ville;
-            $cp       = $this->clients_adresses->cp;
-            $id_pays  = $this->clients_adresses->id_pays;
-
+            $adresse_fiscal    = $this->clients_adresses->adresse_fiscal;
+            $ville_fiscal      = $this->clients_adresses->ville_fiscal;
+            $cp_fiscal         = $this->clients_adresses->cp_fiscal;
+            $id_pays_fiscal    = $this->clients_adresses->id_pays_fiscal;
+            $adresse1          = $this->clients_adresses->adresse1;
+            $ville             = $this->clients_adresses->ville;
+            $cp                = $this->clients_adresses->cp;
+            $id_pays           = $this->clients_adresses->id_pays;
             $civilite          = $this->clients->civilite;
-            $nom               = $this->clients->nom;
             $nom_usage         = $this->clients->nom_usage;
-            $prenom            = $this->clients->prenom;
             $email             = $this->clients->email;
             $telephone         = $this->clients->telephone;
             $id_pays_naissance = $this->clients->id_pays_naissance;
@@ -243,45 +231,26 @@ class profileController extends bootstrap
 
             $this->form_ok = true;
 
-            ////////////////////////////////////
-            // On verifie meme adresse ou pas //
-            ////////////////////////////////////
-            if ($_POST['mon-addresse'] != false) {
-                $this->clients_adresses->meme_adresse_fiscal = 1;
-            } // la meme
-            else {
-                $this->clients_adresses->meme_adresse_fiscal = 0;
-            } // pas la meme
-
-            // adresse fiscal
+            $_POST['mon-addresse'] != false ? $this->clients_adresses->meme_adresse_fiscal = 1:  $this->clients_adresses->meme_adresse_fiscal = 0;
 
             $this->clients_adresses->adresse_fiscal = $_POST['adresse_inscription'];
             $this->clients_adresses->ville_fiscal   = $_POST['ville_inscription'];
             $this->clients_adresses->cp_fiscal      = $_POST['postal'];
             $this->clients_adresses->id_pays_fiscal = $_POST['pays1'];
 
-            // pas la meme
             if ($this->clients_adresses->meme_adresse_fiscal == 0) {
-                // adresse client
                 $this->clients_adresses->adresse1 = $_POST['adress2'];
                 $this->clients_adresses->ville    = $_POST['ville2'];
                 $this->clients_adresses->cp       = $_POST['postal2'];
                 $this->clients_adresses->id_pays  = $_POST['pays2'];
-            } // la meme
-            else {
-                // adresse client
+            } else {
                 $this->clients_adresses->adresse1 = $_POST['adresse_inscription'];
                 $this->clients_adresses->ville    = $_POST['ville_inscription'];
                 $this->clients_adresses->cp       = $_POST['postal'];
                 $this->clients_adresses->id_pays  = $_POST['pays1'];
             }
-            ////////////////////////////////////////
 
             $this->clients->civilite = $_POST['sex'];
-            $this->clients->nom      = $this->ficelle->majNom($_POST['nom-famille']);
-
-            //Ajout CM 06/08/14
-            //$this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-dusage']);
             if (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) {
                 $this->clients->nom_usage = '';
             } else {
@@ -319,7 +288,6 @@ class profileController extends bootstrap
                 unset($oPays, $oInseePays);
             }
 
-            $this->clients->prenom            = $this->ficelle->majNom($_POST['prenom']);
             $this->clients->email             = $_POST['email'];
             $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
             $this->clients->id_pays_naissance = $_POST['pays3'];
@@ -327,34 +295,16 @@ class profileController extends bootstrap
             $this->clients->insee_birth       = $sCodeInsee;
             $this->clients->id_nationalite    = $_POST['nationalite'];
             $this->clients->naissance         = $_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'];
-            // Verif //
 
-            // check_etranger
             if ($this->etranger > 0) {
                 if (isset($_POST['check_etranger']) && $_POST['check_etranger'] == false) {
                     $this->form_ok = false;
                 }
             }
-
-            // age
             if ($this->dates->ageplus18($this->clients->naissance) == false) {
                 $this->form_ok           = false;
                 $_SESSION['reponse_age'] = $this->lng['etape1']['erreur-age'];
             }
-
-            //nom-famille
-            if (! isset($_POST['nom-famille']) || $_POST['nom-famille'] == $this->lng['etape1']['nom-de-famille']) {
-                $this->form_ok = false;
-            }
-            //nom-dusage
-            if (! isset($_POST['nom-dusage']) || $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) {
-                //$this->form_ok = false;
-            }
-            //prenom
-            if (! isset($_POST['prenom']) || $_POST['prenom'] == $this->lng['etape1']['prenom']) {
-                $this->form_ok = false;
-            }
-            //email
             if (! isset($_POST['email']) || $_POST['email'] == $this->lng['etape1']['email']) {
                 $this->form_ok = false;
             } elseif (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) == false) {
@@ -370,15 +320,12 @@ class profileController extends bootstrap
                     $_SESSION['reponse_email'] = $this->reponse_email;
                 }
             }
-            //adresse_inscription
             if (! isset($_POST['adresse_inscription']) || $_POST['adresse_inscription'] == $this->lng['etape1']['adresse']) {
                 $this->form_ok = false;
             }
-            //ville_inscription
             if (! isset($_POST['ville_inscription']) || $_POST['ville_inscription'] == $this->lng['etape1']['ville']) {
                 $this->form_ok = false;
             }
-            //postal
             if (! isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']) {
                 $this->form_ok = false;
             } else {
@@ -393,13 +340,9 @@ class profileController extends bootstrap
                 }
                 unset($oVilles);
             }
-
-            // telephone
             if (! isset($_POST['phone']) || $_POST['phone'] == $this->lng['etape1']['telephone']) {
                 $this->form_ok = false;
             }
-
-            // pas la meme
             if ($this->clients_adresses->meme_adresse_fiscal == 0) {
                 // adresse client
                 if (! isset($_POST['adress2']) || $_POST['adress2'] == $this->lng['etape1']['adresse']) {
@@ -412,12 +355,7 @@ class profileController extends bootstrap
                     $this->form_ok = false;
                 }
             }
-
-
             /////////////////////// PARTIE BANQUE /////////////////////////////
-
-
-            // rib
             $bRibUpdated = false;
             $fichier_rib = isset($this->attachments[attachment_type::RIB]['id']) ? $this->attachments[attachment_type::RIB]['id'] : null;
 
@@ -428,7 +366,6 @@ class profileController extends bootstrap
                     $bRibUpdated = true;
                 }
             }
-
             $bic_old  = $this->lenders_accounts->bic;
             $iban_old = $this->lenders_accounts->iban;
 
@@ -437,7 +374,6 @@ class profileController extends bootstrap
             for ($i = 1; $i <= 7; $i++) {
                 $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-' . $i]));
             }
-
             $origine_des_fonds_old = $this->lenders_accounts->origine_des_fonds;
 
             $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
@@ -446,43 +382,30 @@ class profileController extends bootstrap
             } else {
                 $this->lenders_accounts->precision = '';
             }
-
-
             $this->form_ok       = true;
             $this->error_fichier = false;
+            $this->error_rib     = false;
 
-
-            // BIC
             if (! isset($_POST['bic']) || $_POST['bic'] == $this->lng['etape2']['bic'] || $_POST['bic'] == '') {
                 $this->form_ok = false;
             } elseif (isset($_POST['bic']) && $this->ficelle->swift_validate(trim($_POST['bic'])) == false) {
                 $this->form_ok = false;
             }
-            // IBAN
             if (strlen($this->lenders_accounts->iban) < 27) {
                 $this->form_ok = false;
             } elseif ($this->lenders_accounts->iban != '' && $this->ficelle->isIBAN($this->lenders_accounts->iban) != 1) {
                 $this->form_ok = false;
             }
-            // Origine des fonds
             if (! isset($_POST['origine_des_fonds']) || $_POST['origine_des_fonds'] == 0) {
                 $this->form_ok = false;
             } elseif ($_POST['origine_des_fonds'] == 1000000 && in_array($_POST['preciser'], array($this->lng['etape2']['autre-preciser'], ''))) {
                 $this->form_ok = false;
             }
-            // RIB
             if (false === is_numeric($fichier_rib)) {
                 $this->form_ok   = false;
                 $this->error_rib = true;
             }
-
-
-            ///////////////////////////////////////////////////////////////////
-
-            // si form particulier ok
             if ($this->form_ok == true) {
-                //////////////
-                // FICHIERS //
                 $bDocumentFiscalUpdated              = false;
                 $bCniPasseportUpdated                = false;
                 $bCniPasseporVersotUpdated           = false;
@@ -491,101 +414,72 @@ class profileController extends bootstrap
                 $bCniPassportTiersHebergeantIUpdated = false;
                 $bAutreUpdated                       = false;
 
-                // si etrangé
                 if ($this->etranger == 1 || $this->etranger == 2) {
                     if (isset($_FILES['document_fiscal']) && $_FILES['document_fiscal']['name'] != '') {
-                        $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+                        $fichier_document_fiscal = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::JUSTIFICATIF_FISCAL);
                         if (is_numeric($fichier_document_fiscal)) {
                             $bDocumentFiscalUpdated = true;
                         }
                     }
                 }
-
-                // carte-nationale-didentite
                 if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
-                    $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
+                    $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORTE);
                     if (is_numeric($fichier_cni_passeport)) {
                         $bCniPasseportUpdated = true;
                     }
                 }
-
-
-                // carte-nationale-didentite verso
                 if (isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '') {
-                    $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
+                    $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORTE_VERSO);
                     if (is_numeric($fichier_cni_passeport_verso)) {
                         $bCniPasseporVersotUpdated = true;
                     }
                 }
-
-
-                // justificatif-de-domicile
                 if (isset($_FILES['justificatif_domicile']) && $_FILES['justificatif_domicile']['name'] != '') {
-                    $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
+                    $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::JUSTIFICATIF_DOMICILE);
                     if (is_numeric($fichier_justificatif_domicile)) {
                         $bJustificatifDomicileUpdated = true;
                     }
                 }
-
-                // attestation hebergement tiers
                 if (isset($_FILES['attestation_hebergement_tiers']) && $_FILES['attestation_hebergement_tiers']['name'] != '') {
-                    $fichier_attestation_hebergement_tiers = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
+                    $fichier_attestation_hebergement_tiers = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
                     if (is_numeric($fichier_attestation_hebergement_tiers)) {
                         $bAttestationHebergementTiersUpdated = true;
                     }
                 }
-
-                // CNI passport tiers heberageant
                 if (isset($_FILES['cni_passport_tiers_hebergeant']) && $_FILES['cni_passport_tiers_hebergeant']['name'] != '') {
-                    $fichier_cni_passport_tiers_hebergeant = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
+                    $fichier_cni_passport_tiers_hebergeant = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
                     if (is_numeric($fichier_cni_passport_tiers_hebergeant)) {
                         $bCniPassportTiersHebergeantIUpdated = true;
                     }
                 }
-
-                // autre
                 if (isset($_FILES['autre1']) && $_FILES['autre1']['name'] != '') {
-                    $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::AUTRE1);
+                    $fichier_autre = $this->uploadAttachment($this->lenders_accounts->id_lender_account, \attachment_type::AUTRE1);
                     if (is_numeric($fichier_autre)) {
                         $bAutreUpdated = true;
                     }
                 }
-
-                // FIN FICHIERS //
-                //////////////////
-
                 $this->clients->id_langue = 'fr';
-                $this->clients->slug      = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
-
-                // Si mail existe deja
                 if ($this->reponse_email != '') {
                     $this->clients->email      = $this->email;
                     $_SESSION['reponse_email'] = $this->reponse_email;
                 }
 
-                // Update
                 $this->clients->update();
                 $this->clients_adresses->update();
                 $this->lenders_accounts->update();
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-
 
                 //********************************************//
                 //*** ENVOI DU MAIL NOTIFICATION notification-nouveaux-preteurs ***//
                 //********************************************//
 
                 $dateDepartControlPays = strtotime('2014-07-31 18:00:00');
-
-                // on modifie que si on a des infos sensiblent
                 if (
                     $adresse_fiscal != $this->clients_adresses->adresse_fiscal ||
                     $ville_fiscal != $this->clients_adresses->ville_fiscal ||
                     $cp_fiscal != $this->clients_adresses->cp_fiscal ||
                     ! in_array($this->clients_adresses->id_pays_fiscal, array(0, $id_pays_fiscal)) && strtotime($this->clients->added) >= $dateDepartControlPays ||
-                    //$id_pays != $this->clients_adresses->id_pays && strtotime($this->clients->added) >= $dateDepartControlPays ||
-                    $nom != $this->clients->nom ||
                     $nom_usage != $this->clients->nom_usage ||
-                    $prenom != $this->clients->prenom ||
                     $id_pays_naissance != $this->clients->id_pays_naissance && strtotime($this->clients->added) >= $dateDepartControlPays ||
                     $id_nationalite != $this->clients->id_nationalite && strtotime($this->clients->added) >= $dateDepartControlPays ||
                     $naissance != $this->clients->naissance ||
@@ -601,9 +495,7 @@ class profileController extends bootstrap
                     $iban_old != $this->lenders_accounts->iban ||
                     $bRibUpdated === true
                 ) {
-
                     $contenu = '<ul>';
-                    // adresse fiscal
                     if ($adresse_fiscal != $this->clients_adresses->adresse_fiscal) {
                         $contenu .= '<li>adresse fiscale</li>';
                     }
@@ -616,7 +508,6 @@ class profileController extends bootstrap
                     if (! in_array($this->clients_adresses->id_pays_fiscal, array(0, $id_pays_fiscal)) && strtotime($this->clients->added) >= $dateDepartControlPays) {
                         $contenu .= '<li>pays fiscal</li>';
                     }
-                    // adresse client
                     if ($adresse1 != $this->clients_adresses->adresse1) {
                         $contenu .= '<li>adresse</li>';
                     }
@@ -629,18 +520,11 @@ class profileController extends bootstrap
                     if ($id_pays != $this->clients_adresses->id_pays && strtotime($this->clients->added) >= $dateDepartControlPays) {
                         $contenu .= '<li>pays</li>';
                     }
-                    // client
                     if ($civilite != $this->clients->civilite) {
                         $contenu .= '<li>civilite</li>';
                     }
-                    if ($nom != $this->clients->nom) {
-                        $contenu .= '<li>nom</li>';
-                    }
                     if ($nom_usage != $this->clients->nom_usage) {
                         $contenu .= '<li>nom_usage</li>';
-                    }
-                    if ($prenom != $this->clients->prenom) {
-                        $contenu .= '<li>prenom</li>';
                     }
                     if ($email != $this->clients->email) {
                         $contenu .= '<li>email</li>';
@@ -682,9 +566,6 @@ class profileController extends bootstrap
                     if ($bDocumentFiscalUpdated) {
                         $contenu .= '<li>fichier document fiscal</li>';
                     }
-
-                    ////////////// PARTIE BANQUE ////////////////////////
-
                     if ($origine_des_fonds_old != $this->lenders_accounts->origine_des_fonds) {
                         $contenu .= '<li>Origine des fonds</li>';
                     }
@@ -697,29 +578,16 @@ class profileController extends bootstrap
                     if ($bRibUpdated) {
                         $contenu .= '<li>Fichier RIB</li>';
                     }
-
-                    /////////////////////////////////////////////////////
-
-
                     $contenu .= '</ul>';
 
-                    // 40 : Complétude (Réponse)
-                    if (in_array($this->clients_status->status, array(20, 30, 40))) {
-                        $statut_client = 40;
+                    if (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) {
+                        $this->clients_status_history->addStatus('-2', \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
                     } else {
-                        $statut_client = 50;
-                    } // 50 : Modification
-
-                    // creation du statut "Modification"
-                    $this->clients_status_history->addStatus('-2', $statut_client, $this->clients->id_client, $contenu);
-
-                    // destinataire
+                        $this->clients_status_history->addStatus('-2', \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
+                    }
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
-
                     $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
-
-                    // Recuperation du modele de mail
                     $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
 
                     $surl         = $this->surl;
@@ -753,20 +621,12 @@ class profileController extends bootstrap
                     $this->email->setHTMLBody($texteMail);
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
 
-
-                    /// mail nmp pour le preteur particulier ///
-
                     //************************************//
                     //*** ENVOI DU MAIL GENERATION MDP ***//
                     //************************************//
-
-                    // Recuperation du modele de mail
                     $this->mails_text->get('preteur-modification-compte', 'lang = "' . $this->language . '" AND type');
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
-
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
@@ -791,20 +651,15 @@ class profileController extends bootstrap
 
                     if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                        // Injection du mail NMP dans la queue
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
-
                 }
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['titre-1'] . ' ' . $this->lng['profile']['sauvegardees'];
-
                 header('Location: ' . $this->lurl . '/profile/particulier/3');
                 die;
-
             } // fin form valide
         } // fin form
         // formulaire particulier secu

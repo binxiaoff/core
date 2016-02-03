@@ -35,12 +35,12 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
             </div><!-- /.form-choose -->
         </div><!-- /.row -->
         <div class="row">
-            <input type="text" name="nom-famille" id="nom-famille" title="<?= $this->lng['etape1']['nom-de-famille'] ?>" value="<?= ($this->clients->nom != '' ? $this->clients->nom : $this->lng['etape1']['nom-de-famille']) ?>" class="field field-large required" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+            <input type="text" name="nom-famille" id="nom-famille" title="<?= $this->lng['etape1']['nom-de-famille'] ?>" value="<?= ($this->clients->nom != '' ? $this->clients->nom : $this->lng['etape1']['nom-de-famille']) ?>" class="field field-large required" disabled="disabled" />
             <input type="text" name="nom-dusage" id="nom-dusage" title="<?= $this->lng['etape1']['nom-dusage'] ?>" value="<?= ($this->clients->nom_usage != '' ? $this->clients->nom_usage : $this->lng['etape1']['nom-dusage']) ?>" class="field field-large " data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
         </div><!-- /.row -->
 
         <div class="row">
-            <input type="text" name="prenom" id="prenom" title="<?= $this->lng['etape1']['prenom'] ?>" value="<?= ($this->clients->prenom != '' ? $this->clients->prenom : $this->lng['etape1']['prenom']) ?>" class="field field-large required" data-validators="Presence">
+            <input type="text" name="prenom" id="prenom" title="<?= $this->lng['etape1']['prenom'] ?>" value="<?= ($this->clients->prenom != '' ? $this->clients->prenom : $this->lng['etape1']['prenom']) ?>" class="field field-large required" disabled="disabled" />
             <em class="change_identite"><?= $this->lng['profile']['les-informations-relatives-a-votre-identite-ont-ete-modifiees'] ?></em>
         </div><!-- /.row -->
 
