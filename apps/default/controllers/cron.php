@@ -148,40 +148,42 @@ class cronController extends bootstrap
             $oLoans           = $this->loadData('loans');
 
             $this->settings->get('Facebook', 'type');
+            $lien_fb = $this->settings->value;
+
             $this->settings->get('Twitter', 'type');
+            $lien_tw = $this->settings->value;
 
-            // projets en remboursement
             $aProjects = $oProjects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
-            foreach ($aProjects as $project) {
-                $this->projects->get($project['id_project'], 'id_project');
-                $this->companies->get($this->projects->id_company, 'id_company');
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
+            foreach ($aProjects as $aProject) {
+                $this->companies->get($aProject['id_company']);
+                $this->clients->get($this->companies->id_client_owner);
+                $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
 
-                $aPaymentSchedule = $oPaymentSchedule->select('id_project = ' . $project['id_project'] . ' AND  status_emprunteur = 0 AND date_echeance_emprunteur < "' . date('Y-m-d') . ' 00:00:00"');
-                if (1 === count($aPaymentSchedule)) {
-                    $aPaymentSchedule = array_shift($oPaymentSchedule->select('id_project = ' . $project['id_project'], 'ordre DESC', 0, 1));
-                } else {
-                    $aPaymentSchedule = array_shift($aPaymentSchedule);
+                $aPaymentSchedule = $oPaymentSchedule->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'date_echeance_emprunteur ASC', 0, 1);
+
+                $oNextPayment = DateTime::createFromFormat('Y-m-d h:i:s', $aPaymentSchedule[0]['date_echeance_emprunteur']);
+                $oToday = new DateTime('Now');
+
+                $interval = $oNextPayment->diff($oToday);
+                if (7 != $interval->d || $oToday > $oNextPayment) {
+                    continue;
                 }
-                $iRepayment = $aPaymentSchedule['montant'] / 100;
 
-                $sRecipient = $this->settings->value;
-                $this->mails_text->get('mail-prelevement-mensuel', 'lang = "' . $this->language . '" AND type');
+                $sNextPayment = $oNextPayment->format('d/m/Y');
+                $sRepayment = $this->ficelle->formatNumber($aPaymentSchedule[0]['montant'] / 100);
 
-                $iNumberOfLendersForProject = $oLoans->getNbPreteurs($project['id_project']);
+                $iNumberOfLendersForProject = $oLoans->getNbPreteurs($aProject['id_project']);
                 $aMail                      = array(
-                    'lenders'        => $iNumberOfLendersForProject,
-                    'echeance'       => $iRepayment,
-                    'nextmonth'      => strftime("1er %B", date("m") + 1),
-                    'surl'           => $this->surl,
-                    'url'            => $this->furl,
-                    'nom_entreprise' => $this->projects->title_bo,
-                    'projet_p'       => $this->furl . '/projects/detail/' . $this->projects->slug,
-                    'montant'        => $this->ficelle->formatNumber((double) $this->projects->amount, 0),
-                    'duree'          => $this->projects->period,
-                    'prenom_e'       => $this->clients->prenom,
-                    'lien_fb'        => $this->like_fb,
-                    'lien_tw'        => $this->twitter
+                    'nb_emprunteurs'     => $iNumberOfLendersForProject,
+                    'echeance'           => $sRepayment,
+                    'prochaine_echeance' => $sNextPayment,
+                    'surl'               => $this->surl,
+                    'url'                => $this->furl,
+                    'nom_entreprise'     => $aProject['title'],
+                    'montant'            => $this->ficelle->formatNumber((float) $aProject['amount'], 0),
+                    'prenom_e'           => $this->clients->prenom,
+                    'lien_fb'            => $lien_fb,
+                    'lien_tw'            => $lien_tw
                 );
                 $aVars                      = $this->tnmp->constructionVariablesServeur($aMail);
                 $sujetMail                  = strtr(utf8_decode($this->mails_text->subject), $aVars);
@@ -197,14 +199,13 @@ class cronController extends bootstrap
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                     $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
-                    $this->email->addRecipient(trim($sRecipient));
+                    $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
 
             $this->stopCron();
         }
-        die;
     }
 
     // toutes les minute on check //
