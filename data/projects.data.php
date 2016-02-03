@@ -114,55 +114,51 @@ class projects extends projects_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT COUNT(*) FROM `projects` ' . $where;
-
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT COUNT(*) FROM projects ' . $where);
         return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_project')
     {
-        $sql    = 'SELECT * FROM `projects` WHERE ' . $field . ' = "' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM projects WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = null, $iSalesPersonId = null, $start = '', $nb = '')
+    public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = '', $iSalesPersonId = '', $start = '', $nb = '')
     {
         $where = '';
 
-        if ($date1 != '') {
+        if (false === empty($date1)) {
             $where .= ' AND p.added >= "' . $date1 . ' 00:00:00"';
         }
-        if ($date2 != '') {
+        if (false === empty($date2)) {
             $where .= ' AND p.added <= "' . $date2 . ' 23:59:59"';
         }
-
-        if ($montant != '0' && $montant != '') {
+        if (false === empty($montant)) {
             $where .= ' AND p.amount = "' . $montant . '"';
         }
-        if ($duree != '') {
+        if (false === empty($duree)) {
             $where .= ' AND p.period = "' . $duree . '"';
         }
-        if ($status != '') {
+        if (false === empty($status)) {
             $where .= ' AND ps.status IN (' . $status . ')';
         }
-        if ($analyste != '0' && $analyste != '') {
+        if (false === empty($analyste)) {
             $where .= ' AND p.id_analyste = "' . $analyste . '"';
         }
-        if ($siren != '') {
+        if (false === empty($siren)) {
             $where .= ' AND co.siren LIKE "%' . $siren . '%"';
         }
-        if ($id != '') {
+        if (false === empty($id)) {
             $where .= ' AND p.id_project = "' . $id . '"';
         }
-        if ($raison_sociale != '0' && $raison_sociale != '') {
+        if (false === empty($raison_sociale)) {
             $where .= ' AND co.name LIKE "%' . $raison_sociale . '%"';
         }
-        if (false === is_null($iAdvisorId)) {
+        if (false === empty($iAdvisorId)) {
             $where .= ' AND p.id_prescripteur = ' . $iAdvisorId;
         }
-        if (false === is_null($iSalesPersonId)) {
+        if (false === empty($iSalesPersonId)) {
             $where .= ' AND p.id_commercial = ' . $iSalesPersonId;
         }
 
@@ -178,7 +174,7 @@ class projects extends projects_crud
                         ' . $where;
 
         $rResult        = $this->bdd->query($sSqlCount);
-        $iCountProjects = (int) ($this->bdd->result($rResult, 0, 0));
+        $iCountProjects = (int) $this->bdd->result($rResult, 0, 0);
 
         $sql = 'SELECT
                     p.*,
