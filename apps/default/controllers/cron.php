@@ -985,40 +985,31 @@ class cronController extends bootstrap
         $this->settings->get('TVA', 'type');
         $tva = $this->settings->value;
 
-        // EQ-Acompte d'impôt sur le revenu
-        $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
+        $this->settings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
         $prelevements_obligatoires = $this->settings->value;
 
-        // EQ-Contribution additionnelle au Prélèvement Social
         $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
         $contributions_additionnelles = $this->settings->value;
 
-        // EQ-CRDS
         $this->settings->get('EQ-CRDS', 'type');
         $crds = $this->settings->value;
 
-        // EQ-CSG
         $this->settings->get('EQ-CSG', 'type');
         $csg = $this->settings->value;
 
-        // EQ-Prélèvement de Solidarité
         $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
         $prelevements_solidarite = $this->settings->value;
 
-        // EQ-Prélèvement social
         $this->settings->get('EQ-Prélèvement social', 'type');
         $prelevements_sociaux = $this->settings->value;
 
-        // EQ-Retenue à la source
         $this->settings->get('EQ-Retenue à la source', 'type');
         $retenues_source = $this->settings->value;
 
-        // On recupere le statut
         $this->projects_status->getLastStatut($id_project);
 
         // Si le projet est bien en funde on créer les echeances
         if ($this->projects_status->status == \projects_status::FUNDE) {
-            // On recupere le projet
             $this->projects->get($id_project, 'id_project');
 
             echo '-------------------<br>';
@@ -1026,7 +1017,6 @@ class cronController extends bootstrap
             echo 'date fin de financement : ' . $this->projects->date_fin . '<br>';
             echo '-------------------<br>';
 
-            // Liste des loans du projet
             $lLoans = $this->loans->select('id_project = ' . $this->projects->id_project);
 
             $iLoanNbTotal   = count($lLoans);
@@ -1082,7 +1072,19 @@ class cronController extends bootstrap
                             $montant_csg                          = 0;
                             $montant_prelevements_solidarite      = 0;
                             $montant_prelevements_sociaux         = 0;
-                            $montant_retenues_source              = round($retenues_source * $e['interest'], 2);
+
+                            switch ($this->loans->id_type_contract) {
+                                case \loans::TYPE_CONTRACT_BDC:
+                                    $montant_retenues_source = round($retenues_source * $e['interest'], 2);
+                                    break;
+                                case \loans::TYPE_CONTRACT_IFP:
+                                    $montant_retenues_source = 0;
+                                    break;
+                                default:
+                                    $montant_retenues_source = 0;
+                                    trigger_error('Unknown contract type: ' . $this->loans->id_type_contract, E_USER_WARNING);
+                                    break;
+                            }
                         } else {
                             if (
                                 $this->lenders_accounts->exonere == 1 // @todo should not be usefull and field should be deleted from DB but as long as it exists and BO interface is based on it, we must use it
@@ -1111,7 +1113,19 @@ class cronController extends bootstrap
                         $montant_csg                          = 0;
                         $montant_prelevements_solidarite      = 0;
                         $montant_prelevements_sociaux         = 0;
-                        $montant_retenues_source              = round($retenues_source * $e['interest'], 2);
+
+                        switch ($this->loans->id_type_contract) {
+                            case \loans::TYPE_CONTRACT_BDC:
+                                $montant_retenues_source = round($retenues_source * $e['interest'], 2);
+                                break;
+                            case \loans::TYPE_CONTRACT_IFP:
+                                $montant_retenues_source = 0;
+                                break;
+                            default:
+                                $montant_retenues_source = 0;
+                                trigger_error('Unknown contract type: ' . $this->loans->id_type_contract, E_USER_WARNING);
+                                break;
+                        }
                     }
 
                     $this->echeanciers->id_lender                    = $l['id_lender'];
@@ -4088,55 +4102,39 @@ class cronController extends bootstrap
     public function _etat_fiscal()
     {
         if (true === $this->startCron('etat_fiscal', 5)) {
-
             $echeanciers  = $this->loadData('echeanciers');
             $bank_unilend = $this->loadData('bank_unilend');
             $transactions = $this->loadData('transactions');
 
-            // EQ-Acompte d'impôt sur le revenu
-            $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
+            $this->settings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
             $prelevements_obligatoires = $this->settings->value * 100;
 
-            // EQ-Contribution additionnelle au Prélèvement Social
             $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
             $txcontributions_additionnelles = $this->settings->value * 100;
 
-            // EQ-CRDS
             $this->settings->get('EQ-CRDS', 'type');
             $txcrds = $this->settings->value * 100;
 
-            // EQ-CSG
             $this->settings->get('EQ-CSG', 'type');
             $txcsg = $this->settings->value * 100;
 
-            // EQ-Prélèvement de Solidarité
             $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
             $txprelevements_solidarite = $this->settings->value * 100;
 
-            // EQ-Prélèvement social
             $this->settings->get('EQ-Prélèvement social', 'type');
             $txprelevements_sociaux = $this->settings->value * 100;
 
-            // EQ-Retenue à la source
             $this->settings->get('EQ-Retenue à la source', 'type');
-            $tauxRetenuSoucre = $this->settings->value * 100;
+            $tauxRetenuSource = $this->settings->value * 100;
 
-            $jour = date("d");
-            $mois = date("m");
-            // test ////// - Ne pas mettre de "0" pour 08 par exemple
-            //$mois = 8;
-            // fin test //
-            $annee = date("Y");
-
+            $mois          = date('m');
+            $annee         = date('Y');
             $dateDebutTime = mktime(0, 0, 0, $mois - 1, 1, $annee);
-
-            $dateDebutSql = date('Y-m-d', $dateDebutTime);
-            $dateDebut    = date('d/m/Y', $dateDebutTime);
-
-            $dateFinTime = mktime(0, 0, 0, $mois, 0, $annee);
-
-            $dateFinSql = date('Y-m-d', $dateFinTime);
-            $dateFin    = date('d/m/Y', $dateFinTime);
+            $dateDebutSql  = date('Y-m-d', $dateDebutTime);
+            $dateDebut     = date('d/m/Y', $dateDebutTime);
+            $dateFinTime   = mktime(0, 0, 0, $mois, 0, $annee);
+            $dateFinSql    = date('Y-m-d', $dateFinTime);
+            $dateFin       = date('d/m/Y', $dateFinTime);
 
             //////////////////////
             // personnes morale //
@@ -4254,7 +4252,7 @@ class cronController extends bootstrap
 				<th style="background-color:#E6F4DA;">Retenue à la source</th>
 				<td class="right">' . $this->ficelle->formatNumber($InteRetenuSoucre) . '</td>
 				<td class="right">' . $this->ficelle->formatNumber($prelevementRetenuSoucre) . '</td>
-				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($tauxRetenuSoucre) . '%</td>
+				<td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($tauxRetenuSource) . '%</td>
 			</tr>
 
 			<tr>

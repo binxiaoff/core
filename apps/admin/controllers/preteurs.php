@@ -1811,31 +1811,24 @@ class preteursController extends bootstrap
 
     private function foreignerTax($oClients, $oLendersAccounts, $oClientsAdresses)
     {
-        // EQ-Acompte d'impôt sur le revenu
         $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
         $sPrelevementsObligatoires = $this->settings->value;
 
-        // EQ-Contribution additionnelle au Prélèvement Social
         $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
         $sContributionsAdditionnelles = $this->settings->value;
 
-        // EQ-CRDS
         $this->settings->get('EQ-CRDS', 'type');
         $sCrds = $this->settings->value;
 
-        // EQ-CSG
         $this->settings->get('EQ-CSG', 'type');
         $sCsg = $this->settings->value;
 
-        // EQ-Prélèvement de Solidarité
         $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
         $sPrelevementsSolidarite = $this->settings->value;
 
-        // EQ-Prélèvement social
         $this->settings->get('EQ-Prélèvement social', 'type');
         $sPrelevementsSociaux = $this->settings->value;
 
-        // EQ-Retenue à la source
         $this->settings->get('EQ-Retenue à la source', 'type');
         $sRetenuesSource = $this->settings->value;
 

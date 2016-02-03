@@ -583,32 +583,6 @@ class echeanciers extends echeanciers_crud
         return $montant;
     }
 
-    public function getEcheanceByDayAll_old($date, $statutEmprunteur = '0')
-    {
-        $sql = 'SELECT
-        SUM(montant) as montant,
-        SUM(capital) as capital,
-        SUM(interets) as interets,
-        SUM(commission) as commission,
-        SUM(tva) as tva,
-        SUM(prelevements_obligatoires) as prelevements_obligatoires,
-        SUM(retenues_source) as retenues_source,
-        SUM(csg) as csg,
-        SUM(prelevements_sociaux) as prelevements_sociaux,
-        SUM(contributions_additionnelles) as contributions_additionnelles,
-        SUM(prelevements_solidarite) as prelevements_solidarite,
-        SUM(crds) as crds
-        FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_emprunteur_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_emprunteur_reel,10)';
-
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result[0];
-    }
-
     public function getEcheanceByDayAll($date, $statutEmprunteur = '0')
     {
         $sql = 'SELECT
@@ -806,10 +780,23 @@ class echeanciers extends echeanciers_crud
         // 2 : no fr/resident etranger
 
         if ($etranger > 0) {
+            switch ($this->loans->id_type_contract) {
+                case \loans::TYPE_CONTRACT_BDC:
+                    $iFiscalDeduction = $tabImpo['retenues_source'];
+                    break;
+                case \loans::TYPE_CONTRACT_IFP:
+                    $iFiscalDeduction = 0;
+                    break;
+                default:
+                    $iFiscalDeduction = 0;
+                    trigger_error('Unknown contract type: ' . $this->loans->id_type_contract, E_USER_WARNING);
+                    break;
+            }
+
             $sql = '
             UPDATE echeanciers SET
                 prelevements_obligatoires = 0,
-                retenues_source = ROUND(interets / 100 * ' . $tabImpo['retenues_source'] . ', 2),
+                retenues_source = ROUND(interets / 100 * ' . $iFiscalDeduction . ', 2),
                 csg = 0,
                 prelevements_sociaux = 0,
                 contributions_additionnelles = 0,
