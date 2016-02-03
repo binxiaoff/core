@@ -244,11 +244,13 @@ class bootstrap extends Controller
             }
         }
 
-        // Connexion
+        $this->bAccountClosed      = false;
+        $bErrorLogin               = false;
+        $this->displayCaptchaError = null;
+
         if (isset($_POST['login']) && isset($_POST['password'])) {
             $this->login     = $_POST['login'];
             $this->passsword = $_POST['password'];
-            $this->bAccountClosed = false;
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
             if (isset($bCaptchaOk) && $bCaptchaOk === false) {
@@ -263,8 +265,6 @@ class bootstrap extends Controller
 
                 $_SESSION['login']['displayCaptchaError'] = $this->displayCaptchaError;
             } else {
-                $bErrorLogin = false;
-
                 if ($_POST['login'] == '' || $_POST['password'] == '') {
                     $bErrorLogin = true;
                 } elseif ($this->clients->exist($_POST['login'], 'email') == false) {
@@ -303,14 +303,11 @@ class bootstrap extends Controller
                             $this->loginBorrower();
                         }
                     } else {
-                        $aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0');
-                        if (false === empty($aOfflineClient)) {
-                            $this->error_login = $this->lng['header']['message-login-compte-ferme'];
-                            $this->bAccountClosed = true;
-                        } else {
-                            $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
-                        }
+                       $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
+                } elseif ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0')) {
+                    $this->error_login = $this->lng['header']['message-login-compte-ferme'];
+                    $this->bAccountClosed = true;
                 } else {
                     $oDateTime           = new \datetime('NOW - 10 minutes');
                     $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
