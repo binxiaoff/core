@@ -142,10 +142,6 @@ class syntheseController extends bootstrap
         // somme des bids en cours
         $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
 
-        if ($_SERVER['REMOTE_ADDR'] == '93.26.42.98') {
-            echo "o";
-        }
-
         // somme Prêté
         $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
 
