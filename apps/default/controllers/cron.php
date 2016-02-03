@@ -56,7 +56,7 @@ class cronController extends bootstrap
     private function startCron($sName, $iDelay)
     {
         $this->iStartTime = time();
-        $this->oLogger    = new ULogger($sName, $this->logPath, 'cron.log');
+        $this->oLogger    = new ULogger($sName, $this->logPath, 'cron.' . date('Ymd') . '.log');
         $this->oSemaphore = $this->loadData('settings');
         $this->oSemaphore->get('Controle cron ' . $sName, 'type');
 
@@ -5721,27 +5721,22 @@ class cronController extends bootstrap
             $iOffset += $iLimit;
 
             foreach ($lPreteurs as $preteur) {
-                $this->notifications->type       = 8; // nouveau projet
+                $this->notifications->type       = \notifications::TYPE_NEW_PROJECT;
                 $this->notifications->id_lender  = $preteur['id_lender'];
                 $this->notifications->id_project = $id_project;
                 $this->notifications->create();
 
                 $this->clients_gestion_mails_notif->id_client       = $preteur['id_client'];
-                $this->clients_gestion_mails_notif->id_notif        = 1; // type nouveau projet
+                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                 $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                 $this->clients_gestion_mails_notif->id_project      = $id_project;
                 $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
 
                 if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
-                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-
-                    $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($preteur['prenom']))), 0, 1);
-                    $nom       = $this->ficelle->stripAccents(utf8_decode(trim($preteur['nom'])));
-                    $id_client = str_pad($preteur['id_client'], 6, 0, STR_PAD_LEFT);
-                    $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                    $this->clients_gestion_mails_notif->immediatement = 1;
 
                     $varMail['prenom_p']       = $preteur['prenom'];
-                    $varMail['motif_virement'] = $motif;
+                    $varMail['motif_virement'] = $this->clients->getLenderPattern($preteur['id_client']);
 
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
@@ -5755,7 +5750,7 @@ class cronController extends bootstrap
 
                     $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
 
-                    if ($this->Config['env'] == 'prod') {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
