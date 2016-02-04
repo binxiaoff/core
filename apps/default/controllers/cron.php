@@ -147,33 +147,35 @@ class cronController extends bootstrap
 
             $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
 
-            $aProjects = $oPaymentSchedule->getNextWeekPayments();
+            $aProjects = $oPaymentSchedule->getUpcomingRepayments(7);
 
             foreach ($aProjects as $aProject) {
-                $this->companies->get($aProject['id_company']);
+                $this->companies->get($aProject['id_project']);
+                $this->projects->get($aProject['id_project']);
                 $this->clients->get($this->companies->id_client_owner);
 
-                $aMail     = array(
+                $aMail = array(
                     'nb_emprunteurs'     => $oLoans->getNbPreteurs($aProject['id_project']),
                     'echeance'           => $this->ficelle->formatNumber($aProject['montant'] / 100),
                     'prochaine_echeance' => date('d/m/Y', strtotime($aProject['date_echeance_emprunteur'])),
                     'surl'               => $this->surl,
                     'url'                => $this->furl,
-                    'nom_entreprise'     => $aProject['title'],
-                    'montant'            => $this->ficelle->formatNumber((float) $aProject['amount'], 0),
+                    'nom_entreprise'     => $this->projects->title,
+                    'montant'            => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
                     'prenom_e'           => $this->clients->prenom,
                     'lien_fb'            => $this->like_fb,
                     'lien_tw'            => $this->twitter
                 );
-                $aVars     = $this->tnmp->constructionVariablesServeur($aMail);
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $aVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $aVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+
+                $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
+                $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
+                $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
+                $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
 
                 $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
+                $this->email->setFrom($this->mails_text->exp_email, $sSender);
+                $this->email->setSubject(stripslashes($sMailSubject));
+                $this->email->setHTMLBody(stripslashes($sMailBody));
 
                 if ($this->Config['env'] == 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
