@@ -142,40 +142,28 @@ class cronController extends bootstrap
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
-            $oProjects        = $this->loadData('projects');
             $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
             $oLoans           = $this->loadData('loans');
 
-            $this->settings->get('Facebook', 'type');
-            $sLienFB = $this->settings->value;
-
-            $this->settings->get('Twitter', 'type');
-            $sLienTW = $this->settings->value;
-
             $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
 
-            $aProjects = $oProjects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
+            $aProjects = $oPaymentSchedule->getNextWeekPayments();
 
             foreach ($aProjects as $aProject) {
                 $this->companies->get($aProject['id_company']);
                 $this->clients->get($this->companies->id_client_owner);
 
-                $aPaymentSchedule = $oPaymentSchedule->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) = DATE_FORMAT(date_echeance_emprunteur, "%Y-%m-%d")', 'date_echeance_emprunteur ASC', 0, 1);
-                if (true === empty($aPaymentSchedule)) {
-                    continue;
-                }
-
                 $aMail     = array(
                     'nb_emprunteurs'     => $oLoans->getNbPreteurs($aProject['id_project']),
-                    'echeance'           => $this->ficelle->formatNumber($aPaymentSchedule[0]['montant'] / 100),
-                    'prochaine_echeance' => date('d/m/Y', strtotime($aPaymentSchedule[0]['date_echeance_emprunteur'])),
+                    'echeance'           => $this->ficelle->formatNumber($aProject['montant'] / 100),
+                    'prochaine_echeance' => date('d/m/Y', strtotime($aProject['date_echeance_emprunteur'])),
                     'surl'               => $this->surl,
                     'url'                => $this->furl,
                     'nom_entreprise'     => $aProject['title'],
                     'montant'            => $this->ficelle->formatNumber((float) $aProject['amount'], 0),
                     'prenom_e'           => $this->clients->prenom,
-                    'lien_fb'            => $sLienFB,
-                    'lien_tw'            => $sLienTW
+                    'lien_fb'            => $this->like_fb,
+                    'lien_tw'            => $this->twitter
                 );
                 $aVars     = $this->tnmp->constructionVariablesServeur($aMail);
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $aVars);
