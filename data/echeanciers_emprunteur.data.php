@@ -29,132 +29,135 @@
 class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 {
 
-    function echeanciers_emprunteur($bdd,$params='')
+    public function __construct($bdd, $params = '')
     {
-        parent::echeanciers_emprunteur($bdd,$params);
+        parent::echeanciers_emprunteur($bdd, $params);
     }
 
-    function get($id,$field='id_echeancier_emprunteur')
+    public function get($id, $field = 'id_echeancier_emprunteur')
     {
-        return parent::get($id,$field);
+        return parent::get($id, $field);
     }
 
-    function update($cs='')
+    public function update($cs = '')
     {
         parent::update($cs);
     }
 
-    function delete($id,$field='id_echeancier_emprunteur')
+    public function delete($id, $field = 'id_echeancier_emprunteur')
     {
-        parent::delete($id,$field);
+        parent::delete($id, $field);
     }
 
-    function create($cs='')
+    public function create($cs = '')
     {
         $id = parent::create($cs);
         return $id;
     }
 
-    function select($where='',$order='',$start='',$nb='')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
-        if($where != '')
-            $where = ' WHERE '.$where;
-        if($order != '')
-            $order = ' ORDER BY '.$order;
-        $sql = 'SELECT * FROM `echeanciers_emprunteur`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql = 'SELECT * FROM `echeanciers_emprunteur`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
-        while($record = $this->bdd->fetch_array($resultat))
-        {
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where='')
+    public function counter($where = '')
     {
-        if($where != '')
-            $where = ' WHERE '.$where;
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
 
-        $sql='SELECT count(*) FROM `echeanciers_emprunteur` '.$where;
+        $sql = 'SELECT count(*) FROM `echeanciers_emprunteur` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result,0,0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id,$field='id_echeancier_emprunteur')
+    public function exist($id, $field = 'id_echeancier_emprunteur')
     {
-        $sql = 'SELECT * FROM `echeanciers_emprunteur` WHERE '.$field.'="'.$id.'"';
+        $sql    = 'SELECT * FROM `echeanciers_emprunteur` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result,0,0)>0);
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    function sum($sum,$where='')
+    public function sum($sum, $where = '')
     {
-        if($where != '')
-            $where = ' WHERE '.$where;
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
 
-        $sql='SELECT sum('.$sum.') as sum FROM `echeanciers_emprunteur` '.$where;
+        $sql = 'SELECT sum(' . $sum . ') as sum FROM `echeanciers_emprunteur` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result,0,0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function onMetAjourTVA($taux)
+    public function onMetAjourTVA($taux)
     {
-        $sql='UPDATE echeanciers_emprunteur SET tva = ROUND(commission * '.$taux.') WHERE status_emprunteur = 0';
+        $sql = 'UPDATE echeanciers_emprunteur SET tva = ROUND(commission * ' . $taux . ') WHERE status_emprunteur = 0';
         $this->bdd->query($sql);
     }
 
-    function onMetAjourLesDatesEcheancesE($id_project,$ordre,$date_echeance_emprunteur)
+    public function onMetAjourLesDatesEcheancesE($id_project, $ordre, $date_echeance_emprunteur)
     {
-        $sql='UPDATE echeanciers_emprunteur SET date_echeance_emprunteur = "'.$date_echeance_emprunteur.'", updated = "'.date('Y-m-d H:i:s').'" WHERE status_emprunteur = 0 AND id_project = "'.$id_project.'" AND ordre = "'.$ordre.'" ';
+        $sql = 'UPDATE echeanciers_emprunteur SET date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" ';
         $this->bdd->query($sql);
     }
 
-        // retourne le montant restant à payer pour le projet
-    function get_restant_du($id_project,$date_debut)
+    // retourne le montant restant à payer pour le projet
+    public function get_restant_du($id_project, $date_debut)
     {
-        $sql='SELECT SUM(montant)  as montant /*+SUM(capital)+SUM(interets)+SUM(commission)+SUM(tva) as montant*/
+        $sql     = 'SELECT SUM(montant)  as montant /*+SUM(capital)+SUM(interets)+SUM(commission)+SUM(tva) as montant*/
                       FROM `echeanciers_emprunteur`
-                      WHERE id_project ='.$id_project.'
+                      WHERE id_project =' . $id_project . '
                       AND status_emprunteur = 0
-                      AND LEFT(date_echeance_emprunteur,10) > "'.$date_debut.'"
+                      AND LEFT(date_echeance_emprunteur,10) > "' . $date_debut . '"
                         ';
-        $result = $this->bdd->query($sql);
-        $montant = ($this->bdd->result($result,0,0));
+        $result  = $this->bdd->query($sql);
+        $montant = ($this->bdd->result($result, 0, 0));
         return $montant;
     }
 
-        // retourne le montant restant à payer pour le projet
-    function get_capital_restant_du($id_project,$date_debut)
+    // retourne le montant restant à payer pour le projet
+    public function get_capital_restant_du($id_project, $date_debut)
     {
-        $sql='SELECT SUM(capital)  as montant /*+SUM(capital)+SUM(interets)+SUM(commission)+SUM(tva) as montant*/
+        $sql     = 'SELECT SUM(capital)  as montant /*+SUM(capital)+SUM(interets)+SUM(commission)+SUM(tva) as montant*/
                       FROM `echeanciers_emprunteur`
-                      WHERE id_project ='.$id_project.'
+                      WHERE id_project =' . $id_project . '
                       AND status_emprunteur = 0
-                      AND LEFT(date_echeance_emprunteur,10) > "'.$date_debut.'"
+                      AND LEFT(date_echeance_emprunteur,10) > "' . $date_debut . '"
                         ';
-        $result = $this->bdd->query($sql);
-        $montant = ($this->bdd->result($result,0,0));
+        $result  = $this->bdd->query($sql);
+        $montant = ($this->bdd->result($result, 0, 0));
         return $montant;
     }
 
-        // retourne la somme total a rembourser pour un porjet
-    function reste_a_payer_ra($id_project='', $ordre='')
+    // retourne la somme total a rembourser pour un porjet
+    public function reste_a_payer_ra($id_project = '', $ordre = '')
     {
-        $sql='SELECT SUM(capital) FROM `echeanciers_emprunteur`
+        $sql = 'SELECT SUM(capital) FROM `echeanciers_emprunteur`
                         WHERE status_emprunteur = 0
-                        AND ordre >= "'.$ordre.'"
-                        AND id_project = '.$id_project;
+                        AND ordre >= "' . $ordre . '"
+                        AND id_project = ' . $id_project;
 
-                $result = $this->bdd->query($sql);
-        $sum = (int)($this->bdd->result($result,0,0));
-        return ($sum/100);
+        $result = $this->bdd->query($sql);
+        $sum    = (int) ($this->bdd->result($result, 0, 0));
+        return ($sum / 100);
     }
 
-    function getNextWeekPayments()
+    public function getNextWeekPayments()
     {
         $sNextWeekPayment = 'SELECT * FROM
                 echeanciers_emprunteur ee
@@ -164,8 +167,8 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
                 WHERE status_ra = 0 AND status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) = DATE(date_echeance_emprunteur)';
 
-        $rResult = $this->bdd->query($sNextWeekPayment);
-        $aNextWeekPayment  = array();
+        $rResult          = $this->bdd->query($sNextWeekPayment);
+        $aNextWeekPayment = array();
         while ($aRecord = $this->bdd->fetch_array($rResult)) {
             $aNextWeekPayment[] = $aRecord;
         }
