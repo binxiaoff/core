@@ -5448,10 +5448,7 @@ class cronController extends bootstrap
             $dateDebutOffreAcceptee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
             $dateFinOffreAcceptee   = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
 
-            if (
-                time() >= $dateDebutNewProject && time() < $dateFinNewProject
-                || 'prod' !== $this->Config['env'] && isset($_GET['force'])
-            ) {
+            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
                 $id_notif = 1;
 
                 //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
@@ -5544,6 +5541,8 @@ class cronController extends bootstrap
             $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
             $notifications                 = $this->loadData('notifications');
             $projects                      = $this->loadData('projects');
+            // Included for class constants
+            $this->loadData('clients_status');
 
             $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
@@ -5556,12 +5555,10 @@ class cronController extends bootstrap
             $dateDebutRemboursement = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
 
-            if (
-                time() >= $dateDebutNewProject && time() < $dateFinNewProject
-                || 'prod' !== $this->Config['env'] && isset($_GET['force'])
-            ) {                $id_notif = 1;
-                //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
-                $lPreteurs = $clients->selectPreteursByStatusSlim(60);
+            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
+                $id_notif = 1;
+
+                $lPreteurs = $clients->selectPreteursByStatusSlim(\clients_status::VALIDATED);
                 $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
 
                 foreach ($lPreteurs as $preteur) {
@@ -5638,10 +5635,7 @@ class cronController extends bootstrap
             $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
             $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
 
-            if (
-                time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee
-                || 'prod' !== $this->Config['env'] && isset($_GET['force'])
-            ) {
+            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
                 $id_notif = 4;
             } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
                 $id_notif = 5;
@@ -5711,6 +5705,7 @@ class cronController extends bootstrap
             'lien_fb'         => $lien_fb,
             'lien_tw'         => $lien_tw
         );
+
         $this->mails_text->get('nouveau-projet', 'lang = "' . $this->language . '" AND type');
         $this->email = $this->loadLib('email');
 
@@ -5966,7 +5961,6 @@ class cronController extends bootstrap
                         $nb_arrayoffres = count($mails_notif);
                         $goMail         = true;
                         foreach ($mails_notif as $n) {
-
                             $this->notifications->get($n['id_notification'], 'id_notification');
                             $this->projects->get($this->notifications->id_project, 'id_project');
                             $this->companies->get($this->projects->id_company, 'id_company');
@@ -7469,11 +7463,11 @@ class cronController extends bootstrap
         $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2, 'CNI-25-2-VERSO-#', $companies->siren, $sPathNoZip);
 
         $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3, 'CNI-25-3-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3, 'CNI-25-3-VERSO-#', $companies->siren, sPathNoZip);
+        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3, 'CNI-25-3-VERSO-#', $companies->siren, $sPathNoZip);
 
         $zip = new ZipArchive();
         if (is_dir($sPathNoZip . $companies->siren)) {
-            if ($zip->open($sPath . $companies->siren . '.zip', ZipArchive::CREATE) == TRUE) {
+            if ($zip->open($sPath . $companies->siren . '.zip', ZipArchive::CREATE) == true) {
                 $fichiers = scandir($sPathNoZip . $companies->siren);
                 unset($fichiers[0], $fichiers[1]);
                 foreach ($fichiers as $f) {
