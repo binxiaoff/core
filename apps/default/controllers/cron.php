@@ -141,53 +141,46 @@ class cronController extends bootstrap
 
     public function _mail_echeance_emprunteur()
     {
-        if (true === $this->startCron('mail_echeance_emprunteur', 1)) {
+        if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
             $oProjects        = $this->loadData('projects');
             $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
             $oLoans           = $this->loadData('loans');
 
             $this->settings->get('Facebook', 'type');
-            $lien_fb = $this->settings->value;
+            $sLienFB = $this->settings->value;
 
             $this->settings->get('Twitter', 'type');
-            $lien_tw = $this->settings->value;
+            $sLienTW = $this->settings->value;
+
+            $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
 
             $aProjects = $oProjects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
+
             foreach ($aProjects as $aProject) {
                 $this->companies->get($aProject['id_company']);
                 $this->clients->get($this->companies->id_client_owner);
-                $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
 
-                $aPaymentSchedule = $oPaymentSchedule->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'date_echeance_emprunteur ASC', 0, 1);
-
-                $oNextPayment = DateTime::createFromFormat('Y-m-d h:i:s', $aPaymentSchedule[0]['date_echeance_emprunteur']);
-                $oToday = new DateTime('Now');
-
-                $oInterval = $oNextPayment->diff($oToday);
-                if (7 != $oInterval->d || $oToday > $oNextPayment) {
+                $aPaymentSchedule = $oPaymentSchedule->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) = DATE_FORMAT(date_echeance_emprunteur, "%Y-%m-%d")', 'date_echeance_emprunteur ASC', 0, 1);
+                if (true === empty($aPaymentSchedule)) {
                     continue;
                 }
 
-                $sNextPayment = $oNextPayment->format('d/m/Y');
-                $sRepayment = $this->ficelle->formatNumber($aPaymentSchedule[0]['montant'] / 100);
-
-                $iNumberOfLendersForProject = $oLoans->getNbPreteurs($aProject['id_project']);
-                $aMail                      = array(
-                    'nb_emprunteurs'     => $iNumberOfLendersForProject,
-                    'echeance'           => $sRepayment,
-                    'prochaine_echeance' => $sNextPayment,
+                $aMail     = array(
+                    'nb_emprunteurs'     => $oLoans->getNbPreteurs($aProject['id_project']),
+                    'echeance'           => $this->ficelle->formatNumber($aPaymentSchedule[0]['montant'] / 100),
+                    'prochaine_echeance' => date('d/m/Y', strtotime($aPaymentSchedule[0]['date_echeance_emprunteur'])),
                     'surl'               => $this->surl,
                     'url'                => $this->furl,
                     'nom_entreprise'     => $aProject['title'],
                     'montant'            => $this->ficelle->formatNumber((float) $aProject['amount'], 0),
                     'prenom_e'           => $this->clients->prenom,
-                    'lien_fb'            => $lien_fb,
-                    'lien_tw'            => $lien_tw
+                    'lien_fb'            => $sLienFB,
+                    'lien_tw'            => $sLienTW
                 );
-                $aVars                      = $this->tnmp->constructionVariablesServeur($aMail);
-                $sujetMail                  = strtr(utf8_decode($this->mails_text->subject), $aVars);
-                $texteMail                  = strtr(utf8_decode($this->mails_text->content), $aVars);
-                $exp_name                   = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+                $aVars     = $this->tnmp->constructionVariablesServeur($aMail);
+                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $aVars);
+                $texteMail = strtr(utf8_decode($this->mails_text->content), $aVars);
+                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
 
                 $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
