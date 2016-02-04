@@ -163,7 +163,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
      */
     public function getUpcomingRepayments($iDaysInterval = null)
     {
-        $sNextWeekPayment = 'SELECT * FROM
+        $sNextWeekPayment = 'SELECT ee.* FROM
                 echeanciers_emprunteur ee
                 INNER JOIN projects_last_status_history plsh ON plsh.id_project = ee.id_project
                 INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
