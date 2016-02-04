@@ -147,17 +147,17 @@ class cronController extends bootstrap
 
             $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
 
-            $aProjects = $oPaymentSchedule->getUpcomingRepayments(7);
+            $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
 
-            foreach ($aProjects as $aProject) {
-                $this->companies->get($aProject['id_project']);
-                $this->projects->get($aProject['id_project']);
+            foreach ($aUpcomingRepayments as $aRepayment) {
+                $this->projects->get($aRepayment['id_project']);
+                $this->companies->get($this->projects->id_company);
                 $this->clients->get($this->companies->id_client_owner);
 
                 $aMail = array(
-                    'nb_emprunteurs'     => $oLoans->getNbPreteurs($aProject['id_project']),
-                    'echeance'           => $this->ficelle->formatNumber($aProject['montant'] / 100),
-                    'prochaine_echeance' => date('d/m/Y', strtotime($aProject['date_echeance_emprunteur'])),
+                    'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),
+                    'echeance'           => $this->ficelle->formatNumber($aRepayment['montant'] / 100),
+                    'prochaine_echeance' => date('d/m/Y', strtotime($aRepayment['date_echeance_emprunteur'])),
                     'surl'               => $this->surl,
                     'url'                => $this->furl,
                     'nom_entreprise'     => $this->projects->title,

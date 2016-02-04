@@ -161,7 +161,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
      * @param int $iDaysInterval
      * @return array
      */
-    public function getUpcomingRepayments($iDaysInterval = null)
+    public function getUpcomingRepayments($iDaysInterval)
     {
         $sNextWeekPayment = 'SELECT ee.* FROM
                 echeanciers_emprunteur ee
