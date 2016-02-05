@@ -505,7 +505,7 @@ class collectController extends bootstrap
      */
     private function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
     {
-        if (false === ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
+        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
             return trim($mValue);
         }
         return '';
