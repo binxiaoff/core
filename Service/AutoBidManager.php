@@ -9,12 +9,8 @@ use Unilend\core\Loader;
  */
 class AutoBidManager
 {
-    /**
-     * AutoBidManager constructor.
-     */
-    public function __construct()
-    {
-    }
+    const AUTO_BID_ON  = 1;
+    const AUTO_BID_OFF = 0;
 
     /**
      * @param $iClientId
@@ -22,7 +18,7 @@ class AutoBidManager
     public static function on($iClientId)
     {
         if (self::isQualified($iClientId)) {
-            self::onOff($iClientId, true);
+            self::onOff($iClientId, self::AUTO_BID_ON);
         }
     }
 
@@ -31,28 +27,27 @@ class AutoBidManager
      */
     public static function off($iClientId)
     {
-        self::onOff($iClientId, false);
+        self::onOff($iClientId, self::AUTO_BID_OFF);
     }
 
     /**
      * @param $iClientId
-     * @param $bActive
+     * @param $iAutoBidOnOff
+     *
+     * @return bool
      */
-    private static function onOff($iClientId, $bActive)
+    private static function onOff($iClientId, $iAutoBidOnOff)
     {
         /** @var \client_settings $oClientSettings */
         $oClientSettings = Loader::loadData('client_settings');
 
-        $iValue = $bActive ? 1 : 0;
-        $sOnOff = $bActive ? 'on' : 'off';
-
         if ($oClientSettings->get($iClientId, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
-            $oClientSettings->value = $iValue;
+            $oClientSettings->value = $iAutoBidOnOff;
             $oClientSettings->update();
         } else {
             $oClientSettings->id_client = $iClientId;
             $oClientSettings->id_type   = \client_setting_type::TYPE_AUTO_BID_SWITCH;
-            $oClientSettings->value     = $iValue;
+            $oClientSettings->value     = $iAutoBidOnOff;
             $oClientSettings->create();
         }
 
@@ -60,6 +55,7 @@ class AutoBidManager
         $oClientHistoryActions = Loader::loadData('clients_history_actions');
         // BO user
         $iUserId     = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : null;
+        $sOnOff      = $iAutoBidOnOff === self::AUTO_BID_ON ? 'on' : 'off';
         $sSerialized = serialize(array('id_user' => $iUserId, 'id_client' => $iClientId, 'autobid_switch' => $sOnOff));
         $oClientHistoryActions->histo(20, 'autobid_on_off', $iClientId, $sSerialized);
     }
@@ -77,7 +73,7 @@ class AutoBidManager
         $oSettings->get('Auto-bid global switch', 'type');
         $bGlobalActive = (bool)$oSettings->value;
 
-        if (true === $bGlobalActive || true === (bool)$oClientSettings->getSetting($iClientId, \client_setting_type::TYPE_BETA_TESTER)) {
+        if (true === $bGlobalActive || true === (bool)$oClientSettings->getSetting($iClientId, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER)) {
             $oClients = Loader::loadData('clients');
 
             if ($oClients->getLastStatut($iClientId)) {
@@ -220,8 +216,10 @@ class AutoBidManager
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
             if ($oProjectStatus->status == \projects_status::AUTO_BID) {
                 return self::bidBeforePublication($oProject);
-            } else if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                return self::bidAfterPublication($oProject);
+            } else {
+                if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
+                    return self::bidAfterPublication($oProject);
+                }
             }
         }
 
@@ -235,13 +233,13 @@ class AutoBidManager
      */
     private static function bidBeforePublication(\projects $oProject)
     {
-        $iPeriod     = (int)$oProject->period;
-        $sEvaluation = $oProject->risk;
-        $iCurrentRate    = 10;
+        $iPeriod      = (int)$oProject->period;
+        $sEvaluation  = $oProject->risk;
+        $iCurrentRate = 10;
 
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
-        $oBid = Loader::loadData('bids');
+        $oBid          = Loader::loadData('bids');
 
         $iOffset = 0;
         $iLimit  = 100;
@@ -249,11 +247,11 @@ class AutoBidManager
             $iOffset += $iLimit;
 
             foreach ($aAutoBidList as $aAutoBidSettings) {
-                $oBid->id_lender_account     = $aAutoBidSettings['id_lender'];
-                $oBid->id_project            = $oProject->id_project;
-                $oBid->id_autobid            = $aAutoBidSettings['id_autobid'];
-                $oBid->amount                = $aAutoBidSettings['amount'] * 100;
-                $oBid->rate                  = $iCurrentRate;
+                $oBid->id_lender_account = $aAutoBidSettings['id_lender'];
+                $oBid->id_project        = $oProject->id_project;
+                $oBid->id_autobid        = $aAutoBidSettings['id_autobid'];
+                $oBid->amount            = $aAutoBidSettings['amount'] * 100;
+                $oBid->rate              = $iCurrentRate;
                 BidManager::bid($oBid);
                 $oAutoBidQueue->addToQueue($aAutoBidSettings['id_lender'], \autobid_queue::STATUS_NEW);
             }
@@ -267,15 +265,15 @@ class AutoBidManager
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
         $oSettings->get('Auto-bid step', 'type');
-        $fStep = (float) $oSettings->value;
+        $fStep = (float)$oSettings->value;
 
-        /** @var \bids $oBidData */
-        $oBid = Loader::loadData('bids');
-        $fCurrentRate = (float) $oBid->getProjectMaxRate($oProject->id_project) - $fStep;
+        /** @var \bids $oBid */
+        $oBid         = Loader::loadData('bids');
+        $fCurrentRate = (float)$oBid->getProjectMaxRate($oProject->id_project) - $fStep;
 
         $iOffset = 0;
         $iLimit  = 100;
-        while ($aAutoBidList = $oBidData->getRefusedAutoBids($oProject->id_project)) {
+        while ($aAutoBidList = $oBid->getRefusedAutoBids($oProject->id_project)) {
             $iOffset += $iLimit;
 
             foreach ($aAutoBidList as $aAutobid) {
