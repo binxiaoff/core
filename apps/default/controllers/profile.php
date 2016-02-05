@@ -1204,9 +1204,6 @@ class profileController extends bootstrap
                     if ($siret != $this->companies->siret) {
                         $contenu .= '<li>SIRET</li>';
                     }
-                    if ($siren != $this->companies->siren) {
-                        $contenu .= '<li>SIREN</li>';
-                    }
                     if ($phone != $this->companies->phone) {
                         $contenu .= '<li>Téléphone entreprise</li>';
                     }
