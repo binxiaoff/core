@@ -583,7 +583,7 @@ class echeanciers extends echeanciers_crud
         return $montant;
     }
 
-    public function getEcheanceByDayAll($date, $statutEmprunteur = '0')
+    public function getEcheanceByDayAll($date, $statut = '0')
     {
         $sql = 'SELECT
         SUM(montant) as montant,
@@ -598,7 +598,7 @@ class echeanciers extends echeanciers_crud
         SUM(contributions_additionnelles) as contributions_additionnelles,
         SUM(prelevements_solidarite) as prelevements_solidarite,
         SUM(crds) as crds
-        FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_reel,10)';
+        FROM `echeanciers` WHERE status = ' . $statut . ' AND LEFT(date_echeance_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_reel,10)';
 
 
         $resultat = $this->bdd->query($sql);
@@ -636,7 +636,7 @@ class echeanciers extends echeanciers_crud
         FROM echeanciers e
         LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
         LEFT JOIN clients c ON l.id_client_owner = c.id_client
-        WHERE e.status_emprunteur = 1
+        WHERE e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
         ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
         if ($exonere == 1) {
@@ -676,7 +676,7 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers e
             LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            WHERE e.status_emprunteur = 1
+            WHERE e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
             AND c.type IN (1, 3)
             AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND DATE(lih.added) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
@@ -717,7 +717,7 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers e
             LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            WHERE e.status_emprunteur = 1
+            WHERE e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
             ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
 
