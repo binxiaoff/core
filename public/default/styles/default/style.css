@@ -506,6 +506,7 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 .footer-partners li + li { padding-left:60px; }
 .footer-partners li img { vertical-align:middle; display:inline-block; }
 .footer-partners .logo-partner { width: 193px; height: 90px; }
+.footer-partners img[name="seal"] { width: 80px; height: 40px; }
 
 
 /* === Figure === */
