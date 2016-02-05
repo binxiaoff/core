@@ -615,6 +615,7 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 .testimonials .slides li { float:left; width:960px; }
 
 .testimonial-thumb { float:left; padding:13px 50px 0 10px; }
+.testimonial-thumb img { width: 148px; height: 47px; }
 .testimonial-body { overflow:hidden; }
 .testimonial-body p { color:#808080; padding-bottom:30px; }
 .testimonial-body p.author { text-align:right; font-weight:bold; font-size:14px; padding:0 40px 0 0; }
