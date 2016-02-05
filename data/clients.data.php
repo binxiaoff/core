@@ -1072,6 +1072,7 @@ class clients extends clients_crud
                     c.id_client,
                     c.nom,
                     c.prenom,
+                    c.email,
                     companies.name,
                     DATE(c.added) AS date_creation,
                     (

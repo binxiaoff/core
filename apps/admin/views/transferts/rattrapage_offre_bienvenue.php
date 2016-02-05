@@ -103,6 +103,7 @@
                     <th>Id Client</th>
                     <th>Nom</th>
                     <th>Pr&eacute;nom</th>
+                    <th>Email</th>
                     <th>Date de création</th>
                     <th>Date de validation</th>
                     <th></th>
@@ -114,8 +115,9 @@
                         <td><?= $aClient['id_client'] ?></td>
                         <td><?= empty($aClient['company']) ? $aClient['nom'] : $aClient['company'] ?></td>
                         <td><?= empty($aClient['company']) ? $aClient['prenom'] : '' ?></td>
+                        <td><?= $aClient['email'] ?></td>
                         <td><?= $this->dates->formatDateMysqltoShortFR($aClient['date_creation']) ?></td>
-                        <td><?= (false === empty($aLender['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aClient['date_validation']) : '' ?></td>
+                        <td><?= (false === empty($aClient['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aClient['date_validation']) : '' ?></td>
                         <td>
                             <?php if (false === empty($aClient['date_validation'])) : ?>
                                 <a href="<?= $this->lurl ?>/transferts/affect_welcome_offer/<?= $aClient['id_client'] ?>"

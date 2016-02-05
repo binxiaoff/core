@@ -1138,7 +1138,7 @@ class transfertsController extends bootstrap
         }
 
         $sFileName      = 'ratrappage_offre_bienvenue';
-        $aColumnHeaders = array('ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Date de création', 'Date de validation');
+        $aColumnHeaders = array('ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Email', 'Date de création', 'Date de validation');
         $aData          = array();
 
         foreach ($aClientsWithoutWelcomeOffer as $key =>$aClient) {
@@ -1146,6 +1146,7 @@ class transfertsController extends bootstrap
                 $aClient['id_client'],
                 empty($aClient['company']) ? $aClient['nom'] : $aClient['company'],
                 empty($aClient['company']) ? $aClient['prenom'] : '',
+                $aClient['email'],
                 $this->dates->formatDateMysqltoShortFR($aClient['date_creation']),
                 (false === empty($aClient['date_validation'])) ? $this->dates->formatDateMysqltoShortFR($aClient['date_validation']) : ''
             );
