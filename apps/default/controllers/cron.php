@@ -160,7 +160,7 @@ class cronController extends bootstrap
 
                     // Zippage pour groupama
                     $this->zippage($projects['id_project']);
-                    $this->nouveau_projet($projects['id_project']);
+                    $this->sendNewProjectEmail($projects['id_project']);
                 }
             }
             $oCache = \Unilend\librairies\Cache::getInstance();
@@ -5250,109 +5250,44 @@ class cronController extends bootstrap
     public function _alertes_quotidienne()
     {
         if (true === $this->startCron('notification quotidienne', 5)) {
-            ini_set('max_execution_time', 3600);
-            ini_set('memory_limit', '4096M');
-
-            $clients                       = $this->loadData('clients');
-            $clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-            $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-            $notifications                 = $this->loadData('notifications');
-            $projects                      = $this->loadData('projects');
+            ini_set('max_execution_time', 250);
+            ini_set('memory_limit', '1G');
 
             $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
-            $dateDebutRemboursement = mktime(18, 0, 0, date('m'), date('d'), date('Y'));
-            $dateFinRemboursement   = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
+            /** @var clients_gestion_notifications $oCustomerNotificationSettings */
+            $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
 
-            $dateDebutNewProject = mktime(19, 30, 0, date('m'), date('d'), date('Y'));
-            $dateFinNewProject   = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
+            // Loaded for class constants
+            $this->loadData('clients_gestion_type_notif');
 
-            $dateDebutOffreRealisee = mktime(20, 0, 0, date('m'), date('d'), date('Y'));
-            $dateFinOffreRealisee   = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
+            $iCurrentTime = time();
 
-            $dateDebutOffreRefusee = mktime(20, 15, 0, date('m'), date('d'), date('Y'));
-            $dateFinOffreRefusee   = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
-
-            $dateDebutOffreAcceptee = mktime(20, 30, 0, date('m'), date('d'), date('Y'));
-            $dateFinOffreAcceptee   = mktime(21, 0, 0, date('m'), date('d'), date('Y'));
-
-            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
-                $id_notif = 1;
-
-                //////// on va checker que tous les preteurs ont leur ligne de notif nouveau projet ///////////
-                $lPreteurs = $clients->selectPreteursByStatusSlim(60);
-                $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
-
-                foreach ($lPreteurs as $preteur) {
-                    foreach ($lProjects as $projet) {
-                        if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0) {
-                            $notifications->type            = 8; // nouveau projet
-                            $notifications->id_lender       = $preteur['id_lender'];
-                            $notifications->id_project      = $projet['id_project'];
-                            $notifications->status          = 1; // on le fait passé en deja lu car pas forcement du jour meme
-                            $notifications->id_notification = $notifications->create();
-
-                            $clients_gestion_mails_notif->id_client                      = $preteur['id_client'];
-                            $clients_gestion_mails_notif->id_notif                       = 1; // type nouveau projet
-                            $clients_gestion_mails_notif->id_notification                = $notifications->id_notification;
-                            $clients_gestion_mails_notif->id_project                     = $projet['id_project'];
-                            $clients_gestion_mails_notif->date_notif                     = $projet['date_publication_full'];
-                            $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
-                        }
-                    }
-                }
-            } elseif (time() >= $dateDebutOffreRealisee && time() < $dateFinOffreRealisee) {// Offre realisée
-                $id_notif = 2;
-            } elseif (time() >= $dateDebutOffreRefusee && time() < $dateFinOffreRefusee) {// Offre refusée
-                $id_notif = 3;
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
-                $id_notif = 4;
-            } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
-                $id_notif = 5;
-            } else {
-                $this->stopCron();
-                die;
-            }
-            $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('quotidienne', $id_notif, 0, 50);
-
-            $array_mail_nouveaux_projects = false;
-            $array_offres_placees         = false;
-            $array_offres_refusees        = false;
-            $array_offres_acceptees       = false;
-            $array_remb                   = false;
-
-            foreach ($list_id_client as $id_client) {
-                $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'quotidienne', $id_notif);
-                foreach ($mails_notif as $mail) {
-                    // Nouveaux projets
-                    if ($id_notif == 1) {
-                        $array_mail_nouveaux_projects[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    } elseif ($id_notif == 2) {// Offres placées
-                        $array_offres_placees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    } elseif ($id_notif == 3) {// Offres refusées
-                        $array_offres_refusees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    } elseif ($id_notif == 4) {// Offres accpectées
-                        $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    } elseif ($id_notif == 5) {// remb
-                        $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    }
-                }
-            }
-
-            if ($array_mail_nouveaux_projects != false) {
-                $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'quotidienne');
-            }
-            if ($array_offres_placees != false) {
-                $this->offres_placees_synthese($array_offres_placees, 'quotidienne');
-            }
-            if ($array_offres_refusees != false) {
-                $this->offres_refusees_synthese($array_offres_refusees, 'quotidienne');
-            }
-            if ($array_offres_acceptees != false) {
-                $this->offres_acceptees_synthese($array_offres_acceptees, 'quotidienne');
-            }
-            if ($array_remb != false) {
-                $this->remb_synthese($array_remb, 'quotidienne');
+            if (
+                $iCurrentTime >= mktime(19, 30, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(20, 0, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendNewProjectsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_NEW_PROJECT), 'quotidienne');
+            } elseif (
+                $iCurrentTime >= mktime(20, 0, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(20, 15, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendPlacedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_BID_PLACED), 'quotidienne');
+            } elseif (
+                $iCurrentTime >= mktime(20, 15, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(20, 30, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendRejectedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_BID_REJECTED), 'quotidienne');
+            } elseif (
+                $iCurrentTime >= mktime(20, 30, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(21, 0, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), 'quotidienne');
+            } elseif (
+                $iCurrentTime >= mktime(18, 0, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime <  mktime(19, 30, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendRepaymentsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_REPAYMENT), 'quotidienne');
             }
 
             $this->stopCron();
@@ -5363,84 +5298,31 @@ class cronController extends bootstrap
     public function _alertes_hebdomadaire()
     {
         if (true === $this->startCron('notification hebomadaire', 5)) {
-            $clients                       = $this->loadData('clients');
-            $clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-            $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-            $notifications                 = $this->loadData('notifications');
-            $projects                      = $this->loadData('projects');
-            // Included for class constants
-            $this->loadData('clients_status');
-
             $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
-            $dateDebutNewProject = mktime(9, 0, 0, date('m'), date('d'), date('Y'));
-            $dateFinNewProject   = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
+            /** @var clients_gestion_notifications $oCustomerNotificationSettings */
+            $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
 
-            $dateDebutOffreAcceptee = mktime(9, 30, 0, date('m'), date('d'), date('Y'));
-            $dateFinOffreAcceptee   = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
+            // Loaded for class constants
+            $this->loadData('clients_gestion_type_notif');
 
-            $dateDebutRemboursement = mktime(10, 0, 0, date('m'), date('d'), date('Y'));
-            $dateFinRemboursement   = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
+            $iCurrentTime = time();
 
-            if (time() >= $dateDebutNewProject && time() < $dateFinNewProject) {
-                $id_notif = 1;
-
-                $lPreteurs = $clients->selectPreteursByStatusSlim(\clients_status::VALIDATED);
-                $lProjects = $projects->selectProjectsByStatusSlim(\projects_status::EN_FUNDING);
-
-                foreach ($lPreteurs as $preteur) {
-                    foreach ($lProjects as $projet) {
-                        if ($clients_gestion_mails_notif->counter('id_client = ' . $preteur['id_client'] . ' AND id_project = ' . $projet['id_project']) <= 0) {
-                            $notifications->type            = 8; // nouveau projet
-                            $notifications->id_lender       = $preteur['id_lender'];
-                            $notifications->id_project      = $projet['id_project'];
-                            $notifications->status          = 1; // on le fait passé en deja lu car pas forcement du jour meme
-                            $notifications->id_notification = $notifications->create();
-
-                            $clients_gestion_mails_notif->id_client                      = $preteur['id_client'];
-                            $clients_gestion_mails_notif->id_notif                       = 1; // type nouveau projet
-                            $clients_gestion_mails_notif->id_notification                = $notifications->id_notification;
-                            $clients_gestion_mails_notif->id_project                     = $projet['id_project'];
-                            $clients_gestion_mails_notif->date_notif                     = $projet['date_publication_full'];
-                            $clients_gestion_mails_notif->id_clients_gestion_mails_notif = $clients_gestion_mails_notif->create();
-                        }
-                    }
-                }
-            } elseif (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {// Offre Acceptée
-                $id_notif = 4;
-            } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
-                $id_notif = 5;
-            } else {
-                $this->stopCron();
-                die;
-            }
-            $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('hebdomadaire', $id_notif, 0, 250);
-
-            $array_mail_nouveaux_projects = false;
-            $array_offres_acceptees       = false;
-            $array_remb                   = false;
-
-            foreach ($list_id_client as $id_client) {
-                $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'hebdomadaire', $id_notif);
-
-                foreach ($mails_notif as $mail) {
-                    if ($id_notif == 1) {
-                        $array_mail_nouveaux_projects[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    } elseif ($id_notif == 4) {// Offres accpectées
-                        $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    } elseif ($id_notif == 5) {// remb
-                        $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    }
-                }
-            }
-            if ($array_mail_nouveaux_projects != false) {
-                $this->nouveaux_projets_synthese($array_mail_nouveaux_projects, 'hebdomadaire');
-            }
-            if ($array_offres_acceptees != false) {
-                $this->offres_acceptees_synthese($array_offres_acceptees, 'hebdomadaire');
-            }
-            if ($array_remb != false) {
-                $this->remb_synthese($array_remb, 'hebdomadaire');
+            if (
+                $iCurrentTime >= mktime(9, 0, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(9, 30, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendNewProjectsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('hebdomadaire', \clients_gestion_type_notif::TYPE_NEW_PROJECT), 'hebdomadaire');
+            } elseif (
+                $iCurrentTime >= mktime(9, 30, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(10, 0, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('hebdomadaire', \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), 'hebdomadaire');
+            } elseif (
+                $iCurrentTime >= mktime(10, 0, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(10, 30, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendRepaymentsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('hebdomadaire', \clients_gestion_type_notif::TYPE_REPAYMENT), 'hebdomadaire');
             }
 
             $this->stopCron();
@@ -5451,46 +5333,26 @@ class cronController extends bootstrap
     public function _alertes_mensuelle()
     {
         if (true === $this->startCron('notification mensuelle', 5)) {
-            $clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
             $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
-            $dateDebutOffreAcceptee = mktime(10, 30, 0, date('m'), date('d'), date('Y'));
-            $dateFinOffreAcceptee   = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
+            /** @var clients_gestion_notifications $oCustomerNotificationSettings */
+            $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
 
-            $dateDebutRemboursement = mktime(11, 0, 0, date('m'), date('d'), date('Y'));
-            $dateFinRemboursement   = mktime(11, 30, 0, date('m'), date('d'), date('Y'));
+            // Loaded for class constants
+            $this->loadData('clients_gestion_type_notif');
 
-            if (time() >= $dateDebutOffreAcceptee && time() < $dateFinOffreAcceptee) {
-                $id_notif = 4;
-            } elseif (time() >= $dateDebutRemboursement && time() < $dateFinRemboursement) {// Remboursement
-                $id_notif = 5;
-            } else {
-                $this->stopCron();
-                die;
-            }
+            $iCurrentTime = time();
 
-            $list_id_client = $clients_gestion_notifications->selectIdclientNotifs('mensuelle', $id_notif, 0, 250);
-
-            $array_offres_acceptees = false;
-            $array_remb             = false;
-            foreach ($list_id_client as $id_client) {
-                $mails_notif = $clients_gestion_notifications->selectNotifsByClient($id_client, 'mensuelle', $id_notif);
-                foreach ($mails_notif as $mail) {
-                    // Offres accpectées
-                    if ($id_notif == 4) {
-                        $array_offres_acceptees[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    } elseif ($id_notif == 5) {// remb
-                        $array_remb[$id_client][$mail['id_clients_gestion_mails_notif']] = $mail;
-                    }
-                }
-            }
-
-            if ($array_offres_acceptees != false) {
-                $this->offres_acceptees_synthese($array_offres_acceptees, 'mensuelle');
-            }
-            if ($array_remb != false) {
-                $this->remb_synthese($array_remb, 'mensuelle');
+            if (
+                $iCurrentTime >= mktime(10, 30, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(11, 0, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('mensuelle', \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), 'mensuelle');
+            } elseif (
+                $iCurrentTime >= mktime(11, 0, 0, date('m'), date('d'), date('Y'))
+                && $iCurrentTime < mktime(11, 30, 0, date('m'), date('d'), date('Y'))
+            ) {
+                $this->sendRepaymentsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('mensuelle', \clients_gestion_type_notif::TYPE_REPAYMENT), 'mensuelle');
             }
 
             $this->stopCron();
@@ -5498,7 +5360,7 @@ class cronController extends bootstrap
     }
 
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    private function nouveau_projet($id_project)
+    private function sendNewProjectEmail($id_project)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -5506,6 +5368,8 @@ class cronController extends bootstrap
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->projects                      = $this->loadData('projects');
         $this->companies                     = $this->loadData('companies');
+        // Loaded for class constants
+        $this->loadData('clients_status');
 
         $oLogger = new ULogger('notifications', $this->logPath, 'notifications.log');
         $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $id_project);
@@ -5531,202 +5395,191 @@ class cronController extends bootstrap
         $iOffset = 0;
         $iLimit  = 100;
 
-        while ($lPreteurs = $this->clients->selectPreteursByStatus(60, 'c.status = 1', '', $iOffset, $iLimit)) {
+        while ($aLenders = $this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1', 'c.id_client ASC', $iOffset, $iLimit)) {
+            $iEmails = 0;
             $iOffset += $iLimit;
 
-            foreach ($lPreteurs as $preteur) {
+            $oLogger->addRecord(ULogger::DEBUG, 'Lenders retrieved: ' . count($aLenders));
+
+            foreach ($aLenders as $aLender) {
                 $this->notifications->type       = \notifications::TYPE_NEW_PROJECT;
-                $this->notifications->id_lender  = $preteur['id_lender'];
+                $this->notifications->id_lender  = $aLender['id_lender'];
                 $this->notifications->id_project = $id_project;
                 $this->notifications->create();
 
-                $this->clients_gestion_mails_notif->id_client       = $preteur['id_client'];
+                $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
                 $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                 $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                 $this->clients_gestion_mails_notif->id_project      = $id_project;
                 $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
 
-                if ($this->clients_gestion_notifications->getNotif($preteur['id_client'], 1, 'immediatement') == true) {
+                if ($this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
                     $this->clients_gestion_mails_notif->immediatement = 1;
 
-                    $varMail['prenom_p']       = $preteur['prenom'];
-                    $varMail['motif_virement'] = $this->clients->getLenderPattern($preteur['id_client']);
+                    $varMail['prenom_p']       = $aLender['prenom'];
+                    $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
 
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    $oLogger->addRecord(ULogger::DEBUG, 'Email sent to: ' . $preteur['email']);
+                    $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                    $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
                     if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteur['email'], $tabFiler);
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $aLender['email'], $tabFiler);
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
-                        $this->email->addRecipient(trim($preteur['email']));
+                        $this->email->addRecipient(trim($aLender['email']));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+
+                    ++$iEmails;
                 }
 
                 $this->clients_gestion_mails_notif->create();
             }
+
+            $oLogger->addRecord(ULogger::DEBUG, 'Emails sent: ' . $iEmails);
         }
     }
 
-    // fonction synhtese nouveaux projets
-    // $type = quotidienne,hebdomadaire,mensuelle
-    private function nouveaux_projets_synthese($array_mail_nouveaux_projects, $type)
+    /**
+     * Send new projects summary email
+     * @param array $aCustomerId
+     * @param string $sFrequency (quotidienne/hebdomadaire)
+     */
+    private function sendNewProjectsSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $this->clients                       = $this->loadData('clients');
-        $this->notifications                 = $this->loadData('notifications');
-        $this->projects                      = $this->loadData('projects');
-        $this->companies                     = $this->loadData('companies');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        /** @var Email email */
+        $oEmail = $this->loadLib('email');
 
-        if ($array_mail_nouveaux_projects != false) {
-            $clients_gestion_notif_log           = $this->loadData('clients_gestion_notif_log');
-            $clients_gestion_notif_log->id_notif = 1;
-            $clients_gestion_notif_log->type     = $type;
-            $clients_gestion_notif_log->debut    = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->fin      = '0000-00-00 00:00:00';
-            $clients_gestion_notif_log->create();
+        /** @var clients $oCustomer */
+        $oCustomer = $this->loadData('clients');
+        /** @var projects $oProjects */
+        $oProjects = $this->loadData('projects');
+        /** @var clients_gestion_mails_notif $oMailNotification */
+        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
+        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
+        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
 
-            foreach ($array_mail_nouveaux_projects as $id_client => $mails_notif) {
-                if ($this->clients_gestion_notifications->getNotif($id_client, 1, $type) == true) {
-                    $this->clients->get($id_client, 'id_client');
+        /** @var clients_gestion_notif_log $oNotificationsLog */
+        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
+        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
+        $oNotificationsLog->type     = $sFrequency;
+        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
+        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
+        $oNotificationsLog->create();
 
-                    $nb_arrayoffres = count($mails_notif); // (BT 18180 04/08/2015)
-                    $goMail         = true; // (BT 18180 04/08/2015)
-                    $liste_projets  = '';
+        switch ($sFrequency) {
+            case 'quotidienne':
+                $this->mails_text->get('nouveaux-projets-du-jour', 'lang = "' . $this->language . '" AND type');
+                break;
+            case 'hebdomadaire':
+                $this->mails_text->get('nouveaux-projets-de-la-semaine', 'lang = "' . $this->language . '" AND type');
+                break;
+            default:
+                trigger_error('Unknown frequency for new projects summary email: ' . $sFrequency, E_USER_WARNING);
+                return;
+        }
 
-                    foreach ($mails_notif as $n) {
-                        $this->notifications->get($n['id_notification'], 'id_notification');
-                        $this->projects->get($this->notifications->id_project, 'id_project');
-                        $this->companies->get($this->projects->id_company, 'id_company');
+        foreach (array_chunk($aCustomerId, 500) as $aPartialCustomerId) {
+            $aCustomerNotifications = array();
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_NEW_PROJECT) as $aNotifications) {
+                $aCustomerNotifications[$aNotifications['id_client']][] = $aNotifications;
+            }
 
-                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                        if ($type == 'quotidienne') {
-                            if ($nb_arrayoffres <= 1 && $this->clients_gestion_mails_notif->immediatement == 1) {
-                                $goMail = false;
-                            } else {
-                                $this->clients_gestion_mails_notif->quotidienne = 1;
-                            }
-                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->clients_gestion_mails_notif->hebdomadaire              = 1;
-                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                        } elseif ($type == 'mensuelle') {
-                            $this->clients_gestion_mails_notif->mensuelle              = 1;
-                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                        }
-                        $this->clients_gestion_mails_notif->update();
+            foreach ($aCustomerNotifications as $iCustomerId => $aNotifications) {
+                $oCustomer->get($iCustomerId);
 
-                        $liste_projets .= '
+                if ($oCustomer->status == 1) {
+                    $iProjectsCount = count($aNotifications);
+
+                    if ('quotidienne' === $sFrequency && 1 === $iProjectsCount && 1 == $aNotifications[0]['immediatement']) {
+                        $oMailNotification->get($aNotifications[0]['id_clients_gestion_mails_notif']);
+                        $oMailNotification->status_check_quotidienne = 1;
+                        $oMailNotification->update();
+                        continue;
+                    }
+
+                    $sProjectsList = '';
+                    foreach ($aNotifications as $aNotification) {
+                        $oMailNotification->get($aNotification['id_clients_gestion_mails_notif']);
+                        $oMailNotification->{$sFrequency} = 1;
+                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
+                        $oMailNotification->update();
+
+                        $oProjects->get($aNotification['id_project']);
+
+                        $sProjectsList .= '
                             <tr style="color:#b20066;">
                                 <td  style="font-family:Arial;font-size:14px;height: 25px;">
-                                   <a style="color:#b20066;text-decoration:none;font-family:Arial;"
-                                      href="' . $this->lurl . 'projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a>
+                                   <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . 'projects/detail/' . $oProjects->slug . '">' . $oProjects->title . '</a>
                                 </td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->projects->amount, 0) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->projects->period . ' mois</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProjects->amount, 0) . '&nbsp;&euro;</td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . $oProjects->period . ' mois</td>
                             </tr>';
                     }
-                    if ($goMail == true) {// (BT 18180 04/08/2015)
-                        if ($type == 'quotidienne') {
-                            $this->mails_text->get('nouveaux-projets-du-jour', 'lang = "' . $this->language . '" AND type');
-                        } else {
-                            $this->mails_text->get('nouveaux-projets-de-la-semaine', 'lang = "' . $this->language . '" AND type');
-                        }
-                        $lecontenu = '';
 
-                        // on gère ici le cas du singulier/pluriel
-                        if ($nb_arrayoffres <= 1) {
-                            if ($type == 'quotidienne') {
-                                $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                                $sujet                     = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                                $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                                $objet                     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                            } elseif ($type == 'hebdomadaire') {
-                                $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                                $sujet                     = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                                $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                                $objet                     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                            }
-                        } else {
-                            if ($type == 'quotidienne') {
-                                $sujet     = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                                $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                                $objet     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                            } elseif ($type == 'hebdomadaire') {
-                                $sujet     = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                                $lecontenu = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                                $objet     = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                            }
-                        }
-
-                        $varMail = array(
-                            'surl'            => $this->surl,
-                            'url'             => $this->furl,
-                            'prenom_p'        => $this->clients->prenom,
-                            'liste_projets'   => $liste_projets,
-                            'projet-p'        => $this->lurl . '/projets-a-financer',
-                            'motif_virement'  => $this->clients->getLenderPattern($this->clients->id_client),
-                            'gestion_alertes' => $this->lurl . '/profile',
-                            'objet'           => $objet,
-                            'contenu'         => $lecontenu,
-                            'sujet'           => $sujet,
-                            'lien_fb'         => $this->like_fb,
-                            'lien_tw'         => $this->twitter
-                        );
-
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($this->clients->status == 1) {
-                            if ($this->Config['env'] === 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            } else {
-                                $this->email->addRecipient($this->clients->email);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                            }
-                        }
+                    if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
+                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
+                    } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
+                        $sSubject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                        $sContent = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                        $sObject  = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
+                    } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
+                    } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                        $sSubject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                        $sContent = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                        $sObject  = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                    } else {
+                        trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
+                        continue;
                     }
-                } else {// pas envie de recevoir le mail
-                    foreach ($mails_notif as $n) {
-                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                        if ($type == 'quotidienne') {
-                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                        } elseif ($type == 'mensuelle') {
-                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                        }
-                        $this->clients_gestion_mails_notif->update();
+
+                    $aReplacements = array(
+                        'surl'            => $this->surl,
+                        'url'             => $this->furl,
+                        'prenom_p'        => $oCustomer->prenom,
+                        'liste_projets'   => $sProjectsList,
+                        'projet-p'        => $this->lurl . '/projets-a-financer',
+                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                        'gestion_alertes' => $this->lurl . '/profile',
+                        'objet'           => $sObject,
+                        'contenu'         => $sContent,
+                        'sujet'           => $sSubject,
+                        'lien_fb'         => $this->like_fb,
+                        'lien_tw'         => $this->twitter
+                    );
+
+                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+
+                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
+                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $oEmail->addRecipient($oCustomer->email);
+                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
                     }
                 }
             }
-
-            $clients_gestion_notif_log->fin = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->update();
         }
+
+        $oNotificationsLog->fin = date('Y-m-d H:i:s');
+        $oNotificationsLog->update();
     }
 
-    private function offres_placees_synthese($array_offres_placees, $type)
+    private function sendPlacedBidsSummaryEmail($array_offres_placees, $type)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -5754,6 +5607,7 @@ class cronController extends bootstrap
                         $total          = 0;
                         $nb_arrayoffres = count($mails_notif);
                         $goMail         = true;
+
                         foreach ($mails_notif as $n) {
                             $this->notifications->get($n['id_notification'], 'id_notification');
                             $this->projects->get($this->notifications->id_project, 'id_project');
@@ -5877,7 +5731,7 @@ class cronController extends bootstrap
     }
 
     // offres refusées
-    private function offres_refusees_synthese($array_offres_refusees, $type)
+    private function sendRejectedBidsSummaryEmail($array_offres_refusees, $type)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -6024,7 +5878,7 @@ class cronController extends bootstrap
     }
 
     // offres acceptées
-    private function offres_acceptees_synthese($array_offres_acceptees, $type)
+    private function sendAcceptedLoansSummaryEmail($array_offres_acceptees, $type)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -6218,7 +6072,7 @@ class cronController extends bootstrap
     }
 
     // remb
-    private function remb_synthese($array_remb, $type)
+    private function sendRepaymentsSummaryEmail($array_remb, $type)
     {
         $this->clients       = $this->loadData('clients');
         $this->notifications = $this->loadData('notifications');

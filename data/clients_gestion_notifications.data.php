@@ -103,6 +103,66 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
         }
     }
 
+    /**
+     * Retrieve the list of mail notifications for customers who have notification of the given type
+     * @param string $sFrequency
+     * @param int $iNotificationType
+     * @return array
+     */
+    public function getCustomersByNotification($sFrequency, $iNotificationType)
+    {
+        $aResult = array();
+        $rResult = $this->bdd->query(
+            $this->getCustomerNotificationQuery($sFrequency, $iNotificationType, 'id_client') . '
+            GROUP BY cgn.id_client
+            ORDER BY cgn.id_client ASC'
+        );
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aResult[] = (int) $aRecord['id_client'];
+        }
+        return $aResult;
+    }
+
+    public function getCustomersNotifications(array $aCustomerId, $sFrequency, $iNotificationType)
+    {
+        $aResult = array();
+        $rResult = $this->bdd->query(
+            $this->getCustomerNotificationQuery($sFrequency, $iNotificationType) . '
+            AND cgn.id_client IN (' . implode(',', $aCustomerId) . ')'
+        );
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aResult[] = $aRecord;
+        }
+        return $aResult;
+    }
+
+    private function getCustomerNotificationQuery($sFrequency, $iNotificationType, $sFieldName = null)
+    {
+        if ($sFrequency === 'quotidienne') { // Quotidienne (chaque jour à 20h00)
+            $where = '
+                cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(20, 0, 0, date('m'), date('d') - 2, date('Y'))) . '"
+                AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(20, 0, 0, date('m'), date('d'), date('Y'))) . '"';
+        } elseif ($sFrequency === 'hebdomadaire') { // Hebdomadaire (chaque samedi matin à 9h00)
+            $where = '
+                cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), date('d') - 7, date('Y'))) . '"
+                AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), date('d'), date('Y'))) . '"';
+        } elseif ($sFrequency === 'mensuelle') { // Mensuelle (tous les 1er jours du mois à 9h00)
+            $where = '
+                cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m') - 1, 1, date('Y'))) . '"
+                AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), 1, date('Y'))) . '"';
+        }
+        return '
+            SELECT cgmn.' . (is_null($sFieldName) ? '*' : $sFieldName) . '
+            FROM clients_gestion_mails_notif cgmn
+            INNER JOIN clients_gestion_notifications cgn ON (cgn.id_client = cgmn.id_client AND cgn.id_notif = cgmn.id_notif)
+            WHERE ' . $where . '
+                AND cgn.' . $sFrequency . ' = 1
+                AND cgmn.' . $sFrequency . ' = 0
+                AND cgmn.status_check_' . $sFrequency . ' = 0
+                AND cgmn.id_notif = ' . $iNotificationType;
+
+    }
+
     // requte pour les cron de gestion d'alerte
     public function selectNotifsByClient($id_client, $champ = 'quotidienne', $id_notif = '')
     {
