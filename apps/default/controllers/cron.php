@@ -5298,6 +5298,9 @@ class cronController extends bootstrap
     public function _alertes_hebdomadaire()
     {
         if (true === $this->startCron('notification hebomadaire', 5)) {
+            ini_set('max_execution_time', 250);
+            ini_set('memory_limit', '1G');
+
             $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
             /** @var clients_gestion_notifications $oCustomerNotificationSettings */
@@ -5333,6 +5336,9 @@ class cronController extends bootstrap
     public function _alertes_mensuelle()
     {
         if (true === $this->startCron('notification mensuelle', 5)) {
+            ini_set('max_execution_time', 250);
+            ini_set('memory_limit', '1G');
+
             $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
 
             /** @var clients_gestion_notifications $oCustomerNotificationSettings */
@@ -5482,7 +5488,7 @@ class cronController extends bootstrap
                 return;
         }
 
-        foreach (array_chunk($aCustomerId, 500) as $aPartialCustomerId) {
+        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = array();
             foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_NEW_PROJECT) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
@@ -5491,86 +5497,79 @@ class cronController extends bootstrap
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 $oCustomer->get($iCustomerId);
 
-                if ($oCustomer->status == 1) {
-                    $iProjectsCount = count($aMailNotifications);
+                $sProjectsListHTML = '';
+                $iProjectsCount    = count($aMailNotifications);
 
-                    if ('quotidienne' === $sFrequency && 1 === $iProjectsCount && 1 == $aMailNotifications[0]['immediatement']) {
-                        $oMailNotification->get($aMailNotifications[0]['id_clients_gestion_mails_notif']);
-                        $oMailNotification->status_check_quotidienne = 1;
-                        $oMailNotification->update();
-                        continue;
-                    }
+                foreach ($aMailNotifications as $aMailNotification) {
+                    $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
+                    $oMailNotification->{$sFrequency} = 1;
+                    $oMailNotification->{'status_check_' . $sFrequency} = 1;
+                    $oMailNotification->update();
 
-                    $sProjectsListHTML = '';
-                    foreach ($aMailNotifications as $aMailNotification) {
-                        $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
-                        $oMailNotification->{$sFrequency} = 1;
-                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
-                        $oMailNotification->update();
+                    $oProject->get($aMailNotification['id_project']);
 
-                        $oProject->get($aMailNotification['id_project']);
+                    $sProjectsListHTML .= '
+                        <tr style="color:#b20066;">
+                            <td  style="font-family:Arial;font-size:14px;height: 25px;">
+                               <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . 'projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
+                            </td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
+                        </tr>';
+                }
 
-                        $sProjectsListHTML .= '
-                            <tr style="color:#b20066;">
-                                <td  style="font-family:Arial;font-size:14px;height: 25px;">
-                                   <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . 'projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
-                                </td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
-                            </tr>';
-                    }
+                if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                } else {
+                    trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
+                    continue;
+                }
 
-                    if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                    } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $sSubject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                        $sContent = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sObject  = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                    } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                    } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $sSubject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                        $sContent = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sObject  = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
-                        continue;
-                    }
+                $aReplacements = array(
+                    'surl'            => $this->surl,
+                    'url'             => $this->furl,
+                    'prenom_p'        => $oCustomer->prenom,
+                    'liste_projets'   => $sProjectsListHTML,
+                    'projet-p'        => $this->lurl . '/projets-a-financer',
+                    'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                    'gestion_alertes' => $this->lurl . '/profile',
+                    'contenu'         => $sContent,
+                    'objet'           => $sObject,
+                    'sujet'           => $sSubject,
+                    'lien_fb'         => $this->like_fb,
+                    'lien_tw'         => $this->twitter
+                );
 
-                    $aReplacements = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_projets'   => $sProjectsListHTML,
-                        'projet-p'        => $this->lurl . '/projets-a-financer',
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'objet'           => $sObject,
-                        'contenu'         => $sContent,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter
-                    );
+                $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
 
-                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
+                $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
 
-                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $oEmail->addRecipient($oCustomer->email);
-                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $oEmail->addRecipient($oCustomer->email);
+                    Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
         }
@@ -5579,6 +5578,11 @@ class cronController extends bootstrap
         $oNotificationsLog->update();
     }
 
+    /**
+     * Send accepted bids summary email
+     * @param array $aCustomerId
+     * @param string $sFrequency
+     */
     private function sendPlacedBidsSummaryEmail(array $aCustomerId, $sFrequency)
     {
         /** @var Email email */
@@ -5614,7 +5618,7 @@ class cronController extends bootstrap
                 return;
         }
 
-        foreach (array_chunk($aCustomerId, 500) as $aPartialCustomerId) {
+        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
             $aCustomerMailNotifications = array();
             foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_BID_PLACED) as $aMailNotifications) {
                 $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
@@ -5623,86 +5627,78 @@ class cronController extends bootstrap
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 $oCustomer->get($iCustomerId);
 
-                if ($oCustomer->status == 1) {
-                    $iAcceptedBidsCount = count($aMailNotifications);
+                $sBidsListHTML    = '';
+                $iSumBidsPlaced   = 0;
+                $iPlacedBidsCount = count($aMailNotifications);
 
-                    if ('quotidienne' === $sFrequency && 1 === $iAcceptedBidsCount) {
-                        $oMailNotification->get($aMailNotifications[0]['id_clients_gestion_mails_notif']);
-                        $oMailNotification->status_check_quotidienne = 1;
-                        $oMailNotification->update();
-                        continue;
-                    }
+                foreach ($aMailNotifications as $aMailNotification) {
+                    $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
+                    $oMailNotification->{$sFrequency} = 1;
+                    $oMailNotification->{'status_check_' . $sFrequency} = 1;
+                    $oMailNotification->update();
 
-                    $sBidsListHTML    = '';
-                    $iSumBidsPlaced = 0.0;
-                    foreach ($aMailNotifications as $aMailNotification) {
-                        $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
-                        $oMailNotification->{$sFrequency} = 1;
-                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
-                        $oMailNotification->update();
+                    $oNotification->get($aMailNotification['id_notification']);
+                    $oProject->get($oNotification->id_project);
+                    $oBid->get($oNotification->id_bid);
 
-                        $oNotification->get($aMailNotification['id_notification']);
-                        $oProject->get($oNotification->id_project);
-                        $oBid->get($oNotification->id_bid);
-
-                        $iSumBidsPlaced += $oBid->amount / 100;
-
-                        $sBidsListHTML .= '
-                            <tr style="color:#b20066;">
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->amount / 100, 0) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->rate, 1) . ' %</td>
-                            </tr>';
-                    }
+                    $iSumBidsPlaced += $oBid->amount / 100;
 
                     $sBidsListHTML .= '
-                        <tr>
-                            <td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-                            <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumBidsPlaced, 0) . '&nbsp;&euro;</td>
-                            <td style="border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;"></td>
+                        <tr style="color:#b20066;">
+                            <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->amount / 100, 0) . '&nbsp;&euro;</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->rate, 1) . ' %</td>
                         </tr>';
+                }
 
-                    if (1 === $iAcceptedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
-                    } elseif (1 < $iAcceptedBidsCount && 'quotidienne' === $sFrequency) {
-                        $sSubject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
-                        $sContent = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
-                        $sObject  = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of bids not handled: ' . $sFrequency . ' / ' . $iAcceptedBidsCount, E_USER_WARNING);
-                        continue;
-                    }
+                $sBidsListHTML .= '
+                    <tr>
+                        <td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+                        <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumBidsPlaced, 0) . '&nbsp;&euro;</td>
+                        <td style="border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;"></td>
+                    </tr>';
 
-                    $aReplacements = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_offres'    => $sBidsListHTML,
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'objet'           => $sObject,
-                        'contenu'         => $sContent,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter
-                    );
+                if (1 === $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
+                } elseif (1 < $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
+                } else {
+                    trigger_error('Frequency and number of placed bids not handled: ' . $sFrequency . ' / ' . $iPlacedBidsCount, E_USER_WARNING);
+                    continue;
+                }
 
-                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                $aReplacements = array(
+                    'surl'            => $this->surl,
+                    'url'             => $this->furl,
+                    'prenom_p'        => $oCustomer->prenom,
+                    'liste_offres'    => $sBidsListHTML,
+                    'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                    'gestion_alertes' => $this->lurl . '/profile',
+                    'contenu'         => $sContent,
+                    'objet'           => $sObject,
+                    'sujet'           => $sSubject,
+                    'lien_fb'         => $this->like_fb,
+                    'lien_tw'         => $this->twitter
+                );
 
-                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+                $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
 
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $oEmail->addRecipient($oCustomer->email);
-                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
+                $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $oEmail->addRecipient($oCustomer->email);
+                    Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
         }
@@ -5711,562 +5707,495 @@ class cronController extends bootstrap
         $oNotificationsLog->update();
     }
 
-    // offres refusées
-    private function sendRejectedBidsSummaryEmail($array_offres_refusees, $type)
+    /**
+     * Send rejected bids summary email
+     * @param array $aCustomerId
+     * @param string $sFrequency
+     */
+    private function sendRejectedBidsSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $this->clients                       = $this->loadData('clients');
-        $this->notifications                 = $this->loadData('notifications');
-        $this->projects                      = $this->loadData('projects');
-        $this->companies                     = $this->loadData('companies');
-        $this->bids                          = $this->loadData('bids');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        /** @var Email email */
+        $oEmail = $this->loadLib('email');
 
-        if ($array_offres_refusees != false) {
-            $clients_gestion_notif_log           = $this->loadData('clients_gestion_notif_log');
-            $clients_gestion_notif_log->id_notif = 3;
-            $clients_gestion_notif_log->type     = $type;
-            $clients_gestion_notif_log->debut    = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->fin      = '0000-00-00 00:00:00';
-            $clients_gestion_notif_log->create();
+        /** @var bids $oBid */
+        $oBid = $this->loadData('bids');
+        /** @var clients $oCustomer */
+        $oCustomer = $this->loadData('clients');
+        /** @var notifications $oNotification */
+        $oNotification = $this->loadData('notifications');
+        /** @var projects $oProject */
+        $oProject = $this->loadData('projects');
+        /** @var clients_gestion_mails_notif $oMailNotification */
+        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
+        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
+        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
 
-            foreach ($array_offres_refusees as $id_client => $mails_notif) {
-                if ($this->clients_gestion_notifications->getNotif($id_client, 3, $type) == true) {
-                    if ($type == 'quotidienne') {
-                        $this->mails_text->get('synthese-quotidienne-offres-non-retenues', 'lang = "' . $this->language . '" AND type');
-                    }
-                    $liste_offres   = '';
-                    $i              = 1;
-                    $total          = 0;
-                    $nb_arrayoffres = count($mails_notif);
-                    foreach ($mails_notif as $n) {
+        /** @var clients_gestion_notif_log $oNotificationsLog */
+        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
+        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_REJECTED;
+        $oNotificationsLog->type     = $sFrequency;
+        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
+        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
+        $oNotificationsLog->create();
 
-                        $this->notifications->get($n['id_notification'], 'id_notification');
-                        $this->projects->get($this->notifications->id_project, 'id_project');
-                        $this->companies->get($this->projects->id_company, 'id_company');
-                        $this->bids->get($this->notifications->id_bid, 'id_bid');
+        switch ($sFrequency) {
+            case 'quotidienne':
+                $this->mails_text->get('synthese-quotidienne-offres-non-retenues', 'lang = "' . $this->language . '" AND type');
+                break;
+            default:
+                trigger_error('Unknown frequency for rejected bids summary email: ' . $sFrequency, E_USER_WARNING);
+                return;
+        }
 
-                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                        if ($type == 'quotidienne') {
-                            $this->clients_gestion_mails_notif->quotidienne              = 1;
-                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->clients_gestion_mails_notif->hebdomadaire              = 1;
-                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                        } elseif ($type == 'mensuelle') {
-                            $this->clients_gestion_mails_notif->mensuelle              = 1;
-                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                        }
-                        $this->clients_gestion_mails_notif->update();
-
-                        $total += ($this->notifications->amount / 100);
-
-                        if ($i == $nb_arrayoffres) {
-                            $liste_offres .= '
-                            <tr style="color:#b20066;">
-                                <td  style="height:25px; font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->notifications->amount / 100), 0) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
-                            </tr>
-                            <tr>
-                                <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-                                <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' &euro;</td>
-                                <td style="border-top:1px solid #727272;"></td>
-                            </tr>
-                            ';
-                        } else {
-                            $liste_offres .= '
-                            <tr style="color:#b20066;">
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->notifications->amount / 100), 0) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->bids->rate) . ' %</td>
-                            </tr>';
-                        }
-                        $i++;
-                    }
-
-                    $this->clients->get($id_client, 'id_client');
-
-                    $lecontenu = '';
-
-                    if ($nb_arrayoffres <= 1) {
-                        if ($type == 'quotidienne') {
-                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
-                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
-                            $objet                     = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
-                        }
-                    } else {
-                        if ($type == 'quotidienne') {
-                            $sujet     = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
-                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
-                            $objet     = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
-                        }
-                    }
-
-                    $varMail = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $this->clients->prenom,
-                        'liste_offres'    => $liste_offres,
-                        'motif_virement'  => $this->clients->getLenderPattern($this->clients->id_client),
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'contenu'         => $lecontenu,
-                        'objet'           => $objet,
-                        'sujet'           => $sujet,
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter
-                    );
-
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->clients->status == 1) {
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient($this->clients->email);
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                    }
-                } else {// si il veut pas de mail
-                    foreach ($mails_notif as $n) {
-                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                        if ($type == 'quotidienne') {
-                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                        } elseif ($type == 'mensuelle') {
-                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                        }
-                        $this->clients_gestion_mails_notif->update();
-                    }
-                }
+        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
+            $aCustomerMailNotifications = array();
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_BID_REJECTED) as $aMailNotifications) {
+                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
-            $clients_gestion_notif_log->fin = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->update();
+            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
+                $oCustomer->get($iCustomerId);
+
+                $sBidsListHTML      = '';
+                $iSumRejectedBids   = 0;
+                $iRejectedBidsCount = count($aMailNotifications);
+
+                foreach ($aMailNotifications as $aMailNotification) {
+                    $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
+                    $oMailNotification->{$sFrequency} = 1;
+                    $oMailNotification->{'status_check_' . $sFrequency} = 1;
+                    $oMailNotification->update();
+
+                    $oNotification->get($aMailNotification['id_notification']);
+                    $oProject->get($oNotification->id_project);
+                    $oBid->get($oNotification->id_bid);
+
+                    $iSumRejectedBids += $oNotification->amount / 100;
+
+                    $sBidsListHTML .= '
+                        <tr style="color:#b20066;">
+                            <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oNotification->amount / 100, 0) . '&nbsp;&euro;</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->rate, 1) . ' %</td>
+                        </tr>';
+                }
+
+                $sBidsListHTML .= '
+                    <tr>
+                        <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+                        <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumRejectedBids, 0) . '&nbsp;&euro;</td>
+                        <td style="border-top:1px solid #727272;"></td>
+                    </tr>';
+
+                if (1 === $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
+                } elseif (1 < $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
+                } else {
+                    trigger_error('Frequency and number of rejected bids not handled: ' . $sFrequency . ' / ' . $iRejectedBidsCount, E_USER_WARNING);
+                    continue;
+                }
+
+                $aReplacements = array(
+                    'surl'            => $this->surl,
+                    'url'             => $this->furl,
+                    'prenom_p'        => $oCustomer->prenom,
+                    'liste_offres'    => $sBidsListHTML,
+                    'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                    'gestion_alertes' => $this->lurl . '/profile',
+                    'contenu'         => $sContent,
+                    'objet'           => $sObject,
+                    'sujet'           => $sSubject,
+                    'lien_fb'         => $this->like_fb,
+                    'lien_tw'         => $this->twitter
+                );
+
+                $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+
+                $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
+                $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $oEmail->addRecipient($oCustomer->email);
+                    Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+            }
         }
+
+        $oNotificationsLog->fin = date('Y-m-d H:i:s');
+        $oNotificationsLog->update();
     }
 
-    // offres acceptées
-    private function sendAcceptedLoansSummaryEmail($array_offres_acceptees, $type)
+    /**
+     * Send accepted loans summary email
+     * @param array $aCustomerId
+     * @param string $sFrequency
+     */
+    private function sendAcceptedLoansSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $this->clients                       = $this->loadData('clients');
-        $this->notifications                 = $this->loadData('notifications');
-        $this->projects                      = $this->loadData('projects');
-        $this->companies                     = $this->loadData('companies');
-        $this->loans                         = $this->loadData('loans');
-        $oLender                             = $this->loadData('lenders_accounts');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        /** @var Email email */
+        $oEmail = $this->loadLib('email');
 
-        if (isset($array_offres_acceptees)) {
-            $clients_gestion_notif_log           = $this->loadData('clients_gestion_notif_log');
-            $clients_gestion_notif_log->id_notif = 4;
-            $clients_gestion_notif_log->type     = $type;
-            $clients_gestion_notif_log->debut    = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->fin      = '0000-00-00 00:00:00';
-            $clients_gestion_notif_log->create();
+        /** @var clients $oCustomer */
+        $oCustomer = $this->loadData('clients');
+        /** @var lenders_accounts $oLender */
+        $oLender = $this->loadData('lenders_accounts');
+        /** @var loans $oLoan */
+        $oLoan = $this->loadData('loans');
+        /** @var notifications $oNotification */
+        $oNotification = $this->loadData('notifications');
+        /** @var projects $oProject */
+        $oProject = $this->loadData('projects');
+        /** @var clients_gestion_mails_notif $oMailNotification */
+        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
+        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
+        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
 
-            foreach ($array_offres_acceptees as $id_client => $mails_notif) {
-                if ($this->clients_gestion_notifications->getNotif($id_client, 4, $type) == true) {
-                    $this->clients->get($id_client, 'id_client');
+        /** @var clients_gestion_notif_log $oNotificationsLog */
+        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
+        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
+        $oNotificationsLog->type     = $sFrequency;
+        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
+        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
+        $oNotificationsLog->create();
 
-                    $oLender->get($this->clients->id_client, 'id_client_owner');
-                    $bLenderIsNaturalPerson = $oLender->isNaturalPerson($oLender->id_lender_account);
-                    $sLinkExplication       = ($bLenderIsNaturalPerson) ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="'.$this->surl.'/document-de-pret">cette page</a>. ' : '';
+        switch ($sFrequency) {
+            case 'quotidienne':
+                $this->mails_text->get('synthese-quotidienne-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                break;
+            case 'hebdomadaire':
+                $this->mails_text->get('synthese-hebdomadaire-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                break;
+            case 'mensuelle':
+                $this->mails_text->get('synthese-mensuelle-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                break;
+            default:
+                trigger_error('Unknown frequency for accepted loans summary email: ' . $sFrequency, E_USER_WARNING);
+                return;
+        }
 
-                    if (count($mails_notif) > 1 || $type != 'quotidienne') {
-                        $liste_offres   = '';
-                        $i              = 1;
-                        $total          = 0;
-                        $nb_arrayoffres = count($mails_notif);
-                        $goMail         = true;
-
-                        foreach ($mails_notif as $n) {
-                            $this->notifications->get($n['id_notification'], 'id_notification');
-                            $this->projects->get($this->notifications->id_project, 'id_project');
-                            $this->companies->get($this->projects->id_company, 'id_company');
-                            $this->loans->get($n['id_loan'], 'id_loan');
-
-                            switch ($this->loans->id_type_contract){
-                                case \loans::TYPE_CONTRACT_BDC:
-                                    $sContractType = 'Bon de caisse';
-                                    break;
-                                case \loans::TYPE_CONTRACT_IFP:
-                                    $sContractType = 'Contrat de pr&ecirc;t';
-                                    break;
-                                default:
-                                    $sContractType = '';
-                                    break;
-                            }
-
-                            $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                            if ($type == 'quotidienne') {
-                                $this->clients_gestion_mails_notif->quotidienne              = 1;
-                                $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                            } elseif ($type == 'hebdomadaire') {
-                                $this->clients_gestion_mails_notif->hebdomadaire              = 1;
-                                $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                            } elseif ($type == 'mensuelle') {
-                                $this->clients_gestion_mails_notif->mensuelle              = 1;
-                                $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                            }
-                            $this->clients_gestion_mails_notif->update();
-
-                            $total += ($this->loans->amount / 100);
-
-                            if ($i == $nb_arrayoffres) {
-                                $liste_offres .= '
-                                <tr style="color:#b20066;">
-                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' &euro;</td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $sContractType . '</td>
-                                </tr>
-                                <tr>
-                                    <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-                                    <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($total, 0) . ' &euro;</td>
-                                    <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
-                                    <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
-                                </tr>
-                                ';
-                            } else {
-                                $liste_offres .= '
-                                <tr style="color:#b20066;">
-                                    <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber(($this->loans->amount / 100), 0) . ' &euro;</td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->loans->rate) . ' %</td>
-                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $sContractType . '</td>
-                                </tr>';
-                            }
-                            $i++;
-                        }
-
-                        if ($goMail == true) {// (BT : 18180 04/08/2015)
-
-                            if ($type == 'quotidienne') {
-                                $this->mails_text->get('synthese-quotidienne-offres-acceptees', 'lang = "' . $this->language . '" AND type');
-                            } elseif ($type == 'hebdomadaire') {
-                                $this->mails_text->get('synthese-hebdomadaire-offres-acceptees', 'lang = "' . $this->language . '" AND type');
-                            } else {
-                                $this->mails_text->get('synthese-mensuelle-offres-acceptees', 'lang = "' . $this->language . '" AND type');
-                            }
-                            // on gère ici le cas du singulier/pluriel
-                            if ($nb_arrayoffres <= 1) {
-                                if ($type == 'quotidienne') {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
-                                    $sujet                     = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
-                                    $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
-                                    $objet                     = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
-                                } elseif ($type == 'hebdomadaire') {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
-                                    $sujet                     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
-                                    $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
-                                    $objet                     = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
-                                } elseif ($type == 'mensuelle') {
-                                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
-                                    $sujet                     = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
-                                    $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
-                                    $objet                     = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
-                                }
-                            } else {
-                                if ($type == 'quotidienne') {
-                                    $sujet     = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
-                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
-                                    $objet     = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
-                                } elseif ($type == 'hebdomadaire') {
-                                    $sujet     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                                    $objet     = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                                } elseif ($type == 'mensuelle') {
-                                    $sujet     = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
-                                    $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
-                                    $objet     = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
-                                }
-                            }
-
-                            $varMail = array(
-                                'surl'             => $this->surl,
-                                'url'              => $this->furl,
-                                'prenom_p'         => $this->clients->prenom,
-                                'liste_offres'     => $liste_offres,
-                                'motif_virement'   => $this->clients->getLenderPattern($this->clients->id_client),
-                                'contenu'          => $lecontenu,
-                                'objet'            => $objet,
-                                'sujet'            => $sujet,
-                                'gestion_alertes'  => $this->lurl . '/profile',
-                                'lien_fb'          => $this->like_fb,
-                                'lien_tw'          => $this->twitter,
-                                'link_explication' => $sLinkExplication
-                            );
-                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                            $this->email = $this->loadLib('email');
-                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                            $this->email->setSubject(stripslashes($sujetMail));
-                            $this->email->setHTMLBody(stripslashes($texteMail));
-
-                            if ($this->clients->status == 1) {
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient($this->clients->email);
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
-                            }
-                        }
-                    }
-                } else {// si il veut pas de mail
-                    foreach ($mails_notif as $n) {
-                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                        if ($type == 'quotidienne') {
-                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                        } elseif ($type == 'mensuelle') {
-                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                        }
-                        $this->clients_gestion_mails_notif->update();
-                    }
-                }
+        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
+            $aCustomerMailNotifications = array();
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED) as $aMailNotifications) {
+                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
-            $clients_gestion_notif_log->fin = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->update();
+            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
+                $oCustomer->get($iCustomerId);
+                $oLender->get($oCustomer->id_client, 'id_client_owner');
+
+                $sLoansListHTML      = '';
+                $iSumAcceptedLoans   = 0;
+                $iAcceptedLoansCount = count($aMailNotifications);
+
+                foreach ($aMailNotifications as $aMailNotification) {
+                    $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
+                    $oMailNotification->{$sFrequency} = 1;
+                    $oMailNotification->{'status_check_' . $sFrequency} = 1;
+                    $oMailNotification->update();
+
+                    $oNotification->get($aMailNotification['id_notification']);
+                    $oProject->get($oNotification->id_project);
+                    $oLoan->get($aMailNotification['id_loan']);
+
+                    $iSumAcceptedLoans += $oLoan->amount / 100;
+
+                    switch ($oLoan->id_type_contract) {
+                        case \loans::TYPE_CONTRACT_BDC:
+                            $sContractType = 'Bon de caisse';
+                            break;
+                        case \loans::TYPE_CONTRACT_IFP:
+                            $sContractType = 'Contrat de pr&ecirc;t';
+                            break;
+                        default:
+                            $sContractType = '';
+                            trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
+                            break;
+                    }
+
+                    $sLoansListHTML .= '
+                        <tr style="color:#b20066;">
+                            <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oLoan->amount / 100, 0) . '&nbsp;&euro;</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oLoan->rate, 1) . ' %</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $sContractType . '</td>
+                        </tr>';
+                }
+
+                $sLoansListHTML .= '
+                    <tr>
+                        <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
+                        <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumAcceptedLoans, 0) . '&nbsp;&euro;</td>
+                        <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
+                        <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
+                    </tr>';
+
+                if (1 === $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                } elseif (1 < $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
+                } elseif (1 === $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                } elseif (1 < $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                } elseif (1 === $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                } elseif (1 < $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
+                    $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
+                } else {
+                    trigger_error('Frequency and number of accepted loans not handled: ' . $sFrequency . ' / ' . $iAcceptedLoansCount, E_USER_WARNING);
+                    continue;
+                }
+
+                $aReplacements = array(
+                    'surl'             => $this->surl,
+                    'url'              => $this->furl,
+                    'prenom_p'         => $oCustomer->prenom,
+                    'liste_offres'     => $sLoansListHTML,
+                    'link_explication' => $oLender->isNaturalPerson() ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="' . $this->surl . '/document-de-pret">cette page</a>. ' : '',
+                    'motif_virement'   => $oCustomer->getLenderPattern($oCustomer->id_client),
+                    'gestion_alertes'  => $this->lurl . '/profile',
+                    'contenu'          => $sContent,
+                    'objet'            => $sObject,
+                    'sujet'            => $sSubject,
+                    'lien_fb'          => $this->like_fb,
+                    'lien_tw'          => $this->twitter
+                );
+
+                $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+
+                $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
+                $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $oEmail->addRecipient($oCustomer->email);
+                    Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+            }
         }
+
+        $oNotificationsLog->fin = date('Y-m-d H:i:s');
+        $oNotificationsLog->update();
     }
 
-    // remb
-    private function sendRepaymentsSummaryEmail($array_remb, $type)
+    /**
+     * Send repayment summary email
+     * @param array $aCustomerId
+     * @param string $sFrequency
+     */
+    private function sendRepaymentsSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $this->clients       = $this->loadData('clients');
-        $this->notifications = $this->loadData('notifications');
-        $this->projects      = $this->loadData('projects');
-        $this->companies     = $this->loadData('companies');
-        $this->echeanciers   = $this->loadData('echeanciers');
-        $this->loans         = $this->loadData('loans');
+        /** @var Email email */
+        $oEmail = $this->loadLib('email');
 
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        /** @var clients $oCustomer */
+        $oCustomer = $this->loadData('clients');
+        /** @var echeanciers $oLenderRepayment */
+        $oLenderRepayment = $this->loadData('echeanciers');
+        /** @var notifications $oNotification */
+        $oNotification = $this->loadData('notifications');
+        /** @var projects $oProject */
+        $oProject = $this->loadData('projects');
+        /** @var transactions $oTransaction */
+        $oTransaction = $this->loadData('transactions');
+        /** @var clients_gestion_mails_notif $oMailNotification */
+        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
+        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
+        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
 
-        if ($array_remb != false) {
-            $clients_gestion_notif_log           = $this->loadData('clients_gestion_notif_log');
-            $clients_gestion_notif_log->id_notif = 5;
-            $clients_gestion_notif_log->type     = $type;
-            $clients_gestion_notif_log->debut    = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->fin      = '0000-00-00 00:00:00';
-            $clients_gestion_notif_log->create();
+        /** @var clients_gestion_notif_log $oNotificationsLog */
+        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
+        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_REPAYMENT;
+        $oNotificationsLog->type     = $sFrequency;
+        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
+        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
+        $oNotificationsLog->create();
 
-            foreach ($array_remb as $id_client => $mails_notif) {
-                if ($this->clients_gestion_notifications->getNotif($id_client, 5, $type) == true) {
-                    if ($type == 'quotidienne') {
-                        $this->mails_text->get('synthese-quotidienne-remboursements', 'lang = "' . $this->language . '" AND type');
-                    } elseif ($type == 'hebdomadaire') {
-                        $this->mails_text->get('synthese-hebdomadaire-remboursements', 'lang = "' . $this->language . '" AND type');
-                    } else {
-                        $this->mails_text->get('synthese-mensuelle-remboursements', 'lang = "' . $this->language . '" AND type');
-                    }
+        switch ($sFrequency) {
+            case 'quotidienne':
+                $this->mails_text->get('synthese-quotidienne-remboursements', 'lang = "' . $this->language . '" AND type');
+                break;
+            case 'hebdomadaire':
+                $this->mails_text->get('synthese-hebdomadaire-remboursements', 'lang = "' . $this->language . '" AND type');
+                break;
+            case 'mensuelle':
+                $this->mails_text->get('synthese-mensuelle-remboursements', 'lang = "' . $this->language . '" AND type');
+                break;
+            default:
+                trigger_error('Unknown frequency for repayment summary email: ' . $sFrequency, E_USER_WARNING);
+                return;
+        }
 
-                    $liste_remb   = '';
-                    $i            = 1;
-                    $nb_arrayRemb = count($mails_notif);
-
-                    $totalinteretsNet = 0;
-                    $totalinterets    = 0;
-                    $totalcapital     = 0;
-
-                    foreach ($mails_notif as $n) {
-                        $this->notifications->get($n['id_notification'], 'id_notification');
-                        $this->projects->get($this->notifications->id_project, 'id_project');
-                        $this->companies->get($this->projects->id_company, 'id_company');
-
-                        $this->transactions->get($n['id_transaction'], 'id_transaction');
-                        $this->echeanciers->get($this->transactions->id_echeancier, 'id_echeancier');
-
-                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                        if ($type == 'quotidienne') {
-                            $this->clients_gestion_mails_notif->quotidienne              = 1;
-                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->clients_gestion_mails_notif->hebdomadaire              = 1;
-                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                        } elseif ($type == 'mensuelle') {
-                            $this->clients_gestion_mails_notif->mensuelle              = 1;
-                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                        }
-                        $this->clients_gestion_mails_notif->update();
-                        // On gère ici le cas ou on est dans un remboursement anticipé (on a pas de id_echeance car plusieurs echeances)
-                        $contenu_remboursement_anticipe = "";
-                        if ($this->transactions->type_transaction == 23) {
-                            $this->echeanciers->prelevements_obligatoires    = 0;
-                            $this->echeanciers->retenues_source              = 0;
-                            $this->echeanciers->csg                          = 0;
-                            $this->echeanciers->prelevements_sociaux         = 0;
-                            $this->echeanciers->contributions_additionnelles = 0;
-                            $this->echeanciers->prelevements_solidarite      = 0;
-                            $this->echeanciers->crds                         = 0;
-                            $this->echeanciers->interets                     = 0;
-                            $this->echeanciers->capital                      = $this->transactions->montant;
-
-                            $montantHaut = 0;
-                            $montantBas  = 0;
-                            foreach ($this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $this->transactions->id_loan_remb) as $b) {
-                                $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                                $montantBas += ($b['amount'] / 100);
-                            }
-                            $AvgLoans = ($montantHaut / $montantBas);
-
-                            $sumInt = $this->echeanciers->getSumRembByloan_remb_ra($this->transactions->id_loan_remb, 'interets');
-
-                            $contenu_remboursement_anticipe = "
-                            Important : le remboursement de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($this->echeanciers->capital / 100) . "&euro;</span> correspond au remboursement total du capital restant dû de votre prêt à <span style='color: #b20066;'>" . $this->companies->name . "</span>. Comme le prévoient les règles d'Unilend, <span style='color: #b20066;'>" . $this->companies->name . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
-                            <br /><br />
-                            Depuis l’origine, il vous a versé <span style='color: #b20066;'>" . $this->ficelle->formatNumber($sumInt) . "€</span> d’intérêts soit un taux d’intérêt annualisé moyen de <span style='color: #b20066;'>" . number_format($AvgLoans) . "%.</span><br><br> ";
-
-                        } else {
-                            $this->echeanciers->get($this->transactions->id_echeancier, 'id_echeancier');
-                        }
-
-                        $totalFiscal = ($this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds);
-
-                        $totalinteretsNet += ($this->echeanciers->interets / 100) - $totalFiscal;
-                        $totalinterets += ($this->echeanciers->interets / 100);
-                        $totalcapital += ($this->echeanciers->capital / 100);
-
-                        if ($i == $nb_arrayRemb) {
-                            $liste_remb .= '
-                            <tr style="color:#b20066;">
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->capital / 100) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100 - $totalFiscal) . ' &euro;</td>
-                            </tr>
-                            <tr>
-                                <td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($totalcapital) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($totalinterets) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($totalinteretsNet) . ' &euro;</td>
-                            </tr>
-                            ';
-                        } else {
-                            $liste_remb .= '
-                            <tr style="color:#b20066;">
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $this->projects->slug . '">' . $this->projects->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->capital / 100) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100) . ' &euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($this->echeanciers->interets / 100 - $totalFiscal) . ' &euro;</td>
-                            </tr>';
-                        }
-                        $i++;
-                    }
-
-                    $this->clients->get($id_client, 'id_client');
-
-                    $getsolde = $this->transactions->getSolde($this->clients->id_client);
-
-                    if ($this->Config['env'] != 'prod') {
-                        $liste_remb = utf8_decode($liste_remb);
-                    }
-
-                    $lecontenu = '';
-                    // on gère ici le cas du singulier/pluriel
-                    if ($nb_arrayRemb <= 1) {
-                        if ($type == 'quotidienne') {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
-                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
-                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
-                        } elseif ($type == 'mensuelle') {
-                            $sujet                     = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                            $lecontenu                 = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
-                        }
-                    } else {
-                        if ($type == 'quotidienne') {
-                            $sujet     = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
-                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
-                        } elseif ($type == 'hebdomadaire') {
-                            $sujet     = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
-                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
-                        } elseif ($type == 'mensuelle') {
-                            $sujet     = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
-                            $lecontenu = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
-                        }
-                    }
-
-                    $varMail = array(
-                        'surl'                   => $this->surl,
-                        'url'                    => $this->furl,
-                        'prenom_p'               => $this->clients->prenom,
-                        'liste_offres'           => $liste_remb,
-                        'motif_virement'         => $this->clients->getLenderPattern($this->clients->id_client),
-                        'gestion_alertes'        => $this->lurl . '/profile',
-                        'montant_dispo'          => $this->ficelle->formatNumber($getsolde),
-                        'remboursement_anticipe' => $contenu_remboursement_anticipe,
-                        'contenu'                => $lecontenu,
-                        'sujet'                  => $sujet,
-                        'lien_fb'                => $this->like_fb,
-                        'lien_tw'                => $this->twitter
-                    );
-
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->clients->status == 1) {
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient($this->clients->email);
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                    }
-                } else {// si il veut pas de mail
-                    // On ajout un statut comme quoi on a deja checké
-                    foreach ($mails_notif as $n) {
-                        $this->clients_gestion_mails_notif->get($n['id_clients_gestion_mails_notif'], 'id_clients_gestion_mails_notif');
-                        if ($type == 'quotidienne') {
-                            $this->clients_gestion_mails_notif->status_check_quotidienne = 1;
-                        } elseif ($type == 'hebdomadaire') {
-                            $this->clients_gestion_mails_notif->status_check_hebdomadaire = 1;
-                        } elseif ($type == 'mensuelle') {
-                            $this->clients_gestion_mails_notif->status_check_mensuelle = 1;
-                        }
-                        $this->clients_gestion_mails_notif->update();
-                    }
-                }
+        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
+            $aCustomerMailNotifications = array();
+            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_REPAYMENT) as $aMailNotifications) {
+                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
             }
 
-            $clients_gestion_notif_log->fin = date('Y-m-d H:i:s');
-            $clients_gestion_notif_log->update();
+            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
+                $oCustomer->get($iCustomerId);
+
+                $sEarlyRepaymentContent     = '';
+                $sRepaymentsListHTML        = '';
+                $fTotalInterestsTaxFree     = 0;
+                $fTotalInterestsTaxIncluded = 0;
+                $fTotalCapital              = 0;
+                $iRepaymentsCount           = count($aMailNotifications);
+
+                foreach ($aMailNotifications as $aMailNotification) {
+                    $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
+                    $oMailNotification->{$sFrequency} = 1;
+                    $oMailNotification->{'status_check_' . $sFrequency} = 1;
+                    $oMailNotification->update();
+
+                    $oNotification->get($aMailNotification['id_notification']);
+                    $oProject->get($oNotification->id_project);
+                    $oTransaction->get($aMailNotification['id_transaction']);
+
+                    if (\transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT == $oTransaction->type_transaction) {
+                        /** @var companies $oCompanies */
+                        $oCompanies = $this->loadData('companies');
+                        $oCompanies->get($oProject->id_company);
+
+                        /** @var lenders_accounts $oLender */
+                        $oLender = $this->loadData('lenders_accounts');
+                        $oLender->get($oCustomer->id_client, 'id_client_owner');
+
+                        /** @var loans $oLoan */
+                        $oLoan = $this->loadData('loans');
+
+                        $fRepaymentCapital              = $oTransaction->montant / 100;
+                        $fRepaymentInterestsTaxIncluded = 0;
+                        $fRepaymentTax                  = 0;
+
+                        $sEarlyRepaymentContent = "
+                            Important : le remboursement de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oTransaction->montant / 100) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span>.
+                            Comme le pr&eacute;voient les r&egrave;gles d'Unilend, <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
+                            <br/><br/>
+                            Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLenderRepayment->getSumRembByloan_remb_ra($oTransaction->id_loan_remb, 'interets')) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $oProject->id_project), 1) . " %.</span><br/><br/> ";
+                    } else {
+                        $oLenderRepayment->get($oTransaction->id_echeancier);
+
+                        $fRepaymentCapital              = $oLenderRepayment->montant / 100;
+                        $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
+                        $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
+                    }
+
+                    $fTotalCapital += $fRepaymentCapital;
+                    $fTotalInterestsTaxIncluded += $fRepaymentInterestsTaxIncluded;
+                    $fTotalInterestsTaxFree += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
+
+                    $sRepaymentsListHTML .= '
+                        <tr style="color:#b20066;">
+                            <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentCapital) . '&nbsp;&euro;</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;&euro;</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;&euro;</td>
+                        </tr>';
+                }
+
+                $sRepaymentsListHTML .= '
+                    <tr>
+                        <td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
+                        <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalCapital) . '&nbsp;&euro;</td>
+                        <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxIncluded) . '&nbsp;&euro;</td>
+                        <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxFree) . '&nbsp;&euro;</td>
+                    </tr>';
+
+                if (1 === $iRepaymentsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                } elseif (1 < $iRepaymentsCount && 'quotidienne' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
+                } elseif (1 === $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                } elseif (1 < $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
+                } elseif (1 === $iRepaymentsCount && 'mensuelle' === $sFrequency) {
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
+                } elseif (1 < $iRepaymentsCount && 'mensuelle' === $sFrequency) {
+                    $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
+                    $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
+                    $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
+                } else {
+                    trigger_error('Frequency and number of repayments not handled: ' . $sFrequency . ' / ' . $iRepaymentsCount, E_USER_WARNING);
+                    continue;
+                }
+
+                $aReplacements = array(
+                    'surl'                   => $this->surl,
+                    'url'                    => $this->furl,
+                    'prenom_p'               => $oCustomer->prenom,
+                    'liste_offres'           => $sRepaymentsListHTML,
+                    'motif_virement'         => $oCustomer->getLenderPattern($oCustomer->id_client),
+                    'gestion_alertes'        => $this->lurl . '/profile',
+                    'montant_dispo'          => $this->ficelle->formatNumber($oTransaction->getSolde($oCustomer->id_client)),
+                    'remboursement_anticipe' => $sEarlyRepaymentContent,
+                    'contenu'                => $sContent,
+                    'sujet'                  => $sSubject,
+                    'lien_fb'                => $this->like_fb,
+                    'lien_tw'                => $this->twitter
+                );
+
+                $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+
+                $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
+                $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $oEmail->addRecipient($oCustomer->email);
+                    Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+            }
         }
+
+        $oNotificationsLog->fin = date('Y-m-d H:i:s');
+        $oNotificationsLog->update();
     }
 
     // 1 fois par jour on regarde si on a une offre de parrainage a traiter pour donner l'argent
