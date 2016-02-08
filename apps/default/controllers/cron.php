@@ -6418,22 +6418,22 @@ class cronController extends bootstrap
     public function _send_email_remb_auto()
     {
         if (true === $this->startCron('send_email_remb_auto', 5)) {
-            $echeanciers             = $this->loadData('echeanciers');
-            $transactions            = $this->loadData('transactions');
-            $lenders                 = $this->loadData('lenders_accounts');
-            $clients                 = $this->loadData('clients');
-            $companies               = $this->loadData('companies');
-            $notifications           = $this->loadData('notifications');
-            $loans                   = $this->loadData('loans');
-            $projects_status_history = $this->loadData('projects_status_history');
-            $projects                = $this->loadData('projects');
+            $this->email = $this->loadLib('email');
 
-            // ajout KLE - 28-07-15 BT : 18157 *** pour ne pas envoyer de mail tant que le remb auto n'est pas terminé
-            // On recup le param du remb auto
+            $echeanciers                         = $this->loadData('echeanciers');
+            $transactions                        = $this->loadData('transactions');
+            $lenders                             = $this->loadData('lenders_accounts');
+            $clients                             = $this->loadData('clients');
+            $companies                           = $this->loadData('companies');
+            $notifications                       = $this->loadData('notifications');
+            $loans                               = $this->loadData('loans');
+            $projects_status_history             = $this->loadData('projects_status_history');
+            $projects                            = $this->loadData('projects');
+            $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+
             $settingsControleRemb = $this->loadData('settings');
             $settingsControleRemb->get('Controle cron remboursements auto', 'type');
 
-            // on rentre dans le cron si statut égale 1
             if ($settingsControleRemb->value == 1) {
                 // BIEN PRENDRE EN COMPTE LA DATE DE DEBUT DE LA REQUETE POUR NE PAS TRATER LES ANCIENS PROJETS REMB <------------------------------------| !!!!!!!!!
                 $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1 AND DATE(date_echeance) > "2015-06-30"', '', 0, 300); // on limite a 300 mails par executions
@@ -6441,96 +6441,91 @@ class cronController extends bootstrap
                 foreach ($lEcheances as $e) {
                     if (
                         $transactions->get($e['id_echeancier'], 'id_echeancier')
+                        && $lenders->get($e['id_lender'], 'id_lender_account')
                         && $clients->get($lenders->id_client_owner, 'id_client')
-                        && $clients->status == 1
                     ) {
-                        $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'added DESC', 0, 1);
-                        $dateDernierStatut = $dernierStatut[0]['added'];
+                        if (1 == $clients->status) {
+                            $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'added DESC', 0, 1);
+                            $dateDernierStatut = $dernierStatut[0]['added'];
+                            $timeAdd           = strtotime($dateDernierStatut);
+                            $day               = date('d', $timeAdd);
+                            $month             = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+                            $year              = date('Y', $timeAdd);
+                            $rembNet           = $e['rembNet'];
 
-                        $timeAdd = strtotime($dateDernierStatut);
-                        $day     = date('d', $timeAdd);
-                        $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-                        $year    = date('Y', $timeAdd);
+                            $projects->get($e['id_project'], 'id_project');
+                            $companies->get($projects->id_company, 'id_company');
 
-                        $rembNet = $e['rembNet'];
+                            $this->mails_text->get('preteur-remboursement', 'lang = "' . $this->language . '" AND type');
 
-                        $lenders->get($e['id_lender'], 'id_lender_account');
-                        $clients->get($lenders->id_client_owner, 'id_client');
-                        $projects->get($e['id_project'], 'id_project');
-                        $companies->get($projects->id_company, 'id_company');
+                            $nbpret = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
-                        $this->mails_text->get('preteur-remboursement', 'lang = "' . $this->language . '" AND type');
-
-                        $nbpret = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-
-                        if ($rembNet >= 2) {
-                            $euros = ' euros';
-                        } else {
-                            $euros = ' euro';
-                        }
-                        $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
-
-                        $getsolde = $transactions->getSolde($clients->id_client);
-                        if ($getsolde > 1) {
-                            $euros = ' euros';
-                        } else {
-                            $euros = ' euro';
-                        }
-                        $solde = $this->ficelle->formatNumber($getsolde) . $euros;
-
-                        $varMail = array(
-                            'surl'                  => $this->surl,
-                            'url'                   => $this->furl,
-                            'prenom_p'              => $clients->prenom,
-                            'mensualite_p'          => $rembNetEmail,
-                            'mensualite_avantfisca' => ($e['montant'] / 100),
-                            'nom_entreprise'        => $companies->name,
-                            'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
-                            'nbre_prets'            => $nbpret,
-                            'solde_p'               => $solde,
-                            'motif_virement'        => $clients->getLenderPattern($clients->id_client),
-                            'lien_fb'               => $this->like_fb,
-                            'lien_tw'               => $this->twitter
-                        );
-
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        $notifications->type            = \notifications::TYPE_REPAYMENT;
-                        $notifications->id_lender       = $e['id_lender'];
-                        $notifications->id_project      = $e['id_project'];
-                        $notifications->amount          = $rembNet * 100;
-                        $notifications->create();
-
-                        $this->clients_gestion_mails_notif                  = $this->loadData('clients_gestion_mails_notif');
-                        $this->clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
-                        $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
-                        $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                        $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                        $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
-                        $this->clients_gestion_mails_notif->create();
-
-                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
-                        if ($this->clients_gestion_notifications->getNotif($clients->id_client, 5, 'immediatement') == true) {
-                            $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                            $this->clients_gestion_mails_notif->update();
-
-                            if ($this->Config['env'] === 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                            if ($rembNet >= 2) {
+                                $euros = ' euros';
                             } else {
-                                $this->email->addRecipient(trim($clients->email));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                $euros = ' euro';
+                            }
+                            $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
+
+                            $getsolde = $transactions->getSolde($clients->id_client);
+                            if ($getsolde > 1) {
+                                $euros = ' euros';
+                            } else {
+                                $euros = ' euro';
+                            }
+                            $solde = $this->ficelle->formatNumber($getsolde) . $euros;
+
+                            $varMail = array(
+                                'surl'                  => $this->surl,
+                                'url'                   => $this->furl,
+                                'prenom_p'              => $clients->prenom,
+                                'mensualite_p'          => $rembNetEmail,
+                                'mensualite_avantfisca' => $e['montant'] / 100,
+                                'nom_entreprise'        => $companies->name,
+                                'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
+                                'nbre_prets'            => $nbpret,
+                                'solde_p'               => $solde,
+                                'motif_virement'        => $clients->getLenderPattern($clients->id_client),
+                                'lien_fb'               => $this->like_fb,
+                                'lien_tw'               => $this->twitter
+                            );
+
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
+
+                            $notifications->type       = \notifications::TYPE_REPAYMENT;
+                            $notifications->id_lender  = $e['id_lender'];
+                            $notifications->id_project = $e['id_project'];
+                            $notifications->amount     = $rembNet * 100;
+                            $notifications->create();
+
+                            $this->clients_gestion_mails_notif                  = $this->loadData('clients_gestion_mails_notif');
+                            $this->clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
+                            $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                            $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                            $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
+                            $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
+                            $this->clients_gestion_mails_notif->create();
+
+                            if ($this->clients_gestion_notifications->getNotif($clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement') == true) {
+                                $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                                $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                $this->clients_gestion_mails_notif->update();
+
+                                if ($this->Config['env'] === 'prod') {
+                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
+                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                } else {
+                                    $this->email->addRecipient(trim($clients->email));
+                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                }
                             }
                         }
                         $echeanciers->get($e['id_echeancier'], 'id_echeancier');
@@ -6722,7 +6717,7 @@ class cronController extends bootstrap
 
                             $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
 
-                            if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $e['ordre'] . '  AND id_project')) {
+                            if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $r['ordre'] . '  AND id_project')) {
                                 $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
                                 $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
                                 $oInvoice->id_company      = $companies->id_company;

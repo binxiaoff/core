@@ -583,7 +583,7 @@ class echeanciers extends echeanciers_crud
         return $montant;
     }
 
-    public function getEcheanceByDayAll($date, $statutEmprunteur = '0')
+    public function getEcheanceByDayAll($date, $statut = '0')
     {
         $sql = 'SELECT
         SUM(montant) as montant,
@@ -598,7 +598,7 @@ class echeanciers extends echeanciers_crud
         SUM(contributions_additionnelles) as contributions_additionnelles,
         SUM(prelevements_solidarite) as prelevements_solidarite,
         SUM(crds) as crds
-        FROM `echeanciers` WHERE status_emprunteur = ' . $statutEmprunteur . ' AND LEFT(date_echeance_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_reel,10)';
+        FROM `echeanciers` WHERE status = ' . $statut . ' AND LEFT(date_echeance_reel,10) = "' . $date . '" GROUP BY  LEFT(date_echeance_reel,10)';
 
 
         $resultat = $this->bdd->query($sql);
@@ -636,7 +636,7 @@ class echeanciers extends echeanciers_crud
         FROM echeanciers e
         LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
         LEFT JOIN clients c ON l.id_client_owner = c.id_client
-        WHERE e.status_emprunteur = 1
+        WHERE e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
         ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
         if ($exonere == 1) {
@@ -676,10 +676,10 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers e
             LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            WHERE e.status_emprunteur = 1
+            WHERE e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
             AND c.type IN (1, 3)
-            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND DATE(lih.added) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
+            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
             AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
 
@@ -717,7 +717,7 @@ class echeanciers extends echeanciers_crud
             FROM echeanciers e
             LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
             LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            WHERE e.status_emprunteur = 1
+            WHERE e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
             ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
 
@@ -780,30 +780,19 @@ class echeanciers extends echeanciers_crud
         // 2 : no fr/resident etranger
 
         if ($etranger > 0) {
-            switch ($this->loans->id_type_contract) {
-                case \loans::TYPE_CONTRACT_BDC:
-                    $iFiscalDeduction = $tabImpo['retenues_source'];
-                    break;
-                case \loans::TYPE_CONTRACT_IFP:
-                    $iFiscalDeduction = 0;
-                    break;
-                default:
-                    $iFiscalDeduction = 0;
-                    trigger_error('Unknown contract type: ' . $this->loans->id_type_contract, E_USER_WARNING);
-                    break;
-            }
-
             $sql = '
-            UPDATE echeanciers SET
-                prelevements_obligatoires = 0,
-                retenues_source = ROUND(interets / 100 * ' . $iFiscalDeduction . ', 2),
-                csg = 0,
-                prelevements_sociaux = 0,
-                contributions_additionnelles = 0,
-                prelevements_solidarite = 0,
-                crds = 0,
-                updated = "' . date('Y-m-d H:i:s') . '"
-            WHERE id_lender = ' . $id_lender . ' AND status = 0';
+                UPDATE echeanciers e
+                INNER JOIN loans l ON e.id_loan = l.id_loan
+                SET
+                    e.prelevements_obligatoires = 0,
+                    e.retenues_source = IF(l.id_type_contract = ' . \loans::TYPE_CONTRACT_BDC . ', ROUND(e.interets / 100 * ' . $tabImpo['retenues_source'] . ', 2), 0),
+                    e.csg = 0,
+                    e.prelevements_sociaux = 0,
+                    e.contributions_additionnelles = 0,
+                    e.prelevements_solidarite = 0,
+                    e.crds = 0,
+                    e.updated = "' . date('Y-m-d H:i:s') . '"
+                WHERE e.status = 0 AND l.id_lender = ' . $id_lender;
 
             $this->bdd->query($sql);
         } else {
