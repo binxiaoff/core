@@ -1884,7 +1884,7 @@ class preteursController extends bootstrap
             'crds'
         );
 
-        if (isset($_FILES['echeances_csv']) && 'text/csv' === $_FILES['echeances_csv']['type']) {
+        if (isset($_FILES['echeances_csv'])) {
             $rFile = fopen($_FILES['echeances_csv']['tmp_name'], 'r');
             if ($aKeys = fgetcsv($rFile, 0, ';')) {
                 /** @var echeanciers $oEcheanciers */
