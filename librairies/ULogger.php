@@ -2,9 +2,10 @@
 
 namespace Unilend\librairies;
 
-use Monolog\Logger;
-use Monolog\Handler\StreamHandler;
 use Monolog\Formatter\LineFormatter;
+use Monolog\Handler\StreamHandler;
+use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class ULogger
 {
@@ -68,11 +69,23 @@ class ULogger
      */
     private $sFullPath;
 
-    public function __construct($sNameLogger, $sPathLog, $sNameLog)
+    /**
+     * @var string
+     */
+    private $sChannel;
+
+    /**
+     * ULogger constructor.
+     * @param string $sChannel Channel name
+     * @param string $sPathLog Log file path
+     * @param string $sNameLog Log file name
+     */
+    public function __construct($sChannel, $sPathLog, $sNameLog)
     {
         $this->setFormatterLog();
+        $this->sChannel  = $sChannel;
         $this->sFullPath = $sPathLog . $sNameLog;
-        $this->oLogger   = new Logger($sNameLogger);
+        $this->oLogger   = new Logger($sChannel);
         $this->setStreamHandler();
     }
 
@@ -96,5 +109,10 @@ class ULogger
     public function addRecord($sType, $sMessage, array $aContext = array())
     {
         return $this->oLogger->addRecord($sType, $sMessage, $aContext);
+    }
+
+    public function getChannel()
+    {
+        return $this->sChannel;
     }
 }
