@@ -159,7 +159,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                     <span class="btn btn-small">
                         +
                         <span class="file-upload">
-                            <input type="file" class="file-field" name="document_fiscal">
+                            <input id="document_fiscal_1" type="file" class="file-field" name="document_fiscal">
                         </span>
 
                         <small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
@@ -182,7 +182,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                     <span class="btn btn-small">
                         +
                         <span class="file-upload">
-                            <input type="file" class="file-field" name="document_fiscal">
+                            <input id="document_fiscal_2" type="file" class="file-field" name="document_fiscal">
                         </span>
 
                         <small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
