@@ -1435,7 +1435,7 @@ class statsController extends bootstrap
 
                 $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
                         WHERE id_lender = {$record['id_lender_account']}
-                        AND DATE(added) <= '{$record['date_echeance_reel']}'
+                        AND added <= '{$record['date_echeance_reel']}'
                         ORDER BY added DESC LIMIT 1";
                 $oQueryResident = $this->bdd->query($sSqlResident);
                 $aRow = $this->bdd->fetch_array($oQueryResident);

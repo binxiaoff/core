@@ -679,7 +679,7 @@ class echeanciers extends echeanciers_crud
             WHERE e.status = 1
                 AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
             AND c.type IN (1, 3)
-            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND DATE(lih.added) <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
+            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
             AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
 
 
