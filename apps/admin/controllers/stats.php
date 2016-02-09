@@ -327,7 +327,7 @@ class statsController extends bootstrap
 
         $this->lEmpr = $this->clients->getClientsBorrower('clients.status = 1');
 
-        $header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;LieuRCS;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
+        $header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
         $header = utf8_encode($header);
 
         $csv = "";
@@ -341,7 +341,7 @@ class statsController extends bootstrap
             if ($lPorjects != false) {
                 foreach ($lPorjects as $p) {
                     $this->projects_status->getLastStatut($p['id_project']);
-                    if ($this->projects_status->status == 80) {
+                    if ($this->projects_status->status == \projects_status::REMBOURSEMENT) {
                         $statutRemb = true;
                     }
                 }
@@ -357,11 +357,7 @@ class statsController extends bootstrap
                 $com     = str_pad($this->insee->COM, 3, '0', STR_PAD_LEFT);
                 $codeCom = $dep . $com;
 
-                $pos = strpos(str_replace('.', '', $this->companies->rcs), 'RCS');
-                $pos += 3;
-                $lieuRCS = trim(substr($this->companies->rcs, $pos));
-
-                $csv .= $e['id_client'] . ";" . $this->companies->name . ";;" . str_replace(';', ',', $this->clients_adresses->adresse1) . ";" . $codeCom . ";;" . $this->clients_adresses->cp . ";" . $this->clients_adresses->ville . ";" . $this->companies->activite . ";" . $this->companies->siret . ";;" . $this->companies->forme . ";" . $this->companies->capital . ";\"EUR\";" . $lieuRCS . ";" . $e['prenom'] . ' ' . $e['nom'] . ";" . $e['fonction'] . ";" . $e['telephone'] . ";;;C;B;";
+                $csv .= $e['id_client'] . ";" . $this->companies->name . ";;" . str_replace(';', ',', $this->clients_adresses->adresse1) . ";" . $codeCom . ";;" . $this->clients_adresses->cp . ";" . $this->clients_adresses->ville . ";" . $this->companies->activite . ";" . $this->companies->siret . ";;" . $this->companies->forme . ";" . $this->companies->capital . ";\"EUR\";;" . $e['prenom'] . ' ' . $e['nom'] . ";" . $e['fonction'] . ";" . $e['telephone'] . ";;;C;B;";
                 $csv .= " \n";
             }
         }
@@ -670,8 +666,7 @@ class statsController extends bootstrap
         $this->loans            = $this->loadData('loans');
         $this->insee_pays       = $this->loadData('insee_pays');
 
-        // EQ-Retenue à la source
-        $this->settings->get(63);
+        $this->settings->get('EQ-Retenue à la source', 'type');
         $this->retenuesource = $this->settings->value;
         $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
     }
@@ -691,8 +686,7 @@ class statsController extends bootstrap
         $this->loans            = $this->loadData('loans');
         $this->insee_pays       = $this->loadData('insee_pays');
 
-        // EQ-Retenue à la source
-        $this->settings->get(63);
+        $this->settings->get('EQ-Retenue à la source', 'type');
         $this->retenuesource = $this->settings->value;
         $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
 
@@ -1029,7 +1023,7 @@ class statsController extends bootstrap
               SELECT psh.id_project, MIN(psh.added) as first_added
               FROM projects_status_history psh
                 INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-              WHERE ps.status = 80
+              WHERE ps.status = ' . \projects_status::REMBOURSEMENT . '
               GROUP BY psh.id_project
               HAVING YEAR(first_added) = ' . $annee . '
             ) p ON p.id_project = lo.id_project
@@ -1198,7 +1192,6 @@ class statsController extends bootstrap
             ELSE "Non"
             END execices_comptables,
 
-            comp.rcs,
             comp.tribunal_com,
             comp.activite,
             comp.lieu_exploi,
@@ -1240,7 +1233,7 @@ class statsController extends bootstrap
             ORDER BY l.added DESC';
 
         if (isset($this->params[0]) && $this->params[0] == 'csv') {
-            $this->exportQueryCSV($this->sql, 'infos_preteurs_' . date('Ymd'), array('id_client', 'civilite', 'nom', 'nom_usage', 'prenom', 'fonction', 'naissance', 'telephone', 'email', 'source', 'adresse', 'cp', 'ville', 'adresse_fiscal', 'ville_fiscal', 'cp_fiscal', 'exonere', 'debut_exoneration', 'fin_exoneration', 'origine_des_fonds', 'Entreprise', 'id_company', 'forme_juridique', 'siren', 'execices_comptables', 'rcs', 'tribunal_com', 'activite', 'lieu_exploi', 'capital', 'date_creation', 'adresse_company', 'cp_company', 'ville_company', 'telephone_company', 'status_client', 'status_conseil_externe_entreprise', 'civilite_dirigeant', 'nom_dirigeant', 'prenom_dirigeant', 'fonction_dirigeant', 'email_dirigeant', 'phone_dirigeant', 'sector', 'risk', 'code_banque'));
+            $this->exportQueryCSV($this->sql, 'infos_preteurs_' . date('Ymd'), array('id_client', 'civilite', 'nom', 'nom_usage', 'prenom', 'fonction', 'naissance', 'telephone', 'email', 'source', 'adresse', 'cp', 'ville', 'adresse_fiscal', 'ville_fiscal', 'cp_fiscal', 'exonere', 'debut_exoneration', 'fin_exoneration', 'origine_des_fonds', 'Entreprise', 'id_company', 'forme_juridique', 'siren', 'execices_comptables', 'tribunal_com', 'activite', 'lieu_exploi', 'capital', 'date_creation', 'adresse_company', 'cp_company', 'ville_company', 'telephone_company', 'status_client', 'status_conseil_externe_entreprise', 'civilite_dirigeant', 'nom_dirigeant', 'prenom_dirigeant', 'fonction_dirigeant', 'email_dirigeant', 'phone_dirigeant', 'sector', 'risk', 'code_banque'));
         }
     }
 
@@ -1376,7 +1369,6 @@ class statsController extends bootstrap
         if (count($aResult) > 0 && is_null($aHeaders)) {
             $aHeaders = array_keys($aResult[0]);
         }
-
         $this->exportCSV($aResult, $sFileName, $aHeaders);
     }
 
@@ -1411,6 +1403,7 @@ class statsController extends bootstrap
         header('Expires: 0');
 
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
 
@@ -1435,28 +1428,37 @@ class statsController extends bootstrap
         $resultat = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($resultat)) {
-            if ('1' === $record['type']) {
-                $sql = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
-                    WHERE id_lender = {$record['id_lender_account']}
-                    AND added <= '{$record['date_echeance_reel']}'
-                    ORDER BY added DESC LIMIT 1";
+            if ('1' === $record['type'] || '3' === $record['type']) {
+                $bForeigner = false;
+                $bZoneB040Country = false;
 
-                $oQueryResident = $this->bdd->query($sql);
+                $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
+                        WHERE id_lender = {$record['id_lender_account']}
+                        AND added <= '{$record['date_echeance_reel']}'
+                        ORDER BY added DESC LIMIT 1";
+                $oQueryResident = $this->bdd->query($sSqlResident);
                 $aRow = $this->bdd->fetch_array($oQueryResident);
+
+                if (0 !== $this->bdd->num_rows() && 0 < $aRow['resident_etranger']) {
+                    $bForeigner = true;
+                    if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                        $bZoneB040Country = true;
+                    }
+                }
+                unset($oQueryResident, $aRow);
+
                 // Exclude "remboursement anticipé" for calculating interests
                 if('0' === $record['status_ra']) {
-                    if(0 === $this->bdd->num_rows() || '0' === $aRow['resident_etranger']) { //code 66
+                    if(false === $bForeigner) { //code 66
                         $iSum66 += $record['interets'];
-
-                    } else if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                    } else if (true === $bZoneB040Country) {
                         $iSum81 += $record['interets'] - $record['retenues_source']*100;
                     }
                 }
 
-                if (1 === $this->bdd->num_rows() && '0' !== $aRow['resident_etranger'] && in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
+                if (true === $bZoneB040Country) {
                     $iSum82 += $record['capital'];
                 }
-                unset($oQueryResident, $aRow);
             }
             $iSum118 += $record['capital'];
 

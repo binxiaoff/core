@@ -122,18 +122,6 @@ class depot_de_dossierController extends bootstrap
         $this->projects->fonds_propres_declara_client         = 0;
         $this->projects->create();
 
-        /**
-         * 1 : activé
-         * 2 : activé mais prend pas en compte le résultat
-         * 3 : désactivé (DC)
-         */
-        $this->settings->get('Altares debrayage', 'type');
-        $iStatusSetting = $this->settings->value;
-
-        if ($iStatusSetting == 3) {
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Altares débrayé');
-        }
-
         $this->settings->get('Altares email alertes', 'type');
         $sAlertEmail = $this->settings->value;
 
@@ -145,7 +133,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oException->getMessage(), array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Erreur Altares');
+            $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         if (false === empty($oResult->exception)) {
@@ -153,14 +141,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur, array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Erreur Altares');
-        }
-
-        if ($iStatusSetting == 2) {
-            $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
-            $oLogger->addRecord(ULogger::INFO, 'Tentative évaluation', array('siren' => $iSIREN));
-
-            mail($sAlertEmail, '[ALERTE] Altares Tentative evaluation', 'Date ' . date('Y-m-d H:i:s') . ' siren : ' . $iSIREN);
+            $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
@@ -184,7 +165,6 @@ class depot_de_dossierController extends bootstrap
             $this->companies->adresse1                          = $oIdentity->rue;
             $this->companies->city                              = $oIdentity->ville;
             $this->companies->zip                               = $oIdentity->codePostal;
-            $this->companies->rcs                               = $oIdentity->rcs;
             $this->companies->siret                             = $oIdentity->siret;
             $this->companies->date_creation                     = substr($oIdentity->dateCreation, 0, 10);
 
@@ -758,7 +738,11 @@ class depot_de_dossierController extends bootstrap
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
         $this->sAttachmentList  = '';
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language, false);
+        $aAttachmentTypes       = $this->attachment_type->getAllTypesForProjects($this->language, false);
+        $this->aAttachmentTypes = $this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes);
+
+        $this->sYearLessTwo   = date('Y') - 2;
+        $this->sYearLessThree = date('Y') - 3;
 
         $this->projects_last_status_history = $this->loadData('projects_last_status_history');
         $this->projects_last_status_history->get($this->projects->id_project, 'id_project');

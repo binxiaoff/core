@@ -2,9 +2,11 @@
     <div class="shell">
         <h1><?= $this->companies->name ?></h1>
         <div class="register-form">
-            <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="form_espace_emprunteur" enctype="multipart/form-data">
+            <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" id="form_espace_emprunteur" enctype="multipart/form-data">
                 <?php if (empty($this->sAttachmentList)) { ?>
-                    <div class="row"><?= $this->lng['espace-emprunteur']['liste-des-docs-procedure-rapide'] ?></div>
+                    <div class="row">
+                        <?php echo str_replace(array('[#YEAR-2#]','[#YEAR-3#]'), array($this->sYearLessTwo, $this->sYearLessThree), $this->lng['espace-emprunteur']['liste-des-docs-procedure-rapide']) ?>
+                    </div>
                 <?php } else { ?>
                     <div class="row"><?= $this->lng['espace-emprunteur']['documents-demandes'] ?></div>
                     <div class="row"><?= $this->sAttachmentList ?></div>

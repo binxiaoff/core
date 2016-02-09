@@ -26,7 +26,7 @@ if ($heure_sans_minute == '00h00') {
     $heure_sans_minute = $HfinFunding[0] . 'h00';
 }
 
-if ($this->projects_status->status != 50 || $this->page_attente) {
+if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) {
     $this->dateRest = $this->lng['preteur-projets']['termine'];
 } else {
     $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1];
@@ -92,18 +92,16 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                         <p class="left multi-line">
                             <em><?= $this->projects->nature_project ?></em>
                             <?
-                            // si projet pas terminé
-                            if ($this->projects_status->status == 50) {
+
+                            if ($this->projects_status->status == \projects_status::EN_FUNDING) {
                                 ?><strong class="green-span">
                                 <i class="icon-clock-green"></i><?= $this->lng['preteur-projets']['reste'] ?>
                                 <span id="val"><?= $this->dateRest ?></span></strong>, <?
-                            } // sinon il est terminé
-                            else {
+                            } else {
                                 ?><strong class="red-span"><span id="val"><?= $this->dateRest ?></span></strong><?
                             }
                             ?>
-
-                            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?><?php /* ?><?=$this->heure_retrait?>h<?php */ ?>
+                            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?>
                         </p>
 
                     </div>
@@ -117,6 +115,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                         </div>
                         <?php } ?>
                         <div class="info left">
+                            <?php $this->companies->get($this->projects->id_company); ?>
                             <h3><?= $this->companies->name ?></h3>
                             <?= ($this->companies->city != '' ? '<p><i class="icon-place"></i>' . $this->lng['preteur-projets']['localisation'] . ' : ' . $this->companies->city . '</p>' : '') ?>
                             <?= ($this->companies->sector != '' ? '<p>' . $this->lng['preteur-projets']['secteur'] . ' : ' . $this->lSecteurs[$this->companies->sector] . '</p>' : '') ?>
@@ -136,7 +135,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
                                     <?php if ($this->CountEnchere > 0) { ?>
-                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
+                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
                                     <?php } else { ?>
                                         <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
                                     <?php } ?>
@@ -146,7 +145,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                     </div>
                     <nav class="tabs-nav">
                         <ul>
-                            <?php if ($this->projects_status->status == 50) { ?>
+                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) { ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a></li>
                                 <li><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
                             <?php } else { ?>
@@ -167,7 +166,7 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                     <div class="tabs">
                         <?
                         // en funding
-                        if ($this->projects_status->status == 50) {
+                        if ($this->projects_status->status == \projects_status::EN_FUNDING) {
                         ?>
                         <div class="tab tc" id="bids">
                             <?
@@ -519,21 +518,39 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                             </div>
                         <?php } ?>
                         </div>
-                        <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) { ?>
+                        <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT): ?>
                             <div class="tab">
                                 <div class="article">
                                     <p>
                                         <?= $this->lng['preteur-projets']['vous-avez-prete'] ?>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde']) ?>&nbsp;€</strong>
                                     </p>
                                     <p>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?> €</strong> <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?> €</strong> <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?>&nbsp;€</strong>
+                                        <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?>&nbsp;€</strong>
+                                        <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
                                         <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong>
                                     </p>
                                 </div>
+                                <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                                    <?php if (false === empty($aHistory['site_content'])): ?>
+                                        <p>
+                                            <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
+                                            <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                                <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
+                                            <?php endif; ?>
+                                            <br/>
+                                            <?= nl2br($aHistory['site_content']) ?>
+                                            <?php if (1 == $aHistory['failure']): ?>
+                                                <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                            <?php endif; ?>
+                                            <br/><br/>
+                                        </p>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
                             </div>
-                        <?php } ?>
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -549,10 +566,10 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
             <?php } else { ?>
                 <strong class="red-span"><span id="valM"><?= $this->dateRest ?></span></strong>
             <?php } ?>
-            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?><?php /* ?><?=$this->heure_retrait?>h<?php */ ?></p>
+            <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?>
             <?php $this->fireView('../blocs/project-mobile-header'); ?>
             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
-            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == 60) { ?>
+            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == \projects_status::FUNDE) { ?>
                 <div class="single-project-actions">
                     <a href="<?= $this->lurl . '/thickbox/pop_up_offer_mobile/' . $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
                 </div>
@@ -817,9 +834,25 @@ if ($this->projects_status->status != 50 || $this->page_attente) {
                                 </div>
                             </div>
                         </p>
+                        <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                            <?php if (false === empty($aHistory['site_content'])): ?>
+                                <p>
+                                    <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
+                                    <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                        <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
+                                    <?php endif; ?>
+                                    <br/>
+                                    <?= nl2br($aHistory['site_content']) ?>
+                                    <?php if (1 == $aHistory['failure']): ?>
+                                        <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                    <?php endif; ?>
+                                    <br/>
+                                </p>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                     </div>
                 </article>
-            <?php } ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>

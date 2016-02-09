@@ -35,53 +35,40 @@ if (date('Y') == 2015) {
     <link rel="stylesheet" href="css/jquery.nouislider.css"/>
 
     <!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
-
-    <!-- Google Tag Manager -->
-    <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
-    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
-    '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-        })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
-    <!-- End Google Tag Manager -->
 </head>
 <body>
+<!-- Google Tag Manager -->
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
+                  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
+<!-- End Google Tag Manager -->
 <?php
 
-if (! empty($_GET["utm_source"])) {
-    $source = $_GET["utm_source"];
-} else {
-    $source = "";
+if (false === ($source = filter_input(INPUT_GET, 'utm_source', FILTER_SANITIZE_STRING))) {
+    $source = '';
 }
-if (! empty($_GET["utm_source2"])) {
-    $source2 = $_GET["utm_source2"];
-} else {
-    $source2 = "";
+if (false === ($source2 = filter_input(INPUT_GET, 'utm_source2', FILTER_SANITIZE_STRING))) {
+    $source2 = '';
 }
-if (! empty($_GET["nom"])) {
-    $nom = $_GET["nom"];
-} else {
-    $nom = "";
+if (false === ($nom = filter_input(INPUT_GET, 'nom', FILTER_SANITIZE_STRING))) {
+    $nom = '';
 }
-if (! empty($_GET["prenom"])) {
-    $prenom = $_GET["prenom"];
-} else {
-    $prenom = "";
+if (false === ($prenom = filter_input(INPUT_GET, 'prenom', FILTER_SANITIZE_STRING))) {
+    $prenom = '';
 }
-if (! empty($_GET["email"])) {
-    $email = $_GET["email"];
-} else {
-    $email = "";
+if (false === ($email = filter_input(INPUT_GET, 'email', FILTER_SANITIZE_EMAIL))) {
+    $email = '';
 }
-if (! empty($_GET["civilite"])) {
-    $civilite = $_GET["civilite"];
-} else {
-    $civilite = "";
+if (false === ($civilite = filter_input(INPUT_GET, 'civilite', FILTER_SANITIZE_STRING))) {
+    $civilite = '';
 }
 
-$slug_origine = "Lp-offre-bienvenue-web";
-$url = 'https://www.unilend.fr';
+$slug_origine = 'Lp-offre-bienvenue-web';
+$url          = 'https://www.unilend.fr';
 
 ?>
 <div id="form">

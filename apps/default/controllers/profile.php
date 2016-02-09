@@ -18,7 +18,7 @@ class profileController extends bootstrap
 
         // On check si y a un compte
         if (! $this->clients->checkAccess()) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         } else {
             // check preteur ou emprunteur (ou les deux)
@@ -38,10 +38,10 @@ class profileController extends bootstrap
     public function _default()
     {
         if (in_array($this->clients->type, array(1, 3))) {
-            header('Location:' . $this->lurl . '/profile/particulier');
+            header('Location: ' . $this->lurl . '/profile/particulier');
             die;
         } elseif (in_array($this->clients->type, array(2, 4))) {
-            header('Location:' . $this->lurl . '/profile/societe');
+            header('Location: ' . $this->lurl . '/profile/societe');
             die;
         }
     }
@@ -126,111 +126,73 @@ class profileController extends bootstrap
         }
 
         $this->infosNotifs['title'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
-            2 => $this->lng['gestion-alertes']['offres-realisees'],
-            3 => $this->lng['gestion-alertes']['offres-refusees'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees'],
-            5 => $this->lng['gestion-alertes']['remboursements'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
-            8 => $this->lng['gestion-alertes']['retrait']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
         );
 
         $this->infosNotifs['info'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
-            2 => $this->lng['gestion-alertes']['offres-realisees-info'],
-            3 => $this->lng['gestion-alertes']['offres-refusees-info'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees-info'],
-            5 => $this->lng['gestion-alertes']['remboursements-info'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
-            8 => $this->lng['gestion-alertes']['retrait-info']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees-info'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees-info'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees-info'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements-info'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait-info'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
         );
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
+        $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+        $this->NotifC      = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
 
-        $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+        $aMissingNotificationTypes = array_diff(array_column($this->lTypeNotifs, 'id_client_gestion_type_notif'), array_keys($this->NotifC));
 
-        // formulaire particulier gestion de vos alertes
+        if (false === empty($aMissingNotificationTypes)) {
+            foreach ($aMissingNotificationTypes as $iMissingNotificationType) {
+                $this->clients_gestion_notifications->id_client        = $this->clients->id_client;
+                $this->clients_gestion_notifications->id_notif         = $iMissingNotificationType;
+                $this->clients_gestion_notifications->immediatement    = 1;
+                $this->clients_gestion_notifications->quotidienne      = 0;
+                $this->clients_gestion_notifications->hebdomadaire     = 0;
+                $this->clients_gestion_notifications->mensuelle        = 0;
+                $this->clients_gestion_notifications->uniquement_notif = 0;
+                $this->clients_gestion_notifications->create(array('id_client' => $this->clients->id_client, 'id_notif' => $iMissingNotificationType));
+            }
+
+            $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+            $this->NotifC  = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
+        }
+
         if (isset($_POST['send_gestion_alertes'])) {
-            foreach ($this->lTypeNotifs as $k => $n) {
+            foreach ($this->lTypeNotifs as $n) {
                 $id_notif = $n['id_client_gestion_type_notif'];
 
-                $_POST['immediatement_' . $id_notif];
-                $_POST['quotidienne_' . $id_notif];
-                $_POST['hebdomadaire_' . $id_notif];
-                $_POST['mensuelle_' . $id_notif];
-                $_POST['uniquement_notif_' . $id_notif];
-
-                if ($_POST['immediatement_' . $id_notif] == true) {
-                    $immediatement[$id_notif] = 1;
-                } else {
-                    $immediatement[$id_notif] = 0;
-                }
-
-                if ($_POST['quotidienne_' . $id_notif] == true) {
-                    $quotidienne[$id_notif] = 1;
-                } else {
-                    $quotidienne[$id_notif] = 0;
-                }
-
-                if ($_POST['hebdomadaire_' . $id_notif] == true) {
-                    $hebdomadaire[$id_notif] = 1;
-                } else {
-                    $hebdomadaire[$id_notif] = 0;
-                }
-
-                if ($_POST['mensuelle_' . $id_notif] == true) {
-                    $mensuelle[$id_notif] = 1;
-                } else {
-                    $mensuelle[$id_notif] = 0;
-                }
-
-                if ($_POST['uniquement_notif_' . $id_notif] == true) {
-                    $uniquement_notif[$id_notif] = 1;
-                } else {
-                    $uniquement_notif[$id_notif] = 0;
-                }
-
-                // uniquement notif
-                if ($uniquement_notif[$id_notif] == 1) {
-                    $this->clients_gestion_notifications->get(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
+                if (false === empty($_POST['uniquement_notif_' . $id_notif])) {
                     $this->clients_gestion_notifications->immediatement    = 0;
                     $this->clients_gestion_notifications->quotidienne      = 0;
                     $this->clients_gestion_notifications->hebdomadaire     = 0;
                     $this->clients_gestion_notifications->mensuelle        = 0;
                     $this->clients_gestion_notifications->uniquement_notif = 1;
                     $this->clients_gestion_notifications->update(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
-                } // notif et email
-                else {
-                    $this->clients_gestion_notifications->get(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
-                    $this->clients_gestion_notifications->immediatement = $immediatement[$id_notif];
-
-                    if (in_array($id_notif, array(6, 7, 8))) {
-                        $this->clients_gestion_notifications->quotidienne = 0;
-                    } else {
-                        $this->clients_gestion_notifications->quotidienne = $quotidienne[$id_notif];
-                    }
-
-                    if (in_array($id_notif, array(2, 3, 6, 7, 8))) {
-                        $this->clients_gestion_notifications->hebdomadaire = 0;
-                    } // on change pas pour les nouveau projet
-                    else {
-                        $this->clients_gestion_notifications->hebdomadaire = $hebdomadaire[$id_notif];
-                    }
-
-                    if (in_array($id_notif, array(1, 2, 3, 6, 7, 8))) {
-                        $this->clients_gestion_notifications->mensuelle = 0;
-                    } // on change pas pour les nouveau projet et offres realisees
-                    else {
-                        $this->clients_gestion_notifications->mensuelle = $mensuelle[$id_notif];
-                    }
+                } else {
+                    $this->clients_gestion_notifications->immediatement    = empty($_POST['immediatement_' . $id_notif]) ? 0 : 1;
+                    $this->clients_gestion_notifications->quotidienne      = in_array($id_notif, array(6, 7, 8)) || empty($_POST['quotidienne_' . $id_notif]) ? 0 : 1;
+                    $this->clients_gestion_notifications->hebdomadaire     = in_array($id_notif, array(2, 3, 6, 7, 8)) || empty($_POST['hebdomadaire_' . $id_notif]) ? 0 : 1;
+                    $this->clients_gestion_notifications->mensuelle        = in_array($id_notif, array(1, 2, 3, 6, 7, 8)) || empty($_POST['mensuelle_' . $id_notif]) ? 0 : 1;
                     $this->clients_gestion_notifications->uniquement_notif = 0;
                     $this->clients_gestion_notifications->update(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
                 }
             }
 
-            header('Location:' . $this->lurl . '/profile/particulier/');
+            header('Location: ' . $this->lurl . '/profile/particulier/');
             die;
         }
         ////////////////////////////
@@ -840,7 +802,7 @@ class profileController extends bootstrap
                 }
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['titre-1'] . ' ' . $this->lng['profile']['sauvegardees'];
 
-                header('Location:' . $this->lurl . '/profile/particulier/3');
+                header('Location: ' . $this->lurl . '/profile/particulier/3');
                 die;
 
             } // fin form valide
@@ -862,7 +824,7 @@ class profileController extends bootstrap
                 $this->form_ok = false;
 
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['ancien-mot-de-passe-incorrect'];
-                header('Location:' . $this->lurl . '/profile/particulier/2');
+                header('Location: ' . $this->lurl . '/profile/particulier/2');
                 die;
             }
 
@@ -1041,114 +1003,72 @@ class profileController extends bootstrap
         }
 
         $this->infosNotifs['title'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
-            2 => $this->lng['gestion-alertes']['offres-realisees'],
-            3 => $this->lng['gestion-alertes']['offres-refusees'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees'],
-            5 => $this->lng['gestion-alertes']['remboursements'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
-            8 => $this->lng['gestion-alertes']['retrait']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation']
         );
 
         $this->infosNotifs['info'] = array(
-            1 => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
-            2 => $this->lng['gestion-alertes']['offres-realisees-info'],
-            3 => $this->lng['gestion-alertes']['offres-refusees-info'],
-            4 => $this->lng['gestion-alertes']['offres-acceptees-info'],
-            5 => $this->lng['gestion-alertes']['remboursements-info'],
-            6 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
-            7 => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
-            8 => $this->lng['gestion-alertes']['retrait-info']
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT          => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
+            \clients_gestion_type_notif::TYPE_BID_PLACED           => $this->lng['gestion-alertes']['offres-realisees-info'],
+            \clients_gestion_type_notif::TYPE_BID_REJECTED         => $this->lng['gestion-alertes']['offres-refusees-info'],
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED        => $this->lng['gestion-alertes']['offres-acceptees-info'],
+            \clients_gestion_type_notif::TYPE_REPAYMENT            => $this->lng['gestion-alertes']['remboursements-info'],
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
+            \clients_gestion_type_notif::TYPE_DEBIT                => $this->lng['gestion-alertes']['retrait-info'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM      => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info']
         );
 
-        ////// Liste des notifs //////
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
         $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+        $this->NotifC      = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
 
-        if ($this->lNotifs == false) {
-            foreach ($this->lTypeNotifs as $n) {
-                $this->clients_gestion_notifications->id_client     = $this->clients->id_client;
-                $this->clients_gestion_notifications->id_notif      = $n['id_client_gestion_type_notif'];
-                $this->clients_gestion_notifications->immediatement = 1;
-                $this->clients_gestion_notifications->create();
+        $aMissingNotificationTypes = array_diff(array_column($this->lTypeNotifs, 'id_client_gestion_type_notif'), array_keys($this->NotifC));
+
+        if (false === empty($aMissingNotificationTypes)) {
+            foreach ($aMissingNotificationTypes as $iMissingNotificationType) {
+                $this->clients_gestion_notifications->id_client        = $this->clients->id_client;
+                $this->clients_gestion_notifications->id_notif         = $iMissingNotificationType;
+                $this->clients_gestion_notifications->immediatement    = 1;
+                $this->clients_gestion_notifications->quotidienne      = 0;
+                $this->clients_gestion_notifications->hebdomadaire     = 0;
+                $this->clients_gestion_notifications->mensuelle        = 0;
+                $this->clients_gestion_notifications->uniquement_notif = 0;
+                $this->clients_gestion_notifications->create(array('id_client' => $this->clients->id_client, 'id_notif' => $iMissingNotificationType));
             }
+
+            $this->lNotifs = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
+            $this->NotifC  = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
         }
 
-        $this->NotifC = $this->clients_gestion_notifications->getNotifs($this->clients->id_client);
-
-        // formulaire particulier gestion de vos alertes
         if (isset($_POST['send_gestion_alertes'])) {
-            foreach ($this->lTypeNotifs as $k => $n) {
+            foreach ($this->lTypeNotifs as $n) {
                 $id_notif = $n['id_client_gestion_type_notif'];
 
-                $_POST['immediatement_' . $id_notif];
-                $_POST['quotidienne_' . $id_notif];
-                $_POST['hebdomadaire_' . $id_notif];
-                $_POST['mensuelle_' . $id_notif];
-                $_POST['uniquement_notif_' . $id_notif];
-
-                if ($_POST['immediatement_' . $id_notif] == true) {
-                    $immediatement[$id_notif] = 1;
-                } else {
-                    $immediatement[$id_notif] = 0;
-                }
-
-                if ($_POST['quotidienne_' . $id_notif] == true) {
-                    $quotidienne[$id_notif] = 1;
-                } else {
-                    $quotidienne[$id_notif] = 0;
-                }
-
-                if ($_POST['hebdomadaire_' . $id_notif] == true) {
-                    $hebdomadaire[$id_notif] = 1;
-                } else {
-                    $hebdomadaire[$id_notif] = 0;
-                }
-
-                if ($_POST['mensuelle_' . $id_notif] == true) {
-                    $mensuelle[$id_notif] = 1;
-                } else {
-                    $mensuelle[$id_notif] = 0;
-                }
-
-                if ($_POST['uniquement_notif_' . $id_notif] == true) {
-                    $uniquement_notif[$id_notif] = 1;
-                } else {
-                    $uniquement_notif[$id_notif] = 0;
-                }
-
-                // uniquement notif
-                if ($uniquement_notif[$id_notif] == 1) {
-                    $this->clients_gestion_notifications->get(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
+                if (false === empty($_POST['uniquement_notif_' . $id_notif])) {
                     $this->clients_gestion_notifications->immediatement    = 0;
                     $this->clients_gestion_notifications->quotidienne      = 0;
                     $this->clients_gestion_notifications->hebdomadaire     = 0;
                     $this->clients_gestion_notifications->mensuelle        = 0;
                     $this->clients_gestion_notifications->uniquement_notif = 1;
                     $this->clients_gestion_notifications->update(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
-                } // notif et email
-                else {
-                    $this->clients_gestion_notifications->get(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
-                    $this->clients_gestion_notifications->immediatement = $immediatement[$id_notif];
-                    $this->clients_gestion_notifications->quotidienne   = $quotidienne[$id_notif];
-                    if ($id_notif != 2) {
-                        $this->clients_gestion_notifications->hebdomadaire = 0;
-                    } // on change pas pour les nouveau projet
-                    else {
-                        $this->clients_gestion_notifications->hebdomadaire = $hebdomadaire[$id_notif];
-                    }
-                    if ($id_notif != 1 && $id_notif != 2) {
-                        $this->clients_gestion_notifications->mensuelle = 0;
-                    } // on change pas pour les nouveau projet et offres realisees
-                    else {
-                        $this->clients_gestion_notifications->mensuelle = $mensuelle[$id_notif];
-                    }
+                } else {
+                    $this->clients_gestion_notifications->immediatement    = empty($_POST['immediatement_' . $id_notif]) ? 0 : 1;
+                    $this->clients_gestion_notifications->quotidienne      = in_array($id_notif, array(6, 7, 8)) || empty($_POST['quotidienne_' . $id_notif]) ? 0 : 1;
+                    $this->clients_gestion_notifications->hebdomadaire     = in_array($id_notif, array(2, 3, 6, 7, 8)) || empty($_POST['hebdomadaire_' . $id_notif]) ? 0 : 1;
+                    $this->clients_gestion_notifications->mensuelle        = in_array($id_notif, array(1, 2, 3, 6, 7, 8)) || empty($_POST['mensuelle_' . $id_notif]) ? 0 : 1;
                     $this->clients_gestion_notifications->uniquement_notif = 0;
                     $this->clients_gestion_notifications->update(array('id_client' => $this->clients->id_client, 'id_notif' => $id_notif));
                 }
             }
-            header('Location:' . $this->lurl . '/profile/societe/');
+            header('Location: ' . $this->lurl . '/profile/societe/');
             die;
         }
 
@@ -1779,7 +1699,7 @@ class profileController extends bootstrap
                 }
 
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['sauvegardees'];
-                header('Location:' . $this->lurl . '/profile/societe/3');
+                header('Location: ' . $this->lurl . '/profile/societe/3');
                 die;
             }
 
@@ -1801,7 +1721,7 @@ class profileController extends bootstrap
                 $this->form_ok = false;
 
                 $_SESSION['reponse_profile_secu_error'] = $this->lng['profile']['ancien-mot-de-passe-incorrect'];
-                header('Location:' . $this->lurl . '/profile/particulier/2');
+                header('Location: ' . $this->lurl . '/profile/particulier/2');
                 die;
             }
 
@@ -1885,7 +1805,7 @@ class profileController extends bootstrap
                 $_SESSION['reponse_profile_secu'] = $this->lng['profile']['votre-mot-de-passe-a-bien-ete-change'];
             }
 
-            header('Location:' . $this->lurl . '/profile/societe/2');
+            header('Location: ' . $this->lurl . '/profile/societe/2');
             die;
         } elseif (isset($_POST['send_form_question'])) {
             $serialize = serialize(array(
@@ -2017,7 +1937,7 @@ class profileController extends bootstrap
 
         // Societe (si on est pas sur la bonne page)
         if (in_array($this->clients->type, array(2, 4))) {
-            header('Location:' . $this->lurl . '/profile/societe_doc');
+            header('Location: ' . $this->lurl . '/profile/societe_doc');
             die;
         }
 
@@ -2221,7 +2141,7 @@ class profileController extends bootstrap
                     $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];
 
                 }
-                header('Location:' . $this->lurl . '/profile/societe_doc');
+                header('Location: ' . $this->lurl . '/profile/societe_doc');
                 die;
             }
         }
@@ -2251,7 +2171,7 @@ class profileController extends bootstrap
     {
         // Particulier (si on est pas sur la bonne page)
         if (in_array($this->clients->type, array(1, 3))) {
-            header('Location:' . $this->lurl . '/profile/particulier_doc');
+            header('Location: ' . $this->lurl . '/profile/particulier_doc');
             die;
         }
 
@@ -2466,7 +2386,7 @@ class profileController extends bootstrap
                     $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];
 
                 }
-                header('Location:' . $this->lurl . '/profile/societe_doc');
+                header('Location: ' . $this->lurl . '/profile/societe_doc');
                 die;
             }
         }

@@ -39,7 +39,7 @@
             var ga = document.createElement('script');
             ga.type = 'text/javascript';
             ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+            ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
             var s = document.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(ga, s);
         })();
@@ -56,8 +56,7 @@
             var f = d.getElementsByTagName(s)[0],
                 j = d.createElement(s), dl = l != 'dataLayer' ? '&l=' + l : '';
             j.async = true;
-            j.src =
-                '//www.googletagmanager.com/gtm.js?id=' + i + dl;
+            j.src = '//www.googletagmanager.com/gtm.js?id=' + i + dl;
             f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
@@ -106,7 +105,7 @@
         </section>
         <aside class="signup right">
             <h2><?= $this->content['lp-titre-formulaire'] ?></h2>
-            <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="depot_de_dossier" name="depot_de_dossier">
+            <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" id="depot_de_dossier" name="depot_de_dossier">
                 <?php if (isset($this->aForm['response'])) { ?>
                     <div class="form-row error" style="display:inline;"><?= $this->aForm['response'] ?></div>
                 <?php } ?>
@@ -174,5 +173,8 @@
         <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], '', 'partenaires_landing_page') ?>"/></span>
     </section>
 </div>
+<!--[if lte IE 9]>
+<script type="text/javascript" src="<?= $this->surl ?>/scripts/default/placeholders.jquery.min.js"></script>
+<![endif]-->
 </body>
 </html>

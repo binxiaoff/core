@@ -131,6 +131,20 @@
     .title-ope {
         margin-top: 12.5px;
     }
+
+    .body_content_table_vos_operations .positif {
+        color:#40b34f;
+    }
+    .body_content_table_vos_operations .negatif {
+        color:red;
+    }
+
+    .body_content_table_vos_operations .col2 {
+        width: 140px;
+        text-align: left;
+    }
+
+
 </style>
 <h2><?= $this->lng['espace-emprunteur']['operations'] ?></h2>
 <div class="table-filter clearfix">
@@ -182,8 +196,7 @@
                 </td>
                 <td>
                     <div class="vos_operations_ligne div_fin">
-                        <input type="text" id="fin" name="fin" title="fin" value="<?= $this->sDisplayDateTimeEnd ?>"
-                               class="field" style="width:72px;">
+                        <input type="text" id="fin" name="fin" title="fin" value="<?= $this->sDisplayDateTimeEnd ?>" class="field" style="width:72px;">
                     </div>
                 </td>
             </tr>
@@ -192,15 +205,12 @@
     <div class="export">
         <div class="vos_operations_ligne" style="text-align:center;">
             <?= $this->lng['espace-emprunteur']['imprimer'] ?><br/>
-            <a href="<?= $this->lurl ?>/espace_emprunteur/getPdfOperations" target="_blank"><img class="print"
-                                                                                                src="<?= $this->surl ?>/styles/default/preteurs/images/icon-print.png"/></a>
+            <a href="<?= $this->lurl ?>/espace_emprunteur/getPdfOperations" target="_blank"><img class="print" src="<?= $this->surl ?>/styles/default/preteurs/images/icon-print.png"/></a>
         </div>
-
         <div style="width:30px;display:inline-block;"></div>
         <div class="vos_operations_ligne" style="text-align:center;">
             <?= $this->lng['espace-emprunteur']['exporter'] ?><br/>
-            <a href="<?= $this->lurl ?>/espace_emprunteur/getCSVOperations" target="_blank"><img class="xls"
-                                                                                           src="<?= $this->surl ?>/images/default/xls_hd.png"/></a>
+            <a href="<?= $this->lurl ?>/espace_emprunteur/getCSVOperations" target="_blank"><img class="xls" src="<?= $this->surl ?>/images/default/xls_hd.png"/></a>
         </div>
     </div>
     <div style="clear:both;"></div>
@@ -214,7 +224,6 @@
                 <option value="<?= \clients::COMMISSION_MENSUELLE ?>"><?= $this->lng['espace-emprunteur']['operations-type-commission-mensuelle'] ?></option>
                 <option value="<?= \clients::AFF_MENSUALITE_PRETEURS ?>"><?= $this->lng['espace-emprunteur']['operations-type-affectation-preteurs'] ?></option>
                 <option value="<?= \clients::PRLV_MENSUALITE ?>"><?= $this->lng['espace-emprunteur']['operations-type-prelevement-mensualite'] ?></option>
-                <option value="<?= \clients::COMMISSION_DEBLOCAGE ?>"><?= $this->lng['espace-emprunteur']['operations-type-commission-deblocage'] ?></option>
                 <option value="<?= \clients::VIREMENT ?>"><?= $this->lng['espace-emprunteur']['operations-type-virement'] ?></option>
                 <option value="<?= \clients::OCTROI_FINANCMENT ?>"><?= $this->lng['espace-emprunteur']['operations-type-financement'] ?></option>
                 <option value="<?= \clients::REMBOURSEMENT_ANTICIPE ?>"><?= $this->lng['espace-emprunteur']['operations-type-remboursement-anticipe'] ?></option>
@@ -241,35 +250,40 @@
 </div>
 
 <div class="content_table_vos_operations">
-    <table class="table vos_operations transactions-history finances" border="0" cellspacing="0" cellpadding="0">
+    <table class="table vos_operations transactions-history finances" border="5px" cellspacing="0" cellpadding="0" style="table-layout: fixed;">
         <thead>
         <tr>
-            <th width="200px" id="order_operations" align="left" class="col1" style="padding-left: 0px;">
+            <th width="260px" id="order_operations" align="left" class="col1" style="padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 250px;'>
+                    <i class="tooltip-anchor icon-double"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['operation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
-            <th width="200px" id="order_id_projet" align="left" class="col1" style="padding-left: 0px;">
+            <th width="140px" id="order_id_projet" align="right" class="col2" style="padding-left: 0px;">
                 <div class="th-wrap" style='top:-3px;width: 60px;'>
+                    <i class="tooltip-anchor icon-bdc"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['projet'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="140px" id="order_date">
                 <div class="th-wrap">
+                    <i class="icon-calendar tooltip-anchor" style="margin-left:-15px;" ></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['date-de-loperation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="180px" id="order_montant">
                 <div class="th-wrap" style="top:-2px;">
+                    <i class="icon-euro tooltip-anchor"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['montant-de-loperation'] ?>&nbsp;
                     </div>
                 </div>
             </th>
             <th width="140px">
                 <div class="th-wrap">
+                    <i class="icon-person tooltip-anchor" style="margin-left:-15px;"></i>
                     <div class="title-ope"><?= $this->lng['espace-emprunteur']['detail-preteurs'] ?></div>
                 </div>
             </th>
@@ -281,57 +295,55 @@
     </table>
 </div>
 
+<script type="text/javascript">
+     $(function() {
+         $("input, select").change(function() {
+             $(".c2-sb-wrap").removeClass('populated');
+             $(".load_table_vos_operations").fadeIn();
 
-<script type="text/javascript">//
+             var val = {
+                 debut: $("#debut").val(),
+                 fin: $("#fin").val(),
+                 nbMois: $("#nbMois").val(),
+                 annee: $("#annee").val(),
+                 tri_type_transac: $("#tri_type_transac").val(),
+                 tri_projects: $("#tri_projects").val(),
+                 id_last_action: $(this).attr('id')
+             };
 
-    $("input,select").change(function () {
-        $(".c2-sb-wrap").removeClass('populated');
-        $(".load_table_vos_operations").fadeIn();
+             $.post(add_url + "/ajax/operations_emprunteur", val).done(function (data) {
+                 var obj = jQuery.parseJSON(data);
 
-        var val = {
-            debut: $("#debut").val(),
-            fin: $("#fin").val(),
-            nbMois: $("#nbMois").val(),
-            annee: $("#annee").val(),
-            tri_type_transac: $("#tri_type_transac").val(),
-            tri_projects: $("#tri_projects").val(),
-            id_last_action: $(this).attr('id')
-        };
+                 $("#debut").val(obj.debut);
+                 $("#fin").val(obj.fin);
 
-        $.post(add_url + "/ajax/operations_emprunteur", val).done(function (data) {
-            var obj = jQuery.parseJSON(data);
+                 $(".custom-select").c2Selectbox();
 
-            $("#debut").val(obj.debut);
-            $("#fin").val(obj.fin);
+                 $(".body_content_table_vos_operations").html(obj.html);
+                 $(".load_table_vos_operations").fadeOut();
+             });
+         });
 
-            $(".custom-select").c2Selectbox();
+        $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-            $(".body_content_table_vos_operations").html(obj.html);
-            $(".load_table_vos_operations").fadeOut();
+        $("#debut").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
+            maxDate: '<?=$this->date_fin_display?>',
+            onClose: function (selectedDate) {
+                $("#fin").datepicker("option", "minDate", selectedDate);
+            }
+        });
+
+        $("#fin").datepicker({
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
+            minDate: '<?=$this->date_debut_display?>',
+            onClose: function (selectedDate) {
+                $("#debut").datepicker("option", "maxDate", selectedDate);
+            }
         });
     });
-
-     $(function () {
-            $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
-
-            $("#debut").datepicker({
-                changeMonth: true,
-                changeYear: true,
-                yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-                maxDate: '<?=$this->date_fin_display?>',
-                onClose: function (selectedDate) {
-                    $("#fin").datepicker("option", "minDate", selectedDate);
-                }
-            });
-
-            $("#fin").datepicker({
-                changeMonth: true,
-                changeYear: true,
-                yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-                minDate: '<?=$this->date_debut_display?>',
-                onClose: function (selectedDate) {
-                    $("#debut").datepicker("option", "maxDate", selectedDate);
-                }
-            });
-        });
 </script>

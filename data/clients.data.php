@@ -26,23 +26,21 @@
 //
 // **************************************************************************************************** //
 
-
 class clients extends clients_crud
 {
+    const OCTROI_FINANCMENT           = 1;
+    const VIREMENT                    = 2;
+    const COMMISSION_DEBLOCAGE        = 3;
+    const PRLV_MENSUALITE             = 4;
+    const AFF_MENSUALITE_PRETEURS     = 5;
+    const COMMISSION_MENSUELLE        = 6;
+    const REMBOURSEMENT_ANTICIPE      = 7;
+    const AFFECTATION_RA_PRETEURS     = 8;
 
-    const OCTROI_FINANCMENT = 1;
-    const VIREMENT = 2;
-    const COMMISSION_DEBLOCAGE = 3;
-    const PRLV_MENSUALITE = 4;
-    const AFF_MENSUALITE_PRETEURS = 5;
-    const COMMISSION_MENSUELLE = 6;
-    const REMBOURSEMENT_ANTICIPE = 7;
-    const AFFECTATION_RA_PRETEURS = 8;
-
-    const TYPE_BORROWER_PERSON = 1;
-    const TYPE_BORROWER_LEGAL_ENTITY = 2;
-    const TYPE_BORROWER_PERSON_FOREIGNER = 3;
-    const TYPE_BORROWER_LEGAL_ENTITY_FOREIGNER = 4;
+    const TYPE_PERSON                 = 1;
+    const TYPE_LEGAL_ENTITY           = 2;
+    const TYPE_PERSON_FOREIGNER       = 3;
+    const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
 
     public function __construct($bdd, $params = '')
@@ -360,76 +358,78 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
+    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
+    {
     public function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
         $and   = '';
-
         if ($ref != '') {
             $and .= ' AND c.id_client IN(' . $ref . ')';
         }
         if ($email != '') {
-            $and .= ' AND c.email LIKE "%' . $email . '%"';
+            $and .= ' AND c.email LIKE "' . $email . '%"';
         }
         if ($prenom != '') {
-            $and .= ' AND c.prenom LIKE "%' . $prenom . '%"';
+            $and .= ' AND c.prenom LIKE "' . $prenom . '%"';
         }
         if ($name != '') {
-            $and .= ' AND co.name LIKE "%' . $name . '%"';
+            $and .= ' AND co.name LIKE "' . $name . '%"';
         }
 
-        if ($noValide == '1') {
-            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 1';
-        } // inscription non terminée
-        elseif ($noValide == '2') {
-            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 0';
+        if ($emprunteur != '') {
+            $and .= ' AND c.status_pre_emp IN (2,3)';
         } else {
-            $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_inscription_preteur = 1';
+            // inscription terminée
+            if ($noValide == '1') {
+                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 1';
+            } // inscription non terminée
+            elseif ($noValide == '2') {
+                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 0';
+            } else {
+                $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_pre_emp IN (1,3) AND c.status_inscription_preteur = 1';
+            }
         }
 
         // pour le OR on rajoute la condition derriere
         if ($nom != '') {
-            $and .= ' AND c.nom LIKE "%' . $nom . '%" OR c.nom_usage LIKE "%' . $nom . '%" ' . $and;
+            $and .= ' AND c.nom LIKE "' . $nom . '%" OR c.nom_usage LIKE "' . $nom . '%" ' . $and;
         }
 
         $where .= $and;
 
         $sql = "
-        SELECT
-            la.id_lender_account as id_lender_account,
-            c.id_client as id_client,
-            c.status as status,
-            c.email as email,
-            c.telephone as telephone,
-            c.status_inscription_preteur as status_inscription_preteur,
-            (SELECT ROUND(SUM(t.montant/100),2) FROM transactions t WHERE t.etat = 1 AND t.status = 1 AND t.id_client = c.id_client AND t.type_transaction NOT IN (9,6)) as solde,
-            (SELECT COUNT(amount) FROM loans l WHERE l.id_lender = la.id_lender_account) as bids_valides,
-            (SELECT COUNT(amount) FROM bids b WHERE b.id_lender_account = la.id_lender_account AND b.status = 0) as bids_encours,
-
-            CASE la.id_company_owner
-                WHEN 0 THEN c.prenom
-                ELSE
-                    (SELECT
-                        CASE co.status_client
-                            WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
-                            ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
-                        END as dirigeant
-                     FROM companies co WHERE co.id_company = la.id_company_owner)
-            END as prenom_ou_dirigeant,
-            CASE la.id_company_owner
-                WHEN 0 THEN c.nom
-                ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
-            END as nom_ou_societe,
-            CASE la.id_company_owner
-                WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
-                ELSE ''
-            END as nom_usage
-        FROM lenders_accounts la
-        LEFT JOIN clients c ON c.id_client = la.id_client_owner
-        LEFT JOIN companies co ON co.id_company = la.id_company_owner
-        " . $where . "
-        GROUP BY la.id_lender_account
-        ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            SELECT
+                la.id_lender_account as id_lender_account,
+                c.id_client as id_client,
+                c.status as status,
+                c.email as email,
+                c.telephone as telephone,
+                c.status_inscription_preteur as status_inscription_preteur,
+                CASE la.id_company_owner
+                    WHEN 0 THEN c.prenom
+                    ELSE
+                        (SELECT
+                            CASE co.status_client
+                                WHEN 1 THEN CONCAT(c.prenom,' ',c.nom)
+                                ELSE CONCAT(co.prenom_dirigeant,' ',co.nom_dirigeant)
+                            END as dirigeant
+                         FROM companies co WHERE co.id_company = la.id_company_owner)
+                END as prenom_ou_dirigeant,
+                CASE la.id_company_owner
+                    WHEN 0 THEN c.nom
+                    ELSE (SELECT co.name FROM companies co WHERE co.id_company = la.id_company_owner)
+                END as nom_ou_societe,
+                CASE la.id_company_owner
+                    WHEN 0 THEN REPLACE(c.nom_usage,'Nom D\'usage','')
+                    ELSE ''
+                END as nom_usage
+            FROM lenders_accounts la
+            LEFT JOIN clients c ON c.id_client = la.id_client_owner
+                LEFT JOIN companies co ON co.id_company = la.id_company_owner
+            " . $where . "
+            GROUP BY la.id_lender_account
+            ORDER BY la.id_lender_account DESC " . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -683,7 +683,6 @@ class clients extends clients_crud
         }
 
         return $oLendersAccounts->exist($iClientId, 'id_client_owner');
-
     }
 
     public function isBorrower(projects $oProjects, companies $oCompanies, $iClientId = null)
@@ -695,29 +694,6 @@ class clients extends clients_crud
         $oCompanies->get($iClientId, 'id_client_owner');
 
         return $oProjects->exist($oCompanies->id_company, 'id_company');
-
-    }
-
-
-    public function generateTemporaryLink($iClientId = null)
-    {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        $oTemporaryLink = new \temporary_links_login($this->bdd);
-        $sToken = md5($iClientId).md5(time());
-
-        $oDateTime =  new \datetime('NOW + 1 week');
-        $sExpiryDateTime = $oDateTime->format('Y-m-d H:i:s');
-
-        $oTemporaryLink->id_client = $iClientId;
-        $oTemporaryLink->token = $sToken;
-        $oTemporaryLink->expires = $sExpiryDateTime;
-        $oTemporaryLink->create();
-
-        return $sToken;
-
     }
 
 
@@ -749,6 +725,9 @@ class clients extends clients_crud
 
         foreach ($aOperations as $iOperation) {
             switch ($iOperation) {
+                case self::COMMISSION_DEBLOCAGE:
+                    $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate));
+                    break;
                 case self::OCTROI_FINANCMENT:
                     $aDataForBorrowerOperations = array_merge($aDataForBorrowerOperations, $this->getBorrowerOperationAllLoans($aProjects, $sStartDate, $sEndDate));
                     break;
@@ -780,26 +759,27 @@ class clients extends clients_crud
         }
 
         usort($aDataForBorrowerOperations, function ($aFirstArray, $aSecondArray) {
-
             if ($aFirstArray['date'] === $aSecondArray['date']) {
-
                 if ($aFirstArray['type'] == 'prelevement-mensualite') {
-                    return -1;
+                    return 1;
                 } elseif ($aFirstArray['type'] == 'commission-mensuelle') {
-                    return 1;
-                }
-
-                if ($aFirstArray['type'] == 'financement') {
                     return -1;
+                }
+                if ($aFirstArray['type'] == 'commission-deblocage') {
+                    if ($aSecondArray['type'] == 'virement'){
+                        return 1;
+                    } else {
+                        return -1;
+                    }
                 } elseif ($aFirstArray['type'] == 'virement') {
+                    return -1;
+                } elseif ($aFirstArray['type'] == 'financement') {
                     return 1;
                 }
-
             } else {
                 return $aFirstArray['date'] < $aSecondArray['date'];
             }
         });
-
         return $aDataForBorrowerOperations;
     }
 
@@ -808,7 +788,7 @@ class clients extends clients_crud
         $aDataForBorrowerOperations = array();
         $sql = 'SELECT
                     sum(l.amount)/100 AS montant,
-                    psh.added AS date,
+                    DATE(psh.added) AS date,
                     l.id_project,
                     "financement" AS type
                 FROM
@@ -835,7 +815,7 @@ class clients extends clients_crud
         $aDataForBorrowerOperations = array();
         $sql = 'SELECT
                     montant/100 AS montant,
-                    `date_transaction` AS date,
+                    DATE(date_transaction) AS date,
                     id_project,
                     "virement" AS type
                 FROM
@@ -852,7 +832,6 @@ class clients extends clients_crud
         while ($record = $this->bdd->fetch_assoc($result)) {
             $aDataForBorrowerOperations[] = $record;
         }
-
         return $aDataForBorrowerOperations;
     }
 
@@ -864,7 +843,7 @@ class clients extends clients_crud
                     SUM(montant + commission + tva)/100 AS montant,
                     -`commission`/100 AS commission,
                     -`tva`/100 AS tva,
-                    `date_echeance_emprunteur_reel` AS date
+                    DATE(date_echeance_emprunteur_reel) AS date
                 FROM
                     `echeanciers_emprunteur`
                 WHERE
@@ -898,7 +877,6 @@ class clients extends clients_crud
                 );
             }
         }
-
         return $aDataForBorrowerOperations;
     }
 
@@ -908,7 +886,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     -SUM(`capital` + `interets`)/100 AS montant,
-                    `date_echeance_reel` AS date,
+                    DATE(date_echeance_reel) AS date,
                     `ordre`,
                     "affectation-preteurs" AS type
                 FROM
@@ -935,7 +913,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                         `id_project`,
                         montant/100 AS montant,
-                        added as date,
+                        DATE(added) as date,
                         "remboursement-anticipe" AS type
                     FROM
                         `receptions`
@@ -959,7 +937,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     - SUM(`capital`)/100 AS montant,
-                    date_echeance_reel AS date,
+                    DATE(date_echeance)_reel AS date,
                     "affectation-ra-preteur" AS type
                 FROM
                     `echeanciers`
@@ -977,50 +955,53 @@ class clients extends clients_crud
         }
 
         return $aDataForBorrowerOperations;
-
     }
 
-
-    public function countClientsLender($sWhere = null)
+    private function getBorrowerOperationCommissionOnFinancing($aProjects, $sStartDate, $sEndDate)
     {
-        if (is_null($sWhere) === false) {
-            $sWhere = ' WHERE ' . $sWhere;
-        }
+        $aDataForBorrowerOperations = array();
 
         $sql = 'SELECT
-                    COUNT(*)
-                FROM
-                    `clients` cl
-                    INNER JOIN lenders_accounts la ON cl.id_client = la.id_client_owner' . $sWhere;
+                        id_project,
+                        -montant_ttc/100 AS montant,
+                        -montant_ht/100 AS commission,
+                        -tva/100 AS tva,
+                        date,
+                        \'commission-deblocage\' AS type
+                    FROM
+                        `factures`
+                    WHERE
+                        `id_project` IN (' . implode(',', $aProjects) . ')
+                        AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+                        AND type_commission = 1';
 
         $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
-    }
-
-
-
-
-    public function countClientsBorrower($sWhere = null)
-    {
-        if (is_null($sWhere) === false) {
-            $sWhere = ' WHERE ' . $sWhere;
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aDataForBorrowerOperations[] = $record;
         }
 
-        $sql = 'SELECT
-                    COUNT(*)
-                FROM
-                    `clients`
-                INNER JOIN companies ON companies.id_client_owner = clients.id_client
-                INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
-
-
-        $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
+        return $aDataForBorrowerOperations;
     }
 
-    public function countClientsLenderAndBorrower($sWhere = null)
+    /**
+     * Retrieve pattern that lender must use in bank transfer label
+     * @param int $iClientId
+     * @return string
+     */
+    public function getLenderPattern($iClientId)
+    {
+        $this->get($iClientId);
+
+        $oToolkit = new \ficelle();
+
+        return mb_strtoupper(
+            str_pad($this->id_client, 6, 0, STR_PAD_LEFT) .
+            substr($oToolkit->stripAccents(utf8_decode($this->prenom)), 0, 1) .
+            $oToolkit->stripAccents(utf8_decode($this->nom))
+        );
+    }
+
+        public function countClientsLenderAndBorrower($sWhere = null)
     {
         if (is_null($sWhere) === false) {
             $sWhere = ' WHERE ' . $sWhere;
@@ -1041,7 +1022,7 @@ class clients extends clients_crud
 
     }
 
-    public function getClientsLender($sWhere = null)
+        public function getClientsLender($sWhere = null)
     {
         if (is_null($sWhere) === false) {
             $sWhere = ' WHERE ' . $sWhere;
@@ -1062,7 +1043,7 @@ class clients extends clients_crud
         return $aClientsLender;
     }
 
-    public function getClientsBorrower($sWhere = null)
+        public function getClientsBorrower($sWhere = null)
     {
         if (is_null($sWhere) === false) {
             $sWhere = ' WHERE ' . $sWhere;
@@ -1084,5 +1065,4 @@ class clients extends clients_crud
         return $aClientsBorrower;
     }
 
-
-}
+    }

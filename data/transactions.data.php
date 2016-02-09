@@ -33,6 +33,7 @@ class transactions extends transactions_crud
         parent::transactions($bdd, $params);
     }
 
+
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -634,13 +635,23 @@ class transactions extends transactions_crud
                 foreach ($t as $key_offre => $offre) {
                     // offre en cours
                     if ($key_offre == 1) {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NULL THEN "' . $offre . '"';
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $offre . '"';
                     } // offre rejeté
                     elseif ($key_offre == 2) {
                         $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant > 0 THEN "' . $offre . '"';
                     } // offre acceptée
                     else {
-                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NOT NULL THEN "' . $t[1] . '"';
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.montant <= 0 THEN "' . $t[1] . '"';
+                    }
+                }
+            } elseif ($key == 5) {
+                foreach ($t as $key_remb => $remb) {
+                    // remb
+                    if ($key_remb == 1) {
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 0 THEN "' . $remb . '"';
+                    } // recouvrement
+                    else {
+                        $sql .= ' WHEN t.type_transaction = ' . $key . ' AND t.recouvrement = 1 THEN "' . $remb . '"';
                     }
                 }
             } else {
@@ -670,11 +681,13 @@ class transactions extends transactions_crud
             END as title,
 
             CASE t.type_transaction
-                WHEN 2 THEN (SELECT loa.id_loan FROM loans loa WHERE loa.id_bid = b.id_bid AND loa.status = 0)
+                WHEN 2 THEN 0
                 WHEN 5 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
-                                WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
+                WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
                 ELSE ""
-            END as bdc
+            END as bdc,
+
+            t.montant as amount_operation
 
             FROM transactions t
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
@@ -705,25 +718,24 @@ class transactions extends transactions_crud
                     ELSE ""
                 END as title,
 
-                lo.id_loan as bdc
+                lo.id_loan as bdc,
+
+                ab.amount as amount_operation
 
             FROM loans lo
-            LEFT JOIN bids b ON lo.id_bid = b.id_bid
+            INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
+            LEFT JOIN bids b ON ab.id_bid = b.id_bid
             LEFT JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
             LEFT JOIN transactions t ON t.id_transaction = w.id_transaction
             LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
             WHERE 1=1
             AND lo.status = 0
             ' . $where . '
-
-
             ' . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')) . '
         )
         ' . $order . '
         ';
-
         $this->bdd->query("SET SQL_BIG_SELECTS=1");  //Set it before your main query
-
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
@@ -731,6 +743,7 @@ class transactions extends transactions_crud
         }
         return $result;
     }
+
 
     public function getSoldeByTransaction($id_client, $id_transaction)
     {

@@ -18,21 +18,15 @@
     }
 
     .small {
-        width: 192px;
         height: 18px;
-        float: left;
     }
 
     .medium {
-        width: 306px;
         height: 18px;
-        float: left;
     }
 
     .large {
-        width: 646px;
         height: 18px;
-        float: left;
     }
 
     .row-btn {
@@ -43,9 +37,28 @@
         line-height: 1.2em;
     }
 
-    .info {
-        height: 36px;
+    .info th {
+        width: 25%;
     }
+
+    #account-data-person tr, #account-data-company tr {
+        height: 100%;
+    }
+
+    #account-data-person table, #account-data-company table {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    #account-data-company .td_small, #account-data-person .td_small {
+        width: 25%;
+    }
+
+    #account-data-company .td_medium, #account-data-person .td_medium {
+        width: 50%;
+    }
+
+
 </style>
 
 <div class="main form-page account-page account-page-personal">
@@ -64,45 +77,105 @@
             <div class="tabs">
                 <div class="tab page1 tab-manage">
                     <div class="account-data">
-                        <div class="row">
-                            <span
-                                class="small info"><?= $this->lng['espace-emprunteur']['vos-informations-personnelles'] ?></span>
-                            <span class="small content"><?= $this->clients->prenom ?></span>
-                            <span class="small content"><?= $this->clients->nom ?></span>
-                            <span class="small content"><?= $this->clients->function ?></span>
-                        </div>
-                        <div class="row">
-                            <span class="medium content"><?= $this->clients->mobile ?></span>
-                            <span class="medium content"><?= $this->clients->email ?></span>
-                        </div>
+                        <table id="account-data-person">
+                            <tr>
+                                <th rowspan="3" class="td_small small info">
+                                    <div
+                                        class="small info"><?= $this->lng['espace-emprunteur']['vos-informations-personnelles'] ?></div>
+                                </th>
+                                <td class="td_small small">
+                                    <div
+                                        class="small content"><?= empty($this->clients->prenom) === false ? $this->clients->prenom : $this->lng['espace-emprunteur']['prenom'] ?></div>
+                                </td>
+                                <td class="td_small small">
+                                    <div
+                                        class="small content"><?= empty($this->clients->nom) === false ? $this->clients->nom : $this->lng['espace-emprunteur']['nom'] ?></div>
+                                </td>
+                                <td class="td_small small">
+                                    <div
+                                        class="small content"><?= empty($this->clients->function) === false ? $this->clients->function : $this->lng['espace-emprunteur']['fonction'] ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="td_small"><div
+                                        class="small info"><?= $this->lng['espace-emprunteur']['telephone-mobile'] ?></div>
+                                </td>
+                                <td colspan="2"><div
+                                        class="medium content"><?= empty($this->clients->mobile) === false ? $this->clients->mobile : $this->lng['espace-emprunteur']['telephone-mobile'] ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="td_small"><div
+                                        class="small info"><?= $this->lng['espace-emprunteur']['email'] ?></div></td>
+                                <td colspan="2"><div
+                                        class="medium content"><?= empty($this->clients->email) === false ? $this->clients->email : $this->lng['espace-emprunteur']['email'] ?></div>
+                                </td>
+                            </tr>
+                        </table>
+
                         <div class="row">
                             <span
                                 style="background: #ae0364; width: 900px; height: 5px; margin: 12px; border-radius: 3px; float:left;"></span>
                         </div>
-                        <div class="row">
-                            <span class="small info"
-                                  style="height: 200px;"><?= $this->lng['espace-emprunteur']['coordonnes-de-votre-entreprise'] ?></span>
-                            <span class="medium content"><?= $this->companies->siren ?></span>
-                        </div>
-                        <div class="row">
-                            <span class="large content"><?= $this->companies->name ?></span>
-                        </div>
-                        <div class="row">
-                            <span class="large content"><?= $this->companies->adresse1 ?></span>
-                        </div>
-                        <div class="row">
-                            <span class="medium content"><?= $this->companies->zip ?></span>
-                            <span class="medium content"><?= $this->companies->city ?></span>
-                        </div>
-                        <div class="row">
-                            <span class="medium content"><?= $this->companies->phone ?></span>
-                            <span class="medium content"><?= $this->companies->email_facture ?></span>
-                        </div>
+
+                        <table id="account-data-company">
+                            <tr>
+                                <th rowspan="8" class="td_small"><div
+                                        class="small info"><?= $this->lng['espace-emprunteur']['coordonnes-de-votre-entreprise'] ?></div>
+                                </th>
+                                <td>
+                                    <div class="info small"><?= $this->lng['espace-emprunteur']['siren'] ?></div>
+                                </td>
+                                <td class="td_medium">
+                                    <div
+                                        class="medium content"><?= empty($this->companies->siren) === false ? $this->companies->siren : $this->lng['espace-emprunteur']['siren'] ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="td_small"><div class="info small"><?= $this->lng['espace-emprunteur']['raison-sociale'] ?></div></td>
+                                <td><div
+                                        class="large content"><?= empty($this->companies->name) === false ? $this->companies->name : $this->lng['espace-emprunteur']['raison-sociale'] ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="3"><div class="info small"><p><?= $this->lng['espace-emprunteur']['adresse'] ?></p></div></td>
+                            </tr>
+                            <tr>
+                                <td colspan="3">
+                                    <div class="large content"><?= empty($this->companies->adresse1) === false ? $this->companies->adresse1 : $this->lng['espace-emprunteur']['adresse'] ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="td_small">
+                                        <div class="content"><?= $this->companies->zip ?></div>
+                                </td>
+                                <td colspan="2">
+                                        <div class="medium content"><?= $this->companies->city ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="info"><?= $this->lng['espace-emprunteur']['telephone-societe'] ?></div>
+                                </td>
+                                <td>
+                                    <div class="medium content"><?= $this->companies->phone ?></div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="info"><?= $this->lng['espace-emprunteur']['email-facturation'] ?></div>
+                                </td>
+                                <td>
+                                    <div class="medium content"><?= $this->companies->email_facture ?></div>
+                                </td>
+                            </tr>
+                        </table>
+
                     </div>
                     <div class="clear" style="clear: both"></div>
                     <div class="row row-btn">
                         <a href="contact">
-                            <button class="btn" style="float: right;">
+                            <button class="btn" style="margin-left: 389px;">
                                 <?= $this->lng['espace-emprunteur']['demande-modification'] ?>
                                 <i class="icon-arrow-next"></i>
                             </button>
@@ -111,22 +184,43 @@
                 </div>
                 <div class="tab page2" style="display: none;">
                     <div class="row row-bank">
-                        <div class="row" style="float: left;">
-                            <span class="small info"><?= $this->lng['espace-emprunteur']['votre-rib'] ?></span>
-                            <span class="medium content"><?= $this->companies->bic ?></span>
-                        </div>
-                        <div class="row" style="float: left;">
-                            <span class="small info">&nbsp;</span>
-                            <span class="large content"><?= $this->companies->iban ?></span>
-                        </div>
-                        <div class="row" style="float: left;">
-                            &nbsp;
+                        <table>
+                            <tr>
+                                <th rowspan="3">
+                                    <div class="small info"><?= $this->lng['espace-emprunteur']['votre-rib'] ?></div></th>
+                                <td>
+                                    <label for="bic"><?=$this->lng['espace-emprunteur']['bic']?></label>
+                                </td>
+                                <td>
+                                    <div class="content field-small"><?= $this->companies->bic ?></div>
+                                </td>
+                            </tr>
+                            <tr><td colspan="3"><div class="info"></div></td></tr>
+                            <tr><td><label class="inline-text"><?=$this->lng['espace-emprunteur']['iban']?></label></td>
+                                <td colspan="2">
+                                    <?php if (empty($this->companies->iban) === false ) : ?>
+                                    <span class="content field-extra-tiny"><?= substr($this->companies->iban, 0, 4) ?></span>
+                                    <span class="content field-extra-tiny"><?= substr($this->companies->iban, 4, 4) ?></span>
+                                    <span class="content field-extra-tiny"><?= substr($this->companies->iban, 8, 4) ?></span>
+                                    <span class="content field-extra-tiny"><?= substr($this->companies->iban, 12, 4) ?></span>
+                                    <span class="content field-extra-tiny"><?= substr($this->companies->iban, 16, 4) ?></span>
+                                    <span class="content field-extra-tiny"><?= substr($this->companies->iban, 20, 4) ?></span>
+                                    <span class="content field-extra-tiny"><?= substr($this->companies->iban, 24, 3) ?></span>
+                                    <?php else : ?>
+                                    <div class="content"></div>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <tr><td colspan="2"><div class="info"></div></td></tr>
+                        </table>
+
+                        <div class="row">
                             <p><?= $this->lng['espace-emprunteur']['explication-changement-rib'] ?></p>
                         </div>
                         <div class="clear" style="clear: both"></div>
                         <div class="row row-btn">
                             <a href="contact">
-                                <button class="btn" style="float: right;">
+                                <button class="btn" style="margin-left: 389px;">
                                     <?= $this->lng['espace-emprunteur']['demande-modification'] ?>
                                     <i class="icon-arrow-next"></i>
                                 </button>
@@ -148,5 +242,3 @@
         $("#tabs").tabs();
     });
 </script>
-
-

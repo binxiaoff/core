@@ -2,7 +2,7 @@
     <div class="shell">
         <p><?= $this->lng['depot-de-dossier']['titre-prospect'] ?></p>
         <div class="register-form">
-            <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
+            <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
                 <div class="row">
                     <input type="text" name="raison_sociale" id="raison_sociale"
                            placeholder="<?= $this->lng['etape2']['raison-sociale'] ?>"

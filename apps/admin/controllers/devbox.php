@@ -9,8 +9,9 @@ class devboxController extends bootstrap
 
         $this->catchAll = true;
 
-        if ($_SERVER['REMOTE_ADDR'] != "93.26.42.99") {
-            //die;
+        if (false === in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) {
+            header('Location: ' . $this->furl);
+            die;
         }
     }
 

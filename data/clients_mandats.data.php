@@ -28,22 +28,15 @@
 
 class clients_mandats extends clients_mandats_crud
 {
-
-    const STATUS_EN_COURS = 0;
-    const STATUS_SIGNE = 1;
-    const STATUS_ANNULE = 2;
-    const STATUS_FAIL = 3;
+    const STATUS_PENDING  = 0;
+    const STATUS_SIGNED   = 1;
+    const STATUS_CANCELED = 2;
+    const STATUS_FAILED   = 3;
+    const STATUS_ARCHIVED = 4;
 
     public function __construct($bdd, $params = '')
     {
         parent::clients_mandats($bdd, $params);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-
-        return $id;
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -71,18 +64,13 @@ class clients_mandats extends clients_mandats_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `clients_mandats` ' . $where;
-
-        $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM clients_mandats ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_mandat')
     {
-        $sql    = 'SELECT * FROM `clients_mandats` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-
+        $result = $this->bdd->query('SELECT * FROM clients_mandats WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 }
