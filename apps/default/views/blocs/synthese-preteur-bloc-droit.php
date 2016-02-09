@@ -43,9 +43,7 @@
     </header>
     <div class="body">
         <div class="post-box">
-            <p>
-                <small><?= $this->sDate ?></small>
-            </p>
+            <p><small><?= empty($this->sDate) ? '' : str_replace('[#DATE#]', $this->sDate, $this->lng['preteur-synthese']['message-date-donnees']) ?></small></p>
         </div>
         <div class="rd-meter">
             <div class="rd-data">
