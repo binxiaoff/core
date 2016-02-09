@@ -35,6 +35,9 @@ class projects extends projects_crud
     const MINIMUM_CREATION_DAYS          = 1080;
     const MINIMUM_REVENUE                = 80000;
 
+    const DISPLAY_PROJECT_ON  = 0;
+    const DISPLAY_PROJECT_OFF = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::projects($bdd, $params);

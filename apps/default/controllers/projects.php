@@ -119,7 +119,8 @@ class projectsController extends bootstrap
             $this->restriction_ip = false;
         }
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0') {
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0' && $this->projects->display == \projects::DISPLAY_PROJECT_ON) {
+
             //title de la page
             $this->meta_title = $this->projects->title . ' - Unilend';
 
@@ -631,8 +632,8 @@ class projectsController extends bootstrap
                 }
             }
         } else {
-            header('Location: ' . $this->lurl . '/projects');
-            die;
+            header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+            $this->setView('../root/404');
         }
     }
 }
