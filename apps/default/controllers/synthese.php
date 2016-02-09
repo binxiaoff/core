@@ -260,7 +260,7 @@ class syntheseController extends bootstrap
         $this->sDisplayedValue       = '';
         $this->sTypeMessageTooltip   = '';
         $this->sDisplayedMessage     = '';
-        $this->sDate                 = '';
+        $this->sDate                 = null;
         $this->iNumberOfCompanies    = $this->lenders_accounts->countCompaniesLenderInvestedIn($this->lenders_accounts->id_lender_account);
         $oLenderAccountStats         = $this->loadData('lenders_account_stats');
 
@@ -292,7 +292,7 @@ class syntheseController extends bootstrap
         if ($this->iNumberOfCompanies > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
             if ($aLastIRR) {
-                $this->sDate               = $this->lng['preteur-synthese']['donnees-actualisees'] . $this->dates->formatDateMysqltoFrTxtMonth($aLastIRR['tri_date']);
+                $this->sDate               = $this->dates->formatDateMysqltoFrTxtMonth($aLastIRR['tri_date']);
                 $this->sDisplayedValue     = ($aLastIRR['tri_value'] > 0) ? '+ ' . $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%' : $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%';
                 $this->bIRRIsNegative      = ($aLastIRR['tri_value'] > 0) ? false : true;
                 $this->sTypeMessageTooltip = 'tri';
@@ -305,7 +305,7 @@ class syntheseController extends bootstrap
                     $this->bHasIRR             = false;
                     $this->sTypeMessageTooltip = 'taux-de-perte';
                     $this->sDisplayedMessage   = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-non-calculable']);
-                    $this->sDate               = $this->lng['preteur-synthese']['donnees-actualisees'] . $this->dates->formatDateMysqltoFrTxtMonth(date('Y-m-d'));
+                    $this->sDate               = $this->dates->formatDateMysqltoFrTxtMonth(date('Y-m-d'));
                 } else {
                     $this->sDisplayedValue     = '';
                     $this->sTypeMessageTooltip = 'tri';
