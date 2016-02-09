@@ -84,7 +84,7 @@ class syntheseController extends bootstrap
         }
 
         // cgu societe
-        if (in_array($this->clients->type, array(2, 4))) {
+        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
         } else {
@@ -107,11 +107,8 @@ class syntheseController extends bootstrap
             }
         }
 
-        // Heure fin periode funding
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
-
-        // on recup le lender
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         // On recupere les projets favoris
@@ -122,16 +119,6 @@ class syntheseController extends bootstrap
             $this->lProjetsFav = 0;
         } else {
             $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')');
-        }
-
-        // on récup la liste des projets que le lender a bidé
-        $lesBids = $this->bids->projetsBidsEnCoursPreteur($this->lenders_accounts->id_lender_account);
-
-        // Liste des projets en cours dont le preteur participe
-        if ($lesBids == false) {
-            $this->lProjetsBidsEncours = 0;
-        } else {
-            $this->lProjetsBidsEncours = $this->projects->select('id_project IN (' . $lesBids . ')');
         }
 
         // Liste des projets en cours (projets a decouvrir)
@@ -253,5 +240,23 @@ class syntheseController extends bootstrap
 
         // statut client
         $this->clients_status->getLastStatut($this->clients->id_client);
+
+        //Ongoing Bids Widget
+        $oBids          = $this->loadData('bids');
+        $oProjects      = $this->loadData('projects');
+        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+
+        $aProjectsInFunding = $oProjects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'date_retrait_full ASC');
+
+        foreach ($aProjectsInFunding as $iKey => $aProject) {
+            $aProjectsInFunding[$iKey]['oEndFunding']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
+            $aProjectsInFunding[$iKey]['aPendingBids'] = $oBids->select('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status = ' . \bids::STATUS_BID_PENDING, 'id_bid DESC');
+            $aProjectsInFunding[$iKey]['aRejectedBid'] = array_shift($oBids->select('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED,\bids::STATUS_AUTOBID_REJECTED)) . ')', 'id_bid DESC', null, '1'));
+            $aProjectsInFunding[$iKey]['iNumberOfRejectedBids'] = $oBids->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED, \bids::STATUS_AUTOBID_REJECTED)) . ')');
+        }
+
+        $this->aOngoingBidsByProject     = $aProjectsInFunding;
+        $this->iDisplayTotalNumberOfBids = $oBids->counter('id_lender_account = ' . $oLenderAccount->id_lender_account);
     }
 }

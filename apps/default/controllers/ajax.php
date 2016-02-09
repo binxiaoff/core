@@ -1878,4 +1878,44 @@ class ajaxController extends bootstrap
         $this->sDisplayDateTimeStart = $oStartTime->format('d/m/Y');
         $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
     }
+
+    public function _rejectedBids(){
+
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $oProject       = $this->loadData('projects');
+        $oClient        = $this->loadData('clients');
+        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oBids          = $this->loadData('bids');
+
+        $oProject->get($this->params[0]);
+        $oClient->get($this->params[1], 'hash');
+        $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+
+        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+
+        $aRejectedBids = $oBids->select('id_project = ' . $oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED, \bids::STATUS_AUTOBID_REJECTED)) . ')', 'id_bid DESC');
+
+        ob_start();
+        foreach ($aRejectedBids as $aBid) {
+            echo
+            '<div class="row bid">
+                <span class="' . ((0 == $aBid['id_autobid']) ? 'no_autobid' : 'autobid') . '">A</span>
+                <span class="amount">' . $this->ficelle->formatNumber($aBid['amount'] / 100, 0) . ' €</span>
+                <span class="rate">' . $this->ficelle->formatNumber($aBid['rate'], 1) . ' %</span>
+                <span class="circle_rejected"></span>
+                <span class="rejected">' . $this->lng['preteur-synthese']['label-rejected-bid'] . '
+                    <a href="' . $this->furl . '/projects/detail/' . $oProject->slug . '">' . $this->lng['preteur-synthese']['label-new-offer'] . '</a>
+                </span>
+            </div>';
+        }
+
+        $sHtmlBody = ob_get_contents();
+        ob_clean();
+
+        echo json_encode(array('html' => $sHtmlBody));
+    }
+
+
 }
