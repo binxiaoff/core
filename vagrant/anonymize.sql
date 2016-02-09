@@ -7,7 +7,7 @@ UPDATE clients SET
   nom_usage = CONCAT('Nom usage ', id_client),
   telephone = CONCAT(SUBSTRING('0100000000', 1, 10 - LENGTH(id_client)), id_client),
   mobile = CONCAT(SUBSTRING('0600000000', 1, 10 - LENGTH(id_client)), id_client),
-  naissance = CONCAT('19', ROUND(RAND(id_client) * 100), '-', ROUND(RAND(id_client) * 100) % 12, '-', ROUND(RAND(id_client) * 100) % 31),
+  naissance = CONCAT('19', SUBSTRING(ROUND(RAND(id_client) * 100), -2), '-', ROUND(RAND(id_client) * 100) % 12, '-', ROUND(RAND(id_client) * 100) % 31),
   cni_passeport = IF(cni_passeport = '', '', CONCAT('cni', '-', id_client, IF(cni_passeport REGEXP '\.[a-zA-Z0-9]{3}', SUBSTRING(cni_passeport, -4), IF(cni_passeport REGEXP '\.[a-zA-Z0-9]{4}', SUBSTRING(cni_passeport, -5), 'ext'))))
 WHERE email NOT LIKE '%@unilend.fr';
 
