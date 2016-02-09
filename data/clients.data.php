@@ -48,16 +48,6 @@ class clients extends clients_crud
         parent::clients($bdd, $params);
     }
 
-    public function get($id, $field = 'id_client')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function delete($id, $field = 'id_client')
-    {
-        parent::delete($id, $field);
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -242,7 +232,6 @@ class clients extends clients_crud
         $result = $this->bdd->query($sql);
         $nb     = (int) ($this->bdd->result($result, 0, 0));
 
-        //die;
         if ($nb > 0) {
             return true;
         } else {
@@ -257,7 +246,6 @@ class clients extends clients_crud
         }
 
         if ($this->isLender(new \lenders_accounts($this->bdd), $iClientId)) {
-
             if ($this->checkCompteCreate($iClientId) === false) {
                 header('location:' . $this->lurl . '/inscription-preteurs');
                 die;
@@ -273,7 +261,7 @@ class clients extends clients_crud
             $iClientId = $this->id_client;
         }
 
-        if ($this->isBorrower(new \projects($this->bdd), $iClientId) === false ) {
+        if ($this->isBorrower(new \projects($this->bdd), new\companies($this->bdd), $iClientId) === false ) {
             $this->handleLogout();
         }
     }
@@ -359,8 +347,6 @@ class clients extends clients_crud
     }
 
     public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
-    {
-    public function searchPreteursV2($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
         $and   = '';
@@ -1001,7 +987,7 @@ class clients extends clients_crud
         );
     }
 
-        public function countClientsLenderAndBorrower($sWhere = null)
+    public function countClientsLenderAndBorrower($sWhere = null)
     {
         if (is_null($sWhere) === false) {
             $sWhere = ' WHERE ' . $sWhere;
@@ -1022,16 +1008,15 @@ class clients extends clients_crud
 
     }
 
-        public function getClientsLender($sWhere = null)
+    public function getClientsLender($sWhere = null)
     {
         if (is_null($sWhere) === false) {
             $sWhere = ' WHERE ' . $sWhere;
         }
 
         $sql = 'SELECT *
-                FROM
-                    `clients`
-                    INNER JOIN lenders_accounts la ON clients.id_client = la.id_client_owner'. $sWhere;
+                FROM `clients`
+                INNER JOIN lenders_accounts la ON clients.id_client = la.id_client_owner'. $sWhere;
 
         $aClientsLender = array();
 
@@ -1043,17 +1028,16 @@ class clients extends clients_crud
         return $aClientsLender;
     }
 
-        public function getClientsBorrower($sWhere = null)
+    public function getClientsBorrower($sWhere = null)
     {
         if (is_null($sWhere) === false) {
             $sWhere = ' WHERE ' . $sWhere;
         }
 
         $sql = 'SELECT *
-                FROM
-                    `clients`
-                    INNER JOIN companies ON companies.id_client_owner = clients.id_client
-                    INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
+                FROM `clients`
+                INNER JOIN companies ON companies.id_client_owner = clients.id_client
+                INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
 
         $aClientsBorrower = array();
 
@@ -1065,4 +1049,4 @@ class clients extends clients_crud
         return $aClientsBorrower;
     }
 
-    }
+}

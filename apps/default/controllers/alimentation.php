@@ -17,8 +17,7 @@ class alimentationController extends bootstrap
             header('Location:' . $this->lurl);
             die;
         } else {
-            // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkStatusPreEmp('preteur', $this->clients->id_client);
+            $this->clients->checkAccessLender($this->clients->id_client);
         }
 
         $this->page = 'alimentation';

@@ -200,15 +200,11 @@ class rootController extends bootstrap
                     header('Location:' . $this->lurl);
                     die;
                 } else {
-                    // 1 preteur
                     if ($this->tree->arbo == 1) {
-                        $this->clients->checkStatusPreEmp('preteur', $this->clients->id_client);
-                    } // 2 emprunteur
-                    elseif ($this->tree->arbo == 2) {
-                        $this->clients->checkStatusPreEmp('emprunteur', $this->clients->id_client);
+                        $this->clients->checkAccessLender($this->clients->id_client);
+                    } elseif ($this->tree->arbo == 2) {
+                        $this->clients->checkAccessBorrower($this->clients->id_client);;
                     }
-
-                    // On prend le header account
                     $this->setHeader('header_account');
                 }
             }

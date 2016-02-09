@@ -14,44 +14,28 @@
         </div>
     </div>
 
-    <?php if ($this->bIsBorrowerAndLender): ?>
-        <script type="text/javascript">
-            $(function() {
-                $.colorbox({
-                    href: "-<?= $this->lurl ?>/thickbox/pop_up_lender_and_borrower",
-                    fixed: true,
-                    maxWidth: '90%',
-                    onClosed: function() {}
-                });
-            });
-        </script>
-    <?php endif; ?>
-
-    <?php
-    if ($this->bDisplayLender):
-        if (in_array($this->clients->type, array(2, 4))) { // societe
+    <?php  if ($this->bDisplayLender) :
+        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) :
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
-        } else { // particulier
+        else :  // particulier
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
-        }
+        endif;
 
         $listeAccept_header = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
-
         $this->update_accept_header = false;
 
-        if (in_array($this->lienConditionsGenerales, $listeAccept_header)) {
+        if (in_array($this->lienConditionsGenerales, $listeAccept_header)) :
             $this->accept_ok_header = true;
-        } else {
+        else :
             $this->accept_ok_header = false;
 
-            if ($listeAccept_header != false) {
+            if ($listeAccept_header != false) :
                 $this->update_accept_header = true;
-            }
-        }
-        ?>
-        <?php if (! $this->accept_ok_header): ?>
+            endif;
+        endif; ?>
+    <?php if (! $this->accept_ok_header) : ?>
             <script type="text/javascript">
                 $(function() {
                     $.colorbox({
@@ -61,7 +45,7 @@
                     });
                 });
             </script>
-        <?php endif; ?>
+    <?php endif; ?>
         <style type="text/css">
             .navigation .styled-nav {
                 width: 100%;
@@ -139,7 +123,7 @@
                 })
             </script>
         </div>
-    <?php elseif ($this->bDisplayBorrower): ?>
+    <?php elseif ($this->bDisplayBorrower) : ?>
         <style type="text/css">
             .navigation .styled-nav{width: 100%;}
         </style>

@@ -285,30 +285,22 @@ class bootstrap extends Controller
                                 $this->accept_cookies->update();
                             }
                         }
-
-                        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
-                        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
-
                         $this->clients_history->id_client = $_SESSION['client']['id_client'];
                         $this->clients_history->status    = 1; // statut login
                         $this->clients_history->create();
 
-                        if ($this->bIsLenderAndBorrower = $this->checkIfLenderOrBorrower()) {
-                            $this->bPopUpChoice = true;
-                        }
+                        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
+                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
+                        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender);
 
-                        if ($this->bIsLender && $this->bIsLenderAndBorrower === false ) {
-                            $this->handleLoginDataLender();
-
-                        } elseif ($this->bIsBorrower && $this->bIsLenderAndBorrower === false) {
-                            $this->handleLoginDataBorrower();
-
+                        if ($this->bIsLender && false === $this->bIsBorrowerAndLender) {
+                            $this->loginLender();
+                        } elseif ($this->bIsBorrower && false === $this->bIsBorrowerAndLender) {
+                            $this->loginBorrower();
                         } else {
                             header('location: ' . $this->surl);
                             die;
                         }
-
                     } else {
                         $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
@@ -351,26 +343,25 @@ class bootstrap extends Controller
 
             $this->addDataLayer('id_client', $this->clients->id_client);
             $this->addDataLayer('email_client', $this->clients->email);
+
             $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
             $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
-            $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
+            $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender);
+            $this->bDisplayLender       = false;
+            $this->bDisplayBorrower     = false;
+            $this->bShowChoiceBorrowerOrLender = true;
 
-            if ($this->bIsLenderAndBorrower && $command->Name === 'root' && $command->Function === 'default') {
-                $this->bPopUpChoice = true;
-            }
 
-            if ($this->clients->isBorrower($this->projects, $_SESSION['client']['id_client']) && $command->Name === 'espace_emprunteur') {
+            if ($this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']) && 'espace_emprunteur' === $command->Name) {
                 $this->getDataBorrower();
-                $this->bDisplayLender = false;
                 $this->bDisplayBorrower = true;
-                $this->bPopUpChoice = false;
+                $this->bShowChoiceBorrowerOrLender = false;
             }
 
-            if ($this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']) && $command->Name === 'synthese') {
+            if ($this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']) && 'synthese' === $command->Name ) {
                 $this->getDataLender();
                 $this->bDisplayLender = true;
-                $this->bDisplayBorrower = false;
-                $this->bPopUpChoice = false;
+                $this->bShowChoiceBorrowerOrLender = false;
             }
         }
 
@@ -697,19 +688,14 @@ class bootstrap extends Controller
     private function getDataLender()
     {
         $this->bDisplayLender = true;
-        // particulier
         if ($this->clients->type == clients::TYPE_PERSON) {
-            // cgu particulier
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
-        } // morale
-        else {
-            // cgu societe
+        } else {
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
         }
 
-        // Recuperation du contenu de la page
         $contenu = $this->tree_elements->select('id_tree = "' . $this->lienConditionsGenerales . '" AND id_langue = "' . $this->language . '"');
         foreach ($contenu as $elt) {
             $this->elements->get($elt['id_element']);
@@ -727,7 +713,6 @@ class bootstrap extends Controller
         $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
         $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', $this->language, $this->App);
 
-
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         $this->nbNotifdisplay      = 10;
@@ -735,10 +720,7 @@ class bootstrap extends Controller
         $this->NbNotifHeader       = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0');
         $this->NbNotifHeaderEnTout = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account);
 
-
-        // Solde du compte preteur
         $this->solde = $this->transactions->getSolde($this->clients->id_client);
-
     }
 
     private function getDataBorrower()

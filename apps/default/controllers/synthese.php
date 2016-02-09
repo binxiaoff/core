@@ -12,12 +12,10 @@ class syntheseController extends bootstrap
 
         $this->setHeader('header_account');
 
-        // On check si y a un compte
         if (!$this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
         } else {
-            // check preteur ou emprunteur (ou les deux)
             $this->clients->checkAccessLender($this->clients->id_client);
         }
 

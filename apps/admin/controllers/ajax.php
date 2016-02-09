@@ -391,7 +391,6 @@ class ajaxController extends bootstrap
                     // si inscription
                     if ($this->clients->status_transition == 1) {
                         $this->clients_history->id_client = $this->clients->id_client;
-                        $this->clients_history->type      = $this->clients->status_pre_emp;
                         $this->clients_history->status    = 2; // statut inscription
                         $this->clients_history->create();
                     }
