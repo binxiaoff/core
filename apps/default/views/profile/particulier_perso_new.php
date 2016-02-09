@@ -145,7 +145,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
         </div>
 
 
-        <div class="row row-upload etranger1" <?=($this->etranger == 1?'':'style="display:none;"')?>>
+        <div class="row row-upload etranger<?= $this->etranger == 1 ? 1 : 2 ?>" <?=(($this->etranger == 1 || $this->etranger == 2) ? '' : 'style="display:none;"')?>>
             <label class="inline-text">
                 <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['document-fiscal-1']?>"></i>
 
@@ -153,36 +153,13 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
             </label>
 
             <div class="uploader">
-                <input id="text_document_fiscal_1" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"] !=''?$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
+                <input id="text_document_fiscal_<?= $this->etranger == 1 ? 1 : 2 ?>" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"] !=''?$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
 
                 <div class="file-holder">
                     <span class="btn btn-small">
                         +
                         <span class="file-upload">
-                            <input id="document_fiscal_1" type="file" class="file-field" name="document_fiscal">
-                        </span>
-
-                        <small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
-                    </span>
-                </div>
-            </div><!-- /.uploader -->
-        </div>
-
-        <div class="row row-upload etranger2" <?=($this->etranger == 2?'':'style="display:none;"')?>>
-            <label class="inline-text">
-                <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['document-fiscal-2']?>"></i>
-
-                <?=$this->lng['etape2']['document-fiscal-2']?>
-            </label>
-
-            <div class="uploader">
-                <input id="text_document_fiscal_2" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]!=''?$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
-
-                <div class="file-holder">
-                    <span class="btn btn-small">
-                        +
-                        <span class="file-upload">
-                            <input id="document_fiscal_2" type="file" class="file-field" name="document_fiscal">
+                            <input type="file" class="file-field" name="document_fiscal" >
                         </span>
 
                         <small><?=$this->lng['profile']['telecharger-un-autre-document-fiscal']?></small>
