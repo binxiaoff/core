@@ -6632,7 +6632,7 @@ class cronController extends bootstrap
 
             if ($settingsControleRemb->value == 1) {
                 // BIEN PRENDRE EN COMPTE LA DATE DE DEBUT DE LA REQUETE POUR NE PAS TRATER LES ANCIENS PROJETS REMB <------------------------------------| !!!!!!!!!
-                $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1 AND DATE(date_echeance) > "2015-06-30"', '', 0, 300); // on limite a 300 mails par executions
+                $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300); // on limite a 300 mails par executions
 
                 foreach ($lEcheances as $e) {
                     if (
