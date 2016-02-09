@@ -145,15 +145,15 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
         </div>
 
 
-        <div class="row row-upload etranger<?= $this->etranger == 1 ? 1 : 2 ?>" <?=(($this->etranger == 1 || $this->etranger == 2) ? '' : 'style="display:none;"')?>>
+        <div class="row row-upload etranger" <?=($this->etranger == 0) ? 'style="display:none;"':''?>>
             <label class="inline-text">
-                <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['document-fiscal-1']?>"></i>
-
-                <?=$this->lng['etape2']['document-fiscal-1']?>
+                <?php $sTranslationLabel = $this->etranger == 1 ? 'document-fiscal-1' : 'document-fiscal-2'; ?>
+                <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2'][$sTranslationLabel]?>"></i>
+                <?=$this->lng['etape2'][$sTranslationLabel]?>
             </label>
 
             <div class="uploader">
-                <input id="text_document_fiscal_<?= $this->etranger == 1 ? 1 : 2 ?>" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"] !=''?$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
+                <input id="text_document_fiscal" type="text" class="field" readonly value="<?=($this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"] !=''?$this->attachments[attachment_type::JUSTIFICATIF_FISCAL]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>">
 
                 <div class="file-holder">
                     <span class="btn btn-small">
@@ -502,26 +502,22 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
         // particulier etranger
         $("#pays1,#nationalite").change(function() {
             var pays1 = $('#pays1').val();
-            var nationalite = $('#nationalite').val();
 
             //resident etranger
-            if(nationalite > 0 && pays1 > 1){
+            if(pays1 > 1){
                 $(".etranger").slideDown();
-                if(nationalite == 1 && pays1 > 1){ $(".etranger1").slideDown();$(".etranger2").slideUp(); }
-                else if(nationalite != 1 && pays1 > 1){ $(".etranger2").slideDown();$(".etranger1").slideUp();}
+            } else {
+                $(".etranger").slideUp();
             }
-            else{ $(".etranger").slideUp();$(".etranger1").slideUp();$(".etranger2").slideUp(); }
         });
 
         // particulier messagge check_etranger
         $("#check_etranger").change(function() {
             if($(this).is(':checked') == true){
                 $(".message_check_etranger").slideUp();
-                $("#text_document_fiscal_1").val('');
-                $("#text_document_fiscal_2").val('');
-                //$(".cb_check_etranger").addClass('checked');
+                $("#text_document_fiscal").val('');
             }
-            else{$(".message_check_etranger").slideDown();/*$( ".cb_check_etranger" ).removeClass("checked");*/}
+            else{$(".message_check_etranger").slideDown();}
         });
 
         //CInput2.init();
@@ -559,17 +555,12 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
         //resident etranger
         var pays1 = $('#pays1').val();
-        var nationalite = $('#nationalite').val();
-        if(nationalite > 0 && pays1 > 1){
+        if(pays1 > 1){
             // check_etranger
             if($('#check_etranger').is(':checked') == false){$('.check_etranger').css('color','#C84747'); $('#check_etranger').addClass('LV_invalid_field');$('#check_etranger').removeClass('LV_valid_field');  form_ok = false; }
             else{ $('#check_etranger').addClass('LV_valid_field');$('#check_etranger').removeClass('LV_invalid_field'); $('.check_etranger').css('color','#727272');}
 
-            var text_document_fiscal = $("#text_document_fiscal_1");
-
-            // document fiscal
-            if(nationalite == 1 && pays1 > 1){var text_document_fiscal = $("#text_document_fiscal_1"); }
-            else if(nationalite != 1 && pays1 > 1){var text_document_fiscal = $("#text_document_fiscal_2");}
+            var text_document_fiscal = $("#text_document_fiscal");
 
             if(text_document_fiscal.val() == '' || text_document_fiscal.val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>'){form_ok = false; text_document_fiscal.addClass('LV_invalid_field');text_document_fiscal.removeClass('LV_valid_field');}
             else { text_document_fiscal.addClass('LV_valid_field');text_document_fiscal.removeClass('LV_invalid_field'); }
