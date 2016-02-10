@@ -134,33 +134,71 @@ class cronController extends bootstrap
         }
     }
 
-    // toutes les minute on check //
-    // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
+    // toutes les minutes on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
     {
         if (true === $this->startCron('check_projet_a_funder', 5)) {
-            $this->projects                = $this->loadData('projects');
-            $this->projects_status         = $this->loadData('projects_status');
-            $this->projects_status_history = $this->loadData('projects_status_history');
+            $oProjects              = $this->loadData('projects');
+            $oProjectsStatusHistory = $this->loadData('projects_status_history');
 
-            $this->settings->get('Heure debut periode funding', 'type');
-            $this->heureDebutFunding = $this->settings->value;
+            $this->settings->get('Projet en funding', 'type');
+            $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
 
-            $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::A_FUNDER);
+            $aProjects = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
 
-            foreach ($this->lProjects as $projects) {
-                $tabdatePublication = explode(':', $projects['date_publication_full']);
-                $datePublication    = $tabdatePublication[0] . ':' . $tabdatePublication[1];
-                $today              = date('Y-m-d H:i');
-                echo 'datePublication : ' . $datePublication . '<br>';
-                echo 'today : ' . $today . '<br><br>';
+            foreach ($aProjects as $aProject) {
+                $this->projects->get($aProject['id_project']);
+                $this->companies->get($this->projects->id_company);
 
-                if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
-                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $projects['id_project']);
+                $aPublicationDate = explode(':', $aProject['date_publication_full']);
+                $aPublicationDate = $aPublicationDate[0] . ':' . $aPublicationDate[1];
+                echo 'datePublication : ' . $aPublicationDate . '<br>';
+                echo 'today : ' . date('Y-m-d H:i') . '<br><br>';
 
-                    // Zippage pour groupama
-                    $this->zippage($projects['id_project']);
-                    $this->nouveau_projet($projects['id_project']);
+                $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $aProject['id_project']);
+
+                // Zippage pour groupama
+                $this->zippage($aProject['id_project']);
+                $this->sendNewProjectEmail($aProject['id_project']);
+
+                if (false === empty($this->companies->prenom_dirigeant) && false === empty($this->companies->email_dirigeant)) {
+                    $sFirstName  = $this->companies->prenom_dirigeant;
+                    $sMailClient = $this->companies->email_dirigeant;
+                } else {
+                    $this->clients->get($this->companies->id_client_owner);
+
+                    $sFirstName  = $this->clients->prenom;
+                    $sMailClient = $this->clients->email;
+                }
+
+                $aMail = array(
+                    'surl'           => $this->surl,
+                    'url'            => $this->furl,
+                    'nom_entreprise' => $this->companies->name,
+                    'projet_p'       => $this->furl . '/projects/detail/' . $this->projects->slug,
+                    'montant'        => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
+                    'duree'          => $this->projects->period,
+                    'prenom_e'       => $sFirstName,
+                    'lien_fb'        => $this->like_fb,
+                    'lien_tw'        => $this->twitter
+                );
+
+                $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
+                $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
+                $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
+                $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, $sSender);
+                $this->email->setSubject(stripslashes($sMailSubject));
+                $this->email->setHTMLBody(stripslashes($sMailBody));
+
+                if ($this->Config['env'] == 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($sMailClient));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
             $oCache = \Unilend\librairies\Cache::getInstance();
