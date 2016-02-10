@@ -246,7 +246,7 @@ class projects extends projects_crud
 
         if (2 === count($aRateRange)) {
             $sql .= ' GROUP BY p.id_project';
-            $sql .= ' HAVING avg_rate BETWEEN "'. $aRateRange[0] .'" AND "'. $aRateRange[1] .'"';
+            $sql .= ' HAVING avg_rate >= "'. $aRateRange[0] .'" AND avg_rate < "'. $aRateRange[1] .'"';
         }
 
         $sql .= " ORDER BY " . $order .

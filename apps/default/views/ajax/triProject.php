@@ -37,74 +37,70 @@
         </th>
     </tr>
     <?php
-    foreach ($this->lProjetsFunding as $project) : ?>
-        <tr class="unProjet" id="project<?= $project['id_project'] ?>">
+    foreach ($this->lProjetsFunding as $aProject) : ?>
+        <tr class="unProjet" id="project<?= $aProject['id_project'] ?>">
             <td>
                 <?php
                 if ($this->projects_status->status >= \projects_status::FUNDE) {
                     $project['daterest'] = 'Terminé';
                 } else {
-                    $tab_date_retrait = explode(' ', $project['date_retrait_full']);
+                    $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                     $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
 
                     ?>
                     <script>
-                        var cible<?= $project['id_project'] ?> = new Date('<?= $this->dates->formatDate($project['date_retrait'], 'F d'); ?>, <?= $this->dates->formatDate($project['date_retrait'], 'Y'); ?> <?= $heure_retrait ?>');
-                        var letime<?= $project['id_project'] ?> = parseInt(cible<?=$project['id_project']?>.getTime() / 1000, 10);
-                        setTimeout('decompte(letime <?= $project['id_project'] ?>,"val<?=$project['id_project']?>")', 500);
+                        var cible<?= $aProject['id_project'] ?> = new Date('<?= $this->dates->formatDate($aProject['date_retrait'], 'F d'); ?>, <?= $this->dates->formatDate($aProject['date_retrait'], 'Y'); ?> <?= $heure_retrait ?>');
+                        var letime<?= $aProject['id_project'] ?> = parseInt(cible<?=$aProject['id_project']?>.getTime() / 1000, 10);
+                        setTimeout('decompte(letime <?= $aProject['id_project'] ?>,"val<?=$aProject['id_project']?>")', 500);
                     </script>
                     <?php
                 }
                 ?>
 
-                <?php if ($project['photo_projet'] != '') { ?>
-                    <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
-                        <img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>" class="thumb">
+                <?php if ($aProject['photo_projet'] != '') { ?>
+                    <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
+                        <img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>" alt="<?= $aProject['photo_projet'] ?>" class="thumb">
                     </a>
                 <?php } ?>
                 <div class="description">
-                    <?php if ($_SESSION['page_projet'] == 'projets_fo') { ?>
-                        <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>"><?= $project['title'] ?></a></h5>
-                    <?php } else { ?>
-                        <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>"><?= $project['title'] ?></a></h5>
-                    <?php } ?>
+                    <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>"><?= $aProject['title'] ?></a></h5>
                     <h6><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h6>
-                    <p><?= $project['nature_project'] ?></p>
+                    <p><?= $aProject['nature_project'] ?></p>
                 </div>
             </td>
             <td>
-                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
+                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
                     <div class="cadreEtoiles">
-                        <div class="etoile <?= $this->lNotes[$project['risk']] ?>"></div>
+                        <div class="etoile <?= $this->lNotes[$aProject['risk']] ?>"></div>
                     </div>
                 </a>
             </td>
             <td style="white-space:nowrap;">
-                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
-                    <?= $this->ficelle->formatNumber($project['amount'], 0) ?>€
+                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
+                    <?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>€
                 </a>
             </td>
             <td style="white-space:nowrap;">
-                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
-                    <?= ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
+                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
+                    <?= ($aProject['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $aProject['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
                 </a>
             </td>
             <td>
-                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
-                    <?= $project['taux'] ?>%
+                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
+                    <?= $aProject['taux'] ?>%
                 </a>
             </td>
             <td>
-                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>">
-                    <strong id="val<?= $project['id_project'] ?>"><?= $project['daterest'] ?></strong>
+                <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
+                    <strong id="val<?= $aProject['id_project'] ?>"><?= $aProject['daterest'] ?></strong>
                 </a>
             </td>
             <td>
                 <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
-                    <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small multi grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
+                    <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn btn-info btn-small multi grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                 <?php } else { ?>
-                    <a href="<?= $this->lurl ?>/projects/detail/<?= $project['slug'] ?>" class="btn btn-info btn-small">PRÊTEZ</a>
+                    <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn btn-info btn-small">PRÊTEZ</a>
                 <?php } ?>
             </td>
         </tr>
