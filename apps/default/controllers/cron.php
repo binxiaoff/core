@@ -146,13 +146,21 @@ class cronController extends bootstrap
             $oLoans           = $this->loadData('loans');
 
             $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
-
             $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
 
             foreach ($aUpcomingRepayments as $aRepayment) {
                 $this->projects->get($aRepayment['id_project']);
                 $this->companies->get($this->projects->id_company);
-                $this->clients->get($this->companies->id_client_owner);
+
+                if (false === empty($this->companies->prenom_dirigeant) && false === empty($this->companies->email_dirigeant)) {
+                    $sFirstName  = $this->companies->prenom_dirigeant;
+                    $sMailClient = $this->companies->email_dirigeant;
+                } else {
+                    $this->clients->get($this->companies->id_client_owner);
+
+                    $sFirstName  = $this->clients->prenom;
+                    $sMailClient = $this->clients->email;
+                }
 
                 $aMail = array(
                     'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),
@@ -160,9 +168,9 @@ class cronController extends bootstrap
                     'prochaine_echeance' => date('d/m/Y', strtotime($aRepayment['date_echeance_emprunteur'])),
                     'surl'               => $this->surl,
                     'url'                => $this->furl,
-                    'nom_entreprise'     => $this->projects->title,
+                    'nom_entreprise'     => $this->companies->name,
                     'montant'            => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
-                    'prenom_e'           => $this->clients->prenom,
+                    'prenom_e'           => $sFirstName,
                     'lien_fb'            => $this->like_fb,
                     'lien_tw'            => $this->twitter
                 );
@@ -178,10 +186,10 @@ class cronController extends bootstrap
                 $this->email->setHTMLBody(stripslashes($sMailBody));
 
                 if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
                     $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
-                    $this->email->addRecipient(trim($this->clients->email));
+                    $this->email->addRecipient(trim($sMailClient));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
             }
