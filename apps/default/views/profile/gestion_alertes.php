@@ -130,7 +130,7 @@
                         <?php
                         foreach ($this->lTypeNotifs as $n) {
                             $id_notif = $n['id_client_gestion_type_notif'];
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT))) {
+                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_REPAYMENT))) {
                                 ?>
                                 <tr>
                                     <td>
