@@ -12,7 +12,7 @@
         <div class="contact">
             <h1><?=$this->lng['espace-emprunteur']['nous-contacter'] ?></h1>
             <div class="contact-form">
-                <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" enctype="multipart/form-data">
+                <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" enctype="multipart/form-data">
                     <div class="row">
                         <input type="text"
                                placeholder="<?= $this->lng['espace-emprunteur']['contact-siren'] ?>"

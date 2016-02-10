@@ -157,6 +157,7 @@
                     <th>statut</th>
                     <th>Montant</th>
                     <th>PDF</th>
+                    <th>Factures</th>
                     <th>&nbsp;</th>
                 </tr>
             </thead>
@@ -176,6 +177,11 @@
                             <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
                                 <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a>
                             <?php endif; ?>
+                        </td>
+                        <td align="center">
+                            <a href="<?= $this->lurl ?>/emprunteurs/factures/<?= $aProject['id_project'] ?>" class="thickbox cboxElement" target="_blank">
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Factures" />
+                            </a>
                         </td>
                         <td align="center">
                             <a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>">

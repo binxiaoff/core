@@ -17,44 +17,45 @@ class collectController extends bootstrap
 
     public function _prospect()
     {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
         $key  = 'unilend';
         $time = '60';
 
         if (isset($_POST['token']) && $this->ficelle->verifier_token(trim($_POST['token']), $key, $time)) {
-            $form_ok = true;
+            $form_ok      = true;
+            $erreur       = '';
+            $nom          = $this->filterPost('nom');
+            $prenom       = $this->filterPost('prenom');
+            $email        = $this->filterPost('email', FILTER_SANITIZE_EMAIL);
+            $date         = $this->filterPost('date');
+            $slug_origine = $this->filterPost('slug_origine');
+            $utm_source   = $this->filterPost('utm_source');
+            $utm_source2  = $this->filterPost('utm_source2');
+            $utm_source3  = $this->filterPost('utm_source3');
 
-            $erreur = '';
+            if (empty($utm_source) && empty($slug_origine)) {
+                $utm_source = $this->lurl . '/prospect';
+            } elseif (empty($utm_source)) {
+                $utm_source = $slug_origine;
+            }
 
-            $nom          = isset($_POST['nom']) ? trim($_POST['nom']) : '';
-            $prenom       = isset($_POST['prenom']) ? trim($_POST['prenom']) : '';
-            $email        = isset($_POST['email']) ? trim($_POST['email']) : '';
-            $date         = isset($_POST['date']) ? trim($_POST['date']) : '';
-            $slug_origine = isset($_POST['slug_origine']) ? trim($_POST['slug_origine']) : '';
-            $utm_source   = isset($_POST['utm_source']) ? trim($_POST['utm_source']) : empty($slug_origine) ? $this->lurl . '/prospect' : $slug_origine;
-            $utm_source2  = isset($_POST['utm_source2']) ? trim($_POST['utm_source2']) : '';
-            $utm_source3  = isset($_POST['utm_source3']) ? trim($_POST['utm_source3']) : '';
-
-            // Verif nom
             if (! isset($nom) || strlen($nom) > 255 || strlen($nom) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Nom;';
             }
-            // Verif prenom
             if (! isset($prenom) || strlen($prenom) > 255 || strlen($prenom) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Prenom;';
             }
-            // Verif email
             if (! isset($email) || $email == '' || strlen($email) > 255 || strlen($email) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Email;';
-            } // Verif format mail
-            elseif (! $this->ficelle->isEmail($email)) {
+            } elseif (! $this->ficelle->isEmail($email)) {
                 $form_ok = false;
                 $erreur .= 'Format email;';
-            } // Si exite déjà
-            elseif ($this->clients->existEmail($email) == false) {
-
+            } elseif ($this->clients->existEmail($email) == false) {
                 $clients_status_history = $this->loadData('clients_status_history');
                 if ($this->clients->get($email, 'slug_origine != "" AND email') && $clients_status_history->counter('id_client = ' . $this->clients->id_client) <= 0) {
                     $form_update = true;
@@ -63,7 +64,7 @@ class collectController extends bootstrap
                     $erreur .= 'Email existant;';
                 }
             }
-            // Verif date presente ou pas
+
             if (! isset($date) || $date == '0000-00-00 00:00:00' || $date == '' || strlen($date) > 19 || strlen($date) < 19) {
                 $date      = date('Y-m-d H:i:s');
                 $date_diff = false;
@@ -88,7 +89,6 @@ class collectController extends bootstrap
                     $this->prospects->create();
                 }
 
-                // on modifie la date du added en bdd
                 if ($date_diff == true) {
                     $this->prospects->update_added($date, $this->prospects->id_prospect);
                 }
@@ -110,19 +110,18 @@ class collectController extends bootstrap
             $reponse = array('Erreur' => 'Token');
         }
 
-        echo json_encode(array('reponse' => $reponse, 'id_prospect' => $id_prospect));
-
-        die;
+        echo json_encode(array('reponse' => $reponse, 'id_prospect' => isset($id_prospect) ? $id_prospect : null));
     }
 
     public function _inscription()
     {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
         $key  = 'unilend';
         $time = '60';
 
         if (isset($_POST['token']) && $this->ficelle->verifier_token(trim($_POST['token']), $key, $time)) {
-
-            // chargement des datas
             $this->pays                    = $this->loadData('pays_v2');
             $this->nationalites            = $this->loadData('nationalites_v2');
             $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -130,79 +129,76 @@ class collectController extends bootstrap
             $this->clients_adresses        = $this->loadData('clients_adresses');
             $this->lenders_accounts        = $this->loadData('lenders_accounts');
 
-            $utm_source    = isset($_POST['utm_source']) ? trim($_POST['utm_source']) : '';
-            $utm_source2   = isset($_POST['utm_source2']) ? trim($_POST['utm_source2']) : '';
-            $utm_source3   = isset($_POST['utm_source3']) ? trim($_POST['utm_source3']) : '';
-            $slug_origine  = isset($_POST['slug_origine']) ? trim($_POST['slug_origine']) : '';
-            $forme_preteur = isset($_POST['forme_preteur']) ? trim($_POST['forme_preteur']) : '';
-            $civilite      = isset($_POST['civilite']) ? trim($_POST['civilite']) : '';
-            $nom           = isset($_POST['nom']) ? trim($_POST['nom']) : '';
-            $nom_usage     = isset($_POST['nom_usage']) ? trim($_POST['nom_usage']) : '';
-            $prenom        = isset($_POST['prenom']) ? trim($_POST['prenom']) : '';
-            $email         = isset($_POST['email']) ? trim($_POST['email']) : '';
-            $password      = isset($_POST['password']) ? trim($_POST['password']) : '';
-            $question      = isset($_POST['question']) ? trim($_POST['question']) : '';
-            $reponse       = isset($_POST['reponse']) ? trim($_POST['reponse']) : '';
+            $utm_source    = $this->filterPost('utm_source');
+            $utm_source2   = $this->filterPost('utm_source2');
+            $utm_source3   = $this->filterPost('utm_source3');
+            $slug_origine  = $this->filterPost('slug_origine');
+            $forme_preteur = $this->filterPost('forme_preteur');
+            $civilite      = $this->filterPost('civilite');
+            $nom           = $this->filterPost('nom');
+            $nom_usage     = $this->filterPost('nom_usage');
+            $prenom        = $this->filterPost('prenom');
+            $email         = $this->filterPost('email');
+            $password      = $this->filterPost('password');
+            $question      = $this->filterPost('question');
+            $reponse       = $this->filterPost('reponse');
 
-            $adresse_fiscale = isset($_POST['adresse_fiscale']) ? trim($_POST['adresse_fiscale']) : '';
-            $ville_fiscale   = isset($_POST['ville_fiscale']) ? trim($_POST['ville_fiscale']) : '';
-            $cp_fiscale      = isset($_POST['cp_fiscale']) ? trim($_POST['cp_fiscale']) : '';
-            $id_pays_fiscale = isset($_POST['id_pays_fiscale']) ? trim($_POST['id_pays_fiscale']) : '';
+            $adresse_fiscale = $this->filterPost('adresse_fiscale');
+            $ville_fiscale   = $this->filterPost('ville_fiscale');
+            $cp_fiscale      = $this->filterPost('cp_fiscale');
+            $id_pays_fiscale = $this->filterPost('id_pays_fiscale');
 
-            $adresse = isset($_POST['adresse']) ? trim($_POST['adresse']) : '';
-            $ville   = isset($_POST['ville']) ? trim($_POST['ville']) : '';
-            $cp      = isset($_POST['cp']) ? trim($_POST['cp']) : '';
-            $id_pays = isset($_POST['id_pays']) ? trim($_POST['id_pays']) : '';
+            $adresse = $this->filterPost('adresse');
+            $ville   = $this->filterPost('ville');
+            $cp      = $this->filterPost('cp');
+            $id_pays = $this->filterPost('id_pays');
 
-            $telephone         = isset($_POST['telephone']) ? trim($_POST['telephone']) : '';
-            $id_nationalite    = isset($_POST['id_nationalite']) ? trim($_POST['id_nationalite']) : '';
-            $date_naissance    = isset($_POST['date_naissance']) ? trim($_POST['date_naissance']) : '';
-            $commune_naissance = isset($_POST['commune_naissance']) ? trim($_POST['commune_naissance']) : '';
-            $id_pays_naissance = isset($_POST['id_pays_naissance']) ? trim($_POST['id_pays_naissance']) : '';
-            $signature_cgv     = isset($_POST['signature_cgv']) ? trim($_POST['signature_cgv']) : '';
-            $date              = isset($_POST['date']) ? trim($_POST['date']) : '';
-            $insee_birth       = isset($_POST['insee_birth']) ? trim($_POST['insee_birth']) : '';
+            $telephone         = $this->filterPost('telephone');
+            $id_nationalite    = $this->filterPost('id_nationalite');
+            $date_naissance    = $this->filterPost('date_naissance');
+            $commune_naissance = $this->filterPost('commune_naissance');
+            $id_pays_naissance = $this->filterPost('id_pays_naissance');
+            $signature_cgv     = $this->filterPost('signature_cgv');
+            $date              = $this->filterPost('date');
+            $insee_birth       = $this->filterPost('insee_birth');
 
-            $form_ok = true;
+            if (empty($utm_source) && empty($slug_origine)) {
+                $utm_source = $this->lurl . '/inscription';
+            } elseif (empty($utm_source)) {
+                $utm_source = $slug_origine;
+            }
+
+            $form_ok     = true;
             $form_update = false;
+            $erreur      = '';
 
-            $erreur = '';
-
-            // Verif forme preteur
             if (! isset($forme_preteur) || ! in_array($forme_preteur, array(1, 3))) {
                 $form_ok = false;
                 $erreur .= 'Forme preteur;';
             }
-            // Verif civilite
             if (! isset($civilite) || ! in_array($civilite, array('M.', 'Mme', 'Mlle'))) {
                 $form_ok = false;
                 $erreur .= 'Civilite;';
             }
-            // Verif nom
             if (! isset($nom) || strlen($nom) > 255 || strlen($nom) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Nom;';
             }
-            // Verif nom usage
             if (strlen($nom_usage) > 255) {
                 $form_ok = false;
                 $erreur .= 'Nom usage;';
             }
-            // Verif prenom
             if (! isset($prenom) || strlen($prenom) > 255 || strlen($prenom) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Prenom;';
             }
-            // Verif email
             if (! isset($email) || $email == '' || strlen($email) > 255 || strlen($email) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Email;';
-            } // Verif format mail
-            elseif (! $this->ficelle->isEmail($email)) {
+            } elseif (! $this->ficelle->isEmail($email)) {
                 $form_ok = false;
                 $erreur .= 'Format email;';
-            } // Si exite déjà
-            elseif ($this->clients->existEmail($email) == false) {
+            } elseif ($this->clients->existEmail($email) == false) {
                 $clients_status_history = $this->loadData('clients_status_history');
                 if ($this->clients->get($email, 'origine = 1 AND email') && $clients_status_history->counter('id_client = ' . $this->clients->id_client) <= 0) {
                     $form_update = true;
@@ -211,110 +207,78 @@ class collectController extends bootstrap
                     $erreur .= 'Email déjà présent;';
                 }
             }
-            // Verif mot de passe
             if (! isset($password) || strlen($password) > 255 || strlen($password) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Mot de passe;';
             }
-            // Verif question
             if (strlen($question) > 255) {
                 $form_ok = false;
                 $erreur .= 'Question secrète;';
             }
-            // Verif reponse
             if (strlen($reponse) > 255) {
                 $form_ok = false;
                 $erreur .= 'Reponse secrète;';
             }
-
-            // Verif adresse fiscale
             if (! isset($adresse_fiscale) || strlen($adresse_fiscale) > 255 || strlen($adresse_fiscale) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Adresse fiscale;';
             }
-            // Verif ville fiscale
             if (! isset($ville_fiscale) || strlen($ville_fiscale) > 255 || strlen($ville_fiscale) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Ville fiscale;';
             }
-            // Verif cp fiscale
             $oVilles = $this->loadData('villes');
             if (false === isset($cp_fiscale) || false === $oVilles->exist($cp_fiscale, 'cp')) {
                 $form_ok = false;
                 $erreur .= 'Code postal fiscale;';
             }
-            // Verif id pays fiscale
             if (! isset($id_pays_fiscale) || $this->pays->get($id_pays_fiscale, 'id_pays') == false) {
                 $form_ok = false;
                 $erreur .= 'Pays fiscale;';
             }
-
-
-            // meme adresse ou non
             if ($adresse == '' && $ville == '' && $cp == '' && in_array($id_pays, array('', 0))) {
                 $meme_adresse_fiscal = true;
             } else {
                 $meme_adresse_fiscal = false;
 
-                // Verif adresse
                 if (isset($adresse) && strlen($adresse) > 255) {
                     $form_ok = false;
                     $erreur .= 'Adresse;';
                 }
-
-                // Verif ville
                 if (isset($ville) && strlen($ville) > 255) {
                     $form_ok = false;
                     $erreur .= 'Ville;';
                 }
-
-                // Verif cp
                 if (isset($cp) && strlen($cp) != 0 && strlen($cp) != 5) {
                     $form_ok = false;
                     $erreur .= 'Code postal;';
                 }
-
-                // Verif id pays
                 if (isset($id_pays) && strlen($id_pays) > 0 && $this->pays->get($id_pays, 'id_pays') == false) {
                     $form_ok = false;
                     $erreur .= 'Pays;';
                 }
-
             }
-
-
-            // Verif telephone
             if (! isset($telephone) || strlen($telephone) < 9 || strlen($telephone) > 14) {
                 $form_ok = false;
                 $erreur .= 'Téléphone;';
             }
-
-            // Verif id nationalite
             if (! isset($id_nationalite) || $this->nationalites->get($id_nationalite, 'id_nationalite') == false) {
                 $form_ok = false;
                 $erreur .= 'Nationalité;';
             }
-
-            // Verif date de naissance
             if (! isset($date_naissance) || $date_naissance == '0000-00-00 00:00:00' || strlen($date_naissance) != 10 || $this->dates->ageplus18($date_naissance) == false) {
                 $form_ok = false;
                 $erreur .= 'Date de naissance;';
             }
-
-
-            // Verif Commune de naissance
             if (! isset($commune_naissance) || strlen($commune_naissance) > 255 || strlen($commune_naissance) <= 0) {
                 $form_ok = false;
                 $erreur .= 'Commune de naissance;';
             }
-            // Verif id pays naissance
             if (! isset($id_pays_naissance) || $this->pays->get($id_pays_naissance, 'id_pays') == false) {
                 $form_ok = false;
                 $erreur .= 'Pays de naissance;';
             }
-            // Verif code insee de naissance
             if (1 == $id_pays_naissance) {
-                //Check birth city
                 if ('' == $insee_birth) {
                     $oVilles = $this->loadData('villes');
                     //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
@@ -340,14 +304,10 @@ class collectController extends bootstrap
                 }
                 unset($oPays, $oInseePays);
             }
-
-            // Verif signature cgv
             if (! isset($signature_cgv) || $signature_cgv != 1) {
                 $form_ok = false;
                 $erreur .= 'Signature cgv;';
             }
-
-            // Verif date presente ou pas
             if (! isset($date) || $date == '0000-00-00 00:00:00' || $date == '' || strlen($date) > 19 || strlen($date) < 19) {
                 $date      = date('Y-m-d H:i:s');
                 $date_diff = false;
@@ -355,35 +315,7 @@ class collectController extends bootstrap
                 $date_diff = true;
             }
 
-            // slug_origine
-            if (! isset($slug_origine) || $slug_origine == '') {
-                $slug_origine = '';
-            }
-
-            // utm source
-            if (! isset($utm_source) || $utm_source == '') {
-
-                if ($slug_origine != '') {
-                    $utm_source = $slug_origine;
-                } else {
-                    $utm_source = $this->lurl . '/inscription';
-                }
-            }
-
-            // utm source
-            if (! isset($utm_source2) || $utm_source2 == '') {
-                $utm_source2 = '';
-            }
-            // utm source
-            if (! isset($utm_source3) || $utm_source3 == '') {
-                $utm_source3 = '';
-            }
-
-            // Si ok
             if ($form_ok == true) {
-
-
-                // client
                 $this->clients->id_langue = 'fr';
 
                 $this->clients->civilite  = $civilite;
@@ -391,7 +323,6 @@ class collectController extends bootstrap
                 $this->clients->nom_usage = $nom_usage;
                 $this->clients->prenom    = $prenom;
                 $this->clients->slug      = $this->bdd->generateSlug($prenom . '-' . $nom);
-
 
                 $this->clients->naissance         = $date_naissance;
                 $this->clients->id_pays_naissance = $id_pays_naissance;
@@ -415,8 +346,7 @@ class collectController extends bootstrap
                 $this->clients->source3                    = $utm_source3;
                 $this->clients->slug_origine               = $slug_origine;
 
-                // slugs autorisés à une offre de bienvenue
-                $this->settings->get("Offre de bienvenue slug", 'type');
+                $this->settings->get('Offre de bienvenue slug', 'type');
                 $ArraySlugOffre = explode(';', $this->settings->value);
 
                 if (in_array(trim($slug_origine), $ArraySlugOffre)) {
@@ -426,19 +356,16 @@ class collectController extends bootstrap
                     $this->clients->origine = 0;
                 } // pas d'offre
 
-                // enregistrement
                 if ($form_update == true) {
                     $this->clients->update();
                 } else {
                     $this->clients->id_client = $this->clients->create();
                 }
 
-                // on modifie la date du added en bdd
                 if ($date_diff == true) {
                     $this->clients->update_added($date, $this->clients->id_client);
                 }
 
-                // client adresse
                 if ($form_update == true) {
                     $this->clients_adresses->get($this->clients->id_client, 'id_client');
                 } else {
@@ -462,29 +389,25 @@ class collectController extends bootstrap
                     $this->clients_adresses->id_pays  = $id_pays;
                 }
 
-                // enregistrement
                 if ($form_update == true) {
                     $this->clients_adresses->update();
                 } else {
                     $this->clients_adresses->create();
                 }
 
-                // lender
                 if ($form_update == true) {
                     $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
                 } else {
                     $this->lenders_accounts->id_client_owner = $this->clients->id_client;
                 }
-                $this->lenders_accounts->status = 1; // statut lender online
+                $this->lenders_accounts->status = 1;
 
-                // enregistrement
                 if ($form_update == true) {
                     $this->lenders_accounts->update();
                 } else {
                     $this->lenders_accounts->create();
                 }
 
-                // acceptations_legal_docs
                 $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
                 $this->lienConditionsGeneralesParticulier = $this->settings->value;
 
@@ -497,35 +420,19 @@ class collectController extends bootstrap
                 $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesParticulier;
                 $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
 
-                // enregistrement
                 if ($accepet_ok == true) {
                     $this->acceptations_legal_docs->update();
                 } else {
                     $this->acceptations_legal_docs->create();
                 }
 
-                // on recup les infos client
                 $this->clients->get($this->clients->id_client, 'id_client');
                 $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-
-                // Motif virement
-                $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-
-                // email inscription preteur //
 
                 //******************************************************//
                 //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
                 //******************************************************//
-
-                // Recuperation du modele de mail
                 $this->mails_text->get('confirmation-inscription-preteur', 'lang = "' . $this->language . '" AND type');
-
-                $surl = $this->surl;
-                $url  = $this->lurl;
 
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
@@ -534,12 +441,12 @@ class collectController extends bootstrap
                 $lien_tw = $this->settings->value;
 
                 $varMail = array(
-                    'surl'           => $surl,
-                    'url'            => $url,
+                    'surl'           => $this->surl,
+                    'url'            => $this->lurl,
                     'prenom'         => utf8_decode($this->clients->prenom),
                     'email_p'        => $this->clients->email,
                     'mdp'            => '',
-                    'motif_virement' => $motif,
+                    'motif_virement' => $this->clients->getLenderPattern($this->clients->id_client),
                     'lien_fb'        => $lien_fb,
                     'lien_tw'        => $lien_tw
                 );
@@ -550,7 +457,7 @@ class collectController extends bootstrap
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -565,11 +472,13 @@ class collectController extends bootstrap
 
                 $_SESSION['LP_id_unique'] = $this->clients->id_client;
 
-                $reponse = 'OK';
-
-                echo json_encode(array('reponse' => $reponse, 'URL' => $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash, 'uniqueid' => $this->clients->id_client));
+                echo json_encode(array(
+                        'reponse'  => 'OK',
+                        'URL'      => $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash,
+                        'uniqueid' => $this->clients->id_client
+                    )
+                );
                 die;
-
             } else {
                 $lesErreurs = explode(';', $erreur);
                 $lesErreurs = array_filter($lesErreurs);
@@ -579,7 +488,6 @@ class collectController extends bootstrap
                     $newErreurs[$k]['erreur'] = $e;
                 }
                 $erreur = $newErreurs;
-
                 $reponse = $erreur;
             }
         } else {
@@ -587,8 +495,19 @@ class collectController extends bootstrap
         }
 
         echo json_encode(array('reponse' => $reponse, 'URL' => ''));
+    }
 
-        die;
+    /**
+     * Filter and sanitize POST field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    private function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
     }
 }
-

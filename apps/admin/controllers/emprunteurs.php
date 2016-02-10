@@ -500,4 +500,35 @@ class emprunteursController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
     }
+
+    public function _factures()
+    {
+        $this->hideDecoration();
+
+        $oProject  = $this->loadData('projects');
+        $oCompany  = $this->loadData('companies');
+        $oClient   = $this->loadData('clients');
+        $oInvoices = $this->loadData('factures');
+
+        $oProject->get($this->params[0]);
+        $oCompany->get($oProject->id_company);
+        $oClient->get($oCompany->id_client_owner);
+
+        $aProjectInvoices = $oInvoices->select('id_project = ' . $oProject->id_project, 'date DESC');
+
+        foreach ($aProjectInvoices as $iKey => $aInvoice) {
+            switch ($aInvoice['type_commission']) {
+                case \factures::TYPE_COMMISSION_FINANCEMENT :
+                    $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_EF/' . $oClient->hash . '/' . $aInvoice['id_project'];
+                    break;
+                case \factures::TYPE_COMMISSION_REMBOURSEMENT:
+                    $aProjectInvoices[$iKey]['url'] = $this->furl . '/pdf/facture_ER/' . $oClient->hash . '/' . $aInvoice['id_project'] . '/' . $aInvoice['ordre'];
+                    break;
+                default :
+                    trigger_error('Commission type for invoice unknown', E_USER_NOTICE);
+                    break;
+            }
+        }
+        $this->aProjectInvoices = $aProjectInvoices;
+    }
 }

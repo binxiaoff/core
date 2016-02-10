@@ -666,8 +666,7 @@ class statsController extends bootstrap
         $this->loans            = $this->loadData('loans');
         $this->insee_pays       = $this->loadData('insee_pays');
 
-        // EQ-Retenue à la source
-        $this->settings->get(63);
+        $this->settings->get('EQ-Retenue à la source', 'type');
         $this->retenuesource = $this->settings->value;
         $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
     }
@@ -687,8 +686,7 @@ class statsController extends bootstrap
         $this->loans            = $this->loadData('loans');
         $this->insee_pays       = $this->loadData('insee_pays');
 
-        // EQ-Retenue à la source
-        $this->settings->get(63);
+        $this->settings->get('EQ-Retenue à la source', 'type');
         $this->retenuesource = $this->settings->value;
         $this->lPre = $this->clients->selectPreteursByStatus('20,30,40,50,60', '(SELECT count(*) from loans where status = 0 AND id_lender = l.id_lender_account) >= 1');
 
@@ -1437,7 +1435,7 @@ class statsController extends bootstrap
 
                 $sSqlResident = "SELECT id_pays, resident_etranger FROM lenders_imposition_history
                         WHERE id_lender = {$record['id_lender_account']}
-                        AND DATE(added) <= '{$record['date_echeance_reel']}'
+                        AND added <= '{$record['date_echeance_reel']}'
                         ORDER BY added DESC LIMIT 1";
                 $oQueryResident = $this->bdd->query($sSqlResident);
                 $aRow = $this->bdd->fetch_array($oQueryResident);
