@@ -1,6 +1,7 @@
 <div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-	<form name="add_prescripteur" id="add_prescripteur" action="#">
+    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer" /></a>
+    <div id="popup-content">
+    <form name="add_prescripteur" id="add_prescripteur" action="#">
         <h1>Ajouter un prescripteur</h1>
         <fieldset>
             <table class="formColor" style="width: 755px;">
@@ -16,7 +17,7 @@
                     <th></th>
                     <td></td>
                 </tr>
-            	<tr>
+                <tr>
                     <th><label for="nom">Nom :</label></th>
                     <td><input type="text" name="nom" id="nom" class="input_large" value=""/></td>
 
@@ -54,14 +55,16 @@
                     <th><label for="ville">BIC :</label></th>
                     <td><input type="text" name="bic" id="bic" class="input_large" value=""/></td>
                 </tr>
-            	<tr>
-                	<th colspan="4">
-                        <input type="submit" value="Valider" title="Valider" name="send_add_prescripteur" id="send_add_prescripteur" class="btn" />
+                <tr><td><input type="hidden" name="id_project" value="<?= $this->params[0] ?>"></td></tr>
+                <tr>
+                    <th colspan="4">
+                        <input type="submit" value="Créer prescripteur" name="send_add_prescripteur" class="btn" />
                     </th>
                 </tr>
-        	</table>
+            </table>
         </fieldset>
     </form>
+    </div>
 </div>
 <script>
     $('#add_prescripteur').submit(function(e) {
@@ -80,12 +83,23 @@
             url: "<?=$this->lurl?>/prescripteurs/add_client",
             type: 'POST',
             data: values,
+            dataType: 'json',
             error: function() {
                 alert('An error has occurred');
             },
             success: function(data) {
-                if('OK' == data) {
-                    $("#popup").html('le prescripteur a &eacute;t&eacute; cr&eacute;&eacute; !');
+
+                if(data.result && data.result == 'OK') {
+                    $("#popup-content").html('le prescripteur a &eacute;t&eacute; cr&eacute;&eacute; !');
+                    $("#id_prescripteur").val(data.id_prescripteur);
+                    $("#civilite_prescripteur").html(values.civilite);
+                    $("#prenom_prescripteur").html(values.prenom);
+                    $("#nom_prescripteur").html(values.nom);
+                    $("#email_prescripteur").html(values.email);
+                    $("#telephone_prescripteur").html(values.telephone);
+                    $("#company_prescripteur").html(values.company_name);
+                    $("#siren_prescripteur").html(values.siren);
+                    $('.identification_prescripteur').show('slow');
                 } else {
                     alert('An error has occurred');
                 }

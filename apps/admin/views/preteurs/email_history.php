@@ -1,80 +1,37 @@
 <script type="text/javascript">
+    $(function() {
+        $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
-
-    $(document).ready(function () {
-
-        <!--partie copié de la vue "edit"-->
-        jQuery.tablesorter.addParser({
-            id: "fancyNumber", is: function (s) {
-                return /[\-\+]?\s*[0-9]{1,3}(\.[0-9]{3})*,[0-9]+/.test(s);
-            }, format: function (s) {
-                return jQuery.tablesorter.formatFloat(s.replace(/,/g, '').replace(' €', '').replace(' ', ''));
-            }, type: "numeric"
+        $("#datepik_1").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
         });
 
-        $(".encheres").tablesorter({headers: {6: {sorter: false}}});
-        $(".mandats").tablesorter({headers: {}});
-        $(".bidsEncours").tablesorter({headers: {6: {sorter: false}}});
-        $(".transac").tablesorter({headers: {}});
-        $(".favoris").tablesorter({headers: {3: {sorter: false}}});
-        <?
-        if($this->nb_lignes != '')
-        {
-        ?>
-        $(".encheres").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
-        $(".mandats").tablesorterPager({container: $("#pager"), positionFixed: false, size: <?=$this->nb_lignes?>});
-        <?
-        }
-        ?>
-        $("#annee").change(function () {
-            $('#changeDate').attr('href', "<?=$this->lurl?>/preteurs/edit/<?=$this->params[0]?>/" + $(this).val());
+        $("#datepik_2").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?= (date('Y') - 10) ?>:<?= (date('Y') + 10) ?>'
         });
 
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
     });
-    //partie qui vient de la vue "vos_operations"
-    $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
-
-    $("#debut").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-        maxDate: '<?=$this->date_fin_display?>',
-        onClose: function (selectedDate) {
-            $("#fin").datepicker("option", "minDate", selectedDate);
-        }
-    });
-    $("#fin").datepicker({
-        changeMonth: true,
-        changeYear: true,
-        yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-        minDate: '<?=$this->date_debut_display?>',
-        onClose: function (selectedDate) {
-            $("#debut").datepicker("option", "maxDate", selectedDate);
-        }
-    });
-
-    })
-    ;
-
-    <!--partie copié de la vue "edit"-->
-    <?
-if(isset($_SESSION['freeow']))
-{
-    ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?=$_SESSION['freeow']['title']?>";
-        message = "<?=$_SESSION['freeow']['message']?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
-    });
-    <?
-    unset($_SESSION['freeow']);
-}
-?>
 </script>
-<!--vient de "vos_operations"-->
+
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
@@ -84,44 +41,14 @@ if(isset($_SESSION['freeow']))
         <li>Portefeuille & Performances</li>
     </ul>
 
-    <?
-    // a controler
-    if ($this->clients_status->status == 10) {
-        ?>
-        <div class="attention">
-            Attention : compte non validé - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-        <?
-    } // completude
-    elseif (in_array($this->clients_status->status, array(20, 30, 40))) {
-        ?>
-        <div class="attention" style="background-color:#F9B137">
-            Attention : compte en complétude - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-        <?
-    } // modification
-    elseif (in_array($this->clients_status->status, array(50))) {
-        ?>
-        <div class="attention" style="background-color:#F2F258">
-            Attention : compte en modification - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-        <?
-    }
-    ?>
+    <div><?= $this->sClientStatusMessage ?></div>
 
-    <!--    section "detail prêteur"    -->
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
-
     <h2>Préférences Notifications</h2>
     <div class="btnDroite">
-        <a
-            href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>"
-            class="btn_link">Consulter Prêteur</a>
-        <a
-            href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>"
-            class="btn_link">Modifier Prêteur</a>
-        <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>"
-           class="btn_link">Portefeuille & Performances</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a>
     </div>
     <div class="form-body">
         <div class="form-row">
@@ -129,174 +56,150 @@ if(isset($_SESSION['freeow']))
                 <tr>
                     <th width="auto"><span><br>Offres et Projets</span></th>
                     <th width="100px"><br>Immédiatement</th>
-                    <th width="100px">
-                        <p>Synthèse<br>quotidienne</p>
-                    </th>
-                    <th width="100px">
-                        <p>Synthèse<br>hebdomadaire</p>
-                    </th>
-                    <th width="100px">
-                        <p>Synthèse<br>Mensuelle</p>
-                    </th>
-                    <th width="100px">
-                        <p>Uniquement<br>notification</p>
-                    </th>
+                    <th width="100px"><p>Synthèse<br>quotidienne</p></th>
+                    <th width="100px"><p>Synthèse<br>hebdomadaire</p></th>
+                    <th width="100px"><p>Synthèse<br>Mensuelle</p></th>
+                    <th width="100px"><p>Uniquement<br>notification</p></th>
                 </tr>
-                <?
-                foreach($this->lTypeNotifs as $k => $n){
-
-                    $id_notif = $n['id_client_gestion_type_notif'];
-                    if(in_array($id_notif,array(1,2,3,4))){
-                        ?>
+                <?php foreach ($this->aTypesOfNotifications as $aNotificationType) : ?>
+                    <?php if (
+                        in_array($aNotificationType['id_client_gestion_type_notif'], array(
+                            \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                            \clients_gestion_type_notif::TYPE_BID_PLACED,
+                            \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
+                        ))
+                    ) : ?>
                         <tr>
-                            <td><p><?=$this->lTypeNotifs[$id_notif-1]['nom']?></p></td>
+                            <td><p><?= $aNotificationType['nom'] ?></p></td>
                             <td>
-                                <input type="checkbox" id="immediatement_<?=$id_notif?>" name="immediatement_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['immediatement']==1?'checked':'')?> disabled/>
-                                <label for="immediatement_<?=$id_notif?>"></label>
+                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['immediatement'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                             <td>
-                                <input type="checkbox" id="quotidienne_<?=$id_notif?>" name="quotidienne_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['quotidienne']==1?'checked':'')?> disabled/>
-                                <label for="quotidienne_<?=$id_notif?>"></label>
+                                <?php if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
+                                <input type="checkbox" <?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['quotidienne'] ? ' checked' : '') ?> disabled="disabled" />
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <?
-                                if(!in_array($id_notif,array(2,3))){
-                                    ?>
-                                    <input type="checkbox" id="hebdomadaire_<?=$id_notif?>" name="hebdomadaire_<?=$id_notif?>" <?=(in_array($id_notif,array(2))?'class="check-delete" disabled checked':($this->NotifC[$id_notif]['hebdomadaire']==1?'checked':''))?> disabled/>
-                                    <label for="hebdomadaire_<?=$id_notif?>"></label>
-                                    <?
-                                }
-                                ?>
+                                <?php if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
+                                        \clients_gestion_type_notif::TYPE_BID_PLACED,
+                                        \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                                        \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
+                                    ))
+                                ) : ?>
+                                    <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['hebdomadaire'] ? ' checked' : '') ?> disabled="disabled" />
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <?
-                                if(!in_array($id_notif,array(1,2,3))){
-                                    ?>
-                                    <input type="checkbox" id="mensuelle_<?=$id_notif?>" name="mensuelle_<?=$id_notif?>" <?=(in_array($id_notif,array(1,2))?'class="check-delete" disabled checked':($this->NotifC[$id_notif]['mensuelle']==1?'checked':''))?> disabled/>
-                                    <label for="mensuelle_<?=$id_notif?>"></label>
-
-                                    <?
-                                }
-                                ?>
+                                <?php if (
+                                    false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
+                                        \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                                        \clients_gestion_type_notif::TYPE_BID_PLACED,
+                                        \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                                        \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
+                                    ))
+                                ) : ?>
+                                    <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['mensuelle'] ? ' checked' : '') ?> disabled="disabled" />
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <input type="radio" id="uniquement_notif_<?=$id_notif?>" name="uniquement_notif_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['uniquement_notif']==1?'checked':'')?> disabled/>
-                                <label for="uniquement_notif_<?=$id_notif?>"></label>
+                                <input type="radio"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['uniquement_notif'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                         </tr>
-                        <?
-                    }
-                }
-                ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
                 <tr>
                     <th><span>Remboursements</span></th>
                 </tr>
-                <?
-                foreach($this->lTypeNotifs as $k => $n){
-                    $id_notif = $n['id_client_gestion_type_notif'];
-                    if(in_array($id_notif,array(5))){
-                        ?>
+                <?php foreach ($this->aTypesOfNotifications as $aNotificationType) : ?>
+                    <?php if ($aNotificationType['id_client_gestion_type_notif'] == \clients_gestion_type_notif::TYPE_REPAYMENT) : ?>
                         <tr>
-                            <td><p><?=$this->lTypeNotifs[$id_notif-1]['nom']?></p></td>
+                            <td><p><?= $aNotificationType['nom'] ?></p></td>
                             <td>
-                                <input type="radio" id="immediatement_<?=$id_notif?>" name="immediatement_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['immediatement']==1?'checked':'')?> disabled/>
-                                <label for="immediatement_<?=$id_notif?>"></label>
-                            </td>
-
-                            <td>
-                                <input  type="checkbox" id="quotidienne_<?=$id_notif?>" name="quotidienne_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['quotidienne']==1?'checked':'')?> disabled/>
-                                <label for="quotidienne_<?=$id_notif?>"></label>
+                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['immediatement'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                             <td>
-                                <input type="checkbox" id="hebdomadaire_<?=$id_notif?>" name="hebdomadaire_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['hebdomadaire']==1?'checked':'')?> disabled/>
-                                <label for="hebdomadaire_<?=$id_notif?>"></label>
+                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['quotidienne'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                             <td>
-                                <input type="checkbox" id="mensuelle_<?=$id_notif?>" name="mensuelle_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['mensuelle']==1?'checked':'')?> disabled/>
-                                <label for="mensuelle_<?=$id_notif?>"></label>
+                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['hebdomadaire'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                             <td>
-                                <div class="form-controls">
-                                    <input type="radio" id="uniquement_notif_<?=$id_notif?>" name="uniquement_notif_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['uniquement_notif']==1?'checked':'')?> disabled/>
-
-                                    <label for="uniquement_notif_<?=$id_notif?>"></label>
+                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['mensuelle'] ? ' checked' : '') ?> disabled="disabled" />
+                            </td>
+                            <td>
+                                <input type="radio"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']['id_client_gestion_type_notif']]['uniquement_notif'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                         </tr>
-                        <?
-                    }
-                }
-                ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
                 <tr>
                     <th><span>Mouvements sur le compte</span></th>
                 </tr>
-                <?
-                foreach($this->lTypeNotifs as $k => $n){
-                    $id_notif = $n['id_client_gestion_type_notif'];
-                    if(in_array($id_notif,array(6,7,8))){
-                        ?>
+                <?php foreach ($this->aTypesOfNotifications as $aNotificationType) :
+                    if (
+                        in_array($aNotificationType['id_client_gestion_type_notif'], array(
+                            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
+                            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
+                            \clients_gestion_type_notif::TYPE_DEBIT
+                        ))
+                    ) : ?>
                         <tr>
                             <td>
-                                <p><?=$this->lTypeNotifs[$id_notif-1]['nom']?></p></td>
+                                <p><?= $aNotificationType['nom'] ?></p></td>
                             <td>
-                                <input type="checkbox" id="immediatement_<?=$id_notif?>" name="immediatement_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['immediatement']==1?'checked':'')?> disabled/>
-                                <label for="immediatement_<?=$id_notif?>"></label>
+                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['immediatement'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                             <td colspan="3"></td>
                             <td>
-                                <input type="radio" id="uniquement_notif_<?=$id_notif?>" name="uniquement_notif_<?=$id_notif?>" <?=($this->NotifC[$id_notif]['uniquement_notif']==1?'checked':'')?> disabled />
-                                <label for="uniquement_notif_<?=$id_notif?>"></label>
+                                <input type="radio"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['uniquement_notif'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                         </tr>
-                        <?
-                    }
-                }
-                ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
             </table>
-        </div><!-- /.form-row -->
-    </div><!-- /.form-body -->
-
-
+        </div>
+    </div>
     <H2>Historique des Emails</H2>
-    Et ici viedra la vue des l'historique des mails
-    avec une lightbox preview à droite
-
-
-    <script type="text/javascript">
-        $("input,select").change(function () {
-
-            $(".c2-sb-wrap").removeClass('populated');
-
-
-            $(".load_table_vos_operations").fadeIn();
-
-
-            var val = {
-                debut: $("#debut").val(),
-                fin: $("#fin").val(),
-                nbMois: $("#nbMois").val(),
-                annee: $("#annee").val(),
-                tri_type_transac: $("#tri_type_transac").val(),
-                tri_projects: $("#tri_projects").val(),
-                id_last_action: $(this).attr('id')
-            };
-            //alert('debut : '+debut+' fin : '+fin+' mois : '+mois+' annee : '+annee+' tri_type_transac : '+tri_type_transac+' tri_projects : '+tri_projects);
-            $.post(add_url + "/ajax/vos_operations", val).done(function (data) {
-                //alert( "Data Loaded: " + data );
-
-                var obj = jQuery.parseJSON(data);
-
-                $("#debut").val(obj.debut);
-                $("#fin").val(obj.fin);
-
-
-                $("#filtres_secondaires").html(obj.html_filtre);
-                $(".custom-select").c2Selectbox();
-
-                $(".content_table_vos_operations").html(obj.html);
-                $(".load_table_vos_operations").fadeOut();
-
-            });
-        });
-
-
-    </script>
+    <p>(envoyés à l'adresse email : <?= $this->clients->email ?>)</p>
+    <div class="date_picker_email_history">
+        <form method="post" name="history_dates" id="history_dates" enctype="multipart/form-data" action="" target="_parent">
+            <fieldset>
+                <table class="formColor">
+                    <tr>
+                        <th><label for="datepik_1">Debut :</label></th>
+                        <td><input type="text" name="debut" id="datepik_1" class="input_dp" value="<?= $this->sDisplayDateTimeStart ?>"/></td>
+                        <th><label for="datepik_2">Fin :</label></th>
+                        <td><input type="text" name="fin" id="datepik_2" class="input_dp" value="<?= $this->sDisplayDateTimeEnd ?>"/></td>
+                        <td><input type="submit" value="Filtrer par date" name="send_dates" class="btn"/></td>
+                    </tr>
+                </table>
+            </fieldset>
+        </form>
+    </div>
+    <table class="tablesorter">
+        <thead>
+        <tr>
+            <th>Type de Mail</th>
+            <th>Sujet</th>
+            <th>Date d'envoi</th>
+            <th>Visualiser</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
+            <tr>
+                <td><?= $aEmail['name'] ?></td>
+                <td><?= str_replace('_', ' ', utf8_encode(mb_decode_mimeheader($aEmail['subject']))) ?></td>
+                <td><?= $this->dates->formatDateMysqltoFr_HourIn($aEmail['added']) ?></td>
+                <td style="text-align: center">
+                    <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_filermails'] ?>" class="thickbox">
+                        <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px" />
+                    </a>
+                </td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>

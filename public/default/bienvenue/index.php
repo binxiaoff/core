@@ -38,39 +38,27 @@ if (date('Y') == 2015) {
 <body>
 <?php
 
-if (! empty($_GET["utm_source"])) {
-    $source = $_GET["utm_source"];
-} else {
-    $source = "";
+if (false === ($source = filter_input(INPUT_GET, 'utm_source', FILTER_SANITIZE_STRING))) {
+    $source = '';
 }
-if (! empty($_GET["utm_source2"])) {
-    $source2 = $_GET["utm_source2"];
-} else {
-    $source2 = "";
+if (false === ($source2 = filter_input(INPUT_GET, 'utm_source2', FILTER_SANITIZE_STRING))) {
+    $source2 = '';
 }
-if (! empty($_GET["nom"])) {
-    $nom = $_GET["nom"];
-} else {
-    $nom = "";
+if (false === ($nom = filter_input(INPUT_GET, 'nom', FILTER_SANITIZE_STRING))) {
+    $nom = '';
 }
-if (! empty($_GET["prenom"])) {
-    $prenom = $_GET["prenom"];
-} else {
-    $prenom = "";
+if (false === ($prenom = filter_input(INPUT_GET, 'prenom', FILTER_SANITIZE_STRING))) {
+    $prenom = '';
 }
-if (! empty($_GET["email"])) {
-    $email = $_GET["email"];
-} else {
-    $email = "";
+if (false === ($email = filter_input(INPUT_GET, 'email', FILTER_SANITIZE_EMAIL))) {
+    $email = '';
 }
-if (! empty($_GET["civilite"])) {
-    $civilite = $_GET["civilite"];
-} else {
-    $civilite = "";
+if (false === ($civilite = filter_input(INPUT_GET, 'civilite', FILTER_SANITIZE_STRING))) {
+    $civilite = '';
 }
 
-$slug_origine = "bienvenue";
-$url = 'https://www.unilend.fr';
+$slug_origine = 'bienvenue';
+$url          = 'https://www.unilend.fr';
 
 ?>
 <div id="form">

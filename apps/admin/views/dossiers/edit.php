@@ -163,12 +163,6 @@
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="rcs">RCS :</label></th>
-                        <td>
-                            <input type="text" name="rcs" id="rcs" class="input_large" value="<?= $this->companies->rcs ?>"/>
-                        </td>
-                    </tr>
-                    <tr>
                         <th><label for="code_naf">Code NAF :</label></th>
                         <td>
                             <input type="text" name="code_naf" id="code_naf" class="input_large" value="<?= $this->companies->code_naf ?>"/>
@@ -377,9 +371,9 @@
                     <tr>
                         <th>Afficher projet :</th>
                         <td>
-                            <input <?= ($this->projects->display == '0' ? 'checked' : '') ?> type="radio" name="display_project" id="oui_display_project" value="0"/>
+                            <input <?= ($this->projects->display == \projects::DISPLAY_PROJECT_ON ? 'checked' : '') ?> type="radio" name="display_project" id="oui_display_project" value="<?= \projects::DISPLAY_PROJECT_ON ?>"/>
                             <label for="oui_display_project">Oui</label>
-                            <input <?= ($this->projects->display == '1' ? 'checked' : '') ?> type="radio" name="display_project" id="non_display_project" value="1"/>
+                            <input <?= ($this->projects->display == \projects::DISPLAY_PROJECT_OFF ? 'checked' : '') ?> type="radio" name="display_project" id="non_display_project" value="<?= \projects::DISPLAY_PROJECT_OFF ?>"/>
                             <label for="non_display_project">Non</label>
                         </td>
                     </tr>
@@ -636,7 +630,7 @@
                             <th></th>
                             <td>
                                 <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == \projects_status::FUNDE) { ?>
-                                    <select name="satut_pouvoir" id="satut_pouvoir" class="select">
+                                    <select name="statut_pouvoir" id="statut_pouvoir" class="select">
                                         <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
                                         <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
                                     </select>
@@ -1061,12 +1055,13 @@
                     <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
                         <td colspan="4">
                             <input class="input_large" name="search_prescripteur" id="search_prescripteur" placeholder="nom, prenom ou email du prescripteur" />
-                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?= $this->lurl ?>/prescripteurs/search_ajax/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
+                            <a id="btn_search_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/search_ajax/" onclick="$(this).attr('href', '<?= $this->lurl ?>/prescripteurs/search_ajax/<?= $this->projects->id_project ?>/' + $('#search_prescripteur').val());">Rechercher un prescripteur existant</a>
                         </td>
                     </tr>
                     <tr<?= $this->bHasPrescripteur ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
                         <td colspan="4">
-                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement" href="<?= $this->lurl ?>/prescripteurs/add_client" target="_blank">Créer un prescripteur</a>
+                            <a id="btn_add_prescripteur" class="btn_link thickbox cboxElement"
+                               href="<?= $this->lurl ?>/prescripteurs/add_client/<?= $this->projects->id_project ?>" target="_blank">Créer un prescripteur</a>
                         </td>
                     </tr>
                     <input type="hidden" id="id_prescripteur" name="id_prescripteur" value="<?= $this->prescripteurs->id_prescripteur ?>" />

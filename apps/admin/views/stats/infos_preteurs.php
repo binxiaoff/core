@@ -1,11 +1,11 @@
 <script type="text/javascript">
 	$(document).ready(function(){
-		$(".tablesorter").tablesorter();	
+		$(".tablesorter").tablesorter();
 		<?
 		if($this->nb_lignes != '')
 		{
 		?>
-			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});		
+			$(".tablesorter").tablesorterPager({container: $("#pager"),positionFixed: false,size: <?=$this->nb_lignes?>});
 		<?
 		}
 		?>
@@ -26,10 +26,10 @@
 	<?
 	}
 	?>
-	
-	
-	
-	
+
+
+
+
 </script>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
@@ -38,7 +38,7 @@
         <li>Administrateurs</li>
     </ul>
 	<h1>Requete Infos prêteurs</h1>
-    
+
     <div style="margin-bottom:20px; float:right;"><a href="<?=$this->lurl?>/stats/infos_preteurs/csv" class="btn_link">Recuperation du CSV</a></div>
 
     <table class="tablesorter">
@@ -47,10 +47,10 @@
                 <th>Id client</th>
                 <th>Civilite</th>
                 <th>Nom</th>
-                <th>Nom usage</th>   
-                <th>Prenom</th>                     
+                <th>Nom usage</th>
+                <th>Prenom</th>
                 <th>Fonction</th>
-                <th>Naissance</th>   
+                <th>Naissance</th>
                 <th>Téléphone</th>
                 <th>Email</th>
                 <th>Source</th>
@@ -69,7 +69,6 @@
                 <th>forme juridique</th>
                 <th>Siren</th>
                 <th>Exercices comptables</th>
-                <th>RCS</th>
                 <th>Tribunal_com</th>
                 <th>Activite</th>
                 <th>Lieu exploi</th>
@@ -91,11 +90,11 @@
                 <th>Risk</th>
                 <th>Code banque</th>
             </tr>
-        </thead>           	
+        </thead>
         <tbody>
         <?
         $i = 1;
-		
+
 		$resultat = $this->bdd->query($this->sql);
         while($record = $this->bdd->fetch_array($resultat))
 		{
@@ -106,8 +105,8 @@
 					?><td><?=$record[$a]?></td><?
 				}
 				?>
-			</tr>   
-			<?	
+			</tr>
+			<?
 			$i++;
         }
 

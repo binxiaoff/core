@@ -1,4 +1,5 @@
 <?php
+use Unilend\librairies\ULogger;
 
 class lenders_account_stats extends lenders_account_stats_crud
 {
@@ -174,12 +175,16 @@ class lenders_account_stats extends lenders_account_stats_crud
      */
     public function calculateIRR($iLendersAccountId)
     {
-        try {
-            $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
-        } catch (Exception $e){
-            $oLoggerIRR = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage(). ' '. $e->getTraceAsString());
-        }
+        /* @var array $config */
+        include __DIR__ . '/../config.php';
+
+        $oLoggerIRR = new ULogger('Calculate IRR', $config['log_path'][ENVIRONMENT], 'IRR.log');
+        $fGuess     = 0.1;
+        $oLoggerIRR->addRecord(ULogger::INFO, 'Guess : ' . $fGuess . ' MAX_INTERATIONS : '. 100);
+
+        $fStartSQL  = microtime(true);
+        $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
+        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         foreach ($aValuesIRR as $aValues) {
             foreach ($aValues as $date => $value) {
@@ -188,18 +193,22 @@ class lenders_account_stats extends lenders_account_stats_crud
             }
         }
 
+        $fStartXIRR = microtime(true);
         $oFinancial = new \PHPExcel_Calculation_Financial();
-        $fXIRR      = round($oFinancial->XIRR($aSums, $aDates) * 100, 2);
+        $fXIRR      = round($oFinancial->XIRR($aSums, $aDates, $fGuess) * 100, 2);
+        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)));
 
         if (abs($fXIRR) > 100) {
-            throw new Exception('IRR not in range for id_lender '.$iLendersAccountId. ' IRR : '. $fXIRR);
+            throw new Exception('IRR not in range for id_lender ' . $iLendersAccountId . ' IRR : ' . $fXIRR);
         }
+        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+
         return $fXIRR;
     }
 
-    public function getLossRate($iLendersAccountId, loans $oLoans)
+    public function getLossRate($iLendersAccountId, lenders_accounts $oLendersAccounts)
     {
-        $iSumOfLoans = $oLoans->sumPrets($iLendersAccountId);
+        $iSumOfLoans = $oLendersAccounts->sumLoansOfProjectsInRepayment($iLendersAccountId);
 
         $aProjectStatusCollectiveProceeding = array(
             \projects_status::PROCEDURE_SAUVEGARDE,
@@ -221,9 +230,16 @@ class lenders_account_stats extends lenders_account_stats_crud
                     AND e.status = 0
                     AND (ps.status IN (' . implode(',', $aProjectStatusCollectiveProceeding) . ')
                         OR (ps.status = ' . \projects_status::RECOUVREMENT . ' AND DATEDIFF(NOW(), e.date_echeance) > 180))';
-        $result = $this->bdd->query($sql);
-        $fRemainingDueCapital =  ($this->bdd->result($result, 0, 0)/100);;
 
-        return round($fRemainingDueCapital / $iSumOfLoans, 2);
+        $result               = $this->bdd->query($sql);
+        $fRemainingDueCapital = ($this->bdd->result($result, 0, 0) / 100);
+
+        if ($iSumOfLoans > 0) {
+            $fLossRate = round($fRemainingDueCapital / $iSumOfLoans, 2) * 100;
+        } else {
+            $fLossRate = null ;
+        }
+
+        return $fLossRate;
     }
 }
