@@ -31,7 +31,7 @@ class bids extends bids_crud
     const STATUS_BID_PENDING      = 0;
     const STATUS_BID_ACCEPTED     = 1;
     const STATUS_BID_REJECTED     = 2;
-    const STATUS_AUTOBID_REJECTED = 3;
+    const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
     public function __construct($bdd, $params = '')
     {
@@ -286,15 +286,16 @@ class bids extends bids_crud
         return $aLenders;
     }
 
-    public function getRefusedAutoBids($iProjectId)
+    public function getTempRefusedAutoBids($iProjectId, $iLimit = 100, $iOffset = 0)
     {
         $sQuery = 'SELECT * FROM `bids` b
                    INNER JOIN autobid ab ON ab.id_autobid = b.id_autobid
                    WHERE b.id_project = ' . $iProjectId . '
-                   AND b.status = ' . self::STATUS_AUTOBID_REJECTED;
+                   AND b.status = ' . self::STATUS_AUTOBID_REJECTED_TEMPORARILY . '
+                   LIMIT ' . $iLimit . ' OFFSET ' . $iOffset;
 
-        $rQuery   = $this->bdd->query($sQuery);
-        $aBids = array();
+        $rQuery = $this->bdd->query($sQuery);
+        $aBids  = array();
         while ($aRow = $this->bdd->fetch_array($rQuery)) {
             $aBids[] = $aRow;
         }

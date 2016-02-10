@@ -201,96 +201,39 @@ class AutoBidManager
         );
     }
 
-    /**
-     * @param \projects $oProject
-     *
-     * @return bool
-     */
-    public static function bid(\projects $oProject)
+    public static function bid(\autobid $oAutoBid, \projects $oProject, $fRate)
     {
-        if ($oProject->date_fin != '0000-00-00 00:00:00' && time() >= strtotime($oProject->date_fin)) {
-            return false;
-        }
+        if ($oAutoBid->rate_min <= $fRate) {
+            /** @var \bids $oBid */
+            $oBid                    = Loader::loadData('bids');
+            $oBid->id_lender_account = $oAutoBid->id_lender;
+            $oBid->id_project        = $oProject->id_project;
+            $oBid->id_autobid        = $oAutoBid->id_autobid;
+            $oBid->amount            = $oAutoBid->amount * 100;
+            $oBid->rate              = $fRate;
+            BidManager::bid($oBid);
 
-        $oProjectStatus = Loader::loadData('projects_status');
-        if ($oProjectStatus->getLastStatut($oProject->id_project)) {
-            if ($oProjectStatus->status == \projects_status::AUTO_BID) {
-                return self::bidBeforePublication($oProject);
+            $oAutoBidQueue = Loader::loadData('autobid_queue');
+            $oAutoBidQueue->addToQueue($oAutoBid->id_lender, \autobid_queue::STATUS_NEW);
+        }
+    }
+
+    public static function refreshRateOrReject(\bids $oBid, $fCurrentRate)
+    {
+        /** @var \autobid $oAutoBidSetting */
+        $oAutoBidSetting = Loader::loadData('autobids');
+
+        if (false === empty($oBid->id_autobid) && $oAutoBidSetting->get($oBid->id_autobid)) {
+            if ($oAutoBidSetting->rate_min <= $fCurrentRate) {
+                $oBid->status = \bids::STATUS_BID_PENDING;
+                $oBid->rate   = $fCurrentRate;
+                $oBid->update();
             } else {
-                if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                    return self::bidAfterPublication($oProject);
-                }
+                self::reject($oBid);
             }
         }
 
-        return false;
-    }
-
-    /**
-     * @param \projects $oProject
-     *
-     * @return bool
-     */
-    private static function bidBeforePublication(\projects $oProject)
-    {
-        $iPeriod      = (int)$oProject->period;
-        $sEvaluation  = $oProject->risk;
-        $iCurrentRate = 10;
-
-        /** @var \autobid_queue $oAutoBidQueue */
-        $oAutoBidQueue = Loader::loadData('autobid_queue');
-        $oBid          = Loader::loadData('bids');
-
-        $iOffset = 0;
-        $iLimit  = 100;
-        while ($aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iCurrentRate, $iOffset, $iLimit)) {
-            $iOffset += $iLimit;
-
-            foreach ($aAutoBidList as $aAutoBidSettings) {
-                $oBid->id_lender_account = $aAutoBidSettings['id_lender'];
-                $oBid->id_project        = $oProject->id_project;
-                $oBid->id_autobid        = $aAutoBidSettings['id_autobid'];
-                $oBid->amount            = $aAutoBidSettings['amount'] * 100;
-                $oBid->rate              = $iCurrentRate;
-                BidManager::bid($oBid);
-                $oAutoBidQueue->addToQueue($aAutoBidSettings['id_lender'], \autobid_queue::STATUS_NEW);
-            }
-        }
-
-        return true;
-    }
-
-    private static function bidAfterPublication(\projects $oProject)
-    {
-        /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
-        $oSettings->get('Auto-bid step', 'type');
-        $fStep = (float)$oSettings->value;
-
-        /** @var \bids $oBid */
-        $oBid         = Loader::loadData('bids');
-        $fCurrentRate = (float)$oBid->getProjectMaxRate($oProject->id_project) - $fStep;
-
-        $iOffset = 0;
-        $iLimit  = 100;
-        while ($aAutoBidList = $oBid->getRefusedAutoBids($oProject->id_project)) {
-            $iOffset += $iLimit;
-
-            foreach ($aAutoBidList as $aAutobid) {
-                if (false === $oBid->get($aAutobid['id_bid'])) {
-                    continue;
-                }
-                if ($aAutobid['rate_min'] <= $fCurrentRate) {
-                    $oBid->status = \bids::STATUS_BID_PENDING;
-                    $oBid->rate   = $fCurrentRate;
-                    $oBid->update();
-                } else {
-                    self::rejec($oBid);
-                }
-            }
-        }
-
-        return true;
+        return $oBid;
     }
 
     public static function reject(\bids $oBid)

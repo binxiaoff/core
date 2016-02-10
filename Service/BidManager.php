@@ -9,7 +9,6 @@ use Unilend\core\Loader;
  */
 class BidManager
 {
-    //todo: not yet tested
     public static function bid(\bids $oBid)
     {
         /** @var \settings $oSetting */
@@ -156,14 +155,12 @@ class BidManager
             $oDate = Loader::loadLib('dates');
             $month = $oDate->tableauMois['fr'][date('n', $timeAdd)];
 
-            //TODO: add a loader for config in Loader.php
-            /* @var array $config */
-            include __DIR__ . '/../config.php';
-            $sSUrl = $config['static_url'][$config['env']];
-            $sLUrl = $config['url'][$config['env']]['default'] . ($config['multilanguage']['enabled'] ? '/' . $sLanguage : '');
+            $config = Loader::loadConfig();
+            $sSUrl  = $config['static_url'][$config['env']];
+            $sLUrl  = $config['url'][$config['env']]['default'] . ($config['multilanguage']['enabled'] ? '/' . $sLanguage : '');
 
             /** @var \tree $oTree */
-            $oTree = Loader::loadData('tree');
+            $oTree       = Loader::loadData('tree');
             $pageProjets = $oTree->getSlug(4, $sLanguage);
 
             /** @var \ficelle $oFicelle */
@@ -172,23 +169,23 @@ class BidManager
             /** @var \companies $oCompany */
             $oCompany = Loader::loadData('companies');
 
-            $varMail     = array(
-                'surl'              => $sSUrl,
-                'url'               => $sLUrl,
-                'prenom_p'          => $oClient->prenom,
-                'nom_entreprise'    => $oCompany->name,
-                'valeur_bid'        => $oFicelle->formatNumber($iAmount),
-                'taux_bid'          => $oFicelle->formatNumber($oBid->rate, 1),
-                'date_bid'          => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                'heure_bid'         => date('H:i:s', strtotime($oBids->added)),
-                'projet-p'          => $sLUrl . '/' . $pageProjets,
-                'motif_virement'    => $sPurpose,
-                'lien_fb'           => $lien_fb,
-                'lien_tw'           => $lien_tw
+            $varMail = array(
+                'surl' => $sSUrl,
+                'url' => $sLUrl,
+                'prenom_p' => $oClient->prenom,
+                'nom_entreprise' => $oCompany->name,
+                'valeur_bid' => $oFicelle->formatNumber($iAmount),
+                'taux_bid' => $oFicelle->formatNumber($oBid->rate, 1),
+                'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                'heure_bid' => date('H:i:s', strtotime($oBids->added)),
+                'projet-p' => $sLUrl . '/' . $pageProjets,
+                'motif_virement' => $sPurpose,
+                'lien_fb' => $lien_fb,
+                'lien_tw' => $lien_tw
             );
 
             /** @var \tnmp $oTNMP */
-            $oTNMP = Loader::loadLib('tnmp');
+            $oTNMP   = Loader::loadLib('tnmp');
             $tabVars = $oTNMP->constructionVariablesServeur($varMail);
 
             $sujetMail = strtr(utf8_decode($oMailText->subject), $tabVars);
@@ -196,7 +193,7 @@ class BidManager
             $exp_name  = strtr(utf8_decode($oMailText->exp_name), $tabVars);
 
             /** @var \email $oEmail */
-            $oEmail =  Loader::loadLib('email');
+            $oEmail = Loader::loadLib('email');
             $oEmail->setFrom($oMailText->exp_email, $exp_name);
             $oEmail->setSubject(stripslashes($sujetMail));
             $oEmail->setHTMLBody(stripslashes($texteMail));
@@ -231,18 +228,40 @@ class BidManager
      */
     public static function reject(\bids $oBid)
     {
-        //Todo: method not tested
-        $oBid->status = \bids::STATUS_BID_REJECTED;
-        $oBid->update();
+        if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
+            /** @var \lenders_accounts $oLenderAccount */
+            $oLenderAccount = Loader::loadData('lenders_accounts');
+            $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
 
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
-        $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
+            self::credit($oBid, $oLenderAccount, $oBid->amount / 100);
+            $oBid->status = \bids::STATUS_BID_REJECTED;
+            $oBid->update();
+        }
+    }
+
+    public static function rejectPartially(\bids $oBid, $fRepaymentAmount)
+    {
+        if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
+            /** @var \lenders_accounts $oLenderAccount */
+            $oLenderAccount = Loader::loadData('lenders_accounts');
+            $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
+
+            self::credit($oBid, $oLenderAccount, $fRepaymentAmount);
+            // Save new amount of the bid after repayment
+            $oBid->amount -= $fRepaymentAmount * 100;
+            $oBid->status = \bids::STATUS_BID_ACCEPTED;
+            $oBid->update();
+        }
+    }
+
+    private static function credit($oBid, $oLenderAccount, $fAmount)
+    {
+        $iAmountX100 = $fAmount * 100;
 
         /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
+        $oTransaction                   = Loader::loadData('transactions');
         $oTransaction->id_client        = $oLenderAccount->id_client_owner;
-        $oTransaction->montant          = $oBid->amount;
+        $oTransaction->montant          = $iAmountX100;
         $oTransaction->id_langue        = 'fr';
         $oTransaction->date_transaction = date('Y-m-d H:i:s');
         $oTransaction->status           = '1';
@@ -255,44 +274,26 @@ class BidManager
         $oTransaction->create();
 
         /** @var \wallets_lines $oTransaction */
-        $oWalletsLine = Loader::loadData('wallets_lines');
+        $oWalletsLine                           = Loader::loadData('wallets_lines');
         $oWalletsLine->id_lender                = $oBid->id_lender_account;
         $oWalletsLine->type_financial_operation = 20;
         $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
         $oWalletsLine->status                   = 1;
         $oWalletsLine->type                     = 2;
         $oWalletsLine->id_bid_remb              = $oBid->id_bid;
-        $oWalletsLine->amount                   = $oBid->amount;
+        $oWalletsLine->amount                   = $iAmountX100;
         $oWalletsLine->id_project               = $oBid->id_project;
         $oWalletsLine->create();
 
-        /** @var \notifications $oNotification */
-        $oNotification             = Loader::loadData('notifications');
-        $oNotification->type       = 1; // rejet
-        $oNotification->id_lender  = $oBid->id_lender_account;
-        $oNotification->id_project = $oBid->id_project;
-        $oNotification->amount     = $oBid->amount;
-        $oNotification->id_bid     = $oBid->id_bid;
-        $oNotification->create();
-
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
-        $oMailNotification->id_client       = $oLenderAccount->id_client_owner;
-        $oMailNotification->id_notif        = 3; // rejet
-        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $oMailNotification->id_notification = $oNotification->id_notification;
-        $oMailNotification->id_transaction  = $oTransaction->id_transaction;
-        $oMailNotification->create();
-
         /** @var \offres_bienvenues_details $oWelcomeOffer */
         $oWelcomeOffer = Loader::loadData('offres_bienvenues_details');
-        $sumOffres = $oWelcomeOffer->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $oBid->id_bid, 'montant');
+        $sumOffres     = $oWelcomeOffer->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $oBid->id_bid, 'montant');
         if ($sumOffres > 0) {
             // sum des offres inferieur au montant a remb
-            if ($sumOffres <= $oBid->amount) {
+            if ($sumOffres <= $iAmountX100) {
                 $oWelcomeOffer->montant = $sumOffres;
             } else {// Si montant des offres superieur au remb on remb le montant a crediter
-                $oWelcomeOffer->montant = $oBid->amount;
+                $oWelcomeOffer->montant = $iAmountX100;
             }
 
             $oWelcomeOffer->id_offre_bienvenue = 0;
@@ -303,5 +304,23 @@ class BidManager
             $oWelcomeOffer->type               = 2;
             $oWelcomeOffer->create();
         }
+
+        /** @var \notifications $oNotification */
+        $oNotification             = Loader::loadData('notifications');
+        $oNotification->type       = 1; // rejet
+        $oNotification->id_lender  = $oBid->id_lender_account;
+        $oNotification->id_project = $oBid->id_project;
+        $oNotification->amount     = $iAmountX100;
+        $oNotification->id_bid     = $oBid->id_bid;
+        $oNotification->create();
+
+        /** @var \clients_gestion_mails_notif $oMailNotification */
+        $oMailNotification                  = Loader::loadData('clients_gestion_mails_notif');
+        $oMailNotification->id_client       = $oLenderAccount->id_client_owner;
+        $oMailNotification->id_notif        = 3; // rejet
+        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
+        $oMailNotification->id_notification = $oNotification->id_notification;
+        $oMailNotification->id_transaction  = $oTransaction->id_transaction;
+        $oMailNotification->create();
     }
 }
