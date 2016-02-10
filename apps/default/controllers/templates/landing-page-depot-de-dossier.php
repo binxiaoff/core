@@ -68,7 +68,7 @@ if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
         die;
     }
 
-    header('Location: ' . (isset($sRedirectURL) ? $sRedirectURL : $this->lurl) . '/depot_de_dossier/etape1');
+    header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
     die;
 }
 

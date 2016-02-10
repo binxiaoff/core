@@ -67,7 +67,7 @@ class depot_de_dossierController extends bootstrap
      */
     public function _etape1()
     {
-        $this->page = 1;
+        $this->page = 'depot_dossier_1';
 
         if (false === isset($_SESSION['forms']['depot-de-dossier']['values'])) {
             header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
@@ -278,9 +278,9 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape2()
     {
-        $this->page = 2;
+        $this->page = 'depot_dossier_2';
 
-        $this->bDisplayTouchvives = true;
+        $this->bDisplayTouchvibes = true;
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_2);
 
@@ -483,7 +483,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape3()
     {
-        $this->page = 3;
+        $this->page = 'depot_dossier_3';
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_3);
 
@@ -644,7 +644,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _prospect()
     {
-        $this->page = 'prospect';
+        $this->page = 'depot_dossier_prospect';
 
         $this->checkProjectHash(self::PAGE_NAME_PROSPECT);
 
@@ -727,7 +727,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _fichiers()
     {
-        $this->page = 'fichiers';
+        $this->page = 'depot_dossier_fichiers';
 
         $this->checkProjectHash(self::PAGE_NAME_FILES);
 
@@ -781,6 +781,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _fin()
     {
+        $this->page = 'depot_dossier_fin';
+
         $this->checkProjectHash(self::PAGE_NAME_END);
 
         $this->lng['depot-de-dossier-fin'] = $this->ln->selectFront('depot-de-dossier-fin', $this->language, $this->App);
@@ -791,7 +793,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->bDisplayContact = false;
         $this->sMessage        = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
-        $this->bDisplayTouchvives = false;
+        $this->bDisplayTouchvibes = false;
 
         switch ($this->projects_status->status) {
             case \projects_status::ABANDON:
@@ -841,7 +843,7 @@ class depot_de_dossierController extends bootstrap
                         }
                         break;
                 }
-                $this->bDisplayTouchvives = true;
+                $this->bDisplayTouchvibes = true;
                 break;
         }
 
@@ -879,6 +881,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _emails()
     {
+        $this->page = 'depot_dossier_emails';
+
         $this->checkProjectHash(self::PAGE_NAME_EMAILS);
 
         $this->projects->stop_relances = 1;
