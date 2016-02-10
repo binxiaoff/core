@@ -134,7 +134,67 @@ class cronController extends bootstrap
         }
     }
 
-    // toutes les minutes on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
+    public function _mail_echeance_emprunteur()
+    {
+        if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
+            $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
+            $oLoans           = $this->loadData('loans');
+
+            $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
+            $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
+
+            foreach ($aUpcomingRepayments as $aRepayment) {
+                $this->projects->get($aRepayment['id_project']);
+                $this->companies->get($this->projects->id_company);
+
+                if (false === empty($this->companies->prenom_dirigeant) && false === empty($this->companies->email_dirigeant)) {
+                    $sFirstName  = $this->companies->prenom_dirigeant;
+                    $sMailClient = $this->companies->email_dirigeant;
+                } else {
+                    $this->clients->get($this->companies->id_client_owner);
+
+                    $sFirstName  = $this->clients->prenom;
+                    $sMailClient = $this->clients->email;
+                }
+
+                $aMail = array(
+                    'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),
+                    'echeance'           => $this->ficelle->formatNumber($aRepayment['montant'] / 100),
+                    'prochaine_echeance' => date('d/m/Y', strtotime($aRepayment['date_echeance_emprunteur'])),
+                    'surl'               => $this->surl,
+                    'url'                => $this->furl,
+                    'nom_entreprise'     => $this->companies->name,
+                    'montant'            => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
+                    'prenom_e'           => $sFirstName,
+                    'lien_fb'            => $this->like_fb,
+                    'lien_tw'            => $this->twitter
+                );
+
+                $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
+                $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
+                $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
+                $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, $sSender);
+                $this->email->setSubject(stripslashes($sMailSubject));
+                $this->email->setHTMLBody(stripslashes($sMailBody));
+
+                if ($this->Config['env'] == 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($sMailClient));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+            }
+
+            $this->stopCron();
+        }
+    }
+
+    // toutes les minute on check //
+    // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
     {
         if (true === $this->startCron('check_projet_a_funder', 5)) {
@@ -7655,6 +7715,74 @@ class cronController extends bootstrap
             }
             $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
             $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for '. count($aLendersAccounts) .' lenders : ' . round(microtime(true) - $fTimeStart, 2));
+            $this->stopCron();
+        }
+    }
+
+    /***
+     * Removes welcome offers not used by lenders
+     * Executed once per night, at 2am
+     *
+     */
+    public function _checkWelcomeOfferValidity()
+    {
+        if (true === $this->startCron('Validité Offre de Bienvenue', 5)) {
+            $oSettings            = $this->loadData('settings');
+            $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
+            $oTransactions        = $this->loadData('transactions');
+            $oWalletsLines        = $this->loadData('wallets_lines');
+            $oBankUnilend         = $this->loadData('bank_unilend');
+            $oLendersAccounts     = $this->loadData('lenders_accounts');
+
+            $oSettings->get('Durée validité Offre de bienvenue', 'type');
+            $sOfferValidity = $oSettings->value;
+
+            $aUnusedWelcomeOffers = $oWelcomeOfferDetails->select('status = 0');
+            $oDateTime            = new \DateTime();
+
+            $iNumberOfUnusedWelcomeOffers = 0;
+
+            foreach ($aUnusedWelcomeOffers as $aWelcomeOffer) {
+                $oAdded    = DateTime::createFromFormat('Y-m-d H:i:s', $aWelcomeOffer['added']);
+                $oInterval = $oDateTime->diff($oAdded);
+
+                if ($oInterval->days >= $sOfferValidity) {
+                    $oWelcomeOfferDetails->get($aWelcomeOffer['id_offre_bienvenue_detail']);
+                    $oWelcomeOfferDetails->status = 2;
+                    $oWelcomeOfferDetails->update();
+
+                    $oTransactions->id_client                 = $aWelcomeOffer['id_client'];
+                    $oTransactions->montant                   = -$aWelcomeOffer['montant'];
+                    $oTransactions->id_offre_bienvenue_detail = $aWelcomeOffer['id_offre_bienvenue_detail'];
+                    $oTransactions->id_langue                 = 'fr';
+                    $oTransactions->date_transaction          = date('Y-m-d H:i:s');
+                    $oTransactions->status                    = '1';
+                    $oTransactions->etat                      = '1';
+                    $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
+                    $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
+                    $oTransactions->transaction               = 2;
+                    $oTransactions->create();
+
+                    $oLendersAccounts->get($aWelcomeOffer['id_client'], 'id_client_owner');
+
+                    $oWalletsLines->id_lender                = $oLendersAccounts->id_lender_account;
+                    $oWalletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
+                    $oWalletsLines->id_transaction           = $oTransactions->id_transaction;
+                    $oWalletsLines->status                   = 1;
+                    $oWalletsLines->type                     = 1;
+                    $oWalletsLines->amount                   = -$aWelcomeOffer['montant'];
+                    $oWalletsLines->create();
+
+                    $oBankUnilend->id_transaction = $oTransactions->id_transaction;
+                    $oBankUnilend->montant        = abs($oWelcomeOfferDetails->montant);
+                    $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
+                    $oBankUnilend->create();
+
+                    $iNumberOfUnusedWelcomeOffers +=1;
+                }
+            }
+            $this->oLogger->addRecord(ULogger::INFO, 'Nombre d\'offres de Bienvenue retirées : ' . $iNumberOfUnusedWelcomeOffers);
+
             $this->stopCron();
         }
     }
