@@ -131,6 +131,7 @@
                            data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
                     <em class="caractmax<?= isset($this->aForm['errors']['siren']) ? ' error' : '' ?>"><?= $this->lng['landing-page']['9-caracteres-numeriques'] ?></em>
                 </div>
+                <?php if (false === $this->bShortTunnel) : ?>
                 <div class="form-row">
                     <input type="email" name="email" id="email"
                            placeholder="<?= $this->lng['landing-page']['email'] ?>"
@@ -138,6 +139,7 @@
                            class="field<?= isset($this->aForm['errors']['email']) ? ' LV_invalid_field' : '' ?>"
                            data-validators="Email">
                 </div>
+                <?php endif; ?>
                 <input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1">
                 <button type="submit" class="button submit">
                     <?= $this->content['lp-bouton-formulaire-241'] ?>
