@@ -801,36 +801,11 @@ class rootController extends bootstrap
                     // To send HTML mail, the Content-type header must be set
                     $headers = 'MIME-Version: 1.0' . "\r\n";
                     $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                    // Additional headers
-
-                    //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
-                    $headers .= 'From: Unilend <unilend@equinoa.fr>' . "\r\n";
+                    $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
 
                     // Mail it
                     mail($to, $subject, $message, $headers);
                 }
-            }
-        }
-    }
-
-    public function _changeCompte()
-    {
-        // On check si y a un compte
-        if (! $this->clients->checkAccess()) {
-            header('Location: ' . $this->lurl);
-            die;
-        }
-
-        if (isset($this->params[0]) && isset($_SESSION['client'])) {
-            // on redirige sur le compte preteur
-            if ($this->params[0] == 1) {
-                header('Location:' . $this->lurl . '/synthese');
-                die;
-            } // on redirige sur le compte emprunteur
-            else {
-                header('Location:' . $this->lurl . '/espace_emprunteur');
-                die;
             }
         }
     }

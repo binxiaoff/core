@@ -347,11 +347,11 @@ class bootstrap extends Controller
             $this->addDataLayer('id_client', $this->clients->id_client);
             $this->addDataLayer('email_client', $this->clients->email);
 
-            $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-            $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
-            $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender);
-            $this->bDisplayLender       = false;
-            $this->bDisplayBorrower     = false;
+            $this->bIsLender                   = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
+            $this->bIsBorrower                 = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
+            $this->bIsBorrowerAndLender        = ($this->bIsBorrower && $this->bIsLender);
+            $this->bDisplayLender              = false;
+            $this->bDisplayBorrower            = false;
             $this->bShowChoiceBorrowerOrLender = true;
 
 

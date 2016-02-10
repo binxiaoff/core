@@ -226,8 +226,7 @@ class emprunteursController extends bootstrap
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
 
-        // On recup les infos du client
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower($this->projects, $this->params[0], 'id_client' )) {
+        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower($this->projects, $this->companies, $this->params[0])) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
@@ -241,8 +240,6 @@ class emprunteursController extends bootstrap
                 $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
                 $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
 
-
-                //// check doublon mail ////
                 $checkEmailExistant = $this->clients->select('email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';

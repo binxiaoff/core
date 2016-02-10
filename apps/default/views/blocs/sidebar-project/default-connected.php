@@ -52,7 +52,7 @@
                         </div>
                     </div>
                 <?php } ?>
-                <?php if ($this->clients->isBorrower($this->projects, $this->clients->id_client) === false ) { ?>
+                <?php if ($this->clients->isLender($this->loadData('lenders_accounts'), $this->clients->id_client)) { ?>
                     <div class="widget-cat">
                         <h4><?= $this->lng['preteur-projets']['faire-une-offre'] ?></h4>
                         <div class="row">
@@ -80,7 +80,7 @@
                         <?php
                         // on check si on a coché les cgv ou pas
                         // cgu societe
-                        if (in_array($this->clients->type, array(2, 4))) {
+                        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
                             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
                             $this->lienConditionsGenerales_header = $this->settings->value;
                         } // cgu particulier

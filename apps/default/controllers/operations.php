@@ -13,7 +13,7 @@ class operationsController extends bootstrap
         $this->setHeader('header_account');
 
         // On check si y a un compte
-        if ($this->clients->checkAccess() === false) {
+        if (false === $this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
         } else {
@@ -150,50 +150,45 @@ class operationsController extends bootstrap
         switch ($this->sOrderField) {
             case 'status':
                 $this->sOrderField = 'status';
-                $sOrderBy = 'project_status ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'project_status ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'title':
                 $this->sOrderField = 'title';
-                $sOrderBy = 'p.title ' . $this->sOrderDirection . ', debut DESC';
+                $sOrderBy          = 'p.title ' . $this->sOrderDirection . ', debut DESC';
                 break;
             case 'note':
                 $this->sOrderField = 'note';
-                $sOrderBy = 'p.risk ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'p.risk ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'amount':
                 $this->sOrderField = 'amount';
-                $sOrderBy = 'amount ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'amount ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'interest':
                 $this->sOrderField = 'interest';
-                $sOrderBy = 'rate ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'rate ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'next':
                 $this->sOrderField = 'next';
-                $sOrderBy = 'next_echeance ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'next_echeance ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'end':
                 $this->sOrderField = 'end';
-                $sOrderBy = 'fin ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'fin ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'repayment':
                 $this->sOrderField = 'repayment';
-                $sOrderBy = 'mensuel ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'mensuel ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'start':
             default:
                 $this->sOrderField = 'start';
-                $sOrderBy = 'debut ' . $this->sOrderDirection . ', p.title ASC';
+                $sOrderBy          = 'debut ' . $this->sOrderDirection . ', p.title ASC';
                 break;
         }
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
-        $this->lSumLoans       = $this->loans->getSumLoansByProject(
-            $this->lenders_accounts->id_lender_account,
-            $sOrderBy,
-            isset($_POST['year']) && is_numeric($_POST['year']) ? (int) $_POST['year'] : null,
-            isset($_POST['status']) && is_numeric($_POST['status']) ? (int) $_POST['status'] : null
-        );
+        $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $sOrderBy, isset($_POST['year']) && is_numeric($_POST['year']) ? (int) $_POST['year'] : null, isset($_POST['status']) && is_numeric($_POST['status']) ? (int) $_POST['status'] : null);
 
         $this->aLoansStatuses = array(
             'no-problem'            => 0,
@@ -344,10 +339,17 @@ class operationsController extends bootstrap
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
+            2  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
+                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
+                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
+            ),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
+            5  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['remboursement'],
+                2 => $this->lng['preteur-operations-vos-operations']['recouvrement']
+            ),
             7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -368,7 +370,7 @@ class operationsController extends bootstrap
         );
 
         if (isset($post_tri_type_transac)) {
-            $tri_type_transac = $array_type_transactions_liste_deroulante[ $post_tri_type_transac ];
+            $tri_type_transac = $array_type_transactions_liste_deroulante[$post_tri_type_transac];
         } else {
             $tri_type_transac = $array_type_transactions_liste_deroulante[1];
         }
@@ -608,7 +610,7 @@ class operationsController extends bootstrap
                         <td><?= $bdc ?></td>
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                        <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
+                        <td<?= (! $offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -684,10 +686,17 @@ class operationsController extends bootstrap
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
+            2  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
+                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
+                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
+            ),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
+            5  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['remboursement'],
+                2 => $this->lng['preteur-operations-vos-operations']['recouvrement']
+            ),
             7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -695,7 +704,8 @@ class operationsController extends bootstrap
             19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
             20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
             22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
+            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']
+        );
 
         $sql_forcage_id_client = "";
         if ($liste_id_a_forcer != 0) {
@@ -729,11 +739,11 @@ class operationsController extends bootstrap
                         AND DATE(t.date_transaction) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
 
                 $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-                $nb_entrees = count($this->lTrans);
+                $nb_entrees                    = count($this->lTrans);
                 foreach ($this->lTrans as $t) {
                     $indexage_client_existe = false;
 
-                    if ($this->indexage_vos_operations->counter(' id_client = ' . $t['id_client'] . ' AND type_transaction = "' . $t['type_transaction'] . '" AND libelle_operation ="' . $t['type_transaction_alpha'] . '" AND id_transaction = '.$t['id_transaction']) < 1) {
+                    if ($this->indexage_vos_operations->counter(' id_client = ' . $t['id_client'] . ' AND type_transaction = "' . $t['type_transaction'] . '" AND libelle_operation ="' . $t['type_transaction_alpha'] . '" AND id_transaction = ' . $t['id_transaction']) < 1) {
                         $indexage_client_existe = true;
                         $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
@@ -821,10 +831,7 @@ class operationsController extends bootstrap
                 }
             } else {
                 $oLogger = new ULogger('operations', $this->logPath, 'operations.log');
-                $oLogger->addRecord(ULogger::ERROR,
-                    'Impossible de récupérer le client : ' . $clt['id_client'],
-                    array(__FILE__ . ' at line ' . __LINE__)
-                );
+                $oLogger->addRecord(ULogger::ERROR, 'Impossible de récupérer le client : ' . $clt['id_client'], array(__FILE__ . ' at line ' . __LINE__));
             }
         }
     }

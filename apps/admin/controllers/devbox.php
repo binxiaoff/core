@@ -117,7 +117,7 @@ class devboxController extends bootstrap
 
 
         // 1 preteurs offline
-        $this->countPreteursOffline = $this->clients->countClientsLender('clients.status = 0 AND clients.status_inscription_preteur = 1 AND LEFT(clients.added,10) < "2014-07-31"');
+        $this->countPreteursOffline = $this->clients->counter_de_test('status = 0 AND status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner) AND LEFT(added,10) < "2014-07-31"');
         echo '<br>';
         echo '<br>';
 

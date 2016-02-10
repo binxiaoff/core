@@ -110,9 +110,9 @@ class inscription_preteurController extends bootstrap
                 $this->preteurOnline = true;
             }
             // Si c'est un emprunteur
-            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client)){
+            elseif($this->clients->isBorrower($this->projects, $this->companies, $this->clients->id_client)){
                 $this->emprunteurCreatePreteur = true;
-                $this->clients->type = 2;
+                $this->clients->type = \clients::TYPE_LEGAL_ENTITY;
                 // tant qu'on a pas le systeme preteur/emprunteur
                 header('Location:'.$this->lurl.'/projects');
                 die;
@@ -1203,7 +1203,7 @@ class inscription_preteurController extends bootstrap
                 $this->preteurOnline = true;
             }
             // Emprunteur/preteur n'ayant pas terminé la création de son compte
-            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
+            elseif($this->clients->isBorrower($this->projects, $this->loadData('companies'), $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
                 $this->emprunteurCreatePreteur = true;
             }
         }
@@ -1712,7 +1712,7 @@ class inscription_preteurController extends bootstrap
                 $this->preteurOnline = true;
             }
             // Emprunteur/preteur n'ayant pas terminé la création de son compte
-            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
+            elseif($this->clients->isBorrower($this->projects, $this->loadData('companies'), $this->clients->id_client) && $this->clients->etape_inscription_preteur < 3){
                 $this->emprunteurCreatePreteur = true;
             }
 
@@ -2320,67 +2320,35 @@ class inscription_preteurController extends bootstrap
 
     function _erreur()
     {
-
-        //////////////////////////////////
-        // Initialisation variable
         $this->emprunteurCreatePreteur = false;
 
-        // Si on a une session active
-        if(isset($_SESSION['client']))
-        {
-
-            // On recup le mec
-            $this->clients->get($_SESSION['client']['id_client'],'id_client');
-
-            // Si c'est un preteur on interdit de se créer un deuxieme compte
-            if($this->clients->isLender($this->lenders_accounts, $this->clients->id_client))
-            {
-                header('location:'.$this->lurl.'/inscription_preteur/etape1');
+        if (isset($_SESSION['client'])) {
+            $this->clients->get($_SESSION['client']['id_client'], 'id_client');
+            if ($this->clients->isLender($this->lenders_accounts, $this->clients->id_client)) {
+                header('Location:' . $this->lurl . '/inscription_preteur/etape1');
                 die;
-
-            }
-            // Si c'est un emprunteur
-            elseif($this->clients->isBorrower($this->projects, $this->clients->id_client)) // deja statut changé en 3 car validation de linscription a la fin de letape 2
-            {
+            } elseif ($this->clients->isBorrower($this->projects, $this->loadData('companies'), $this->clients->id_client)) {
                 $this->emprunteurCreatePreteur = true;
-
-                $this->clients->type = 2;
-            }
-            else
-            {
-                // Si emprunteur pas le droit de créer un autre compte en etant connecté
-                header('location:'.$this->lurl.'/inscription_preteur/etape1');
+                $this->clients->type = \clients::TYPE_LEGAL_ENTITY;
+            } else {
+                header('Location:' . $this->lurl . '/inscription_preteur/etape1');
                 die;
             }
         }
-        //////////////////////////////////
 
-        if($this->emprunteurCreatePreteur == true)
-        {
+        if ($this->emprunteurCreatePreteur == true) {
             $conditionOk = true;
-        }
-        elseif(isset($this->params[0]) && $this->clients->get($this->params[0],'hash'))
-        {
+        } elseif (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $conditionOk = true;
-        }
-        else
-        {
+        } else {
             $conditionOk = false;
         }
 
-        // On recupere le client
-        if($conditionOk == true)
-        {
-            // pour menu etapes
+        if ($conditionOk == true) {
             $this->page_preteur = 3;
-
-            //Recuperation des element de traductions
-            $this->lng['etape3'] = $this->ln->selectFront('inscription-preteur-etape-3',$this->language,$this->App);
-
-        }
-        else
-        {
-            header('location:'.$this->lurl.'/inscription_preteur/etape1/');
+            $this->lng['etape3'] = $this->ln->selectFront('inscription-preteur-etape-3', $this->language, $this->App);
+        } else {
+            header('Location:' . $this->lurl . '/inscription_preteur/etape1/');
             die;
         }
     }

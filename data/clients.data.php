@@ -1082,30 +1082,9 @@ class clients extends clients_crud
         return $aClientsWithoutWelcomeOffer;
     }
 
-    public function countClientsLenderAndBorrower($sWhere = null)
-    {
-        if (is_null($sWhere) === false) {
-            $sWhere = ' WHERE ' . $sWhere;
-        }
-
-        $sql = 'SELECT
-                    COUNT(*)
-                FROM
-                    `clients`
-                INNER JOIN companies ON companies.id_client_owner = clients.id_client
-                INNER JOIN projects ON companies.id_company = projects.id_company
-                INNER JOIN lenders_accounts la ON clients.id_client = la.id_client_owner' . $sWhere;
-
-
-        $result = $this->bdd->query($sql);
-
-        return (int)($this->bdd->result($result, 0, 0));
-
-    }
-
     public function getClientsLender($sWhere = null)
     {
-        if (is_null($sWhere) === false) {
+        if (false === is_null($sWhere)) {
             $sWhere = ' WHERE ' . $sWhere;
         }
 
@@ -1125,7 +1104,7 @@ class clients extends clients_crud
 
     public function getClientsBorrower($sWhere = null)
     {
-        if (is_null($sWhere) === false) {
+        if (false === is_null($sWhere)) {
             $sWhere = ' WHERE ' . $sWhere;
         }
 
