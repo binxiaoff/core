@@ -122,16 +122,12 @@ class syntheseController extends bootstrap
         }
 
         // Liste des projets en cours (projets a decouvrir)
-        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, $where_not_in, 'p.date_retrait ASC', 0, 30);
+        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, '', 'p.date_retrait ASC', 0, 30);
 
         $this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
 
         // somme des bids en cours
         $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
-
-        if ($_SERVER['REMOTE_ADDR'] == '93.26.42.98') {
-            echo "o";
-        }
 
         // somme Prêté
         $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
@@ -139,7 +135,10 @@ class syntheseController extends bootstrap
         // somme remboursé
         $this->sumRembMontant = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account, 'capital');
         // somme retant du (capital) (a rajouter en prod)
-        $this->sumRestanteARemb = $this->echeanciers->getSumARemb($this->lenders_accounts->id_lender_account, 'capital', 'dashboard');
+        $ProblematicProjects    = $this->echeanciers->getProblematicProjects($this->lenders_accounts->id_lender_account);
+        $this->nbProblems       = $ProblematicProjects['projects'];
+        $this->sumProblems      = $ProblematicProjects['capital'];
+        $this->sumRestanteARemb = $this->echeanciers->getSumARemb($this->lenders_accounts->id_lender_account, 'capital') - $this->sumProblems;
 
         // somme retenues fiscales remboursés
         $this->sumRevenuesFiscalesRemb = $this->echeanciers->getSumRevenuesFiscalesRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0');
@@ -150,9 +149,10 @@ class syntheseController extends bootstrap
 
         $total = $this->solde + $this->sumBidsEncours + $this->sumPrets; // solde + bids en cours + prets validés
 
-        $this->soldePourcent          = @round(($this->solde / $total) * 100, 1); // solde du compte en pourcentage
-        $this->sumBidsEncoursPourcent = @round(($this->sumBidsEncours / $total) * 100, 1); // bids en pourcentage
-        $this->sumPretsPourcent       = @round(($this->sumPrets / $total) * 100, 1); // pret en pourcentage
+        $this->soldePourcent          = $total > 0 ? round($this->solde / $total * 100, 1) : 0; // solde du compte en pourcentage
+        $this->sumBidsEncoursPourcent = $total > 0 ? round($this->sumBidsEncours / $total * 100, 1) : 0; // bids en pourcentage
+        $this->sumPretsPourcent       = $total > 0 ? round($this->sumPrets / $total * 100, 1) : 0; // pret en pourcentage
+        $this->sumProblemsPourcent    = $total > 0 ? round($this->sumProblems / $total * 100, 1) : 0;
 
         $this->SumDepot = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30'); // sommes deposé
 
@@ -189,9 +189,9 @@ class syntheseController extends bootstrap
             for ($i = 1; $i <= 12; $i++) {
                 $a                                            = $i;
                 $a                                            = ($i < 10 ? '0' . $a : $a);
-                $this->sumRembParMois[$annee][$i]             = number_format(($tabSumRembParMois[$annee][$a] != '' ? $tabSumRembParMois[$annee][$a] : 0), 2, '.', ''); // capital remboursé / mois
-                $this->sumIntbParMois[$annee][$i]             = number_format(($tabSumIntbParMois[$annee][$a] != '' ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // interets net / mois
-                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(($tabSumRevenuesfiscalesParMois[$annee][$a] != '' ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0), 2, '.', ''); // prelevements fiscaux
+                $this->sumRembParMois[$annee][$i]             = number_format(isset($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0, 2, '.', ''); // capital remboursé / mois
+                $this->sumIntbParMois[$annee][$i]             = number_format(isset($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // interets net / mois
+                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // prelevements fiscaux
 
                 // on organise l'affichage
                 if ($d == 3) {
@@ -240,6 +240,66 @@ class syntheseController extends bootstrap
 
         // statut client
         $this->clients_status->getLastStatut($this->clients->id_client);
+
+        $this->settings->get('TRI Unilend', 'type');
+        $this->sIRRUnilend           = $this->ficelle->formatNumber($this->settings->value);
+        $this->iDiversificationLevel = '';
+        $this->sDisplayedValue       = '';
+        $this->sTypeMessageTooltip   = '';
+        $this->sDisplayedMessage     = '';
+        $this->sDate                 = null;
+        $this->iNumberOfCompanies    = $this->lenders_accounts->countCompaniesLenderInvestedIn($this->lenders_accounts->id_lender_account);
+        $oLenderAccountStats         = $this->loadData('lenders_account_stats');
+
+        if ($this->iNumberOfCompanies === 0) {
+            $this->iDiversificationLevel = 0;
+            $this->sDisplayedMessage    = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-niveau-0']);
+        }
+
+        if ($this->iNumberOfCompanies >= 1 && $this->iNumberOfCompanies <= 19) {
+            $this->iDiversificationLevel = 1;
+        }
+
+        if ($this->iNumberOfCompanies >= 20 && $this->iNumberOfCompanies <= 49) {
+            $this->iDiversificationLevel = 2;
+        }
+
+        if ($this->iNumberOfCompanies >= 50 && $this->iNumberOfCompanies <= 79) {
+            $this->iDiversificationLevel = 3;
+        }
+
+        if ($this->iNumberOfCompanies >= 80 && $this->iNumberOfCompanies <= 119) {
+            $this->iDiversificationLevel = 4;
+        }
+
+        if ($this->iNumberOfCompanies >= 120) {
+            $this->iDiversificationLevel = 5;
+        }
+
+        if ($this->iNumberOfCompanies > 0) {
+            $aLastIRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
+            if ($aLastIRR) {
+                $this->sDate               = $this->dates->formatDateMysqltoFrTxtMonth($aLastIRR['tri_date']);
+                $this->sDisplayedValue     = ($aLastIRR['tri_value'] > 0) ? '+ ' . $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%' : $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%';
+                $this->bIRRIsNegative      = ($aLastIRR['tri_value'] > 0) ? false : true;
+                $this->sTypeMessageTooltip = 'tri';
+                $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-' . (($aLastIRR['tri_value'] > 0) ? 'positif-niveau-' : 'negatif-niveau-') . $this->iDiversificationLevel];
+            } else {
+                $fLossRate        = $oLenderAccountStats->getLossRate($this->lenders_accounts->id_lender_account, $this->lenders_accounts);
+
+                if ($fLossRate > 0) {
+                    $this->sDisplayedValue     = $this->ficelle->formatNumber(-$fLossRate) . '%';
+                    $this->bHasIRR             = false;
+                    $this->sTypeMessageTooltip = 'taux-de-perte';
+                    $this->sDisplayedMessage   = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-non-calculable']);
+                    $this->sDate               = $this->dates->formatDateMysqltoFrTxtMonth(date('Y-m-d'));
+                } else {
+                    $this->sDisplayedValue     = '';
+                    $this->sTypeMessageTooltip = 'tri';
+                    $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-pas-encore-calcule'];
+                }
+            }
+        }
 
         //Ongoing Bids Widget
         $oBids          = $this->loadData('bids');

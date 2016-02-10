@@ -1,4 +1,4 @@
-﻿<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
+<?php $url_site = 'https://' . $_SERVER['HTTP_HOST']; ?>
 <!DOCTYPE html>
 <!--[if lt IE 7]>
 <html class="lt-ie9 lt-ie8 lt-ie7" lang="fr"> <![endif]-->
@@ -43,48 +43,38 @@
 <!-- End Google Tag Manager -->
 <?php
 
-if (! empty($_GET["utm_source"])) {
-    $source = $_GET["utm_source"];
-} else {
-    $source = "";
+if (false === ($source = filter_input(INPUT_GET, 'utm_source', FILTER_SANITIZE_STRING))) {
+    $source = '';
 }
-if (! empty($_GET["utm_source2"])) {
-    $source2 = $_GET["utm_source2"];
-} else {
-    $source2 = "";
+if (false === ($source2 = filter_input(INPUT_GET, 'utm_source2', FILTER_SANITIZE_STRING))) {
+    $source2 = '';
 }
-if (! empty($_GET["nom"])) {
-    $nom = $_GET["nom"];
-} else {
-    $nom = "";
+if (false === ($nom = filter_input(INPUT_GET, 'nom', FILTER_SANITIZE_STRING))) {
+    $nom = '';
 }
-if (! empty($_GET["prenom"])) {
-    $prenom = $_GET["prenom"];
-} else {
-    $prenom = "";
+if (false === ($prenom = filter_input(INPUT_GET, 'prenom', FILTER_SANITIZE_STRING))) {
+    $prenom = '';
 }
-if (! empty($_GET["email"])) {
-    $email = $_GET["email"];
-} else {
-    $email = "";
+if (false === ($email = filter_input(INPUT_GET, 'email', FILTER_SANITIZE_EMAIL))) {
+    $email = '';
 }
-if (! empty($_GET["civilite"])) {
-    $civilite = $_GET["civilite"];
-} else {
-    $civilite = "";
+if (false === ($civilite = filter_input(INPUT_GET, 'civilite', FILTER_SANITIZE_STRING))) {
+    $civilite = '';
 }
 
-$slug_origine = 'LP_inscription_preteurs';
-$page         = (isset($_GET['page']) && $_GET['page'] == 'lexpress' ? $_GET['page'] : '');
-
-if ($page == 'lexpress') {
-    $slug_origine = 'LP_inscription_preteurs_lexpress'
+if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
+    $page         = 'lexpress';
+    $slug_origine = 'LP_inscription_preteurs_lexpress';
+} else {
+    $page         = '';
+    $slug_origine = 'LP_inscription_preteurs';
     ?>
     <style type="text/css">
         #chiffres, #presse{display:none;}
     </style>
     <?php
 }
+
 ?>
 <div id="form">
     <section class="wrapper">
@@ -95,9 +85,9 @@ if ($page == 'lexpress') {
             </div>
             <div class="form_content etape1">
                 <select name="civilite" id="inscription_civilite" class="custom-select">
-                        <option value=""><?php if ($civilite == "Mme") { echo "Madame"; } elseif ($civilite == "M.") { echo "Monsieur"; } else { echo "Civilit&eacute;"; } ?></option>
-                        <option <?php if ($civilite == "M.") { echo "selected"; } ?> value="M.">Monsieur</option>
-                        <option <?php if ($civilite == "Mme") { echo "selected"; } ?> value="Mme">Madame</option>
+                    <option value=""><?php if ($civilite == "Mme") { echo "Madame"; } elseif ($civilite == "M.") { echo "Monsieur"; } else { echo "Civilit&eacute;"; } ?></option>
+                    <option <?php if ($civilite == "M.") { echo "selected"; } ?> value="M.">Monsieur</option>
+                    <option <?php if ($civilite == "Mme") { echo "selected"; } ?> value="Mme">Madame</option>
                 </select>
                 <input type="text" id="inscription_nom" name="nom" placeholder="Nom" maxlength="255" value="<?php echo $nom; ?>">
                 <input type="text" id="inscription_prenom" name="prenom" placeholder="Pr&eacute;nom" maxlength="255" value="<?php echo $prenom; ?>">
@@ -889,76 +879,11 @@ if ($page == 'lexpress') {
     </section>
 </div><!-- projet_analyse -->
 
-<div id="chiffres" class="wrapper100 bg_gris">
+<div class="wrapper100" id="dc_slider-step">
     <section class="wrapper">
-        <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos int&eacute;r&ecirc;ts se rencontrent" width="252" height="60"></a>
-        <h1>Unilend <span>en chiffres</span></h1>
-        <p>Depuis le lancement d'Unilend jusqu'&agrave; fin octobre 2014</p>
-        <div id="chiffres_left">
-            <ul>
-                <li>
-                    <p>67</p>
-                    <p>Projets<br/>financ&eacute;s</p>
-                </li>
-                <li>
-                    Record de financement<br/>d'un projet :
-                    <p>312 &euro;/min</p>
-                </li>
-                <li>
-                    Record du dossier<br/>100% financ&eacute; :
-                    <p>45 min</p>
-                </li>
-            </ul>
-        </div>
-        <div id="chiffres_right">
-            <ul>
-                <li>
-                    <p id="tooltip1" data-toggle="tooltip" data-placement="top" title="Montants pr&ecirc;t&eacute;s par la communaut&eacute; Unilend aux entreprises fran&ccedil;aises">Montants pr&ecirc;t&eacute;s</p>
-                    <div class="chiffres">
-                        <p class="m5">5</p>
-                        <p>4</p>
-                        <p>7</p>
-                        <p class="m5">0</p>
-                        <p>1</p>
-                        <p>5</p>
-                        <p>0</p>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="clear"></div>
-                </li>
-                <li>
-                    <p id="tooltip2" data-toggle="tooltip" data-placement="top" title="Cumul des versements (capital et int&eacute;r&ecirc;ts bruts) rembours&eacute;s aux pr&ecirc;teurs">Remboursements<br/>aux pr&ecirc;teurs</p>
-                    <div class="chiffres">
-                        <p>4</p>
-                        <p>9</p>
-                        <p class="m5">8</p>
-                        <p>1</p>
-                        <p>8</p>
-                        <p>8</p>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="clear"></div>
-                </li>
-                <li>
-                    <p id="tooltip3" data-toggle="tooltip" data-placement="top" title="Cumul des int&eacute;r&ecirc;ts bruts revers&eacute;s aux pr&ecirc;teurs">Int&eacute;r&ecirc;ts bruts<br/>revers&eacute;s aux pr&ecirc;teurs</p>
-                    <div class="chiffres">
-                        <p>1</p>
-                        <p>4</p>
-                        <p class="m5">9</p>
-                        <p>1</p>
-                        <p>3</p>
-                        <p>1</p>
-                        <div class="clear"></div>
-                    </div>
-                    <div class="clear"></div>
-                </li>
-            </ul>
-        </div>
         <div class="clear"></div>
-        <p class="fleche">Inscrivez-vous et pr&ecirc;tez &agrave; partir de 20&euro; jusqu'&agrave; 1 000 000&euro;</p>
-        <div class="scroll"></div>
     </section>
-</div><!-- chiffres -->
+</div><!-- Slider -->
 
 <div id="presse" class="wrapper100">
     <section class="wrapper">
@@ -1025,9 +950,9 @@ if ($page == 'lexpress') {
             <li>Aux &eacute;pargnants de pr&ecirc;ter de l'argent directement aux entreprises en recevant des int&eacute;r&ecirc;ts.</li>
         </ul>
         <p>
-            <span>Unilend</span> est intermédiaire en financement participatif (IFP) inscrit à l’ORIAS (www.orias.fr) sous le numéro 15006955.<br>
-            Le service de paiement Unilend est distribué par la Société française pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790766034. Les informations d'enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
-            Le service de paiement Unilend est fourni par la Société financière du porte-monnaie électronique interbancaire (SFPMEI), société par actions simplifiée au capital de 3 732 089 euros, dont le siège social est situé 29 rue du Louvre - 75002 Paris, immatriculée au registre du commerce et des sociétés de Paris sous le numéro 422 721 274. La SFPMEI est un établissement de crédit (code établissement 14378) agréé en date du 30 décembre 1999 par l’Autorité de contrôle prudentiel et de résolution (ACPR).
+            <span>Unilend</span> est interm&eacute;diaire en financement participatif (IFP) inscrit &agrave; l&apos;ORIAS (www.orias.fr) sous le num&eacute;ro 15006955.<br>
+            Le service de paiement Unilend est distribu&eacute; par la Soci&eacute;t&eacute; fran&ccedil;aise pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandat&eacute; par la SFPMEI et enregistr&eacute; aupr&egrave;s de l&apos;Autorit&eacute; de contr&ocirc;le prudentiel et de r&eacute;solution (ACPR) sous le num&eacute;ro 790766034. Les informations d&apos;enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
+            Le service de paiement Unilend est fourni par la Soci&eacute;t&eacute; financi&egrave;re du porte-monnaie &eacute;lectronique interbancaire (SFPMEI), soci&eacute;t&eacute; par actions simplifi&eacute;e au capital de 3 732 089 euros, dont le si&egrave;ge social est situ&eacute; 29 rue du Louvre - 75002 Paris, immatricul&eacute;e au registre du commerce et des soci&eacute;t&eacute;s de Paris sous le num&eacute;ro 422 721 274. La SFPMEI est un &eacute;tablissement de cr&eacute;dit (code &eacute;tablissement 14378) agr&eacute;&eacute; en date du 30 d&eacute;cembre 1999 par l’Autorit&eacute; de contr&ocirc;le prudentiel et de r&eacute;solution (ACPR).
         </p>
         <br/>
         <p>
@@ -1209,9 +1134,18 @@ if ($page == 'lexpress') {
                                     $('#form_header').fadeIn();
                                 });
 
+
                                 $('#form_inscription > .form_content.etape1').fadeOut('fast', function () {
-                                    $('#form').css('position', 'relative');
-                                    $('#form > .wrapper').addClass('etape2');
+                                    if ($(window).width() >= 960) {
+                                        $('#form').css({position: 'relative'});
+                                        $('#form > .wrapper').addClass('etape2');
+                                    }
+                                    else {
+                                        $('#form').css({position: 'relative', bottom: "auto", top: "0"});
+                                        $('#form > .wrapper').addClass('etape2');
+                                        $('#form_inscription.etape2').css({bottom: "auto", top: "0"});
+                                    }
+
                                     $("#tracking").html('<iframe src="https://tracking.unilend-partners.com/mastertags/3.html?action=cpca&pid=3&type=15"  width="1" height="1" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="border:none;"></iframe>');
 
                                     $('#form_inscription > .form_content.etape2').fadeIn();
@@ -1498,6 +1432,13 @@ if ($page == 'lexpress') {
 
                             if (parsedDate.reponse == 'OK') {
                                 var url = parsedDate.URL;
+
+                                dataLayer.push ({
+                                    'email_lead': email,
+                                    'source1_lead': utm_source,
+                                    'source2_lead': utm_source2,
+                                    'event': 'signupPreteurStep2OK'
+                                });
 
                                 if (idSubmit == "inscription_submit2") {
                                     $(location).attr('href', url);

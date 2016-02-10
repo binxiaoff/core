@@ -3,7 +3,7 @@
         <p class="introduction"><?php printf($this->lng['etape3']['contenu'], $this->ficelle->formatNumber($this->iMinimumMonthlyPayment, 0), $this->ficelle->formatNumber($this->iMaximumMonthlyPayment, 0)) ?></p>
         <p><?= $this->lng['etape3']['introduction-sub'] ?></p>
         <div class="register-form">
-            <form id="documents-form" action="<?= $_SERVER['REQUEST_URI'] ?>" method="post" enctype="multipart/form-data">
+            <form id="documents-form" action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" enctype="multipart/form-data">
                 <table class="form-table">
                     <tr>
                         <th colspan="2" style="text-align: left;">

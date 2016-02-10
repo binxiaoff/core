@@ -4,14 +4,14 @@ class rootController extends bootstrap
 {
     var $Command;
 
-    function rootController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
     }
 
-    function _login()
+    public function _login()
     {
         // On masque le header et le footer
         $this->autoFireHead   = false;
@@ -90,7 +90,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _logout()
+    public function _logout()
     {
         // On place le redirect sur la home
         $_SESSION['request_url'] = $this->lurl;
@@ -98,7 +98,7 @@ class rootController extends bootstrap
         $this->users->handleLogout();
     }
 
-    function _sitemap()
+    public function _sitemap()
     {
         // Controle d'acces à la rubrique
         $this->users->checkAccess('edition');
@@ -137,18 +137,13 @@ class rootController extends bootstrap
         die;
     }
 
-    function _indexation()
+    public function _indexation()
     {
         // Controle d'acces à la rubrique
         $this->users->checkAccess('edition');
 
-        // Activation du menu
         $this->menu_admin = 'edition';
 
-        // Chargement de la class de recherche
-        $this->se = $this->loadLib('elgoog', array($this->bdd));
-
-        // Mise en session du message
         $_SESSION['freeow']['title']   = 'Indexation du site';
         $_SESSION['freeow']['message'] = 'Le site a bien &eacute;t&eacute; index&eacute; !';
 
@@ -157,7 +152,7 @@ class rootController extends bootstrap
         die;
     }
 
-    function _default()
+    public function _default()
     {
         // Check de la plateforme
         if ($this->cms == 'iZinoa') {
@@ -172,124 +167,14 @@ class rootController extends bootstrap
         // Activation du menu
         $this->menu_admin = 'dashboard';
 
-        //***********//
-        // CA ANNUEL //
-        //***********//
-
-        // Chargement des fichiers JS
-        $this->loadJs('admin/chart/highcharts');
-
-        $this->transactions      = $this->loadData('transactions');
-        $this->partenaires_types = $this->loadData('partenaires_types');
-        $this->clients_history   = $this->loadData('clients_history');
-        $this->bids              = $this->loadData('bids');
-        $this->echeanciers       = $this->loadData('echeanciers');
         $this->projects_status   = $this->loadData('projects_status');
         $this->projects          = $this->loadData('projects');
-
-        // Recuperation de la liste des type de partenaires
-        $this->lTypes = $this->partenaires_types->select('status = 1');
-
-
-        $this->year = date('Y');
-
-        // Recuperation du chiffre d'affaire sur les mois de l'année
-        $lCaParMois = $this->transactions->recupCAByMonthForAYear($this->year);
-
-        // Recuperation des virements emprunteurs
-        $lVirementsParMois = $this->transactions->recupVirmentEmprByMonthForAYear($this->year);
-
-        // Recuperation des remb emprunteurs
-        $lRembParMois = $this->transactions->recupRembEmprByMonthForAYear($this->year);
-
-        $this->caParmoisPart = $this->transactions->recupMonthlyPartnershipTurnoverByYear($this->year);
-
-
-        for ($i = 1; $i <= 12; $i++) {
-            $i                   = ($i < 10 ? '0' . $i : $i);
-            $this->caParmois[$i] = number_format((isset($lCaParMois[$i]) && $lCaParMois[$i] != '' ? $lCaParMois[$i] : 0), 2, '.', '');
-
-            $this->VirementsParmois[$i] = number_format(str_replace('-', '', (isset($lVirementsParMois[$i]) && $lVirementsParMois[$i] != '' ? $lVirementsParMois[$i] : 0)), 2, '.', '');
-
-            $this->RembEmprParMois[$i] = number_format((isset($lRembParMois[$i]) && $lRembParMois[$i] != '' ? $lRembParMois[$i] : 0), 2, '.', '');
-        }
-
-
-        $this->month = date('m');
-
-        //////////////////
-
-        // nb preteurs connect
-        $this->nbPreteurLogin = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 1', 1);
-        // nb inscription preteur
-        $this->nbInscriptionPreteur = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 2', 1);
-
-        // fonds deposés
-        $this->nbFondsDeposes = $this->caParmois[$this->month];
-
-        // Fonds pretes
-        $this->nbFondsPretes = $this->bids->sumBidsMonth($this->month, $this->year);
-
-        // Total capital restant du mois
-        $this->TotalCapitalRestant = $this->echeanciers->getTotalSumRembByMonth($this->month, $this->year);
-
-
-        /////////////////
-
-        // Tous les projets du mois
-        $nbProjects = $this->projects->counter('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
-
-        $lProjects = $this->projects->select('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
-
-        // On recupere les projets valides
-        $nbProjetValid = 0;
-        foreach ($lProjects as $p) {
-            $this->projects_status->getLastStatutByMonth($p['id_project'], $this->month, $this->year);
-            if ($this->projects_status->status >= \projects_status::A_FUNDER) {
-                $nbProjetValid += 1;
-            }
-        }
-
-        // ratio Projets
-        $this->ratioProjects = (0 < $nbProjects) ? ($nbProjetValid / $nbProjects) * 100 : 0;
-
-        // moyenne des depots de fonds preteur
-        $this->moyenneDepotsFonds = $this->transactions->avgDepotPreteurByMonth($this->month, $this->year);
-
-        // total retrait argent
-        $TotalRetrait = $this->transactions->sumByMonth(8, $this->month, $this->year);
-        $TotalRetrait = str_replace('-', '', $TotalRetrait);
-
-        // total remboursement preteur
-        $TotalrembPreteur = $this->transactions->sumByMonth(5, $this->month, $this->year);
-
-        // tauxRepret
-        if ($TotalRetrait > 0 && $TotalrembPreteur > 0) $this->tauxRepret = ($TotalRetrait / $TotalrembPreteur) * 100;
-        else $this->tauxRepret = 0;
-
-        // sum Remb par emprunteur
-        $lSumRemb = $this->echeanciers->getSumRembEmpruntByMonths('', '', '0', $this->month, $this->year);
-
-        // Capital
-        $capital = 0;
-        foreach ($lSumRemb as $r) {
-            $capital += ($r['montant'] - $r['interets']);
-        }
-
-        // fonds gelés
-        $sumGel = $this->bids->sumBidsMonthEncours($this->month, $this->year);
-
-        // fonds dispo
-        $dispo = $this->transactions->getDispo($this->month, $this->year);
-
-        if ($TotalRetrait > 0) $this->tauxAttrition = ($TotalRetrait / ($capital + $dispo + $sumGel)) * 100;
-        else $this->tauxAttrition = 0;
 
         $this->lProjectsNok = $this->projects->selectProjectsByStatus(implode(', ', array(\projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)));
         $this->lStatus      = $this->projects_status->select();
     }
 
-    function _edit_password()
+    public function _edit_password()
     {
         // On masque le header et le footer
         $this->autoFireHead   = false;
@@ -419,7 +304,7 @@ class rootController extends bootstrap
         }
     }
 
-    function _captcha()
+    public function _captcha()
     {
         $_SESSION['request_url'] = '/';
 

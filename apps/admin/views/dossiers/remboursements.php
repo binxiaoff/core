@@ -49,7 +49,7 @@
         <h1>Liste des <?= count($this->lProjects) ?> derniers <?= $this->pageTitle ?></h1>
     <?php endif; ?>
     <div style="width:673px; background-color:white; border:1px solid #A1A5A7; border-radius:10px; margin:0 auto 20px; padding:5px;">
-        <form method="post" name="search_remb" id="search_remb" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/no_remb" target="_parent">
+        <form method="post" name="search_remb" id="search_remb" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/<?= $this->current_function ?>" target="_parent">
             <fieldset>
                 <table class="formColor">
                     <tr>

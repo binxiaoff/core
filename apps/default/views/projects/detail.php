@@ -114,6 +114,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                         </div>
                         <?php } ?>
                         <div class="info left">
+                            <?php $this->companies->get($this->projects->id_company); ?>
                             <h3><?= $this->companies->name ?></h3>
                             <?= ($this->companies->city != '' ? '<p><i class="icon-place"></i>' . $this->lng['preteur-projets']['localisation'] . ' : ' . $this->companies->city . '</p>' : '') ?>
                             <?= ($this->companies->sector != '' ? '<p>' . $this->lng['preteur-projets']['secteur'] . ' : ' . $this->lSecteurs[$this->companies->sector] . '</p>' : '') ?>

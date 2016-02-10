@@ -1,45 +1,34 @@
 <div class="graphic-box">
     <header>
-        <h2><?=$this->lng['preteur-synthese']['situation-de-votre-compte-unilend']?></h2>
-        <p><?=$this->lng['preteur-synthese']['solde-de-mon-compte']?> :<strong> <?=$this->ficelle->formatNumber($this->solde)?> €</strong></p>
+        <h2><?= $this->lng['preteur-synthese']['situation-de-votre-compte-unilend'] ?></h2>
+        <p><?= $this->lng['preteur-synthese']['solde-de-mon-compte'] ?> :<strong> <?= $this->ficelle->formatNumber($this->solde) ?> €</strong></p>
     </header>
     <div class="body">
         <style>
-                        #leSolde,#leSoldePourcent,#sumBidsEncours,#sumBidsEncoursPourcent,#sumPrets,#sumPretsPourcent,#sumRembMontant,#nbLoan,#argentPrete,#argentRemb,#interets,#titlePrete,#titleArgentRemb,#titleInteretsRecu{display:none;}
-
-        #cboxLoadedContent{margin-bottom:0px;}
-        .popup{background-color:#E3E4E5;}
-
-
+            #leSolde,#leSoldePourcent,#sumBidsEncours,#sumBidsEncoursPourcent,#sumPrets,#sumPretsPourcent,#sumProblems,#sumProblemsPourcent,#sumRembMontant,#nbLoan,#argentPrete,#argentRemb,#interets,#titlePrete,#titleArgentRemb,#titleInteretsRecu{display:none;}
+            #cboxLoadedContent{margin-bottom:0;}
+            .popup{background-color:#E3E4E5;}
         </style>
-        <?
-        if($this->solde > 0 || $this->soldePourcent > 0 || $this->sumBidsEncoursPourcent > 0 || $this->sumPretsPourcent > 0){
+        <?php
+
+        if ($this->solde > 0 || $this->soldePourcent > 0 || $this->sumBidsEncoursPourcent > 0 || $this->sumPretsPourcent > 0) {
             // On met ca pour eviter les débordements
-            if($this->solde >= 1000) $fondsdispo = str_replace(' ','<br>',$this->lng['preteur-synthese']['de-fond-disponible']);
-            else $fondsdispo = $this->lng['preteur-synthese']['de-fond-disponible'];
-			?>
-
-			<span id="leSolde"><b><?=$this->ficelle->formatNumber($this->solde)?> € <br /><?=$fondsdispo?></b></span>
-			<span id="leSoldePourcent"><?=number_format($this->soldePourcent,1,'.','')?></span>
-
-			<span id="sumBidsEncours"><b><?=$this->ficelle->formatNumber($this->sumBidsEncours)?> € <br /><?=$this->lng['preteur-synthese']['de-fond-bloques']?></b></span>
-			<span id="sumBidsEncoursPourcent"><?=number_format($this->sumBidsEncoursPourcent,1,'.','')?></span>
-
-			<?php /*?><span id="sumPrets"><b><?=$this->ficelle->formatNumber($this->sumPrets)?> € <br /><?=$this->lng['preteur-synthese']['pretes-a']?> <?=$this->nbLoan?> <?=$this->lng['preteur-synthese']['entreprise']?><?=($this->nbLoan>1?'s':'')?> <br /><?=$this->lng['preteur-synthese']['dont']?> <?=number_format($this->sumRembMontant,2,',','')?> <?=$this->lng['preteur-synthese']['de-recouvrement']?></b></span><?php */?>
-
-			<span id="sumPrets"><b><?=$this->ficelle->formatNumber($this->sumRestanteARemb)?> € <br /><?=$this->lng['preteur-synthese']['pretes-a']?> <?=$this->nbLoan?> <?=$this->lng['preteur-synthese']['entreprise']?><?=($this->nbLoan>1?'s':'')?><br />et restant à rembourser
-			<?
-
-			if($this->sumRestanteARemb>0){
-				/*?><br /><?=$this->lng['preteur-synthese']['et']?> <?=number_format($this->sumRestanteARemb,2,',','')?> <?=$this->lng['preteur-synthese']['de-recouvrement']?><?*/
-			}
-			?>
-			</b></span>
-
-			<span id="sumPretsPourcent"><?=number_format($this->sumPretsPourcent,1,'.','')?></span>
-
-			<div id="pie-chart"></div>
-			<?
+            if ($this->solde >= 1000) {
+                $fondsdispo = str_replace(' ', '<br>', $this->lng['preteur-synthese']['de-fond-disponible']);
+            } else {
+                $fondsdispo = $this->lng['preteur-synthese']['de-fond-disponible'];
+            }
+            ?>
+            <span id="leSolde"><b><?= $this->ficelle->formatNumber($this->solde) ?> € <br /><?= $fondsdispo ?></b></span>
+            <span id="leSoldePourcent"><?= number_format($this->soldePourcent, 1, '.', '') ?></span>
+            <span id="sumBidsEncours"><b><?= $this->ficelle->formatNumber($this->sumBidsEncours) ?> € <br /><?= $this->lng['preteur-synthese']['de-fond-bloques'] ?></b></span>
+            <span id="sumBidsEncoursPourcent"><?= number_format($this->sumBidsEncoursPourcent, 1, '.', '') ?></span>
+            <span id="sumPrets"><b><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?> € <br /><?= $this->lng['preteur-synthese']['pretes-a'] ?> <?= ($this->nbLoan - $this->nbProblems) ?> <?= $this->lng['preteur-synthese']['entreprise'] ?><?= ($this->nbLoan - $this->nbProblems > 1 ? 's' : '') ?><br />et restant à rembourser</b></span>
+            <span id="sumPretsPourcent"><?= number_format($this->sumPretsPourcent, 1, '.', '') ?></span>
+            <span id="sumProblems"><b><?= $this->ficelle->formatNumber($this->sumProblems) ?> € <br /><?= $this->lng['preteur-synthese']['pretes-a'] ?> <?= $this->nbProblems ?> <?= $this->lng['preteur-synthese']['entreprise'] ?><?= ($this->nbProblems > 1 ? 's' : '') ?> en difficulté</b></span>
+            <span id="sumProblemsPourcent"><?= number_format($this->sumProblemsPourcent, 1, '.', '') ?></span>
+            <div id="pie-chart"></div>
+            <?php
         }
         ?>
     </div>
@@ -91,16 +80,20 @@
                 <?php endforeach; ?>
             </div>
         </div>
+                </div>
+                <?php
+            }
+        }
+        ?>
     </div>
 </div>
 
 <div class="post-schedule">
     <h2><?=$this->lng['preteur-synthese']['projets-a-decouvrir']?> <span><?=($this->lProjetEncours!=false?count($this->lProjetEncours):0)?> <i class="icon-box-arrow"></i></span></h2>
     <div class="body">
-        <?
-        if($this->lProjetEncours != false){
-            foreach($this->lProjetEncours as $f){
-
+    <?php
+        if ($this->lProjetEncours != false) {
+            foreach ($this->lProjetEncours as $f) {
                 $this->companies->get($f['id_company'],'id_company');
                 $this->projects_status->getLastStatut($f['id_project']);
 

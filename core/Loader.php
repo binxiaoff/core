@@ -9,8 +9,7 @@ class Loader
 {
     public static function loadData($object, $params = array(), $db = '')
     {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
+        $config = self::loadConfig();
 
         if ($db == '') {
             $db = new \bdd($config['bdd_config'][$config['env']], $config['bdd_option'][$config['env']]);
@@ -209,16 +208,14 @@ class Loader
 
     public static function loadService($sService, $aParams = array())
     {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
-
-        $sPath = $config['path'][$config['env']];
+        $config = self::loadConfig();
+        $sPath  = $config['path'][$config['env']];
 
         $sService = trim($sService, "/ \t\n\r\0\x0B");
         if (!file_exists($sPath . 'Service/' . $sService . '.php')) {
             return false;
         } else {
-            $sService = str_replace('/', '\\', $sService);
+            $sService   = str_replace('/', '\\', $sService);
             $sClassName = 'Unilend\Service\\' . $sService;
             return new $sClassName($aParams);
         }
@@ -227,15 +224,13 @@ class Loader
 
     public static function loadLib($sLibrary, $aParams = array(), $bInstancing = true)
     {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
-
+        $config       = self::loadConfig();
         $sProjectPath = $config['path'][$config['env']];
 
         $sClassPath = '';
         $aPath      = explode("/", $sLibrary);
         if (count($aPath) > 1) {
-            $sLibrary = array_pop($aPath);
+            $sLibrary   = array_pop($aPath);
             $sClassPath = implode("/", $aPath) . '/';
         }
         if (!file_exists($sProjectPath . 'librairies/' . $sClassPath . $sLibrary . '.class.php')) {
@@ -246,5 +241,12 @@ class Loader
                 return new $sClassName($aParams);
             }
         }
+    }
+
+    public static function loadConfig()
+    {
+        /* @var array $config */
+        include __DIR__ . '/../config.php';
+        return $config;
     }
 }
