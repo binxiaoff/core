@@ -141,7 +141,6 @@ class cronController extends bootstrap
             $oProjects              = $this->loadData('projects');
             $oProjectsStatusHistory = $this->loadData('projects_status_history');
 
-            $this->settings->get('Projet en funding', 'type');
             $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
 
             $aProjects = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
