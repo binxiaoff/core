@@ -1,7 +1,7 @@
 <div class="main">
     <div class="shell">
         <div class="content-col left">
-            <p>Vous voici déjà à la dernière étape : compléter ces éléments et joignez les pièces nécessaires. Nous nous chargeons de la suite de l’instruction.</p>
+            <p><?= $this->lng['partenaire']['introduction'] ?></p>
             <div class="register-form">
                 <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" id="form_depot_dossier" name="form_depot_dossier" enctype="multipart/form-data">
                     <?php if (false === empty($this->aErrors)) : ?>
@@ -11,7 +11,7 @@
                     <?php endif; ?>
                     <div class="row">
                         <input type="text" name="raison_sociale" id="raison_sociale"
-                               placeholder="<?= $this->lng['etape2']['raison-sociale'] ?>"
+                               placeholder="<?= $this->lng['partenaire']['raison-sociale'] ?>"
                                value="<?= $this->aForm['raison_sociale'] ?>"
                                class="field required<?= isset($this->aErrors['raison_sociale']) ? ' LV_invalid_field' : '' ?>"
                                style="width: 588px;"
@@ -20,12 +20,12 @@
                     <div class="row">
                         <div class="form-choose fixed">
                             <div class="radio-holder">
-                                <label for="civilite_madame"><?= $this->lng['etape2']['madame'] ?></label>
+                                <label for="civilite_madame"><?= $this->lng['partenaire']['madame'] ?></label>
                                 <input type="radio" class="custom-input" name="civilite" id="civilite_madame"
                                        value="Mme"<?= $this->aForm['civilite'] == 'Mme' ? ' checked' : '' ?>>
                             </div>
                             <div class="radio-holder">
-                                <label for="civilite_monsieur"><?= $this->lng['etape2']['monsieur'] ?></label>
+                                <label for="civilite_monsieur"><?= $this->lng['partenaire']['monsieur'] ?></label>
                                 <input type="radio" class="custom-input" name="civilite" id="civilite_monsieur"
                                        value="M."<?= $this->aForm['civilite'] == 'M.' ? ' checked' : '' ?>>
                             </div>
@@ -33,29 +33,29 @@
                     </div>
                     <div class="row">
                         <input type="text" name="prenom" id="prenom"
-                               placeholder="<?= $this->lng['etape2']['prenom'] ?>"
+                               placeholder="<?= $this->lng['partenaire']['prenom'] ?>"
                                value="<?= $this->aForm['prenom'] ?>"
                                class="field required"
                                data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
                         <input type="text" name="nom" id="nom"
-                               placeholder="<?= $this->lng['etape2']['nom'] ?>"
+                               placeholder="<?= $this->lng['partenaire']['nom'] ?>"
                                value="<?= $this->aForm['nom'] ?>"
                                class="field required"
                                data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
                         <input type="text" name="fonction" id="fonction"
-                               placeholder="<?= $this->lng['etape2']['fonction'] ?>"
+                               placeholder="<?= $this->lng['partenaire']['fonction'] ?>"
                                value="<?= $this->aForm['fonction'] ?>"
                                class="field required"
                                data-validators="Presence&amp;Format,{pattern:/^([^0-9]*)$/}">
                     </div>
                     <div class="row">
                         <input type="email" name="email" id="email"
-                               placeholder="<?= $this->lng['etape2']['email'] ?>"
+                               placeholder="<?= $this->lng['partenaire']['email'] ?>"
                                value="<?= $this->aForm['email'] ?>"
                                class="field required"
                                data-validators="Presence&amp;Email">
                         <input type="text" name="telephone" id="telephone"
-                               placeholder="<?= $this->lng['etape2']['telephone'] ?>"
+                               placeholder="<?= $this->lng['partenaire']['telephone'] ?>"
                                value="<?= $this->aForm['telephone'] ?>"
                                class="field required"
                                data-validators="Presence&amp;Numericality&amp;Length,{minimum: 9, maximum: 14}">
@@ -63,29 +63,35 @@
                     <div class="spacer">&nbsp;</div>
                     <div class="row">
                         <select name="duree" id="duree" class="field required custom-select" style="width: 410px;">
-                            <option value="0">Durée d’amortissement souhaitée</option>
+                            <option value="0"><?= $this->lng['partenaire']['duree'] ?></option>
                             <?php foreach ($this->dureePossible as $duree): ?>
-                                <option value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree ?> mois</option>
+                                <option value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= str_replace('[#DURATION#]', $duree, $this->lng['partenaire']['valeur-duree']) ?></option>
                             <?php endforeach ?>
                         </select>
                     </div>
                     <div class="spacer">&nbsp;</div>
                     <div class="row">
                         <div class="cb-holder">
-                            <label class="cgv" for="cgv"><?= $this->lng['etape2']['je-reconnais-avoir-pris-connaissance'] ?>
-                                <a style="color:#A1A5A7; text-decoration: underline;" class="cgv" target="_blank" href="<?= $this->lurl . '/' . $this->tree->getSlug($this->lienConditionsGenerales, $this->language) ?>"><?= $this->lng['etape2']['des-conditions-generales-de-vente'] ?></a>
+                            <label class="cgv" for="cgv">
+                                <?=
+                                    str_replace(
+                                        array('[#LINK_START#]', '[#LINK_END#]'),
+                                        array('<a style="color:#A1A5A7; text-decoration: underline;" class="cgv" target="_blank" href="' . $this->lurl . '/' . $this->tree->getSlug($this->lienConditionsGenerales, $this->language) . '">', '</a>'),
+                                        $this->lng['partenaire']['cgv']
+                                    )
+                                ?>
                             </label>
                             <input type="checkbox" class="custom-input" name="cgv" id="cgv">
                         </div>
                     </div>
                     <div class="spacer">&nbsp;</div>
                     <div class="row">
-                        <div class="row-title"><?= $this->lng['espace-emprunteur']['type-de-document'] ?></div>
-                        <div class="row-title"><?= $this->lng['espace-emprunteur']['champs-dupload'] ?></div>
+                        <div class="row-title"><?= $this->lng['partenaire']['titre-type-document'] ?></div>
+                        <div class="row-title"><?= $this->lng['partenaire']['titre-champs-upload'] ?></div>
                     </div>
                     <div class="row row-upload show-scrollbar">
                         <select class="custom-select required field field-large">
-                            <option value=""><?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
+                            <option value=""><?= $this->lng['partenaire']['placeholder-type-document'] ?></option>
                             <option value="<?= \attachment_type::AUTRE1 ?>">Fiche contact</option>
                             <?php foreach ($this->aAttachmentTypes as $aAttachmentType) { ?>
                                 <option value="<?= $aAttachmentType['id'] ?>"><?= $aAttachmentType['label'] ?></option>
@@ -93,7 +99,7 @@
                         </select>
                         <div class="uploader">
                             <input type="text"
-                                   value="<?= $this->lng['etape3']['aucun-fichier-selectionne'] ?>"
+                                   value="<?= $this->lng['partenaire']['placeholder-champ-upload'] ?>"
                                    class="field required"
                                    readonly="readonly">
                             <div class="file-holder">
@@ -108,13 +114,13 @@
                     </div>
                     <div class="row">
                         <span class="btn btn-small btn-add-row">+</span>
-                        <span style="margin-left: 5px;"><?= $this->lng['espace-emprunteur']['cliquez-pour-ajouter'] ?></span>
+                        <span style="margin-left: 5px;"><?= $this->lng['partenaire']['legende-bouton-ajout'] ?></span>
                     </div>
                     <div class="row">
-                        <span class="form-caption"><?= $this->lng['etape2']['champs-obligatoires'] ?></span>
+                        <span class="form-caption"><?= $this->lng['partenaire']['champs-obligatoires'] ?></span>
                     </div>
                     <div class="row centered">
-                        <button class="btn" name="send_form_depot_dossier" type="submit">Déposer le dossier</button>
+                        <button class="btn" name="send_form_depot_dossier" type="submit"><?= $this->lng['partenaire']['bouton-soumission-formulaire'] ?></button>
                     </div>
                 </form>
             </div>
@@ -123,27 +129,18 @@
             <aside class="widget widget-price">
                 <div class="widget-body">
                     <div class="widget-cat" style="padding-top:25px;">
-                        <strong>Liste des pièces obligatoires à transmettre</strong>
-                        <ul>
-                            <li>Fiche de liaison</li>
-                            <li>RIB</li>
-                            <li>Mandat de levée du secret bancaire</li>
-                            <li>Captures d'écran (marché agri / pro) ou dossier Anadefi et note (marché entreprise)</li>
-                        </ul>
+                        <strong><?= $this->lng['partenaire']['titre-widget-documents-obligatoires'] ?></strong>
+                        <?= $this->lng['partenaire']['contenu-widget-documents-obligatoires'] ?>
                     </div>
                     <div class="widget-cat" style="padding-top:25px;">
-                        <strong>Pièces optionnelles</strong>
-                        <ul>
-                            <li>Derniers bilans</li>
-                            <li>Pièce d'identité des bénéficiaires effectifs</li>
-                            <li>Justificatifs du projet</li>
-                        </ul>
+                        <strong><?= $this->lng['partenaire']['titre-widget-documents-optionnels'] ?></strong>
+                        <?= $this->lng['partenaire']['contenu-widget-documents-optionnels'] ?>
                     </div>
                 </div>
             </aside>
         </div>
         <div class="clearfix"></div>
-        <p>En cas de difficulté, vous pouvez nous contacter au XXXXXXXX ou sur <a href="mailto:emprunteurs@unilend.fr">emprunteurs@unilend.fr</a></p>
+        <p><?= $this->lng['partenaire']['encart-aide-bas-page'] ?></a></p>
     </div>
 </div>
 

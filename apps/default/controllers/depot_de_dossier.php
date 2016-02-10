@@ -653,7 +653,7 @@ class depot_de_dossierController extends bootstrap
         $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
         $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-2'];
 
-        $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
+        $this->lng['partenaire'] = $this->ln->selectFront('depot-de-dossier-partenaire-' . $_SESSION['depot-de-dossier']['partner'], $this->language, $this->App);
 
         $this->settings->get('Lien conditions generales depot dossier', 'type');
         $this->lienConditionsGenerales = $this->settings->value;
@@ -1129,7 +1129,11 @@ class depot_de_dossierController extends bootstrap
             case \projects_status::EN_ATTENTE_PIECES:
             case \projects_status::ATTENTE_ANALYSTE:
                 if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
-                    $this->redirect(self::PAGE_NAME_FILES);
+                    if (empty($_SESSION['depot-de-dossier']['partner'])) {
+                        $this->redirect(self::PAGE_NAME_FILES);
+                    } else {
+                        $this->redirect(self::PAGE_NAME_END);
+                    }
                 }
                 break;
             case \projects_status::ABANDON:
