@@ -254,7 +254,7 @@ class BidManager
         }
     }
 
-    private static function credit($oBid, $oLenderAccount, $fAmount)
+    private static function credit(\bids $oBid, \lenders_accounts $oLenderAccount, $fAmount)
     {
         $iAmountX100 = $fAmount * 100;
 
@@ -286,23 +286,24 @@ class BidManager
         $oWalletsLine->create();
 
         /** @var \offres_bienvenues_details $oWelcomeOffer */
-        $oWelcomeOffer = Loader::loadData('offres_bienvenues_details');
-        $sumOffres     = $oWelcomeOffer->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $oBid->id_bid, 'montant');
-        if ($sumOffres > 0) {
-            // sum des offres inferieur au montant a remb
-            if ($sumOffres <= $iAmountX100) {
-                $oWelcomeOffer->montant = $sumOffres;
-            } else {// Si montant des offres superieur au remb on remb le montant a crediter
-                $oWelcomeOffer->montant = $iAmountX100;
+        $oWelcomeOffer      = Loader::loadData('offres_bienvenues_details');
+        $iWelcomeOfferTotal = $oWelcomeOffer->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $oBid->id_bid, 'montant');
+        if ($iWelcomeOfferTotal > 0) {
+            if ($oBid->amount === $iAmountX100) { //Totally credit
+                $oWelcomeOffer->montant = min($iWelcomeOfferTotal, $iAmountX100);
+            } elseif (($oBid->amount - $iAmountX100) <= $iWelcomeOfferTotal) { //Partially credit
+                $oWelcomeOffer->montant = $iWelcomeOfferTotal - ($oBid->amount - $iAmountX100);
             }
 
-            $oWelcomeOffer->id_offre_bienvenue = 0;
-            $oWelcomeOffer->id_client          = $oLenderAccount->id_client_owner;
-            $oWelcomeOffer->id_bid             = 0;
-            $oWelcomeOffer->id_bid_remb        = $oBid->id_bid;
-            $oWelcomeOffer->status             = 0;
-            $oWelcomeOffer->type               = 2;
-            $oWelcomeOffer->create();
+            if (false === empty($oWelcomeOffer->montant)) {
+                $oWelcomeOffer->id_offre_bienvenue = 0;
+                $oWelcomeOffer->id_client          = $oLenderAccount->id_client_owner;
+                $oWelcomeOffer->id_bid             = 0;
+                $oWelcomeOffer->id_bid_remb        = $oBid->id_bid;
+                $oWelcomeOffer->status             = 0;
+                $oWelcomeOffer->type               = 2;
+                $oWelcomeOffer->create();
+            }
         }
 
         /** @var \notifications $oNotification */
