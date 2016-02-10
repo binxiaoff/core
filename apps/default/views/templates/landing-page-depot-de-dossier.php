@@ -149,7 +149,7 @@
         </aside>
     </div>
     <?php if (count($this->nbProjects) > 0) : ?>
-        <section class="featured-articles content">
+        <section class="featured-articles">
             <div class="carousel">
                 <ul class="slides cf">
                 <?php foreach ($this->lProjetsFunding as $project) : ?>
