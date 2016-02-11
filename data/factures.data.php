@@ -29,6 +29,9 @@
 
 class factures extends factures_crud
 {
+    const TYPE_COMMISSION_FINANCEMENT = 1;
+    const TYPE_COMMISSION_REMBOURSEMENT = 2;
+
     public function __construct($bdd, $params = '')
     {
         parent::factures($bdd, $params);
@@ -69,26 +72,5 @@ class factures extends factures_crud
         $sql    = 'SELECT * FROM `factures` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
-    }
-
-    public function fa()
-    {
-        $sql = '
-            SELECT ee.id_project, p.slug, p.id_company, c.id_client_owner, cli.hash, ee.ordre
-            FROM echeanciers_emprunteur ee
-            LEFT JOIN projects p ON ee.id_project = p.id_project
-            LEFT JOIN companies c ON p.id_company = c.id_company
-            LEFT JOIN clients cli ON c.id_client_owner = cli.id_client
-            WHERE ee.status_emprunteur = 1
-                AND (SELECT e.status FROM echeanciers e WHERE e.id_project = ee.id_project AND e.ordre = ee.ordre LIMIT 1) = 1
-                AND (SELECT f.date FROM factures f WHERE f.id_project = ee.id_project AND f.ordre = ee.ordre AND f.type_commission = 2 LIMIT 1) IS NULL
-            ORDER BY ee.id_project , ee.ordre';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
     }
 }

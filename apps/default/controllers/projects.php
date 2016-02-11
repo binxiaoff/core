@@ -54,7 +54,7 @@ class projectsController extends bootstrap
         $aElementsProjects        = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10);
 
         $this->lProjetsFunding = $aElementsProjects['lProjectsFunding'];
-        $this->nbProjects      = $aElementsProjects['nbProjects'];
+        $this->nbProjects = $aElementsProjects['nbProjects'];
     }
 
     public function _detail()
@@ -109,16 +109,13 @@ class projectsController extends bootstrap
             $this->restriction_ip = false;
         }
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0') {
+        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0' && $this->projects->display == \projects::DISPLAY_PROJECT_ON) {
             $this->meta_title = $this->projects->title . ' - Unilend';
 
             $this->ficelle->source(empty($_GET['utm_source']) ?: $_GET['utm_source'], $this->lurl . '/' . $this->params[0], empty($_GET['utm_source2']) ?: $_GET['utm_source2']);
 
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
-
-            $this->settings->get('Cron fin funding minutes suplémentaires avant traitement', 'type');
-            $this->minutesEnPlus = $this->settings->value;
 
             $this->settings->get('Liste deroulante secteurs', 'type');
             $lSecteurs = explode(';', $this->settings->value);
@@ -163,6 +160,8 @@ class projectsController extends bootstrap
                 $this->page_attente = true;
             }
 
+            $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
+
             ////////////////////////
             // Formulaire de pret //
             ////////////////////////
@@ -198,7 +197,7 @@ class projectsController extends bootstrap
 
                 $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects->id_project);
 
-                if ($_POST['taux_pret'] >= $fMaxCurrentRate) {
+                if ($this->soldeBid >= $this->projects->amount && $_POST['taux_pret'] >= $fMaxCurrentRate) {
                     $this->form_ok = false;
                 } elseif (! isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
                     $this->form_ok = false;
@@ -210,7 +209,7 @@ class projectsController extends bootstrap
                     $this->form_ok = false;
                 } elseif ($montant_p >= $this->projects->amount) {
                     $this->form_ok = false;
-                } elseif ($this->projects_status->status != 50) {
+                } elseif ($this->projects_status->status != \projects_status::EN_FUNDING) {
                     $this->form_ok = false;
                 }
 
@@ -435,7 +434,7 @@ class projectsController extends bootstrap
             }
             // FIN INSCRIPTION PRETEUR //
 
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', 75', ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
             $this->mois_jour  = $this->dates->formatDate($this->projects->date_retrait, 'F d');
             $this->annee      = $this->dates->formatDate($this->projects->date_retrait, 'Y');
 
@@ -589,12 +588,12 @@ class projectsController extends bootstrap
                     $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                     $montantBas += ($b['amount'] / 100);
                 }
-                $this->AvgLoans = ($montantHaut / $montantBas);
+                $this->AvgLoans = $montantHaut / $montantBas;
 
-                // Taux moyen des encheres validés du preteur
                 if ($this->lenders_accounts->id_lender_account != false) {
                     $this->AvgLoansPreteur = $this->loans->getAvgLoansPreteur($this->projects->id_project, $this->lenders_accounts->id_lender_account, 'rate');
                 }
+
                 if ($this->projects->date_publication_full != '0000-00-00 00:00:00') {
                     $date1 = strtotime($this->projects->date_publication_full);
                 } else {
@@ -606,18 +605,20 @@ class projectsController extends bootstrap
                 } else {
                     $date2 = strtotime($this->projects->date_fin);
                 }
+
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
 
                 if ($this->lenders_accounts->id_lender_account != false) {
-                    $this->sumRemb = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0');
-                    $this->sumRemb += $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1'); // (add 17/07/2015)
+                    $oProjectsStatusHistory = $this->loadData('projects_status_history');
+                    $this->aStatusHistory   = $oProjectsStatusHistory->getHistoryDetails($this->projects->id_project);
+                    $this->sumRemb          = $this->echeanciers->sumARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 0') + $this->echeanciers->sumARembByProjectCapital($this->lenders_accounts->id_lender_account, $this->projects->id_project . ' AND status_ra = 1');
                     $this->sumRestanteARemb = $this->echeanciers->getSumRestanteARembByProject($this->lenders_accounts->id_lender_account, $this->projects->id_project);
                     $this->nbPeriod         = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
                 }
             }
         } else {
-            header('Location: ' . $this->lurl . '/projects');
-            die;
+            header($_SERVER["SERVER_PROTOCOL"] . " 404 Not Found");
+            $this->setView('../root/404');
         }
     }
 }

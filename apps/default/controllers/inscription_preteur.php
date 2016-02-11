@@ -300,13 +300,6 @@ class inscription_preteurController extends bootstrap
                 $this->form_ok = false;
             }
 
-            // check_etranger
-            /*if($this->etranger > 0){*/
-            if(isset($_POST['check_etranger']) && $_POST['check_etranger'] == false){
-                $this->form_ok = false;
-            }
-            /*}*/
-
             // age (+18ans)
             if($this->dates->ageplus18($this->clients->naissance) == false){
                 $this->form_ok = false;
@@ -1235,17 +1228,13 @@ class inscription_preteurController extends bootstrap
 
             $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-            if($this->lenders_accounts->iban != '')
-            {
-                $this->iban1 = substr($this->lenders_accounts->iban,0,4);
-                $this->iban2 = substr($this->lenders_accounts->iban,4,4);
-                $this->iban3 = substr($this->lenders_accounts->iban,8,4);
-                $this->iban4 = substr($this->lenders_accounts->iban,12,4);
-                $this->iban5 = substr($this->lenders_accounts->iban,16,4);
-                $this->iban6 = substr($this->lenders_accounts->iban,20,4);
-                $this->iban7 = substr($this->lenders_accounts->iban,24,3);
-            }
-            else $this->iban1 = 'FR...';
+            $this->iban1 = empty($this->lenders_accounts->iban) ? 'FR...' : substr($this->lenders_accounts->iban, 0, 4);
+            $this->iban2 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 4, 4);
+            $this->iban3 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 8, 4);
+            $this->iban4 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 12, 4);
+            $this->iban5 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 16, 4);
+            $this->iban6 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 20, 4);
+            $this->iban7 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 24, 3);
 
             $this->hash_client = $this->clients->hash;
 
@@ -1297,7 +1286,9 @@ class inscription_preteurController extends bootstrap
 
                 $this->lenders_accounts->bic = trim(strtoupper($_POST['bic']));// Bic
                 $this->lenders_accounts->iban = ''; // Iban
-                for($i=1;$i<=7;$i++){ $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-'.$i]));}
+                for($i=1; $i<=7; $i++) {
+                    $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-'.$i]));
+                }
 
                 if($this->lenders_accounts->iban != '')
                 {
@@ -1339,21 +1330,23 @@ class inscription_preteurController extends bootstrap
                     $this->form_ok = false;
                 }
 
-                if($this->form_ok == true){
+                // US Person
+                if (isset($_POST['check_etranger']) && $_POST['check_etranger'] != 'on') {
+                    $this->form_ok = false;
+                }
 
+                if ($this->form_ok == true) {
                     $this->clients->etape_inscription_preteur = 2; // etape 2 ok
 
-                    // On met à jour en BDD
                     $this->lenders_accounts->update();
                     $this->clients->update();
 
-                    if($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 1') <= 0){
+                    if ($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 1') <= 0){
                         // creation du statut "a contrôler"
-                        $this->clients_status_history->addStatus('-2','10',$this->clients->id_client);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $this->clients->id_client);
 
                         $serialize = serialize(array('id_client' => $this->clients->id_client,'post' => $_POST));
                         $this->clients_history_actions->histo(17,'inscription etape 2 particulier',$this->clients->id_client,$serialize);
-                        ////////////////
 
                         //********************************************//
                         //*** ENVOI DU MAIL NOTIFICATION notification-nouveaux-preteurs ***//
@@ -1368,17 +1361,16 @@ class inscription_preteurController extends bootstrap
                         $this->mails_text->get('notification-nouveaux-preteurs','lang = "'.$this->language.'" AND type');
 
                         // Variables du mailing
-                        $surl = $this->surl;
-                        $url = $this->lurl;
-                        $id_preteur = $this->clients->id_client;
-                        $nom = utf8_decode($this->clients->nom);
-                        $prenom = utf8_decode($this->clients->prenom);
-                        //$montant = 'virement';
-                        $montant = '';
-                        $date = date('d').' '.$lemois.' '.date('Y');
+                        $surl         = $this->surl;
+                        $url          = $this->lurl;
+                        $id_preteur   = $this->clients->id_client;
+                        $nom          = utf8_decode($this->clients->nom);
+                        $prenom       = utf8_decode($this->clients->prenom);
+                        $montant      = '';
+                        $date         = date('d').' '.$lemois.' '.date('Y');
                         $heure_minute = date('h:m');
-                        $email = $this->clients->email;
-                        $lien = $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account;
+                        $email        = $this->clients->email;
+                        $lien         = $this->aurl.'/preteurs/edit_preteur/'.$this->lenders_accounts->id_lender_account;
 
                         // Attribution des données aux variables
                         $sujetMail = htmlentities($this->mails_text->subject);
@@ -1452,7 +1444,7 @@ class inscription_preteurController extends bootstrap
                             else $statut_client = 50;
 
                             // creation du statut "Modification"
-                            $this->clients_status_history->addStatus('-2',$statut_client,$this->clients->id_client,$contenu);
+                            $this->clients_status_history->addStatus(\users::USER_ID_FRONT, $statut_client, $this->clients->id_client, $contenu);
 
                             // destinataire
                             $this->settings->get('Adresse notification modification preteur','type');
@@ -1588,7 +1580,7 @@ class inscription_preteurController extends bootstrap
 
                     if($this->clients_status_history->counter('id_client = '.$this->clients->id_client.' AND id_client_status = 1') <= 0){
                         // creation du statut "a contrôler"
-                        $this->clients_status_history->addStatus('-2','10',$this->clients->id_client);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $this->clients->id_client);
 
                         //********************************************//
                         //*** ENVOI DU MAIL NOTIFICATION notification-nouveaux-preteurs ***//

@@ -91,14 +91,24 @@ class depot_de_dossierController extends bootstrap
         $this->clients->source         = $_SESSION['utm_source'];
         $this->clients->source2        = $_SESSION['utm_source2'];
         $this->clients->status_pre_emp = 2;
+        if (true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
+            $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
+        } else {
+            $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
+        }
         $this->clients->create();
 
+        if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {
+            header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
+            die;
+        }
         $this->clients_adresses->id_client = $this->clients->id_client;
         $this->clients_adresses->create();
 
         $this->companies->id_client_owner               = $this->clients->id_client;
         $this->companies->siren                         = $iSIREN;
         $this->companies->status_adresse_correspondance = '1';
+        $this->companies->email_dirigeant               = $_SESSION['forms']['depot-de-dossier']['email'];
         $this->companies->create();
 
         $this->projects->id_company                           = $this->companies->id_company;
@@ -107,18 +117,6 @@ class depot_de_dossierController extends bootstrap
         $this->projects->resultat_exploitation_declara_client = 0;
         $this->projects->fonds_propres_declara_client         = 0;
         $this->projects->create();
-
-        /**
-         * 1 : activé
-         * 2 : activé mais prend pas en compte le résultat
-         * 3 : désactivé (DC)
-         */
-        $this->settings->get('Altares debrayage', 'type');
-        $iStatusSetting = $this->settings->value;
-
-        if ($iStatusSetting == 3) {
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Altares débrayé');
-        }
 
         $this->settings->get('Altares email alertes', 'type');
         $sAlertEmail = $this->settings->value;
@@ -131,7 +129,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oException->getMessage(), array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Erreur Altares');
+            $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         if (false === empty($oResult->exception)) {
@@ -139,14 +137,7 @@ class depot_de_dossierController extends bootstrap
             $oLogger->addRecord(ULogger::ALERT, $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur, array('siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
-            $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, 'Erreur Altares');
-        }
-
-        if ($iStatusSetting == 2) {
-            $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
-            $oLogger->addRecord(ULogger::INFO, 'Tentative évaluation', array('siren' => $iSIREN));
-
-            mail($sAlertEmail, '[ALERTE] Altares Tentative evaluation', 'Date ' . date('Y-m-d H:i:s') . ' siren : ' . $iSIREN);
+            $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
@@ -646,7 +637,11 @@ class depot_de_dossierController extends bootstrap
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('depot-de-dossier-espace-emprunteur', $this->language, $this->App);
 
         $this->sAttachmentList  = '';
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language, false);
+        $aAttachmentTypes       = $this->attachment_type->getAllTypesForProjects($this->language, false);
+        $this->aAttachmentTypes = $this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes);
+
+        $this->sYearLessTwo   = date('Y') - 2;
+        $this->sYearLessThree = date('Y') - 3;
 
         $this->projects_last_status_history = $this->loadData('projects_last_status_history');
         $this->projects_last_status_history->get($this->projects->id_project, 'id_project');

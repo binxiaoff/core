@@ -33,9 +33,6 @@ include __DIR__ . '/../../core/bdd.class.php';
 include __DIR__ . '/../../core/errorhandler.class.php';
 include __DIR__ . '/../../route.php';
 
-$tablOk = array('78.225.42.28', '109.0.41.146', '78.225.121.47', '78.225.121.3', '93.26.42.99');
-
-//define in routages.php
 $app                    = 'default';
 $config['route_projet'] = isset($route_projet) ? $route_projet : '';
 $config['route_url']    = isset($route_url) ? $route_url : '';

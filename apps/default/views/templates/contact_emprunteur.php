@@ -1,6 +1,6 @@
 <div class="contact">
     <div class="contact-form">
-        <form action="<?= $_SERVER['REQUEST_URI'] ?>" method="post">
+        <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post">
             <?php if (isset($this->confirmation)) { ?>
                 <p class="system-message message-positive"><?= $this->confirmation ?></p>
             <?php } ?>

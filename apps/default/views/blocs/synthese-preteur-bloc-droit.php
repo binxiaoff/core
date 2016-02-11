@@ -1,3 +1,72 @@
+<style>
+    /* Fix on the tooltip override, to be placed after the line 602 of styles/default/style.css */
+    .tooltip.left .tooltip-arrow {
+        top: 50%;
+        left: 100%;
+        margin-top: -8px;
+        margin-left: 0px;
+        border-width: 8px 0 8px 8px;
+        border-color: transparent;
+        border-left-color: #a1a5a7;
+        border-style:solid;
+    }
+</style>
+
+<script>
+    /**
+     * change_rd - change the rendement chart to a targeted lvl
+     * @param {integer} lvl - level 0 to 5
+     */
+
+    var change_rd = function(lvl) {
+        $('.rd-box').removeClass('lvl0 lvl1 lvl2 lvl3 lvl4 lvl5').addClass('lvl'+lvl);
+    }
+
+    setTimeout(function() {
+        change_rd(<?= $this->iDiversificationLevel ?>);
+    }, 200);
+
+    // tooltip init
+    $(function(){
+        $('[data-toggle="tooltip"]').tooltip({
+            placement : window.innerWidth > 770 ? 'left' : 'top',
+            trigger : window.innerWidth > 770 ? 'hover' : 'click'
+        });
+    })
+</script>
+
+<div class="graphic-box rd-box lvl0">
+    <header>
+        <h2><?= $this->lng['preteur-synthese']['rendement-portefeuille'] ?></h2>
+        <p><?= $this->lng['preteur-synthese']['nombre-entreprises'] ?><strong><?= $this->iNumberOfCompanies ?></strong>
+        </p>
+    </header>
+    <div class="body">
+        <div class="post-box">
+            <p><small><?= empty($this->sDate) ? '' : str_replace('[#DATE#]', $this->sDate, $this->lng['preteur-synthese']['message-date-donnees']) ?></small></p>
+        </div>
+        <div class="rd-meter">
+            <div class="rd-data">
+                <div class="rd-lvl">
+                    <span class="rd-fill"></span>
+                </div>
+                <em class="rd-fill-marker"></em>
+                <p class="rd-desc"><?= $this->lng['preteur-synthese']['niveau-diversification'] ?>
+                    <span><?= $this->lng['preteur-synthese']['niveau-' . $this->iDiversificationLevel] ?></span></p>
+            </div>
+            <div class="rd-mask-cnt"
+                 data-toggle="tooltip"
+                 title="<?= $this->lng['preteur-synthese']['info-' . $this->sTypeMessageTooltip] ?>">
+                <img class="rd-mask" alt="" src="<?= $this->surl . '/styles/default/images/round_mask_unilend.png' ?>">
+                <span class="rd-pct"><?= $this->sDisplayedValue ?></span>
+            </div>
+        </div>
+        <p class="rd-unilend"><?= $this->lng['preteur-synthese']['tri-unilend']?><span><?= $this->sIRRUnilend ?> %</span></p>
+        <p class="rd-info"><?= $this->sDisplayedMessage  ?></p>
+        <p><?= str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-explication-lien']) ?></p>
+    </div>
+</div>
+
 <div class="graphic-box le-bar-chart">
     <header>
         <h2><?= $this->lng['preteur-synthese']['synthese-de-vos-mouvement'] ?></h2>
@@ -16,7 +85,6 @@
 </div>
 
 <div class="post-schedule clearfix">
-
     <div style="float:right;margin-right:70px;margin-top:12px;">
         <select name="duree" id="duree" class="custom-select field-tiny-plus">
             <option value="mois">Mois</option>
@@ -28,14 +96,10 @@
 
     <h2><?= $this->lng['preteur-synthese']['revenus-mensuels'] ?> <span><i class="icon-box-arrow"></i></span></h2>
 
-    <?php /* ?><?=$this->lng['preteur-synthese']['3-mois']?><?php */ ?>
-
     <div class="body duree_content">
         <div style="display:none;" class="interets_recu"><?= $this->lng['preteur-synthese']['interets-recus-par-mois'] ?></div>
         <div style="display:none;" class="capital_rembourse"><?= $this->lng['preteur-synthese']['capital-rembourse-par-mois'] ?></div>
         <div style="display:none;" class="prelevements_fiscaux"><?= $this->lng['preteur-synthese']['prelevements-fiscaux'] ?></div>
-
-
         <div class="slider-c">
             <div class="arrow prev notext">arrow</div>
             <div class="arrow next notext">arrow</div>
@@ -59,8 +123,7 @@
 
         <?php
         $old = 0;
-        foreach ($this->lesmois as $key => $o)
-        {
+        foreach ($this->lesmois as $key => $o) {
             $tab = explode('_', $key);
             $annee = $tab[0];
             $mois = $tab[1];
@@ -102,16 +165,6 @@
 
             next($this->lesmois);
 
-            /* if($i==1){
-              $a = $key;
-              $b = $o+1;
-              $c = $o+2;
-              }
-              else{
-              $a = $c+1;
-              $b = $c+2;
-              $c = $c+3;
-              } */
             ?>
 
         $('#bar-mensuels-<?= $o ?>').highcharts({
@@ -158,7 +211,7 @@
                 }
             },
             tooltip: {
-                valueSuffix: ' €',
+                valueSuffix: ' €'
             },
             series: [
                 {
@@ -191,94 +244,6 @@
     $old = $o;
 }
 
-/* foreach($this->ordre as $key => $o){
-
-  if($i==1){
-  $a = $i;
-  $b = $i+1;
-  $c = $i+2;
-  }
-  else{
-  $a = $c+1;
-  $b = $c+2;
-  $c = $c+3;
-  }
-  ?>
-
-  $('#bar-mensuels-<?=$i?>').highcharts({
-  chart: {
-  type: 'column',
-  backgroundColor:'#fafafa',
-  plotBackgroundColor: null,
-  plotBorderWidth: null,
-  plotShadow: false
-  },
-  colors: ['#8462a7','#ee5396','#b10366'],
-  title: {
-  text: ''
-  },
-  xAxis: {
-  color: '#a1a5a7',
-  title: {
-  enabled: null,
-  text : null
-  },
-  categories: [' <b>JAN</>', ' <b>FEV</b>', ' <b>MAR</b>']
-  },
-  yAxis: {
-  reversedStacks: false,
-  title: {
-  enabled: null,
-  text: null
-  },
-  min: 0
-  },
-  legend: {
-  borderColor: '#ffffff',
-  enabled: true
-  },
-  plotOptions: {
-  column: {
-  pointWidth: 80,
-  stacking: 'normal',
-  dataLabels: {
-  color: '#fff',
-  enabled: true,
-  format: '{point.name}'
-  }
-  }
-  },
-  tooltip: {
-  valueSuffix: ' €',
-  },
-  series: [
-  {
-  name: ' <b>'+$('.capital_rembourse').html()+'</b>',
-  data:  [
-  [' <b>'+remb<?=$a?>.toString().replace('.',',')+'€</b>', remb<?=$a?>],
-  [' <b>'+remb<?=$b?>.toString().replace('.',',')+'€</b>', remb<?=$b?>],
-  [' <b>'+remb<?=$c?>.toString().replace('.',',')+'€</b>', remb<?=$c?>]
-  ]
-  },
-  {
-  name: ' <b>'+$('.interets_recu').html()+'</b>',
-  data: [
-  [' <b>'+inte<?=$a?>.toString().replace('.',',')+' €</b>', inte<?=$a?>],
-  [' <b>'+inte<?=$b?>.toString().replace('.',',')+' €</b>', inte<?=$b?>],
-  [' <b>'+inte<?=$c?>.toString().replace('.',',')+' €</b>', inte<?=$c?>]]
-  },
-  {
-  name: ' <b>'+$('.prelevements_fiscaux').html()+'</b>',
-  data:  [
-  [' <b>'+fiscal<?=$a?>.toString().replace('.',',')+'€</b>', fiscal<?=$a?>],
-  [' <b>'+fiscal<?=$b?>.toString().replace('.',',')+'€</b>', fiscal<?=$b?>],
-  [' <b>'+fiscal<?=$c?>.toString().replace('.',',')+'€</b>', fiscal<?=$c?>]
-  ]
-  }]
-  });
-
-  <?php
-  } */
 ?>
     </script>
 </div>
@@ -333,9 +298,14 @@
                 switch ($this->projects_status->status) {
                     case projects_status::REMBOURSEMENT:
                     case projects_status::REMBOURSE:
-                    case projects_status::PROBLEME:
-                    case projects_status::RECOUVREMENT:
                     case projects_status::REMBOURSEMENT_ANTICIPE:
+                    case projects_status::PROBLEME:
+                    case projects_status::PROBLEME_J_X:
+                    case projects_status::RECOUVREMENT:
+                    case projects_status::PROCEDURE_SAUVEGARDE:
+                    case projects_status::REDRESSEMENT_JUDICIAIRE:
+                    case projects_status::LIQUIDATION_JUDICIAIRE:
+                    case projects_status::DEFAUT:
                         foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
                             $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                             $montantBas += ($b['amount'] / 100);
@@ -345,7 +315,6 @@
                     case projects_status::FUNDING_KO:
                     case projects_status::PRET_REFUSE:
                     case projects_status::EN_FUNDING:
-                    case projects_status::DEFAULT_STATUS:
                         foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
                             $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                             $montantBas += ($b['amount'] / 100);
@@ -363,7 +332,7 @@
                 <div class="post-box clearfix">
                     <h3><?= $f['title'] ?>, <small><?= $this->companies->city ?><?= ($this->companies->city != '' ? ',' : '') ?> <?= $this->companies->zip ?></small></h3>
                     <?php
-                    if ($this->projects_status->status > 50) {
+                    if ($this->projects_status->status > \projects_status::EN_FUNDING) {
                         $dateRest = $this->lng['preteur-synthese']['termine'];
                         $reste    = '';
                     } else {

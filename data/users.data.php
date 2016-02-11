@@ -25,9 +25,10 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
 class users extends users_crud
 {
+    const USER_ID_CRON  = -1;
+    const USER_ID_FRONT = -2;
     const FRONT_OFFICE = -2;
     const CRON         = -1;
 
@@ -122,23 +123,20 @@ class users extends users_crud
                 $_SESSION['token'] = md5(md5(mktime() . $this->securityKey));
                 $_SESSION['user']  = $user;
 
-                // Mise à jour pour la derniere connexion du user
                 $sql = 'UPDATE ' . $this->userTable . ' SET lastlogin = NOW() WHERE email = "' . $_POST[$email] . '" AND password = "' . md5($_POST[$pass]) . '"';
                 $this->bdd->query($sql);
 
-                // Renvoi sur la page apres connexion
                 if (isset($_SESSION['request_url']) && $_SESSION['request_url'] != '' && $_SESSION['request_url'] != 'login' && $_SESSION['request_url'] != 'captcha') {
-                    header('location:' . $_SESSION['request_url']);
+                    header('Location: ' . $_SESSION['request_url']);
                     die;
                 } else {
-                    header('location:' . $this->params['lurl'] . '/');
+                    header('Location: ' . $this->params['lurl'] . '/');
                     die;
                 }
             } else {
-                // Mise en session du message
                 $_SESSION['msgErreur'] = 'loginError';
 
-                header('location:' . $this->params['lurl'] . '/login');
+                header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             }
         }
@@ -151,7 +149,7 @@ class users extends users_crud
         unset($_SESSION['user']);
         unset($_SESSION['request_url']);
 
-        header('location:' . $this->params['lurl'] . '/login');
+        header('Location: ' . $this->params['lurl'] . '/login');
     }
 
     public function login($email, $pass)
@@ -198,21 +196,20 @@ class users extends users_crud
                     $_SESSION['token'] = md5(md5(mktime() . $this->securityKey));
                     $_SESSION['user']  = $this->bdd->fetch_array($res);
                 } else {
-                    // Mise en session du message
                     $_SESSION['msgErreur'] = 'loginError';
 
-                    header('location:' . $this->params['lurl'] . '/login');
+                    header('Location: ' . $this->params['lurl'] . '/login');
                     die;
                 }
             }
         } else {
             if ($_SESSION['auth'] != true) {
-                header('location:' . $this->params['lurl'] . '/login');
+                header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             }
 
             if (trim($_SESSION['token']) == '') {
-                header('location:' . $this->params['lurl'] . '/login');
+                header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             }
 
@@ -220,21 +217,18 @@ class users extends users_crud
             $res = $this->bdd->query($sql);
 
             if ($this->bdd->result($res, 0) != 1) {
-                // Mise en session du message
                 $_SESSION['msgErreur'] = 'loginError';
 
-                header('location:' . $this->params['lurl'] . '/login');
+                header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             } else {
                 if ($zone != '') {
-                    // Recuperation de l'ID de la Zone
                     $sql    = 'SELECT id_zone FROM zones WHERE slug = "' . $zone . '"';
                     $result = $this->bdd->query($sql);
                     $record = $this->bdd->fetch_array($result);
 
                     $id_zone = $record['id_zone'];
 
-                    // On check si l'user a le droit a cette zone
                     $sql    = 'SELECT * FROM users_zones WHERE id_user = ' . $_SESSION['user']['id_user'] . ' AND id_zone = "' . $id_zone . '"';
                     $result = $this->bdd->query($sql);
                     $nb     = $this->bdd->num_rows();
@@ -242,14 +236,25 @@ class users extends users_crud
                     if ($nb == 1) {
                         return true;
                     } else {
-                        // Mise en session du message
                         $_SESSION['msgErreur'] = 'loginInterdit';
 
-                        header('location:' . $this->params['lurl'] . '/login');
+                        header('Location: ' . $this->params['lurl'] . '/login');
                         die;
                     }
                 }
             }
         }
+    }
+
+    public function getName($iUserId)
+    {
+        if ($iUserId == -1) {
+            return 'Cron';
+        } elseif ($iUserId == -2) {
+            return 'Front office';
+        } elseif ($this->get($iUserId)) {
+            return trim($this->firstname . ' ' . $this->name);
+        }
+        return '';
     }
 }

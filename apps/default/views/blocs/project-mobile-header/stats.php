@@ -12,7 +12,7 @@
     <li>
         <i class="ico-chart"></i>
         <?php if ($this->CountEnchere > 0) { ?>
-            <span><?= $this->ficelle->formatNumber(($this->projects_status->status == 60 || $this->projects_status->status >= 80) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
+            <span><?= $this->ficelle->formatNumber(($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
         <?php } else { ?>
             <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
         <?php } ?>

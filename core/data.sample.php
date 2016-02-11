@@ -25,7 +25,6 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
 class --classe-- extends --classe--_crud
 {
     public function __construct($bdd, $params = '')
@@ -45,9 +44,9 @@ class --classe-- extends --classe--_crud
 
         $sql = 'SELECT * FROM `--table--`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -64,6 +63,6 @@ class --classe-- extends --classe--_crud
 
     public function exist($id, $field = '--id--')
     {
-        return $this->bdd->fetch_array($this->bdd->query('SELECT * FROM `--table--` WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `--table--` WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
     }
 }

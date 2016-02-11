@@ -28,45 +28,39 @@
 
 class projects_status extends projects_status_crud
 {
-    const NOTE_EXTERNE_FAIBLE    = 5;
-    const PAS_3_BILANS           = 6;
-    const COMPLETUDE_ETAPE_2     = 7;
-    const COMPLETUDE_ETAPE_3     = 8;
-    const ABANDON                = 9;
-    const A_TRAITER              = 10;
-    const EN_ATTENTE_PIECES      = 20;
-    const ATTENTE_ANALYSTE       = 25;
-    const REJETE                 = 30;
-    const REVUE_ANALYSTE         = 31;
-    const REJET_ANALYSTE         = 32;
-    const COMITE                 = 33;
-    const REJET_COMITE           = 34;
-    const PREP_FUNDING           = 35;
-    const A_FUNDER               = 40;
-    const EN_FUNDING             = 50;
-    const FUNDE                  = 60;
-    const FUNDING_KO             = 70;
-    const PRET_REFUSE            = 75;
-    const REMBOURSEMENT          = 80;
-    const REMBOURSE              = 90;
-    const PROBLEME               = 100;
-    const RECOUVREMENT           = 110;
-    const DEFAUT                 = 120;
-    const REMBOURSEMENT_ANTICIPE = 130;
+    const NOTE_EXTERNE_FAIBLE     = 5;
+    const PAS_3_BILANS            = 6;
+    const COMPLETUDE_ETAPE_2      = 7;
+    const COMPLETUDE_ETAPE_3      = 8;
+    const ABANDON                 = 9;
+    const A_TRAITER               = 10;
+    const EN_ATTENTE_PIECES       = 20;
+    const ATTENTE_ANALYSTE        = 25;
+    const REJETE                  = 30;
+    const REVUE_ANALYSTE          = 31;
+    const REJET_ANALYSTE          = 32;
+    const COMITE                  = 33;
+    const REJET_COMITE            = 34;
+    const PREP_FUNDING            = 35;
+    const A_FUNDER                = 40;
+    const EN_FUNDING              = 50;
+    const FUNDE                   = 60;
+    const FUNDING_KO              = 70;
+    const PRET_REFUSE             = 75;
+    const REMBOURSEMENT           = 80;
+    const REMBOURSE               = 90;
+    const REMBOURSEMENT_ANTICIPE  = 95;
+    const PROBLEME                = 100;
+    const PROBLEME_J_X            = 110;
+    const RECOUVREMENT            = 120;
+    const PROCEDURE_SAUVEGARDE    = 130;
+    const REDRESSEMENT_JUDICIAIRE = 140;
+    const LIQUIDATION_JUDICIAIRE  = 150;
+    const DEFAUT                  = 160;
 
     public function __construct($bdd, $params = '')
     {
         parent::projects_status($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_project_status')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function delete($id, $field = 'id_project_status')
-    {
-        parent::delete($id, $field);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -147,35 +141,50 @@ class projects_status extends projects_status_crud
     }
 
     /**
-     * @param                         $iProjectId
+     * @param int                     $iProjectId
      * @param projects_status_history $oProjectStatusHistory
-     *
-     * @return array|bool
+     * @return array
      */
     public function getPossibleStatus($iProjectId, projects_status_history $oProjectStatusHistory)
     {
-        if ($this->status >= self::REMBOURSEMENT) {
-            $sPossibleStatus = 'status >= '. self::REMBOURSEMENT;
-        } else {
-            switch ($this->status) {
-                case self::ABANDON:
-                    return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatus($iProjectId) . ' OR status = ' . $this->status);
-                case self::A_TRAITER:
-                case self::EN_ATTENTE_PIECES:
-                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
-                    break;
-                case self::ATTENTE_ANALYSTE:
-                    $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ')';
-                    break;
-                case self::PREP_FUNDING:
-                    $sPossibleStatus = 'status IN (' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
-                    break;
-                case self::REJETE:
-                default:
+        switch ($this->status) {
+            case self::ABANDON:
+                return $this->select('id_project_status = ' . $oProjectStatusHistory->getBeforeLastStatus($iProjectId) . ' OR status = ' . $this->status);
+            case self::A_TRAITER:
+            case self::EN_ATTENTE_PIECES:
+                $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . $this->status . ', ' . $this->getNextStatus($this->status) . ')';
+                break;
+            case self::ATTENTE_ANALYSTE:
+                $sPossibleStatus = 'status IN (' . self::ABANDON . ', ' . self::ATTENTE_ANALYSTE . ')';
+                break;
+            case self::PREP_FUNDING:
+                $sPossibleStatus = 'status IN (' . self::ABANDON . ',' . self::PREP_FUNDING . ',' . self::A_FUNDER . ')';
+                break;
+            case self::LIQUIDATION_JUDICIAIRE:
+                $sPossibleStatus = 'status IN (' . self::LIQUIDATION_JUDICIAIRE . ',' . self::DEFAUT . ')';
+                break;
+            case self::REMBOURSEMENT_ANTICIPE:
+            case self::DEFAUT:
+                return array();
+            default:
+                if ($this->status < self::REMBOURSEMENT) {
                     return array();
-            }
+                }
+                $sPossibleStatus = 'status >= '. self::REMBOURSEMENT . ' AND status != ' . self::DEFAUT;
+                break;
         }
 
         return $this->select($sPossibleStatus, 'status ASC');
+    }
+
+    public static function checkStatusPostRepayment($iStatus)
+    {
+        return $iStatus >= self::REMBOURSEMENT;
+    }
+
+    public static function checkStatusKo($iStatus){
+
+        $aStatusKo = array(self::PROBLEME, self::RECOUVREMENT);
+        return in_array($iStatus, $aStatusKo);
     }
 }

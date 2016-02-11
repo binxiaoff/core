@@ -8,6 +8,11 @@ class devboxController extends bootstrap
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
+
+        if (false === in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) {
+            header('Location: ' . $this->furl);
+            die;
+        }
     }
 
     // Ressort un csv avec les process des usersw≤
@@ -1228,5 +1233,188 @@ class devboxController extends bootstrap
         }
 
         fclose($rHandle);
+    }
+
+    public function _importBirthCity()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'naissance.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var villes $oVille */
+        $oClient = $this->loadData('clients');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $aRow = array_map('trim', $aRow);
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+
+            preg_match('/^\d+/s', $aRow[0], $matches);
+            if (false === isset($matches[0])) {
+                continue;
+            }
+            $iClientId = (int) $matches[0];
+            if ('99' === substr($aRow[1], 0, 2)) {
+                $sql = "UPDATE clients set insee_birth = '{$aRow[1]}' WHERE id_client = {$iClientId}";
+            } else {
+                $sql = "UPDATE clients set insee_birth = '{$aRow[1]}', ville_naissance = '{$aRow[2]}' WHERE id_client = {$iClientId}";
+            }
+            $oClient->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+        echo 'done';
+    }
+
+    public function _importFiscalCity()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'fiscal_city.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var villes $oVille */
+        $oClient = $this->loadData('clients_adresses');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $aRow = array_map('trim', $aRow);
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+
+            preg_match('/^\d+/s', $aRow[0], $matches);
+            if (false === isset($matches[0])) {
+                continue;
+            }
+            $iClientId = (int) $matches[0];
+
+            if (empty($aRow[1])) { // company
+                if ('99' === substr($aRow[2], 0, 2)) {
+                    continue;
+                }
+                $sql = "UPDATE companies SET zip = '{$aRow[2]}', city = '{$aRow[3]}' WHERE id_client_owner = {$iClientId}";
+            } else {
+                $sFieldPostCode = 'cp';
+                $sFieldCity     = 'ville';
+                $sFieldCountry  = 'id_pays';
+
+                $sql = "SELECT meme_adresse_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
+                $oQuery = $oClient->bdd->query($sql);
+                $aClient = $this->bdd->fetch_array($oQuery);
+
+                if($aClient[meme_adresse_fiscal] === '0') {
+                    $sFieldPostCode = 'cp_fiscal';
+                    $sFieldCity     = 'ville_fiscal';
+                    $sFieldCountry  = 'id_pays_fiscal';
+                }
+
+
+                if ('99' === substr($aRow[2], 0, 2)) {
+                    $sql = "SELECT id_pays_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
+                    $oQuery = $oClient->bdd->query($sql);
+                    $aClient = $this->bdd->fetch_array($oQuery);
+
+                    if(isset($aClient[id_pays_fiscal]) && false === empty($aClient[id_pays_fiscal]) &&  $aClient[id_pays_fiscal] <= 1) {
+                        $sql = "SELECT p.id_pays FROM pays_v2 p INNER JOIN insee_pays ip ON ip.CODEISO2 = p.iso WHERE ip.COG = {$aRow[2]}";
+                        $oQuery = $oClient->bdd->query($sql);
+                        $aClient = $this->bdd->fetch_array($oQuery);
+
+                        if(isset($aClient[id_pays]) && false === empty($aClient[id_pays])) {
+                            $sql = "UPDATE clients_adresses SET $sFieldCountry = '{$aClient[id_pays]}' WHERE id_client = {$iClientId}";
+                        }
+                    }
+                } else {
+                    $sql = "UPDATE clients_adresses SET $sFieldPostCode = '{$aRow[2]}', $sFieldCity = '{$aRow[3]}' WHERE id_client = {$iClientId}";
+                }
+            }
+            $oClient->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+        echo 'done';
+    }
+
+    public function _importResidenceOverseas()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'etranger.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var lenders_imposition_history $oClient */
+        $oClient = $this->loadData('lenders_imposition_history');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $aRow = array_map('trim', $aRow);
+            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+
+            preg_match('/^\d+/s', $aRow[0], $matches);
+            if (false === isset($matches[0])) {
+                continue;
+            }
+            $iClientId = (int) $matches[0];
+            $sql = "UPDATE `lenders_imposition_history`
+                    SET `id_pays`= (SELECT p.id_pays FROM pays_v2 p WHERE p.iso = '{$aRow[1]}')
+                    WHERE `id_lenders_imposition_history` = (
+                    SELECT t.id_lenders_imposition_history FROM (
+                        SELECT lih.id_lenders_imposition_history
+                            FROM `lenders_imposition_history` lih
+                            INNER JOIN lenders_accounts la ON la.id_lender_account = lih.id_lender
+                            WHERE la.id_client_owner = $iClientId
+                            ORDER BY lih.added DESC LIMIT 1
+                        ) t
+                    )";
+            $oClient->bdd->query($sql);
+            unset($aRow);
+        }
+
+        fclose($rHandle);
+        echo 'done';
+    }
+
+    public function _addWelcomeOffer()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'welcome.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var offres_bienvenues_details $oOffre */
+        $oOffre = $this->loadData('offres_bienvenues_details');
+
+        while (($aRow = fgetcsv($rHandle, 0, ',')) !== false) {
+            $iClientId = $aRow[0];
+            if (false === $oOffre->exist($iClientId, 'id_client')) {
+                $sql = "INSERT INTO `offres_bienvenues_details` (`id_offre_bienvenue`, `motif`, `id_client`, `id_bid`, `id_bid_remb`, `montant`, `status`, `type`, `added`, `updated`)
+                        VALUES (1, 'Offre de bienvenue', $iClientId, 0, 0, 2000, 0, 0, now(), now())";
+                $oOffre->bdd->query($sql);
+            }
+        }
+        fclose($rHandle);
+        echo 'done';
     }
 }

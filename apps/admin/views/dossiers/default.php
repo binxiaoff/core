@@ -112,7 +112,7 @@
                             <input type="hidden" name="pageActive" id="pageActive" value="<?= (isset($_POST['pageActive'])) ? $_POST['pageActive'] : 1 ?>"/>
                         </td>
                         <td>
-                            <label for="siren">Siren :</label><br/><input type="text" name="siren" id="siren" class="input_moy" title="siren" value="<?= (isset($_POST['siren'])) ? $_POST['siren'] : '' ?>"/>
+                            <label for="siren">Siren :</label><br/><input type="text" name="siren" id="siren" class="input_moy" style="width:100px;" title="siren" value="<?= (isset($_POST['siren'])) ? $_POST['siren'] : '' ?>"/>
                         </td>
                         <td>
                             <label for="siren">Raison sociale :</label><br/><input type="text" name="raison-sociale" id="raison-sociale" class="input_moy" title="Raison sociale" value="<?= (isset($_POST['raison-sociale'])) ? $_POST['raison-sociale'] : '' ?>"/>
@@ -124,7 +124,7 @@
                             <input type="text" name="date2" id="datepik_2" class="input_dp" value="<?= (isset($_POST['date2'])) ? $_POST['date2'] : '' ?>"/>
                         </td>
                         <td style="padding-top:23px;">
-                            <select name="montant" id="montant" class="select">
+                            <select name="montant" id="montant" class="select" style="width:80px;">
                                 <option value="0">Montant</option>
                                 <option <?= (isset($_POST['montant']) && $_POST['montant'] == 50 ? 'selected' : '') ?> value="50">50</option>
                                 <option <?= (isset($_POST['montant']) && $_POST['montant'] == 100 ? 'selected' : '') ?> value="100">100</option>
@@ -140,7 +140,7 @@
                             </select>
                         </td>
                         <td style="padding-top:23px;">
-                            <select name="duree" id="duree" class="select">
+                            <select name="duree" id="duree" class="select" style="width:80px;">
                                 <option value="">Durée</option>
                                 <option <?= (isset($_POST['duree']) && $_POST['duree'] == '24' ? 'selected' : '') ?> value="24">24 mois</option>
                                 <option <?= (isset($_POST['duree']) && $_POST['duree'] == '36' ? 'selected' : '') ?> value="36">36 mois</option>
@@ -150,7 +150,7 @@
                             </select>
                         </td>
                         <td style="padding-top:23px;">
-                            <select name="status" id="status" class="select">
+                            <select name="status" id="status" class="select" style="width:80px;">
                                 <option value="">Status</option>
                                 <?php foreach ($this->lProjects_status as $s) { ?>
                                     <option <?= (isset($_POST['status']) && $_POST['status'] == $s['status'] || isset($this->params[0]) && $this->params[0] == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
@@ -158,16 +158,24 @@
                             </select>
                         </td>
                         <td style="padding-top:23px;">
+                            <select name="commercial" id="commercial" class="select">
+                                <option value="0">Commercial</option>
+                                <?php foreach ($this->aSalesPersons as $aSalesPerson) { ?>
+                                    <option <?= (isset($_POST['commercial']) && $_POST['commercial'] == $aSalesPerson['id_user'] ? 'selected' : '') ?> value="<?= $aSalesPerson['id_user'] ?>"><?= $aSalesPerson['firstname'] ?> <?= $aSalesPerson['name'] ?></option>
+                                <?php } ?>
+                            </select>
+                        </td>
+                        <td style="padding-top:23px;">
                             <select name="analyste" id="analyste" class="select">
                                 <option value="0">Analyste</option>
-                                <?php foreach ($this->lUsers as $u) { ?>
-                                    <option <?= (isset($_POST['analyste']) && $_POST['analyste'] == $u['id_user'] ? 'selected' : '') ?> value="<?= $u['id_user'] ?>"><?= $u['firstname'] ?> <?= $u['name'] ?></option>
+                                <?php foreach ($this->aAnalysts as $aAnalyst) { ?>
+                                    <option <?= (isset($_POST['analyste']) && $_POST['analyste'] == $aAnalyst['id_user'] ? 'selected' : '') ?> value="<?= $aAnalyst['id_user'] ?>"><?= $aAnalyst['firstname'] ?> <?= $aAnalyst['name'] ?></option>
                                 <?php } ?>
                             </select>
                         </td>
                     </tr>
                     <tr>
-                        <th colspan="8" style="text-align:center;">
+                        <th colspan="10" style="text-align:center;">
                             <input type="hidden" name="form_search_dossier" id="form_search_dossier"/>
                             <input type="submit" value="Valider" title="Valider" name="send_dossier" id="send_dossier" class="btn"/>
                             <input style="border-color: #A1A5A7;background-color:#A1A5A7; color:white;" type="button" value="Reset" title="Reset" name="Reset" id="Reset" class="btn"/>
@@ -181,23 +189,26 @@
         <table class="tablesorter">
             <thead>
                 <tr>
-                    <th>ID</th>
-                    <th>Siren</th>
-                    <th>Raison sociale</th>
-                    <th>Date demande</th>
-                    <th>Date modification</th>
-                    <th>Montant</th>
-                    <th>Durée</th>
-                    <th>Statut</th>
-                    <th>Analyste</th>
-                    <th>&nbsp;</th>
+                    <th style="width:4%">ID</th>
+                    <th style="width:4%">Siren</th>
+                    <th style="width:24%">Raison sociale</th>
+                    <th style="width:8%">Date demande</th>
+                    <th style="width:8%">Date modification</th>
+                    <th style="width:10%">Montant</th>
+                    <th style="width:6%">Durée</th>
+                    <th style="width:13%">Statut</th>
+                    <th style="width:10%">Commercial</th>
+                    <th style="width:10%">Analyste</th>
+                    <th style="width:2%">Presc.</th>
+                    <th style="width:1%">&nbsp;</th>
                 </tr>
             </thead>
             <tbody>
             <?php
             $i = 1;
             foreach ($this->lProjects as $p) {
-                $this->users->get($p['id_analyste'], 'id_user');
+                $this->oUserAnalyst->get($p['id_analyste'], 'id_user');
+                $this->oUserSalesPerson->get($p['id_commercial'], 'id_user');
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?> id="ledossier<?= $p['id_project'] ?>">
                     <td><?= $p['id_project'] ?></td>
@@ -208,7 +219,9 @@
                     <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
                     <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
                     <td><?= $p['label'] ?></td>
-                    <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
+                    <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
+                    <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
+                    <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>

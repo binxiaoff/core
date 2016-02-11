@@ -68,19 +68,19 @@
         $montantBas  = 0;
 
         // si fundé ou remboursement
-        if ($this->projects_status->status == 60 || $this->projects_status->status >= 80) {
+        if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
             foreach ($this->loans->select('id_project = ' . $pf['id_project']) as $b) {
                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                 $montantBas += ($b['amount'] / 100);
             }
         } // funding ko
-        elseif ($this->projects_status->status == 70) {
+        elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
             foreach ($this->bids->select('id_project = ' . $pf['id_project']) as $b) {
                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                 $montantBas += ($b['amount'] / 100);
             }
         } // emprun refusé
-        elseif ($this->projects_status->status == 75) {
+        elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
             foreach ($this->bids->select('id_project = ' . $pf['id_project'] . ' AND status = 1') as $b) {
                 $montantHaut += ($b['rate'] * ($b['amount'] / 100));
                 $montantBas += ($b['amount'] / 100);
@@ -103,7 +103,7 @@
             <td>
                 <?php
 
-                if ($this->projects_status->status >= 60) {
+                if ($this->projects_status->status >= \projects_status::FUNDE) {
                     $dateRest = 'Terminé';
                 } else {
                     $tab_date_retrait = explode(' ', $pf['date_retrait_full']);

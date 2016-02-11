@@ -73,8 +73,8 @@ class SalesForce
         $this->oDatabase = $this->oBoostrap->getDatabase();
         $this->oLogger   = $this->oBoostrap->setLogger('SalesForce', 'salesforce.log')->getLogger();
         $this->setSearchAndReplace()
-            ->setTypeDataloader()
-            ->DeleteStatusLog();
+             ->setTypeDataloader()
+             ->deleteStatusLog();
     }
 
     public function setTypeDataloader()
@@ -120,73 +120,68 @@ class SalesForce
     public function extractBorrowers()
     {
         $sQuery = "SELECT
-                    c.id_client as 'IDClient',
-                    c.id_client as 'IDClient_2',
-                    c.id_langue as 'Langue',
-                    REPLACE(c.civilite,',','') as 'Civilite',
-                    REPLACE(c.nom,',','') as 'Nom',
-                    REPLACE(c.nom_usage,',','') as 'Nom_usage',
-                    REPLACE(c.prenom,',','') as 'Prenom',
-                    CONVERT(REPLACE(c.fonction,',','') USING utf8) as 'Fonction',
-                    CASE c.naissance
+                      c.id_client as 'IDClient',
+                      c.id_client as 'IDClient_2',
+                      c.id_langue as 'Langue',
+                      REPLACE(c.civilite,',','') as 'Civilite',
+                      REPLACE(c.nom,',','') as 'Nom',
+                      REPLACE(c.nom_usage,',','') as 'Nom_usage',
+                      REPLACE(c.prenom,',','') as 'Prenom',
+                      CONVERT(REPLACE(c.fonction,',','') USING utf8) as 'Fonction',
+                      CASE c.naissance
                       WHEN '0000-00-00' then '2001-01-01'
                       ELSE
-                          CASE SUBSTRING(c.naissance,1,1)
-                            WHEN '0' then '2001-01-01'
-                            ELSE c.naissance
-                          END
-                    END as 'DateNaissance',
-                    REPLACE(ville_naissance,',','') as 'VilleNaissance',
-                    ccountry.fr as 'PaysNaissance',
-                    nv2.fr_f as 'Nationalite',
-                    REPLACE(c.telephone,'\t','') as 'Telephone',
-                    c.mobile as 'Mobile',
-                    REPLACE(c.email,',','') as 'Email',
-                    c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
-                    CASE c.type
-                        WHEN 1 THEN 'Physique'
-                        WHEN 2 THEN 'Morale'
-                        WHEN 3 THEN 'Physique'
-                        ELSE 'Morale'
-                    END as 'TypeContact',
-                    CASE c.status
-                        WHEN 1 THEN 'oui'
-                        ELSE 'non'
-                    END as 'Valide',
-                    CASE c.added
+                        CASE SUBSTRING(c.naissance,1,1)
+                        WHEN '0' then '2001-01-01'
+                        ELSE c.naissance
+                        END
+                      END as 'DateNaissance',
+                      REPLACE(ville_naissance,',','') as 'VilleNaissance',
+                      ccountry.fr as 'PaysNaissance',
+                      nv2.fr_f as 'Nationalite',
+                      REPLACE(c.telephone,'\t','') as 'Telephone',
+                      c.mobile as 'Mobile',
+                      REPLACE(c.email,',','') as 'Email',
+                      c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
+                      CASE c.type
+                      WHEN 1 THEN 'Physique'
+                      WHEN 2 THEN 'Morale'
+                      WHEN 3 THEN 'Physique'
+                      ELSE 'Morale'
+                      END as 'TypeContact',
+                      CASE c.status
+                      WHEN 1 THEN 'oui'
+                      ELSE 'non'
+                      END as 'Valide',
+                      CASE c.added
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.added
-                    END as 'date_inscription',
-                    CASE c.updated
+                      END as 'date_inscription',
+                      CASE c.updated
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.updated
-                    END as 'DateMiseJour',
-                    CASE c.lastlogin
+                      END as 'DateMiseJour',
+                      CASE c.lastlogin
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.lastlogin
-                    END as 'DateDernierLogin',
-                    REPLACE(ca.adresse1,',','') as 'Adresse1',
-                    REPLACE(ca.adresse2,',','') as 'Adresse2',
-                    REPLACE(ca.adresse3,',','') as 'Adresse3',
-                    REPLACE(ca.cp,',','') as 'CP',
-                    REPLACE(ca.ville,',','') as 'Ville',
-                    acountry.fr as 'Pays',
-                    '012240000002G4e' as 'Sfcompte'
-                  FROM
-                    clients c
-                    LEFT JOIN clients_adresses ca on (c.id_client = ca.id_client)
-                    LEFT JOIN pays_v2 ccountry on (
-                        c.id_pays_naissance = ccountry.id_pays
-                    )
-                    LEFT JOIN pays_v2 acountry on (ca.id_pays = acountry.id_pays)
-                    LEFT JOIN nationalites_v2 nv2 on (
-                        c.id_nationalite = nv2.id_nationalite
-                    )
-                    LEFT JOIN companies co on c.id_client = co.id_client_owner
-                WHERE
-                    c.status_pre_emp = 2
+                      END as 'DateDernierLogin',
+                      REPLACE(ca.adresse1,',','') as 'Adresse1',
+                      REPLACE(ca.adresse2,',','') as 'Adresse2',
+                      REPLACE(ca.adresse3,',','') as 'Adresse3',
+                      REPLACE(ca.cp,',','') as 'CP',
+                      REPLACE(ca.ville,',','') as 'Ville',
+                      acountry.fr as 'Pays',
+                      '012240000002G4e' as 'Sfcompte'
+                    FROM
+                      clients c
+                      INNER JOIN companies co on c.id_client = co.id_client_owner
+                      INNER JOIN projects p ON p.id_company = co.id_company
+                      LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
+                      LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
+                      LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
+                      LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
                     group by
-                        c.id_client";
+                      c.id_client";
 
         $this->tryIt($sQuery, 'emprunteurs');
     }
@@ -261,95 +256,87 @@ class SalesForce
     public function extractLenders()
     {
         $sQuery = "SELECT
-                    c.id_client as 'IDClient',
-                    la.id_lender_account as 'IDPreteur',
-                    c.id_langue as 'Langue',
-                    REPLACE(c.source,',','') as 'Source1',
-                    REPLACE(c.source2,',','') as 'Source2',
-                    REPLACE(c.source3,',','') as 'Source3',
-                    REPLACE(c.civilite,',','') as 'Civilite',
-                    REPLACE(c.nom,',','') as 'Nom',
-                    REPLACE(c.nom_usage,',','') as 'NomUsage',
-                    REPLACE(c.prenom,',','') as 'Prenom',
-                    REPLACE(c.fonction,',','') as 'Fonction',
-                    CASE c.naissance
-                    	WHEN '0000-00-00' then '2001-01-01'
-                    	ELSE
-                          CASE SUBSTRING(c.naissance,1,1)
-                            WHEN '0' then '2001-01-01'
-                            ELSE c.naissance
-                          END
-                    END as 'Datenaissance',
-                    REPLACE(ville_naissance,',','') as 'Villenaissance',
-                    ccountry.fr as 'PaysNaissance',
-                    nv2.fr_f as 'Nationalite',
-                    REPLACE(c.telephone,'\t','') as 'Telephone',
-                    REPLACE(c.mobile,',','') as 'Mobile',
-                    REPLACE(c.email,',','') as 'Email',
-                    c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
-                    CASE c.type
-                        WHEN 1 THEN 'Physique'
-                        WHEN 2 THEN 'Morale'
-                        WHEN 3 THEN 'Physique'
-                        ELSE 'Morale'
-                    END as 'TypeContact',
-                    CASE cs.status
-                        WHEN 6 THEN 'oui'
-                        ELSE 'non'
-                    END as 'Valide',
-                    CASE c.status_pre_emp
-                        WHEN 1
-                            THEN (SELECT cs.label FROM clients_status_history cshs1
-                                  inner join clients_status cs on cshs1.id_client_status =cs.id_client_status
-                                  WHERE cshs1.id_client=c.id_client
-                                  ORDER BY cshs1.added DESC LIMIT 1)
-                         ELSE 'N/A' END as 'StatusCompletude',
-                    CASE c.added
+                      c.id_client as 'IDClient',
+                      la.id_lender_account as 'IDPreteur',
+                      c.id_langue as 'Langue',
+                      REPLACE(c.source,',','') as 'Source1',
+                      REPLACE(c.source2,',','') as 'Source2',
+                      REPLACE(c.source3,',','') as 'Source3',
+                      REPLACE(c.civilite,',','') as 'Civilite',
+                      REPLACE(c.nom,',','') as 'Nom',
+                      REPLACE(c.nom_usage,',','') as 'NomUsage',
+                      REPLACE(c.prenom,',','') as 'Prenom',
+                      REPLACE(c.fonction,',','') as 'Fonction',
+                      CASE c.naissance
+                      WHEN '0000-00-00' then '2001-01-01'
+                      ELSE
+                        CASE SUBSTRING(c.naissance,1,1)
+                        WHEN '0' then '2001-01-01'
+                        ELSE c.naissance
+                        END
+                      END as 'Datenaissance',
+                      REPLACE(ville_naissance,',','') as 'Villenaissance',
+                      ccountry.fr as 'PaysNaissance',
+                      nv2.fr_f as 'Nationalite',
+                      REPLACE(c.telephone,'\t','') as 'Telephone',
+                      REPLACE(c.mobile,',','') as 'Mobile',
+                      REPLACE(c.email,',','') as 'Email',
+                      c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
+                      CASE c.type
+                      WHEN 1 THEN 'Physique'
+                      WHEN 2 THEN 'Morale'
+                      WHEN 3 THEN 'Physique'
+                      ELSE 'Morale'
+                      END as 'TypeContact',
+                      CASE cs.status
+                      WHEN 6 THEN 'oui'
+                      ELSE 'non'
+                      END as 'Valide',
+                      (
+                        SELECT cs.label FROM clients_status_history cshs1
+                        INNER JOIN clients_status cs on cshs1.id_client_status =cs.id_client_status
+                        WHERE cshs1.id_client=c.id_client
+                        ORDER BY cshs1.added DESC LIMIT 1
+                      ) AS 'StatusCompletude',
+                      CASE c.added
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.added
-                    END as 'DateInscription',
-                    CASE c.updated
+                      END as 'DateInscription',
+                      CASE c.updated
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.updated
-                    END as 'DateDerniereMiseaJour',
-                    CASE c.lastlogin
+                      END as 'DateDerniereMiseaJour',
+                      CASE c.lastlogin
                       WHEN '0000-00-00 00:00:00' then ''
                       ELSE c.lastlogin
-                    END as 'DateDernierLogin',
-                    cs.id_client_status as 'StatutValidation',
-                    status_inscription_preteur as 'StatusInscription',
-                    count(
-                        distinct(l.id_project)
-                    ) as 'NbPretsValides',
-                    REPLACE(ca.adresse1,',','') as 'Adresse1',
-                    REPLACE(ca.adresse2,',','') as 'Adresse2',
-                    REPLACE(ca.adresse3,',','') as 'Adresse3',
-                    REPLACE(ca.cp,',','') as 'CP',
-                    REPLACE(ca.ville,',','') as 'Ville',
-                    acountry.fr as 'Pays',
-                    SUM(l.amount)/100 as 'TotalPretEur',
-                    '' as 'DeletingProspect',
-                    '0012400000K0Bxw' as 'Sfcompte'
-                  FROM
-                    clients c
-                    LEFT JOIN clients_adresses ca on (c.id_client = ca.id_client)
-                    LEFT JOIN pays_v2 ccountry on (
-                        c.id_pays_naissance = ccountry.id_pays
-                    )
-                    LEFT JOIN pays_v2 acountry on (ca.id_pays = acountry.id_pays)
-                    LEFT JOIN nationalites_v2 nv2 on (
-                        c.id_nationalite = nv2.id_nationalite
-                    )
-                    LEFT JOIN lenders_accounts la on (la.id_client_owner = c.id_client)
-                    LEFT JOIN loans l on (
-                        la.id_lender_account = l.id_lender
-                        and l.status = 0
-                    )
-                    LEFT JOIN clients_status cs on c.status = cs.id_client_status
-                  WHERE
-                    (c.status_pre_emp = 1 or c.status_pre_emp = 2)
-                  GROUP BY
-                    c.id_client";
+                      END as 'DateDernierLogin',
+                      cs.id_client_status as 'StatutValidation',
+                      status_inscription_preteur as 'StatusInscription',
+                      count(
+                          distinct(l.id_project)
+                      ) as 'NbPretsValides',
+                      REPLACE(ca.adresse1,',','') as 'Adresse1',
+                      REPLACE(ca.adresse2,',','') as 'Adresse2',
+                      REPLACE(ca.adresse3,',','') as 'Adresse3',
+                      REPLACE(ca.cp,',','') as 'CP',
+                      REPLACE(ca.ville,',','') as 'Ville',
+                      acountry.fr as 'Pays',
+                      SUM(l.amount)/100 as 'TotalPretEur',
+                      CASE p.id_prospect WHEN NULL THEN '' ELSE CONCAT('P', p.id_prospect) END AS 'DeletingProspect',
+                      '0012400000K0Bxw' as 'Sfcompte'
+                    FROM
+                      clients c
+                      INNER JOIN lenders_accounts la on la.id_client_owner = c.id_client
+                      LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
+                      LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
+                      LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
+                      LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
+                      LEFT JOIN loans l on la.id_lender_account = l.id_lender and l.status = 0
+                      LEFT JOIN clients_status cs on c.status = cs.id_client_status
+                      LEFT JOIN prospects p ON p.email = c.email
+                    WHERE c.status = 1
+                    GROUP BY
+                      c.id_client";
 
         $this->tryIt($sQuery, 'preteurs');
         $this->extractProspects();
@@ -382,88 +369,81 @@ class SalesForce
             if ($rSql = $this->oDatabase->query($sQuery)) {
                 $iTimeStartCsv = microtime(true);
                 $rCsvFile      = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . 'preteurs.csv', 'a');
-                $rCsvFileCheck = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . 'tempProspect.csv', 'w');
                 $sNom          = $sPrenom = $sEmail = '';
-                $that          = $this;
                 while ($aRow = $this->oDatabase->fetch_assoc($rSql)) {
-                    array_walk($aRow, function (&$sValueRow, $sKeyRow) use ($that) {
-                        $sValueRow = html_entity_decode($sValueRow, ENT_QUOTES, 'UTF-8');
-                        $sValueRow = str_replace($that->aSearchCharacter, $that->aReplaceCharacter, $sValueRow);
-                    });
+                    $aRow = array_map(array($this, 'cleanValue'), $aRow);
                     if ($aRow['nom'] != $sNom && $aRow['prenom'] != $sPrenom && $aRow['email'] != $sEmail) {
                         //Array adding in file preteur.csv
-                        $aCsvProspect = array('P' . $aRow['id_prospect'],// We add the letter P to avoid error in the dataloader on duplicate key with lenders.
-                                              '',
-                                              $aRow['id_langue'],
-                                              $aRow['source'],
-                                              $aRow['source2'],
-                                              $aRow['source3'],
-                                              '',
-                                              $aRow['nom'],
-                                              '',
-                                              $aRow['prenom'],
-                                              '', '', '', '', '', '', '',
-                                              $aRow['email'],
-                                              '', 'Prospect', 'Prospect', '',
-                                              $aRow['added'],
-                                              $aRow['updated'],
-                                              '', '', '', '', '', '', '', '', '', '', 0, '',
-                                              '0012400000K0Bxw');
+                        $aCsvProspect = array(
+                            'P' . $aRow['id_prospect'],// We add the letter P to avoid error in the dataloader on duplicate key with lenders.
+                            '',
+                            $aRow['id_langue'],
+                            $aRow['source'],
+                            $aRow['source2'],
+                            $aRow['source3'],
+                            '',
+                            $aRow['nom'],
+                            '',
+                            $aRow['prenom'],
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            $aRow['email'],
+                            '',
+                            'Prospect',
+                            'Prospect',
+                            '',
+                            $aRow['added'],
+                            $aRow['updated'],
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            '',
+                            0,
+                            '',
+                            '0012400000K0Bxw'
+                        );
                         fputs($rCsvFile, '""' . implode('"", ""', $aCsvProspect) . '""' . "\n");
-
-                        //Array adding in file tempProspect.csv for check if become a client (deleting or not)
-                        $aCsvProspectCheck = array($aRow['id_prospect'], $aRow['email']);
-                        fputs($rCsvFileCheck, implode(',', $aCsvProspectCheck) . "\n");
-
                     }
                     $sNom    = $aRow['nom'];
                     $sPrenom = $aRow['prenom'];
                     $sEmail  = $aRow['email'];
                 }
                 fclose($rCsvFile);
-                fclose($rCsvFileCheck);
                 $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-                $this->oLogger->addRecord(ULogger::INFO, 'Generation of csv prospects in ' . round($iTimeEndCsv, 2),
-                    array(__FILE__ . ' on line ' . __LINE__));
+                $this->oLogger->addRecord(
+                    ULogger::INFO,
+                    'Generation of csv prospects in ' . round($iTimeEndCsv, 2),
+                    array(__FILE__ . ' on line ' . __LINE__)
+                );
 
                 $this->oDatabase->free_result($rSql);
-//                $this->sendDataloader('preteurs');
             } else {
                 throw new \Exception(mysql_error($this->oDatabase->connect_id));
             }
         } catch (\Exception $oException) {
-            $this->oLogger->addRecord(ULogger::ERROR, 'Error on query prospects : ' . $oException->getMessage(),
-                array(__FILE__ . ' on line ' . __LINE__));
+            $this->oLogger->addRecord(
+                ULogger::ERROR,
+                'Error on query prospects : ' . $oException->getMessage(),
+                array(__FILE__ . ' on line ' . __LINE__)
+            );
         }
     }
 
     /**
-     * @param string $sEmail client email
-     */
-    private function checkDeletingProspect($sEmail)
-    {
-        if (true === file_exists(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . self::FILE_PROSPECTS_ONLY)) {
-            $rCsvProspects = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . self::FILE_PROSPECTS_ONLY, 'r');
-            if (false === $rCsvProspects) {
-                $this->oLogger->addRecord(ULogger::ERROR, 'Opening of file ' . self::FILE_PROSPECTS_ONLY . ' return an error',
-                    array(__FILE__ . ' at line' . __LINE__));
-            } else {
-                while (false !== ($aData = fgetcsv($rCsvProspects))) {
-                    if ($sEmail == $aData[1]) {
-                        return 'P' . $aData[0];
-                    }
-                }
-
-                fclose($rCsvProspects);
-
-                return false;
-            }
-        }
-    }
-
-    /**
-     * @param resource $rSql resource of query sql
-     * @param string $sNameFile name of csv file to write
+     * @param resource $rSql      resource of query sql
+     * @param string   $sNameFile name of csv file to write
+     * @return mixed
      */
     private function createFileFromQuery($rSql, $sNameFile)
     {
@@ -472,18 +452,11 @@ class SalesForce
             $sNameFile .= (1 !== preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
             $rCsvFile   = fopen(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT . $sNameFile, 'w');
             $iCountLine = 0;
-            $that       = $this;
             while ($aRow = $this->oDatabase->fetch_assoc($rSql)) {
-                array_walk($aRow, function (&$sValueRow, $sKeyRow) use ($that) {
-                    $sValueRow = html_entity_decode($sValueRow, ENT_QUOTES, 'UTF-8');
-                    $sValueRow = str_replace($that->aSearchCharacter, $that->aReplaceCharacter, $sValueRow);
-                });
-
+                $aRow = array_map(array($this, 'cleanValue'), $aRow);
                 switch ($sNameFile) {
                     case 'preteurs.csv':
-                        $aRow['Valide']           = ('Valide' == $aRow['StatusCompletude']) ? 'Oui' : 'Non';
-                        $mDeleteProspect          = $this->checkDeletingProspect($aRow['Email']);
-                        $aRow['DeletingProspect'] = (false === $mDeleteProspect) ? '' : $mDeleteProspect;
+                        $aRow['Valide'] = ('Valide' == $aRow['StatusCompletude']) ? 'Oui' : 'Non';
                         break;
                 }
                 if (0 === $iCountLine) {
@@ -496,9 +469,11 @@ class SalesForce
             fclose($rCsvFile);
 
             $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
-            $this->oLogger->addRecord(ULogger::INFO, 'Generation of csv ' . $sNameFile . ' in ' . round($iTimeEndCsv, 2),
-                array(__FILE__ . ' on line ' . __LINE__));
-
+            $this->oLogger->addRecord(
+                ULogger::INFO,
+                'Generation of csv ' . $sNameFile . ' in ' . round($iTimeEndCsv, 2),
+                array(__FILE__ . ' on line ' . __LINE__)
+            );
             return true;
         }
 
@@ -509,9 +484,12 @@ class SalesForce
     {
         if (false === is_dir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT)) {
             if (false === mkdir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT, 0777, true)) {
-                $this->oLogger->addRecord(ULogger::INFO, 'Error on create dir ' .
+                $this->oLogger->addRecord(
+                    ULogger::INFO,
+                    'Error on create dir ' .
                     Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_EXTRACT,
-                    array(__FILE__ . ' on line ' . __LINE__));
+                    array(__FILE__ . ' on line ' . __LINE__)
+                );
 
                 return false;
             }
@@ -521,12 +499,13 @@ class SalesForce
     }
 
     /**
-     * @param string $sQuery sql query
+     * @param string $sQuery    sql query
      * @param string $sNameFile File Name to generate
      */
     private function tryIt($sQuery, $sNameFile)
     {
         try {
+            $this->oDatabase->query('SET SQL_BIG_SELECTS=1');
             if ($rSql = $this->oDatabase->query($sQuery)) {
                 $this->createFileFromQuery($rSql, $sNameFile . '.csv');
                 $this->oDatabase->free_result($rSql);
@@ -534,46 +513,44 @@ class SalesForce
                 throw new \Exception(mysql_error($this->oDatabase->connect_id));
             }
         } catch (\Exception $oException) {
-            $this->oLogger->addRecord(ULogger::ERROR, 'Error on query ' . $sNameFile . ' : ' . $oException->getMessage(),
-                array(__FILE__ . ' on line ' . __LINE__));
+            $this->oLogger->addRecord(
+                ULogger::ERROR,
+                'Error on query ' . $sNameFile . ' : ' . $oException->getMessage(),
+                array(__FILE__ . ' on line ' . __LINE__)
+            );
         }
     }
 
     /**
      * @param string $sPath path of directory to unlink. If null, path of success log.
      */
-    private function DeleteStatusLog($sPath = null)
+    private function deleteStatusLog($sPath = null)
     {
         $sPath = (true === is_null($sPath)) ?
             Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_SUCCESS_LOG : $sPath;
         if (true === is_dir($sPath)) {
             $aFiles = array_diff(
                 scandir(Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_SUCCESS_LOG),
-                array('.', '..'));
+                array('.', '..')
+            );
             foreach ($aFiles as $sFile) {
                 (is_dir($sPath . '/' . $sFile)) ? delTree($sPath . '/' . $sFile) : unlink($sPath . '/' . $sFile);
             }
 
             $bUnlinkSuccessLog = rmdir($sPath);
             $sTextLog          = (true === $bUnlinkSuccessLog) ? 'success.' : 'error.';
-            $this->oLogger->addRecord(ULogger::INFO,
+            $this->oLogger->addRecord(
+                ULogger::INFO,
                 'Deleting ' . self::PATH_SUCCESS_LOG . ' with message ' . $sTextLog,
-                array(__FILE__ . ' at line ' . __LINE__));
+                array(__FILE__ . ' at line ' . __LINE__)
+            );
         }
     }
 
-    /**
-     * @param string $sType name of treatment (preteurs, emprunteurs, projects or companies)
-     */
-    private function sendDataloader($sType)
+    private function cleanValue($sValue)
     {
-        assert('in_array($sType, self::$aTypeDataloader, true); //Type $sType not authorized for dataloader.');
-
-        $iTimeStartDataloader = microtime(true);
-        //TODO a passer en crontab
-        exec('java -cp ' . Bootstrap::$aConfig['dataloader_path'][Bootstrap::$aConfig['env']] . 'dataloader-' . self::DATALOADER_VERSION . '-uber.jar -Dsalesforce.config.dir=' . Bootstrap::$aConfig['path'][Bootstrap::$aConfig['env']] . self::PATH_DATALOADER_CONF . ' com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader);
-        $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
-        $this->oLogger->addRecord(ULogger::ERROR, 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
-            array(__FILE__ . ' on line ' . __LINE__));
+        $sValue = html_entity_decode($sValue, ENT_QUOTES, 'UTF-8');
+        $sValue = str_replace($this->aSearchCharacter, $this->aReplaceCharacter, $sValue);
+        return $sValue;
     }
 }
