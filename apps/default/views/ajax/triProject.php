@@ -41,9 +41,7 @@
         <tr class="unProjet" id="project<?= $aProject['id_project'] ?>">
             <td>
                 <?php
-                if ($this->projects_status->status >= \projects_status::FUNDE) {
-                    $project['daterest'] = 'Terminé';
-                } else {
+                if ($this->projects_status->status < \projects_status::FUNDE) {
                     $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                     $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
@@ -55,6 +53,8 @@
                         setTimeout('decompte(letime <?= $aProject['id_project'] ?>,"val<?=$aProject['id_project']?>")', 500);
                     </script>
                     <?php
+                } else {
+                    $project['daterest'] = 'Terminé';
                 }
                 ?>
 
