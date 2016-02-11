@@ -109,7 +109,6 @@ class Altares
             $oCompany->adresse1      = $oEligibilityInfo->identite->rue;
             $oCompany->city          = $oEligibilityInfo->identite->ville;
             $oCompany->zip           = $oEligibilityInfo->identite->codePostal;
-            $oCompany->rcs           = $oEligibilityInfo->identite->rcs;
             $oCompany->siret         = $oEligibilityInfo->identite->siret;
             $oCompany->date_creation = substr($oEligibilityInfo->identite->dateCreation, 0, 10);
         }

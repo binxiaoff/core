@@ -344,7 +344,7 @@ if($asterix_on) {
 			id_last_action		: $(this).attr('id'),
 			order 				: order,
 			type 				: type
-		}
+		};
 
 		$.post(add_url+"/ajax/vos_operations",val).done(function( data ) {
 

@@ -595,7 +595,6 @@ class pdfController extends bootstrap
 
         $this->clients_adresses->get($oClients->id_client, 'id_client');
         $this->companiesEmprunteur->get($oProjects->id_company, 'id_company');
-        $this->companies_detailsEmprunteur->get($oProjects->id_company, 'id_company');
         $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
 
         // Si preteur morale

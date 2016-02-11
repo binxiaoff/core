@@ -26,7 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\ULogger;
 use Unilend\librairies\Cache;
 
 class lenders_accounts extends lenders_accounts_crud

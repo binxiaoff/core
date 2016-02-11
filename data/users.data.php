@@ -29,8 +29,6 @@ class users extends users_crud
 {
     const USER_ID_CRON  = -1;
     const USER_ID_FRONT = -2;
-    const FRONT_OFFICE = -2;
-    const CRON         = -1;
 
     public function __construct($bdd, $params = '')
     {

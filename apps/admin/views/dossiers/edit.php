@@ -140,8 +140,8 @@
             changeMonth: true,
             changeYear: true
         });
-        $('#duree').change(function(){
-            if(0 == $(this).val() && \projects_status::PREP_FUNDING == <?= $this->current_projects_status->status ?>) {
+        $('#duree').change(function() {
+            if (0 == $(this).val() && <?= \projects_status::PREP_FUNDING ?> == <?= $this->current_projects_status->status ?>) {
                 $("#status").css('display', 'none');
                 $("#msgProject").css('display', 'none');
                 $("#displayPeriodHS").css('display', 'block');
