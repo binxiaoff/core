@@ -28,6 +28,24 @@
 
 class transactions extends transactions_crud
 {
+    const PAYMENT_TYPE_VISA       = 0;
+    const PAYMENT_TYPE_MASTERCARD = 3;
+    const PAYMENT_TYPE_AUTO       = 1;
+    const PAYMENT_TYPE_AMEX       = 2;
+
+    const PAYMENT_STATUS__NOK = 0;
+    const PAYMENT_STATUS_OK   = 1;
+
+    const STATUS_PENDING  = 0;
+    const STATUS_VALID    = 1;
+    const STATUS_CANCELED = 3;
+
+    const PHYSICAL = 1;
+    const VIRTUAL  = 2;
+
+    const DISPLAY_IN_FO = 0;
+    const HIDE_IN_FO = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::transactions($bdd, $params);

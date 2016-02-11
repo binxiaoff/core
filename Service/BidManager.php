@@ -9,103 +9,171 @@ use Unilend\core\Loader;
  */
 class BidManager
 {
-    public static function bid(\bids $oBid)
+    /** @var \settings */
+    private $oSettings;
+    /** @var \lenders_accounts */
+    private $oLenderAccount;
+    /** @var \clients_status */
+    private $oClientStatus;
+    /** @var \transactions */
+    private $oTransaction;
+    /** @var \wallets_lines */
+    private $oWalletsLine;
+    /** @var \bids */
+    private $oBid;
+    /** @var \offres_bienvenues_details */
+    private $oWelcomeOfferDetails;
+    /** @var \notifications */
+    private $oNotification;
+    /** @var \clients_gestion_notifications */
+    private $oNotificationSettings;
+    /** @var \clients_gestion_mails_notif */
+    private $oMailNotification;
+    /** @var \clients */
+    private $oClient;
+    private $sLanguage;
+    /** @var \mails_text */
+    private $oMailText;
+    /** @var \dates */
+    private $oDate;
+    /** @var \tree */
+    private $oTree;
+    /** @var \ficelle */
+    private $oFicelle;
+    /** @var \companies */
+    private $oCompany;
+    /** @var \mails_filer */
+    private $oMailFiler;
+    /** @var \tnmp */
+    private $oTNMP;
+    /** @var \email */
+    private $oEmail;
+    /** @var array */
+    private $aConfig;
+    /** @var  ClientManager */
+    private $oClientManager;
+
+    public function __construct()
     {
-        /** @var \settings $oSetting */
-        $oSetting = Loader::loadData('settings');
-        $oSetting->get('Pret min', 'type');
-        $iAmountMin = (int)$oSetting->value;
+        $this->oSettings             = Loader::loadData('settings');
+        $this->oLenderAccount        = Loader::loadData('lenders_accounts');
+        $this->oClientStatus         = Loader::loadData('clients_status');
+        $this->oTransaction          = Loader::loadData('transactions');
+        $this->oWalletsLine          = Loader::loadData('wallets_lines');
+        $this->oBid                  = Loader::loadData('bids');
+        $this->oWelcomeOfferDetails  = Loader::loadData('offres_bienvenues_details');
+        $this->oNotification         = Loader::loadData('notifications');
+        $this->oNotificationSettings = Loader::loadData('clients_gestion_notifications');
+        $this->oMailNotification     = Loader::loadData('clients_gestion_mails_notif');
+        $this->oClient               = Loader::loadData('clients');
+        $this->oCompany              = Loader::loadData('companies');
+        $this->oMailFiler            = Loader::loadData('mails_filer');
+        $this->oMailText             = Loader::loadData('mails_text');
+        $this->oTree                 = Loader::loadData('tree');
 
-        $iAmount     = $oBid->amount / 100;
-        $iAmountX100 = $oBid->amount;
+        $this->oDate    = Loader::loadLib('dates');
+        $this->oFicelle = Loader::loadLib('ficelle');
+        $this->oTNMP    = Loader::loadLib('tnmp');
+        $this->oEmail   = Loader::loadLib('email');
 
-        if ($iAmountMin > $iAmount) {
+        $this->aConfig = Loader::loadConfig();
+
+        $this->oClientManager = Loader::loadService('ClientManager');
+
+        $this->sLanguage = 'fr';
+    }
+
+    public function bid($iLenderId, $iProjectId, $iAutoBidId, $fAmount, $fRate)
+    {
+        $this->oSettings->get('Pret min', 'type');
+        $iAmountMin = (int)$this->oSettings->value;
+
+        if ($iAmountMin > $fAmount) {
             return false;
         }
 
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
-        if (false === $oLenderAccount->get($oBid->id_lender)) {
+        if (false === $this->oLenderAccount->get($iLenderId)) {
             return false;
         }
-        $iClientId = $oLenderAccount->id_client_owner;
 
-        /** @var \clients_status $oClientStatus */
-        $oClientStatus = Loader::loadData('clients_status');
-        if ($oClientStatus->getLastStatut($iClientId)) {
-            if ($oClientStatus->status < 60) {
+        $iClientId = $this->oLenderAccount->id_client_owner;
+
+        if ($this->oClientStatus->getLastStatut($iClientId)) {
+            if ($this->oClientStatus->status < 60) {
                 return false;
             }
         } else {
             return false;
         }
-        /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
-        $iBalance     = $oTransaction->getSolde($iClientId);
-        if ($iBalance < $iAmount) {
+
+        $iBalance = $this->oTransaction->getSolde($iClientId);
+        if ($iBalance < $fAmount) {
             return false;
         }
 
-        $oTransaction->id_client        = $iClientId;
-        $oTransaction->montant          = '-' . ($iAmountX100);
-        $oTransaction->id_langue        = 'fr';
-        $oTransaction->date_transaction = date('Y-m-d H:i:s');
-        $oTransaction->status           = '1';
-        $oTransaction->etat             = '1';
-        $oTransaction->id_project       = $oBid->id_project;
-        $oTransaction->transaction      = '2';
-        $oTransaction->type_transaction = '2';
-        $oTransaction->create();
+        $fAmountX100 = $fAmount * 100;
 
-        /** @var \wallets_lines $oWalletsLine */
-        $oWalletsLine                           = Loader::loadData('wallets_lines');
-        $oWalletsLine->id_lender                = $oBid->id_lender;
-        $oWalletsLine->type_financial_operation = 20; // enchere
-        $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
-        $oWalletsLine->status                   = 1;
-        $oWalletsLine->type                     = 2; // transaction virtuelle
-        $oWalletsLine->amount                   = '-' . ($iAmountX100);
-        $oWalletsLine->id_project               = $oBid->id_project;
-        $oWalletsLine->create();
+        $this->oBid->id_lender_account = $iLenderId;
+        $this->oBid->id_project        = $iProjectId;
+        $this->oBid->id_autobid        = $iAutoBidId;
+        $this->oBid->amount            = $fAmountX100;
+        $this->oBid->rate              = $fRate;
 
-        /** @var \bids $oBids */
-        $oBids  = Loader::loadData('bids');
-        $iBidNb = $oBids->counter('id_project = ' . $oBid->id_project);
+        $this->oTransaction->id_client        = $iClientId;
+        $this->oTransaction->montant          = -$fAmountX100;
+        $this->oTransaction->id_langue        = 'fr';
+        $this->oTransaction->date_transaction = date('Y-m-d H:i:s');
+        $this->oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
+        $this->oTransaction->etat             = \transactions::STATUS_VALID;
+        $this->oTransaction->id_project       = $iProjectId;
+        $this->oTransaction->transaction      = \transactions::VIRTUAL;
+        $this->oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
+        $this->oTransaction->create();
+
+
+        $this->oWalletsLine->id_lender                = $this->oBid->id_lender;
+        $this->oWalletsLine->type_financial_operation = \wallets_lines::TYPE_BID;
+        $this->oWalletsLine->id_transaction           = $this->oTransaction->id_transaction;
+        $this->oWalletsLine->status                   = \wallets_lines::STATUS_VALID;
+        $this->oWalletsLine->type                     = \wallets_lines::VIRTUAL;
+        $this->oWalletsLine->amount                   = -$fAmountX100;
+        $this->oWalletsLine->id_project               = $this->oBid->id_project;
+        $this->oWalletsLine->create();
+
+
+        $iBidNb = $this->oBid->counter('id_project = ' . $this->oBid->id_project);
         $iBidNb += 1;
 
-        $oBids->id_lender_wallet_line = $oWalletsLine->id_wallet_line;
-        $oBids->ordre                 = $iBidNb;
-        $oBids->create();
+        $this->oBid->id_lender_wallet_line = $this->oWalletsLine->id_wallet_line;
+        $this->oBid->ordre                 = $iBidNb;
+        $this->oBid->create();
 
-        /** @var \offres_bienvenues_details $oWelcomeOffer */
-        $oWelcomeOffer = Loader::loadData('offres_bienvenues_details');
 
         // Liste des offres non utilisées
-        $aAllOffers = $oWelcomeOffer->select('id_client = ' . $iClientId . ' AND status = 0');
+        $aAllOffers = $this->oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
         if ($aAllOffers != false) {
             $iOfferTotal = 0;
             foreach ($aAllOffers as $aOffer) {
-                // Tant que le total des offres est infèrieur
-                if ($iOfferTotal <= $iAmount) {
+                if ($iOfferTotal <= $fAmount) {
                     $iOfferTotal += ($aOffer['montant'] / 100); // total des offres
 
-                    $oWelcomeOffer->get($aOffer['id_offre_bienvenue_detail'], 'id_offre_bienvenue_detail');
-                    $oWelcomeOffer->status = 1;
-                    $oWelcomeOffer->id_bid = $oBids->id_bid;
-                    $oWelcomeOffer->update();
+                    $this->oWelcomeOfferDetails->get($aOffer['id_offre_bienvenue_detail'], 'id_offre_bienvenue_detail');
+                    $this->oWelcomeOfferDetails->status = \offres_bienvenues_details::STATUS_USED;
+                    $this->oWelcomeOfferDetails->id_bid = $this->oBid->id_bid;
+                    $this->oWelcomeOfferDetails->update();
 
                     // Apres addition de la derniere offre on se rend compte que le total depasse
-                    if ($iOfferTotal > $iAmount) {
+                    if ($iOfferTotal > $fAmount) {
                         // On fait la diff et on créer un remb du trop plein d'offres
-                        $iAmountRepayment                  = $iOfferTotal - $iAmount;
-                        $oWelcomeOffer->id_offre_bienvenue = 0;
-                        $oWelcomeOffer->id_client          = $iClientId;
-                        $oWelcomeOffer->id_bid             = 0;
-                        $oWelcomeOffer->id_bid_remb        = $oBids->id_bid;
-                        $oWelcomeOffer->status             = 0;
-                        $oWelcomeOffer->type               = 1;
-                        $oWelcomeOffer->montant            = ($iAmountRepayment * 100);
-                        $oWelcomeOffer->create();
+                        $iAmountRepayment                               = $iOfferTotal - $fAmount;
+                        $this->oWelcomeOfferDetails->id_offre_bienvenue = 0;
+                        $this->oWelcomeOfferDetails->id_client          = $iClientId;
+                        $this->oWelcomeOfferDetails->id_bid             = 0;
+                        $this->oWelcomeOfferDetails->id_bid_remb        = $this->oBid->id_bid;
+                        $this->oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
+                        $this->oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_CUT;
+                        $this->oWelcomeOfferDetails->montant            = ($iAmountRepayment * 100);
+                        $this->oWelcomeOfferDetails->create();
                     }
                 } else {
                     break;
@@ -114,214 +182,170 @@ class BidManager
         }
 
         ///// NOTIFICATION OFFRE PLACEE ///////
-        /** @var \notifications $oNotification */
-        $oNotification             = Loader::loadData('notifications');
-        $oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED; // offre placée
-        $oNotification->id_lender  = $oBid->id_lender;
-        $oNotification->id_project = $oBid->id_project;
-        $oNotification->amount     = $iAmountX100;
-        $oNotification->id_bid     = $oBids->id_bid;
-        $oNotification->create();
+
+        $this->oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED;
+        $this->oNotification->id_lender  = $this->oBid->id_lender;
+        $this->oNotification->id_project = $this->oBid->id_project;
+        $this->oNotification->amount     = $fAmountX100;
+        $this->oNotification->id_bid     = $this->oBid->id_bid;
+        $this->oNotification->create();
         ///// FIN NOTIFICATION OFFRE PLACEE ///////
 
-        /** @var \clients_gestion_notifications $oNotificationSettings */
-        $oNotificationSettings = Loader::loadData('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
-        if ($oNotificationSettings->getNotif($iClientId, \clients_gestion_type_notif::TYPE_BID_PLACED, 'immediatement') == true) {
-            /** @var \clients $oClient */
-            $oClient = Loader::loadData('clients');
-            $oClient->get($iClientId);
-
-            $sPurpose = ClientManager::getClientTransferPurpose($oClient);
+        if ($this->oNotificationSettings->getNotif($iClientId, \clients_gestion_type_notif::TYPE_BID_PLACED, 'immediatement') == true) {
+            $this->oClient->get($iClientId);
+            $sPurpose = $this->oClientManager->getClientTransferPurpose($iClientId);
 
             //*********************************//
             //*** ENVOI DU MAIL CONFIRM BID ***//
             //*********************************//
-            //Todo: create the language in client settings in case of multi-language site (project Italy)
-            $sLanguage = 'fr';
-            /** @var \mails_text $oMailText */
-            $oMailText = Loader::loadData('mails_text');
-            $oMailText->get('confirmation-bid', 'lang = "' . $sLanguage . '" AND type');
+            $this->oMailText->get('confirmation-bid', 'lang = "' . $this->sLanguage . '" AND type');
 
-            $oSetting->get('Facebook', 'type');
-            $lien_fb = $oSetting->value;
+            $this->oSettings->get('Facebook', 'type');
+            $lien_fb = $this->oSettings->value;
 
-            $oSetting->get('Twitter', 'type');
-            $lien_tw = $oSetting->value;
+            $this->oSettings->get('Twitter', 'type');
+            $lien_tw = $this->oSettings->value;
 
-            $timeAdd = strtotime($oBids->added);
-            /** @var \dates $oDate */
-            $oDate = Loader::loadLib('dates');
-            $month = $oDate->tableauMois['fr'][date('n', $timeAdd)];
+            $timeAdd = strtotime($this->oBid->added);
+            $month   = $this->oDate->tableauMois['fr'][date('n', $timeAdd)];
 
-            $config = Loader::loadConfig();
-            $sSUrl  = $config['static_url'][$config['env']];
-            $sLUrl  = $config['url'][$config['env']]['default'] . ($config['multilanguage']['enabled'] ? '/' . $sLanguage : '');
+            $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
+            $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
 
-            /** @var \tree $oTree */
-            $oTree       = Loader::loadData('tree');
-            $pageProjets = $oTree->getSlug(4, $sLanguage);
-
-            /** @var \ficelle $oFicelle */
-            $oFicelle = Loader::loadLib('ficelle');
-
-            /** @var \companies $oCompany */
-            $oCompany = Loader::loadData('companies');
+            $pageProjets = $this->oTree->getSlug(4, $this->sLanguage);
 
             $varMail = array(
                 'surl' => $sSUrl,
                 'url' => $sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'nom_entreprise' => $oCompany->name,
-                'valeur_bid' => $oFicelle->formatNumber($iAmount),
-                'taux_bid' => $oFicelle->formatNumber($oBid->rate, 1),
+                'prenom_p' => $this->oClient->prenom,
+                'nom_entreprise' => $this->oCompany->name,
+                'valeur_bid' => $this->oFicelle->formatNumber($fAmount),
+                'taux_bid' => $this->oFicelle->formatNumber($this->oBid->rate, 1),
                 'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                'heure_bid' => date('H:i:s', strtotime($oBids->added)),
+                'heure_bid' => date('H:i:s', strtotime($this->oBid->added)),
                 'projet-p' => $sLUrl . '/' . $pageProjets,
                 'motif_virement' => $sPurpose,
                 'lien_fb' => $lien_fb,
                 'lien_tw' => $lien_tw
             );
 
-            /** @var \tnmp $oTNMP */
-            $oTNMP   = Loader::loadLib('tnmp');
-            $tabVars = $oTNMP->constructionVariablesServeur($varMail);
+            $tabVars   = $this->oTNMP->constructionVariablesServeur($varMail);
+            $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
 
-            $sujetMail = strtr(utf8_decode($oMailText->subject), $tabVars);
-            $texteMail = strtr(utf8_decode($oMailText->content), $tabVars);
-            $exp_name  = strtr(utf8_decode($oMailText->exp_name), $tabVars);
+            $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
+            $this->oEmail->setSubject(stripslashes($sujetMail));
+            $this->oEmail->setHTMLBody(stripslashes($texteMail));
 
-            /** @var \email $oEmail */
-            $oEmail = Loader::loadLib('email');
-            $oEmail->setFrom($oMailText->exp_email, $exp_name);
-            $oEmail->setSubject(stripslashes($sujetMail));
-            $oEmail->setHTMLBody(stripslashes($texteMail));
-
-            /** @var \mails_filer $oMailFiler */
-            $oMailFiler = Loader::loadData('mails_filer');
-
-            if ($config['env'] === 'prod') {
-                \Mailer::sendNMP($oEmail, $oMailFiler, $oMailText->id_textemail, $oClient->email, $tabFiler);
-                $oTNMP->sendMailNMP($tabFiler, $varMail, $oMailText->nmp_secure, $oMailText->id_nmp, $oMailText->nmp_unique, $oMailText->mode);
+            if ($this->aConfig['env'] === 'prod') {
+                \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $this->oClient->email, $tabFiler);
+                $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
             } else {
-                $oEmail->addRecipient(trim($oClient->email));
-                \Mailer::send($oEmail, $oMailFiler, $oMailText->id_textemail);
+                $this->oEmail->addRecipient(trim($this->oClient->email));
+                \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
             }
             // fin mail confirmation bid //
 
-            $oMailNotification->immediatement = 1;
+            $this->oMailNotification->immediatement = 1;
         } else {
-            $oMailNotification->immediatement = 0;
+            $this->oMailNotification->immediatement = 0;
         }
 
-        $oMailNotification->id_client       = $oClient->id_client;
-        $oMailNotification->id_notif        = 2; // offre placée
-        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $oMailNotification->id_notification = $oNotification->id_notification;
-        $oMailNotification->id_transaction  = $oTransaction->id_transaction;
-        $oMailNotification->create();
+        $this->oMailNotification->id_client       = $this->oClient->id_client;
+        $this->oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED; // offre placée
+        $this->oMailNotification->date_notif      = date('Y-m-d H:i:s');
+        $this->oMailNotification->id_notification = $this->oNotification->id_notification;
+        $this->oMailNotification->id_transaction  = $this->oTransaction->id_transaction;
+        $this->oMailNotification->create();
     }
 
     /**
-     * @param \bids $oBid
+     * @param $iBidId
      */
-    public static function reject(\bids $oBid)
+    public function reject($iBidId)
     {
-        if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            /** @var \lenders_accounts $oLenderAccount */
-            $oLenderAccount = Loader::loadData('lenders_accounts');
-            $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
-
-            self::credit($oBid, $oLenderAccount, $oBid->amount / 100);
-            $oBid->status = \bids::STATUS_BID_REJECTED;
-            $oBid->update();
+        if ($this->oBid->get($iBidId) && ($this->oBid->status == \bids::STATUS_BID_PENDING || $this->oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
+            $this->credit($this->oBid->amount / 100);
+            $this->oBid->status = \bids::STATUS_BID_REJECTED;
+            $this->oBid->update();
         }
+
+
     }
 
-    public static function rejectPartially(\bids $oBid, $fRepaymentAmount)
+    public function rejectPartially($iBidId, $fRepaymentAmount)
     {
-        if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            /** @var \lenders_accounts $oLenderAccount */
-            $oLenderAccount = Loader::loadData('lenders_accounts');
-            $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
-
-            self::credit($oBid, $oLenderAccount, $fRepaymentAmount);
+        if ($this->oBid->get($iBidId) && ($this->oBid->status == \bids::STATUS_BID_PENDING || $this->oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
+            $this->credit($fRepaymentAmount);
             // Save new amount of the bid after repayment
-            $oBid->amount -= $fRepaymentAmount * 100;
-            $oBid->status = \bids::STATUS_BID_ACCEPTED;
-            $oBid->update();
+            $this->oBid->amount -= $fRepaymentAmount * 100;
+            $this->oBid->status = \bids::STATUS_BID_ACCEPTED;
+            $this->oBid->update();
         }
     }
 
-    private static function credit(\bids $oBid, \lenders_accounts $oLenderAccount, $fAmount)
+    private function credit($fAmount)
     {
-        $iAmountX100 = $fAmount * 100;
+        $this->oLenderAccount->get($this->oBid->id_lender_account, 'id_lender_account');
 
-        /** @var \transactions $oTransaction */
-        $oTransaction                   = Loader::loadData('transactions');
-        $oTransaction->id_client        = $oLenderAccount->id_client_owner;
-        $oTransaction->montant          = $iAmountX100;
-        $oTransaction->id_langue        = 'fr';
-        $oTransaction->date_transaction = date('Y-m-d H:i:s');
-        $oTransaction->status           = '1';
-        $oTransaction->etat             = '1';
-        $oTransaction->id_project       = $oBid->id_project;
-        $oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
-        $oTransaction->type_transaction = 2;
-        $oTransaction->id_bid_remb      = $oBid->id_bid;
-        $oTransaction->transaction      = 2; // transaction virtuelle
-        $oTransaction->create();
+        $fAmountX100 = $fAmount * 100;
 
-        /** @var \wallets_lines $oTransaction */
-        $oWalletsLine                           = Loader::loadData('wallets_lines');
-        $oWalletsLine->id_lender                = $oBid->id_lender_account;
-        $oWalletsLine->type_financial_operation = 20;
-        $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
-        $oWalletsLine->status                   = 1;
-        $oWalletsLine->type                     = 2;
-        $oWalletsLine->id_bid_remb              = $oBid->id_bid;
-        $oWalletsLine->amount                   = $iAmountX100;
-        $oWalletsLine->id_project               = $oBid->id_project;
-        $oWalletsLine->create();
+        $this->oTransaction->id_client        = $this->oLenderAccount->id_client_owner;
+        $this->oTransaction->montant          = $fAmountX100;
+        $this->oTransaction->id_langue        = 'fr';
+        $this->oTransaction->date_transaction = date('Y-m-d H:i:s');
+        $this->oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
+        $this->oTransaction->etat             = \transactions::STATUS_VALID;
+        $this->oTransaction->id_project       = $this->oBid->id_project;
+        $this->oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+        $this->oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
+        $this->oTransaction->id_bid_remb      = $this->oBid->id_bid;
+        $this->oTransaction->transaction      = \transactions::VIRTUAL;
+        $this->oTransaction->create();
 
-        /** @var \offres_bienvenues_details $oWelcomeOffer */
-        $oWelcomeOffer      = Loader::loadData('offres_bienvenues_details');
-        $iWelcomeOfferTotal = $oWelcomeOffer->sum('id_client = ' . $oLenderAccount->id_client_owner . ' AND id_bid = ' . $oBid->id_bid, 'montant');
+        $this->oWalletsLine->id_lender                = $this->oBid->id_lender_account;
+        $this->oWalletsLine->type_financial_operation = \wallets_lines::TYPE_BID;
+        $this->oWalletsLine->id_transaction           = $this->oTransaction->id_transaction;
+        $this->oWalletsLine->status                   = \wallets_lines::STATUS_VALID;
+        $this->oWalletsLine->type                     = \wallets_lines::VIRTUAL;
+        $this->oWalletsLine->id_bid_remb              = $this->oBid->id_bid;
+        $this->oWalletsLine->amount                   = $fAmountX100;
+        $this->oWalletsLine->id_project               = $this->oBid->id_project;
+        $this->oWalletsLine->create();
+
+        $iWelcomeOfferTotal = $this->oWelcomeOfferDetails->sum('id_client = ' . $this->oLenderAccount->id_client_owner . ' AND id_bid = ' . $this->oBid->id_bid, 'montant');
         if ($iWelcomeOfferTotal > 0) {
-            if ($oBid->amount === $iAmountX100) { //Totally credit
-                $oWelcomeOffer->montant = min($iWelcomeOfferTotal, $iAmountX100);
-            } elseif (($oBid->amount - $iAmountX100) <= $iWelcomeOfferTotal) { //Partially credit
-                $oWelcomeOffer->montant = $iWelcomeOfferTotal - ($oBid->amount - $iAmountX100);
+            if ($this->oBid->amount === $fAmountX100) { //Totally credit
+                $this->oWelcomeOfferDetails->montant = min($iWelcomeOfferTotal, $fAmountX100);
+            } elseif (($this->oBid->amount - $fAmountX100) <= $iWelcomeOfferTotal
+            ) { //Partially credit
+                $this->oWelcomeOfferDetails->montant = $iWelcomeOfferTotal - ($this->oBid->amount - $fAmountX100);
             }
 
-            if (false === empty($oWelcomeOffer->montant)) {
-                $oWelcomeOffer->id_offre_bienvenue = 0;
-                $oWelcomeOffer->id_client          = $oLenderAccount->id_client_owner;
-                $oWelcomeOffer->id_bid             = 0;
-                $oWelcomeOffer->id_bid_remb        = $oBid->id_bid;
-                $oWelcomeOffer->status             = 0;
-                $oWelcomeOffer->type               = 2;
-                $oWelcomeOffer->create();
+            if (false === empty($this->oWelcomeOfferDetails->montant)) {
+                $this->oWelcomeOfferDetails->id_offre_bienvenue = 0;
+                $this->oWelcomeOfferDetails->id_client          = $this->oLenderAccount->id_client_owner;
+                $this->oWelcomeOfferDetails->id_bid             = 0;
+                $this->oWelcomeOfferDetails->id_bid_remb        = $this->oBid->id_bid;
+                $this->oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
+                $this->oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_PAYBACK;
+                $this->oWelcomeOfferDetails->create();
             }
         }
 
-        /** @var \notifications $oNotification */
-        $oNotification             = Loader::loadData('notifications');
-        $oNotification->type       = 1; // rejet
-        $oNotification->id_lender  = $oBid->id_lender_account;
-        $oNotification->id_project = $oBid->id_project;
-        $oNotification->amount     = $iAmountX100;
-        $oNotification->id_bid     = $oBid->id_bid;
-        $oNotification->create();
+        $this->oNotification->type       = \notifications::TYPE_BID_REJECTED; // rejet
+        $this->oNotification->id_lender  = $this->oBid->id_lender_account;
+        $this->oNotification->id_project = $this->oBid->id_project;
+        $this->oNotification->amount     = $fAmountX100;
+        $this->oNotification->id_bid     = $this->oBid->id_bid;
+        $this->oNotification->create();
 
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification                  = Loader::loadData('clients_gestion_mails_notif');
-        $oMailNotification->id_client       = $oLenderAccount->id_client_owner;
-        $oMailNotification->id_notif        = 3; // rejet
-        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $oMailNotification->id_notification = $oNotification->id_notification;
-        $oMailNotification->id_transaction  = $oTransaction->id_transaction;
-        $oMailNotification->create();
+        $this->oMailNotification->id_client       = $this->oLenderAccount->id_client_owner;
+        $this->oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_REJECTED;
+        $this->oMailNotification->date_notif      = date('Y-m-d H:i:s');
+        $this->oMailNotification->id_notification = $this->oNotification->id_notification;
+        $this->oMailNotification->id_transaction  = $this->oTransaction->id_transaction;
+        $this->oMailNotification->create();
     }
 }

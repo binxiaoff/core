@@ -197,40 +197,37 @@ class cronController extends bootstrap
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
     {
-        if (true === $this->startCron('check_projet_a_funder', 5)) {
-            $this->projects                = $this->loadData('projects');
-            $this->projects_status         = $this->loadData('projects_status');
-            $this->projects_status_history = $this->loadData('projects_status_history');
+        if (true || true === $this->startCron('check_projet_a_funder', 5)) {
+            $oProjects              = $this->loadData('projects');
+            $oProjectsStatusHistory = $this->loadData('projects_status_history');
 
-            $this->settings->get('Heure debut periode funding', 'type');
-            $this->heureDebutFunding = $this->settings->value;
+            $aProjectToFund = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER);
 
-            $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::A_FUNDER);
-
-            foreach ($this->lProjects as $projects) {
-                $tabdatePublication = explode(':', $projects['date_publication_full']);
+            foreach ($aProjectToFund as $aProject) {
+                $tabdatePublication = explode(':', $aProject['date_publication_full']);
                 $datePublication    = $tabdatePublication[0] . ':' . $tabdatePublication[1];
                 $today              = date('Y-m-d H:i');
                 echo 'datePublication : ' . $datePublication . '<br>';
                 echo 'today : ' . $today . '<br><br>';
 
-                if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
-                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, projects_status::AUTO_BID, $projects['id_project']);
-                    $this->projects->get($projects['id_project']);
-                    \Unilend\Service\ProjectManager::autoBid($this->projects);
+                if (true || $datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
+                    $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, projects_status::AUTO_BID, $aProject['id_project']);
+                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                    $oProjectManager = $this->get('ProjectManager');
+                    $oProjectManager->autoBid($aProject['id_project']);
 
-                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $projects['id_project']);
+                    $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $aProject['id_project']);
 
                     // Zippage pour groupama
-                    $this->zippage($projects['id_project']);
-                    $this->nouveau_projet($projects['id_project']);
+                    $this->zippage($aProject['id_project']);
+                    $this->nouveau_projet($aProject['id_project']);
                 }
             }
             $oCache = \Unilend\librairies\Cache::getInstance();
             $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
             $oCache->delete($sKey);
 
-            $this->stopCron();
+            //$this->stopCron();
         }
     }
 
@@ -278,8 +275,9 @@ class cronController extends bootstrap
 
                 // Fundé
                 if ($solde >= $projects['amount']) {
-
-                    \Unilend\Service\ProjectManager::cleanTempRefusedAutobid($this->projects);
+                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                    $oProjectManager = $this->get('ProjectManager');
+                    $oProjectManager->cleanTempRefusedAutobid($projects['id_project']);
 
                     // on passe le projet en fundé
                     $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $projects['id_project']);
@@ -293,29 +291,30 @@ class cronController extends bootstrap
                         $iTreatedBitNb = 0;
                         $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iBidNbTotal . ' bids in total.');
 
+                        /** @var \Unilend\Service\BidManager $oBidManager */
+                        $oBidManager = $this->get('BidManager');
+
                         foreach ($this->lEnchere as $k => $e) {
                             if ($leSoldeE < $projects['amount']) {
                                 $leSoldeE += ($e['amount'] / 100);
-                                $this->bids->get($e['id_bid'], 'id_bid');
+                                // Pour la partie qui depasse le montant de l'emprunt ( ca cest que pour le mec a qui on decoupe son montant)
+                                if ($leSoldeE > $projects['amount']) {
+                                    $fAmountToCredit = $leSoldeE - $projects['amount'];
+                                    $oBidManager->rejectPartially($e['id_bid'], $fAmountToCredit);
+                                } else {
+                                    $this->bids->get($e['id_bid'], 'id_bid');
+                                    $this->bids->status = \bids::STATUS_BID_ACCEPTED;
+                                    $this->bids->update();
+                                }
 
-                            // Pour la partie qui depasse le montant de l'emprunt ( ca cest que pour le mec a qui on decoupe son montant)
-                            if ($leSoldeE > $projects['amount']) {
-                                $fAmountToCredit = $leSoldeE - $projects['amount'];
-                                \Unilend\Service\BidManager::rejectPartially($this->bids, $fAmountToCredit);
-                            } else {
-                                $this->bids->status = \bids::STATUS_BID_ACCEPTED;
-                                $this->bids->update();
+                                $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 1');
+                            } else {// Pour les encheres qui depassent on rend l'argent
+                                // On regarde si on a pas deja un remb pour ce bid
+                                $oBidManager->reject($e['id_bid']);
                             }
-
-                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : The bid (' . $e['id_bid'] . ') status has been updated to 1');
-                        } else {// Pour les encheres qui depassent on rend l'argent
-                            $this->bids->get($e['id_bid'], 'id_bid');
-                            // On regarde si on a pas deja un remb pour ce bid
-                            \Unilend\Service\BidManager::reject($this->bids);
+                            $iTreatedBitNb++;
+                            $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated.');
                         }
-                        $iTreatedBitNb++;
-                        $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated.');
-                    }
 
                         // Traite the accepted bid by lender
                         $aLenders = $this->bids->getLenders($projects['id_project'], array(\bids::STATUS_BID_ACCEPTED));
@@ -4294,19 +4293,15 @@ class cronController extends bootstrap
         if (true === $this->startCron('checkBids', 5)) {
             ini_set('max_execution_time', '300');
             ini_set('memory_limit', '1G');
-            $oProject    = $this->loadData('projects');
-            $oBid        = $this->loadData('bids');
-            $oEmprunteur = $this->loadData('clients');
-            $oCompanies  = $this->loadData('companies');
+            $oProject = $this->loadData('projects');
 
-            foreach ($oProject->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0') as $p) {
-                $oProject->get($p['id_project']);
-                $montantEmprunt = $oProject->amount;
-                $soldeBid       = $oBid->getSoldeBid($oProject->id_project);
-
-                \Unilend\Service\ProjectManager::checkBids($oProject, $this->oLogger);
-                \Unilend\Service\ProjectManager::sendMailFonded($oProject, $this->oLogger);
-                \Unilend\Service\ProjectManager::autoBid($oProject);
+            foreach ($oProject->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0') as $aProject) {
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('ProjectManager');
+                $oProjectManager->setLogger($this->oLogger);
+                $oProjectManager->checkBids($aProject['id_project']);
+                $oProjectManager->sendMailFonded($aProject['id_project']);
+                $oProjectManager->autoBid($aProject['id_project']);
             }
 
             $this->stopCron();
