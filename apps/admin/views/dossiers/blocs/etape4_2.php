@@ -4,8 +4,38 @@
         $('#last_annual_accounts').change(function() {
             $('#last_annual_accounts_form').submit();
         });
-    })
+
+        $('.annual_accounts_dates').click(function() {
+            $box = $('#annual_accounts_dates_popup').clone();
+            $box.find('[name=duree_exercice_fiscal]').val($(this).data('duration'));
+            $box.find('[name=id_annual_accounts]').val($(this).data('annual-account'));
+            $box.find('[name=cloture_exercice_fiscal]').val($(this).data('closing')).datepicker({
+                showOn: 'both',
+                buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+                buttonImageOnly: true,
+                changeMonth: true,
+                changeYear: true,
+                yearRange: '<?= (date('Y') - 5) ?>:<?= (date('Y') + 5) ?>'
+            });
+            $.fn.colorbox({html: $box.show()});
+        });
+    });
 </script>
+
+<div id="annual_accounts_dates_popup" style="display: none;">
+    <h2>Modifier l'exercice fiscal</h2>
+    <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
+        <input type="text" name="cloture_exercice_fiscal" class="input_dp datepicker" placeholder="Date de cloture"/>
+        <input type="text" name="duree_exercice_fiscal" class="input_court" placeholder="Durée (mois)"/> mois
+        <br/><br/>
+        <div style="text-align: right">
+            <input type="hidden" name="id_annual_accounts"/>
+            <input type="hidden" name="change_annual_accounts_info" value="1"/>
+            <input type="submit" value="Sauvegarder" class="btn_link"/>
+        </div>
+    </form>
+</div>
+
 <div class="tab_title" id="title_etape4_2">Etape 4.2 - Bilans</div>
 <div class="tab_content" id="etape4_2">
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
@@ -27,7 +57,7 @@
                 <tr>
                     <th colspan="2">Actif</th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
-                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <th width="200" class="annual_accounts_dates" data-closing="<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>" data-duration="<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>" data-annual-account="<?= $aAnnualAccounts['id_bilan'] ?>"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>

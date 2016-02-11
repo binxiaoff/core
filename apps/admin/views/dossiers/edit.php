@@ -90,6 +90,10 @@
         width: 550px;
         z-index: 999;
     }
+
+    .annual_accounts_dates {
+        cursor: pointer;
+    }
 </style>
 <script type="text/javascript">
     $(function () {

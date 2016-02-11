@@ -252,6 +252,13 @@ class dossiersController extends bootstrap
 
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
+            } elseif (isset($_POST['change_annual_accounts_info']) && $this->companies_bilans->get($_POST['id_annual_accounts'])) {
+                $this->companies_bilans->cloture_exercice_fiscal = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['cloture_exercice_fiscal'])));
+                $this->companies_bilans->duree_exercice_fiscal   = (int) $_POST['duree_exercice_fiscal'];
+                $this->companies_bilans->update();
+
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                die;
             } elseif (isset($_POST['add_annual_accounts'])) {
                 $aLastAnnualAccounts                                 = current($this->aAllAnnualAccounts);
                 $oClosingDate = new \DateTime($aLastAnnualAccounts['cloture_exercice_fiscal']);
@@ -2295,7 +2302,7 @@ class dossiersController extends bootstrap
                     $remboursement_anticipe_mail_a_envoyer->create();
 
                     //on change le statut du projet
-                    $this->projects_status_history->addStatus(-1, \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
 
                     // on recupere les preteurs de ce projet (par loans)
                     $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
