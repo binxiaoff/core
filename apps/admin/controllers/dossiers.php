@@ -93,9 +93,6 @@ class dossiersController extends bootstrap
         $this->companies_prescripteurs         = $this->loadData('companies');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            // Id Status to block risk note and risk comments.
-            $aBlockRiskStatus = array(50, 60, 70, 80, 100, 110, 120, 130);
-
             $this->settings->get('Durée des prêts autorisées', 'type');
             $this->dureePossible = explode(',', $this->settings->value);
 
@@ -1117,6 +1114,8 @@ class dossiersController extends bootstrap
                     }
                 }
             }
+
+            $this->recup_info_remboursement_anticipe($this->projects->id_project);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
             die;
