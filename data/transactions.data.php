@@ -40,7 +40,7 @@ class transactions extends transactions_crud
     const STATUS_VALID    = 1;
     const STATUS_CANCELED = 3;
 
-    const PHYSIQUE = 1;
+    const PHYSICAL = 1;
     const VIRTUAL  = 2;
 
     const DISPLAY_IN_FO = 0;
