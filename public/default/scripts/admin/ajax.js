@@ -370,46 +370,10 @@ function create_client(id_project) {
 }
 
 function valid_etape2(id_project) {
-    var same_address_etape2 = $("#same_address_etape2").attr('checked') ? 0 : 1,
-        enterprise_etape2 = $('input[name=enterprise_etape2]:checked', '#dossier_etape2').val(),
-        civilite_etape2 = $('input[name=civilite_etape2]:checked', '#dossier_etape2').val(),
-        civilite2_etape2 = $('input[name=civilite2_etape2]:checked', '#dossier_etape2').val(),
-        val = {
-            raison_sociale_etape2:                      $("#raison_sociale_etape2").val(),
-            forme_juridique_etape2:                     $("#forme_juridique_etape2").val(),
-            capital_social_etape2:                      $("#capital_social_etape2").val(),
-            creation_date_etape2:                       $("#creation_date_etape2").val(),
-            address_etape2:                             $("#address_etape2").val(),
-            ville_etape2:                               $("#ville_etape2").val(),
-            postal_etape2:                              $("#postal_etape2").val(),
-            phone_etape2:                               $("#phone_etape2").val(),
-            same_address_etape2:                        same_address_etape2,
-            adresse_correspondance_etape2:              $("#adresse_correspondance_etape2").val(),
-            city_correspondance_etape2:                 $("#city_correspondance_etape2").val(),
-            zip_correspondance_etape2:                  $("#zip_correspondance_etape2").val(),
-            phone_correspondance_etape2:                $("#phone_correspondance_etape2").val(),
-            civilite_etape2:                            civilite_etape2,
-            nom_etape2:                                 $("#nom_etape2").val(),
-            prenom_etape2:                              $("#prenom_etape2").val(),
-            fonction_etape2:                            $("#fonction_etape2").val(),
-            email_etape2:                               $("#email_etape2").val(),
-            phone_new_etape2:                           $("#phone_new_etape2").val(),
-            civilite2_etape2:                           civilite2_etape2,
-            nom2_etape2:                                $("#nom2_etape2").val(),
-            prenom2_etape2:                             $("#prenom2_etape2").val(),
-            fonction2_etape2:                           $("#fonction2_etape2").val(),
-            email2_etape2:                              $("#email2_etape2").val(),
-            phone_new2_etape2:                          $("#phone_new2_etape2").val(),
-            status_conseil_externe_entreprise_etape2:   $("#status_conseil_externe_entreprise_etape2").val(),
-            preciser_conseil_externe_entreprise_etape2: $("#preciser_conseil_externe_entreprise_etape2").val(),
-            enterprise_etape2:                          enterprise_etape2,
-            id_project:                                 id_project,
-            id_prescripteur:                            $("#id_prescripteur").val(),
-            has_prescripteur:                           $('#enterprise3_etape2').attr('checked'),
-            etape:                                      2
-        };
+    var has_prescripteur = $('#enterprise3_etape2').attr('checked'),
+        val = 'id_project=' + id_project + '&etape=2&has_prescripteur=' + has_prescripteur + '&' + $('#dossier_etape2').serialize();
 
-    if (false === val.has_prescripteur) {
+    if (false === has_prescripteur) {
         $("#civilite_prescripteur").html('');
         $("#prenom_prescripteur").html('');
         $("#nom_prescripteur").html('');
@@ -417,18 +381,17 @@ function valid_etape2(id_project) {
         $("#telephone_prescripteur").html('');
     }
 
-    $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#title").val($("#raison_sociale_etape2").val());
         $("#prenom").val($("#prenom_etape2").val());
         $("#nom").val($("#nom_etape2").val());
 
-        if (same_address_etape2 == 1) {
+        if ($("#same_address_etape2").attr('checked') == 1) {
             $("#adresse").val($("#address_etape2").val());
             $("#city").val($("#ville_etape2").val());
             $("#zip").val($("#postal_etape2").val());
             $("#phone").val($("#phone_etape2").val());
-        }
-        else {
+        } else {
             $("#adresse").val($("#adresse_correspondance_etape2").val());
             $("#city").val($("#city_correspondance_etape2").val());
             $("#zip").val($("#zip_correspondance_etape2").val());

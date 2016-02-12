@@ -8,6 +8,14 @@
             changeYear: true,
             yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
         });
+        $("#date_naissance_gerant").datepicker({
+            showOn: 'both',
+            buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
+            buttonImageOnly: true,
+            changeMonth: true,
+            changeYear: true,
+            yearRange: '<?= (date('Y') - 100) ?>:<?= (date('Y')) ?>'
+        });
         $('#same_address_etape2').click(function () {
             if ($(this).attr('checked') == true) {
                 $('.same_adresse').hide('slow');
@@ -43,7 +51,7 @@
             <tr>
                 <th><label for="capital_social_etape2">Capital social :</label></th>
                 <td><input type="text" name="capital_social_etape2" id="capital_social_etape2" class="input_large" value="<?= empty($this->companies->capital) ? '' : $this->ficelle->formatNumber($this->companies->capital, 0) ?>"/></td>
-                <th><label for="creation_date_etape2">Date de création (jj/mm/aaaa):</label></th>
+                <th><label for="creation_date_etape2">Date de création :</label></th>
                 <td><input readonly="readonly" type="text" name="creation_date_etape2" id="creation_date_etape2" class="input_dp" value="<?= empty($this->companies->date_creation) || $this->companies->date_creation === '0000-00-00' ? '' : $this->dates->formatDate($this->companies->date_creation, 'd/m/Y') ?>"/></td>
             </tr>
             <tr>
@@ -122,7 +130,9 @@
             </tr>
             <tr>
                 <th><label for="phone_new_etape2">Téléphone :</label></th>
-                <td colspan="3"><input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>"/></td>
+                <td><input type="text" name="phone_new_etape2" id="phone_new_etape2" class="input_moy" value="<?= $this->clients->telephone ?>"/></td>
+                <th><label for="date_naissance_gerant">Date de naissance :</label></th>
+                <td><input type="text" name="date_naissance_gerant" id="date_naissance_gerant" class="input_dp" value="<?= empty($this->clients->naissance) || $this->clients->naissance === '0000-00-00' ? '' : $this->dates->formatDate($this->clients->naissance, 'd/m/Y') ?>"/></td>
             </tr>
             <tr<?= $this->bHasAdvisor ? '' : ' style="display:none;"' ?> class="statut_dirigeant_etape2">
                 <th colspan="4" style="text-align:left;"><br/>Prescripteur :</th>

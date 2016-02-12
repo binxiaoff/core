@@ -543,27 +543,23 @@ class ajaxController extends bootstrap
                 $this->companies->update();
             } elseif ($_POST['etape'] == 2) {
                 $this->projects->get($_POST['id_project'], 'id_project');
-                $this->companies->get($this->projects->id_company, 'id_company');
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
-                $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
-
-                $iIdPrescripteur = 'true' === $_POST['has_prescripteur'] ? $_POST['id_prescripteur'] : 0;
-
-                $this->projects->id_prescripteur = $iIdPrescripteur;
+                $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
                 $this->projects->update();
 
-                $creation_date_etape2                           = explode('/', $_POST['creation_date_etape2']);
+                $this->companies->get($this->projects->id_company, 'id_company');
                 $this->companies->name                          = $_POST['raison_sociale_etape2'];
                 $this->companies->forme                         = $_POST['forme_juridique_etape2'];
                 $this->companies->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
-                $this->companies->date_creation                 = $creation_date_etape2[2] . '-' . $creation_date_etape2[1] . '-' . $creation_date_etape2[0];
+                $this->companies->date_creation                 = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['creation_date_etape2'])));
                 $this->companies->adresse1                      = $_POST['address_etape2'];
                 $this->companies->city                          = $_POST['ville_etape2'];
                 $this->companies->zip                           = $_POST['postal_etape2'];
                 $this->companies->phone                         = $_POST['phone_etape2'];
-                $this->companies->status_adresse_correspondance = $_POST['same_address_etape2'];
+                $this->companies->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
                 $this->companies->status_client                 = $_POST['enterprise_etape2'];
+                $this->companies->update();
 
+                $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
                 if ($this->companies->status_adresse_correspondance == 0) {
                     $this->clients_adresses->adresse1  = $_POST['adresse_correspondance_etape2'];
                     $this->clients_adresses->ville     = $_POST['city_correspondance_etape2'];
@@ -575,50 +571,22 @@ class ajaxController extends bootstrap
                     $this->clients_adresses->cp        = $_POST['postal_etape2'];
                     $this->clients_adresses->telephone = $_POST['phone_etape2'];
                 }
+                $this->clients_adresses->update();
 
-                $this->clients->civilite = $_POST['civilite_etape2'];
-                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_etape2']);
-                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_etape2']);
-                $this->clients->fonction = $_POST['fonction_etape2'];
-
+                $this->clients->get($this->companies->id_client_owner, 'id_client');
                 if ($this->clients->counter('email = "' . $_POST['email_etape2'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
                     $this->clients->email = $_POST['email_etape2'];
                     $this->clients->email .= '-' . $this->projects->id_project;
                 } elseif ($this->clients->email != $_POST['email_etape2']) {
                     $this->clients->email = $_POST['email_etape2'];
                 }
-
+                $this->clients->civilite = $_POST['civilite_etape2'];
+                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_etape2']);
+                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_etape2']);
+                $this->clients->fonction = $_POST['fonction_etape2'];
                 $this->clients->telephone = $_POST['phone_new_etape2'];
-
-                if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
-                    $this->companies->civilite_dirigeant = $_POST['civilite2_etape2'];
-                    $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_etape2']);
-                    $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_etape2']);
-                    $this->companies->fonction_dirigeant = $_POST['fonction2_etape2'];
-                    $this->companies->email_dirigeant    = $_POST['email2_etape2'];
-                    $this->companies->phone_dirigeant    = $_POST['phone_new2_etape2'];
-
-                    if ($this->companies->status_client == 3) {
-                        $this->companies->status_conseil_externe_entreprise   = $_POST['status_conseil_externe_entreprise_etape2'];
-                        $this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise_etape2'];
-                    } else {
-                        $this->companies->status_conseil_externe_entreprise   = '';
-                        $this->companies->preciser_conseil_externe_entreprise = '';
-                    }
-                } else {
-                    $this->companies->civilite_dirigeant                  = '';
-                    $this->companies->nom_dirigeant                       = '';
-                    $this->companies->prenom_dirigeant                    = '';
-                    $this->companies->fonction_dirigeant                  = '';
-                    $this->companies->email_dirigeant                     = '';
-                    $this->companies->phone_dirigeant                     = '';
-                    $this->companies->status_conseil_externe_entreprise   = '';
-                    $this->companies->preciser_conseil_externe_entreprise = '';
-                }
-
-                $this->companies->update();
+                $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
                 $this->clients->update();
-                $this->clients_adresses->update();
             } elseif ($_POST['etape'] == 3) {
                 $this->projects = $this->loadData('projects');
                 $this->projects->get($_POST['id_project'], 'id_project');
