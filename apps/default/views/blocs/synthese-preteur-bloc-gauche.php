@@ -227,7 +227,7 @@
         if ($('.switch-input').length) {
             $('.switch-input').on('change', function () {
                 var Settings = {
-                    setting : $('.switch-input').val(),
+                    setting : $('.switch-input').is(":checked"),
                     id_client: "<?= $this->clients->id_client ?>"
                 };
 
@@ -235,7 +235,7 @@
                     var reply = jQuery.parseJSON(data);
                     switch(reply){
                         case "update_success":
-                            $(this).parent().toggleClass('checked');
+                            $('.switch-container').toggleClass('checked');
                             break;
                         case "pop_up_autolend":
                             $.colorbox({href:"<?= $this->lurl ?>/thickbox/pop_up_autolend"});

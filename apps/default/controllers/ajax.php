@@ -1906,35 +1906,22 @@ class ajaxController extends bootstrap
         $oClient              = $this->loadData('clients');
         $oClientSettings      = $this->loadData('client_settings');
         $oClientHistoryAction = $this->loadData('clients_history_actions');
+        $oAutoBidManager      = $this->get('AutoBidManager');
+        $sInstruction         = '';
 
         $oClient->get($_POST['id_client']);
-        $aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $oClient->id_client));
 
-        $sInstruction = '';
-
-        if (false === empty($_POST['setting']) && 'on' === $_POST['setting']) {
-            $iNewSetting = \Unilend\Service\AutoBidManager::AUTO_BID_ON;
-            $aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $oClient->id_client));
-        } else {
-            $iNewSetting = \Unilend\Service\AutoBidManager::AUTO_BID_OFF;
-        }
-
-        if ($aClientAutoBidSetting && $iNewSetting != $aClientAutoBidSetting['value']) {
-            switch($aClientAutoBidSetting['value']){
-                case \Unilend\Service\AutoBidManager::AUTO_BID_ON:
-                    //TODO update settings
-                    $sInstruction = 'update_success';
-                    break;
-                case \Unilend\Service\AutoBidManager::AUTO_BID_OFF:
-                    if ($oClientHistoryAction->select('id_client = ' . $oClient->id_client . ' AND nom_form = "autobid_on_off"')) {
-                        $sInstruction = 'pop_up_autolend';
-                    } else {
-                        $sInstruction = 'settings';
-                    }
-                    break;
-                default:
-                    trigger_error(E_USER_NOTICE, 'Unknown Autobid_on_off value');
-                    break;
+        if ($aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $oClient->id_client))) {
+            if (false === empty($_POST['setting'])) {
+                switch ($aClientAutoBidSetting['value']) {
+                    case \Unilend\Service\AutoBidManager::AUTO_BID_ON:
+                        $oAutoBidManager->off($oClient->id_client);
+                        $sInstruction = 'update_success';
+                        break;
+                    case  \Unilend\Service\AutoBidManager::AUTO_BID_OFF:
+                        $sInstruction = ($oClientHistoryAction->select('id_client = ' . $oClient->id_client . ' AND nom_form = "autobid_on_off"')) ? 'pop_up_autolend' : 'settings';
+                        break;
+                }
             }
         } else {
             $sInstruction = 'settings';
