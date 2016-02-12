@@ -322,4 +322,9 @@ class thickboxController extends bootstrap
 
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
     }
+
+    public function _pop_up_autolend()
+    {
+
+    }
 }

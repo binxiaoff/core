@@ -9,9 +9,7 @@
             #cboxLoadedContent{margin-bottom:0;}
             .popup{background-color:#E3E4E5;}
         </style>
-        <?php
-
-        if ($this->solde > 0 || $this->soldePourcent > 0 || $this->sumBidsEncoursPourcent > 0 || $this->sumPretsPourcent > 0) {
+        <?php if ($this->solde > 0 || $this->soldePourcent > 0 || $this->sumBidsEncoursPourcent > 0 || $this->sumPretsPourcent > 0) {
             // On met ca pour eviter les débordements
             if ($this->solde >= 1000) {
                 $fondsdispo = str_replace(' ', '<br>', $this->lng['preteur-synthese']['de-fond-disponible']);
@@ -53,7 +51,7 @@
                         </h3>
                     <?php foreach ($aProject['aPendingBids'] as $aBid) : ?>
                         <div class="row bid">
-                            <span class="<?= (0 == $aBid['id_autobid']) ? 'no_autobid' : 'autobid' ?>">A</span>
+                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
                             <span class="amount"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</span>
                             <span class="rate"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</span>
                             <span class="circle_pending"></span>
@@ -62,12 +60,12 @@
                     <?php endforeach; ?>
                         <div class="rejected_bids_<?= $aProject['id_project'] ?>">
                             <div class="row bid">
-                                <span class="<?= (0 == $aProject['aRejectedBid']['id_autobid']) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                <span class="<?= (empty($aProject['aRejectedBid']['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
                                 <span class="amount"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['amount'] / 100, 0) ?> €</span>
                                 <span class="rate"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['rate'], 1) ?> %</span>
                                 <span class="circle_rejected"></span>
                                 <span class="rejected"><?= $this->lng['preteur-synthese']['label-rejected-bid'] ?>
-                                    <a href="<?= $this->furl . '/projects/detail/' . $aProject['slug'] ?>"><?= $this->lng['preteur-synthese']['label-new-offer'] ?></a>
+                                    <a href="<?= $this->lurl . '/projects/detail/' . $aProject['slug'] ?>"><?= $this->lng['preteur-synthese']['label-new-offer'] ?></a>
                                 </span>
                             </div>
                             <?php if ($aProject['iNumberOfRejectedBids'] > 1) : ?>
@@ -78,13 +76,25 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
+                <div class="autobid_switch">
+                    <div class="text" style="float: left;">
+                        <h2><?= $this->lng['preteur-synthese']['title-autobid-switch'] ?></h2>
+                        <?php if ($this->bFirstTimeActivation) : ?>
+                        <p><a href="" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-explanation'] ?></a></p>
+                        <?php else: ?>
+                        <p><a href="" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-settings'] ?></a></p>
+                        <?php endif; ?>
+                    </div>
+                    <div class="auotbid_switch">
+                        <div class="switch-container <?= $this->bAutoBidOff ? '': 'checked' ?>">
+                            <label class="label-on" for="autobid-switch-1"><?= $this->lng['autobid']['switch-status-on'] ?></label>
+                            <label class="label-off" for="autobid-switch-1"><?= $this->lng['autobid']['switch-status-off'] ?></label>
+                            <input type="checkbox" class="switch-input" id="autobid-switch-1" name="autobid-switch-1" <?= $this->bAutoBidOff ? '': 'checked' ?>>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-                </div>
-                <?php
-            }
-        }
-        ?>
     </div>
 </div>
 
@@ -210,18 +220,45 @@
         ?>
     </div>
 </div>
+
 <script type="text/javascript">
-    $(".btn_show_rejected_bids").click(function () {
+    $(window).load(function() {
+        // Switch On/Off handler
+        if ($('.switch-input').length) {
+            $('.switch-input').on('change', function () {
+                var Settings = {
+                    setting : $('.switch-input').val(),
+                    id_client: "<?= $this->clients->id_client ?>"
+                };
 
-        var values = {
-            id_project: $(this).data('id-project'),
-            client: "<?= $this->clients->hash ?>"
-        };
+                $.post(add_url + "/ajax/changeAutoBidSetting", Settings).done(function(data) {
+                    var reply = jQuery.parseJSON(data);
+                    switch(reply){
+                        case "update_success":
+                            $(this).parent().toggleClass('checked');
+                            break;
+                        case "pop_up_autolend":
+                            $.colorbox({href:"<?= $this->lurl ?>/thickbox/pop_up_autolend"});
+                            break;
+                        case "settings":
+                            window.location.replace("<?= $this->lurl ?>/profil");
+                            break;
+                    }
+                })
+            });
+        }
+        $(".btn_show_rejected_bids").click(function () {
 
-        $.get(add_url + "/ajax/rejectedBids/"+values.id_project+"/"+values.client).done(function (data) {
-            var obj = jQuery.parseJSON(data);
-            $(".rejected_bids_"+values.id_project).html(obj.html);
-            $(this).fadeOut();
+            var values = {
+                id_project: $(this).data('id-project'),
+                client: "<?= $this->clients->hash ?>"
+            };
+
+            $.get(add_url + "/ajax/rejectedBids/"+values.id_project+"/"+values.client).done(function (data) {
+                var obj = jQuery.parseJSON(data);
+                $(".rejected_bids_"+values.id_project).html(obj.html);
+                $(this).fadeOut();
+            });
         });
     });
 </script>

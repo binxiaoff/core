@@ -2,7 +2,6 @@
 
 class syntheseController extends bootstrap
 {
-    var $Command;
 
     function syntheseController($command, $config, $app)
     {
@@ -21,6 +20,7 @@ class syntheseController extends bootstrap
 
         $this->lng['preteur-projets']  = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
         $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+        $this->lng['autobid']          = $this->ln->selectFront('autobid', $this->language, $this->App);
 
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
@@ -122,7 +122,8 @@ class syntheseController extends bootstrap
         }
 
         // Liste des projets en cours (projets a decouvrir)
-        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, '', 'p.date_retrait ASC', 0, 30);
+        $aProjectsInFunding   = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC');
+        $this->lProjetEncours = $aProjectsInFunding;
 
         $this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
 
@@ -302,21 +303,29 @@ class syntheseController extends bootstrap
         }
 
         //Ongoing Bids Widget
-        $oBids          = $this->loadData('bids');
-        $oProjects      = $this->loadData('projects');
-        $oLenderAccount = $this->loadData('lenders_accounts');
-        $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
-
-        $aProjectsInFunding = $oProjects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'date_retrait_full ASC');
+        $oClientHistoryActions = $this->loadData('clients_history_actions');
+        $oClientSettings       = $this->loadData('client_settings');
 
         foreach ($aProjectsInFunding as $iKey => $aProject) {
-            $aProjectsInFunding[$iKey]['oEndFunding']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
-            $aProjectsInFunding[$iKey]['aPendingBids'] = $oBids->select('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status = ' . \bids::STATUS_BID_PENDING, 'id_bid DESC');
-            $aProjectsInFunding[$iKey]['aRejectedBid'] = array_shift($oBids->select('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED,\bids::STATUS_AUTOBID_REJECTED)) . ')', 'id_bid DESC', null, '1'));
-            $aProjectsInFunding[$iKey]['iNumberOfRejectedBids'] = $oBids->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED, \bids::STATUS_AUTOBID_REJECTED)) . ')');
+            $aProjectsInFunding[$iKey]['oEndFunding']           = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
+            $aProjectsInFunding[$iKey]['aPendingBids']          = $this->bids->select('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status = ' . \bids::STATUS_BID_PENDING, 'id_bid DESC');
+            $aProjectsInFunding[$iKey]['aRejectedBid']          = array_shift($this->bids->select('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) . ')', 'id_bid DESC', null, '1'));
+            $aProjectsInFunding[$iKey]['iNumberOfRejectedBids'] = $this->bids->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED,\bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) . ')');
         }
 
         $this->aOngoingBidsByProject     = $aProjectsInFunding;
-        $this->iDisplayTotalNumberOfBids = $oBids->counter('id_lender_account = ' . $oLenderAccount->id_lender_account);
+        $this->iDisplayTotalNumberOfBids = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
+
+        //Autobid Switch (if changes here, also change profile)
+        $this->bAutoBidOff          = false;
+        $this->bFirstTimeActivation = false;
+
+        $this->aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $this->clients->id_client));
+
+        if ($this->aClientAutoBidSetting && \Unilend\Service\AutoBidManager::AUTO_BID_OFF == $this->aClientAutoBidSetting['value']) {
+            $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off"');
+            $this->bFirstTimeActivation = empty($aClientAutoBidHistory);
+            $this->bAutoBidOff          = true;
+        }
     }
 }

@@ -1879,43 +1879,66 @@ class ajaxController extends bootstrap
         $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
     }
 
-    public function _rejectedBids(){
-
+    public function _rejectedBids()
+    {
         $this->hideDecoration();
-        $this->autoFireView = false;
+        $this->autoFireView = true;
 
-        $oProject       = $this->loadData('projects');
+        $this->oProject = $this->loadData('projects');
         $oClient        = $this->loadData('clients');
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oBids          = $this->loadData('bids');
 
-        $oProject->get($this->params[0]);
+        $this->oProject->get($this->params[0]);
         $oClient->get($this->params[1], 'hash');
         $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
 
         $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
 
-        $aRejectedBids = $oBids->select('id_project = ' . $oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED, \bids::STATUS_AUTOBID_REJECTED)) . ')', 'id_bid DESC');
-
-        ob_start();
-        foreach ($aRejectedBids as $aBid) {
-            echo
-            '<div class="row bid">
-                <span class="' . ((0 == $aBid['id_autobid']) ? 'no_autobid' : 'autobid') . '">A</span>
-                <span class="amount">' . $this->ficelle->formatNumber($aBid['amount'] / 100, 0) . ' €</span>
-                <span class="rate">' . $this->ficelle->formatNumber($aBid['rate'], 1) . ' %</span>
-                <span class="circle_rejected"></span>
-                <span class="rejected">' . $this->lng['preteur-synthese']['label-rejected-bid'] . '
-                    <a href="' . $this->furl . '/projects/detail/' . $oProject->slug . '">' . $this->lng['preteur-synthese']['label-new-offer'] . '</a>
-                </span>
-            </div>';
-        }
-
-        $sHtmlBody = ob_get_contents();
-        ob_clean();
-
-        echo json_encode(array('html' => $sHtmlBody));
+        $this->aRejectedBids = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) . ')', 'id_bid DESC');
     }
 
+    public function _changeAutoBidSetting()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
 
+        $oClient              = $this->loadData('clients');
+        $oClientSettings      = $this->loadData('client_settings');
+        $oClientHistoryAction = $this->loadData('clients_history_actions');
+
+        $oClient->get($_POST['id_client']);
+        $aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $oClient->id_client));
+
+        $sInstruction = '';
+
+        if (false === empty($_POST['setting']) && 'on' === $_POST['setting']) {
+            $iNewSetting = \Unilend\Service\AutoBidManager::AUTO_BID_ON;
+            $aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $oClient->id_client));
+        } else {
+            $iNewSetting = \Unilend\Service\AutoBidManager::AUTO_BID_OFF;
+        }
+
+        if ($aClientAutoBidSetting && $iNewSetting != $aClientAutoBidSetting['value']) {
+            switch($aClientAutoBidSetting['value']){
+                case \Unilend\Service\AutoBidManager::AUTO_BID_ON:
+                    //TODO update settings
+                    $sInstruction = 'update_success';
+                    break;
+                case \Unilend\Service\AutoBidManager::AUTO_BID_OFF:
+                    if ($oClientHistoryAction->select('id_client = ' . $oClient->id_client . ' AND nom_form = "autobid_on_off"')) {
+                        $sInstruction = 'pop_up_autolend';
+                    } else {
+                        $sInstruction = 'settings';
+                    }
+                    break;
+                default:
+                    trigger_error(E_USER_NOTICE, 'Unknown Autobid_on_off value');
+                    break;
+            }
+        } else {
+            $sInstruction = 'settings';
+        }
+        echo json_encode($sInstruction);
+    }
 }

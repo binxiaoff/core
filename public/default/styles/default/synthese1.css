@@ -335,8 +335,62 @@
     border-radius: 5px;
     -webkit-box-shadow: 0px 1px 3px #666666;
     -moz-box-shadow: 0px 1px 3px #666666;
-    box-shadow: 0px 1px 3px #666666;
     color: #827f82;
     padding: 5px 10px 5px 10px;
     text-decoration: none;
+}
+
+/*-- Switch*/
+.switch-container {
+    position: relative;
+    width: 77px;
+    height: 33px;
+    background: url(images/switch-sprite.png) bottom center no-repeat
+}
+
+.switch-container label {
+    opacity: 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+    position: absolute;
+    top: 6px;
+}
+.switch-container .label-off {
+    opacity: 1;
+    right: 12px;
+}
+.switch-container.checked{
+    background-position: top center;
+}
+.switch-container.checked .label-on{
+    opacity: 1;
+    left: 12px;
+}
+.switch-container.checked .label-off{
+    opacity: 0;
+}
+.switch-input {
+    opacity: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    height: 33px;
+}
+
+.autobid_switch h2{
+    color: #d9aa34;
+    border-bottom: none;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+}
+.autobid_switch div{
+    float:right;
+    padding-right: 10px;
+    margin-top: 24px;
 }
