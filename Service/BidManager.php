@@ -70,13 +70,16 @@ class BidManager
         $this->oMailFiler            = Loader::loadData('mails_filer');
         $this->oMailText             = Loader::loadData('mails_text');
         $this->oTree                 = Loader::loadData('tree');
+        $this->oNMP                  = Loader::loadData('nmp');
+        $this->oNMPDesabo            = Loader::loadData('nmp_desabo');
+
+        $this->aConfig = Loader::loadConfig();
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
-        $this->oTNMP    = Loader::loadLib('tnmp');
-        $this->oEmail   = Loader::loadLib('email');
 
-        $this->aConfig = Loader::loadConfig();
+        $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
+        $this->oEmail = Loader::loadLib('email');
 
         $this->oClientManager = Loader::loadService('ClientManager');
 
