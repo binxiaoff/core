@@ -22,33 +22,36 @@
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
-                    <li <?= (! isset($this->params[0]) || $this->params[0] == 1 ? 'class="active"' : '') ?>>
-                        <a id="title_1" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
+                    <li class="active">
+                        <a id="notification" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
                     </li>
-                    <li id='title_2_tab' <?= (isset($this->params[0]) && $this->params[0] == 2 ? 'class="active"' : '') ?> >
+                    <li id="securite">
                         <a id="title_2" href="#"><?= $this->lng['profile']['titre-3'] ?></a>
                     </li>
-                    <li id='title_3_tab' <?= (isset($this->params[0]) && $this->params[0] == 3 ? 'class="active"' : '') ?> >
+                    <li id="info_perso">
                         <a id="title_3" href="#"><?= $this->lng['profile']['titre-1'] ?></a>
+                    </li>
+                    <li id="autolend">
+                        <a href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a>
                     </li>
                 </ul>
             </nav>
             <div class="tabs">
-                <div class="tab page1 tab-manage">
+                <div class="tab notification">
                     <?= $this->fireView('/gestion_alertes') ?>
                 </div>
-                <div class="tab page2">
+                <div class="tab securite" style="display: none;">
                     <?= $this->fireView('/secu_new') ?>
                 </div>
-                <div class="tab page3">
+                <div class="tab info_perso" style="display: none;">
                 <?php
-                    if ($this->Command->Function == 'societe') {
-                        echo $this->fireView('/societe_perso_new');
-                        echo $this->fireView('/societe_bank_new');
-                    } else {
-                        echo $this->fireView('/particulier_perso_new');
-                        echo $this->fireView('/particulier_bank_new');
-                    }
+                if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                    $this->fireView('/particulier_perso_new');
+                    $this->fireView('/particulier_bank_new');
+                } elseif (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+                    $this->fireView('/societe_perso_new');
+                    $this->fireView('/societe_bank_new');
+                }
                 ?>
                 </div>
             </div>
@@ -56,31 +59,23 @@
     </div>
 </div>
 
-<script>
-    <?php if (isset($this->params[0]) && $this->params[0] == 2) { ?>
-        setTimeout(function () {
-            $("#title_2_tab").click();
-        }, 0);
-    <?php } elseif (isset($this->params[0]) && $this->params[0] == 3) { ?>
-        setTimeout(function () {
-            $("#title_3_tab").click();
-        }, 0);
-    <?php } ?>
-
-    $(window).load(function () {
-    <?php
-        if (isset($this->params[0]) && $this->params[0] > 1 && $this->params[0] <= 3) {
-            for ($i = 1; $i <= 3; $i++){
-                if ($this->params[0] != $i) {
-                ?>
-            $(".page<?=$i?>").hide();
-    <?php
-                }
-            }
-        } else{
-    ?>
-        $(".page2").hide();
-        $(".page3").hide();
-    <?php } ?>
+<script type="text/javascript">
+    $(function() {
+        $('#notification').click(function() {
+            location.hash = '';
+            history.pushState('', '', location.pathname);
+            $("#notification").scrollTop();
+        });
+        $('#securite').click(function() {
+            location.hash = "securite";
+            $("#securite").scrollTop();
+        });
+        $('#info_perso').click(function() {
+            location.hash = "info_perso";
+            $("#info_perso").scrollTop();
+        });
+        $('#autolend').click(function() {
+            window.location.replace("<?= $this->lurl ?>/profile/autolend");
+        });
     });
 </script>
