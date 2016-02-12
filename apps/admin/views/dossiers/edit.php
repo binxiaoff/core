@@ -322,22 +322,35 @@
                 </table>
             </div>
             <div class="droite">
-                <h2>Montant</h2>
+                <h2>Projet</h2>
                 <table class="form" style="width: 575px;">
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
-                        <td>
-                            <input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €
-                        </td>
+                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €</td>
                     </tr>
                     <tr>
                         <th><label for="duree">Durée du prêt* :</label></th>
                         <td>
-                            <select name="duree" id="duree" class="select" style="width:160px;background-color:#AAACAC;" >
-                                <?php foreach($this->dureePossible as $duree): ?>
-                                    <option <?= ($this->projects->period == $duree ? 'selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
-                                <?php endforeach ?>
+                            <select name="duree" id="duree" class="select" style="width:160px;background-color:#AAACAC;">
                                 <option<?= (in_array($this->projects->period, array(0, 1000000)) ? ' selected' : '') ?> value="0">Je ne sais pas</option>
+                                <?php foreach ($this->dureePossible as $duree) : ?>
+                                    <option<?= ($this->projects->period == $duree ? ' selected' : '') ?> value="<?= $duree ?>"><?= $duree ?> mois</option>
+                                <?php endforeach ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th><label for="need">Type de besoin :</label></th>
+                        <td>
+                            <select name="need" id="need" class="select" style="width:160px;background-color:#AAACAC;">
+                                <option value="0"></option>
+                                <?php foreach ($this->aNeeds as $aNeed) : ?>
+                                    <optgroup label="<?= $aNeed['label'] ?>">
+                                    <?php foreach ($aNeed['children'] as $aNeedChild) : ?>
+                                        <option<?= ($this->projects->id_project_need == $aNeedChild['id_project_need'] ? ' selected' : '') ?>><?= $aNeedChild['label'] ?></option>
+                                    <?php endforeach; ?>
+                                    </optgroup>
+                                <?php endforeach; ?>
                             </select>
                         </td>
                     </tr>

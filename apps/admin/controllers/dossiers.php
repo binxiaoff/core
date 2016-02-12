@@ -1122,6 +1122,10 @@ class dossiersController extends bootstrap
                 }
             }
 
+            /** @var project_need $oProjectNeed */
+            $oProjectNeed = $this->loadData('project_need');
+            $this->aNeeds = $oProjectNeed->getTree();
+
             $this->recup_info_remboursement_anticipe($this->projects->id_project);
         } else {
             header('Location: ' . $this->lurl . '/dossiers');
