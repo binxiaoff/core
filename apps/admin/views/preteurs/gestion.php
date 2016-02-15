@@ -59,7 +59,7 @@
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['telephone'] ?></td>
                     <td class="leLender<?= $c['id_lender_account'] ?>"><?= $c['status'] == 1 ? 'en ligne' : 'hors ligne' ?></td>
                     <td align="center">
-                        <?php if ($c['novalid'] == 1): ?>
+                        <?php if (1 == $c['novalid']): ?>
                             <a href="<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>">
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $c['nom_ou_societe'] . ' ' . $c['prenom_ou_dirigeant'] ?>"/>
                             </a>
@@ -68,7 +68,7 @@
                                 <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $c['nom_ou_societe'] . ' ' . $c['prenom_ou_dirigeant'] ?>"/>
                             </a>
                             <script>
-                                $(".leLender<?=$c['id_lender_account']?>").click(function() {
+                                $(".leLender<?= $c['id_lender_account'] ?>").click(function() {
                                     $(location).attr('href', '<?= $this->lurl ?>/preteurs/edit/<?= $c['id_lender_account'] ?>');
                                 });
                             </script>
@@ -86,6 +86,7 @@
                         <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
                         <input type="text" class="pagedisplay"/>
                         <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
+
                         <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
                         <select class="pagesize">
                             <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
