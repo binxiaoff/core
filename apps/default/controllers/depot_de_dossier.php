@@ -642,7 +642,33 @@ class depot_de_dossierController extends bootstrap
             'duree'                  => isset($aForm['duree']) ? $aForm['duree'] : $this->projects->period
         );
 
-        $aAttachmentTypes       = $this->attachment_type->getAllTypesForProjects($this->language, false);
+        $aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language, true, array(
+            \attachment_type::PRESENTATION_ENTRERPISE,
+            \attachment_type::RIB,
+            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+            \attachment_type::CNI_PASSPORTE_VERSO,
+            \attachment_type::DERNIERE_LIASSE_FISCAL,
+            \attachment_type::LIASSE_FISCAL_N_1,
+            \attachment_type::LIASSE_FISCAL_N_2,
+            \attachment_type::RAPPORT_CAC,
+            \attachment_type::PREVISIONNEL,
+            \attachment_type::BALANCE_CLIENT,
+            \attachment_type::BALANCE_FOURNISSEUR,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
+            \attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE,
+            \attachment_type::DERNIERS_COMPTES_CONSOLIDES,
+            \attachment_type::STATUTS,
+            \attachment_type::PRESENTATION_PROJET,
+            \attachment_type::DERNIERE_LIASSE_FISCAL_HOLDING,
+            \attachment_type::KBIS_HOLDING,
+            \attachment_type::AUTRE1,
+            \attachment_type::AUTRE2
+        ));
         $this->aAttachmentTypes = $this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes);
 
         unset($_SESSION['forms']['depot-de-dossier-partenaire']);
