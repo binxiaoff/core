@@ -31,7 +31,7 @@
 
     .tab_content {
         border: 2px solid #B10366;
-        /*display: none;*/
+        display: none;
         padding: 10px;
     }
 

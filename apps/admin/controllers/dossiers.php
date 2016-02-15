@@ -2608,12 +2608,6 @@ class dossiersController extends bootstrap
      */
     private function recup_info_remboursement_anticipe($id_project)
     {
-//        $this->phrase_resultat = '';
-//        $this->virement_recu = false;
-//        $this->remb_anticipe_effectue = false;
-//        $this->montant_restant_du_preteur = $this->echeanciers->reste_a_payer_ra($id_project, 1);
-//        return;
-
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers            = $this->loadData('echeanciers');
 
