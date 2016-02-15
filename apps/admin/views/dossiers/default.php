@@ -2,9 +2,10 @@
 <script src="//code.jquery.com/jquery-1.10.2.js"></script>
 <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 <script>
-    $( document ).tooltip();
     var nbPages = <?= ceil($this->iCountProjects / $this->nb_lignes) ?>;
     $(function () {
+        $('[data-toggle="tooltip"]').tooltip();
+
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#datepik_1").datepicker({
@@ -227,7 +228,7 @@
                     <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
                     <td><?= $this->oUserAnalyst->firstname ?> <?= $this->oUserAnalyst->name ?></td>
                     <td><?= ($p['id_prescripteur']) ? '<img src="'. $this->surl .'/images/admin/check.png" alt="a prescripteur"/>' : '' ?></td>
-                    <td class="tooltip" title="<?= $p['comments'] ? $p['comments'] : '' ?>"><?= $p['comments'] ? 'oui' : 'non' ?></td>
+                    <td data-toggle="tooltip" class="tooltip" title="<?= $p['comments'] ? $p['comments'] : '' ?>"><?= $p['comments'] ? 'oui' : 'non' ?></td>
                     <td align="center">
                         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $p['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $p['title'] ?>"/>
