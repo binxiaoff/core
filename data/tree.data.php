@@ -1236,7 +1236,7 @@ class tree extends tree_crud
     // Recuperation des enfants et construction html de l'arbo plan du site
     public function getChildsPDS($id_parent, $langue = 'fr')
     {
-        $lRubriques = $this->select('id_langue = "' . $langue . '" AND status = 1 AND id_parent = ' . $id_parent, 'ordre ASC');
+        $lRubriques = $this->select('id_langue = "' . $langue . '" AND status = 1 AND prive = 0 AND id_parent = ' . $id_parent, 'ordre ASC');
 
         // Creation de l'arbo
         foreach ($lRubriques as $rub) {
