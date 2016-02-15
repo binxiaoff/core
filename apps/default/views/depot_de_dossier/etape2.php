@@ -132,8 +132,8 @@
                 <div class="row">
                     <label for="commentaires"><?= $this->lng['etape2']['label-toutes-informations-utiles'] ?></label>
                     <textarea name="commentaires" id="commentaires" cols="30" rows="10"
-                              placeholder="<?= $this->lng['etape2']['toutes-informations-utiles'] ?>"
-                              class="field field-mega"><?= $this->aForm['commentaires'] ?></textarea>
+                              placeholder="<?= $this->lng['etape2']['toutes-informations-utiles'] ?>*"
+                              class="field field-mega" required="required"><?= $this->aForm['commentaires'] ?></textarea>
                 </div>
                 <div class="row">
                     <table>
@@ -141,7 +141,7 @@
                             <td style="vertical-align:middle;"><label for="duree"><?php printf($this->lng['etape2']['choisir-duree-de-remboursement'], $this->ficelle->formatNumber($this->projects->amount, 0)); ?> &nbsp;</label></td>
                             <td>
                                 <select name="duree" id="duree" class="field field-small required custom-select">
-                                    <option value="0"><?= $this->lng['etape2']['duree'] ?></option>
+                                    <option value="0"><?= isset($this->lng['etape2']['duree']) ? $this->lng['etape2']['duree'] : '' ?></option>
                                     <?php foreach ($this->dureePossible as $duree): ?>
                                         <option value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree ?> mois</option>
                                     <?php endforeach ?>
