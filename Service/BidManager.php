@@ -55,6 +55,8 @@ class BidManager
 
     public function __construct()
     {
+        $this->aConfig = Loader::loadConfig();
+
         $this->oSettings             = Loader::loadData('settings');
         $this->oLenderAccount        = Loader::loadData('lenders_accounts');
         $this->oClientStatus         = Loader::loadData('clients_status');
@@ -72,8 +74,6 @@ class BidManager
         $this->oTree                 = Loader::loadData('tree');
         $this->oNMP                  = Loader::loadData('nmp');
         $this->oNMPDesabo            = Loader::loadData('nmp_desabo');
-
-        $this->aConfig = Loader::loadConfig();
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
@@ -116,12 +116,14 @@ class BidManager
 
         $fAmountX100 = $fAmount * 100;
 
+        $this->oBid->unsetData();
         $this->oBid->id_lender_account = $iLenderId;
         $this->oBid->id_project        = $iProjectId;
         $this->oBid->id_autobid        = $iAutoBidId;
         $this->oBid->amount            = $fAmountX100;
         $this->oBid->rate              = $fRate;
 
+        $this->oTransaction->unsetData();
         $this->oTransaction->id_client        = $iClientId;
         $this->oTransaction->montant          = -$fAmountX100;
         $this->oTransaction->id_langue        = 'fr';
@@ -133,7 +135,7 @@ class BidManager
         $this->oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $this->oTransaction->create();
 
-
+        $this->oWalletsLine->unsetData();
         $this->oWalletsLine->id_lender                = $this->oBid->id_lender;
         $this->oWalletsLine->type_financial_operation = \wallets_lines::TYPE_BID;
         $this->oWalletsLine->id_transaction           = $this->oTransaction->id_transaction;
@@ -169,6 +171,7 @@ class BidManager
                     if ($iOfferTotal > $fAmount) {
                         // On fait la diff et on créer un remb du trop plein d'offres
                         $iAmountRepayment                               = $iOfferTotal - $fAmount;
+                        $this->oWelcomeOfferDetails->unsetData();
                         $this->oWelcomeOfferDetails->id_offre_bienvenue = 0;
                         $this->oWelcomeOfferDetails->id_client          = $iClientId;
                         $this->oWelcomeOfferDetails->id_bid             = 0;
@@ -185,7 +188,7 @@ class BidManager
         }
 
         ///// NOTIFICATION OFFRE PLACEE ///////
-
+        $this->oNotification->unsetData();
         $this->oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED;
         $this->oNotification->id_lender  = $this->oBid->id_lender;
         $this->oNotification->id_project = $this->oBid->id_project;
@@ -255,6 +258,7 @@ class BidManager
             $this->oMailNotification->immediatement = 0;
         }
 
+        $this->oMailNotification->unsetData();
         $this->oMailNotification->id_client       = $this->oClient->id_client;
         $this->oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED; // offre placée
         $this->oMailNotification->date_notif      = date('Y-m-d H:i:s');
@@ -294,6 +298,7 @@ class BidManager
 
         $fAmountX100 = $fAmount * 100;
 
+        $this->oTransaction->unsetData();
         $this->oTransaction->id_client        = $this->oLenderAccount->id_client_owner;
         $this->oTransaction->montant          = $fAmountX100;
         $this->oTransaction->id_langue        = 'fr';
@@ -307,6 +312,7 @@ class BidManager
         $this->oTransaction->transaction      = \transactions::VIRTUAL;
         $this->oTransaction->create();
 
+        $this->oWalletsLine->unsetData();
         $this->oWalletsLine->id_lender                = $this->oBid->id_lender_account;
         $this->oWalletsLine->type_financial_operation = \wallets_lines::TYPE_BID;
         $this->oWalletsLine->id_transaction           = $this->oTransaction->id_transaction;
@@ -327,6 +333,7 @@ class BidManager
             }
 
             if (false === empty($this->oWelcomeOfferDetails->montant)) {
+                $this->oWelcomeOfferDetails->unsetData();
                 $this->oWelcomeOfferDetails->id_offre_bienvenue = 0;
                 $this->oWelcomeOfferDetails->id_client          = $this->oLenderAccount->id_client_owner;
                 $this->oWelcomeOfferDetails->id_bid             = 0;
@@ -337,6 +344,7 @@ class BidManager
             }
         }
 
+        $this->oNotification->unsetData();
         $this->oNotification->type       = \notifications::TYPE_BID_REJECTED; // rejet
         $this->oNotification->id_lender  = $this->oBid->id_lender_account;
         $this->oNotification->id_project = $this->oBid->id_project;
@@ -344,6 +352,7 @@ class BidManager
         $this->oNotification->id_bid     = $this->oBid->id_bid;
         $this->oNotification->create();
 
+        $this->oMailNotification->unsetData();
         $this->oMailNotification->id_client       = $this->oLenderAccount->id_client_owner;
         $this->oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_REJECTED;
         $this->oMailNotification->date_notif      = date('Y-m-d H:i:s');

@@ -34,6 +34,8 @@ class loans extends loans_crud
     const TYPE_CONTRACT_BDC = 1;
     const TYPE_CONTRACT_IFP = 2;
 
+    private $aAcceptedBids;
+
     public function __construct($bdd, $params = '')
     {
         parent::loans($bdd, $params);
@@ -450,5 +452,15 @@ class loans extends loans_crud
         }
 
         return $iSumOfAmountXRate/$iSumAmount;
+    }
+
+    public function addAcceptedBid(\bids $oBid)
+    {
+        $this->aAcceptedBids[] = $oBid;
+    }
+
+    public function getAcceptedBids()
+    {
+        return $this->aAcceptedBids;
     }
 }

@@ -75,6 +75,7 @@ class AutoBidManager
             $this->oClientSettings->value = $iAutoBidOnOff;
             $this->oClientSettings->update();
         } else {
+            $this->oClientSettings->unsetData();
             $this->oClientSettings->id_client = $iClientId;
             $this->oClientSettings->id_type   = \client_setting_type::TYPE_AUTO_BID_SWITCH;
             $this->oClientSettings->value     = $iAutoBidOnOff;
@@ -162,6 +163,7 @@ class AutoBidManager
      */
     private function createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
     {
+        $this->oAutoBid->unsetData();
         $this->oAutoBid->id_lender         = $iLenderId;
         $this->oAutoBid->status            = \autobid::STATUS_ACTIVE;
         $this->oAutoBid->evaluation        = $sEvaluation;
@@ -171,6 +173,7 @@ class AutoBidManager
         $this->oAutoBid->create();
 
         if (false === $this->oAutoBidQueue->exist($iLenderId, 'id_lender')) {
+            $this->oAutoBidQueue->unsetData();
             $this->oAutoBidQueue->id_lender = $iLenderId;
             $this->oAutoBidQueue->status    = \autobid_queue::STATUS_NEW;
             $this->oAutoBidQueue->create();
