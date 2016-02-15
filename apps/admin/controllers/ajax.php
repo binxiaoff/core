@@ -532,16 +532,7 @@ class ajaxController extends bootstrap
             $serialize = serialize($_POST);
             $this->users_history->histo(8, 'dossier edit etapes', $_SESSION['user']['id_user'], $serialize);
 
-            if ($_POST['etape'] == 1) {
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->amount = $this->ficelle->cleanFormatedNumber($_POST['montant_etape1']);
-                $this->projects->period = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $this->projects->period;
-                $this->projects->update();
-
-                $this->companies->get($this->projects->id_company, 'id_company');
-                $this->companies->siren = $_POST['siren_etape1'];
-                $this->companies->update();
-            } elseif ($_POST['etape'] == 2) {
+            if ($_POST['etape'] == 2) {
                 $this->projects->get($_POST['id_project'], 'id_project');
                 $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
                 $this->projects->update();

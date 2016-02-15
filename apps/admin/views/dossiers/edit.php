@@ -805,7 +805,6 @@
 
     <div id="lesEtapes">
         <?php $this->fireView('blocs/email'); ?>
-        <?php $this->fireView('blocs/etape1'); ?>
         <?php $this->fireView('blocs/etape2'); ?>
         <?php $this->fireView('blocs/etape3'); ?>
         <?php $this->fireView('blocs/etape4_1'); ?>
