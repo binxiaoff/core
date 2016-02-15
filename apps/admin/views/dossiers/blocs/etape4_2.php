@@ -1,4 +1,4 @@
-<?php $iLastAnnualAccountsId = end(array_keys($this->aBalanceSheets)); ?>
+<?php $iOldestAnnualAccountsId = end(array_keys($this->aBalanceSheets)); ?>
 <script type="text/javascript">
     $(function() {
         $('#last_annual_accounts').change(function() {
@@ -21,6 +21,14 @@
         });
     });
 </script>
+<style type="text/css">
+    #annual_accounts_dates_popup {
+        background-color: #FFF;
+        padding: 20px;
+        border: 2px solid #E3E4E5;
+        border-radius: 10px;
+    }
+</style>
 
 <div id="annual_accounts_dates_popup" style="display: none;">
     <h2>Modifier l'exercice fiscal</h2>
@@ -58,7 +66,7 @@
                     <th colspan="2">Actif</th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200" class="annual_accounts_dates" data-closing="<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>" data-duration="<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>" data-annual-account="<?= $aAnnualAccounts['id_bilan'] ?>"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
-                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>
@@ -962,7 +970,7 @@
                     <th colspan="2">Passif</th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
-                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>
@@ -1443,7 +1451,7 @@
                     <th colspan="2">Autres infos</th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
-                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>
@@ -1597,7 +1605,7 @@
                     <th colspan="2">Compte de résultat</th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
-                        <?php if ($aAnnualAccounts['id_bilan'] != $iLastAnnualAccountsId) { ?><th width="50"></th><?php } ?>
+                        <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
             </thead>

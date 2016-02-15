@@ -41,7 +41,7 @@ class companies_balance extends companies_balance_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM companies_balance WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
     }
 
-    public function getBalanceSheetsByAnnualAccount($aAnnualAccountsIds)
+    public function getBalanceSheetsByAnnualAccount(array $aAnnualAccountsIds)
     {
         $aAnnualAccounts    = array();
         $oBalanceTypes      = new \companies_balance_type($this->bdd);

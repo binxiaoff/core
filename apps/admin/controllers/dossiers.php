@@ -113,6 +113,9 @@ class dossiersController extends bootstrap
             $this->settings->get('Heure fin periode funding', 'type');
             $this->finFunding = $this->settings->value;
 
+            $this->settings->get('TVA', 'type');
+            $this->fVATRate = $this->settings->value;
+
             $debutFunding        = explode(':', $this->debutFunding);
             $this->HdebutFunding = $debutFunding[0];
 
@@ -1051,12 +1054,9 @@ class dossiersController extends bootstrap
 
                                     $this->transactions->get($this->projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = 1 AND etat = 1 AND id_project');
 
-                                    $this->settings->get('TVA', 'type');
-                                    $fVATRate = $this->settings->value;
-
                                     $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
                                     $fCommission        = $this->transactions->montant_unilend;
-                                    $fVATFreeCommission = $fCommission / ($fVATRate + 1);
+                                    $fVATFreeCommission = $fCommission / ($this->fVATRate + 1);
 
                                     $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($oInvoiceCounter->compteurJournalier($this->projects->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
                                     $oInvoice->date            = $sDateFirstPayment;
@@ -2608,6 +2608,12 @@ class dossiersController extends bootstrap
      */
     private function recup_info_remboursement_anticipe($id_project)
     {
+//        $this->phrase_resultat = '';
+//        $this->virement_recu = false;
+//        $this->remb_anticipe_effectue = false;
+//        $this->montant_restant_du_preteur = $this->echeanciers->reste_a_payer_ra($id_project, 1);
+//        return;
+
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers            = $this->loadData('echeanciers');
 
