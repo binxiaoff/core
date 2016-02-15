@@ -600,40 +600,7 @@ class depot_de_dossierController extends bootstrap
 
                 $this->redirect(self::PAGE_NAME_FILES);
             } else {
-                $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
-
-                $this->settings->get('Facebook', 'type');
-                $sFacebookURL = $this->settings->value;
-
-                $this->settings->get('Twitter', 'type');
-                $sTwitterURL = $this->settings->value;
-
-                $aVariables = array(
-                    'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
-                    'raison_sociale'       => $this->companies->name,
-                    'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
-                    'lien_fb'              => $sFacebookURL,
-                    'lien_tw'              => $sTwitterURL,
-                    'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
-                    'surl'                 => $this->surl,
-                    'url'                  => $this->url,
-                );
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-                $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
-                $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
-                    $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient($sRecipient);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                $this->sendSubscriptionConfirmationEmail();
 
                 $this->clients->status = 1;
                 $this->clients->update();
@@ -761,6 +728,11 @@ class depot_de_dossierController extends bootstrap
         $this->projects->comments = '';
         $this->projects->period   = $_POST['duree'];
         $this->projects->update();
+
+        $this->sendSubscriptionConfirmationEmail();
+
+        $this->clients->status = 1;
+        $this->clients->update();
 
         $this->redirect(self::PAGE_NAME_END, \projects_status::A_TRAITER);
     }
@@ -1012,6 +984,38 @@ class depot_de_dossierController extends bootstrap
         $this->projects->update();
 
         $this->sendCommercialEmail('notification-stop-relance-dossier');
+    }
+
+    private function sendSubscriptionConfirmationEmail()
+    {
+        $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+
+        $aVariables = array(
+            'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
+            'raison_sociale'       => $this->companies->name,
+            'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
+            'lien_fb'              => $this->like_fb,
+            'lien_tw'              => $this->twitter,
+            'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
+            'surl'                 => $this->surl,
+            'url'                  => $this->url,
+        );
+
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
+
+        $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
+        $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
+
+        if ($this->Config['env'] === 'prod') {
+            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
+            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+        } else {
+            $this->email->addRecipient($sRecipient);
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
     }
 
     private function sendCommercialEmail($sEmailType)
