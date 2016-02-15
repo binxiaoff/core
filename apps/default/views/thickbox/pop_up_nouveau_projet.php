@@ -52,7 +52,7 @@
                 </div>
                 <div class="form-row">
                   <textarea name="commentaires" id="commentaires" cols="35" rows="25"
-                      placeholder="<?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-toutes-informations-utiles'] ?>*"
+                      placeholder="<?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-toutes-informations-utiles'] ?>"
                       class="field" required="required"></textarea>
                     <em><?= $this->lng['espace-emprunteur']['champs-obligatoires']?></em>
                 </div>

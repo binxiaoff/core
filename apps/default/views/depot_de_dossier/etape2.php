@@ -132,7 +132,7 @@
                 <div class="row">
                     <label for="commentaires"><?= $this->lng['etape2']['label-toutes-informations-utiles'] ?></label>
                     <textarea name="commentaires" id="commentaires" cols="30" rows="10"
-                              placeholder="<?= $this->lng['etape2']['toutes-informations-utiles'] ?>*"
+                              placeholder="<?= $this->lng['etape2']['toutes-informations-utiles'] ?>"
                               class="field field-mega" required="required"><?= $this->aForm['commentaires'] ?></textarea>
                 </div>
                 <div class="row">
