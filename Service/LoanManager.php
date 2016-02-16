@@ -2,6 +2,7 @@
 namespace Unilend\Service;
 
 use Unilend\librairies\ULogger;
+use Unilend\core\Loader;
 
 /**
  * Class LoanManager
@@ -9,21 +10,8 @@ use Unilend\librairies\ULogger;
  */
 class LoanManager
 {
-    /** @var \bids */
-    private $oBid;
-    /** @var  \loans */
-    private $oLoan;
-    /** @var  \accepted_bids */
-    private $oAcceptedBid;
     /** @var  ULogger */
     private $oLogger;
-
-    public function __construct()
-    {
-        $this->oBid         = Loader::loadData('bids');
-        $this->oLoan        = Loader::loadData('loans');
-        $this->oAcceptedBid = Loader::loadData('accepted_bids');
-    }
 
     /**
      * @param ULogger $oLogger
@@ -33,33 +21,28 @@ class LoanManager
         $this->oLogger = $oLogger;
     }
 
-    public function create($iLenderId, $iProjectId, $fAmount, $fRate, $iContractType, $aAcceptedBids)
+    public function create(\loans $oLoan)
     {
+        $aAcceptedBids = $oLoan->getAcceptedBids();
         if (empty($aAcceptedBids)) {
             return false;
         }
+        $oLoan->create();
 
-        $this->oLoan->unsetData();
-        $this->oLoan->id_lender        = $iLenderId;
-        $this->oLoan->id_project       = $iProjectId;
-        $this->oLoan->amount           = $fAmount * 100;
-        $this->oLoan->rate             = $fRate;
-        $this->oLoan->id_type_contract = $iContractType;
-        $this->oLoan->create();
-
-        if (empty($this->oLoan->id_loan)) {
+        if (empty($oLoan->id_loan)) {
             return false;
         }
+        /** @var \accepted_bids $oAcceptedBid */
+        $oAcceptedBid = Loader::loadData('accepted_bids');
+        foreach ($oLoan->getAcceptedBids() as $aAcceptedBid) {
+            $oAcceptedBid->unsetData();
+            $oAcceptedBid->id_bid  = $aAcceptedBid['bid_id'];
+            $oAcceptedBid->id_loan = $oLoan->id_loan;
+            $oAcceptedBid->amount  = $aAcceptedBid['amount'] * 100;
+            $oAcceptedBid->create();
 
-        foreach ($aAcceptedBids as $aAcceptedBid) {
-            $this->oAcceptedBid->unsetData();
-            $this->oAcceptedBid->id_bid  = $aAcceptedBid['id_bid'];
-            $this->oAcceptedBid->id_loan = $this->oLoan->id_loan;
-            $this->oAcceptedBid->amount  = $aAcceptedBid['amount'] * 100;
-            $this->oAcceptedBid->create();
-
-            if ($this->oAcceptedBid->id > 0 && $this->oLogger instanceof ULogger) {
-                switch ($iContractType) {
+            if ($oAcceptedBid->id > 0 && $this->oLogger instanceof ULogger) {
+                switch ($oLoan->id_type_contract) {
                     case \loans::TYPE_CONTRACT_BDC:
                         $sType = 'BDC';
                         break;
@@ -72,7 +55,7 @@ class LoanManager
                 }
                 $this->oLogger->addRecord(
                     ULogger::INFO,
-                    'project : ' . $iProjectId . ' : bid (' . $aAcceptedBid['id_bid'] . ') has been transferred to ' . $sType . ' contract loan (' . $this->oLoan->id_loan . ') with amount ' . $aAcceptedBid['amount']
+                    'project : ' . $oLoan->id_project . ' : bid (' . $aAcceptedBid['bid_id'] . ') has been transferred to ' . $sType . ' contract loan (' . $oLoan->id_loan . ') with amount ' .  $aAcceptedBid['amount']
                 );
             }
         }
