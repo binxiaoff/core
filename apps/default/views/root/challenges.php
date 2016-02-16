@@ -84,7 +84,7 @@ body{width:990px;min-width:auto;margin:auto;}
 
 </style>
 
-<div style="width:990px;margin:auto;">
+<div class="inside-global" style="width:990px;margin:auto;">
 <?=$this->haut?>
 
 
