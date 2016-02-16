@@ -85,13 +85,6 @@
                         <p><a href="" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-settings'] ?></a></p>
                         <?php endif; ?>
                     </div>
-                    <div class="auotbid_switch">
-                        <div class="switch-container <?= $this->bAutoBidOff ? '': 'checked' ?>">
-                            <label class="label-on" for="autobid-switch-1"><?= $this->lng['autobid']['switch-status-on'] ?></label>
-                            <label class="label-off" for="autobid-switch-1"><?= $this->lng['autobid']['switch-status-off'] ?></label>
-                            <input type="checkbox" class="switch-input" id="autobid-switch-1" name="autobid-switch-1" <?= $this->bAutoBidOff ? '': 'checked' ?>>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -222,31 +215,6 @@
 </div>
 
 <script type="text/javascript">
-    $(window).load(function() {
-        // Switch On/Off handler
-        if ($('.switch-input').length) {
-            $('.switch-input').on('change', function () {
-                var Settings = {
-                    setting : $('.switch-input').is(":checked"),
-                    id_client: "<?= $this->clients->id_client ?>"
-                };
-
-                $.post(add_url + "/ajax/changeAutoBidSetting", Settings).done(function(data) {
-                    var reply = jQuery.parseJSON(data);
-                    switch(reply){
-                        case "update_success":
-                            $('.switch-container').toggleClass('checked');
-                            break;
-                        case "pop_up_autolend":
-                            $.colorbox({href:"<?= $this->lurl ?>/thickbox/pop_up_autolend"});
-                            break;
-                        case "settings":
-                            window.location.replace("<?= $this->lurl ?>/profil");
-                            break;
-                    }
-                })
-            });
-        }
         $(".btn_show_rejected_bids").click(function () {
 
             var values = {
