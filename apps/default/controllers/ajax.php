@@ -565,10 +565,10 @@ class ajaxController extends bootstrap
             $order = 'ordre ' . $direction;
         }
 
-        $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->bids->getAVG($this->projects->id_project, 'rate');
+        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
+        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgRate        = $this->bids->getAVG($this->projects->id_project, 'rate');
 
         $montantHaut = 0;
         $tauxBas     = 0;
@@ -619,10 +619,10 @@ class ajaxController extends bootstrap
             $order = 'ordre ' . $direction;
         }
 
-        $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->bids->getAVG($this->projects->id_project, 'rate');
+        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
+        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgRate        = $this->bids->getAVG($this->projects->id_project, 'rate');
 
         $montantHaut = 0;
         $tauxBas     = 0;

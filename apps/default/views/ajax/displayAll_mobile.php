@@ -1,6 +1,45 @@
-<?php
-if (count($this->lEnchere) > 0) {
-    ?>
+<style type="text/css">
+    .autobid {
+        -webkit-border-radius: 9px;
+        -moz-border-radius: 9px;
+        border-radius: 9px;
+        color: #ffffff;
+        font-weight: bold;
+        background: #d9aa34;
+        padding: 5px 10px 5px 10px;
+        text-decoration: none;
+    }
+    .no_autobid {
+        padding: 5px 10px 5px 10px;
+        background: transparent;
+        color: transparent;
+        font-weight: bold;
+    }
+
+    .circle_pending {
+        width: 15px;
+        height: 15px;
+        -webkit-border-radius: 15px;
+        -moz-border-radius: 15px;
+        border-radius: 15px;
+        background: #289922;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .circle_rejected {
+        width: 15px;
+        height: 15px;
+        -webkit-border-radius: 15px;
+        -moz-border-radius: 15px;
+        border-radius: 15px;
+        background: #eb3023;
+        text-decoration: none;
+        display: inline-block;
+    }
+</style>
+
+<?php if (count($this->aBidsOnProject) > 0) : ?>
     <table class="table orders-table">
         <tr>
             <th width="125"><span id="triNum_mobile">N°<i class="icon-arrows"></i></span></th>
@@ -14,48 +53,73 @@ if (count($this->lEnchere) > 0) {
             </th>
             <th width="101"><span id="triStatuts_mobile"><?= $this->lng['preteur-projets']['statuts'] ?> <i class="icon-arrows"></i></span></th>
         </tr>
-        <?
-        foreach ($this->lEnchere as $key => $e) {
-            if ($this->lenders_accounts->id_lender_account == $e['id_lender_account']) {
-                $vous = true;
-            } else {
-                $vous = false;
-            }
-
-            if ($this->CountEnchere >= 12 && !isset($_POST['tri'])) {
-                if ($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere - 5) {
-                    ?><tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
-                        <td><?= ($vous == true ? '<span class="enchereVous">' . $e['ordre'] . ' (' . $this->lng['preteur-projets']['vous'] . ')</span>' : $e['ordre']) ?></td>
-                        <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                        <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
-                        <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
-                    </tr><?
-                }
-                if ($e['ordre'] == 6) {
-                    ?><tr><td colspan="4" class="nth-table-row displayAll_mobile" style="cursor:pointer;">...</td></tr><?
-                }
-            } else {
-                ?><tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
-                    <td><?= ($vous == true ? '<span class="enchereVous">' . $e['ordre'] . ' (' . $this->lng['preteur-projets']['vous'] . ')</span>' : $e['ordre']) ?></td>
-                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
-                    <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
-                </tr><?
-            }
-        }
-        ?>
+        <?php foreach ($this->aBidsOnProject as $iKey => $aBid) : ?>
+            <?php if ($this->CountEnchere >= 12 && !isset($_POST['tri'])) : ?>
+                <?php if ($aBid['ordre'] <= 5 || $aBid['ordre'] > $this->CountEnchere - 5) : ?>
+                    <tr <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' class="enchereVousColor"' : '') ?>>
+                        <td>
+                            <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
+                                <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
+                                <span>
+                                <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                <?= $aBid['ordre'] ?>
+                                </span>
+                            <?php else : ?>
+                                <span>
+                                <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                <?= $aBid['ordre'] ?>
+                                </span>
+                            <?php endif; ?>
+                        </td>
+                        <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
+                        <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</td>
+                        <td>
+                            <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span>
+                            <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'green-span' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'red-span' : '')) ?>">
+                                <?= $this->status[$aBid['status']] ?>
+                            </span>
+                        </td>
+                    </tr>
+                <?php endif; ?>
+                <?php if ($aBid['ordre'] == 6) : ?>
+                    <tr><td colspan="4" class="nth-table-row displayAll_mobile" style="cursor:pointer;">...</td></tr>
+                <?php endif; ?>
+            <?php else : ?>
+                <tr <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' class="enchereVousColor"' : '' )?>>
+                    <td>
+                        <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
+                            <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
+                            <span>
+                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                            <?= $aBid['ordre'] ?>
+                            </span>
+                        <?php else : ?>
+                            <span>
+                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                            <?= $aBid['ordre'] ?>
+                            </span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
+                    <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
+                    </td>
+                    <td>
+                        <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span>
+                        <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'green-span' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'red-span' : '')) ?>">
+                            <?= $this->status[$aBid['status']] ?>
+                        </span>
+                    </td>
+                </tr>
+            <?php endif; ?>
+        <?php endforeach; ?>
     </table>
-    <?
-    if ($this->CountEnchere >= 12 && !isset($_POST['tri'])) {
-        ?>
+    <?php if ($this->CountEnchere >= 12 && !isset($_POST['tri'])) : ?>
         <div class="single-project-actions">
             <a class="btn btn-large displayAll_mobile" ><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a>
         </div>
-        <?
-    } else {
-        ?><div class="displayAll_mobile"></div><?
-    }
-    ?>
+    <?php else : ?>
+    <div class="displayAll_mobile"></div>
+    <?php endif; ?>
     <script>
         $("#direction_mobile").html('<?=$this->direction?>');
 
@@ -89,7 +153,6 @@ if (count($this->lEnchere) > 0) {
             });
         });
     </script>
-    <?
-} else {
-    ?><p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p><?
-}
+<?php else : ?>
+        <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
+<?php endif; ?>

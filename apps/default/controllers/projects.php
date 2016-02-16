@@ -455,7 +455,7 @@ class projectsController extends bootstrap
             }
             // FIN INSCRIPTION PRETEUR //
             // Nb projets en funding
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = '. \projects::DISPLAY_PROJECT_ON);
 
             // dates pour le js
             $this->mois_jour = $this->dates->formatDate($this->projects->date_retrait, 'F d');
@@ -543,7 +543,7 @@ class projectsController extends bootstrap
                 }
             }
 
-            $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+            $this->aBidsOnProject     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
             $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
             $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
 
@@ -582,16 +582,13 @@ class projectsController extends bootstrap
 
             $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            if ($this->lenders_accounts->id_lender_account != false) {
+            if (false === empty($this->lenders_accounts->id_lender_account)) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
-            }
-
-            if ($this->lenders_accounts->id_lender_account != false) {
                 $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
             }
 
             if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
-                if ($this->lenders_accounts->id_lender_account != false) {
+                if (false === empty($this->lenders_accounts->id_lender_account)) {
                     $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
                 }
 
