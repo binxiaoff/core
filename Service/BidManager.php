@@ -165,7 +165,6 @@ class BidManager
         }
 
         ///// NOTIFICATION OFFRE PLACEE ///////
-
         $oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED;
         $oNotification->id_lender  = $oBid->id_lender;
         $oNotification->id_project = $oBid->id_project;

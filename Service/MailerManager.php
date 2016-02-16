@@ -16,8 +16,6 @@ class MailerManager
     private $oLogger;
     /** @var \email */
     private $oEmail;
-    /** @var ProjectManager */
-    private $oProjectManager;
     /** @var \ficelle */
     private $oFicelle;
     private $aConfig;
@@ -44,8 +42,6 @@ class MailerManager
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
         $this->oWorkingDay = Loader::loadLib('jours_ouvres');
-
-        $this->oProjectManager = Loader::loadService('ProjectManager');
 
         $this->sLanguage = 'fr';
 
@@ -261,7 +257,7 @@ class MailerManager
         }
 
         // Taux moyen pondéré
-        $fWeightedAvgRate = $this->oFicelle->formatNumber($this->getWeightedAvgRate($oProject));
+        $fWeightedAvgRate = $this->oFicelle->formatNumber(ProjectManager::getWeightedAvgRate($oProject));
 
         $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
         $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
@@ -354,7 +350,7 @@ class MailerManager
 
         if ($oBorrower->status == 1) {
             $this->oMailText->get('emprunteur-dossier-funde-et-termine', 'lang = "' . $this->sLanguage . '" AND type');
-            $fWeightedAvgRate = $this->oFicelle->formatNumber((float)$this->oProjectManager->getWeightedAvgRate($oProject));
+            $fWeightedAvgRate = $this->oFicelle->formatNumber((float)ProjectManager::getWeightedAvgRate($oProject));
 
             $oBorrowerPaymentSchedule->get($oProject->id_project, 'ordre = 1 AND id_project');
             $fMonthlyPayment = $oBorrowerPaymentSchedule->montant + $oBorrowerPaymentSchedule->commission + $oBorrowerPaymentSchedule->tva;
@@ -426,7 +422,7 @@ class MailerManager
         $this->oSettings->get('Adresse notification projet funde a 100', 'type');
         $sRecipient = $this->oSettings->value;
 
-        $fWeightedAvgRate = $this->oFicelle->formatNumber((float)$this->oProjectManager->getWeightedAvgRate($oProject));
+        $fWeightedAvgRate = $this->oFicelle->formatNumber((float)ProjectManager::getWeightedAvgRate($oProject));
 
         $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
         $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
