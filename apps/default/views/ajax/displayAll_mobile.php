@@ -61,12 +61,12 @@
                             <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
                                 <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
                                 <span>
-                                <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                <span class="<?= (empty($aBid['id_autobid']) || false === $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                 <?= $aBid['ordre'] ?>
                                 </span>
                             <?php else : ?>
                                 <span>
-                                <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                <span class="<?= (empty($aBid['id_autobid']) || false === $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                 <?= $aBid['ordre'] ?>
                                 </span>
                             <?php endif; ?>
@@ -90,12 +90,12 @@
                         <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
                             <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
                             <span>
-                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                            <span class="<?= (empty($aBid['id_autobid']) || false === $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                             <?= $aBid['ordre'] ?>
                             </span>
                         <?php else : ?>
                             <span>
-                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                            <span class="<?= (empty($aBid['id_autobid']) || false === $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                             <?= $aBid['ordre'] ?>
                             </span>
                         <?php endif; ?>

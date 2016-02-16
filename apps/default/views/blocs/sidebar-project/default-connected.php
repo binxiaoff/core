@@ -26,13 +26,14 @@
     }
 
     #lOffres .orders-table-wrapper {
-        max-height: 102px;
+        max-height: 100px;
         overflow-y: scroll;
         margin-top: 48px;
     }
 
     #lOffres .orders-table > thead {
         position: absolute;
+        width: 100%;
         top: -48px;
     }
 

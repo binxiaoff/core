@@ -1,5 +1,3 @@
-<?php $this->bIsConnected = $this->clients->checkAccess(); ?>
-
 <style type="text/css">
     <?php if ($this->ficelle->is_mobile() == true) : ?>
     .sidebar-fixed {
@@ -233,18 +231,20 @@
                                                 <?php if ($aBid['ordre'] <= 5 || $aBid['ordre'] > $this->CountEnchere - 5) : ?>
                                                     <tr <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' class="enchereVousColor"' : '') ?>>
                                                         <td>
+                                                            <div style="position: relative">
                                                             <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
                                                                 <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
-                                                                <span style="position: relative; left: -12px; bottom: 13px">
-                                                                <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                                <span style="position: relative; left: -12px;">
+                                                                <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                                                 <?= $aBid['ordre'] ?>
                                                                 </span>
                                                             <?php else : ?>
-                                                                <span style="position: relative; left: -12px; bottom: 13px">
-                                                                <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                                <span style="position: relative; left: -12px;">
+                                                                <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                                                 <?= $aBid['ordre'] ?>
                                                                 </span>
                                                             <?php endif; ?>
+                                                            </div>
                                                         </td>
                                                         <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
                                                         <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</td>
@@ -266,18 +266,20 @@
                                             <?php else : ?>
                                                 <tr <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' class="enchereVousColor"' : '' )?>>
                                                     <td>
+                                                        <div style="position: relative">
                                                         <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
                                                             <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
                                                             <span style="position: relative; left: -54px;">
-                                                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                            <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                                             <?= $aBid['ordre'] ?>
                                                             </span>
                                                             <?php else : ?>
-                                                            <span style="position: relative; left: -12px; bottom: 13px">
-                                                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                            <span style="position: relative; left: -12px;">
+                                                            <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                                             <?= $aBid['ordre'] ?>
                                                             </span>
                                                         <?php endif; ?>
+                                                        </div>
                                                     </td>
                                                     <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
                                                     <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
