@@ -30,8 +30,6 @@ class ProjectManager
     private $oBidManager;
     /** @var  LoanManager */
     private $oLoanManager;
-    /** @var  MailerManager */
-    private $oMailerManager;
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
@@ -75,19 +73,22 @@ class ProjectManager
 
     public function checkBids(\projects $oProject)
     {
+        /** @var \bids $oBid */
+        $oBid           = Loader::loadData('bids');
+        /** @var \bids_logs $oBidLogi */
+        $oBidLog             = Loader::loadData('bids_logs');
+
         $aLogContext      = array();
         $bBidsLogs        = false;
         $nb_bids_ko       = 0;
         $iBidsAccumulated = 0;
         $iBorrowAmount    = $oProject->amount;
 
-        /** @var \bids $oBid */
-        $oBid           = Loader::loadData('bids');
+
         $iBidsNbPending = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 0');
         $iBidsNbTotal   = $oBid->counter('id_project = ' . $oProject->id_project);
         $iBidTotal      = $oBid->getSoldeBid($oProject->id_project);
-        /** @var \bids_logs $oBidLogi */
-        $oBidLog             = Loader::loadData('bids_logs');
+
         $oBidLog->debut      = date('Y-m-d H:i:s');
         $oBidLog->id_project = $oProject->id_project;
 
@@ -183,10 +184,11 @@ class ProjectManager
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
-        $oSettings->get('Auto-bid step', 'type');
-        $fStep = (float)$oSettings->value;
         /** @var \bids $oBid */
         $oBid         = Loader::loadData('bids');
+
+        $oSettings->get('Auto-bid step', 'type');
+        $fStep = (float)$oSettings->value;
         $fCurrentRate = (float)$oBid->getProjectMaxRate($oProject->id_project) - $fStep;
 
         while ($aAutoBidList = $oBid->getTempRefusedAutoBids($oProject->id_project)) {
@@ -618,19 +620,19 @@ class ProjectManager
 
     }
 
-    public function getWeightedAvgRate(\projects $oProject)
+    public static function getWeightedAvgRate(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = Loader::loadData('projects_status');
         $oProjectStatus->getLastStatut($oProject->id_project);
         if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-            $this->getWeightedAvgRateFromBid($oProject);
+            return self::getWeightedAvgRateFromBid($oProject);
         } elseif ($oProjectStatus->status == \projects_status::FUNDE) {
-            $this->getWeightedAvgRateFromLoan($oProject);
+            return self::getWeightedAvgRateFromLoan($oProject);
         }
     }
 
-    private function getWeightedAvgRateFromLoan(\projects $oProject)
+    private static function getWeightedAvgRateFromLoan(\projects $oProject)
     {
         /** @var \loans $oLoan */
         $oLoan          = Loader::loadData('loans');
@@ -643,7 +645,7 @@ class ProjectManager
         return ($iInterestTotal / $iCapitalTotal);
     }
 
-    private function getWeightedAvgRateFromBid(\projects $oProject)
+    private static function getWeightedAvgRateFromBid(\projects $oProject)
     {
         /** @var \bids $oBid */
         $oBid           = Loader::loadData('bids');
