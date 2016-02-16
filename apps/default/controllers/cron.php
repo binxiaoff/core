@@ -206,8 +206,7 @@ class cronController extends bootstrap
             $aProjects = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
 
             foreach ($aProjects as $aProject) {
-                $this->projects->get($aProject['id_project']);
-                $this->companies->get($this->projects->id_company);
+                $this->companies->get($aProject['id_company']);
 
                 $aPublicationDate = explode(':', $aProject['date_publication_full']);
                 $aPublicationDate = $aPublicationDate[0] . ':' . $aPublicationDate[1];
@@ -234,9 +233,9 @@ class cronController extends bootstrap
                     'surl'           => $this->surl,
                     'url'            => $this->furl,
                     'nom_entreprise' => $this->companies->name,
-                    'projet_p'       => $this->furl . '/projects/detail/' . $this->projects->slug,
-                    'montant'        => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
-                    'duree'          => $this->projects->period,
+                    'projet_p'       => $this->furl . '/projects/detail/' . $aProject['slug'],
+                    'montant'        => $this->ficelle->formatNumber((float) $aProject['amount'], 0),
+                    'duree'          => $aProject['period'],
                     'prenom_e'       => $sFirstName,
                     'lien_fb'        => $this->like_fb,
                     'lien_tw'        => $this->twitter
