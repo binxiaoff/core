@@ -21,6 +21,20 @@
         font-weight: bold;
     }
 
+    #lOffres {
+        position: relative;
+    }
+
+    #lOffres .orders-table-wrapper {
+        max-height: 102px;
+        overflow-y: scroll;
+        margin-top: 48px;
+    }
+
+    #lOffres .orders-table > thead {
+        position: absolute;
+        top: -48px;
+    }
 
 </style>
 <div class="sidebar right">
@@ -59,41 +73,43 @@
                         <h4 id="plusOffres">
                             <?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= $this->ficelle->formatNumber($this->bidsEncours['solde'], 0) ?> €
                         </h4>
-                        <div id="lOffres">
-                            <table class="table orders-table" style="font-size: 0.8em;" id="bids">
-                                <thead>
-                                    <tr style="text-align: center; color: white;">
-                                        <th width="30%" style="padding-left: 30px;">
-                                            <span id="triNum">N°</span>
-                                        </th>
-                                        <th width="25%">
-                                            <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?></span>
-                                        </th>
-                                        <th width="25%">
-                                            <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?></span>
-                                        </th>
-                                        <th width="20%">
-                                            <span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?></span>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody class="<?= ($this->bidsEncours['nbEncours'] > 3 ) ? 'show-scrollbar' : '' ?>">
-                            <?php foreach ($this->lBids as $aBid) : ?>
-                                <tr>
-                                    <td>
-                                        <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
-                                        <?= $aBid['ordre'] ?>
-                                    </td>
-                                    <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
-                                    <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
-                                    </td>
-                                    <td><span>
-                                        <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span></span>
-                                    </td>
-                                </tr>
-                            <?php endforeach; ?>
-                                </tbody>
-                            </table>
+                        <div id="lOffres" class="show-scrollbar">
+                            <div class="orders-table-wrapper">
+                                <table class="table orders-table" style="font-size: 0.8em;" id="bids">
+                                    <thead>
+                                        <tr style="text-align: center; color: white;">
+                                            <th width="30%" style="padding-left: 30px;">
+                                                <span id="triNum">N°</span>
+                                            </th>
+                                            <th width="25%">
+                                                <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?></span>
+                                            </th>
+                                            <th width="25%">
+                                                <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?></span>
+                                            </th>
+                                            <th width="20%">
+                                                <span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?></span>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                    <?php foreach ($this->lBids as $aBid) : ?>
+                                        <tr>
+                                            <td>
+                                                <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                <?= $aBid['ordre'] ?>
+                                            </td>
+                                            <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
+                                            <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
+                                            </td>
+                                            <td><span>
+                                                <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span></span>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 <?php } ?>
