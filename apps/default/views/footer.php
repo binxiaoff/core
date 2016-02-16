@@ -98,7 +98,7 @@
                         } else {
                             ?>
                             <li>
-                            <img class="logo-partner" src="<?= $this->surl ?>/var/images/<?= $this->bloc_partenaires['image-' . $i] ?>" alt="<?= $this->bloc_partenairesComplement['image' . $i] ?>"/>
+                            <img class="logo-partner" src="<?= $this->surl ?>/var/images/<?= $this->bloc_partenaires['image-' . $i] ?>" alt="<?= $this->bloc_partenairesComplement['image-' . $i] ?>"/>
                             </li> <?
                         }
                     }
