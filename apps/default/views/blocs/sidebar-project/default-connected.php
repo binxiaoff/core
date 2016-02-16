@@ -1,3 +1,28 @@
+<style>
+    table#bids td {
+        padding: 8px;
+    }
+
+    #bids.autobid {
+        -webkit-border-radius: 6px;
+        -moz-border-radius: 6px;
+        border-radius: 6px;
+        color: #ffffff;
+        font-weight: bold;
+        background: #d9aa34;
+        padding: 3px 6px 3px 6px;
+        text-decoration: none;
+    }
+
+    #bids.no_autobid {
+        padding: 3px 6px 3px 6px;
+        background: transparent;
+        color: transparent;
+        font-weight: bold;
+    }
+
+
+</style>
 <div class="sidebar right">
     <aside class="widget widget-price">
         <div class="widget-top">
@@ -31,24 +56,44 @@
                 </div>
                 <?php if ($this->bidsEncours['nbEncours'] > 0) { ?>
                     <div class="widget-cat">
-                        <style>
-                            #plusOffres {cursor: pointer;}
-                            #lOffres {display: none;}
-                            #lOffres ul {list-style: none outside none; padding-left: 14px; font-size: 15px;}
-                        </style>
                         <h4 id="plusOffres">
-                            <?= $this->lng['preteur-projets']['offre-en-cours'] ?>
-                            <i class="icon-plus"></i>
+                            <?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= $this->ficelle->formatNumber($this->bidsEncours['solde'], 0) ?> €
                         </h4>
-                        <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-avez'] ?> :
-                            <br/><?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= $this->ficelle->formatNumber($this->bidsEncours['solde'], 0) ?> €
-                        </p>
                         <div id="lOffres">
-                            <ul>
-                            <?php foreach ($this->lBids as $b) { ?>
-                                <li>Offre de <?= $this->ficelle->formatNumber($b['amount'] / 100, 0) ?> € au taux de <?= $this->ficelle->formatNumber($b['rate'], 1) ?>%</li>
-                            <?php } ?>
-                            </ul>
+                            <table class="table orders-table" style="font-size: 0.8em;" id="bids">
+                                <thead>
+                                    <tr style="text-align: center; color: white;">
+                                        <th width="30%" style="padding-left: 30px;">
+                                            <span id="triNum">N°</span>
+                                        </th>
+                                        <th width="25%">
+                                            <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?></span>
+                                        </th>
+                                        <th width="25%">
+                                            <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?></span>
+                                        </th>
+                                        <th width="20%">
+                                            <span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?></span>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="<?= ($this->bidsEncours['nbEncours'] > 3 ) ? 'show-scrollbar' : '' ?>">
+                            <?php foreach ($this->lBids as $aBid) : ?>
+                                <tr>
+                                    <td>
+                                        <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                        <?= $aBid['ordre'] ?>
+                                    </td>
+                                    <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
+                                    <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
+                                    </td>
+                                    <td><span>
+                                        <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span></span>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 <?php } ?>
