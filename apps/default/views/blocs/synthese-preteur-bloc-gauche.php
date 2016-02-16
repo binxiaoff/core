@@ -76,6 +76,7 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
+                <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
                 <div class="autobid_switch">
                     <div class="text" style="float: left;">
                         <h2><?= $this->lng['preteur-synthese']['title-autobid-switch'] ?></h2>
@@ -86,6 +87,7 @@
                         <?php endif; ?>
                     </div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </div>
