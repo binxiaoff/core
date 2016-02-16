@@ -143,7 +143,7 @@ class ProjectManager
     {
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = Loader::loadData('projects_status');
-        if ($oProject->date_fin != '0000-00-00 00:00:00' && time() >= strtotime($oProject->date_fin)) {
+        if ($oProject->date_fin != '0000-00-00 00:00:00' && new \DateTime() >= new \DateTime($oProject->date_fin)) {
             return false;
         }
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
@@ -167,15 +167,10 @@ class ProjectManager
         $sEvaluation  = $oProject->risk;
         $iCurrentRate = 10;
 
-        $iOffset = 0;
-        $iLimit  = 100;
-        while (0 !== count($aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iCurrentRate, $iOffset, $iLimit))) {
-            $iOffset += $iLimit;
-
-            foreach ($aAutoBidList as $aAutoBidSetting) {
-                if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                    $this->oAutoBidManager->bid($oAutoBid, $oProject, $iCurrentRate);
-                }
+        $aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iCurrentRate);
+        foreach ($aAutoBidList as $aAutoBidSetting) {
+            if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
+                $this->oAutoBidManager->bid($oAutoBid, $oProject, $iCurrentRate);
             }
         }
     }

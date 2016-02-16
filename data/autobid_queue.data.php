@@ -75,7 +75,7 @@ class autobid_queue extends autobid_queue_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getAutoBids($iPeriod, $sEvaluation, $fRate, $iOffset = 0, $iLimit = 100)
+    public function getAutoBids($iPeriod, $sEvaluation, $fRate)
     {
         $sQuery  = 'SELECT * FROM (
                     SELECT a.*, la.id_client_owner as id_client
@@ -88,7 +88,7 @@ class autobid_queue extends autobid_queue_crud
                       AND a.rate_min <= ' . $fRate . '
                       AND a.status = ' . autobid::STATUS_ACTIVE . '
                       AND aq.status = ' . self::STATUS_TOP . '
-                    ORDER BY aq.id_queue DESC
+                    ORDER BY aq.id_queue ASC
                   ) top_queue
 
                   UNION
@@ -104,9 +104,8 @@ class autobid_queue extends autobid_queue_crud
                       AND a.rate_min <= ' . $fRate . '
                       AND a.status = ' . autobid::STATUS_ACTIVE . '
                       AND aq.status = ' . self::STATUS_NEW . '
-                    ORDER BY aq.id_queue DESC
-                  ) low_queue
-                  LIMIT ' . $iLimit . ' OFFSET ' . $iOffset;
+                    ORDER BY aq.id_queue ASC
+                  ) low_queue';
         $rQuery  = $this->bdd->query($sQuery);
         $aResult = array();
         while ($aRow = $this->bdd->fetch_array($rQuery)) {

@@ -115,7 +115,7 @@ class BidManager
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $oTransaction->create();
 
-        $oWalletsLine->id_lender                = $oBid->id_lender;
+        $oWalletsLine->id_lender                = $oBid->id_lender_account;
         $oWalletsLine->type_financial_operation = \wallets_lines::TYPE_BID;
         $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
         $oWalletsLine->status                   = \wallets_lines::STATUS_VALID;
@@ -125,7 +125,7 @@ class BidManager
         $oWalletsLine->create();
 
         $iBidNb = $oBid->counter('id_project = ' . $oBid->id_project);
-        $iBidNb += 1;
+        $iBidNb ++;
 
         $oBid->id_lender_wallet_line = $oWalletsLine->id_wallet_line;
         $oBid->ordre                 = $iBidNb;
@@ -166,7 +166,7 @@ class BidManager
 
         ///// NOTIFICATION OFFRE PLACEE ///////
         $oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED;
-        $oNotification->id_lender  = $oBid->id_lender;
+        $oNotification->id_lender  = $oBid->id_lender_account;
         $oNotification->id_project = $oBid->id_project;
         $oNotification->amount     = $fAmountX100;
         $oNotification->id_bid     = $oBid->id_bid;
@@ -180,11 +180,13 @@ class BidManager
         }
 
         $oMailNotification->id_client       = $iClientId;
-        $oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED; // offre placée
+        $oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED;
         $oMailNotification->date_notif      = date('Y-m-d H:i:s');
         $oMailNotification->id_notification = $oNotification->id_notification;
         $oMailNotification->id_transaction  = $oTransaction->id_transaction;
         $oMailNotification->create();
+
+        return true;
     }
 
     /**

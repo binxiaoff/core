@@ -208,12 +208,13 @@ class AutoBidManager
             $oAutoBidQueue = Loader::loadData('autobid_queue');
 
             $oBid->id_autobid        = $oAutoBid->id_autobid;
-            $oBid->id_lender_account = $oProject->id_lender;
+            $oBid->id_lender_account = $oAutoBid->id_lender;
             $oBid->id_project        = $oProject->id_project;
             $oBid->amount            = $oAutoBid->amount * 100;
             $oBid->rate              = $fRate;
-            $this->oBidManager->bid($oBid);
-            $oAutoBidQueue->addToQueue($oAutoBid->id_lender, \autobid_queue::STATUS_NEW);
+            if ($this->oBidManager->bid($oBid)) {
+                $oAutoBidQueue->addToQueue($oAutoBid->id_lender, \autobid_queue::STATUS_NEW);
+            }
         }
     }
 
