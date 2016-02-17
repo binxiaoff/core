@@ -4,10 +4,7 @@
         text-align: right;
     }
 
-    #etape4_1 .input_moy,
-    #etape4_2 .input_moy,
-    #etape4_3 .input_moy,
-    #etape4_4 .input_moy {
+    input[type=text].numbers {
         text-align: right;
     }
 
@@ -66,10 +63,6 @@
     table.annual-accounts .sub-total td {
         background-color: #d2d2d2;
         font-weight: bold;
-    }
-
-    table.annual-accounts input[type=text] {
-        text-align: right;
     }
 
     #tab_email_msg, .valid_etape {
@@ -192,7 +185,7 @@
         <li><a href="<?= $this->lurl ?>/dossiers" title="Gestion des dossiers">Gestion des dossiers</a> -</li>
         <li>Detail Dossier</li>
     </ul>
-    <h1>Detail dossier : <?= $this->projects->title ?></h1>
+    <h1>Detail dossier<?php if (false === empty($this->projects->title)) : ?> : <?= $this->projects->title ?><?php endif; ?></h1>
     <form method="post" name="dossier_resume" id="dossier_resume" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="resume">
             <div class="gauche">
@@ -386,19 +379,6 @@
                         <th><label for="rate">Score Sectoriel :</label></th>
                         <td><strong><?= $this->companies->altares_scoreSectorielCent / 100 * 20 ?></strong>/20</td>
                     </tr>
-                    <tr>
-                        <th><label for="rate">Date dernier bilan :</label></th>
-                        <td>
-                            <?php if (empty($this->aAnnualAccountsDates)) { ?>
-                                -
-                            <?php
-                                } else {
-                                    $aAnnualAccountsDate = current($this->aAnnualAccountsDates);
-                                    echo $aAnnualAccountsDate['end']->format('d/m/Y');
-                                }
-                            ?>
-                        </td>
-                    </tr>
                 </table>
                 <br><br>
                 <h2>Remboursement anticipé / Information</h2>
@@ -418,7 +398,7 @@
                         </tr>
                         <tr>
                             <th>Montant virement</th>
-                            <td><strong><?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?> €</strong></td>
+                            <td><strong><?= $this->ficelle->formatNumber($this->receptions->montant / 100) ?>&nbsp;€</strong></td>
                         </tr>
                         <tr>
                             <th>Motif du virement</th>
@@ -432,7 +412,7 @@
                     <?php endif; ?>
                     <tr>
                         <th>Montant CRD (*)</th>
-                        <td><strong><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>€</strong></td>
+                        <td><strong><?= $this->ficelle->formatNumber($this->montant_restant_du_preteur) ?>&nbsp;€</strong></td>
                     </tr>
                     <?php if (false == $this->virement_recu): ?>
                         <tr>

@@ -33,8 +33,8 @@
 <div id="annual_accounts_dates_popup" style="display: none;">
     <h2>Modifier l'exercice fiscal</h2>
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
-        <input type="text" name="cloture_exercice_fiscal" class="input_dp datepicker" placeholder="Date de cloture"/>
-        <input type="text" name="duree_exercice_fiscal" class="input_court" placeholder="Durée (mois)"/> mois
+        <input type="text" class="numbers" name="cloture_exercice_fiscal" class="input_dp datepicker" placeholder="Date de cloture"/>
+        <input type="text" class="numbers" name="duree_exercice_fiscal" class="input_court numbers" placeholder="Durée (mois)"/> mois
         <br/><br/>
         <div style="text-align: right">
             <input type="hidden" name="id_annual_accounts"/>
@@ -86,7 +86,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -106,7 +106,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -126,7 +126,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -146,7 +146,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -166,7 +166,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -186,7 +186,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AJ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AJ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AJ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AJ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -206,7 +206,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -247,7 +247,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -267,7 +267,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -287,7 +287,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AR[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AR']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AR[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AR']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -308,7 +308,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -328,7 +328,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -348,7 +348,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="AX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="AX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['AX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -389,7 +389,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CS[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CS']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CS[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CS']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -409,7 +409,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -429,7 +429,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -449,7 +449,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -469,7 +469,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -489,7 +489,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -530,7 +530,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BJ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BJ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BJ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BJ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -550,7 +550,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -570,7 +570,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -590,7 +590,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -610,7 +610,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BR[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BR']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BR[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BR']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -630,7 +630,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -671,7 +671,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -691,7 +691,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -711,7 +711,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BZ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BZ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BZ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BZ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -731,7 +731,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -772,7 +772,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -792,7 +792,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -833,7 +833,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -853,7 +853,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CJ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CJ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CJ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CJ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -873,7 +873,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -893,7 +893,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CM[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CM']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CM[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CM']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -913,7 +913,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -990,7 +990,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1010,7 +1010,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1030,7 +1030,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DO[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DO']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DO[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DO']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1071,7 +1071,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="BK[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BK']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="BK[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['BK']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1091,7 +1091,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="CK[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CK']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="CK[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['CK']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1111,7 +1111,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DR[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DR']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DR[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DR']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1131,7 +1131,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DS[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DS']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DS[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DS']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1151,7 +1151,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1171,7 +1171,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1191,7 +1191,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1232,7 +1232,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1252,7 +1252,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1293,7 +1293,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DY[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DY']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DY[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DY']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1313,7 +1313,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="DZ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DZ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="DZ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['DZ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1333,7 +1333,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="EA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="EA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1374,7 +1374,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="EB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="EB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1394,7 +1394,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="ED[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['ED']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="ED[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['ED']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1470,7 +1470,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="EH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="EH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1490,7 +1490,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="EI[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EI']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="EI[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['EI']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1510,7 +1510,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1530,7 +1530,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HQ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HQ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HQ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HQ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1550,7 +1550,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="0J[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['0J']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="0J[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['0J']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1570,7 +1570,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="VH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['VH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="VH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['VH']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1590,7 +1590,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="VI[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['VI']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="VI[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['VI']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1624,7 +1624,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FL[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FL']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1644,7 +1644,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FM[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FM']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FM[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FM']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1664,7 +1664,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1684,7 +1684,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FO[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FO']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FO[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FO']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1704,7 +1704,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FP']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1724,7 +1724,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FQ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FQ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FQ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FQ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1744,7 +1744,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FS[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FS']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FS[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FS']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1764,7 +1764,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FT[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FT']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1784,7 +1784,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1804,7 +1804,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1824,7 +1824,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1844,7 +1844,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FX[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FX']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1864,7 +1864,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FY[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FY']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FY[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FY']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1884,7 +1884,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="FZ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FZ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="FZ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['FZ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1904,7 +1904,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1924,7 +1924,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1944,7 +1944,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GC[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GC']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GC[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GC']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1964,7 +1964,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GD[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GD']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -1984,7 +1984,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GE[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GE']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GE[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GE']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2004,7 +2004,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GG[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GG']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GG[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GG']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2024,7 +2024,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GV[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GV']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2044,7 +2044,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GM[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GM']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GM[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GM']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2064,7 +2064,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GQ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GQ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GQ[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GQ']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2084,7 +2084,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GU[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GU']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2104,7 +2104,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="GW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="GW[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['GW']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2124,7 +2124,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HA[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HA']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2144,7 +2144,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HB[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HB']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2164,7 +2164,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HC[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HC']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HC[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HC']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2184,7 +2184,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HE[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HE']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HE[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HE']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2204,7 +2204,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HF[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HF']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2224,7 +2224,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HG[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HG']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HG[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HG']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
@@ -2244,7 +2244,7 @@
                             <?php
                         }
                         ?>
-                        <td><input type="text" name="HN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="HN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet[$this->aBalanceCodes['HN']['id_balance_type']], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
