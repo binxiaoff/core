@@ -345,7 +345,7 @@ class emprunteursController extends bootstrap
                             if (false === empty($aMandats)) {
                                 foreach ($aMandats as $aMandatToArchive) {
                                     $this->clients_mandats->get($aMandatToArchive['id_mandat']);
-                                    if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status) {
+                                    if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status || \clients_mandats::STATUS_PENDING == $this->clients_mandats->status) {
                                         $nouveauNom    = str_replace('mandat', 'mandat-' . $this->clients_mandats->id_mandat, $this->clients_mandats->name);
                                         $chemin        = $this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name;
                                         $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
