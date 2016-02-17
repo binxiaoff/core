@@ -38,11 +38,11 @@
                            class="field field-large required"
                            data-validators="Presence&amp;Numericality, {maximum:<?= $this->sommeMax ?>}&amp;Numericality, {minimum: <?= $this->sommeMin ?>}"
                            onkeyup="lisibilite_nombre(this.value,this.id);">
-                    <em class="jusqua"><?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-jusqua'] ?></em>
+                    <em class="jusqua"><?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-souhaite'] ?></em>
                 </div>
                 <div class="form-row">
                     <select name="duree" id="duree" class="field field-large required custom-select">
-                        <option value="0"><?= $this->lng['espace-emprunteur']['duree'] ?>*</option>
+                        <option value="0"><?= $this->lng['espace-emprunteur']['duree'] ?></option>
                         <?php foreach ($this->dureePossible as $duree): ?>
                             <option
                                 value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree . ' ' . $this->lng['espace-emprunteur']['mois'] ?>
