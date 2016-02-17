@@ -407,9 +407,13 @@ class loans extends loans_crud
                 }
 
             }
-
             foreach ($aSchedule['commission'] as $sKey => $fValue) {
-                $aCommissionGrouped[$sKey] += $fValue;
+                if (isset($aCommissionGrouped[$sKey])) {
+                    $aCommissionGrouped[$sKey] += $fValue;
+                } else {
+                    $aCommissionGrouped[$sKey] = $fValue;
+                }
+
             }
         }
         return array(

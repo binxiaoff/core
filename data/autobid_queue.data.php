@@ -28,8 +28,9 @@
 
 class autobid_queue extends autobid_queue_crud
 {
-    const STATUS_NEW = 0;
-    const STATUS_TOP = 1;
+    const TYPE_QUEUE_NEW    = 0;
+    const TYPE_QUEUE_REJECTED = 1;
+    const TYPE_QUEUE_BID  = 2;
 
     public function __construct($bdd, $params = '')
     {
@@ -77,35 +78,29 @@ class autobid_queue extends autobid_queue_crud
 
     public function getAutoBids($iPeriod, $sEvaluation, $fRate)
     {
-        $sQuery  = 'SELECT * FROM (
-                    SELECT a.*, la.id_client_owner as id_client
-                    FROM autobid_queue aq
-                      INNER JOIN autobid a ON a.id_lender = aq.id_lender
-                      INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
-                      INNER JOIN lenders_accounts la ON la.id_lender_account = aq.id_lender
-                    WHERE ' . $iPeriod . ' BETWEEN ap.min AND ap.max
-                      AND a.evaluation = "' . $sEvaluation . '"
-                      AND a.rate_min <= ' . $fRate . '
-                      AND a.status = ' . autobid::STATUS_ACTIVE . '
-                      AND aq.status = ' . self::STATUS_TOP . '
-                    ORDER BY aq.id_queue ASC
-                  ) top_queue
+        $sBasicQuery = 'SELECT a.*, la.id_client_owner as id_client
+                   FROM autobid_queue aq
+                   INNER JOIN autobid a ON a.id_lender = aq.id_lender
+                   INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                   INNER JOIN lenders_accounts la ON la.id_lender_account = aq.id_lender
+                   WHERE ' . $iPeriod . ' BETWEEN ap.min AND ap.max
+                   AND a.evaluation = "' . $sEvaluation . '"
+                   AND a.rate_min <= ' . $fRate . '
+                   AND a.status = ' . autobid::STATUS_ACTIVE;
 
-                  UNION
+        $sQuery  = 'SELECT * FROM ( '
+                        . $sBasicQuery . '
+                        AND aq.type in (' . self::TYPE_QUEUE_REJECTED . ', '. self::TYPE_QUEUE_NEW .')
+                        ORDER BY aq.type, aq.id_queue ASC
+                    ) rejected_new_queue
 
-                  SELECT * FROM (
-                    SELECT a.*, la.id_client_owner as id_client
-                    FROM autobid_queue aq
-                      INNER JOIN autobid a ON a.id_lender = aq.id_lender
-                      INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
-                      INNER JOIN lenders_accounts la ON la.id_lender_account = aq.id_lender
-                    WHERE ' . $iPeriod . ' BETWEEN ap.min AND ap.max
-                      AND a.evaluation = "' . $sEvaluation . '"
-                      AND a.rate_min <= ' . $fRate . '
-                      AND a.status = ' . autobid::STATUS_ACTIVE . '
-                      AND aq.status = ' . self::STATUS_NEW . '
-                    ORDER BY aq.id_queue ASC
-                  ) low_queue';
+                    UNION
+
+                    SELECT * FROM ( '
+                        . $sBasicQuery . '
+                        AND aq.type = ' . self::TYPE_QUEUE_BID . '
+                        ORDER BY aq.id_queue DESC
+                    ) bid_queue';
         $rQuery  = $this->bdd->query($sQuery);
         $aResult = array();
         while ($aRow = $this->bdd->fetch_array($rQuery)) {
@@ -114,12 +109,12 @@ class autobid_queue extends autobid_queue_crud
         return $aResult;
     }
 
-    public function addToQueue($iLenderId, $iStatus)
+    public function addToQueue($iLenderId, $iType)
     {
         $this->delete($iLenderId, 'id_lender');
 
         $this->id_lender = $iLenderId;
-        $this->status    = $iStatus;
+        $this->type    = $iType;
         $this->create();
     }
 }

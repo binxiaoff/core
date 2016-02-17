@@ -160,7 +160,7 @@ class AutoBidManager
     private function createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
     {
         /** @var \autobid $oAutoBid */
-        $oAutoBid                    = Loader::loadData('autobid');
+        $oAutoBid = Loader::loadData('autobid');
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
 
@@ -173,10 +173,7 @@ class AutoBidManager
         $oAutoBid->create();
 
         if (false === $oAutoBidQueue->exist($iLenderId, 'id_lender')) {
-            $oAutoBidQueue->unsetData();
-            $oAutoBidQueue->id_lender = $iLenderId;
-            $oAutoBidQueue->status    = \autobid_queue::STATUS_NEW;
-            $oAutoBidQueue->create();
+            $oAutoBidQueue->addToQueue($iLenderId, \autobid_queue::TYPE_QUEUE_NEW);
         }
     }
 
@@ -203,7 +200,7 @@ class AutoBidManager
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
-            $oBid                    = Loader::loadData('bids');
+            $oBid = Loader::loadData('bids');
             /** @var \autobid_queue $oAutoBidQueue */
             $oAutoBidQueue = Loader::loadData('autobid_queue');
 
@@ -213,7 +210,7 @@ class AutoBidManager
             $oBid->amount            = $oAutoBid->amount * 100;
             $oBid->rate              = $fRate;
             if ($this->oBidManager->bid($oBid)) {
-                $oAutoBidQueue->addToQueue($oAutoBid->id_lender, \autobid_queue::STATUS_NEW);
+                $oAutoBidQueue->addToQueue($oAutoBid->id_lender, \autobid_queue::TYPE_QUEUE_BID);
             }
         }
     }
@@ -228,18 +225,8 @@ class AutoBidManager
                 $oBid->rate   = $fCurrentRate;
                 $oBid->update();
             } else {
-                $this->reject($oBid);
+                $this->oBidManager->reject($oBid);
             }
-        }
-    }
-
-    public function reject(\bids $oBid)
-    {
-        if (false === empty($oBid->id_bid)) {
-            $this->oBidManager->reject($oBid);
-            /** @var \autobid_queue $oAutoBidQueue */
-            $oAutoBidQueue = Loader::loadData('autobid_queue');
-            $oAutoBidQueue->addToQueue($oBid->id_lender_account, \autobid_queue::STATUS_TOP);
         }
     }
 }

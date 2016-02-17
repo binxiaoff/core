@@ -66,7 +66,7 @@ class MailerManager
         /** @var \projects $oProject */
         $oProject = Loader::loadData('projects');
         /** @var \tree $oTree */
-        $oTree       = Loader::loadData('tree');
+        $oTree = Loader::loadData('tree');
 
         $oLenderAccount->get($oBid->id_lender_account);
         $oClient->get($oLenderAccount->id_client_owner);
@@ -138,7 +138,7 @@ class MailerManager
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
 
-        $aBidList      = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC,added ASC');
+        $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC,added ASC');
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid']);
             $oLenderAccount->get($oBid->id_lender_account);
@@ -218,9 +218,6 @@ class MailerManager
         if ($this->oLogger instanceof ULogger) {
             $this->oLogger->addRecord(ULogger::INFO, 'Project funded - send email to borrower', array('Project ID' => $oProject->id_project));
         }
-        // Mise a jour du statut pour envoyer qu'une seule fois le mail a l'emprunteur
-        $oProject->status_solde = 1;
-        $oProject->update();
 
         $this->oSettings->get('Facebook', 'type');
         $lien_fb = $this->oSettings->value;
@@ -339,7 +336,7 @@ class MailerManager
     public function sendFundedAndFinishedToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('conmapnies');
+        $oCompany = Loader::loadData('companies');
         /** @var \clients $oBorrower */
         $oBorrower = Loader::loadData('clients');
         /** @var \echeanciers_emprunteur $oBorrowerPaymentSchedule */
@@ -411,7 +408,7 @@ class MailerManager
     public function sendFundedToStaff(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('conmapnies');
+        $oCompany = Loader::loadData('companies');
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
         /** @var \loans $oLoan */
@@ -458,7 +455,6 @@ class MailerManager
         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-        $this->oEmail = $this->loadLib('email');
         $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
         $this->oEmail->addRecipient(trim($sRecipient));
 
@@ -550,7 +546,7 @@ class MailerManager
                                                </tr>';
                 }
 
-                $this->oMailText->get('preteur-bid-ok', 'lang = "' . $this->language . '" AND type');
+                $this->oMailText->get('preteur-bid-ok', 'lang = "' . $this->sLanguage . '" AND type');
 
                 $this->oSettings->get('Facebook', 'type');
                 $lien_fb = $this->oSettings->value;
@@ -641,7 +637,6 @@ class MailerManager
         $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
         $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
 
-        $this->oEmail = $this->loadLib('email');
         $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
         $this->oEmail->setSubject(stripslashes($sujetMail));
         $this->oEmail->setHTMLBody(stripslashes($texteMail));

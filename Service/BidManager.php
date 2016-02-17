@@ -23,7 +23,7 @@ class BidManager
     private $aConfig;
     /** @var  ULogger */
     private $oLogger;
-    /** @var MailerManager  */
+    /** @var MailerManager */
     private $oMailerManager;
 
     public function __construct()
@@ -125,7 +125,7 @@ class BidManager
         $oWalletsLine->create();
 
         $iBidNb = $oBid->counter('id_project = ' . $oBid->id_project);
-        $iBidNb ++;
+        $iBidNb++;
 
         $oBid->id_lender_wallet_line = $oWalletsLine->id_wallet_line;
         $oBid->ordre                 = $iBidNb;
@@ -198,6 +198,11 @@ class BidManager
             $this->credit($oBid, $oBid->amount / 100);
             $oBid->status = \bids::STATUS_BID_REJECTED;
             $oBid->update();
+            if (false === empty($oBid->id_autobid)) {
+                /** @var \autobid_queue $oAutoBidQueue */
+                $oAutoBidQueue = Loader::loadData('autobid_queue');
+                $oAutoBidQueue->addToQueue($oBid->id_lender_account, \autobid_queue::TYPE_QUEUE_REJECTED);
+            }
         }
     }
 

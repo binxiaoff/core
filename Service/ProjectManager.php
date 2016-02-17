@@ -74,9 +74,9 @@ class ProjectManager
     public function checkBids(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid           = Loader::loadData('bids');
+        $oBid = Loader::loadData('bids');
         /** @var \bids_logs $oBidLogi */
-        $oBidLog             = Loader::loadData('bids_logs');
+        $oBidLog = Loader::loadData('bids_logs');
 
         $aLogContext      = array();
         $bBidsLogs        = false;
@@ -143,9 +143,14 @@ class ProjectManager
     {
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = Loader::loadData('projects_status');
-        if ($oProject->date_fin != '0000-00-00 00:00:00' && new \DateTime() >= new \DateTime($oProject->date_fin)) {
+        $oEndDate = new \DateTime($oProject->date_retrait_full);
+        if ($oProject->date_fin != '0000-00-00 00:00:00') {
+            $oEndDate = new \DateTime($oProject->date_fin);
+        }
+        if (new \DateTime() >= $oEndDate) {
             return false;
         }
+
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
             if ($oProjectStatus->status == \projects_status::AUTO_BID) {
                 $this->bidAllAutoBid($oProject);
@@ -180,13 +185,13 @@ class ProjectManager
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
         /** @var \bids $oBid */
-        $oBid         = Loader::loadData('bids');
+        $oBid = Loader::loadData('bids');
 
         $oSettings->get('Auto-bid step', 'type');
-        $fStep = (float)$oSettings->value;
+        $fStep        = (float)$oSettings->value;
         $fCurrentRate = (float)$oBid->getProjectMaxRate($oProject->id_project) - $fStep;
 
-        while ($aAutoBidList = $oBid->getTempRefusedAutoBids($oProject->id_project)) {
+        while ($aAutoBidList = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
             foreach ($aAutoBidList as $aAutobid) {
                 if ($oBid->get($aAutobid['id_bid'])) {
                     $this->oAutoBidManager->refreshRateOrReject($oBid, $fCurrentRate);
@@ -199,10 +204,9 @@ class ProjectManager
     {
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
-
-        $aRefusedAutoBid = $oBid->getTempRefusedAutoBids($oProject->id_project, 1);
+        $this->checkBids($oProject);
+        $aRefusedAutoBid = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY, 1);
         if (false === empty($aRefusedAutoBid)) {
-            $this->checkBids($oProject);
             $this->refreshAllAutoBidRate($oProject);
             $this->cleanTempRefusedAutoBid($oProject);
         }
@@ -220,7 +224,7 @@ class ProjectManager
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
 
-        $this->cleanTempRefusedAutoBid($oProject->id_project);
+        $this->cleanTempRefusedAutoBid($oProject);
 
         // on passe le projet en fundé
         $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject->id_project);
