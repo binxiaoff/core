@@ -127,9 +127,9 @@ class Altares
 
         if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
             $oCompanyAssetsDebts    = new \companies_actif_passif($this->oDatabase);
-            $oCompanyBalance        = new \companies_balance($this->oDatabase);
-            $oCompaniesBalanceTypes = new \companies_balance_type($this->oDatabase);
             $oCompanyAnnualAccounts = new \companies_bilans($this->oDatabase);
+            $oCompanyBalance        = new \company_balance($this->oDatabase);
+            $oCompaniesBalanceTypes = new \company_balance_type($this->oDatabase);
 
             $aCodes = $oCompaniesBalanceTypes->getAllByCode();
 

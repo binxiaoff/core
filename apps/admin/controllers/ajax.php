@@ -597,21 +597,21 @@ class ajaxController extends bootstrap
                 $this->projects->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
                 $this->projects->update();
             } elseif ($_POST['etape'] == 4.2) {
-                $this->projects               = $this->loadData('projects');
-                $this->companies_bilans       = $this->loadData('companies_bilans');
-                $this->companies_balance      = $this->loadData('companies_balance');
-                $this->companies_balance_type = $this->loadData('companies_balance_type');
+                $this->projects             = $this->loadData('projects');
+                $this->companies_bilans     = $this->loadData('companies_bilans');
+                $this->company_balance      = $this->loadData('company_balance');
+                $this->company_balance_type = $this->loadData('company_balance_type');
 
                 if ($this->projects->get($_POST['id_project'], 'id_project')) {
                     $aAnnualAccounts    = $this->companies_bilans->select('id_company = ' . $this->projects->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
                     $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
                     $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
                     $aBalanceSheets     = array();
-                    foreach ($this->companies_balance->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
+                    foreach ($this->company_balance->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
                         $aBalanceSheets[$aAnnualAccount['id_bilan']][$aAnnualAccount['id_balance_type']] = $aAnnualAccount;
                     }
 
-                    foreach ($this->companies_balance_type->getAllByCode() as $sCode => $aBalanceType) {
+                    foreach ($this->company_balance_type->getAllByCode() as $sCode => $aBalanceType) {
                         if (isset($_POST[$sCode])) {
                             $iBalanceTypeId = $aBalanceType['id_balance_type'];
 
@@ -619,14 +619,14 @@ class ajaxController extends bootstrap
                                 $iValue = $this->ficelle->cleanFormatedNumber($sValue);
 
                                 if (isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]) && $aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['value'] != $iValue) {
-                                    $this->companies_balance->get($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['id_balance']);
-                                    $this->companies_balance->value = $iValue;
-                                    $this->companies_balance->update();
+                                    $this->company_balance->get($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['id_balance']);
+                                    $this->company_balance->value = $iValue;
+                                    $this->company_balance->update();
                                 } elseif (false === isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId])) {
-                                    $this->companies_balance->id_bilan        = $iAnnualAccountsId;
-                                    $this->companies_balance->id_balance_type = $iBalanceTypeId;
-                                    $this->companies_balance->value           = $iValue;
-                                    $this->companies_balance->create();
+                                    $this->company_balance->id_bilan        = $iAnnualAccountsId;
+                                    $this->company_balance->id_balance_type = $iBalanceTypeId;
+                                    $this->company_balance->value           = $iValue;
+                                    $this->company_balance->create();
                                 }
                             }
                         }

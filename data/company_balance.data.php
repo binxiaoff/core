@@ -1,10 +1,10 @@
 <?php
 
-class companies_balance extends companies_balance_crud
+class company_balance extends company_balance_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::companies_balance($bdd, $params);
+        parent::company_balance($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -17,7 +17,7 @@ class companies_balance extends companies_balance_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM companies_balance' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM company_balance' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -33,18 +33,18 @@ class companies_balance extends companies_balance_crud
             $where = ' WHERE ' . $where;
         }
 
-        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM companies_balance ' . $where), 0, 0);
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM company_balance ' . $where), 0, 0);
     }
 
     public function exist($id, $field = 'id_balance')
     {
-        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM companies_balance WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM company_balance WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
     }
 
     public function getBalanceSheetsByAnnualAccount(array $aAnnualAccountsIds)
     {
         $aAnnualAccounts    = array();
-        $oBalanceTypes      = new \companies_balance_type($this->bdd);
+        $oBalanceTypes      = new \company_balance_type($this->bdd);
         $aBalanceTypes      = $oBalanceTypes->getAllByType();
         $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
 

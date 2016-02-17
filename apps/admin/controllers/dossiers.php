@@ -70,8 +70,8 @@ class dossiersController extends bootstrap
         $this->project_cgv                     = $this->loadData('project_cgv');
         $this->companies                       = $this->loadData('companies');
         $this->companies_actif_passif          = $this->loadData('companies_actif_passif');
-        $this->companies_balance               = $this->loadData('companies_balance');
-        $this->companies_balance_type          = $this->loadData('companies_balance_type');
+        $this->company_balance                 = $this->loadData('company_balance');
+        $this->company_balance_type            = $this->loadData('company_balance_type');
         $this->companies_bilans                = $this->loadData('companies_bilans');
         $this->clients                         = $this->loadData('clients');
         $this->clients_adresses                = $this->loadData('clients_adresses');
@@ -162,7 +162,7 @@ class dossiersController extends bootstrap
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
-            $this->aBalanceCodes        = $this->companies_balance_type->getAllByCode();
+            $this->aBalanceCodes        = $this->company_balance_type->getAllByCode();
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
             if (empty($this->projects->id_dernier_bilan)) {
@@ -183,7 +183,7 @@ class dossiersController extends bootstrap
                 $aAnnualAccountsIds            = array_column($this->lbilans, 'id_bilan');
                 $sAnnualAccountsIds            = implode(', ', $aAnnualAccountsIds);
                 $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC');
-                $this->aBalanceSheets          = $this->companies_balance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+                $this->aBalanceSheets          = $this->company_balance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
 
                 if (count($this->lCompanies_actif_passif) < count($this->lbilans)) {
                     foreach (array_diff(array_column($this->lbilans, 'id_bilan'), array_column($this->lCompanies_actif_passif, 'id_bilan')) as $iAnnualAccountsId) {
@@ -277,8 +277,8 @@ class dossiersController extends bootstrap
                 $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
                 $this->companies_actif_passif->create();
 
-                $this->companies_balance->id_bilan = $this->companies_bilans->id_bilan;
-                $this->companies_balance->create();
+                $this->company_balance->id_bilan = $this->companies_bilans->id_bilan;
+                $this->company_balance->create();
 
                 $this->projects->id_dernier_bilan = $this->companies_bilans->id_bilan;
                 $this->projects->update();
