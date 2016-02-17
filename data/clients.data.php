@@ -241,14 +241,10 @@ class clients extends clients_crud
         }
     }
 
-    public function checkAccessLender($iClientId = null)
+    public function checkAccessLender()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        if ($this->isLender(new \lenders_accounts($this->bdd), $iClientId)) {
-            if ($this->checkCompteCreate($iClientId) === false) {
+        if ($this->isLender()) {
+            if (false === $this->checkCompteCreate($this->id_client)) {
                 header('location:' . $this->lurl . '/inscription-preteurs');
                 die;
             }
@@ -257,13 +253,9 @@ class clients extends clients_crud
         }
     }
 
-    public function checkAccessBorrower($iClientId = null)
+    public function checkAccessBorrower()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        if ($this->isBorrower(new \projects($this->bdd), new\companies($this->bdd), $iClientId) === false ) {
+        if (false === $this->isBorrower()) {
             $this->handleLogout();
         }
     }
@@ -655,33 +647,28 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function isPrescripteur(prescripteurs $oPrescripteurs, $iClientId = null)
+    public function isAdvisor()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        return $oPrescripteurs->exist($iClientId, 'id_client');
+        $oAdvisors = new \prescripteurs($this->bdd);
+        return $oAdvisors->exist($this->id_client, 'id_client');
     }
 
-    public function isLender(lenders_accounts $oLendersAccounts, $iClientId = null)
+    public function isLender()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        return $oLendersAccounts->exist($iClientId, 'id_client_owner');
+        $oLendersAccounts = new \lenders_accounts($this->bdd);
+        return $oLendersAccounts->exist($this->id_client, 'id_client_owner');
     }
 
-    public function isBorrower(projects $oProjects, companies $oCompanies, $iClientId = null)
+    public function isBorrower()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
+        $oCompanies = new \companies($this->bdd);
+        $oProjects  = new \projects($this->bdd);
+
+        if ($oCompanies->get($this->id_client, 'id_client_owner')){
+            return $oProjects->exist($oCompanies->id_company, 'id_company');
+        } else {
+            return false;
         }
-
-        $oCompanies->get($iClientId, 'id_client_owner');
-
-        return $oProjects->exist($oCompanies->id_company, 'id_company');
     }
 
 
@@ -1082,7 +1069,7 @@ class clients extends clients_crud
         return $aClientsWithoutWelcomeOffer;
     }
 
-    public function getClientsLender($sWhere = null)
+    public function getLenders($sWhere = null)
     {
         if (false === is_null($sWhere)) {
             $sWhere = ' WHERE ' . $sWhere;
@@ -1102,7 +1089,7 @@ class clients extends clients_crud
         return $aClientsLender;
     }
 
-    public function getClientsBorrower($sWhere = null)
+    public function getBorrowers($sWhere = null)
     {
         if (false === is_null($sWhere)) {
             $sWhere = ' WHERE ' . $sWhere;

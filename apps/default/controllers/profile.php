@@ -20,10 +20,8 @@ class profileController extends bootstrap
         if (! $this->clients->checkAccess()) {
             header('Location: ' . $this->lurl);
             die;
-        } else {
-            // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkAccessLender($this->clients->id_client);
         }
+        $this->clients->checkAccessLender();
 
         //Recuperation des element de traductions
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);

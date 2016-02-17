@@ -396,7 +396,6 @@ class ajaxController extends bootstrap
                     }
 
                     $this->clients_history->id_client = $this->clients->id_client;
-                    $this->clients_history->type      = $this->clients->status_pre_emp;
                     $this->clients_history->status    = 3; // statut depot de dossier validé
                     $this->clients_history->create();
 

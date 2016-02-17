@@ -15,9 +15,8 @@ class syntheseController extends bootstrap
         if (!$this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
-        } else {
-            $this->clients->checkAccessLender($this->clients->id_client);
         }
+        $this->clients->checkAccessLender();
 
         $this->lng['preteur-projets']  = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
         $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);

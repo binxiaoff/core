@@ -49,7 +49,7 @@ class rootController extends bootstrap
 
             // Redirection inscription preteur
             if ($this->tree->id_tree == 127) {
-                if ($this->clients->checkAccess() && $this->clients->isLender($this->lenders_accounts, $this->clients->id_client)) {
+                if ($this->clients->checkAccess() && $this->clients->isLender()) {
                     if ($this->clients->etape_inscription_preteur < 3) {
                         $etape = ($this->clients->etape_inscription_preteur + 1);
 
@@ -201,7 +201,7 @@ class rootController extends bootstrap
                     die;
                 } else {
                     if ($this->tree->arbo == 1) {
-                        $this->clients->checkAccessLender($this->clients->id_client);
+                        $this->clients->checkAccessLender();
                     } elseif ($this->tree->arbo == 2) {
                         $this->clients->checkAccessBorrower($this->clients->id_client);;
                     }
@@ -1088,7 +1088,7 @@ class rootController extends bootstrap
         include_once $this->path . '/apps/default/controllers/pdf.php';
 
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->clients->checkAccessLender($this->clients->id_client);
+            $this->clients->checkAccessLender();
 
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $id_tree_cgu = $this->settings->value;

@@ -16,10 +16,8 @@ class operationsController extends bootstrap
         if (false === $this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
-        } else {
-            // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkAccessLender($this->clients->id_client);
         }
+        $this->clients->checkAccessLender();
         // page
         $this->page                      = 'operations';
         $this->lng['preteur-operations'] = $this->ln->selectFront('preteur-operations', $this->language, $this->App);

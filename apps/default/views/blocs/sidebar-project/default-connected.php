@@ -52,7 +52,7 @@
                         </div>
                     </div>
                 <?php } ?>
-                <?php if ($this->clients->isLender($this->loadData('lenders_accounts'), $this->clients->id_client)) { ?>
+                <?php if ($this->bIsLender) { ?>
                     <div class="widget-cat">
                         <h4><?= $this->lng['preteur-projets']['faire-une-offre'] ?></h4>
                         <div class="row">

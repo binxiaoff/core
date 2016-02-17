@@ -310,7 +310,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->getClientsBorrower('clients.status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
     }
 
     public function _requete_dossiers_csv()
@@ -325,7 +325,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->getClientsBorrower('clients.status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
 
         $header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
         $header = utf8_encode($header);

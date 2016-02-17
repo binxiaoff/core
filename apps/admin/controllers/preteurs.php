@@ -1634,8 +1634,9 @@ class preteursController extends bootstrap
 
     private function changeClientStatus($iClientId, $iStatus, $iOrigin)
     {
-        if (false === $this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId)) {
-            $this->clients->get($iClientId, 'id_client');
+        $this->clients->get($iClientId, 'id_client');
+
+        if (false === $this->clients->isBorrower()) {
             $this->clients->status = $iStatus;
             $this->clients->update();
 

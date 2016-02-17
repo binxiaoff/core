@@ -3,8 +3,8 @@
         <a href="<?= $this->url?>/synthese" class="btn btn-medium"><?= $this->lng['header']['acceder-preteur'] ?></a>
         <a href="<?= $this->url?>/espace_emprunteur" class="btn btn-medium"><?= $this->lng['header']['acceder-emprunteur'] ?></a>
     </div>
-    <?php endif; ?>
-<?php if ($this->bDisplayLender) : ?>
+<?php endif; ?>
+<?php if ($this->bDisplayHeaderLender) : ?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/synthese"
            class="header_account_name">
@@ -33,7 +33,7 @@
             </ul>
         </div>
     </div><!-- /.login-panel -->
-<?php elseif ($this->bDisplayBorrower) : ?>
+<?php elseif ($this->bDisplayHeaderBorrower) : ?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/espace_emprunteur/identite" class="header_account_name">
             <span style="font-size: 0.8em;"><strong><?= $this->lng['header']['siren'] . $this->oCompanyDisplay->siren ?></strong></span></a>

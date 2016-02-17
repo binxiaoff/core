@@ -29,10 +29,8 @@ class projectsController extends bootstrap
         if (!$this->clients->checkAccess()) {
             header('Location: ' . $this->lurl);
             die;
-        } else {
-            // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkAccessLender($this->clients->id_client);
         }
+        $this->clients->checkAccessLender();
 
         // Chargement des datas
         $this->projects = $this->loadData('projects');

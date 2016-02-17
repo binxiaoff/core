@@ -14,7 +14,7 @@
         </div>
     </div>
 
-    <?php  if ($this->bDisplayLender) :
+    <?php if ($this->bDisplayHeaderLender) :
         if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) :
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
@@ -123,7 +123,7 @@
                 })
             </script>
         </div>
-    <?php elseif ($this->bDisplayBorrower) : ?>
+    <?php elseif($this->bDisplayHeaderBorrower) : ?>
         <style type="text/css">
             .navigation .styled-nav{width: 100%;}
         </style>

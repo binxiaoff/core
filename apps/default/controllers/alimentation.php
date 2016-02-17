@@ -3,7 +3,7 @@
 class alimentationController extends bootstrap
 {
 
-    public function alimentationController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -17,7 +17,7 @@ class alimentationController extends bootstrap
             header('Location:' . $this->lurl);
             die;
         } else {
-            $this->clients->checkAccessLender($this->clients->id_client);
+            $this->clients->checkAccessLender();
         }
 
         $this->page = 'alimentation';
@@ -340,7 +340,7 @@ class alimentationController extends bootstrap
                     } // Si erreur on envoie sur mon mail
                     elseif (isset($result)) {
 
-                        mail('d.courtier@equinoa.com', 'unilend erreur payline', 'alimentation preteur (client : ' . $this->clients->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
+                        mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $this->clients->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
 
                         header('location:' . $this->lurl . '/alimentation/erreur/' . $this->clients->hash);
                         die;
@@ -350,7 +350,7 @@ class alimentationController extends bootstrap
         }
     }
 
-    function _payment()
+    public function _payment()
     {
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
@@ -546,7 +546,7 @@ class alimentationController extends bootstrap
                     header('location:' . $this->lurl . '/alimentation');
                     die;
                 } else {
-                    mail('d.courtier@equinoa.com', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $this->clients->id_client . ') : ' . serialize($response));
+                    mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $this->clients->id_client . ') : ' . serialize($response));
 
                     header('location:' . $this->lurl . '/alimentation/erreur/');
                     die;
@@ -555,7 +555,7 @@ class alimentationController extends bootstrap
         }
     }
 
-    function _confirmation()
+    public function _confirmation()
     {
         if (isset($this->params[0]) && $this->params[0] == 'v') {
             header('location:' . $this->lurl . '/' . $this->tree->getSlug(138, $this->language));
@@ -569,7 +569,7 @@ class alimentationController extends bootstrap
         }
     }
 
-    function _erreur()
+    public function _erreur()
     {
 
     }

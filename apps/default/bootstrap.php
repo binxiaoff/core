@@ -276,6 +276,7 @@ class bootstrap extends Controller
                 if ($bErrorLogin === false) {
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
                         unset($_SESSION['login']);
+                        $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
                         if (isset($_COOKIE['acceptCookies'])) {
                             $this->create_cookies = false;
@@ -289,8 +290,8 @@ class bootstrap extends Controller
                         $this->clients_history->status    = 1; // statut login
                         $this->clients_history->create();
 
-                        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
+                        $this->bIsLender            = $this->clients->isLender();
+                        $this->bIsBorrower          = $this->clients->isBorrower();
                         $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender);
 
                         if ($this->bIsLender && false === $this->bIsBorrowerAndLender) {
@@ -347,24 +348,30 @@ class bootstrap extends Controller
             $this->addDataLayer('id_client', $this->clients->id_client);
             $this->addDataLayer('email_client', $this->clients->email);
 
-            $this->bIsLender                   = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-            $this->bIsBorrower                 = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
+            $this->bIsLender                   = $this->clients->isLender();
+            $this->bIsBorrower                 = $this->clients->isBorrower();
             $this->bIsBorrowerAndLender        = ($this->bIsBorrower && $this->bIsLender);
-            $this->bDisplayLender              = false;
-            $this->bDisplayBorrower            = false;
-            $this->bShowChoiceBorrowerOrLender = true;
+            $this->bDisplayHeaderLender        = false;
+            $this->bDisplayHeaderBorrower      = false;
+            $this->bShowChoiceBorrowerOrLender = $this->bIsBorrowerAndLender;
 
 
-            if ($this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']) && 'espace_emprunteur' === $command->Name) {
+            if ($this->bIsBorrower) {
                 $this->getDataBorrower();
-                $this->bDisplayBorrower = true;
-                $this->bShowChoiceBorrowerOrLender = false;
+                if ('espace_emprunteur' === $command->Name) {
+                    $this->bDisplayHeaderBorrower      = true;
+                    $this->bShowChoiceBorrowerOrLender = false;
+                    $this->bDisplayHeaderLender        = false;
+                }
             }
 
-            if ($this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']) && 'synthese' === $command->Name ) {
+            if ($this->bIsLender) {
                 $this->getDataLender();
-                $this->bDisplayLender = true;
-                $this->bShowChoiceBorrowerOrLender = false;
+                if ('synthese' === $command->Name) {
+                    $this->bDisplayHeaderLender        = true;
+                    $this->bShowChoiceBorrowerOrLender = false;
+                    $this->bDisplayHeaderBorrower      = false;
+                }
             }
         }
 
@@ -551,7 +558,7 @@ class bootstrap extends Controller
 
     private function loginLender()
     {
-        $this->bDisplayLender = true;
+        $this->bDisplayHeaderLender = true;
 
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
@@ -674,7 +681,7 @@ class bootstrap extends Controller
 
     private function loginBorrower()
     {
-        $this->bDisplayBorrower = true;
+        $this->bDisplayHeaderBorrower = true;
         $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
 
         $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
@@ -690,7 +697,6 @@ class bootstrap extends Controller
 
     private function getDataLender()
     {
-        $this->bDisplayLender = true;
         if ($this->clients->type == clients::TYPE_PERSON) {
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
@@ -728,7 +734,6 @@ class bootstrap extends Controller
 
     private function getDataBorrower()
     {
-        $this->bDisplayBorrower = true;
         $this->oCompanyDisplay = $this->loadData('companies');
         $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
 
