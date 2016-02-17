@@ -22,7 +22,7 @@ class inscription_preteurController extends bootstrap
 
     public function _default()
     {
-        header('location:' . $this->lurl . '/inscription_preteur/etape1');
+        header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
         die;
     }
 
@@ -1151,7 +1151,7 @@ class inscription_preteurController extends bootstrap
             // preteur ayant deja crée son compte
             if ($this->bIsLender && $this->clients->etape_inscription_preteur == 3) {
 
-                header('location:' . $this->lurl . '/inscription_preteur/etape1');
+                header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
                 die;
             } // preteur n'ayant pas terminé la création de son compte
             elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
@@ -1657,13 +1657,13 @@ class inscription_preteurController extends bootstrap
 
             // preteur ayant deja crée son compte
             if ($this->bIsLender && $this->clients->etape_inscription_preteur == 3) {
-                header('location:' . $this->lurl . '/inscription_preteur/etape1');
+                header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
                 die;
             } // preteur n'ayant pas terminé la création de son compte
             elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
                 $this->preteurOnline = true;
             } // Emprunteur/preteur n'ayant pas terminé la création de son compte
-            elseif ($this->bIsBorrower && $this->clients->etape_inscription_preteur < 3) {
+            elseif ($this->bIsBorrowerAndLender && $this->clients->etape_inscription_preteur < 3) {
                 $this->emprunteurCreatePreteur = true;
             }
 
@@ -1857,11 +1857,11 @@ class inscription_preteurController extends bootstrap
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                header('location:' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/v/');
+                header('Location: ' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/v/');
                 die;
             }
         } else {
-            header('location:' . $this->lurl . '/inscription_preteur/etape1');
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
             die;
         }
 
@@ -2103,7 +2103,7 @@ class inscription_preteurController extends bootstrap
                     die;
                 } // Si erreur
                 else {
-                    mail('d.courtier@equinoa.com', 'unilend payline erreur', 'erreur sur page payment inscription preteur id_preteur :' . $this->clients->id_client . ' Reponse : ' . serialize($response));
+                    mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment inscription preteur id_preteur :' . $this->clients->id_client . ' Reponse : ' . serialize($response));
 
                     header('location:' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
                     die;
@@ -2146,10 +2146,7 @@ class inscription_preteurController extends bootstrap
 
         if (isset($_SESSION['client'])) {
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-            if ($this->bIsLender) {
-                header('Location:' . $this->lurl . '/inscription_preteur/etape1');
-                die;
-            } elseif ($this->bIsBorrower) {
+            if ($this->bIsBorrower) {
                 $this->emprunteurCreatePreteur = true;
                 $this->clients->type           = \clients::TYPE_LEGAL_ENTITY;
             } else {

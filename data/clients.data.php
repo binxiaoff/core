@@ -340,7 +340,7 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
+    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
         $and   = '';
@@ -357,18 +357,13 @@ class clients extends clients_crud
             $and .= ' AND co.name LIKE "' . $name . '%"';
         }
 
-        if ($emprunteur != '') {
-            $and .= ' AND c.status_pre_emp IN (2,3)';
+        if ($noValide == '1') {
+            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 1';
+        } // inscription non terminée
+        elseif ($noValide == '2') {
+            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 0';
         } else {
-            // inscription terminée
-            if ($noValide == '1') {
-                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 1';
-            } // inscription non terminée
-            elseif ($noValide == '2') {
-                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 0';
-            } else {
-                $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_pre_emp IN (1,3) AND c.status_inscription_preteur = 1';
-            }
+            $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_inscription_preteur = 1';
         }
 
         // pour le OR on rajoute la condition derriere

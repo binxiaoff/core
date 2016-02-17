@@ -906,7 +906,7 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '0', '300');
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
