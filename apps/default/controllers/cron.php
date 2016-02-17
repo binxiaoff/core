@@ -140,7 +140,7 @@ class cronController extends bootstrap
             $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
             $oLoans           = $this->loadData('loans');
 
-            $this->mails_text->get('mail_echeance_emprunteur', 'lang = "' . $this->language . '" AND type');
+            $this->mails_text->get('mail-echeance-emprunteur', 'lang = "' . $this->language . '" AND type');
             $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
 
             foreach ($aUpcomingRepayments as $aRepayment) {
