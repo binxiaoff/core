@@ -81,7 +81,12 @@ class AutoBidManager
         $oSettings->get('Auto-bid global switch', 'type');
         $bGlobalActive = (bool)$oSettings->value;
 
-        if ((true === $bGlobalActive || true === (bool)$oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER))) {
+        $bBetaTester = false;
+        if (false === empty($oClient->id_client) && true === (bool)$oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER)) {
+            $bBetaTester = true;
+        }
+
+        if ($bGlobalActive || $bBetaTester) {
             return true;
         }
 
