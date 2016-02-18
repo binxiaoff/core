@@ -156,7 +156,7 @@ form p{padding-left:0px;}
 .etoile1{right:629px;}
 
 .enchereVousColor{color:#B10366;}
-.enchereVous{position:relative;left:-58px;}
+.enchereVous{position:absolute;left:-58px;}
 
 .register-form .pass-field-holder em{
     color: #b10366;

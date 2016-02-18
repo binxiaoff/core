@@ -62,7 +62,7 @@
                     </div>
                     <div style="clear:both;"></div>
                     <a target="_parent" class="btn" id="seconnecter" style="width:210px; display:block;margin:auto;"><?= $this->lng['preteur-projets']['se-connecter'] ?></a>
-                    <?php if ($_SESSION['login']['nb_tentatives_precedentes'] <= 10 && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && isset($_POST['project_detail'])) { ?>
+                    <?php if (isset($_SESSION['login']['nb_tentatives_precedentes']) && isset($_SESSION['login']['nb_tentatives_precedentes']) <= 10 && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && isset($_POST['project_detail'])) { ?>
                         <p class="error_login error_wait" style="display:block; text-align:center;">
                             <?= $this->lng['header']['vous-devez-attendre'] ?>
                             <?= $_SESSION['login']['duree_waiting'] ?>
@@ -74,7 +74,7 @@
                                 $(".seconnecteropen").html('true');
                             }, <?= ($_SESSION['login']['duree_waiting'] * 1000) ?>);
                         </script>
-                    <?php } elseif ($_SESSION['login']['nb_tentatives_precedentes'] <= 1 && isset($_POST['project_detail'])) { ?>
+                    <?php } elseif (isset($_SESSION['login']['nb_tentatives_precedentes']) && isset($_SESSION['login']['nb_tentatives_precedentes']) <= 1 && isset($_POST['project_detail'])) { ?>
                         <p class="error_login" style="text-align:center;"><?= $this->error_login ?></p>
                     <?php } ?>
 
@@ -125,7 +125,7 @@
                     </form>
                 </div>
                 <a target="_parent" class="btn sinscrire_cta" id="sinscrire" style=""><?= $this->lng['preteur-projets']['sinscrire'] ?></a>
-                <p class="error_login" style="text-align:center;display:inline;"><?= $this->retour_form ?></p>
+                <p class="error_login" style="text-align:center;display:inline;"><?= (isset($this->retour_form)) ? $this->retour_form : '' ?></p>
                 <script type="text/javascript">
                     $("#sinscrire").click(function () {
                         if ($(".sinscrireopen").html() == 'false') {

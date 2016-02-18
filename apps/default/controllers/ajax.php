@@ -529,9 +529,11 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->bids             = $this->loadData('bids');
-        $this->projects         = $this->loadData('projects');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->bids                   = $this->loadData('bids');
+        $this->projects               = $this->loadData('projects');
+        $this->lenders_accounts       = $this->loadData('lenders_accounts');
+        $oAutoBidManager              = $this->get('AutoBidManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -565,10 +567,10 @@ class ajaxController extends bootstrap
             $order = 'ordre ' . $direction;
         }
 
-        $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->bids->getAVG($this->projects->id_project, 'rate');
+        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
+        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgRate        = $this->bids->getAVG($this->projects->id_project, 'rate');
 
         $montantHaut = 0;
         $tauxBas     = 0;
@@ -588,9 +590,11 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->bids             = $this->loadData('bids');
-        $this->projects         = $this->loadData('projects');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->bids                   = $this->loadData('bids');
+        $this->projects               = $this->loadData('projects');
+        $this->lenders_accounts       = $this->loadData('lenders_accounts');
+        $oAutoBidManager              = $this->get('AutoBidManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
@@ -619,10 +623,10 @@ class ajaxController extends bootstrap
             $order = 'ordre ' . $direction;
         }
 
-        $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->bids->getAVG($this->projects->id_project, 'rate');
+        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
+        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgRate        = $this->bids->getAVG($this->projects->id_project, 'rate');
 
         $montantHaut = 0;
         $tauxBas     = 0;
@@ -1877,5 +1881,22 @@ class ajaxController extends bootstrap
         $this->aBorrowerOperations = $oClients->getDataForBorrowerOperations($aClientProjectIDs, $oStartTime, $oEndTime, $iTransaction, $oClients->id_client);
         $this->sDisplayDateTimeStart = $oStartTime->format('d/m/Y');
         $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
+    }
+
+    public function _rejectedBids()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = true;
+
+        $this->oProject = $this->loadData('projects');
+        $oClient        = $this->loadData('clients');
+        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oBids          = $this->loadData('bids');
+
+        if (isset($this->params[0]) && isset($this->params[1]) && $this->oProject->get($this->params[0]) && $oClient->get($this->params[1], 'hash')) {
+            $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+            $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
+        }
     }
 }

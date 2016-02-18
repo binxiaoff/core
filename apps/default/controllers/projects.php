@@ -106,17 +106,16 @@ class projectsController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->projects_status_history       = $this->loadData('projects_status_history');
+        $oAutoBidManager                     = $this->get('AutoBidManager');
 
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
+        $this->lng['landing-page']           = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        if ($this->clients->checkAccess()) {
+        $this->bIsConnected                  = $this->clients->checkAccess();
+        $this->bIsAllowedToSeeAutobid        = $oAutoBidManager->isQualified($this->clients);
+        $this->restriction_ip                = in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]);
+
+        if ($this->bIsConnected) {
             $this->setHeader('header_account');
-        }
-
-        if (in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) {
-            $this->restriction_ip = true;
-        } else {
-            $this->restriction_ip = false;
         }
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0' && $this->projects->display == \projects::DISPLAY_PROJECT_ON) {
@@ -455,7 +454,7 @@ class projectsController extends bootstrap
             }
             // FIN INSCRIPTION PRETEUR //
             // Nb projets en funding
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = '. \projects::DISPLAY_PROJECT_ON);
 
             // dates pour le js
             $this->mois_jour = $this->dates->formatDate($this->projects->date_retrait, 'F d');
@@ -543,7 +542,7 @@ class projectsController extends bootstrap
                 }
             }
 
-            $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+            $this->aBidsOnProject     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
             $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
             $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
 
@@ -582,16 +581,13 @@ class projectsController extends bootstrap
 
             $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            if ($this->lenders_accounts->id_lender_account != false) {
+            if (false === empty($this->lenders_accounts->id_lender_account)) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
-            }
-
-            if ($this->lenders_accounts->id_lender_account != false) {
                 $this->lBids = $this->bids->select('id_lender_account = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND status = 0', 'added ASC');
             }
 
             if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
-                if ($this->lenders_accounts->id_lender_account != false) {
+                if (false === empty($this->lenders_accounts->id_lender_account)) {
                     $this->bidsvalid = $this->loans->getBidsValid($this->projects->id_project, $this->lenders_accounts->id_lender_account);
                 }
 
