@@ -75,6 +75,7 @@ class preteursController extends bootstrap
 
     public function _gestion()
     {
+        $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
@@ -344,8 +345,6 @@ class preteursController extends bootstrap
 
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
-
-        $this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
         if (isset($_POST['send_completude'])) {
             $this->sendCompletenessRequest();
