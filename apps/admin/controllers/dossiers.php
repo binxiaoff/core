@@ -1104,6 +1104,7 @@ class dossiersController extends bootstrap
                 } elseif ($_POST['date_retrait_minute'] < 0) {
                     $form_ok = false;
                 }
+
                 if ($this->current_projects_status->status > \projects_status::EN_FUNDING) {
                     $form_ok = false;
                 }
@@ -1125,6 +1126,13 @@ class dossiersController extends bootstrap
             /** @var project_need $oProjectNeed */
             $oProjectNeed = $this->loadData('project_need');
             $this->aNeeds = $oProjectNeed->getTree();
+
+            $this->aRatings = array();
+            if (false === empty($this->projects->id_company_rating_history)) {
+                /** @var company_rating $oCompanyRating */
+                $oCompanyRating = $this->loadData('company_rating');
+                $this->aRatings = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
+            }
 
             $this->recup_info_remboursement_anticipe($this->projects->id_project);
         } else {

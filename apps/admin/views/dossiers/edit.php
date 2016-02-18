@@ -751,37 +751,36 @@
     <br/><br/>
 
     <h2>Mémos</h2>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $this->projects->id_project ?>" class="btn_link thickbox">Ajouter un mémo</a></div>
-    <br/><br/><br/>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a></div>
-    <div id="table_memo">
     <?php if (count($this->lProjects_comments) > 0): ?>
-        <table class="tablesorter">
-            <thead>
-                <tr>
-                    <th width="120" align="center">Date ajout</th>
-                    <th align="center">Contenu</th>
-                    <th width="50" align="center">&nbsp;</th>
-                </tr>
-            </thead>
-            <tbody>
-            <?php $i = 1; ?>
-            <?php foreach ($this->lProjects_comments as $p): ?>
-                <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
-                    <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
-                    <td><?= nl2br($p['content']) ?></td>
-                    <td align="center">
-                        <a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $p['id_project'] ?>/<?= $p['id_project_comment'] ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
-                        <img style="cursor:pointer;" onclick="deleteMemo(<?= $p['id_project_comment'] ?>,<?= $p['id_project'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
-                    </td>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div id="table_memo">
+            <table class="tablesorter">
+                <thead>
+                    <tr>
+                        <th width="120" align="center">Date ajout</th>
+                        <th align="center">Contenu</th>
+                        <th width="50" align="center">&nbsp;</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <?php $i = 1; ?>
+                <?php foreach ($this->lProjects_comments as $p): ?>
+                    <tr<?= ($i++ % 2 == 1 ? '' : ' class="odd"') ?>>
+                        <td align="center"><?= $this->dates->formatDate($p['added'], 'd/m/Y H:i:s') ?></td>
+                        <td><?= nl2br($p['content']) ?></td>
+                        <td align="center">
+                            <a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $p['id_project'] ?>/<?= $p['id_project_comment'] ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
+                            <img style="cursor:pointer;" onclick="deleteMemo(<?= $p['id_project_comment'] ?>,<?= $p['id_project'] ?>);" src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer"/>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <br/>
     <?php endif; ?>
-    </div>
-
     <br/><br/>
+    <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $this->projects->id_project ?>" class="btn_link thickbox">Ajouter un mémo</a></div>
 
     <div id="lesEtapes">
         <?php $this->fireView('blocs/email'); ?>

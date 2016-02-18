@@ -590,12 +590,54 @@ class ajaxController extends bootstrap
                 $this->projects->comments             = $_POST['comments_etape3'];
                 $this->projects->update();
             } elseif ($_POST['etape'] == 4.1) {
-                $this->projects = $this->loadData('projects');
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
-                $this->projects->resultat_exploitation_declara_client = $this->ficelle->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
-                $this->projects->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
-                $this->projects->update();
+                /** @var projects $oProject */
+                $oProject = $this->loadData('projects');
+
+                if ($oProject->get($_POST['id_project'], 'id_project')) {
+                    /** @var company_rating $oCompanyRating */
+                    $oCompanyRating = $this->loadData('company_rating');
+                    $aRatings       = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
+                    $bAddHistory    = false;
+
+                    foreach ($_POST['ratings'] as $sRating => $mValue) {
+                        switch ($sRating) {
+                            case 'date_dernier_privilege':
+                            case 'date_tresorerie':
+                                $mValue = date('Y-m-d', strtotime(str_replace('/', '-', $mValue)));
+                                break;
+                            case 'montant_tresorerie':
+                                $mValue = $this->ficelle->cleanFormatedNumber($mValue);
+                                break;
+                        }
+
+                        if (false === isset($aRatings[$sRating]) || $aRatings[$sRating] != $mValue) {
+                            $bAddHistory = true;
+                            $aRatings[$sRating] = $mValue;
+                        }
+                    }
+
+                    if ($bAddHistory) {
+                        /** @var company_rating_history $oCompanyRatingHistory */
+                        $oCompanyRatingHistory = $this->loadData('company_rating_history');
+                        $oCompanyRatingHistory->id_company = $oProject->id_company;
+                        $oCompanyRatingHistory->id_user    = $_SESSION['user']['id_user'];
+                        $oCompanyRatingHistory->create();
+
+                        $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+
+                        foreach ($aRatings as $sRating => $mValue) {
+                            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+                            $oCompanyRating->type                      = $sRating;
+                            $oCompanyRating->value                     = $mValue;
+                            $oCompanyRating->create();
+                        }
+                    }
+
+                    $oProject->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
+                    $oProject->resultat_exploitation_declara_client = $this->ficelle->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
+                    $oProject->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
+                    $oProject->update();
+                }
             } elseif ($_POST['etape'] == 4.2) {
                 $this->projects             = $this->loadData('projects');
                 $this->companies_bilans     = $this->loadData('companies_bilans');
