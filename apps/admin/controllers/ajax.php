@@ -621,6 +621,7 @@ class ajaxController extends bootstrap
                         $oCompanyRatingHistory = $this->loadData('company_rating_history');
                         $oCompanyRatingHistory->id_company = $oProject->id_company;
                         $oCompanyRatingHistory->id_user    = $_SESSION['user']['id_user'];
+                        $oCompanyRatingHistory->action     = \company_rating_history::ACTION_USER;
                         $oCompanyRatingHistory->create();
 
                         $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;

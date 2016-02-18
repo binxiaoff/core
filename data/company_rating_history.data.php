@@ -2,6 +2,10 @@
 
 class company_rating_history extends company_rating_history_crud
 {
+    const ACTION_USER  = 'user';
+    const ACTION_WS    = 'ws';
+    const ACTION_XERFI = 'xerfi';
+
     public function __construct($bdd, $params = '')
     {
         parent::company_rating_history($bdd, $params);
