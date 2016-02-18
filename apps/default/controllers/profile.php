@@ -27,6 +27,7 @@ class profileController extends bootstrap
 
         //Recuperation des element de traductions
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng['profile']         = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
         // Heure fin periode funding
         $this->settings->get('Heure fin periode funding', 'type');
@@ -37,25 +38,18 @@ class profileController extends bootstrap
 
     public function _default()
     {
-        if (in_array($this->clients->type, array(1, 3))) {
-            header('Location: ' . $this->lurl . '/profile/particulier');
-            die;
-        } elseif (in_array($this->clients->type, array(2, 4))) {
-            header('Location: ' . $this->lurl . '/profile/societe');
-            die;
+        if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+            $this->_particulier();
+
+        } elseif (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY))) {
+            $this->_societe();
         }
     }
 
     public function _particulier()
     {
-        if (in_array($this->clients->type, array(2, 4))) {
-            header('Location: ' . $this->lurl . '/profile/societe');
-            die;
-        }
-
         $this->lng['etape1']          = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
         $this->lng['etape2']          = $this->ln->selectFront('inscription-preteur-etape-2', $this->language, $this->App);
-        $this->lng['profile']         = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
         $this->lng['gestion-alertes'] = $this->ln->selectFront('preteur-profile-gestion-alertes', $this->language, $this->App);
 
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
@@ -940,11 +934,6 @@ class profileController extends bootstrap
 
     public function _societe()
     {
-        if (in_array($this->clients->type, array(1, 3))) {
-            header('Location: ' . $this->lurl . '/profile/particulier');
-            die;
-        }
-
         $this->lng['etape1']          = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
         $this->lng['etape2']          = $this->ln->selectFront('inscription-preteur-etape-2', $this->language, $this->App);
         $this->lng['profile']         = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
@@ -1835,68 +1824,7 @@ class profileController extends bootstrap
         }
     }
 
-    public function _info_perso()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
-    }
-
-    public function _gestion_secu()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
-    }
-
-    public function _info_bank()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-    }
-
-    public function _histo_transac()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-    }
-
-    /////////
-    // NEW //
-    /////////
-
-    // PARTICULIER //
-    public function _particulier_perso()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-    }
-
     public function _particulier_perso_new()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-    }
-
-    public function _particulier_bank()
     {
         // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = false;
@@ -2148,7 +2076,6 @@ class profileController extends bootstrap
 
     }
 
-    // SOCIETE //
     public function _societe_perso()
     {
         // On masque les Head, header et footer originaux plus le debug
