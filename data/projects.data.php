@@ -702,4 +702,38 @@ class projects extends projects_crud
         }
         return $aProjects;
     }
+
+    public function getAvgRate($sRisk, $sDurationMin, $sDurationMax)
+    {
+        $oCache   = Cache::getInstance();
+        $sKey     = $oCache->makeKey('projects_getAvgRate', $sRisk, $sDurationMin, $sDurationMax);
+        $mAvgRate = $oCache->get($sKey);
+
+        if (false === $mAvgRate) {
+            $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
+                        FROM (
+                          SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
+                          FROM (
+                            SELECT l.id_loan, l.amount, l.rate, l.added, p.id_project, p.period
+                            FROM loans l
+                              INNER JOIN projects p ON p.id_project = l.id_project
+                              INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+                              INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+                              INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+                            WHERE ps.status >= ' . \projects_status::FUNDE . '
+                            AND ps.status != ' . \projects_status::FUNDING_KO . '
+                            AND p.period BETWEEN ' . $sDurationMin . ' AND ' . $sDurationMax . '
+                            AND p.risk = "' . $sRisk . '"
+                          ) t
+                          GROUP BY t.id_project
+                        ) t1
+                        ';
+
+            $rQuery   = $this->bdd->query($sQuery);
+            $mAvgRate = $this->bdd->result($rQuery, 0, 0);
+            $oCache->set($sKey, $mAvgRate, Cache::MEDIUM_TIME);
+        }
+
+        return $mAvgRate;
+    }
 }
