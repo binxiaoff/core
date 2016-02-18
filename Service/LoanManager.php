@@ -55,7 +55,7 @@ class LoanManager
                 }
                 $this->oLogger->addRecord(
                     ULogger::INFO,
-                    'project : ' . $oLoan->id_project . ' : bid (' . $aAcceptedBid['bid_id'] . ') has been transferred to ' . $sType . ' contract loan (' . $oLoan->id_loan . ') with amount ' .  $aAcceptedBid['amount']
+                    'project : ' . $oLoan->id_project . ' : bid (' . $aAcceptedBid['bid_id'] . ') has been transferred to ' . $sType . ' contract loan (' . $oLoan->id_loan . ') with amount ' . $aAcceptedBid['amount']
                 );
             }
         }
