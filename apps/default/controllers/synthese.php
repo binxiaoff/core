@@ -317,9 +317,8 @@ class syntheseController extends bootstrap
 
         $this->aOngoingBidsByProject     = $aProjectsInFunding;
         $this->iDisplayTotalNumberOfBids = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
-
-        $this->bFirstTimeActivation = false;
-        $this->aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $this->clients->id_client));
+        $this->bFirstTimeActivation      = false;
+        $this->aClientAutoBidSetting     = array_shift($oClientSettings->select('id_client = ' . $this->clients->id_client));
 
         if ($this->aClientAutoBidSetting && \Unilend\Service\AutoBidManager::AUTO_BID_OFF == $this->aClientAutoBidSetting['value']) {
             $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off"');

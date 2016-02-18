@@ -1893,43 +1893,10 @@ class ajaxController extends bootstrap
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oBids          = $this->loadData('bids');
 
-        $this->oProject->get($this->params[0]);
-        $oClient->get($this->params[1], 'hash');
-        $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
-
-        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
-
-        $this->aRejectedBids = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) . ')', 'id_bid DESC');
-    }
-
-    public function _changeAutoBidSetting()
-    {
-        $this->hideDecoration();
-        $this->autoFireView = false;
-
-        $oClient              = $this->loadData('clients');
-        $oClientSettings      = $this->loadData('client_settings');
-        $oClientHistoryAction = $this->loadData('clients_history_actions');
-        $oAutoBidManager      = $this->get('AutoBidManager');
-        $sInstruction         = '';
-
-        $oClient->get($_POST['id_client']);
-
-        if ($aClientAutoBidSetting = array_shift($oClientSettings->select('id_client = ' . $oClient->id_client))) {
-            if (false === empty($_POST['setting'])) {
-                switch ($aClientAutoBidSetting['value']) {
-                    case \Unilend\Service\AutoBidManager::AUTO_BID_ON:
-                        $oAutoBidManager->off($oClient);
-                        $sInstruction = 'update_success';
-                        break;
-                    case  \Unilend\Service\AutoBidManager::AUTO_BID_OFF:
-                        $sInstruction = ($oClientHistoryAction->select('id_client = ' . $oClient->id_client . ' AND nom_form = "autobid_on_off"')) ? 'pop_up_autolend' : 'settings';
-                        break;
-                }
-            }
-        } else {
-            $sInstruction = 'settings';
+        if (isset($this->params[0]) && isset($this->params[1]) && $this->oProject->get($this->params[0]) && $oClient->get($this->params[1], 'hash')) {
+            $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+            $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
         }
-        echo json_encode($sInstruction);
     }
 }

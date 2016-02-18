@@ -217,18 +217,17 @@
 </div>
 
 <script type="text/javascript">
-        $(".btn_show_rejected_bids").click(function () {
+    $(".btn_show_rejected_bids").click(function () {
 
-            var values = {
-                id_project: $(this).data('id-project'),
-                client: "<?= $this->clients->hash ?>"
-            };
+        var values = {
+            id_project: $(this).data('id-project'),
+            client: "<?= $this->clients->hash ?>"
+        };
 
-            $.get(add_url + "/ajax/rejectedBids/"+values.id_project+"/"+values.client).done(function (data) {
-                var obj = jQuery.parseJSON(data);
-                $(".rejected_bids_"+values.id_project).html(obj.html);
-                $(this).fadeOut();
-            });
+        $.get(add_url + "/ajax/rejectedBids/"+values.id_project+"/"+values.client).done(function (data) {
+            var obj = jQuery.parseJSON(data);
+            $(".rejected_bids_"+values.id_project).html(obj.html);
+            $(this).fadeOut();
         });
     });
 </script>
