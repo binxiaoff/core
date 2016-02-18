@@ -533,7 +533,7 @@ class ajaxController extends bootstrap
         $this->projects               = $this->loadData('projects');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
         $oAutoBidManager              = $this->get('AutoBidManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients->id_client);
+        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -594,7 +594,7 @@ class ajaxController extends bootstrap
         $this->projects               = $this->loadData('projects');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
         $oAutoBidManager              = $this->get('AutoBidManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients->id_client);
+        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
@@ -1919,7 +1919,7 @@ class ajaxController extends bootstrap
             if (false === empty($_POST['setting'])) {
                 switch ($aClientAutoBidSetting['value']) {
                     case \Unilend\Service\AutoBidManager::AUTO_BID_ON:
-                        $oAutoBidManager->off($oClient->id_client);
+                        $oAutoBidManager->off($oClient);
                         $sInstruction = 'update_success';
                         break;
                     case  \Unilend\Service\AutoBidManager::AUTO_BID_OFF:

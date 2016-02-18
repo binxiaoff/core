@@ -111,7 +111,7 @@ class projectsController extends bootstrap
         $this->lng['landing-page']           = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
         $this->bIsConnected                  = $this->clients->checkAccess();
-        $this->bIsAllowedToSeeAutobid        = $oAutoBidManager->isQualified($this->clients->id_client);
+        $this->bIsAllowedToSeeAutobid        = $oAutoBidManager->isQualified($this->clients);
         $this->restriction_ip                = in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]);
 
         if ($this->bIsConnected) {
