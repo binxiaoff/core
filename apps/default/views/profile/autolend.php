@@ -1,44 +1,4 @@
-<style>
-    .header-autobid {
-        border-bottom: 1px solid #e3e4e4;
-        padding: 0 10px;
-        margin-bottom: 40px;
-    }
-    .header-autobid ul {
-        margin: 0;
-        padding: 0;
-    }
-    .header-autobid li {
-        list-style: none;
-        display: inline-block;
-    }
-    .header-autobid li + li {
-        margin-left: 20px;
-    }
-    .header-autobid li a {
-        color: #a1a5a7;
-        font-size: 18px;
-        font-weight: bold;
-        display: block;
-        padding: 10px 0;
-    }
-    .header-autobid li a:hover {
-        color: #b10366;
-        text-decoration: none;
-    }
-    .header-autobid li.active a {
-        color: #b10366;
-        border-bottom: 4px solid #b10366;
-    }
 
-    .autobid-tab {
-        display: none;
-    }
-    .autobid-tab.visible {
-        display: block;
-    }
-
-</style>
 <div class="main form-page account-page account-page-personal">
     <div class="shell">
         <nav class="tabs-nav">
@@ -51,8 +11,8 @@
         </nav>
         <header class="header-autobid inner-nav">
             <ul>
-                <li class="active"><a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a></li>
-                <li><a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a></li>
+                <li class="active" id="consultation"><a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a></li>
+                <li id="parametrage"><a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a></li>
             </ul>
         </header>
         <div class="autobid-tabs">

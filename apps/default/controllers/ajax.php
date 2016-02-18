@@ -1899,4 +1899,27 @@ class ajaxController extends bootstrap
             $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
         }
     }
+
+    public function _changeAutoBidSetting()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $oClient         = $this->loadData('clients');
+        $oClientSettings = $this->loadData('client_settings');
+        $oAutoBidManager = $this->get('AutoBidManager');
+        $sInstruction    = '';
+
+        if (false === empty($_POST['setting']) && $oClient->get($_POST['id_client'])) {
+            if (\Unilend\Service\AutoBidManager::AUTO_BID_ON == $oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
+                $oAutoBidManager->off($oClient);
+                $sInstruction = 'update_off_success';
+            } else {
+                $oAutoBidManager->on($oClient);
+                $sInstruction = 'update_on_success';
+            }
+        }
+
+        echo $sInstruction;
+    }
 }

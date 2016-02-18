@@ -1,4 +1,5 @@
 <?php
+use \Unilend\core\Loader;
 
 class profileController extends bootstrap
 {
@@ -2397,4 +2398,33 @@ class profileController extends bootstrap
 
 		return $resultUpload;
 	}
+
+    public function _autolend()
+    {
+        $this->loadCss('default/autobid');
+
+        $oClientStatus         = Loader::loadData('clients_status');
+        $oLendersAccounts      = Loader::loadData('lenders_accounts');
+        $oClientSettings       = Loader::loadData('client_settings');
+        $oClientHistoryActions = Loader::loadData('clients_history_actions');
+
+        $this->lng['autobid']  = $this->ln->selectFront('autobid', $this->language, $this->App);
+
+        $oClientStatus->getLastStatut($this->clients->id_client);
+        $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
+
+        $this->bAutoBidOn           = (bool)$oClientSettings->getSetting($this->clients->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
+        $this->bFirstTimeActivation = false;
+        $this->bActivatedLender     = true;
+
+        if (false === $this->bAutoBidOn) {
+            $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . 'AND nom_form = autobid_on_off');
+            $this->bFirstTimeActivation = empty($aClientAutoBidHistory);
+        }
+
+        if (false === in_array($oClientStatus->status, array(\clients_status::VALIDATED))) {
+            $this->bActivatedLender = false;
+        }
+    }
+
 }
