@@ -9,6 +9,7 @@
         </div>
     </div>
     <div class="col-right">
+        <?php if (false === $this->bAutoBidOn) : ?>
         <div class="switch-notice">
             <?php if ($this->bActivatedLender && $this->bFirstTimeActivation) : ?>
                 <p><?= $this->lng['autobid']['overview-text-first-activation'] ?></p>
@@ -18,6 +19,7 @@
                 <p><?= $this->lng['autobid']['overwiew-text-completeness'] ?></p>
             <?php endif; ?>
         </div>
+        <?php endif; ?>
     </div>
 </div>
 
