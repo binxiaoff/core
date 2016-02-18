@@ -203,11 +203,15 @@ class cronController extends bootstrap
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
 
+            $bHasProjectPublished = false;
+
             $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER);
 
             foreach ($aProjectToFund as $aProject) {
                 $oPublicationDate = new \DateTime($aProject['date_publication_full']);
                 if ($oPublicationDate <= new \DateTime() && $oProject->get($aProject['id_project'])) {
+                    $bHasProjectPublished = true;
+
                     $oProjectManager->publish($oProject);
 
                     // Zippage pour groupama
@@ -215,9 +219,11 @@ class cronController extends bootstrap
                     $this->nouveau_projet($aProject['id_project']);
                 }
             }
-            $oCache = \Unilend\librairies\Cache::getInstance();
-            $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
-            $oCache->delete($sKey);
+            if ($bHasProjectPublished) {
+                $oCache = \Unilend\librairies\Cache::getInstance();
+                $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
+                $oCache->delete($sKey);
+            }
 
             $this->stopCron();
         }
@@ -237,6 +243,8 @@ class cronController extends bootstrap
             /** @var \Unilend\Service\MailerManager $oMailerManager */
             $oMailerManager = $this->get('MailerManager');
 
+            $bHasProjectFinished = false;
+
             $oProjectManager->setLogger(new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log'));
 
             $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING);
@@ -247,6 +255,7 @@ class cronController extends bootstrap
                         $oEndDate = new \DateTime($oProject->date_fin);
                     }
                     if ($oEndDate <= new \DateTime()) {
+                        $bHasProjectFinished = true;
                         // Solde total obtenue dans l'enchere
                         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
 
@@ -269,6 +278,12 @@ class cronController extends bootstrap
                         $oMailerManager->sendProjectFinishedToStaff($oProject);
                     }
                 }
+            }
+
+            if ($bHasProjectFinished) {
+                $oCache = \Unilend\librairies\Cache::getInstance();
+                $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
+                $oCache->delete($sKey);
             }
             $this->stopCron();
         }

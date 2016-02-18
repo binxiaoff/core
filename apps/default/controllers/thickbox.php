@@ -225,6 +225,19 @@ class thickboxController extends bootstrap
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
         }
+
+        $listeAccept_header = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
+        $this->update_accept_header = false;
+
+        if (in_array($this->lienConditionsGenerales, $listeAccept_header)) {
+            $this->accept_ok_header = true;
+        } else {
+            $this->accept_ok_header = false;
+            // Si on a deja des cgv d'accepté
+            if ($listeAccept_header != false) {
+                $this->update_accept_header = true;
+            }
+        }
     }
 
     public function _pop_up_offer_mobile()

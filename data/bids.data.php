@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\Cache;
+
 class bids extends bids_crud
 {
     const STATUS_BID_PENDING      = 0;
@@ -301,5 +303,44 @@ class bids extends bids_crud
         }
 
         return $aBids;
+    }
+
+    public function getAcceptationPossibilityRounded($fRate)
+    {
+        $oCache      = Cache::getInstance();
+        $sKey        = $oCache->makeKey('bids_getAcceptationPossibilityRounded', $fRate);
+        $mPercentage = $oCache->get($sKey);
+
+        if (false === $mPercentage) {
+            $sQuery = 'SELECT count(DISTINCT b.id_bid)
+                        FROM bids b
+                        INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
+                        INNER JOIN projects p ON p.id_project = b.id_project
+                        INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+                        INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+                        INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+                        WHERE ps.status >= ' . \projects_status::FUNDE . '
+                        AND ps.status != ' . \projects_status::FUNDING_KO;
+            $rQuery   = $this->bdd->query($sQuery);
+            $iCountTotal = $this->bdd->result($rQuery, 0, 0);
+
+            $sQuery .= ' AND b.rate >=' . $fRate;
+            $rQuery   = $this->bdd->query($sQuery);
+            $iCount = $this->bdd->result($rQuery, 0, 0);
+
+            $mPercentage = ($iCount / $iCountTotal) * 100;
+
+            if ($mPercentage < 1) {
+                $mPercentage = 1;
+            } elseif ($mPercentage > 99) {
+                $mPercentage = 99;
+            } else {
+                $mPercentage = round($mPercentage, 0);
+            }
+
+            $oCache->set($sKey, $mPercentage, Cache::MEDIUM_TIME);
+        }
+
+        return $mPercentage;
     }
 }
