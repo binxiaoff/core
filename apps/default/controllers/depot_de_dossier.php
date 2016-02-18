@@ -142,11 +142,12 @@ class depot_de_dossierController extends bootstrap
 
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
 
-        $oAltares->setCompanyData($this->companies->id_company, $oResult->myInfo);
+        $oAltares->setCompanyData($this->companies, $oResult->myInfo);
 
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
-                $oAltares->setCompanyBalance($this->companies->id_company);
+                $oAltares->setProjectData($this->projects, $oResult->myInfo);
+                $oAltares->setCompanyBalance($this->companies);
 
                 $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                 $oInterval            = $oCompanyCreationDate->diff(new \DateTime());

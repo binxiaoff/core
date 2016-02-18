@@ -363,22 +363,6 @@
                             </select>
                         </td>
                     </tr>
-                    <tr>
-                        <th><label for="rate">Dernière MAJ Altarès :</label></th>
-                        <td><?= $this->altares_dateValeur ?></td>
-                    </tr>
-                    <tr>
-                        <th><label for="rate">Risque Altares :</label></th>
-                        <td><?= $this->companies->altares_niveauRisque ?></td>
-                    </tr>
-                    <tr>
-                        <th><label for="rate">Score :</label></th>
-                        <td><strong><?= $this->companies->altares_scoreVingt ?></strong>/20</td>
-                    </tr>
-                    <tr>
-                        <th><label for="rate">Score Sectoriel :</label></th>
-                        <td><strong><?= $this->companies->altares_scoreSectorielCent / 100 * 20 ?></strong>/20</td>
-                    </tr>
                 </table>
                 <br><br>
                 <h2>Remboursement anticipé / Information</h2>

@@ -76,29 +76,16 @@ class Altares
 
     /**
      * Set main data of the given company according to Altares response
-     * @param integer $iCompanyId
+     * @param \companies $oCompany
      * @param \stdClass|null $oEligibilityInfo
      */
-    public function setCompanyData($iCompanyId, $oEligibilityInfo = null)
+    public function setCompanyData(\companies &$oCompany, $oEligibilityInfo = null)
     {
-        $oCompany = new \companies($this->oDatabase);
-        $oCompany->get($iCompanyId);
-
         if (is_null($oEligibilityInfo)) {
             $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
         }
 
-        $oCompany->altares_eligibility = isset($oEligibilityInfo->eligibility) ? $oEligibilityInfo->eligibility : '';
-        $oCompany->altares_codeRetour  = isset($oEligibilityInfo->codeRetour) ? $oEligibilityInfo->codeRetour : '';
-        $oCompany->altares_motif       = isset($oEligibilityInfo->motif) ? $oEligibilityInfo->motif : '';
-        $oCompany->phone               = isset($oEligibilityInfo->siege->telephone) ? str_replace(' ', '', $oEligibilityInfo->siege->telephone) : '';
-
-        if (isset($oEligibilityInfo->score) && is_object($oEligibilityInfo->score)) {
-            $oCompany->altares_niveauRisque       = $oEligibilityInfo->score->niveauRisque;
-            $oCompany->altares_scoreVingt         = $oEligibilityInfo->score->scoreVingt;
-            $oCompany->altares_scoreSectorielCent = $oEligibilityInfo->score->scoreSectorielCent;
-            $oCompany->altares_dateValeur         = substr($oEligibilityInfo->score->dateValeur, 0, 10);
-        }
+        $oCompany->phone = isset($oEligibilityInfo->siege->telephone) ? str_replace(' ', '', $oEligibilityInfo->siege->telephone) : '';
 
         if (isset($oEligibilityInfo->identite) && is_object($oEligibilityInfo->identite)) {
             $oCompany->name          = $oEligibilityInfo->identite->raisonSociale;
@@ -115,14 +102,92 @@ class Altares
 
         $oCompany->update();
 
-        $this->setCompanyFinancial($iCompanyId, $oEligibilityInfo);
+        $this->setCompanyFinancial($oCompany->id_company, $oEligibilityInfo);
     }
 
-    public function setCompanyBalance($iCompanyId)
+    /**
+     * Set Altares notation of project
+     * @param \projects $oProject
+     * @param \StdClass|null $oEligibilityInfo
+     */
+    public function setProjectData(\projects &$oProject, $oEligibilityInfo = null)
     {
-        $oCompany = new \companies($this->oDatabase);
-        $oCompany->get($iCompanyId);
+        if (is_null($oEligibilityInfo)) {
+            $oCompany = new \companies($this->oDatabase);
+            $oCompany->get($oProject->id_company);
 
+            $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
+        }
+
+        /** @var \company_rating_history $oCompanyRatingHistory */
+        $oCompanyRatingHistory = new \company_rating_history($this->oDatabase);
+        $oCompanyRatingHistory->id_company = $oProject->id_company;
+        $oCompanyRatingHistory->id_user    = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : 0;
+        $oCompanyRatingHistory->action     = \company_rating_history::ACTION_WS;
+        $oCompanyRatingHistory->create();
+
+        /** @var \company_rating $oCompanyRating */
+        $oCompanyRating = new \company_rating($this->oDatabase);
+
+        if (false === empty($oProject->id_company_rating_history)) {
+            foreach ($oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history) as $sRating => $mValue) {
+                if (false === in_array($sRating, array('eligibilite_altares', 'code_retour_altares', 'motif_altares', 'date_valeur_altares', 'score_altares', 'score_sectorial_altares'))) {
+                    $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+                    $oCompanyRating->type                      = $sRating;
+                    $oCompanyRating->value                     = $mValue;
+                    $oCompanyRating->create();
+                }
+            }
+        }
+
+        if (isset($oEligibilityInfo->eligibility)) {
+            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+            $oCompanyRating->type                      = 'eligibilite_altares';
+            $oCompanyRating->value                     = $oEligibilityInfo->eligibility;
+            $oCompanyRating->create();
+        }
+
+        if (isset($oEligibilityInfo->codeRetour)) {
+            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+            $oCompanyRating->type                      = 'code_retour_altares';
+            $oCompanyRating->value                     = $oEligibilityInfo->codeRetour;
+            $oCompanyRating->create();
+        }
+
+        if (isset($oEligibilityInfo->motif)) {
+            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+            $oCompanyRating->type                      = 'motif_altares';
+            $oCompanyRating->value                     = $oEligibilityInfo->motif;
+            $oCompanyRating->create();
+        }
+
+        if (isset($oEligibilityInfo->score) && is_object($oEligibilityInfo->score)) {
+            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+            $oCompanyRating->type                      = 'date_valeur_altares';
+            $oCompanyRating->value                     = substr($oEligibilityInfo->score->dateValeur, 0, 10);
+            $oCompanyRating->create();
+
+            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+            $oCompanyRating->type                      = 'score_altares';
+            $oCompanyRating->value                     = $oEligibilityInfo->score->scoreVingt;
+            $oCompanyRating->create();
+
+            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+            $oCompanyRating->type                      = 'score_sectorial_altares';
+            $oCompanyRating->value                     = $oEligibilityInfo->score->scoreSectorielCent;
+            $oCompanyRating->create();
+        }
+
+        $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+        $oProject->update();
+    }
+
+    /**
+     * Set company balance sheets
+     * @param \companies $oCompany
+     */
+    public function setCompanyBalance(\companies &$oCompany)
+    {
         $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
 
         if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
@@ -135,10 +200,10 @@ class Altares
 
             foreach ($oBalanceSheets->myInfo->bilans as $oBalanceSheet) {
                 $aCompanyBalances = array();
-                $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $iCompanyId . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
+                $aAnnualAccounts  = $oCompanyAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal = "' . $oBalanceSheet->dateClotureN . '"');
 
                 if (empty($aAnnualAccounts)) {
-                    $oCompanyAnnualAccounts->id_company              = $iCompanyId;
+                    $oCompanyAnnualAccounts->id_company              = $oCompany->id_company;
                     $oCompanyAnnualAccounts->cloture_exercice_fiscal = $oBalanceSheet->dateClotureN;
                     $oCompanyAnnualAccounts->duree_exercice_fiscal   = $oBalanceSheet->dureeN;
 //                    $oCompanyAnnualAccounts->ca                          = $aBalances['FL'];

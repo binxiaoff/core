@@ -596,14 +596,16 @@ class ajaxController extends bootstrap
                 if ($oProject->get($_POST['id_project'], 'id_project')) {
                     /** @var company_rating $oCompanyRating */
                     $oCompanyRating = $this->loadData('company_rating');
-                    $aRatings       = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
+                    $aRatings       = $oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history);
                     $bAddHistory    = false;
 
                     foreach ($_POST['ratings'] as $sRating => $mValue) {
                         switch ($sRating) {
                             case 'date_dernier_privilege':
                             case 'date_tresorerie':
-                                $mValue = date('Y-m-d', strtotime(str_replace('/', '-', $mValue)));
+                                if (false === empty($mValue)) {
+                                    $mValue = date('Y-m-d', strtotime(str_replace('/', '-', $mValue)));
+                                }
                                 break;
                             case 'montant_tresorerie':
                                 $mValue = $this->ficelle->cleanFormatedNumber($mValue);

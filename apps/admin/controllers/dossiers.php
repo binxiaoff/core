@@ -296,7 +296,7 @@ class dossiersController extends bootstrap
                             $this->projects->update();
                         }
 
-                        $oAltares->setCompanyData($this->companies->id_company, $oResult->myInfo);
+                        $oAltares->setCompanyData($this->companies, $oResult->myInfo);
 
                         $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                         $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
@@ -305,7 +305,8 @@ class dossiersController extends bootstrap
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Société non éligible';
                         } else {
-                            $oAltares->setCompanyBalance($this->companies->id_company);
+                            $oAltares->setProjectData($this->projects, $oResult->myInfo);
+                            $oAltares->setCompanyBalance($this->companies);
 
                             $_SESSION['freeow']['title']   = 'Données Altares';
                             $_SESSION['freeow']['message'] = 'Données Altares récupéré !';
@@ -322,9 +323,6 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                 die;
             }
-
-            $dateValeur               = explode('-', $this->companies->altares_dateValeur);
-            $this->altares_dateValeur = $dateValeur[2] . '/' . $dateValeur[1] . '/' . $dateValeur[0];
 
             if (isset($_POST['send_form_dossier_resume'])) {
                 // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
@@ -1632,8 +1630,10 @@ class dossiersController extends bootstrap
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
                 $oAltares = new Altares($this->bdd);
-                $oAltares->setCompanyData($this->projects->id_company);
-                $oAltares->setCompanyBalance($this->projects->id_company);
+                $oResult  = $oAltares->getEligibility($this->companies->siren);
+                $oAltares->setCompanyData($this->companies, $oResult->myInfo);
+                $oAltares->setProjectData($this->projects, $oResult->myInfo);
+                $oAltares->setCompanyBalance($this->companies);
 
                 header('Location: ' . $this->lurl . '/dossiers/add/' . $this->projects->id_project);
                 die;

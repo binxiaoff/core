@@ -45,7 +45,7 @@ class company_rating extends company_rating_crud
     {
         $aRatings = array();
         foreach ($this->select('id_company_rating_history = ' . $iCompanyRatingHistoryId) as $aRating) {
-            $aRatings[$aRating['type']] = $aRating;
+            $aRatings[$aRating['type']] = $aRating['value'];
         }
         return $aRatings;
     }

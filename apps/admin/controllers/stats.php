@@ -375,7 +375,8 @@ class statsController extends bootstrap
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
             (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
-            c.altares_scoreVingt, c.risk, p.amount,p.period,
+            IFNULL(cr.value, 0),
+            c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
             (SELECT ca FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as ca2013,
@@ -444,7 +445,10 @@ class statsController extends bootstrap
             (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2012 and cap.id_company = c.id_company) as autresdettes2012,
             (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as autresdettes2013,
             c.forme,c.date_creation
-            FROM projects p join companies c on c.id_company = p.id_company where id_project in (SELECT id_project FROM projects_status_history psh)"
+            FROM projects p
+            LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = 'score_altares'
+            JOIN companies c ON c.id_company = p.id_company
+            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)"
         );
     }
 
@@ -458,7 +462,8 @@ class statsController extends bootstrap
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
             (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
-            c.altares_scoreVingt, c.risk, p.amount,p.period,
+            IFNULL(cr.value, 0),
+            c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
             (SELECT ca FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as ca2013,
@@ -528,7 +533,10 @@ class statsController extends bootstrap
             (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2013 and cap.id_company = c.id_company) as autresdettes2013,
             c.forme,c.date_creation
 
-            FROM projects p join companies c on c.id_company = p.id_company where id_project in (SELECT id_project FROM projects_status_history psh)"
+            FROM projects p
+            LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = 'score_altares'
+            JOIN companies c ON c.id_company = p.id_company
+            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)"
         );
 
         $csv = "";
@@ -1244,7 +1252,8 @@ class statsController extends bootstrap
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
             (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
-            c.altares_scoreVingt, c.risk, p.amount,p.period,
+            IFNULL(cr.value, 0),
+            c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
             (SELECT ca FROM companies_bilans cb WHERE date=2013 and cb.id_company = c.id_company) as ca2013,
@@ -1331,7 +1340,10 @@ class statsController extends bootstrap
             (SELECT autres_dettes FROM companies_actif_passif cap WHERE annee=2014 and cap.id_company = c.id_company) as autresdettes2014,
             c.forme,c.date_creation
 
-            FROM projects p join companies c on c.id_company = p.id_company where id_project in (select id_project FROM projects_status_history psh)';
+            FROM projects p
+            LEFT JOIN company_rating cr ON p.id_company_rating_history > 0 AND cr.id_company_rating_history = p.id_company_rating_history AND cr.type = \'score_altares\'
+            JOIN companies c ON c.id_company = p.id_company
+            WHERE id_project IN (SELECT id_project FROM projects_status_history psh)';
 
         if (isset($this->params[0]) && $this->params[0] == 'csv') {
             $this->autoFireView = false;
