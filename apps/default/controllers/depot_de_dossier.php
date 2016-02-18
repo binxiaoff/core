@@ -373,6 +373,9 @@ class depot_de_dossierController extends bootstrap
         if (empty($_POST['duree']) || false === in_array($_POST['duree'], $this->dureePossible)) {
             $_SESSION['forms']['depot-de-dossier-2']['errors']['duree'] = true;
         }
+        if (empty($_POST['commentaires'])) {
+            $_SESSION['forms']['depot-de-dossier-2']['errors']['commentaires'] = true;
+        }
         if ('non' === $_POST['gerant']) {
             if (empty($_POST['civilite_prescripteur'])) {
                 $_SESSION['forms']['depot-de-dossier-2']['errors']['civilite_prescripteur'] = true;
