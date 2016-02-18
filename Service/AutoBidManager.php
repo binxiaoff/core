@@ -21,44 +21,40 @@ class AutoBidManager
     }
 
     /**
-     * @param $iClientId
+     * @param \clients $oClient
      */
-    public function on($iClientId)
+    public function on(\clients $oClient)
     {
-        /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
-        if ($this->isQualified($iClientId) && $oClient->getLastStatut($iClientId)) {
-            $this->onOff($iClientId, self::AUTO_BID_ON);
+        if ($this->isQualified($oClient) && $this->oBidManager->canBid($oClient)) {
+            $this->onOff($oClient, self::AUTO_BID_ON);
         }
     }
 
     /**
-     * @param $iClientId
+     * @param \clients $oClient
      */
-    public function off($iClientId)
+    public function off(\clients $oClient)
     {
-        $this->onOff($iClientId, self::AUTO_BID_OFF);
+        $this->onOff($oClient, self::AUTO_BID_OFF);
     }
 
     /**
-     * @param $iClientId
-     * @param $iAutoBidOnOff
-     *
-     * @return bool
+     * @param \clients $oClient
+     * @param          $iAutoBidOnOff
      */
-    private function onOff($iClientId, $iAutoBidOnOff)
+    private function onOff(\clients $oClient, $iAutoBidOnOff)
     {
         /** @var \client_settings $oClientSettings */
         $oClientSettings = Loader::loadData('client_settings');
         /** @var \clients_history_actions $oClientHistoryActions */
         $oClientHistoryActions = Loader::loadData('clients_history_actions');
 
-        if ($oClientSettings->get($iClientId, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
+        if ($oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
             $oClientSettings->value = $iAutoBidOnOff;
             $oClientSettings->update();
         } else {
             $oClientSettings->unsetData();
-            $oClientSettings->id_client = $iClientId;
+            $oClientSettings->id_client = $oClient->id_client;
             $oClientSettings->id_type   = \client_setting_type::TYPE_AUTO_BID_SWITCH;
             $oClientSettings->value     = $iAutoBidOnOff;
             $oClientSettings->create();
@@ -66,16 +62,16 @@ class AutoBidManager
         // BO user
         $iUserId     = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : null;
         $sOnOff      = $iAutoBidOnOff === self::AUTO_BID_ON ? 'on' : 'off';
-        $sSerialized = serialize(array('id_user' => $iUserId, 'id_client' => $iClientId, 'autobid_switch' => $sOnOff));
-        $oClientHistoryActions->histo(20, 'autobid_on_off', $iClientId, $sSerialized);
+        $sSerialized = serialize(array('id_user' => $iUserId, 'id_client' => $oClient->id_client, 'autobid_switch' => $sOnOff));
+        $oClientHistoryActions->histo(20, 'autobid_on_off', $oClient->id_client, $sSerialized);
     }
 
     /**
-     * @param $iClientId
+     * @param \clients $oClient
      *
      * @return bool
      */
-    public function isQualified($iClientId)
+    public function isQualified(\clients $oClient)
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
@@ -85,7 +81,7 @@ class AutoBidManager
         $oSettings->get('Auto-bid global switch', 'type');
         $bGlobalActive = (bool)$oSettings->value;
 
-        if ((true === $bGlobalActive || true === (bool)$oClientSettings->getSetting($iClientId, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER))) {
+        if ((true === $bGlobalActive || true === (bool)$oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER))) {
             return true;
         }
 
