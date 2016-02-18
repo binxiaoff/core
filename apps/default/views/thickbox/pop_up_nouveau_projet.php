@@ -38,7 +38,7 @@
                            class="field field-large required"
                            data-validators="Presence&amp;Numericality, {maximum:<?= $this->sommeMax ?>}&amp;Numericality, {minimum: <?= $this->sommeMin ?>}"
                            onkeyup="lisibilite_nombre(this.value,this.id);">
-                    <em class="jusqua"><?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-souhaite'] ?></em>
+                    <em class="jusqua"><?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-montant-jusqua'] ?></em>
                 </div>
                 <div class="form-row">
                     <select name="duree" id="duree" class="field field-large required custom-select">
