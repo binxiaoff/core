@@ -52,14 +52,29 @@ class BidManager
         $this->oLogger = $oLogger;
     }
 
+    /**
+     * @param \clients $oClient
+     *
+     * @return bool
+     */
+    public function canBid(\clients $oClient)
+    {
+        /** @var \clients_status $oClientStatus */
+        $oClientStatus = Loader::loadData('clients_status');
+        if ($oClientStatus->getLastStatut($oClient->id_client) && $oClientStatus->status == 60) {
+            return true;
+        }
+        return false;
+    }
+
     public function bid(\bids $oBid)
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
-        /** @var \clients_status $oClientStatus */
-        $oClientStatus = Loader::loadData('clients_status');
+        /** @var \clients_status $oClient */
+        $oClient = Loader::loadData('clients');
         /** @var \transactions $oTransaction */
         $oTransaction = Loader::loadData('transactions');
         /** @var \wallets_lines $oWalletsLine */
@@ -90,12 +105,7 @@ class BidManager
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
-
-        if ($oClientStatus->getLastStatut($iClientId)) {
-            if ($oClientStatus->status < 60) {
-                return false;
-            }
-        } else {
+        if (false === $oClient->get($iClientId) || false === $this->canBid($oClient)) {
             return false;
         }
 
