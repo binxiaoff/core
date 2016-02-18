@@ -2548,9 +2548,10 @@ class cronController extends bootstrap
                                 $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
                                 $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
 
+                                $sMotifPrelevement = 'UNILEND' . str_pad($nombre, 6, 0, STR_PAD_LEFT) . 'E';
                                 if (
                                     count($listPrel) > 0
-                                    && false !== strpos($motif, $listPrel[0]['motif'])
+                                    && false !== strpos($motif, $sMotifPrelevement)
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
                                 ) {
                                     $projects->get($nombre, 'id_project');
