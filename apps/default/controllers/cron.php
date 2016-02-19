@@ -2544,11 +2544,10 @@ class cronController extends bootstrap
                             $receptions->create();
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
-                                preg_match_all('#[0-9]+#', $motif, $extract);
-                                $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
-                                $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
+                                preg_match('#[0-9]+#', $motif, $extract);
+                                $listPrel = $prelevements->select('id_project = ' . $extract[0] . ' AND status = 0');
 
-                                $sMotifPrelevement = 'UNILEND' . str_pad($nombre, 6, 0, STR_PAD_LEFT) . 'E';
+                                $sMotifPrelevement = 'UNILEND' . $extract[0] . 'E';
                                 if (
                                     count($listPrel) > 0
                                     && false !== strpos($motif, $sMotifPrelevement)
