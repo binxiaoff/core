@@ -3965,7 +3965,7 @@ class cronController extends bootstrap
 
             $sFileName = 'echeances_' . date('Ymd', mktime(0, 0, 0, substr($sPreviousDay, 5, 2) + 1, 1, substr($sPreviousDay, 0, 4))) . '.csv';
             $sFilePath = $this->path . 'protected/sftp/etat_fiscal/' . $sFileName;
-            $sCSV      = file_exists($sFilePath) ? '' : "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
+            $sCSV      = file_exists($sFilePath) ? '' : "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;type_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
             $sQuery    = '
                 SELECT
                     c.id_client,
@@ -3991,6 +3991,7 @@ class cronController extends bootstrap
                     la.fin_exoneration,
                     e.id_project,
                     e.id_loan,
+                    l.id_type_contract,
                     e.ordre,
                     e.montant,
                     e.capital,
@@ -4008,6 +4009,7 @@ class cronController extends bootstrap
                     e.date_echeance_emprunteur,
                     e.date_echeance_emprunteur_reel
                 FROM echeanciers e
+                LEFT JOIN loans l ON l.id_loan = e.id_loan
                 LEFT JOIN lenders_accounts la ON la.id_lender_account = e.id_lender
                 LEFT JOIN clients c ON c.id_client = la.id_client_owner
                 LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
@@ -4071,66 +4073,52 @@ class cronController extends bootstrap
             $annee         = date('Y');
             $dateDebutTime = mktime(0, 0, 0, $mois - 1, 1, $annee);
             $dateDebutSql  = date('Y-m-d', $dateDebutTime);
-            $dateDebut     = date('d/m/Y', $dateDebutTime);
             $dateFinTime   = mktime(0, 0, 0, $mois, 0, $annee);
             $dateFinSql    = date('Y-m-d', $dateFinTime);
-            $dateFin       = date('d/m/Y', $dateFinTime);
 
-            //////////////////////
             // personnes morale //
+            $Morale1    = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', '2'); // entreprises
+            $etranger   = $echeanciers->getEcheanceBetweenDatesEtranger($dateDebutSql, $dateFinSql); // etrangers
+            $MoraleInte = (array_sum(array_column($Morale1, 'interets')) + array_sum(array_column($etranger, 'interets'))) / 100;
 
-            $Morale1  = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', '2'); // entreprises
-            $etranger = $echeanciers->getEcheanceBetweenDatesEtranger($dateDebutSql, $dateFinSql); // etrangers
+            $prelevementRetenuSoucre[1] = $Morale1[1]['retenues_source'] + $etranger[1]['retenues_source'];
 
-            $MoraleInte = ($Morale1['interets'] / 100) + ($etranger['interets'] / 100);
-
-            // on recup les personnes morales et les personnes physique exonéré
-            //$InteRetenuSoucre = $PhysiqueExoInte + $MoraleInte;
-            $InteRetenuSoucre = $MoraleInte;
-
-            //$prelevementRetenuSoucre = $PhysiqueExo['retenues_source'] + $Morale['retenues_source'];
-            $prelevementRetenuSoucre = $Morale1['retenues_source'] + $etranger['retenues_source'];
-
-            /////////////////////
-            //////////////////////////
             // Physique non exoneré //
             $PhysiqueNoExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', array(1, 3));
-            $PhysiqueNoExoInte = ($PhysiqueNoExo['interets'] / 100) - ($etranger['interets'] / 100);
+            $PhysiqueNoExoInte[1] = ($PhysiqueNoExo[1]['interets'] - $etranger[1]['interets']) / 100;
+            $PhysiqueNoExoInte[2] = ($PhysiqueNoExo[2]['interets'] - $etranger[2]['interets']) / 100;
 
             // prelevements pour physiques non exonéré
-            $lesPrelevSurPhysiqueNoExo = $PhysiqueNoExo['prelevements_obligatoires'] - $etranger['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[1] = $PhysiqueNoExo[1]['prelevements_obligatoires'] - $etranger[1]['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[2] = $PhysiqueNoExo[2]['prelevements_obligatoires'] - $etranger[2]['prelevements_obligatoires'];
 
-            ////////////////////////
-            /////////////////////////////////////////
             // Physique non exoneré dans la peride //
-            $PhysiqueNonExoPourLaPeriode = $echeanciers->getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($dateDebutSql, $dateFinSql, '1', array(1, 3));
-            $PhysiqueNoExoInte += ($PhysiqueNonExoPourLaPeriode['interets'] / 100);
+            $PhysiqueNonExoPourLaPeriode = $echeanciers->getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($dateDebutSql, $dateFinSql);
+            $PhysiqueNoExoInte[1] += $PhysiqueNonExoPourLaPeriode[1]['interets'] / 100;
+            $PhysiqueNoExoInte[2] += $PhysiqueNonExoPourLaPeriode[2]['interets'] / 100;
 
             // prelevements pour physiques non exonéré
-            $lesPrelevSurPhysiqueNoExo += $PhysiqueNonExoPourLaPeriode['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[1] += $PhysiqueNonExoPourLaPeriode[1]['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[2] += $PhysiqueNonExoPourLaPeriode[2]['prelevements_obligatoires'];
 
-            ////////////////////////
-            //////////////////////
             // Physique exoneré //
             $PhysiqueExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '1', array(1, 3));
-            $PhysiqueExoInte = ($PhysiqueExo['interets'] / 100);
+            $PhysiqueExoInte = array_sum(array_column($PhysiqueExo, 'interets')) / 100;
 
             // prelevements pour physiques exonéré
-            $lesPrelevSurPhysiqueExo = $PhysiqueExo['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueExo = array_sum(array_column($PhysiqueExo, 'prelevements_obligatoires'));
 
-            //////////////
             // Physique //
             $Physique     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '', array(1, 3));
-            $PhysiqueInte = ($Physique['interets'] / 100) - ($etranger['interets'] / 100);
+            $PhysiqueInte = (array_sum(array_column($Physique, 'interets')) - array_sum(array_column($etranger, 'interets'))) / 100;
 
             // prelevements pour physiques
-            $lesPrelevSurPhysique = $Physique['prelevements_obligatoires'] - $etranger['prelevements_obligatoires'];
-
-            $csg                          = $Physique['csg'] - $etranger['csg'];
-            $prelevements_sociaux         = $Physique['prelevements_sociaux'] - $etranger['prelevements_sociaux'];
-            $contributions_additionnelles = $Physique['contributions_additionnelles'] - $etranger['contributions_additionnelles'];
-            $prelevements_solidarite      = $Physique['prelevements_solidarite'] - $etranger['prelevements_solidarite'];
-            $crds                         = $Physique['crds'] - $etranger['crds'];
+            $lesPrelevSurPhysique         = array_sum(array_column($Physique, 'prelevements_obligatoires')) - array_sum(array_column($etranger, 'prelevements_obligatoires'));
+            $csg                          = array_sum(array_column($Physique, 'csg')) - array_sum(array_column($etranger, 'csg'));
+            $prelevements_sociaux         = array_sum(array_column($Physique, 'prelevements_sociaux')) - array_sum(array_column($etranger, 'prelevements_sociaux'));
+            $contributions_additionnelles = array_sum(array_column($Physique, 'contributions_additionnelles')) - array_sum(array_column($etranger, 'contributions_additionnelles'));
+            $prelevements_solidarite      = array_sum(array_column($Physique, 'prelevements_solidarite')) - array_sum(array_column($etranger, 'prelevements_solidarite'));
+            $crds                         = array_sum(array_column($Physique, 'crds')) - array_sum(array_column($etranger, 'crds'));
 
             $table = '
         <style>
@@ -4150,9 +4138,9 @@ class cronController extends bootstrap
             </tr>
             <tr>
                 <th style="background-color:#C9DAF2;">Période :</th>
-                <th style="background-color:#C9DAF2;">' . $dateDebut . '</th>
+                <th style="background-color:#C9DAF2;">' . date('d/m/Y', $dateDebutTime) . '</th>
                 <th style="background-color:#C9DAF2;">au</th>
-                <th style="background-color:#C9DAF2;">' . $dateFin . '</th>
+                <th style="background-color:#C9DAF2;">' . date('d/m/Y', $dateFinTime) . '</th>
             </tr>
             <tr>
                 <th style="background-color:#ECAEAE;" colspan="4">Prélèvements obligatoires</th>
@@ -4164,9 +4152,15 @@ class cronController extends bootstrap
                 <th style="background-color:#F4F3DA;">Taux</th>
             </tr>
             <tr>
-                <th style="background-color:#E6F4DA;">Soumis au prélèvement</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo) . '</td>
+                <th style="background-color:#E6F4DA;">Soumis au prélèvement (bons de caisse)</th>
+                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte[1]) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo[1]) . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">Soumis au prélèvement (prêt IFP)</th>
+                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte[2]) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo[2]) . '</td>
                 <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
             </tr>
             <tr>
@@ -4182,12 +4176,12 @@ class cronController extends bootstrap
                 <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
             </tr>
             <tr>
-                <th style="background-color:#ECAEAE;" colspan="4">Retenue à la source</th>
+                <th style="background-color:#ECAEAE;" colspan="4">Retenue à la source (bons de caisse)</th>
             </tr>
             <tr>
                 <th style="background-color:#E6F4DA;">Retenue à la source</th>
-                <td class="right">' . $this->ficelle->formatNumber($InteRetenuSoucre) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($prelevementRetenuSoucre) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($MoraleInte) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($prelevementRetenuSoucre[1]) . '</td>
                 <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($tauxRetenuSource) . '%</td>
             </tr>
             <tr>
