@@ -68,6 +68,8 @@ class SalesForce
      */
     public function __construct(Bootstrap $oBootstrap)
     {
+        set_time_limit(2000);
+
         $this->oBoostrap = $oBootstrap;
         $this->oBoostrap->setDatabase();
         $this->oDatabase = $this->oBoostrap->getDatabase();
@@ -96,7 +98,7 @@ class SalesForce
     {
         $sQuery = "SELECT
                     co.id_company AS 'IDCompany',
-                    REPLACE(co.siren,'\t','') AS 'Siren',
+                    REPLACE(REPLACE(co.siren,',',''),'\t','') AS 'Siren',
                     CASE REPLACE(co.name,',','')
                       WHEN '' THEN 'A renseigner'
                       ELSE REPLACE(co.name,',','')
@@ -218,7 +220,7 @@ class SalesForce
                           ELSE REPLACE(co.name,',','')
                         END AS 'Nom_Societe',
                         REPLACE(co.forme,',','') AS 'Forme',
-                        REPLACE(co.siren,'\t','') AS 'Siren',
+                        REPLACE(REPLACE(co.siren,'\t',''),',','') AS 'Siren',
                         REPLACE(co.adresse1,',','') as 'Adresse1',
                         REPLACE(co.adresse2,',','') as 'Adresse2',
                         REPLACE(co.zip,',','') AS 'CP',
