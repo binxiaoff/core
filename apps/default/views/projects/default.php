@@ -13,9 +13,9 @@
                     </select>
                     <select name="taux" id="taux" class="custom-select field-almost-small">
                         <option value=""><?= $this->lng['preteur-projets']['tri-par-taux'] ?></option>
-                        <? foreach ($this->triPartx as $k => $tx) : ?>
+                        <?php foreach ($this->triPartx as $k => $tx) : ?>
                             <option value="<?= $k + 1 ?>"><?= $tx ?></option>
-                        <? endforeach; ?>
+                        <?php endforeach; ?>
                     </select>
                     <select name="type" id="type" class="custom-select field-almost-small">
                         <option value="0"><?= $this->lng['preteur-projets']['tri-par-type-de-projet'] ?></option>
@@ -58,7 +58,6 @@
                     foreach ($this->lProjetsFunding as $project) {
                         $this->projects_status->getLastStatut($project['id_project']);
                         $this->companies->get($project['id_company'], 'id_company');
-                        $this->companies_details->get($project['id_company'], 'id_company');
 
                         $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']);
                         if ($inter['mois'] > 0)
@@ -121,7 +120,7 @@
                                     if ($iSumbids > 0) {
                                         ?><?= $this->ficelle->formatNumber($avgRate, 1) ?>%<?
                                     } else {
-                                        ?><?= ($project['target_rate'] == '-' ? $project['target_rate'] : number_format($project['target_rate'], 1, ',', ' %')) ?><?
+                                        ?><?= ($project['target_rate'] == '-' ? $project['target_rate'] : $this->ficelle->formatNumber($project['target_rate'], 1)) ?>%<?
                                     }
                                     ?>
                                 </a>
@@ -160,7 +159,7 @@
         </div>
         <div class="section-projects-mobile">
             <h3 class="section-projects-mobile-title">Liste des projets</h3>
-            <? foreach ($this->lProjetsFunding as $project) :
+            <?php foreach ($this->lProjetsFunding as $project) :
                 $this->projects_status->getLastStatut($project['id_project']);
                 $this->companies->get($project['id_company'], 'id_company');
                 $this->companies_details->get($project['id_company'], 'id_company');

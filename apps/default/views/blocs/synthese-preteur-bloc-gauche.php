@@ -69,35 +69,7 @@
                 }
 
                 $iSumbids = $this->bids->counter('id_project = ' . $f['id_project']);
-
-                $montantHaut = 0;
-                $montantBas  = 0;
-
-                if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status == \projects_status::REMBOURSEMENT) {
-                    foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                } elseif ($this->projects_status->status == \projects_status::FUNDING_KO) {
-                    foreach ($this->bids->select('id_project = ' . $f['id_project']) as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                } elseif ($this->projects_status->status == \projects_status::PRET_REFUSE) {
-                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                } else {
-                    foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 0') as $b) {
-                        $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                        $montantBas += ($b['amount'] / 100);
-                    }
-                }
-
-                if ($montantHaut > 0 && $montantBas > 0) {
-                    $avgRate = ($montantHaut / $montantBas);
-                }
+                $avgRate  = $this->projects->getAverageInterestRate($f['id_project'], $this->projects_status->status);
 
                 ?>
                 <div class="post-box clearfix">
@@ -151,7 +123,7 @@
     <div class="body">
         <?php
         if ($this->lProjetEncours != false) {
-            foreach ($this->lProjetEncours as $f) :
+            foreach ($this->lProjetEncours as $f) {
                 $this->companies->get($f['id_company'], 'id_company');
                 $this->projects_status->getLastStatut($f['id_project']);
 
@@ -240,6 +212,7 @@
                         <a class="btn alone" href="<?= $this->lurl ?>/projects/detail/<?= $f['slug'] ?>"><?= $this->lng['preteur-synthese']['voir-le-projet'] ?></a>
                     </div>
                 </div>
-        <?php endforeach; } ?>
+        <?php }
+        } ?>
     </div>
 </div>
