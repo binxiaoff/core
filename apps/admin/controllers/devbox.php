@@ -15,6 +15,59 @@ class devboxController extends bootstrap
         }
     }
 
+    /**
+     * On test environment, script took 45 seconds and used 184 MB of memory
+     */
+    public function _migrateAltaresScoring()
+    {
+        ini_set('memory_limit', '1G');
+        ini_set('max_execution_time', 300);
+
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $rResult = $this->bdd->query('
+            SELECT p.id_project, p.id_company, c.added, altares_eligibility, altares_codeRetour, altares_motif, altares_scoreVingt, altares_scoreSectorielCent, altares_dateValeur
+            FROM projects p
+            INNER JOIN companies c ON c.id_company = p.id_company
+            WHERE p.id_company_rating_history = 0
+                AND (
+                    altares_eligibility != ""
+                    OR altares_codeRetour != ""
+                    OR altares_motif != ""
+                    OR altares_scoreVingt != 0
+                    OR altares_scoreSectorielCent != 0
+                    OR (altares_dateValeur IS NOT NULL AND altares_dateValeur != "0000-00-00")
+                )'
+        );
+
+        while ($aRecord = $this->bdd->fetch_array($rResult)) {
+            $this->bdd->query('INSERT INTO company_rating_history (id_company, id_user, action, added, updated) VALUES (' . $aRecord['id_company'] . ", 0, 'ws', '" . $aRecord['added'] . "', '" . $aRecord['added'] . "')");
+            $iCompanyRatingHistoryId = $this->bdd->insert_id();
+
+            $this->bdd->query('UPDATE projects SET id_company_rating_history = ' . $iCompanyRatingHistoryId . ' WHERE id_project = ' . $aRecord['id_project']);
+
+            if (false === empty($aRecord['altares_eligibility'])) {
+                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'eligibilite_altares', '" . $aRecord['altares_eligibility'] . "')");
+            }
+            if (false === empty($aRecord['altares_codeRetour'])) {
+                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'code_retour_altares', '" . $aRecord['altares_codeRetour'] . "')");
+            }
+            if (false === empty($aRecord['altares_motif'])) {
+                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'motif_altares', '" . $aRecord['altares_motif'] . "')");
+            }
+            if (false === empty($aRecord['altares_scoreVingt'])) {
+                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'score_altares', '" . $aRecord['altares_scoreVingt'] . "')");
+            }
+            if (false === empty($aRecord['altares_scoreSectorielCent'])) {
+                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'score_sectorial_altares', '" . $aRecord['altares_scoreSectorielCent'] . "')");
+            }
+            if (false === empty($aRecord['altares_dateValeur']) && '0000-00-00' !== $aRecord['altares_dateValeur']) {
+                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'date_valeur_altares', '" . $aRecord['altares_dateValeur'] . "')");
+            }
+        }
+    }
+
     // Ressort un csv avec les process des usersw≤
     public function _etape_inscription()
     {
