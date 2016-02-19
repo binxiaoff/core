@@ -25,8 +25,16 @@ class AutoBidManager
      */
     public function on(\clients $oClient)
     {
+        /** @var \lenders_accounts $oLendersAccount */
+        $oLendersAccount = Loader::loadData('lenders_accounts');
+        /** @var \autobid_queue $oAutoBidQueue */
+        $oAutoBidQueue = Loader::loadData('autobid_queue');
+
         if ($this->isQualified($oClient) && $this->oBidManager->canBid($oClient)) {
             $this->onOff($oClient, self::AUTO_BID_ON);
+
+            $oLendersAccount->get($oClient->id_client, 'id_client_owner');
+            $oAutoBidQueue->addToQueue($oLendersAccount->id_lender_account, \autobid_queue::TYPE_QUEUE_NEW);
         }
     }
 
@@ -35,7 +43,15 @@ class AutoBidManager
      */
     public function off(\clients $oClient)
     {
+        /** @var \lenders_accounts $oLendersAccount */
+        $oLendersAccount = Loader::loadData('lenders_accounts');
+        /** @var \autobid_queue $oAutoBidQueue */
+        $oAutoBidQueue = Loader::loadData('autobid_queue');
+
         $this->onOff($oClient, self::AUTO_BID_OFF);
+
+        $oLendersAccount->get($oClient->id_client, 'id_client_owner');
+        $oAutoBidQueue->delete($oLendersAccount->id_lender_account, 'id_lender');
     }
 
     /**
