@@ -293,9 +293,12 @@ class emprunteursController extends bootstrap
 
                 // on met a jour les prelevement en cours si y en a.
                 foreach ($this->lprojects as $aProject) {
-                    $sBankTransferLabel = $this->ficelle->motif_mandat($this->companies->siren, $aProject['id_project']);
                     $prelevements->updateIbanBic($aProject['id_project'], $this->companies->bic, $this->companies->iban);
-                    $prelevements->updateMotif($aProject['id_project'], $sBankTransferLabel);
+
+                    if (true === $edited_rib) {
+                        $sBankTransferLabel = $this->ficelle->motif_mandat($this->companies->siren, $aProject['id_project']);
+                        $prelevements->updateMotif($aProject['id_project'], $sBankTransferLabel);
+                    }
                 }
 
                 if ($this->companies->status_adresse_correspondance == 1) {
