@@ -91,7 +91,7 @@ class prelevements extends prelevements_crud
 
     public function updateMotif($sIdProject, $sBankTransferLabel)
     {
-        $sql = 'UPDATE prelevements SET motif = "' . $sBankTransferLabel . '" WHERE id_project = ' . $sIdProject . ' AND status = ' . \prelevements::STATUS_SENT;
+        $sql = 'UPDATE prelevements SET motif = "' . $sBankTransferLabel . '" WHERE id_project = ' . $sIdProject . ' AND status = ' . \prelevements::STATUS_PENDING;
 
         $this->bdd->query($sql);
     }
