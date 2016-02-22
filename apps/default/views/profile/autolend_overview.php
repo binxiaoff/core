@@ -1,5 +1,3 @@
-
-
 <div class="autobid-switch-w-notice autobid-block">
     <div class="col-left">
         <div class="switch-container <?= $this->bAutoBidOn ? 'checked' : '' ?>">
@@ -34,8 +32,7 @@
                     setting: $('.switch-input').is(":checked"),
                     id_client: "<?= $this->clients->id_client ?>"
                 };
-                $.post(add_url + "/ajax/changeAutoBidSetting", Settings).done(function (data) {
-                    console.log(data);
+                $.post(add_url + "/ajax/AutoBidSettingOnOff", Settings).done(function (data) {
                     if (data == "update_on_success") {
                         $('.switch-container').toggleClass('checked');
                         $('#consultation').removeClass('active');

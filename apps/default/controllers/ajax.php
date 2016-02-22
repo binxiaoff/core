@@ -1900,7 +1900,7 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _changeAutoBidSetting()
+    public function _AutoBidSettingOnOff()
     {
         $this->hideDecoration();
         $this->autoFireView = false;

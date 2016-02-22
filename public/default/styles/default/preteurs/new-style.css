@@ -108,7 +108,7 @@
 .navigation-account ul { width: 809px; background: #a1a5a7; border-radius: 3px; }
 .navigation-account ul li { padding: 0 0 0 38px; }
 .navigation-account .shell > ul > li > a { color: #fff; line-height: 33px; padding: 2px 0 0 0; border: 0; position: relative; }
-.navigation-account .shell > ul > li.current > a:after { content: ""; height: 4px; display: block; position: absolute; bottom: 0; left: 0; right: 0; background: #b10366; opacity: 1; filter: none;p }
+.navigation-account .shell > ul > li.current > a:after { content: ""; height: 4px; display: block; position: absolute; bottom: 0; left: 0; right: 0; background: #b10366; opacity: 1; filter: none; }
 
 .account-settings { width: 139px; float: right; }
 .account-settings a { font-family: 'TrendSansOne', sans-serif; font-size: 18px; line-height: 33px; color: #fff; text-align: center; text-transform: uppercase; display: block; padding: 2px 0 0 0; background: #b10366; border-radius: 3px; }

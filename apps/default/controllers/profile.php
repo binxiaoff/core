@@ -2402,28 +2402,87 @@ class profileController extends bootstrap
     public function _autolend()
     {
         $this->loadCss('default/autobid');
+        $this->loadJs('default/main');
 
         $oClientStatus         = Loader::loadData('clients_status');
         $oLendersAccounts      = Loader::loadData('lenders_accounts');
         $oClientSettings       = Loader::loadData('client_settings');
         $oClientHistoryActions = Loader::loadData('clients_history_actions');
+        $oSettings             = Loader::loadData('settings');
+        $oAutobid              = Loader::loadData('autobid');
+
+        $oAutoBidManager       = $this->get('AutoBidManager');
 
         $this->lng['autobid']  = $this->ln->selectFront('autobid', $this->language, $this->App);
 
         $oClientStatus->getLastStatut($this->clients->id_client);
         $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
-        $this->bAutoBidOn           = (bool)$oClientSettings->getSetting($this->clients->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
+        $oSettings->get('Auto-bid step', 'type');
+        $this->fAutoBidStep = $oSettings->value;
+        $oSettings->get('pret min', 'type');
+        $this->iMinimumBidAmount = (int) $oSettings->value;
+        $this->iBidMinimumRate   = 4;
+        $this->iBidMaximumRate   = 9.9; //lender is not allowed to use 10% as setting, said Arnaud
+
+        $this->bAutoBidOn           = (bool) $oClientSettings->getSetting($this->clients->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
         $this->bFirstTimeActivation = false;
         $this->bActivatedLender     = true;
+        $this->bIsNovice            = true;
 
         if (false === $this->bAutoBidOn) {
-            $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . 'AND nom_form = autobid_on_off');
+            $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ');
             $this->bFirstTimeActivation = empty($aClientAutoBidHistory);
         }
 
         if (false === in_array($oClientStatus->status, array(\clients_status::VALIDATED))) {
             $this->bActivatedLender = false;
+        }
+
+        if (false === $this->bFirstTimeActivation) {
+            $this->bIsNovice = $oAutoBidManager->isNovice($oLendersAccounts->id_lender_account);
+        }
+
+        if ($this->bIsNovice) {
+            $aAutoBid = array_shift($oAutobid->select('id_lender = ' . $oLendersAccounts->id_lender_account . ' AND status = ' . \autobid::STATUS_ACTIVE, null, null, 1));
+        }
+        $this->sValidationDate = $oAutobid->getValidationDate($oLendersAccounts->id_lender_account);
+
+        $aSettingsSubmitted       = isset($_SESSION['forms']['send-form-autobid-param-simple']['values']) ? $_SESSION['forms']['send-form-autobid-param-simple']['values'] : array();
+        $this->aErrors            = isset($_SESSION['forms']['send-form-autobid-param-simple']['errors']) ? $_SESSION['forms']['send-form-autobid-param-simple']['errors'] : array();
+        $this->aSettingsSubmitted = array(
+            'simple-amount'   => isset($aSettingsSubmitted['autobid-param-simple-amount']) ? $aSettingsSubmitted['autobid-param-simple-amount'] : $aAutoBid['amount'],
+            'simple-taux-min' => isset($aSettingsSubmitted['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['autobid-param-simple-taux-min'] : $aAutoBid['rate_min'],
+        );
+
+        unset($_SESSION['forms']['send-form-autobid-param-simple']);
+
+        if (isset($_POST['send-form-autobid-param-simple'])){
+            if (
+                empty($_POST['autobid-param-simple-amount']) ||
+                false === is_numeric($_POST['autobid-param-simple-amount']) ||
+                $_POST['autobid-param-simple-amount'] < $this->iMinimumBidAmount)
+            {
+                $_SESSION['forms']['send-form-autobid-param-simple']['errors']['amount'] = true;
+            }
+            if (
+                empty($_POST['autobid-param-simple-taux-min']) ||
+                false === is_numeric($_POST['autobid-param-simple-taux-min']) ||
+                $_POST['autobid-param-simple-taux-min'] < $this->iBidMinimumRate ||
+                $_POST['autobid-param-simple-taux-min'] > $this->iBidMaximumRate)
+            {
+                $_SESSION['forms']['send-form-autobid-param-simple']['errors']['taux-min'] = true;
+            }
+
+            if (false === empty($_SESSION['forms']['send-form-autobid-param-simple']['errors'])) {
+                $_SESSION['forms']['send-form-autobid-param-simple']['values'] = $_POST;
+            } else {
+                $fRate   = $_POST['autobid-param-simple-taux-min'];
+                $iAmount = $_POST['autobid-param-simple-amount'];
+                $oAutoBidManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $fRate, $iAmount);
+                header('Location: ' . $this->lurl . '/profile/autolend#parametrage');
+                die;
+            }
         }
     }
 
