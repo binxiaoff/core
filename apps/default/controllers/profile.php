@@ -2438,9 +2438,7 @@ class profileController extends bootstrap
             $this->bActivatedLender = false;
         }
 
-        if (false === $this->bFirstTimeActivation) {
-            $this->bIsNovice = $oAutoBidManager->isNovice($oLendersAccounts->id_lender_account);
-        }
+        $this->bIsNovice = $oAutoBidManager->isNovice($oLendersAccounts->id_lender_account);
 
         if ($this->bIsNovice) {
             $aAutoBid = array_shift($oAutobid->select('id_lender = ' . $oLendersAccounts->id_lender_account . ' AND status = ' . \autobid::STATUS_ACTIVE, null, null, 1));
