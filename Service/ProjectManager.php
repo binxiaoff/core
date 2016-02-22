@@ -15,6 +15,8 @@ class ProjectManager
 {
     /** @var AutoBidManager */
     private $oAutoBidManager;
+    /** @var NotificationManager */
+    private $oNotificationManager;
     /** @var \email */
     private $oEmail;
     /** @var \ficelle */
@@ -37,9 +39,10 @@ class ProjectManager
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oAutoBidManager = Loader::loadService('AutoBidManager');
-        $this->oBidManager     = Loader::loadService('BidManager');
-        $this->oLoanManager    = Loader::loadService('LoanManager');
+        $this->oAutoBidManager      = Loader::loadService('AutoBidManager');
+        $this->oBidManager          = Loader::loadService('BidManager');
+        $this->oLoanManager         = Loader::loadService('LoanManager');
+        $this->oNotificationManager = Loader::loadService('NotificationManager');
 
         $this->oNMP       = Loader::loadData('nmp');
         $this->oNMPDesabo = Loader::loadData('nmp_desabo');
@@ -143,7 +146,7 @@ class ProjectManager
     {
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = Loader::loadData('projects_status');
-        $oEndDate = new \DateTime($oProject->date_retrait_full);
+        $oEndDate       = new \DateTime($oProject->date_retrait_full);
         if ($oProject->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($oProject->date_fin);
         }
@@ -176,6 +179,45 @@ class ProjectManager
         foreach ($aAutoBidList as $aAutoBidSetting) {
             if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
                 $this->oAutoBidManager->bid($oAutoBid, $oProject, $iCurrentRate);
+            }
+        }
+    }
+
+    public function checkAutoBidBalance(\projects $oProject)
+    {
+        /** @var \autobid_queue $oAutoBidQueue */
+        $oAutoBidQueue = Loader::loadData('autobid_queue');
+        /** @var \transactions $oTransaction */
+        $oTransaction = Loader::loadData('transactions');
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
+
+        $iPeriod      = (int)$oProject->period;
+        $sEvaluation  = $oProject->risk;
+        $aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, \bids::BID_RATE_MAX);
+        foreach ($aAutoBidList as $aAutoBidSetting) {
+            if ($oClient->get($aAutoBidSetting['id_client'])) {
+                $iBalance = $oTransaction->getSolde($oClient->id_client);
+
+                if ($iBalance < $aAutoBidSetting['amount']) {
+                    var_dump($aAutoBidSetting['id_client']. '____'. $aAutoBidSetting['id_lender'] . '____insufficient');
+                    $this->oNotificationManager->create(
+                        \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
+                        \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
+                        $oClient->id_client,
+                        'sendAutoBidBalanceInsufficient',
+                        $oProject->id_project
+                    );
+                } elseif ($iBalance < (3 * $aAutoBidSetting['amount'])) {
+                    var_dump($aAutoBidSetting['id_client']. '____'. $aAutoBidSetting['id_lender'] . '____low');
+                    $this->oNotificationManager->create(
+                        \notifications::TYPE_AUTOBID_BALANCE_LOW,
+                        \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,
+                        $oClient->id_client,
+                        'sendAutoBidBalanceLow',
+                        $oProject->id_project
+                    );
+                }
             }
         }
     }

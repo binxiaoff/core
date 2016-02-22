@@ -611,37 +611,37 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
 
-        $this->oMailText->get('emprunteur-dossier-funding-ko', 'lang = "' . $this->sLanguage . '" AND type');
-
-        $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
-        $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
-
-        $this->oSettings->get('Facebook', 'type');
-        $lien_fb = $this->oSettings->value;
-
-        $this->oSettings->get('Twitter', 'type');
-        $lien_tw = $this->oSettings->value;
-
-        $varMail = array(
-            'surl' => $sSUrl,
-            'url' => $sLUrl,
-            'prenom_e' => $oClient->prenom,
-            'projet' => $oProject->title,
-            'lien_fb' => $lien_fb,
-            'lien_tw' => $lien_tw
-        );
-
-        $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
-
-        $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
-        $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
-        $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
-
-        $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
-        $this->oEmail->setSubject(stripslashes($sujetMail));
-        $this->oEmail->setHTMLBody(stripslashes($texteMail));
-
         if ($oClient->status == 1) {
+            $this->oMailText->get('emprunteur-dossier-funding-ko', 'lang = "' . $this->sLanguage . '" AND type');
+
+            $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
+            $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
+
+            $this->oSettings->get('Facebook', 'type');
+            $lien_fb = $this->oSettings->value;
+
+            $this->oSettings->get('Twitter', 'type');
+            $lien_tw = $this->oSettings->value;
+
+            $varMail = array(
+                'surl' => $sSUrl,
+                'url' => $sLUrl,
+                'prenom_e' => $oClient->prenom,
+                'projet' => $oProject->title,
+                'lien_fb' => $lien_fb,
+                'lien_tw' => $lien_tw
+            );
+
+            $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
+
+            $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
+
+            $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
+            $this->oEmail->setSubject(stripslashes($sujetMail));
+            $this->oEmail->setHTMLBody(stripslashes($texteMail));
+
             if ($this->aConfig['env'] === 'prod') {
                 \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oClient->email, $tabFiler);
                 $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
@@ -673,7 +673,7 @@ class MailerManager
         $oAcceptedBid = Loader::loadData('accepted_bids');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
-        /** @var bids $oBid */
+        /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
 
         $oCompany->get($oProject->id_company, 'id_company');
@@ -722,5 +722,145 @@ class MailerManager
         $this->oEmail->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
         $this->oEmail->setHTMLBody($texteMail);
         \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+    }
+
+    public function sendAutoBidBalanceInsufficient(\notifications $oNotification)
+    {
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = Loader::loadData('lenders_accounts');
+
+        $oLenderAccount->get($oNotification->id_lender);
+        $oClient->get($oLenderAccount->id_client_owner, 'id_client');
+
+        if ($oClient->status == 1) {
+            $sPurpose = $oClient->getLenderPattern($oClient->id_client);
+
+            $this->oSettings->get('Virement - aide par banque', 'type');
+            $this->aide_par_banque = $this->oSettings->value;
+
+            $this->oSettings->get('Virement - IBAN', 'type');
+            $sIban = chunk_split(strtoupper($this->oSettings->value), 4, ' ');
+
+            $this->oSettings->get('Virement - BIC', 'type');
+            $sBic = strtoupper($this->oSettings->value);
+
+            $this->oSettings->get('Virement - titulaire du compte', 'type');
+            $sTitulaire = $this->oSettings->value;
+
+            $this->oMailText->get('preteur-autobid-solde-insuffisant', 'lang = "' . $this->sLanguage . '" AND type');
+
+            $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
+            $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
+
+            $this->oSettings->get('Facebook', 'type');
+            $lien_fb = $this->oSettings->value;
+
+            $this->oSettings->get('Twitter', 'type');
+            $lien_tw = $this->oSettings->value;
+
+            $varMail = array(
+                'surl' => $sSUrl,
+                'url' => $sLUrl,
+                'prenom_p' => $oClient->prenom,
+                'iban' => $sIban,
+                'bic' => $sBic,
+                'titulaire' => $sTitulaire,
+                'motif_virement' => $sPurpose,
+                'lien_fb' => $lien_fb,
+                'lien_tw' => $lien_tw
+            );
+
+            $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
+
+            $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
+
+            $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
+            $this->oEmail->setSubject(stripslashes($sujetMail));
+            $this->oEmail->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->aConfig['env'] === 'prod') {
+                \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oClient->email, $tabFiler);
+                $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
+            } else {
+                $this->oEmail->addRecipient(trim($oClient->email));
+                \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+            }
+        }
+    }
+
+    public function sendAutoBidBalanceLow(\notifications $oNotification)
+    {
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = Loader::loadData('lenders_accounts');
+        /** @var \transactions $oTransaction */
+        $oTransaction = Loader::loadData('transactions');
+
+        $oLenderAccount->get($oNotification->id_lender);
+        $oClient->get($oLenderAccount->id_client_owner, 'id_client');
+
+        if ($oClient->status == 1) {
+            $iBalance = $oTransaction->getSolde($oLenderAccount->id_client_owner);
+            $sPurpose = $oClient->getLenderPattern($oClient->id_client);
+
+            $this->oSettings->get('Virement - aide par banque', 'type');
+            $this->aide_par_banque = $this->oSettings->value;
+
+            $this->oSettings->get('Virement - IBAN', 'type');
+            $sIban = chunk_split(strtoupper($this->oSettings->value), 4, ' ');
+
+            $this->oSettings->get('Virement - BIC', 'type');
+            $sBic = strtoupper($this->oSettings->value);
+
+            $this->oSettings->get('Virement - titulaire du compte', 'type');
+            $sTitulaire = $this->oSettings->value;
+
+            $this->oMailText->get('preteur-autobid-solde-faible', 'lang = "' . $this->sLanguage . '" AND type');
+
+            $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
+            $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
+
+            $this->oSettings->get('Facebook', 'type');
+            $lien_fb = $this->oSettings->value;
+
+            $this->oSettings->get('Twitter', 'type');
+            $lien_tw = $this->oSettings->value;
+
+            $varMail = array(
+                'surl' => $sSUrl,
+                'url' => $sLUrl,
+                'prenom_p' => $oClient->prenom,
+                'balance' => $iBalance,
+                'iban' => $sIban,
+                'bic' => $sBic,
+                'titulaire' => $sTitulaire,
+                'motif_virement' => $sPurpose,
+                'lien_fb' => $lien_fb,
+                'lien_tw' => $lien_tw
+            );
+
+            $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
+
+            $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
+
+            $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
+            $this->oEmail->setSubject(stripslashes($sujetMail));
+            $this->oEmail->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->aConfig['env'] === 'prod') {
+                \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oClient->email, $tabFiler);
+                $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
+            } else {
+                $this->oEmail->addRecipient(trim($oClient->email));
+                \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+            }
+        }
     }
 }
