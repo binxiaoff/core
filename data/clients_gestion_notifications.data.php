@@ -25,14 +25,14 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-const TYPE_NOTIFICATION_IMMEDIATE = 'immediatement';
-const TYPE_NOTIFICATION_DAILY     = 'quotidienne';
-const TYPE_NOTIFICATION_WEEKLY    = 'hebdomadaire';
-const TYPE_NOTIFICATION_MONTHLY   = 'mensuelle';
-const TYPE_NOTIFICATION_NO_MAIL   = 'uniquement_notif';
 
 class clients_gestion_notifications extends clients_gestion_notifications_crud
 {
+    const TYPE_NOTIFICATION_IMMEDIATE = 'immediatement';
+    const TYPE_NOTIFICATION_DAILY     = 'quotidienne';
+    const TYPE_NOTIFICATION_WEEKLY    = 'hebdomadaire';
+    const TYPE_NOTIFICATION_MONTHLY   = 'mensuelle';
+    const TYPE_NOTIFICATION_NO_MAIL   = 'uniquement_notif';
 
     public function __construct($bdd, $params = '')
     {
