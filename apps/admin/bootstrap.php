@@ -151,8 +151,7 @@ class bootstrap extends Controller
         $this->loadJs('admin/treeview/tree');
         $this->loadJs('admin/tablesorter/jquery.tablesorter.min');
         $this->loadJs('admin/tablesorter/jquery.tablesorter.pager');
-        $this->loadJs('admin/datepicker/jquery-ui-1.7.2.custom.min');
-        $this->loadJs('admin/datepicker/ui.datepicker-fr');
+        $this->loadJs('admin/jquery-ui.min');
         $this->loadJs('admin/ajax');
         $this->loadJs('admin/main');
 
@@ -160,7 +159,7 @@ class bootstrap extends Controller
         $this->loadCss('../scripts/admin/colorbox/colorbox');
         $this->loadCss('../scripts/admin/treeview/jquery.treeview');
         $this->loadCss('../scripts/admin/tablesorter/style');
-        $this->loadCss('../scripts/admin/datepicker/jquery-ui-1.7.2.custom');
+        $this->loadCss('../scripts/admin/jquery-ui-min');
         $this->loadCss('admin/main');
 
         // Recuperation du code Google Analytics
