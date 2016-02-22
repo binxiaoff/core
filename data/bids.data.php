@@ -33,7 +33,7 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED   = 2;
 
     const BID_RATE_MIN = 4;
-    const BID_RATE_MAX = 10;
+    const BID_RATE_MAX = 9.9;
 
     public function __construct($bdd, $params = '')
     {
