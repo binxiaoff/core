@@ -78,7 +78,7 @@ class autobid extends autobid_crud
 
     public function getValidationDate($iLenderId)
     {
-        $rResult = $this->bdd->query('SELECT MAX(`updated`) FROM `autobid` WHERE id_lender = ' . $iLenderId);
+        $rResult = $this->bdd->query('SELECT MAX(`updated`) FROM `autobid` WHERE id_lender = ' . $iLenderId . ' AND status != ' . self::STATUS_ARCHIVED);
         return $this->bdd->result($rResult, 0, 0);
     }
 }

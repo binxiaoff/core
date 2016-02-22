@@ -2422,8 +2422,8 @@ class profileController extends bootstrap
         $this->fAutoBidStep = $oSettings->value;
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int) $oSettings->value;
-        $this->iBidMinimumRate   = 4;
-        $this->iBidMaximumRate   = 9.9; //lender is not allowed to use 10% as setting, said Arnaud
+        $this->iBidMinimumRate   = \bids::BID_RATE_MIN;
+        $this->iBidMaximumRate   = \bids::BID_RATE_MAX; //lender is not allowed to use 10% as setting, said Arnaud
 
         $this->bAutoBidOn           = (bool) $oClientSettings->getSetting($this->clients->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
         $this->bFirstTimeActivation = false;
@@ -2431,8 +2431,7 @@ class profileController extends bootstrap
         $this->bIsNovice            = true;
 
         if (false === $this->bAutoBidOn) {
-            $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ');
-            $this->bFirstTimeActivation = empty($aClientAutoBidHistory);
+            $this->bFirstTimeActivation = ($oClientHistoryActions->counter('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ') == 0);
         }
 
         if (false === in_array($oClientStatus->status, array(\clients_status::VALIDATED))) {
