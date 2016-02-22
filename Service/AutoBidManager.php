@@ -258,19 +258,14 @@ class AutoBidManager
                 $bIsNovice = false;
             } else {
                 $aAutobids = $oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
-
-                $fRate   = $aAutobids[0]['rate_min'];
-                $iAmount = $aAutobids[0]['amount'];
+                $fRate     = $aAutobids[0]['rate_min'];
+                $iAmount   = $aAutobids[0]['amount'];
 
                 foreach ($aAutobids as $aAutobid) {
                     if ($fRate !== $aAutobid['rate_min'] || $iAmount !== $aAutobid['amount']) {
                         $bIsNovice = false;
                         break;
                     }
-
-                    $fRate   = $aAutobid['rate_min'];
-                    $iAmount = $aAutobid['amount'];
-                    $bIsNovice = true;
                 }
             }
         }
