@@ -114,6 +114,20 @@
                     <?= str_replace('[ENTREPRISE]', '<a href="' . $this->lurl . '/projects/detail/' . $this->projects_notifs->slug . '">' . addslashes($this->companies->name) . '</a>', $this->lng['notifications']['contenu-' . $r['type']]) ?>
                 </div><?php
                 break;
+            case \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT:
+                ?>
+                <strong><?= $this->lng['notifications']['titre-autobid-balance'] ?></strong><br/>
+                <div class="content_notif">
+                    <?= $this->lng['notifications']['content-autobid-balance-insufficient'] ?>
+                </div><?php
+                break;
+            case \notifications::TYPE_AUTOBID_BALANCE_LOW:
+                ?>
+                <strong><?= $this->lng['notifications']['titre-autobid-balance'] ?></strong><br/>
+                <div class="content_notif">
+                <?= $this->lng['notifications']['content-autobid-balance-low'] ?>
+                </div><?php
+                break;
         }
         ?>
         <span class="date_notif"><?= date('d/m/Y', strtotime($r['added'])) ?></span>

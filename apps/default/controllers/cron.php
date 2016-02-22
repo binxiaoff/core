@@ -216,6 +216,9 @@ class cronController extends bootstrap
 
                     // Zippage pour groupama
                     $this->zippage($aProject['id_project']);
+
+                    $oProjectManager->checkAutoBidBalance($oProject);
+
                     $this->nouveau_projet($aProject['id_project']);
                 }
             }
