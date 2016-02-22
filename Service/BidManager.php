@@ -95,8 +95,13 @@ class BidManager
         $iProjectId  = $oBid->id_project;
         $fAmountX100 = $oBid->amount;
         $fAmount     = $oBid->amount / 100;
+        $fRate       = round(floatval($oBid->rate), 1);
 
         if ($iAmountMin > $fAmount) {
+            return false;
+        }
+
+        if ($fRate > \bids::BID_RATE_MAX || $fRate < \bids::BID_RATE_MIN) {
             return false;
         }
 

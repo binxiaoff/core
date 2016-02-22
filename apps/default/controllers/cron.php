@@ -3481,9 +3481,11 @@ class cronController extends bootstrap
                     $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
 
                     if ($iBidTotal >= $oProject->amount && $oProject->status_solde == 0) {
-                        $oMailerManager->sendFondedToBorrower($oProject);
+                        $oProject->date_funded = date('Y-m-d H:i:s');
                         $oProject->status_solde = 1;
                         $oProject->update();
+
+                        $oMailerManager->sendFondedToBorrower($oProject);
                     }
 
                     $oProjectManager->autoBid($oProject);

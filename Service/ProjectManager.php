@@ -173,7 +173,7 @@ class ProjectManager
         $oAutoBid     = Loader::loadData('autobid');
         $iPeriod      = (int)$oProject->period;
         $sEvaluation  = $oProject->risk;
-        $iCurrentRate = 10;
+        $iCurrentRate = \bids::BID_RATE_MAX;
 
         $aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iCurrentRate);
         foreach ($aAutoBidList as $aAutoBidSetting) {
@@ -200,7 +200,6 @@ class ProjectManager
                 $iBalance = $oTransaction->getSolde($oClient->id_client);
 
                 if ($iBalance < $aAutoBidSetting['amount']) {
-                    var_dump($aAutoBidSetting['id_client']. '____'. $aAutoBidSetting['id_lender'] . '____insufficient');
                     $this->oNotificationManager->create(
                         \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
                         \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
@@ -209,7 +208,6 @@ class ProjectManager
                         $oProject->id_project
                     );
                 } elseif ($iBalance < (3 * $aAutoBidSetting['amount'])) {
-                    var_dump($aAutoBidSetting['id_client']. '____'. $aAutoBidSetting['id_lender'] . '____low');
                     $this->oNotificationManager->create(
                         \notifications::TYPE_AUTOBID_BALANCE_LOW,
                         \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,
