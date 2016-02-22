@@ -246,4 +246,43 @@ class AutoBidManager
             }
         }
     }
+
+    public function isNovice($iLenderId)
+    {
+        $oAutobid              = Loader::loadData('autobid');
+        $oClientHistoryActions = Loader::loadData('clients_history_actions');
+        $bIsNovice             = true;
+
+        if ($oClientHistoryActions->counter('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ') > 0 && $oAutobid->counter('id_lender = ' . $iLenderId ) > 0) {
+            if ($oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_INACTIVE, null, null, 1)) {
+                $bIsNovice = false;
+            } else {
+                $aAutobids = $oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
+                $fRate     = $aAutobids[0]['rate_min'];
+                $iAmount   = $aAutobids[0]['amount'];
+
+                foreach ($aAutobids as $aAutobid) {
+                    if ($fRate !== $aAutobid['rate_min'] || $iAmount !== $aAutobid['amount']) {
+                        $bIsNovice = false;
+                        break;
+                    }
+                }
+            }
+        }
+
+        return $bIsNovice;
+    }
+
+    public function saveNoviceSetting($iLenderId, $fRate, $iAmount)
+    {
+        $oAutoBidPeriods = Loader::loadData('autobid_periods');
+        $aAutoBidPeriods = $oAutoBidPeriods->select();
+        $aRiskValues     = array("A", "B", "C", "D", "E");
+
+        foreach ($aAutoBidPeriods as $aPeriod) {
+            foreach ($aRiskValues as $sEvaluation) {
+                $this->saveSetting($iLenderId, $sEvaluation, $aPeriod['id_period'], $fRate, $iAmount);
+            }
+        }
+    }
 }

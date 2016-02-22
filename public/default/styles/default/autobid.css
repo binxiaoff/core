@@ -1,0 +1,485 @@
+/* CSS FOR AUTOBID SCREEN - UNILEND 2016 */
+
+/*Fix gray / small button background in tab*/
+.tab .grise1:after {
+    background-color: #a1a5a7;
+}
+.tab .btn.btn-small {
+    line-height: 34px;
+}
+
+/*Global helpers*/
+.text-center {
+    text-align: center;
+}
+
+/*Modules*/
+/*-- Switch*/
+.switch-container {
+    position: relative;
+    width: 77px;
+    height: 33px;
+    background: url(images/switch-sprite.png) bottom center no-repeat
+}
+
+.switch-container label {
+    opacity: 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+    position: absolute;
+    top: 6px;
+}
+.switch-container .label-off {
+    opacity: 1;
+    right: 8px;
+}
+.switch-container.checked{
+    background-position: top center;
+}
+.switch-container.checked .label-on{
+    opacity: 1;
+    left: 8px;
+}
+.switch-container.checked .label-off{
+    opacity: 0;
+}
+.switch-input {
+    opacity: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    position: absolute;
+    cursor: pointer;
+    width: 100%;
+    height: 33px;
+}
+
+/*-- Stars rating*/
+.autobid-stars {
+    width: 67px;
+    height: 13px;
+    background: url(images/stars-sprite.png) no-repeat top center;
+    display: inline-block;
+}
+.autobid-stars.stars-35 {
+    background-position: center -60px;
+}
+.autobid-stars.stars-40 {
+    background-position: center -120px;
+}
+.autobid-stars.stars-45 {
+    background-position: center -190px;
+}
+.autobid-stars.stars-50 {
+    background-position: center -260px;
+}
+
+
+/*Blocks*/
+/*--Common*/
+.autobid-block {
+    margin: 0 10px;
+
+}
+.autobid-block:after {
+    content:"";
+    display:table;
+    clear:both;
+}
+.autobid-block + .autobid-block {
+    margin-top: 30px;
+}
+/*-- Block Switch with note */
+.autobid-switch-w-notice {
+
+}
+.autobid-switch-w-notice .col-left {
+    width: 15%;
+    float: left;
+}
+.autobid-switch-w-notice .switch-notice {
+    width: 85%;
+    float: right;
+}
+
+/*-- Block advanced params (big table) */
+.autobid-param-advanced {
+
+}
+
+.autobid-param-advanced .table-container {
+    width: 75%;
+}
+.autobid-param-advanced-table {
+    width: 100%;
+}
+.autobid-param-advanced-table th {
+    text-align: center;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #a1a5a7;
+    font-weight: normal;
+    background: #f5f6f6;
+    width: 16.66666%;
+    vertical-align: middle;
+}
+.autobid-param-advanced-table .table-title {
+    background: #a1a5a7;
+    color: #FFF;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 12px 0;
+}
+.autobid-param-advanced-table .empty {
+    background: transparent;
+
+}
+.autobid-param-advanced-table td {
+    text-align: center;
+    background: #c6e9d7;
+    color: #42b77a;
+    border: 1px solid #fff;
+    padding: 5px;
+    width: 16.66666%;
+    vertical-align: top;
+}
+.autobid-param-advanced-table td .cell-inner {
+    min-height: 90px;
+}
+.autobid-param-advanced-table td.param-over {
+
+    background: #f9babe;
+    color: #ec1a29;
+}
+.autobid-param-advanced-table td.param-off {
+
+    background: #e3e4e4;
+}
+.autobid-param-advanced-table td.param-off .param-advanced-switch {
+    background-position: bottom center;
+    top: 20px;
+}
+.autobid-param-advanced-table td.param-off .param-advanced-bottom {
+    display: none;
+}
+
+.autobid-param-advanced-table td .param-advanced-switch {
+    display: inline-block;
+    position: relative;
+    vertical-align: middle;
+    width: 47px;
+    height: 22px;
+    margin-top: 10px;
+    background: url(images/table-switch-sprite.png) top center no-repeat;
+}
+.autobid-param-advanced-table td .param-advanced-switch-input {
+    display: block;
+    opacity: 0;
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+.autobid-param-advanced td .param-advanced-bottom {
+    margin-top: 10px;
+}
+.autobid-param-advanced-table td .param-advanced-buttons {
+    display: inline-block;
+    vertical-align: middle;
+}
+.autobid-param-advanced-table td .param-advanced-button {
+    -webkit-appearance: hidden;
+    border: none;
+    background: #fff;
+    width: 23px;
+    display: block;
+    color: #a1a5a7;
+    font-size: 14px;
+    font-weight: bold;
+
+}
+.autobid-param-advanced-table td .param-advanced-button:first-child {
+    -webkit-border-top-left-radius: 4px;
+    -webkit-border-top-right-radius: 4px;
+    -moz-border-radius-topleft: 4px;
+    -moz-border-radius-topright: 4px;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
+    border-bottom: 1px solid #a1a5a7;
+}
+.autobid-param-advanced-table td .param-advanced-button:last-child {
+    -webkit-border-bottom-right-radius: 4px;
+    -webkit-border-bottom-left-radius: 4px;
+    -moz-border-radius-bottomright: 4px;
+    -moz-border-radius-bottomleft: 4px;
+    border-bottom-right-radius: 4px;
+    border-bottom-left-radius: 4px;
+}
+.autobid-param-advanced-table td .param-advanced-label {
+    vertical-align: middle;
+    display: inline-block;
+    margin-left: 10px;
+}
+/*Autobid table locked version */
+.autobid-param-advanced-locked .table-container {
+    margin: 0 auto;
+    float: none;
+    display: block;
+}
+.autobid-param-advanced-locked .autobid-param-advanced-table td .param-advanced-label {
+    font-size: 18px;
+    position: relative;
+    top: 16px;
+}
+.autobid-param-advanced-locked .autobid-param-advanced-table td .cell-inner {
+    min-height: 50px;
+}
+.param-advanced-edit {
+
+}
+.param-advanced-edit span {
+    font-style: italic;
+    color: #a1a5a7;
+    display: block;
+    margin: 20px 0;
+}
+.table-infos {
+    width: 23%;
+    color: #a1a5a7;
+}
+
+.table-infos .global-rate {
+    color: #b10366;
+    text-align: center;
+    display: block;
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+.table-infos .global-rate + p {
+    text-transform: uppercase;
+    font-size: 14px;
+    border-bottom: 1px solid #e4e6e6;
+    padding-bottom: 30px;
+    margin-bottom: 40px;
+}
+.table-infos .param-advanced-tooltip {
+    text-align: center;
+    background: #f5f6f6;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    width: 100%;
+    padding: 10px;
+    -moz-box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    position: relative;
+}
+.table-infos .param-advanced-tooltip:after {
+    right: 100%;
+    top: 20%;
+    border: solid transparent;
+    content: " ";
+    height: 0;
+    width: 0;
+    position: absolute;
+    pointer-events: none;
+    border-color: rgba(245, 246, 246, 0);
+    border-right-color: #f5f6f6;
+    border-width: 12px;
+    margin-top: -12px;
+}
+.table-infos .global-progress-container {
+    position: relative;
+
+}
+.table-infos #param-advanced-global-progress {
+    -moz-transform: rotate(-90deg);
+    -webkit-transform: rotate(-90deg);
+    display: block;
+    margin: 0 auto;
+    -o-transform: rotate(-90deg);
+    -ms-transform: rotate(-90deg);
+    transform: rotate(-90deg);
+    background: url(images/progress-bg.png) no-repeat right center;
+}
+.table-infos #param-advanced-global-progress-label {
+    display: block;
+    text-align: center;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    color: #b10366;
+    font-size: 19px;
+    font-weight: bold;
+    margin-top: -19px;
+}
+.table-infos .global-progress-note {
+    margin-top: -40px;
+    display: inline-block;
+    font-size: 14px;
+}
+.table-infos .medium-rate-note {
+    color: #b10366;
+    font-size: 14px;
+    display: block;
+    margin: 30px auto;
+}
+.table-infos .medium-rate-buttons {
+    margin-top: 30px;
+}
+.table-infos .medium-rate-buttons .btn {
+    line-height: 34px;
+}
+
+.table-infos #param-advanced-btn-submit {
+    width: 100%;
+    margin-top: 30px;
+}
+.table-legend {
+    text-align: left;
+}
+.table-legend > span {
+    display: inline-block;
+    width: 260px;
+    font-style: italic;
+    font-size: 14px;
+    color: #a1a5a7;
+}
+.table-legend .rate-legend {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+}
+.table-legend .legend-green {
+    background: #c6e9d7;
+}
+.table-legend .legend-red {
+    background: #f9babe;
+}
+.table-legend .legend-gray {
+    background: #e3e4e4;
+}
+.apply-global-medium-rate {
+    padding-top: 30px;
+    clear: both;
+}
+.apply-global-medium-rate p {
+    max-width: 450px;
+    width: 100%;
+    font-size: 18px;
+    margin-left: 50px;
+    float: left;
+}
+.apply-global-medium-rate .btn {
+    margin-top: 10px;
+}
+
+/*-- Block simple params*/
+.autobid-param-form-simple {
+    max-width: 600px;
+    margin: 20px auto;
+}
+.autobid-param-simple p {
+    font-size: 18px;
+}
+.autobid-param-form-simple form {
+
+}
+.autobid-param-form-simple form .row {
+    position: relative;
+}
+.autobid-param-form-simple form .row label {
+    font-size: 18px;
+    float: left;
+}
+.autobid-param-form-simple form .row .unit {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+.autobid-param-form-simple form .row label .label-note {
+    font-size: 14px;
+    font-style: italic;
+    display: block;
+}
+.autobid-param-form-simple form .row input.field {
+    float: right;
+    max-width: 80px;
+    margin-top: 10px;
+    color: #4d4d4d;
+    text-align: center;
+    font-style: normal;
+}
+.autobid-param-form-simple form .row .link-more {
+    text-transform: uppercase;
+
+}
+.autobid-param-form-simple form .row .c2-sb-wrap {
+    float: right;
+    margin-top: 10px;
+    max-width: 135px;
+}
+.autobid-param-form-simple form .row .c2-sb-text {
+    max-width: 68px;
+}
+.autobid-param-form-simple .btn {
+    margin: 20px auto;
+    width: 250px;
+}
+
+
+/*Layout*/
+
+.header-autobid {
+    border-bottom: 1px solid #e3e4e4;
+    padding: 0 10px;
+    margin-bottom: 40px;
+}
+.header-autobid ul {
+    margin: 0;
+    padding: 0;
+}
+.header-autobid li {
+    list-style: none;
+    display: inline-block;
+}
+.header-autobid li + li {
+    margin-left: 20px;
+}
+.header-autobid li a {
+    color: #a1a5a7;
+    font-size: 18px;
+    font-weight: bold;
+    display: block;
+    padding: 10px 0;
+}
+.header-autobid li a:hover {
+    color: #b10366;
+    text-decoration: none;
+}
+.header-autobid li.active a {
+    color: #b10366;
+    border-bottom: 4px solid #b10366;
+}
+
+.autobid-tab {
+    display: none;
+}
+.autobid-tab.visible {
+    display: block;
+}
+
+
+.errors-autobid-param-form-simple { font-size: 14px; line-height: 14px; color: #b10366;  margin-top:0px; margin-left: 206px;}
+
+#settings_modifications.btn {
+    margin-bottom: 10px;
+}
