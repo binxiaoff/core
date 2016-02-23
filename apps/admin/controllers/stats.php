@@ -1473,4 +1473,47 @@ class statsController extends bootstrap
             'sum_118' => $iSum118,
         );
     }
+
+    public function _autobid_statistic()
+    {
+        $oProject = $this->loadData('projects');
+        if (isset($_POST['date_from'], $_POST['date_to']) && false === empty($_POST['date_from']) && false === empty($_POST['date_to'])) {
+            $this->aProjectList = $oProject->getAutoBidProjectStatistic(
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00'),
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59'));
+
+            if (isset($_POST['extraction_csv'])) {
+                $aProjectForCSV = array();
+                foreach ($this->aProjectList as $aProject) {
+                    $aProjectForCSV[] = array(
+                        $aProject['id_project'],
+                        round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',
+                        $aProject['period'],
+                        $aProject['risk'],
+                        $aProject['bids_nb'],
+                        $aProject['avg_amount'],
+                        round($aProject['weighted_avg_rate'], 2),
+                        $aProject['avg_amount_autobid'],
+                        false === empty($aProject['weighted_avg_rate_autobid']) ? round($aProject['weighted_avg_rate_autobid'], 2) : '',
+                        $aProject['status_lable'],
+                        $aProject['date_fin']
+                    );
+                }
+                $aHeader = array(
+                    'id_project',
+                    'pourcentage',
+                    'period',
+                    'risk',
+                    'nombre de bids',
+                    'taux moyen pondéré',
+                    'montant moyen',
+                    'montant moyen autolend',
+                    'taux moyen pondéré autolend',
+                    'status',
+                    'date fin de projet'
+                );
+                $this->exportCSV($aProjectForCSV, 'statistiques_autolends' . date('Ymd'), $aHeader);
+            }
+        }
+    }
 }

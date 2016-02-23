@@ -242,13 +242,12 @@ class cronController extends bootstrap
             /** @var \bids $oBid */
             $oBid = $this->loadData('bids');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('oProjectManager');
+            $oProjectManager = $this->get('ProjectManager');
             /** @var \Unilend\Service\MailerManager $oMailerManager */
             $oMailerManager = $this->get('MailerManager');
 
             $bHasProjectFinished = false;
-
-            $oProjectManager->setLogger(new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log'));
+            $oProjectManager->setLogger(new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.' . date('Ymd') . '.log'));
 
             $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING);
             foreach ($aProjectsList as $aProject) {

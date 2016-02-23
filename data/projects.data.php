@@ -737,4 +737,48 @@ class projects extends projects_crud
 
         return $mAvgRate;
     }
+
+    public function getAutoBidProjectStatistic(\DateTime $oDateFrom, \DateTime $oDateTo)
+    {
+        $sQuery = 'SELECT pg.id_project, pg.period, pg.risk, pg.date_fin, pg.status_lable, pg.amount_total, pg.weighted_avg_rate, pg.avg_amount,
+                      pb.bids_nb, pa.amount_total_autobid, pa.avg_amount_autobid, pa.weighted_avg_rate_autobid
+                    FROM (
+                       SELECT t.id_project, t.period, t.risk, t.date_fin, t.status_lable, ROUND(SUM(t.amount) / 100, 2) AS amount_total, SUM(t.amount * t.rate) / SUM(t.amount) as weighted_avg_rate, ROUND(AVG(t.amount) / 100, 2) as avg_amount
+                       FROM (
+                          SELECT l.id_loan, l.amount, l.rate, p.date_fin, p.id_project, p.period, p.risk, ps.label as status_lable
+                          FROM loans l
+                          INNER JOIN projects p ON p.id_project = l.id_project
+                          INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+                          INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+                          INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+                          WHERE l.status = 0 AND ps.status > ' . \projects_status::EN_FUNDING . '
+                          AND p.date_fin BETWEEN "' . $oDateFrom->format('Y-m-d H:i:s') . '" AND "' . $oDateTo->format('Y-m-d H:i:s') . '"
+                          GROUP BY l.id_loan
+                       ) t
+                       GROUP BY t.id_project
+                    ) pg
+                    INNER JOIN (
+                      SELECT count(b.id_bid) as bids_nb, b.id_project
+                      FROM bids b
+                      WHERE b.status = ' . \bids::STATUS_BID_ACCEPTED . '
+                      GROUP BY b.id_project
+                    ) pb ON pb.id_project = pg.id_project
+                    LEFT JOIN (
+                      SELECT t1.id_project, ROUND(SUM(t1.amount) / 100, 2) as amount_total_autobid, SUM(t1.amount * t1.rate) / SUM(t1.amount) as weighted_avg_rate_autobid, ROUND(AVG(t1.amount) / 100, 2) avg_amount_autobid
+                      FROM (
+                        SELECT id_project, amount, rate
+                        FROM bids
+                        WHERE status = ' . \bids::STATUS_BID_ACCEPTED . '
+                        AND id_autobid != ""
+                      ) t1
+                      GROUP BY t1.id_project
+                    ) pa ON pa.id_project = pg.id_project';
+
+        $aProjects = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aProjects[] = $aRecord;
+        }
+        return $aProjects;
+    }
 }
