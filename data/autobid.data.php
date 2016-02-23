@@ -81,4 +81,16 @@ class autobid extends autobid_crud
         $rResult = $this->bdd->query('SELECT MAX(`updated`) FROM `autobid` WHERE id_lender = ' . $iLenderId . ' AND status != ' . self::STATUS_ARCHIVED);
         return $this->bdd->result($rResult, 0, 0);
     }
+
+    public function sumAmount($sEvaluation, $iDuration)
+    {
+        $sQuery = 'SELECT SUM(`amount`)
+                   FROM `autobid` a
+                   INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                   WHERE ' . $iDuration . ' BETWEEN ap.min AND ap.max
+                   AND a.status = ' . self::STATUS_ACTIVE . '
+                   AND a.evaluation = "' . $sEvaluation . '"';
+        $rResult = $this->bdd->query($sQuery);
+        return $this->bdd->result($rResult, 0, 0);
+    }
 }

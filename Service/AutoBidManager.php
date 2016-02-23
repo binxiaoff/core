@@ -249,15 +249,15 @@ class AutoBidManager
 
     public function isNovice($iLenderId)
     {
-        $oAutobid              = Loader::loadData('autobid');
+        $oAutoBid              = Loader::loadData('autobid');
         $oClientHistoryActions = Loader::loadData('clients_history_actions');
         $bIsNovice             = true;
 
-        if ($oClientHistoryActions->counter('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ') > 0 && $oAutobid->counter('id_lender = ' . $iLenderId ) > 0) {
-            if ($oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_INACTIVE, null, null, 1)) {
+        if ($oClientHistoryActions->counter('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ') > 0 && $oAutoBid->counter('id_lender = ' . $iLenderId) > 0) {
+            if ($oAutoBid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_INACTIVE, null, null, 1)) {
                 $bIsNovice = false;
             } else {
-                $aAutobids = $oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
+                $aAutobids = $oAutoBid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
                 $fRate     = $aAutobids[0]['rate_min'];
                 $iAmount   = $aAutobids[0]['amount'];
 
@@ -284,5 +284,10 @@ class AutoBidManager
                 $this->saveSetting($iLenderId, $sEvaluation, $aPeriod['id_period'], $fRate, $iAmount);
             }
         }
+    }
+
+    public function predictAmount($sEvaluation, $iDuration)
+    {
+        return Loader::loadData('autobid')->sumAmount($sEvaluation, $iDuration);
     }
 }
