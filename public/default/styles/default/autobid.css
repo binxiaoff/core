@@ -1,7 +1,7 @@
 /* CSS FOR AUTOBID SCREEN - UNILEND 2016 */
 
 /*Fix gray / small button background in tab*/
-.tab .grise1:after {
+.grise1:after {
     background-color: #a1a5a7;
 }
 .tab .btn.btn-small {
@@ -156,7 +156,7 @@
     color: #ec1a29;
 }
 .autobid-param-advanced-table td.param-off {
-
+    color: #a1a5a7;
     background: #e3e4e4;
 }
 .autobid-param-advanced-table td.param-off .param-advanced-switch {
@@ -372,14 +372,16 @@
     clear: both;
 }
 .apply-global-medium-rate p {
-    max-width: 450px;
     width: 100%;
     font-size: 18px;
     margin-left: 50px;
     float: left;
+    padding-bottom: 0.5em;
 }
 .apply-global-medium-rate .btn {
     margin-top: 10px;
+    margin-bottom: 35px;
+    margin-left: 300px;
 }
 
 /*-- Block simple params*/
@@ -418,7 +420,7 @@
     text-align: center;
     font-style: normal;
 }
-.autobid-param-form-simple form .row .link-more {
+.autobid-param-form-simple form .row .link-more, .link-less {
     text-transform: uppercase;
 
 }
@@ -478,7 +480,7 @@
 }
 
 
-.errors-autobid-param-form-simple { font-size: 14px; line-height: 14px; color: #b10366;  margin-top:0px; margin-left: 206px;}
+.errors-autobid { font-size: 14px; line-height: 14px; color: #b10366;  margin-top:0px; margin-left: 206px;}
 
 #settings_modifications.btn {
     margin-bottom: 10px;

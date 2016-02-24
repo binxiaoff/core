@@ -249,15 +249,18 @@ class AutoBidManager
 
     public function isNovice($iLenderId)
     {
-        $oAutoBid              = Loader::loadData('autobid');
+        $oAutobid              = Loader::loadData('autobid');
         $oClientHistoryActions = Loader::loadData('clients_history_actions');
+        $oLendersAccount       = Loader::loadData('lenders_accounts');
+        $oLendersAccount->get($iLenderId);
         $bIsNovice             = true;
 
-        if ($oClientHistoryActions->counter('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ') > 0 && $oAutoBid->counter('id_lender = ' . $iLenderId) > 0) {
-            if ($oAutoBid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_INACTIVE, null, null, 1)) {
+        if ($oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0
+            && $oAutobid->counter('id_lender = ' . $iLenderId ) > 0) {
+            if ($oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_INACTIVE, null, null, 1)) {
                 $bIsNovice = false;
             } else {
-                $aAutobids = $oAutoBid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
+                $aAutobids = $oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
                 $fRate     = $aAutobids[0]['rate_min'];
                 $iAmount   = $aAutobids[0]['amount'];
 

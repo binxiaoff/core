@@ -31,9 +31,11 @@
                     <li id="info_perso">
                         <a id="title_3" href="#"><?= $this->lng['profile']['titre-1'] ?></a>
                     </li>
+                    <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
                     <li id="autolend">
                         <a href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a>
                     </li>
+                    <?php endif; ?>
                 </ul>
             </nav>
             <div class="tabs">
