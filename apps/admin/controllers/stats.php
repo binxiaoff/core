@@ -1473,4 +1473,49 @@ class statsController extends bootstrap
             'sum_118' => $iSum118,
         );
     }
+
+    public function _autobid_statistic()
+    {
+        $oProject = $this->loadData('projects');
+        if (isset($_POST['date_from'], $_POST['date_to']) && false === empty($_POST['date_from']) && false === empty($_POST['date_to'])) {
+            $aProjectList = $oProject->getAutoBidProjectStatistic(
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00'),
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59')
+            );
+
+            $this->aProjectList = array();
+            foreach ($aProjectList as $aProject) {
+                $fRisk = constant('\projects::RISK_' . trim($aProject['risk']));
+                $this->aProjectList[] = array(
+                    'id_project' => $aProject['id_project'],
+                    'percentage' => round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',
+                    'period' => $aProject['period'],
+                    'risk' => $fRisk,
+                    'bids_nb' => $aProject['bids_nb'],
+                    'avg_amount' => $aProject['avg_amount'],
+                    'weighted_avg_rate' => round($aProject['weighted_avg_rate'], 1),
+                    'avg_amount_autobid' => $aProject['avg_amount_autobid'],
+                    'weighted_avg_rate_autobid' => false === empty($aProject['weighted_avg_rate_autobid']) ? round($aProject['weighted_avg_rate_autobid'], 2) : '',
+                    'status_label' =>  $aProject['status_label'],
+                    'date_fin' => $aProject['date_fin']
+                );
+            }
+            if (isset($_POST['extraction_csv'])) {
+                $aHeader = array(
+                    'id_project',
+                    'pourcentage',
+                    'period',
+                    'risk',
+                    'nombre de bids',
+                    'montant moyen',
+                    'taux moyen pondéré',
+                    'montant moyen autolend',
+                    'taux moyen pondéré autolend',
+                    'status',
+                    'date fin de projet'
+                );
+                $this->exportCSV($this->aProjectList, 'statistiques_autolends' . date('Ymd'), $aHeader);
+            }
+        }
+    }
 }

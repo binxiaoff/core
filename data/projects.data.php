@@ -38,6 +38,15 @@ class projects extends projects_crud
     const DISPLAY_PROJECT_ON  = 0;
     const DISPLAY_PROJECT_OFF = 1;
 
+    const RISK_A = 5;
+    const RISK_B = 4.5;
+    const RISK_C = 4;
+    const RISK_D = 3.5;
+    const RISK_E = 3;
+    const RISK_F = 2.5;
+    const RISK_G = 2;
+    const RISK_H = 1.5;
+
     public function __construct($bdd, $params = '')
     {
         parent::projects($bdd, $params);
@@ -70,6 +79,7 @@ class projects extends projects_crud
         $this->id_analyste           = $this->bdd->escape_string($this->id_analyste);
         $this->date_publication      = $this->bdd->escape_string($this->date_publication);
         $this->date_publication_full = $this->bdd->escape_string($this->date_publication_full);
+        $this->date_funded           = $this->bdd->escape_string($this->date_funded);
         $this->date_retrait          = $this->bdd->escape_string($this->date_retrait);
         $this->date_retrait_full     = $this->bdd->escape_string($this->date_retrait_full);
         $this->date_fin              = $this->bdd->escape_string($this->date_fin);
@@ -84,7 +94,7 @@ class projects extends projects_crud
         $this->added                 = $this->bdd->escape_string($this->added);
         $this->updated               = $this->bdd->escape_string($this->updated);
 
-        $this->bdd->query('INSERT INTO `projects` (`hash`,`slug`,`id_company`,`id_partenaire`,`id_partenaire_subcode`,`id_prescripteur`,`amount`,`status_solde`,`period`,`title`,`title_bo`,`photo_projet`,`lien_video`,`comments`,`nature_project`,`objectif_loan`,`presentation_company`,`means_repayment`,`type`,`target_rate`,`stand_by`,`id_analyste`,`date_publication`,`date_publication_full`,`date_retrait`,`date_retrait_full`,`date_fin`,`create_bo`,`risk`,`retour_altares`,`process_fast`,`remb_auto`,`status`,`stop_relances`,`display`,`added`,`updated`) VALUES(MD5(CONCAT(UUID(), NOW())),"' . $this->slug . '","' . $this->id_company . '","' . $this->id_partenaire . '","' . $this->id_partenaire_subcode . '","' . $this->id_prescripteur . '","' . $this->amount . '","' . $this->status_solde . '","' . $this->period . '","' . $this->title . '","' . $this->title_bo . '","' . $this->photo_projet . '","' . $this->lien_video . '","' . $this->comments . '","' . $this->nature_project . '","' . $this->objectif_loan . '","' . $this->presentation_company . '","' . $this->means_repayment . '","' . $this->type . '","' . $this->target_rate . '","' . $this->stand_by . '","' . $this->id_analyste . '","' . $this->date_publication . '","' . $this->date_publication_full . '","' . $this->date_retrait . '","' . $this->date_retrait_full . '","' . $this->date_fin . '","' . $this->create_bo . '","' . $this->risk . '","' . $this->retour_altares . '","' . $this->process_fast . '","' . $this->remb_auto . '","' . $this->status . '","' . $this->stop_relances . '","' . $this->display . '",NOW(),NOW())');
+        $this->bdd->query('INSERT INTO `projects` (`hash`,`slug`,`id_company`,`id_partenaire`,`id_partenaire_subcode`,`id_prescripteur`,`amount`,`status_solde`,`period`,`title`,`title_bo`,`photo_projet`,`lien_video`,`comments`,`nature_project`,`objectif_loan`,`presentation_company`,`means_repayment`,`type`,`target_rate`,`stand_by`,`id_analyste`,`date_publication`,`date_publication_full`,`date_funded`,`date_retrait`,`date_retrait_full`,`date_fin`,`create_bo`,`risk`,`retour_altares`,`process_fast`,`remb_auto`,`status`,`stop_relances`,`display`,`added`,`updated`) VALUES(MD5(CONCAT(UUID(), NOW())),"' . $this->slug . '","' . $this->id_company . '","' . $this->id_partenaire . '","' . $this->id_partenaire_subcode . '","' . $this->id_prescripteur . '","' . $this->amount . '","' . $this->status_solde . '","' . $this->period . '","' . $this->title . '","' . $this->title_bo . '","' . $this->photo_projet . '","' . $this->lien_video . '","' . $this->comments . '","' . $this->nature_project . '","' . $this->objectif_loan . '","' . $this->presentation_company . '","' . $this->means_repayment . '","' . $this->type . '","' . $this->target_rate . '","' . $this->stand_by . '","' . $this->id_analyste . '","' . $this->date_publication . '","' . $this->date_publication_full . '","' . $this->date_funded . '","' . $this->date_retrait . '","' . $this->date_retrait_full . '","' . $this->date_fin . '","' . $this->create_bo . '","' . $this->risk . '","' . $this->retour_altares . '","' . $this->process_fast . '","' . $this->remb_auto . '","' . $this->status . '","' . $this->stop_relances . '","' . $this->display . '",NOW(),NOW())');
 
         $this->get($this->bdd->insert_id(), 'id_project');
 
@@ -703,13 +713,26 @@ class projects extends projects_crud
         return $aProjects;
     }
 
-    public function getAvgRate($sRisk, $sDurationMin, $sDurationMax)
+    public function getAvgRate($sRisk = null, $sDurationMin = null, $sDurationMax = null)
     {
         $oCache   = Cache::getInstance();
         $sKey     = $oCache->makeKey('projects_getAvgRate', $sRisk, $sDurationMin, $sDurationMax);
         $mAvgRate = $oCache->get($sKey);
 
         if (false === $mAvgRate) {
+            $sWhereRisk        = '';
+            $sWhereDurationMin = '';
+            $sWhereDurationMax = '';
+            if (null !== $sRisk) {
+                $sWhereRisk = ' AND p.risk = "' . $sRisk . '" ';
+            }
+            if (null !== $sDurationMin) {
+                $sWhereDurationMin = ' AND p.period >=' . $sDurationMin;
+            }
+            if (null !== $sDurationMax) {
+                $sWhereDurationMax = ' AND p.period <=' . $sDurationMax;
+            }
+
             $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
                         FROM (
                           SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
@@ -721,9 +744,7 @@ class projects extends projects_crud
                               INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
                               INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
                             WHERE ps.status >= ' . \projects_status::FUNDE . '
-                            AND ps.status != ' . \projects_status::FUNDING_KO . '
-                            AND p.period BETWEEN ' . $sDurationMin . ' AND ' . $sDurationMax . '
-                            AND p.risk = "' . $sRisk . '"
+                            AND ps.status != ' . \projects_status::FUNDING_KO . $sWhereRisk . $sWhereDurationMin . $sWhereDurationMax . '
                           ) t
                           GROUP BY t.id_project
                         ) t1
@@ -735,5 +756,49 @@ class projects extends projects_crud
         }
 
         return $mAvgRate;
+    }
+
+    public function getAutoBidProjectStatistic(\DateTime $oDateFrom, \DateTime $oDateTo)
+    {
+        $sQuery = 'SELECT pg.id_project, pg.period, pg.risk, pg.date_fin, pg.status_lable, pg.amount_total, pg.weighted_avg_rate, pg.avg_amount,
+                      pb.bids_nb, pa.amount_total_autobid, pa.avg_amount_autobid, pa.weighted_avg_rate_autobid
+                    FROM (
+                       SELECT t.id_project, t.period, t.risk, t.date_fin, t.status_lable, ROUND(SUM(t.amount) / 100, 2) AS amount_total, SUM(t.amount * t.rate) / SUM(t.amount) as weighted_avg_rate, ROUND(AVG(t.amount) / 100, 2) as avg_amount
+                       FROM (
+                          SELECT l.id_loan, l.amount, l.rate, p.date_fin, p.id_project, p.period, p.risk, ps.label as status_lable
+                          FROM loans l
+                          INNER JOIN projects p ON p.id_project = l.id_project
+                          INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+                          INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+                          INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+                          WHERE l.status = 0 AND ps.status > ' . \projects_status::EN_FUNDING . '
+                          AND p.date_fin BETWEEN "' . $oDateFrom->format('Y-m-d H:i:s') . '" AND "' . $oDateTo->format('Y-m-d H:i:s') . '"
+                          GROUP BY l.id_loan
+                       ) t
+                       GROUP BY t.id_project
+                    ) pg
+                    INNER JOIN (
+                      SELECT count(b.id_bid) as bids_nb, b.id_project
+                      FROM bids b
+                      WHERE b.status = ' . \bids::STATUS_BID_ACCEPTED . '
+                      GROUP BY b.id_project
+                    ) pb ON pb.id_project = pg.id_project
+                    LEFT JOIN (
+                      SELECT t1.id_project, ROUND(SUM(t1.amount) / 100, 2) as amount_total_autobid, SUM(t1.amount * t1.rate) / SUM(t1.amount) as weighted_avg_rate_autobid, ROUND(AVG(t1.amount) / 100, 2) avg_amount_autobid
+                      FROM (
+                        SELECT id_project, amount, rate
+                        FROM bids
+                        WHERE status = ' . \bids::STATUS_BID_ACCEPTED . '
+                        AND id_autobid != ""
+                      ) t1
+                      GROUP BY t1.id_project
+                    ) pa ON pa.id_project = pg.id_project';
+
+        $aProjects = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aProjects[] = $aRecord;
+        }
+        return $aProjects;
     }
 }

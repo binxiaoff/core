@@ -216,6 +216,9 @@ class cronController extends bootstrap
 
                     // Zippage pour groupama
                     $this->zippage($aProject['id_project']);
+
+                    $oProjectManager->checkAutoBidBalance($oProject);
+
                     $this->nouveau_projet($aProject['id_project']);
                 }
             }
@@ -239,13 +242,12 @@ class cronController extends bootstrap
             /** @var \bids $oBid */
             $oBid = $this->loadData('bids');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('oProjectManager');
+            $oProjectManager = $this->get('ProjectManager');
             /** @var \Unilend\Service\MailerManager $oMailerManager */
             $oMailerManager = $this->get('MailerManager');
 
             $bHasProjectFinished = false;
-
-            $oProjectManager->setLogger(new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.log'));
+            $oProjectManager->setLogger(new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.' . date('Ymd') . '.log'));
 
             $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING);
             foreach ($aProjectsList as $aProject) {
@@ -3478,9 +3480,11 @@ class cronController extends bootstrap
                     $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
 
                     if ($iBidTotal >= $oProject->amount && $oProject->status_solde == 0) {
-                        $oMailerManager->sendFondedToBorrower($oProject);
+                        $oProject->date_funded = date('Y-m-d H:i:s');
                         $oProject->status_solde = 1;
                         $oProject->update();
+
+                        $oMailerManager->sendFondedToBorrower($oProject);
                     }
 
                     $oProjectManager->autoBid($oProject);

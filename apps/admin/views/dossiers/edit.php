@@ -266,6 +266,10 @@
                 <h2>Montant</h2>
                 <table class="form" style="width: 575px;">
                     <tr>
+                        <th><label for="autobid_statistic"> AutoLend funding statistic  :</label></th>
+                        <td><?= $this->fPredictAutoBid ?> % </td>
+                    </tr>
+                    <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
                         <td>
                             <input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €
