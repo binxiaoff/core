@@ -2621,9 +2621,9 @@ class profileController extends bootstrap
         $aSettingsSubmitted       = isset($_SESSION['forms']['autobid-param-submit']['values']) ? $_SESSION['forms']['autobid-param-submit']['values'] : array();
         $this->aErrors            = isset($_SESSION['forms']['autobid-param-submit']['errors']) ? $_SESSION['forms']['autobid-param-submit']['errors'] : array();
         $this->aSettingsSubmitted = array(
-            'amount'           => isset($aSettingsSubmitted['amount']) ? $aSettingsSubmitted['amount'] : $this->aAutoBidSettings[0]['amount'],
-            'simple-taux-min'  => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : $this->aAutoBidSettings[0]['rate_min'],
-            'aAutobidSettings' => isset($aSettingsSubmitted['expert']) ? $aSettingsSubmitted['expert'] : $this->aAutoBidSettings
+            'amount'           => isset($aSettingsSubmitted['amount']) ? $aSettingsSubmitted['amount'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings[0]['amount'] : '',
+            'simple-taux-min'  => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings[0]['rate_min'] : '',
+            'aAutobidSettings' => isset($aSettingsSubmitted['expert']) ? $aSettingsSubmitted['expert'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings : ''
         );
 
         unset($_SESSION['forms']['autobid-param-submit']);
