@@ -1485,7 +1485,7 @@ class statsController extends bootstrap
 
             $this->aProjectList = array();
             foreach ($aProjectList as $aProject) {
-                $fRisk = constant('\projects::RISK_' . trim($aProject['risk']));;
+                $fRisk = constant('\projects::RISK_' . trim($aProject['risk']));
                 $this->aProjectList[] = array(
                     'id_project' => $aProject['id_project'],
                     'percentage' => round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',
