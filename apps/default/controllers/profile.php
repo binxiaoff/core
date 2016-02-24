@@ -39,6 +39,9 @@ class profileController extends bootstrap
 
     public function _default()
     {
+        $oAutoBidManager = $this->get('AutoBidManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
+
         if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
             $this->_particulier();
 
