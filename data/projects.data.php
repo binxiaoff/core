@@ -713,13 +713,26 @@ class projects extends projects_crud
         return $aProjects;
     }
 
-    public function getAvgRate($sRisk, $sDurationMin, $sDurationMax)
+    public function getAvgRate($sRisk = null, $sDurationMin = null, $sDurationMax = null)
     {
         $oCache   = Cache::getInstance();
         $sKey     = $oCache->makeKey('projects_getAvgRate', $sRisk, $sDurationMin, $sDurationMax);
         $mAvgRate = $oCache->get($sKey);
 
         if (false === $mAvgRate) {
+            $sWhereRisk        = '';
+            $sWhereDurationMin = '';
+            $sWhereDurationMax = '';
+            if (null !== $sRisk) {
+                $sWhereRisk = ' AND p.risk = "' . $sRisk . '" ';
+            }
+            if (null !== $sDurationMin) {
+                $sWhereDurationMin = ' AND p.period >=' . $sDurationMin;
+            }
+            if (null !== $sDurationMax) {
+                $sWhereDurationMax = ' AND p.period <=' . $sDurationMax;
+            }
+
             $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
                         FROM (
                           SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
@@ -731,9 +744,7 @@ class projects extends projects_crud
                               INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
                               INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
                             WHERE ps.status >= ' . \projects_status::FUNDE . '
-                            AND ps.status != ' . \projects_status::FUNDING_KO . '
-                            AND p.period BETWEEN ' . $sDurationMin . ' AND ' . $sDurationMax . '
-                            AND p.risk = "' . $sRisk . '"
+                            AND ps.status != ' . \projects_status::FUNDING_KO . $sWhereRisk . $sWhereDurationMin . $sWhereDurationMax . '
                           ) t
                           GROUP BY t.id_project
                         ) t1
