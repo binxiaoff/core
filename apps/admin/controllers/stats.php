@@ -1478,41 +1478,43 @@ class statsController extends bootstrap
     {
         $oProject = $this->loadData('projects');
         if (isset($_POST['date_from'], $_POST['date_to']) && false === empty($_POST['date_from']) && false === empty($_POST['date_to'])) {
-            $this->aProjectList = $oProject->getAutoBidProjectStatistic(
+            $aProjectList = $oProject->getAutoBidProjectStatistic(
                 \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00'),
-                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59'));
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59')
+            );
 
+            $this->aProjectList = array();
+            foreach ($aProjectList as $aProject) {
+                $fRisk = constant('\projects::RISK_' . trim($aProject['risk']));;
+                $this->aProjectList[] = array(
+                    'id_project' => $aProject['id_project'],
+                    'percentage' => round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',
+                    'period' => $aProject['period'],
+                    'risk' => $fRisk,
+                    'bids_nb' => $aProject['bids_nb'],
+                    'avg_amount' => $aProject['avg_amount'],
+                    'weighted_avg_rate' => round($aProject['weighted_avg_rate'], 1),
+                    'avg_amount_autobid' => $aProject['avg_amount_autobid'],
+                    'weighted_avg_rate_autobid' => false === empty($aProject['weighted_avg_rate_autobid']) ? round($aProject['weighted_avg_rate_autobid'], 2) : '',
+                    'status_label' =>  $aProject['status_label'],
+                    'date_fin' => $aProject['date_fin']
+                );
+            }
             if (isset($_POST['extraction_csv'])) {
-                $aProjectForCSV = array();
-                foreach ($this->aProjectList as $aProject) {
-                    $aProjectForCSV[] = array(
-                        $aProject['id_project'],
-                        round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',
-                        $aProject['period'],
-                        $aProject['risk'],
-                        $aProject['bids_nb'],
-                        $aProject['avg_amount'],
-                        round($aProject['weighted_avg_rate'], 2),
-                        $aProject['avg_amount_autobid'],
-                        false === empty($aProject['weighted_avg_rate_autobid']) ? round($aProject['weighted_avg_rate_autobid'], 2) : '',
-                        $aProject['status_lable'],
-                        $aProject['date_fin']
-                    );
-                }
                 $aHeader = array(
                     'id_project',
                     'pourcentage',
                     'period',
                     'risk',
                     'nombre de bids',
-                    'taux moyen pondéré',
                     'montant moyen',
+                    'taux moyen pondéré',
                     'montant moyen autolend',
                     'taux moyen pondéré autolend',
                     'status',
                     'date fin de projet'
                 );
-                $this->exportCSV($aProjectForCSV, 'statistiques_autolends' . date('Ymd'), $aHeader);
+                $this->exportCSV($this->aProjectList, 'statistiques_autolends' . date('Ymd'), $aHeader);
             }
         }
     }

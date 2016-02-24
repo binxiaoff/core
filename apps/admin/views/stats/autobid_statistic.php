@@ -111,15 +111,15 @@ if (count($this->aProjectList) > 0) :
     ?>
                 <tr<?= ($iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $aProject['id_project'] ?></td>
-                    <td><?= round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) ?> %</td>
+                    <td><?= $aProject['percentage'] ?></td>
                     <td><?= $aProject['period'] ?></td>
                     <td><?= $aProject['risk'] ?></td>
-                    <td><?= $aProject['bids_nb']; ?></td>
+                    <td><?= $aProject['bids_nb'] ?></td>
                     <td><?= $aProject['avg_amount'] ?></td>
-                    <td><?= round($aProject['weighted_avg_rate'], 2) ?></td>
+                    <td><?= $aProject['weighted_avg_rate'] ?></td>
                     <td><?= $aProject['avg_amount_autobid'] ?></td>
-                    <td><?= false === empty($aProject['weighted_avg_rate_autobid']) ? round($aProject['weighted_avg_rate_autobid'], 2) : '' ?></td>
-                    <td><?= $aProject['status_lable'] ?></td>
+                    <td><?= $aProject['weighted_avg_rate_autobid'] ?></td>
+                    <td><?= $aProject['status_label'] ?></td>
                     <td><?= $aProject['date_fin'] ?></td>
                 </tr>
     <?php
