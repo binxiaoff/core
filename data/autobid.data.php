@@ -84,13 +84,34 @@ class autobid extends autobid_crud
 
     public function sumAmount($sEvaluation, $iDuration)
     {
-        $sQuery = 'SELECT SUM(`amount`)
+        $sQuery  = 'SELECT SUM(`amount`)
                    FROM `autobid` a
                    INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
                    WHERE ' . $iDuration . ' BETWEEN ap.min AND ap.max
+                   AND ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
                    AND a.status = ' . self::STATUS_ACTIVE . '
                    AND a.evaluation = "' . $sEvaluation . '"';
         $rResult = $this->bdd->query($sQuery);
         return $this->bdd->result($rResult, 0, 0);
+    }
+
+    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE))
+    {
+        $sWhereLender     = null === $iLenderId ? '' : ' AND a.id_lender = ' . $iLenderId;
+        $sWhereEvaluation = null === $sEvaluation ? '' : ' AND a.evaluation = "' . $sEvaluation . '"';
+        $sWherePeriod     = null === $iAutoBidPeriodId ? '' : ' AND a.id_autobid_period = ' . $iAutoBidPeriodId;
+
+        $sQuery = 'SELECT a.*
+                   FROM autobid a
+                   INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                   WHERE ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
+                   AND a.status in (' . implode($aStatus, ',') . ')' . $sWhereLender . $sWhereEvaluation . $sWherePeriod;
+
+        $aAutoBids = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aAutoBids[] = $aRecord;
+        }
+        return $aAutoBids;
     }
 }

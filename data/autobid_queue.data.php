@@ -84,9 +84,10 @@ class autobid_queue extends autobid_queue_crud
                    INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
                    INNER JOIN lenders_accounts la ON la.id_lender_account = aq.id_lender
                    WHERE ' . $iPeriod . ' BETWEEN ap.min AND ap.max
+                   AND ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
                    AND a.evaluation = "' . $sEvaluation . '"
                    AND a.rate_min <= ' . $fRate . '
-                   AND a.status = ' . autobid::STATUS_ACTIVE;
+                   AND a.status = ' . \autobid::STATUS_ACTIVE;
 
         $sQuery  = 'SELECT * FROM ( '
                         . $sBasicQuery . '

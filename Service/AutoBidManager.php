@@ -195,22 +195,16 @@ class AutoBidManager
     }
 
     /**
-     * @param     $iLenderId
-     * @param     $sEvaluation
-     * @param     $iAutoBidPeriodId
-     * @param     $fRate
-     * @param     $fAmount
-     * @param int $iStatus
+     * @param       $iLenderId
+     * @param       $sEvaluation
+     * @param       $iAutoBidPeriodId
+     * @param array $aStatus
      *
      * @return mixed
      */
-    public function getSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $fAmount, $iStatus = \autobid::STATUS_ACTIVE)
+    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE))
     {
-        return Loader::loadData('autobid')->get(
-            $iLenderId,
-            'status = ' . $iStatus . ' AND evaluation = "' . $sEvaluation . '"" AND id_autobid_period = '
-            . $iAutoBidPeriodId . ' AND rate_min = ' . $fRate . ' AND amount = ' . $fAmount . ' AND id_lender'
-        );
+        return Loader::loadData('autobid')->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus);
     }
 
     public function bid(\autobid $oAutoBid, $oProject, $fRate)
