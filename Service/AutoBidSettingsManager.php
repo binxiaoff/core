@@ -202,9 +202,9 @@ class AutoBidSettingsManager
      *
      * @return mixed
      */
-    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE))
+    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null)
     {
-        return Loader::loadData('autobid')->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus);
+        return Loader::loadData('autobid')->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus, $sOrder);
     }
 
     /**
@@ -225,7 +225,7 @@ class AutoBidSettingsManager
             if ($oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_INACTIVE, null, null, 1)) {
                 $bIsNovice = false;
             } else {
-                $aAutobids = $oAutobid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
+                $aAutobids = $this->getSettings($iLenderId, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), null);
                 $fRate     = $aAutobids[0]['rate_min'];
                 $iAmount   = $aAutobids[0]['amount'];
 
@@ -269,4 +269,28 @@ class AutoBidSettingsManager
     {
         return Loader::loadData('autobid')->sumAmount($sEvaluation, $iDuration);
     }
+
+    /**
+     * @param $iLenderId
+     * @param $sEvaluation
+     * @param $iAutoBidPeriodId
+     * @param $fRate
+     * @param $iAmount
+     * @param $iNewStatus
+     */
+    public function activateDeactivateSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount, $iNewStatus)
+    {
+        $oAutoBid = Loader::loadData('autobid');
+        $oAutoBid->get(
+            $iLenderId,
+            'status != ' . \autobid::STATUS_ARCHIVED. ' AND evaluation = "' . $sEvaluation . '" AND id_autobid_period = '
+            . $iAutoBidPeriodId . ' AND rate_min = ' . $fRate . ' AND amount = ' . $iAmount . ' AND id_lender'
+        );
+
+        if (in_array($iNewStatus, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE))) {
+            $oAutoBid->status = $iNewStatus;
+            $oAutoBid->update();
+        }
+    }
+
 }

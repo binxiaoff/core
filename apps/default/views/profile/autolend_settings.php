@@ -82,6 +82,9 @@
                 <button class="btn" type="submit" name="send-form-autobid-param-simple">
                     <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
                 </button>
+                <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
+                    <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
+                </button>
             </div>
         </form>
     </div>
@@ -89,9 +92,9 @@
     <div id="expert-settings" style="<?= ($this->bIsNovice) ? 'display:none;' : '' ?>">
 
         <div class="apply-global-medium-rate" style="display: none;">
-            <p>La taux moyen de la plateforme Unilend est : <?= $this->fAverageRateUnilend ?></p>
-            <p>Appliquer le taux moyen de la plateforme pour tout type de durée et évaluation</p>
-            <button class="btn btn-small grise1" type="button" id="global-rate-Unilend">Appliquer</button>
+            <p><?= str_replace('[#GLOBAL-AVG-RATE#]', $this->fAverageRateUnilend, $this->lng['autobid']['unilend-global-rate']) ?></p>
+            <p><? $this->lng['autobid']['apply-unilend-global-rate-instruction'] ?></p>
+            <button class="btn btn-small grise1" type="button" id="global-rate-Unilend"><?= $this->lng['autobid']['apply-unilend-global-rate-button'] ?></button>
         </div>
 
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
@@ -99,10 +102,10 @@
                 <table class="autobid-param-advanced-table">
                     <tr>
                         <th class="empty"></th>
-                        <th scope="col" colspan="5" class="table-title">Risque</th>
+                        <th scope="col" colspan="5" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-risk'] ?></th>
                     </tr>
                     <tr>
-                        <th scope="col" class="table-title">Durée</th>
+                        <th scope="col" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-period'] ?></th>
                         <th scope="col"><div class="autobid-stars stars-30"></div></th>
                         <th scope="col"><div class="autobid-stars stars-35"></div></th>
                         <th scope="col"><div class="autobid-stars stars-40"></div></th>
@@ -117,7 +120,9 @@
                                 <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                     <div class="cell-inner">
                                         <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="param-advanced-switch-1" id="param-advanced-switch-1" />
+                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
                                         </div>
                                         <div class="param-advanced-bottom" >
                                             <div class="param-advanced-buttons" style="display: none;">
@@ -148,7 +153,9 @@
                                 <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                     <div class="cell-inner">
                                         <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="param-advanced-switch-1" id="param-advanced-switch-1" />
+                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
                                         </div>
                                         <div class="param-advanced-bottom">
                                             <div class="param-advanced-buttons" style="display: none;">
@@ -179,7 +186,9 @@
                                 <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                     <div class="cell-inner">
                                         <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="param-advanced-switch-1" id="param-advanced-switch-1" />
+                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
                                         </div>
                                         <div class="param-advanced-bottom">
                                             <div class="param-advanced-buttons" style="display: none;">
@@ -210,7 +219,9 @@
                                 <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                     <div class="cell-inner">
                                         <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="param-advanced-switch-1" id="param-advanced-switch-1" />
+                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
                                         </div>
                                         <div class="param-advanced-bottom">
                                             <div class="param-advanced-buttons" style="display: none;">
@@ -241,7 +252,9 @@
                                 <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                     <div class="cell-inner">
                                         <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="param-advanced-switch-1" id="param-advanced-switch-1" />
+                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
+                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
                                         </div>
                                         <div class="param-advanced-bottom">
                                             <div class="param-advanced-buttons" style="display: none;">
@@ -267,16 +280,15 @@
                         <td class="empty"></td>
                         <td colspan="5" class="empty">
                             <div class="table-legend">
-                                <span><span class="rate-legend legend-green"></span>Taux inférieur au taux moyen</span>
-                                <span><span class="rate-legend legend-gray"></span>Sélection du taux désactivé</span>
-                                <span><span class="rate-legend legend-red"></span>Taux supérieur au taux moyen</span>
+                                <span><span class="rate-legend legend-green"></span><?= $this->lng['autobid']['expert-settings-legend-inferior-rate'] ?></span>
+                                <span><span class="rate-legend legend-gray"></span><?= $this->lng['autobid']['expert-settings-legend-deactivated'] ?></span>
+                                <span><span class="rate-legend legend-red"></span><?= $this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
                             </div>
                         </td>
                     </tr>
                 </table>
             </div>
 
-        </div>
         <div class="table-infos right" style="display: none;" id="table-infos_right">
             <div class="param-advanced-tooltip">
                 <span class="global-rate">8,2%</span>
@@ -299,19 +311,19 @@
             </div>
             <button class="btn" id="param-advanced-btn-submit" type="button" onclick="">Valider</button>
         </div>
+    </div>
+    <div class="row">
+        <a href="#" class="link-less" style="display:none;"><?= $this->lng['autobid']['settings-link-to-novice-mode'] ?></a>
+    </div>
 
-        <div class="row">
-            <a href="#" class="link-less" style="display:none;"><?= $this->lng['autobid']['settings-link-to-novice-mode'] ?></a>
-        </div>
-
-        <div class="row text-center" >
-            <button class="btn" id="validate_settings_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" >
-                <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
-            </button>
-            <button class="btn" id="cancel_modification_settings_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" >
-                ANNULER
-            </button>
-        </div>
+    <div class="row text-center" >
+        <button class="btn" id="validate_settings_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" >
+            <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
+        </button>
+        <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
+            Annuler
+        </button>
+    </div>
     </div>
 </div>
 
@@ -339,6 +351,8 @@ $(window).load(function(){
         } else {
             $(this).addClass('LV_valid_field');
             $(this).removeClass('LV_invalid_field');
+            $('#error-amount-wrong').hide();
+
         }
     });
 
@@ -350,14 +364,13 @@ $(window).load(function(){
         $('#select-autobid-taux').show();
         $('.link-more').show();
         $('#validate_settings_novice').show();
+        $('#cancel_modification_settings').show();
     });
 
     $('.link-less').click(function () {
         $('#expert-settings').hide();
         $('#settings_instructions_novice').show();
         $('#settings_instructions_expert').hide();
-        $('#select-autobid-taux').show();
-        $('#rate-settings-novice').show();
         $('.link-more').show();
         $('#validate_settings_novice').show();
         $('#expert-settings-consult').show();
@@ -367,6 +380,11 @@ $(window).load(function(){
         $('#validate_settings').hide();
         $('#autobid-block').addClass('autobid-param-advanced-locked');
         $('.link-less').hide();
+        $('.c2-sb-list-item-link').removeClass('c2-sb-list-item-link-active');
+        $('.c2-sb-text').html('Choisir');
+        $('#rate-settings-novice').show();
+        $('#select-autobid-taux').show();
+        $('#autobid-param-simple-taux-min-field').hide();
     });
 
 
@@ -382,6 +400,7 @@ $(window).load(function(){
         $('#cancel_modification_settings_expert').show();
         $('#autobid-block').removeClass('autobid-param-advanced-locked');
         $('.link-less').show();
+        $('#cancel_modification_settings').show();
     });
 
     $('.link-more').click(function () {
@@ -402,20 +421,6 @@ $(window).load(function(){
         $('.link-less').show();
     });
 
-    $('#cancel_modification_settings_expert').click(function(){
-        $('#expert-settings-consult').show();
-        $('.param-advanced-switch').hide();
-        $('.param-advanced-buttons').hide();
-        $('.apply-global-medium-rate').hide();
-        $('#validate_settings_expert').hide();
-        $('#cancel_modification_settings_expert').hide();
-        $('#autobid-block').addClass('autobid-param-advanced-locked');
-        $('.link-less').hide();
-        $('#autobid-amount').prop('disabled', true);
-        $('#settings_modifications_expert').show();
-        $('#settings_modifications_novice').show();
-        $('#settings_instructions_expert').hide();
-    });
 
     $('.cell-inner').click(function () {
         $('.table-infos').show();
@@ -427,6 +432,12 @@ $(window).load(function(){
 // Block advanced params
     if($('.param-advanced-switch-input').length){
         $('.param-advanced-switch-input').on('change', function() {
+            var rateSwitch = $(this);
+            if (rateSwitch.val() == "<?= \autobid::STATUS_ACTIVE ?>") {
+                rateSwitch.val('<?= \autobid::STATUS_INACTIVE ?>');
+            } else {
+                rateSwitch.val('<?= \autobid::STATUS_ACTIVE ?>');
+            }
             $(this).closest('td').toggleClass('param-off');
         });
     }
@@ -455,16 +466,18 @@ $(window).load(function(){
                     newVal = currentVal;
                 }
             }
-            console.log(AvgRateUnilend );
 
             input.val(newVal);
             newValString = newVal.toString().replace(".", ",");
             var label = inputUnilend.next();
             label.html(newValString+'%');
-            if (newVal <= AvgRateUnilend ){
-                $(this).closest('td').removeClass('param-over');
-            } else {
-                $(this).closest('td').addClass('param-over');
+
+            if (isNaN(AvgRateUnilend) === false ) {
+                if (newVal <= AvgRateUnilend ){
+                    $(this).closest('td').removeClass('param-over');
+                } else {
+                    $(this).closest('td').addClass('param-over');
+                }
             }
         });
     }

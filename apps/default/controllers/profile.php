@@ -2607,9 +2607,10 @@ class profileController extends bootstrap
             $this->bActivatedLender = false;
         }
 
-        $this->bIsNovice = $oAutoBidSettingsManager->isNovice($oLendersAccounts->id_lender_account);
+        $this->bIsNovice       = $oAutoBidSettingsManager->isNovice($oLendersAccounts->id_lender_account);
         $this->sValidationDate = $oAutoBid->getValidationDate($oLendersAccounts->id_lender_account);
-        $aAutoBidSettings      = $oAutoBid->select('id_lender = ' . $oLendersAccounts->id_lender_account . ' AND status != ' . \autobid::STATUS_ARCHIVED, 'id_autobid_period ASC, evaluation ASC');
+        $aAutoBidSettings      = $oAutoBidSettingsManager->getSettings($oLendersAccounts->id_lender_account, null, null, $aStatus = array( \autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'id_autobid_period ASC, evaluation ASC');
+
 
         foreach ($aAutoBidSettings as $iKey => $aSetting) {
             $oAutoBidPeriod->get($aSetting['id_autobid_period']);
@@ -2646,7 +2647,7 @@ class profileController extends bootstrap
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
                 if (false === $this->bAutoBidOn) {
-                    $oAutoBidManager->on($this->clients);
+                    $oAutoBidSettingsManager->on($this->clients);
                 }
                 $fRate   = $_POST['autobid-param-simple-taux-min'];
                 $iAmount = $_POST['autobid-amount'];
@@ -2664,7 +2665,7 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $oAutoBidManager  = $this->get('AutoBidManager');
+        $oAutoBidSettingsManager  = $this->get('AutoBidSettingsManager');
 
         $oLendersAccounts = Loader::loadData('lenders_accounts');
         $oSettings        = Loader::loadData('settings');
@@ -2715,11 +2716,12 @@ class profileController extends bootstrap
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
                 if (false === (bool)$oClientSettings->getSetting($this->clients->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
-                    $oAutoBidManager->on($this->clients);
+                    $oAutoBidSettingsManager->on($this->clients);
                 }
                 $iAmount = $_POST['autobid-amount'];
                 foreach ($aSettingsFromPOST as $sIndex => $aSetting) {
-                    $oAutoBidManager->saveSetting($oLendersAccounts->id_lender_account, $aSetting['evaluation'], $aSetting['period'], $aSetting['value'], $iAmount);
+                    $oAutoBidSettingsManager->saveSetting($oLendersAccounts->id_lender_account, $aSetting['evaluation'], $aSetting['period'], $aSetting['value'], $iAmount);
+                    $oAutoBidSettingsManager->activateDeactivateSetting($oLendersAccounts->id_lender_account, $aSetting['evaluation'], $aSetting['period'], $aSetting['value'], $iAmount, $aSetting['switch']);
                 }
                 echo 'settings_saved';
             } else {
@@ -2727,6 +2729,25 @@ class profileController extends bootstrap
                 echo 'error';
             }
         }
+    }
+
+    public function _AutoBidSettingOff()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $oClient                 = $this->loadData('clients');
+        $oClientSettings         = $this->loadData('client_settings');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $sInstruction            = '';
+
+        if (false === empty($_POST['setting']) && $oClient->get($_POST['id_client'])) {
+            if (\Unilend\Service\AutoBidSettingsManager::AUTO_BID_ON == $oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
+                $oAutoBidSettingsManager->off($oClient);
+                $sInstruction = 'update_off_success';
+            }
+        }
+        echo $sInstruction;
     }
 
 }

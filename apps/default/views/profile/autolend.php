@@ -11,8 +11,12 @@
         </nav>
         <header class="header-autobid inner-nav">
             <ul>
-                <li class="active" id="consultation"><a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a></li>
-                <li id="parametrage"><a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a></li>
+                <li class="active" id="consultation">
+                    <a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a>
+                </li>
+                <li id="parametrage" style="<?= ($this->bAutoBidOn) ? '' : 'display:none;'  ?>">
+                    <a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a>
+                </li>
             </ul>
         </header>
         <div class="autobid-tabs">

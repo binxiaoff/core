@@ -158,13 +158,10 @@
 .autobid-param-advanced-table td.param-off {
     color: #a1a5a7;
     background: #e3e4e4;
+    font-style: italic;
 }
 .autobid-param-advanced-table td.param-off .param-advanced-switch {
     background-position: bottom center;
-    top: 20px;
-}
-.autobid-param-advanced-table td.param-off .param-advanced-bottom {
-    display: none;
 }
 
 .autobid-param-advanced-table td .param-advanced-switch {
@@ -202,8 +199,23 @@
     color: #a1a5a7;
     font-size: 14px;
     font-weight: bold;
+}
+
+td.param-off div.cell-inner div.param-advanced-bottom div.param-advanced-buttons button.param-advanced-button{
+    display: none;
+}
+.autobid-param-advanced-table td .param-advanced-button {
+    -webkit-appearance: hidden;
+    border: none;
+    background: #fff;
+    width: 23px;
+    display: block;
+    color: #a1a5a7;
+    font-size: 14px;
+    font-weight: bold;
 
 }
+
 .autobid-param-advanced-table td .param-advanced-button:first-child {
     -webkit-border-top-left-radius: 4px;
     -webkit-border-top-right-radius: 4px;
