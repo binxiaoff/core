@@ -81,12 +81,6 @@ class BidManager
         $oWalletsLine = Loader::loadData('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = Loader::loadData('offres_bienvenues_details');
-        /** @var \notifications $oNotification */
-        $oNotification = Loader::loadData('notifications');
-        /** @var \clients_gestion_notifications $oNotificationSettings */
-        $oNotificationSettings = Loader::loadData('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
 
