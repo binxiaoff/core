@@ -23,8 +23,8 @@ class BidManager
     private $aConfig;
     /** @var  ULogger */
     private $oLogger;
-    /** @var MailerManager */
-    private $oMailerManager;
+    /** @var NotificationManager */
+    private $oNotificationManager;
 
     public function __construct()
     {
@@ -39,7 +39,7 @@ class BidManager
         $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail = Loader::loadLib('email');
 
-        $this->oMailerManager = Loader::loadService('MailerManager');
+        $this->oNotificationManager = Loader::loadService('NotificationManager');
 
         $this->sLanguage = 'fr';
     }
@@ -185,27 +185,16 @@ class BidManager
             }
         }
 
-        ///// NOTIFICATION OFFRE PLACEE ///////
-        $oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED;
-        $oNotification->id_lender  = $oBid->id_lender_account;
-        $oNotification->id_project = $oBid->id_project;
-        $oNotification->amount     = $fAmountX100;
-        $oNotification->id_bid     = $oBid->id_bid;
-        $oNotification->create();
-        ///// FIN NOTIFICATION OFFRE PLACEE ///////
-        if ($oNotificationSettings->getNotif($iClientId, \clients_gestion_type_notif::TYPE_BID_PLACED, 'immediatement') == true) {
-            $this->oMailerManager->sendBidConfirmation($oBid);
-            $oMailNotification->immediatement = 1;
-        } else {
-            $oMailNotification->immediatement = 0;
-        }
-
-        $oMailNotification->id_client       = $iClientId;
-        $oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED;
-        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $oMailNotification->id_notification = $oNotification->id_notification;
-        $oMailNotification->id_transaction  = $oTransaction->id_transaction;
-        $oMailNotification->create();
+        $this->oNotificationManager->create(
+            \clients_gestion_type_notif::TYPE_BID_PLACED,
+            \clients_gestion_type_notif::TYPE_BID_PLACED,
+            $iClientId,
+            'sendBidConfirmation',
+            $oBid->id_project,
+            $fAmount,
+            $oBid->id_bid,
+            $oTransaction->id_transaction
+        );
 
         return true;
     }

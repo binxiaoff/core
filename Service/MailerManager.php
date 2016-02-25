@@ -55,7 +55,7 @@ class MailerManager
         $this->oLogger = $oLogger;
     }
 
-    public function sendBidConfirmation(\bids $oBid)
+    public function sendBidConfirmation(\notifications $oNotification)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
@@ -67,61 +67,69 @@ class MailerManager
         $oProject = Loader::loadData('projects');
         /** @var \tree $oTree */
         $oTree = Loader::loadData('tree');
+        /** @var \bids $oBid */
+        $oBid = Loader::loadData('bids');
 
-        $oLenderAccount->get($oBid->id_lender_account);
-        $oClient->get($oLenderAccount->id_client_owner);
-        $sPurpose = $oClient->getLenderPattern($oClient->id_client);
+        if ($oLenderAccount->get($oNotification->id_lender) && $oBid->get($oNotification->id_bid) && $oClient->get($oLenderAccount->id_client_owner)) {
+            if (empty($oBid->id_autobid)) {
+                $sMailTemplate = 'confirmation-bid';
+            } else {
+                $sMailTemplate = 'confirmation-autobid';
+            }
 
-        $this->oMailText->get('confirmation-bid', 'lang = "' . $this->sLanguage . '" AND type');
+            $this->oMailText->get($sMailTemplate, 'lang = "' . $this->sLanguage . '" AND type');
 
-        $this->oSettings->get('Facebook', 'type');
-        $lien_fb = $this->oSettings->value;
+            $sPurpose = $oClient->getLenderPattern($oClient->id_client);
 
-        $this->oSettings->get('Twitter', 'type');
-        $lien_tw = $this->oSettings->value;
+            $this->oSettings->get('Facebook', 'type');
+            $lien_fb = $this->oSettings->value;
 
-        $timeAdd = strtotime($oBid->added);
-        $month   = $this->oDate->tableauMois['fr'][date('n', $timeAdd)];
+            $this->oSettings->get('Twitter', 'type');
+            $lien_tw = $this->oSettings->value;
 
-        $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
-        $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
+            $timeAdd = strtotime($oBid->added);
+            $month   = $this->oDate->tableauMois['fr'][date('n', $timeAdd)];
 
-        $pageProjets = $oTree->getSlug(4, $this->sLanguage);
+            $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
+            $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
 
-        $oProject->get($oBid->id_project);
+            $pageProjects = $oTree->getSlug(4, $this->sLanguage);
 
-        $oCompany->get($oProject->id_company, 'id_company');
+            $oProject->get($oBid->id_project);
 
-        $varMail = array(
-            'surl' => $sSUrl,
-            'url' => $sLUrl,
-            'prenom_p' => $oClient->prenom,
-            'nom_entreprise' => $oCompany->name,
-            'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
-            'taux_bid' => $this->oFicelle->formatNumber($oBid->rate, 1),
-            'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-            'heure_bid' => date('H:i:s', strtotime($oBid->added)),
-            'projet-p' => $sLUrl . '/' . $pageProjets,
-            'motif_virement' => $sPurpose,
-            'lien_fb' => $lien_fb,
-            'lien_tw' => $lien_tw
-        );
+            $oCompany->get($oProject->id_company, 'id_company');
 
-        $tabVars   = $this->oTNMP->constructionVariablesServeur($varMail);
-        $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
-        $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
-        $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
+            $varMail = array(
+                'surl' => $sSUrl,
+                'url' => $sLUrl,
+                'prenom_p' => $oClient->prenom,
+                'nom_entreprise' => $oCompany->name,
+                'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
+                'taux_bid' => $this->oFicelle->formatNumber($oBid->rate, 1),
+                'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                'heure_bid' => date('H:i:s', strtotime($oBid->added)),
+                'projet-p' => $sLUrl . '/' . $pageProjects,
+                'motif_virement' => $sPurpose,
+                'lien_fb' => $lien_fb,
+                'lien_tw' => $lien_tw
+            );
 
-        $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
-        $this->oEmail->setSubject(stripslashes($sujetMail));
-        $this->oEmail->setHTMLBody(stripslashes($texteMail));
+            $tabVars   = $this->oTNMP->constructionVariablesServeur($varMail);
+            $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
 
-        if ($this->aConfig['env'] === 'prod') {
-            \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oClient->email, $tabFiler);
-            $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
-        } else {
-            $this->oEmail->addRecipient(trim($oClient->email));
-            \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+            $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
+            $this->oEmail->setSubject(stripslashes($sujetMail));
+            $this->oEmail->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->aConfig['env'] === 'prod') {
+                \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oClient->email, $tabFiler);
+                $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
+            } else {
+                $this->oEmail->addRecipient(trim($oClient->email));
+                \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+            }
         }
     }
 
