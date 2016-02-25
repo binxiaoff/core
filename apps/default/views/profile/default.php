@@ -18,11 +18,10 @@
 
 <div class="main form-page account-page account-page-personal">
     <div class="shell">
-
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
-                    <li class="active">
+                    <li id="notification">
                         <a id="notification" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
                     </li>
                     <li id="securite">
@@ -60,22 +59,57 @@
 </div>
 
 <script type="text/javascript">
-    $(function() {
+    $( window ).load(function() {
         $('#notification').click(function() {
-            location.hash = '';
-            history.pushState('', '', location.pathname);
-            $("#notification").scrollTop();
+            location.hash = "notification";
         });
         $('#securite').click(function() {
             location.hash = "securite";
-            $("#securite").scrollTop();
         });
         $('#info_perso').click(function() {
             location.hash = "info_perso";
-            $("#info_perso").scrollTop();
         });
         $('#autolend').click(function() {
             window.location.replace("<?= $this->lurl ?>/profile/autolend");
         });
+
+        if (window.location.hash == "#notification" || window.location.hash == "") {
+            history.pushState('', '', location.pathname);
+            $(".notification").show();
+            $(".autolend").hide();
+            $(".info_perso").hide();
+            $(".securite").hide();
+            $("#notification").addClass('active');
+            $("#autolend").removeClass('active');
+            $("#info_perso").removeClass('active');
+            $("#securite").removeClass('active');
+        } else if (window.location.hash == "#info_perso") {
+            $(".notification").hide();
+            $(".autolend").hide();
+            $(".info_perso").show();
+            $(".securite").hide();
+            $("#notification").removeClass('active');
+            $("#autolend").removeClass('active');
+            $("#info_perso").addClass('active');
+            $("#securite").removeClass('active');
+        } else if (window.location.hash == "#securite") {
+            $(".notification").hide();
+            $(".autolend").hide();
+            $(".info_perso").hide();
+            $(".securite").show();
+            $("#notification").removeClass('active');
+            $("#autolend").removeClass('active');
+            $("#info_perso").removeClass('active');
+            $("#securite").addClass('active');
+        } else if (window.location.pathname == "/profile/autolend") {
+            $(".notification").hide();
+            $(".autolend").show();
+            $(".info_perso").hide();
+            $(".securite").hide();
+            $("#notification").removeClass('active');
+            $("#autolend").addClass('active');
+            $("#info_perso").removeClass('active');
+            $("#securite").removeClass('active');
+        }
     });
 </script>
