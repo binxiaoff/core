@@ -2572,7 +2572,7 @@ class profileController extends bootstrap
         $oSettings             = Loader::loadData('settings');
         $oAutobid              = Loader::loadData('autobid');
 
-        $oAutoBidManager       = $this->get('AutoBidManager');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
 
         $this->lng['autobid']  = $this->ln->selectFront('autobid', $this->language, $this->App);
 
@@ -2599,7 +2599,7 @@ class profileController extends bootstrap
             $this->bActivatedLender = false;
         }
 
-        $this->bIsNovice = $oAutoBidManager->isNovice($oLendersAccounts->id_lender_account);
+        $this->bIsNovice = $oAutoBidSettingsManager->isNovice($oLendersAccounts->id_lender_account);
 
         if ($this->bIsNovice) {
             $aAutoBid = array_shift($oAutobid->select('id_lender = ' . $oLendersAccounts->id_lender_account . ' AND status = ' . \autobid::STATUS_ACTIVE, null, null, 1));
@@ -2637,7 +2637,7 @@ class profileController extends bootstrap
             } else {
                 $fRate   = $_POST['autobid-param-simple-taux-min'];
                 $iAmount = $_POST['autobid-param-simple-amount'];
-                $oAutoBidManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $fRate, $iAmount);
+                $oAutoBidSettingsManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $fRate, $iAmount);
                 header('Location: ' . $this->lurl . '/profile/autolend#parametrage');
                 die;
             }

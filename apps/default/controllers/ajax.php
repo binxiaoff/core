@@ -532,8 +532,8 @@ class ajaxController extends bootstrap
         $this->bids                   = $this->loadData('bids');
         $this->projects               = $this->loadData('projects');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
-        $oAutoBidManager              = $this->get('AutoBidManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
+        $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -593,8 +593,8 @@ class ajaxController extends bootstrap
         $this->bids                   = $this->loadData('bids');
         $this->projects               = $this->loadData('projects');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
-        $oAutoBidManager              = $this->get('AutoBidManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
+        $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
@@ -1905,17 +1905,17 @@ class ajaxController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $oClient         = $this->loadData('clients');
-        $oClientSettings = $this->loadData('client_settings');
-        $oAutoBidManager = $this->get('AutoBidManager');
-        $sInstruction    = '';
+        $oClient                 = $this->loadData('clients');
+        $oClientSettings         = $this->loadData('client_settings');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $sInstruction            = '';
 
         if (false === empty($_POST['setting']) && $oClient->get($_POST['id_client'])) {
-            if (\Unilend\Service\AutoBidManager::AUTO_BID_ON == $oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
-                $oAutoBidManager->off($oClient);
+            if (\Unilend\Service\AutoBidSettingsManager::AUTO_BID_ON == $oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
+                $oAutoBidSettingsManager->off($oClient);
                 $sInstruction = 'update_off_success';
             } else {
-                $oAutoBidManager->on($oClient);
+                $oAutoBidSettingsManager->on($oClient);
                 $sInstruction = 'update_on_success';
             }
         }

@@ -13,8 +13,6 @@ use Unilend\librairies\ULogger;
 
 class ProjectManager
 {
-    /** @var AutoBidManager */
-    private $oAutoBidManager;
     /** @var NotificationManager */
     private $oNotificationManager;
     /** @var \email */
@@ -39,7 +37,6 @@ class ProjectManager
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oAutoBidManager      = Loader::loadService('AutoBidManager');
         $this->oBidManager          = Loader::loadService('BidManager');
         $this->oLoanManager         = Loader::loadService('LoanManager');
         $this->oNotificationManager = Loader::loadService('NotificationManager');
@@ -178,7 +175,7 @@ class ProjectManager
         $aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iCurrentRate);
         foreach ($aAutoBidList as $aAutoBidSetting) {
             if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                $this->oAutoBidManager->bid($oAutoBid, $oProject, $iCurrentRate);
+                $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $iCurrentRate);
             }
         }
     }
@@ -234,7 +231,7 @@ class ProjectManager
         while ($aAutoBidList = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
             foreach ($aAutoBidList as $aAutobid) {
                 if ($oBid->get($aAutobid['id_bid'])) {
-                    $this->oAutoBidManager->refreshRateOrReject($oBid, $fCurrentRate);
+                    $this->oBidManager->refreshAutoBidRateOrReject($oBid, $fCurrentRate);
                 }
             }
         }
