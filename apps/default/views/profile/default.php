@@ -101,15 +101,6 @@
             $("#auto").removeClass('active');
             $("#info").removeClass('active');
             $("#secu").addClass('active');
-        } else if (window.location.pathname == "/profile/autolend") {
-            $(".notif").hide();
-            $(".auto").show();
-            $(".info").hide();
-            $(".secu").hide();
-            $("#notif").removeClass('active');
-            $("#auto").addClass('active');
-            $("#info").removeClass('active');
-            $("#securite").removeClass('active');
         }
     });
 </script>

@@ -11,12 +11,12 @@
         </nav>
         <header class="header-autobid inner-nav">
             <ul>
-                <li class="active" id="consultation"><a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a></li>
-                <li id="parametrage"><a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a></li>
+                <li id="consult"><a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a></li>
+                <li id="param"><a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a></li>
             </ul>
         </header>
         <div class="autobid-tabs">
-            <div class="autobid-tab visible" id="tab-1">
+            <div class="autobid-tab" id="tab-1">
                 <?php $this->fireview('autolend_overview'); ?>
             </div>
             <div class="autobid-tab" id="tab-2">
@@ -26,26 +26,44 @@
     </div>
 </div>
 <script>
-    $(window).load(function(){
+    $(window).load(function () {
         $(function () {
-        $('#notification').click(function () {
-            window.location.replace("<?= $this->lurl ?>/profile");
+            $('#notification').click(function () {
+                window.location.replace("<?= $this->lurl ?>/profile");
+            });
+            $('#securite').click(function () {
+                window.location.replace("<?= $this->lurl ?>/profile#securite");
+            });
+            $('#info_perso').click(function () {
+                window.location.replace("<?= $this->lurl ?>/profile#info_perso");
+            });
+            $('#consult').click(function () {
+                location.hash = "consultation";
+            });
+            $('#param').click(function () {
+                location.hash = "parametrage";
+            });
         });
-        $('#securite').click(function () {
-            window.location.replace("<?= $this->lurl ?>/profile#securite");
-        });
-        $('#info_perso').click(function () {
-            window.location.replace("<?= $this->lurl ?>/profile#info_perso");
-        });
-    });
         // Autobid inner nav
-        $('.header-autobid a').on('click', function(e){
+        $('.header-autobid a').on('click', function (e) {
             e.preventDefault();
             $('.header-autobid li').removeClass('active');
             $(this).parent().addClass('active');
             $('.autobid-tab').removeClass('visible');
-            $('#tab-'+$(this).attr('data-dest')).addClass('visible');
+            $('#tab-' + $(this).attr('data-dest')).addClass('visible');
         });
+        console.log(window.location.hash);
+        if (window.location.hash == "#consultation" || window.location.hash == "") {
+            $("#tab-2").removeClass('visible');
+            $("#tab-1").addClass('visible');
+            $("#param").removeClass('active');
+            $("#consult").addClass('active');
+        } else if (window.location.hash == "#parametrage") {
+            $("#tab-1").removeClass('visible');
+            $("#tab-2").addClass('visible');
+            $("#consult").removeClass('active');
+            $("#param").addClass('active');
+        }
     });
 </script>
 
