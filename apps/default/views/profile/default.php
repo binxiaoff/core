@@ -21,16 +21,16 @@
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
-                    <li id="notification">
-                        <a id="notification" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
+                    <li id="notif">
+                        <a id="notif" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
                     </li>
-                    <li id="securite">
+                    <li id="secu">
                         <a id="title_2" href="#"><?= $this->lng['profile']['titre-3'] ?></a>
                     </li>
-                    <li id="info_perso">
+                    <li id="info">
                         <a id="title_3" href="#"><?= $this->lng['profile']['titre-1'] ?></a>
                     </li>
-                    <li id="autolend">
+                    <li id="auto">
                         <a href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a>
                     </li>
                 </ul>
@@ -60,55 +60,55 @@
 
 <script type="text/javascript">
     $( window ).load(function() {
-        $('#notification').click(function() {
+        $('#notif').click(function() {
             location.hash = "notification";
         });
-        $('#securite').click(function() {
+        $('#secu').click(function() {
             location.hash = "securite";
         });
-        $('#info_perso').click(function() {
+        $('#info').click(function() {
             location.hash = "info_perso";
         });
-        $('#autolend').click(function() {
+        $('#auto').click(function() {
             window.location.replace("<?= $this->lurl ?>/profile/autolend");
         });
 
         if (window.location.hash == "#notification" || window.location.hash == "") {
             history.pushState('', '', location.pathname);
             $(".notification").show();
-            $(".autolend").hide();
+            $(".auto").hide();
             $(".info_perso").hide();
-            $(".securite").hide();
-            $("#notification").addClass('active');
-            $("#autolend").removeClass('active');
-            $("#info_perso").removeClass('active');
-            $("#securite").removeClass('active');
+            $(".secu").hide();
+            $("#notif").addClass('active');
+            $("#auto").removeClass('active');
+            $("#info").removeClass('active');
+            $("#secu").removeClass('active');
         } else if (window.location.hash == "#info_perso") {
-            $(".notification").hide();
-            $(".autolend").hide();
-            $(".info_perso").show();
-            $(".securite").hide();
-            $("#notification").removeClass('active');
-            $("#autolend").removeClass('active');
-            $("#info_perso").addClass('active');
-            $("#securite").removeClass('active');
+            $(".notif").hide();
+            $(".auto").hide();
+            $(".info").show();
+            $(".secu").hide();
+            $("#notif").removeClass('active');
+            $("#auto").removeClass('active');
+            $("#info").addClass('active');
+            $("#secu").removeClass('active');
         } else if (window.location.hash == "#securite") {
-            $(".notification").hide();
-            $(".autolend").hide();
-            $(".info_perso").hide();
-            $(".securite").show();
-            $("#notification").removeClass('active');
-            $("#autolend").removeClass('active');
-            $("#info_perso").removeClass('active');
-            $("#securite").addClass('active');
+            $(".notif").hide();
+            $(".auto").hide();
+            $(".info").hide();
+            $(".secu").show();
+            $("#notif").removeClass('active');
+            $("#auto").removeClass('active');
+            $("#info").removeClass('active');
+            $("#secu").addClass('active');
         } else if (window.location.pathname == "/profile/autolend") {
-            $(".notification").hide();
-            $(".autolend").show();
-            $(".info_perso").hide();
-            $(".securite").hide();
-            $("#notification").removeClass('active');
-            $("#autolend").addClass('active');
-            $("#info_perso").removeClass('active');
+            $(".notif").hide();
+            $(".auto").show();
+            $(".info").hide();
+            $(".secu").hide();
+            $("#notif").removeClass('active');
+            $("#auto").addClass('active');
+            $("#info").removeClass('active');
             $("#securite").removeClass('active');
         }
     });
