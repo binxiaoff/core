@@ -52,17 +52,18 @@
             $('.autobid-tab').removeClass('visible');
             $('#tab-' + $(this).attr('data-dest')).addClass('visible');
         });
-        console.log(window.location.hash);
-        if (window.location.hash == "#consultation" || window.location.hash == "") {
-            $("#tab-2").removeClass('visible');
-            $("#tab-1").addClass('visible');
-            $("#param").removeClass('active');
-            $("#consult").addClass('active');
-        } else if (window.location.hash == "#parametrage") {
+        if (window.location.hash == "#parametrage") {
             $("#tab-1").removeClass('visible');
             $("#tab-2").addClass('visible');
             $("#consult").removeClass('active');
             $("#param").addClass('active');
+        }
+        else {
+            location.hash = "consultation";
+            $("#tab-2").removeClass('visible');
+            $("#tab-1").addClass('visible');
+            $("#param").removeClass('active');
+            $("#consult").addClass('active');
         }
     });
 </script>
