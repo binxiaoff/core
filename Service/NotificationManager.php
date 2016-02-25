@@ -29,7 +29,7 @@ class NotificationManager
         /** @var \clients_gestion_notifications $oNotificationSettings */
         $oNotificationSettings = Loader::loadData('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = Loader::loadData('clients_gestion_notifications');
+        $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
 
         $iLenderId = '';
         if ($oLenderAccount->get($iClientId, 'id_client_owner')) {
