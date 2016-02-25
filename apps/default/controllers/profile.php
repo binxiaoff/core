@@ -39,8 +39,8 @@ class profileController extends bootstrap
 
     public function _default()
     {
-        $oAutoBidManager = $this->get('AutoBidManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
 
         if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
             $this->_particulier();
@@ -2565,9 +2565,9 @@ class profileController extends bootstrap
 
     public function _autolend()
     {
-        $oAutoBidManager = $this->get('AutoBidManager');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
 
-        if (false === $oAutoBidManager->isQualified($this->clients)) {
+        if (false === $oAutoBidSettingsManager->isQualified($this->clients)) {
             header('Location: ' . $this->lurl . '/profile');
             die;
         }
@@ -2607,7 +2607,7 @@ class profileController extends bootstrap
             $this->bActivatedLender = false;
         }
 
-        $this->bIsNovice       = $oAutoBidManager->isNovice($oLendersAccounts->id_lender_account);
+        $this->bIsNovice = $oAutoBidSettingsManager->isNovice($oLendersAccounts->id_lender_account);
         $this->sValidationDate = $oAutoBid->getValidationDate($oLendersAccounts->id_lender_account);
         $aAutoBidSettings      = $oAutoBid->select('id_lender = ' . $oLendersAccounts->id_lender_account . ' AND status != ' . \autobid::STATUS_ARCHIVED, 'id_autobid_period ASC, evaluation ASC');
 
@@ -2650,7 +2650,7 @@ class profileController extends bootstrap
                 }
                 $fRate   = $_POST['autobid-param-simple-taux-min'];
                 $iAmount = $_POST['autobid-amount'];
-                $oAutoBidManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $fRate, $iAmount);
+                $oAutoBidSettingsManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $fRate, $iAmount);
                 header('Location: ' . $this->lurl . '/profile/autolend#parametrage');
                 die;
             } else {

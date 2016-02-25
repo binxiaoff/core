@@ -87,6 +87,8 @@ class BidManager
         $oNotificationSettings = Loader::loadData('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $oMailNotification */
         $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
+        /** @var \autobid_queue $oAutoBidQueue */
+        $oAutoBidQueue = Loader::loadData('autobid_queue');
 
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
@@ -145,6 +147,10 @@ class BidManager
         $oBid->id_lender_wallet_line = $oWalletsLine->id_wallet_line;
         $oBid->ordre                 = $iBidNb;
         $oBid->create();
+
+        if (false === empty($oBid->id_autobid)) {
+            $oAutoBidQueue->addToQueue($oBid->id_lender_account, \autobid_queue::TYPE_QUEUE_BID);
+        }
 
         // Liste des offres non utilisées
         $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
@@ -205,6 +211,26 @@ class BidManager
     }
 
     /**
+     * @param \autobid  $oAutoBid
+     * @param \projects $oProject
+     * @param           $fRate
+     */
+    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate)
+    {
+        if ($oAutoBid->rate_min <= $fRate) {
+            /** @var \bids $oBid */
+            $oBid = Loader::loadData('bids');
+
+            $oBid->id_autobid        = $oAutoBid->id_autobid;
+            $oBid->id_lender_account = $oAutoBid->id_lender;
+            $oBid->id_project        = $oProject->id_project;
+            $oBid->amount            = $oAutoBid->amount * 100;
+            $oBid->rate              = $fRate;
+            $this->bid($oBid);
+        }
+    }
+
+    /**
      * @param \bids $oBid
      */
     public function reject(\bids $oBid)
@@ -229,6 +255,25 @@ class BidManager
             $oBid->amount -= $fRepaymentAmount * 100;
             $oBid->status = \bids::STATUS_BID_ACCEPTED;
             $oBid->update();
+        }
+    }
+
+    /**
+     * @param \bids $oBid
+     * @param       $fCurrentRate
+     */
+    public function refreshAutoBidRateOrReject(\bids $oBid, $fCurrentRate)
+    {
+        /** @var \autobid $oAutoBid */
+        $oAutoBid = Loader::loadData('autobid');
+        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
+            if ($oAutoBid->rate_min <= $fCurrentRate) {
+                $oBid->status = \bids::STATUS_BID_PENDING;
+                $oBid->rate   = $fCurrentRate;
+                $oBid->update();
+            } else {
+                $this->reject($oBid);
+            }
         }
     }
 

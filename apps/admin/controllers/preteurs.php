@@ -1266,9 +1266,106 @@ class preteursController extends bootstrap
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
         $oClientsNotifications       = $this->loadData('clients_gestion_notifications');
-        $oTypesOfClientNotifications = $this->loadData('clients_gestion_type_notif');
-        $this->aTypesOfNotifications = $oTypesOfClientNotifications->select();
         $this->aClientsNotifications = $oClientsNotifications->getNotifs($this->clients->id_client);
+
+        $this->aNotificationPeriode = \clients_gestion_notifications::getAllPeriod();
+
+        $this->aInfosNotifications['vos-offres-et-vos-projets']['title'] = 'Offres et Projets';
+        $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = array(
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
+                'title' => 'Annonce des nouveaux projets',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_BID_PLACED => array(
+                'title' => 'Offres réalisées',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
+                'title' => 'Offres refusées',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
+                'title' => 'Offres acceptées',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                'title' => 'Problème sur un projet',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
+                'title' => 'AutoLend soldes faible',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
+                'title' => 'AutoLend soldes insuffisante',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+        );
+        $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';
+        $this->aInfosNotifications['vos-remboursements']['notifications'] = array(
+            \clients_gestion_type_notif::TYPE_REPAYMENT => array(
+                'title' => 'Remboursement(s)',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+        );
+        $this->aInfosNotifications['mouvements-sur-votre-compte']['title'] = 'Mouvements sur le compte';
+        $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = array(
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
+                'title' => 'Alimentation de votre compte par virement',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => array(
+                'title' => 'Alimentation de votre compte par carte bancaire',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_DEBIT => array(
+                'title' => 'retrait',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+        );
 
         if (isset($_SESSION['FilterMails'])) {
             $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);

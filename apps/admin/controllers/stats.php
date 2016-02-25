@@ -1485,7 +1485,7 @@ class statsController extends bootstrap
 
             $this->aProjectList = array();
             foreach ($aProjectList as $aProject) {
-                $fRisk = constant('\projects::RISK_' . trim($aProject['risk']));
+                $fRisk                = constant('\projects::RISK_' . trim($aProject['risk']));
                 $this->aProjectList[] = array(
                     'id_project' => $aProject['id_project'],
                     'percentage' => round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',
@@ -1496,7 +1496,7 @@ class statsController extends bootstrap
                     'weighted_avg_rate' => round($aProject['weighted_avg_rate'], 1),
                     'avg_amount_autobid' => $aProject['avg_amount_autobid'],
                     'weighted_avg_rate_autobid' => false === empty($aProject['weighted_avg_rate_autobid']) ? round($aProject['weighted_avg_rate_autobid'], 2) : '',
-                    'status_label' =>  $aProject['status_label'],
+                    'status_label' => $aProject['status_label'],
                     'date_fin' => $aProject['date_fin']
                 );
             }

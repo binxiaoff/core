@@ -4,10 +4,10 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 
 /**
- * Class AutoBidManager
+ * Class AutoBidSettingsManager
  * @package Unilend\Service
  */
-class AutoBidManager
+class AutoBidSettingsManager
 {
     const AUTO_BID_ON  = 1;
     const AUTO_BID_OFF = 0;
@@ -195,58 +195,23 @@ class AutoBidManager
     }
 
     /**
-     * @param     $iLenderId
-     * @param     $sEvaluation
-     * @param     $iAutoBidPeriodId
-     * @param     $fRate
-     * @param     $fAmount
-     * @param int $iStatus
+     * @param       $iLenderId
+     * @param       $sEvaluation
+     * @param       $iAutoBidPeriodId
+     * @param array $aStatus
      *
      * @return mixed
      */
-    public function getSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $fAmount, $iStatus = \autobid::STATUS_ACTIVE)
+    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE))
     {
-        return Loader::loadData('autobid')->get(
-            $iLenderId,
-            'status = ' . $iStatus . ' AND evaluation = "' . $sEvaluation . '"" AND id_autobid_period = '
-            . $iAutoBidPeriodId . ' AND rate_min = ' . $fRate . ' AND amount = ' . $fAmount . ' AND id_lender'
-        );
+        return Loader::loadData('autobid')->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus);
     }
 
-    public function bid(\autobid $oAutoBid, $oProject, $fRate)
-    {
-        if ($oAutoBid->rate_min <= $fRate) {
-            /** @var \bids $oBid */
-            $oBid = Loader::loadData('bids');
-            /** @var \autobid_queue $oAutoBidQueue */
-            $oAutoBidQueue = Loader::loadData('autobid_queue');
-
-            $oBid->id_autobid        = $oAutoBid->id_autobid;
-            $oBid->id_lender_account = $oAutoBid->id_lender;
-            $oBid->id_project        = $oProject->id_project;
-            $oBid->amount            = $oAutoBid->amount * 100;
-            $oBid->rate              = $fRate;
-            if ($this->oBidManager->bid($oBid)) {
-                $oAutoBidQueue->addToQueue($oAutoBid->id_lender, \autobid_queue::TYPE_QUEUE_BID);
-            }
-        }
-    }
-
-    public function refreshRateOrReject(\bids $oBid, $fCurrentRate)
-    {
-        /** @var \autobid $oAutoBid */
-        $oAutoBid = Loader::loadData('autobid');
-        if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
-            if ($oAutoBid->rate_min <= $fCurrentRate) {
-                $oBid->status = \bids::STATUS_BID_PENDING;
-                $oBid->rate   = $fCurrentRate;
-                $oBid->update();
-            } else {
-                $this->oBidManager->reject($oBid);
-            }
-        }
-    }
-
+    /**
+     * @param $iLenderId
+     *
+     * @return bool
+     */
     public function isNovice($iLenderId)
     {
         $oAutobid              = Loader::loadData('autobid');
@@ -276,6 +241,11 @@ class AutoBidManager
         return $bIsNovice;
     }
 
+    /**
+     * @param $iLenderId
+     * @param $fRate
+     * @param $iAmount
+     */
     public function saveNoviceSetting($iLenderId, $fRate, $iAmount)
     {
         $oAutoBidPeriods = Loader::loadData('autobid_periods');
@@ -289,6 +259,12 @@ class AutoBidManager
         }
     }
 
+    /**
+     * @param $sEvaluation
+     * @param $iDuration
+     *
+     * @return mixed
+     */
     public function predictAmount($sEvaluation, $iDuration)
     {
         return Loader::loadData('autobid')->sumAmount($sEvaluation, $iDuration);

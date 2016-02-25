@@ -305,8 +305,8 @@ class syntheseController extends bootstrap
         //Ongoing Bids Widget
         $oClientHistoryActions        = $this->loadData('clients_history_actions');
         $oClientSettings              = $this->loadData('client_settings');
-        $oAutoBidManager              = $this->get('AutoBidManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidManager->isQualified($this->clients);
+        $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
 
         foreach ($aProjectsInFunding as $iKey => $aProject) {
             $aProjectsInFunding[$iKey]['oEndFunding']           = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
@@ -320,7 +320,7 @@ class syntheseController extends bootstrap
         $this->bFirstTimeActivation      = false;
         $this->aClientAutoBidSetting     = array_shift($oClientSettings->select('id_client = ' . $this->clients->id_client));
 
-        if ($this->aClientAutoBidSetting && \Unilend\Service\AutoBidManager::AUTO_BID_OFF == $this->aClientAutoBidSetting['value']) {
+        if ($this->aClientAutoBidSetting && \Unilend\Service\AutoBidSettingsManager::AUTO_BID_OFF == $this->aClientAutoBidSetting['value']) {
             $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off"');
             $this->bFirstTimeActivation = empty($aClientAutoBidHistory);
         }
