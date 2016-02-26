@@ -82,4 +82,16 @@ class clients_history_actions extends clients_history_actions_crud
         $this->serialize = $serialize;
         $this->create();
     }
+
+    public function getLastAutoBidOnOffActions($iClientID)
+    {
+        $sQuery = 'SELECT *  FROM `clients_history_actions` WHERE `id_form` = 20 and id_client = ' . $iClientID . ' order by ADDED DESC LIMIT 2 ';
+
+        $aAutoBidHistory = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aAutoBidHistory[] = $aRecord;
+        }
+        return $aAutoBidHistory;
+    }
 }

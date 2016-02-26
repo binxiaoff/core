@@ -1,5 +1,7 @@
 <?php
 
+use \Unilend\core\Loader;
+
 class preteursController extends bootstrap
 {
     /**
@@ -1423,6 +1425,27 @@ class preteursController extends bootstrap
         $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
 
         $this->getMessageAboutClientStatus();
+
+        $oTextes                 = Loader::loadData('textes');
+        $this->lng['autobid']    = $oTextes->selectFront('autobid', $this->language, $this->App);
+
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidPeriod          = Loader::loadData('autobid_periods');
+        $oAutobid                = Loader::loadData('autobid');
+        $this->aAutoBidSettings  = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        $this->bAutoBidOn = $oAutoBidSettingsManager->isOn($this->clients);
+
+        foreach ($this->aAutoBidSettings as $iKey => $aSetting) {
+            $oAutoBidPeriod->get($aSetting['id_autobid_period']);
+            $this->aAutoBidSettings[$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $oAutoBidPeriod->min, $oAutoBidPeriod->max);
+        }
+
+        $this->sValidationDate     = $oAutobid->getValidationDate($this->lenders_accounts->id_lender_account);
+        $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
+
+        $this->aSettingsDates = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
+
+        //TODO add beta tester checkbox
     }
 
     public function _control_fiscal_city()

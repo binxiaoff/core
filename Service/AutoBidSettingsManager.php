@@ -65,21 +65,29 @@ class AutoBidSettingsManager
         /** @var \clients_history_actions $oClientHistoryActions */
         $oClientHistoryActions = Loader::loadData('clients_history_actions');
 
+        $bSaveHistory = false;
+
         if ($oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
-            $oClientSettings->value = $iAutoBidOnOff;
-            $oClientSettings->update();
+            if ($iAutoBidOnOff != $oClientSettings->value) {
+                $oClientSettings->value = $iAutoBidOnOff;
+                $oClientSettings->update();
+                $bSaveHistory = true;
+            }
         } else {
             $oClientSettings->unsetData();
             $oClientSettings->id_client = $oClient->id_client;
             $oClientSettings->id_type   = \client_setting_type::TYPE_AUTO_BID_SWITCH;
             $oClientSettings->value     = $iAutoBidOnOff;
             $oClientSettings->create();
+            $bSaveHistory = true;
         }
         // BO user
-        $iUserId     = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : null;
-        $sOnOff      = $iAutoBidOnOff === self::AUTO_BID_ON ? 'on' : 'off';
-        $sSerialized = serialize(array('id_user' => $iUserId, 'id_client' => $oClient->id_client, 'autobid_switch' => $sOnOff));
-        $oClientHistoryActions->histo(20, 'autobid_on_off', $oClient->id_client, $sSerialized);
+        if ($bSaveHistory){
+            $iUserId     = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : null;
+            $sOnOff      = $iAutoBidOnOff === self::AUTO_BID_ON ? 'on' : 'off';
+            $sSerialized = serialize(array('id_user' => $iUserId, 'id_client' => $oClient->id_client, 'autobid_switch' => $sOnOff));
+            $oClientHistoryActions->histo(20, 'autobid_on_off', $oClient->id_client, $sSerialized);
+        }
     }
 
     /**
@@ -266,4 +274,27 @@ class AutoBidSettingsManager
     {
         return Loader::loadData('autobid')->sumAmount($sEvaluation, $iDuration);
     }
+
+    public function getLastDateOnOff($iClientID)
+    {
+        $oClientsHistoryActions = Loader::loadData('clients_history_actions');
+        $aAutoBidHistory        = $oClientsHistoryActions->getLastAutoBidOnOffActions($iClientID);
+
+        $aDates = array();
+
+        foreach ($aAutoBidHistory as $aHistoryAction){
+            $aAction = unserialize($aHistoryAction['serialize']);
+            $aDates[$aAction['autobid_switch']] = $aHistoryAction['added'];
+        }
+        return $aDates;
+    }
+
+    public function isOn(\clients $oClient)
+    {
+        $oClientSettings = Loader::loadData('client_settings');
+        $oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client');
+        return (bool) $oClientSettings->value;
+    }
+
+
 }
