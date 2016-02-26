@@ -2472,6 +2472,7 @@ class cronController extends bootstrap
                     file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file);
 
                     foreach ($lrecus as $r) {
+                        $transactions->unsetData();
                         $code = $r['codeOpInterbancaire'];
 
                         // Status virement/prelevement
