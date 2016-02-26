@@ -44,7 +44,19 @@
     <div id="autobid">
         <h2>Autolend Settings</h2>
         <div id="allow-beta-user" style="padding-bottom: 15px;">
-            <input type="checkbox"/>Est Betatesteur
+            <span>
+            <?php if ($this->bIsBetaTester) : ?>
+                <img alt="ON" src="<?=$this->surl?>/images/admin/check_on.png">
+            <?php else: ?>
+                <img alt="OFF" src="<?=$this->surl?>/images/admin/check_off.png">
+            <?php endif; ?>
+                    BetaTester
+            </span>
+        <span style="padding-left: 50px"></span>
+            <input type="hidden" value="<?= ($this->bIsBetaTester) ? 'off' : 'on' ?>" id="NewSettingValue">
+            <a class="btn_link" href="<?= $this->lurl ?>/preteurs/saveBetaTesterSetting/" onclick="$(this).attr('href', '<?= $this->lurl ?>/preteurs/saveBetaTesterSetting/<?= $this->clients->id_client?>/'+ $('#NewSettingValue').val());">
+                <?= ($this->bIsBetaTester) ? 'Desactiver BetaTester' : 'Activer BetaTester'?>
+            </a>
         </div>
         <?php if (false === $this->bAutoBidOn) : ?>
         La fonctionalité est desactivé pour ce prêteur.

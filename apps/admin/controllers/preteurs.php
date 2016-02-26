@@ -1430,6 +1430,7 @@ class preteursController extends bootstrap
         $this->lng['autobid']    = $oTextes->selectFront('autobid', $this->language, $this->App);
 
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oClientSettingsManager  = $this->get('ClientSettingsManager');
         $oAutoBidPeriod          = Loader::loadData('autobid_periods');
         $oAutobid                = Loader::loadData('autobid');
         $this->aAutoBidSettings  = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
@@ -1442,10 +1443,8 @@ class preteursController extends bootstrap
 
         $this->sValidationDate     = $oAutobid->getValidationDate($this->lenders_accounts->id_lender_account);
         $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
-
-        $this->aSettingsDates = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
-
-        //TODO add beta tester checkbox
+        $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
+        $this->bIsBetaTester       = $oClientSettingsManager->isBetaTester($this->clients);
     }
 
     public function _control_fiscal_city()
@@ -1901,5 +1900,26 @@ class preteursController extends bootstrap
                 trigger_error('Unknown Client Status', E_USER_NOTICE);
                 break;
         }
+    }
+
+    public function _saveBetaTesterSetting()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $oClientSettingsManager = $this->get('ClientSettingsManager');
+        $oClient = Loader::loadData('clients');
+        $oLendersAccount = Loader::loadData('lenders_accounts');
+
+         if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], array('on', 'off'))){
+
+             $oClient->get($this->params[0]);
+             $oLendersAccount->get($oClient->id_client, 'id_client_owner');
+             $sValue = ('on' == $this->params[1]) ? \Unilend\Service\ClientSettingsManager::BETA_TESTER_ON :  \Unilend\Service\ClientSettingsManager::BETA_TESTER_OFF;
+             $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER, $sValue);
+
+             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $oLendersAccount->id_lender_account);
+             die;
+         }
     }
 }
