@@ -288,10 +288,9 @@ class espace_emprunteurController extends Bootstrap
             if (empty($_POST['duree'])) {
                 $_SESSION['forms']['nouvelle-demande']['errors']['duree'] = true;
             }
-            if (empty($_POST['montant'])) {
+            if (empty($_POST['commentaires'])) {
                 $_SESSION['forms']['nouvelle-demande']['errors']['commentaires'] = true;
             }
-
             if (empty($_SESSION['forms']['nouvelle-demande']['errors'])) {
                 $oClients = $this->loadData('clients');
                 $oClients->get($_SESSION['client']['id_client']);

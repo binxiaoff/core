@@ -142,10 +142,6 @@ class syntheseController extends bootstrap
         // somme des bids en cours
         $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
 
-        if ($_SERVER['REMOTE_ADDR'] == '93.26.42.98') {
-            echo "o";
-        }
-
         // somme Prêté
         $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
 
@@ -264,6 +260,7 @@ class syntheseController extends bootstrap
         $this->sDisplayedValue       = '';
         $this->sTypeMessageTooltip   = '';
         $this->sDisplayedMessage     = '';
+        $this->sDate                 = null;
         $this->iNumberOfCompanies    = $this->lenders_accounts->countCompaniesLenderInvestedIn($this->lenders_accounts->id_lender_account);
         $oLenderAccountStats         = $this->loadData('lenders_account_stats');
 
@@ -295,20 +292,20 @@ class syntheseController extends bootstrap
         if ($this->iNumberOfCompanies > 0) {
             $aLastIRR = $oLenderAccountStats->getLastIRRForLender($this->lenders_accounts->id_lender_account);
             if ($aLastIRR) {
-                $this->sDateValue          = $this->dates->formatDateMysqltoFrTxtMonth($aLastIRR['tri_date']);
+                $this->sDate               = $this->dates->formatDateMysqltoFrTxtMonth($aLastIRR['tri_date']);
                 $this->sDisplayedValue     = ($aLastIRR['tri_value'] > 0) ? '+ ' . $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%' : $this->ficelle->formatNumber($aLastIRR['tri_value']) . '%';
                 $this->bIRRIsNegative      = ($aLastIRR['tri_value'] > 0) ? false : true;
                 $this->sTypeMessageTooltip = 'tri';
-                $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-' . (($aLastIRR['tri_value'] > 0) ? 'positif-niveau-' : 'negatif-niveau-' ) . $this->iDiversificationLevel];
+                $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-' . (($aLastIRR['tri_value'] > 0) ? 'positif-niveau-' : 'negatif-niveau-') . $this->iDiversificationLevel];
             } else {
-                $this->sDateValue = $this->dates->formatDateMysqltoFrTxtMonth(date('Y-m-d'));
                 $fLossRate        = $oLenderAccountStats->getLossRate($this->lenders_accounts->id_lender_account, $this->lenders_accounts);
 
                 if ($fLossRate > 0) {
-                    $this->sDisplayedValue     = $this->ficelle->formatNumber(- $fLossRate) . '%';
+                    $this->sDisplayedValue     = $this->ficelle->formatNumber(-$fLossRate) . '%';
                     $this->bHasIRR             = false;
                     $this->sTypeMessageTooltip = 'taux-de-perte';
                     $this->sDisplayedMessage   = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-non-calculable']);
+                    $this->sDate               = $this->dates->formatDateMysqltoFrTxtMonth(date('Y-m-d'));
                 } else {
                     $this->sDisplayedValue     = '';
                     $this->sTypeMessageTooltip = 'tri';
