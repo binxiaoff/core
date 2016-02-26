@@ -21,18 +21,10 @@
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
-                    <li id="noti">
-                        <a id="noti" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
-                    </li>
-                    <li id="secu">
-                        <a id="title_2" href="#"><?= $this->lng['profile']['titre-3'] ?></a>
-                    </li>
-                    <li id="info">
-                        <a id="title_3" href="#"><?= $this->lng['profile']['titre-1'] ?></a>
-                    </li>
-                    <li id="auto">
-                        <a href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a>
-                    </li>
+                    <li><a id="notif" href="#notification"><?= $this->lng['profile']['titre-4'] ?></a></li>
+                    <li><a id="secu" href="#securite"><?= $this->lng['profile']['titre-3'] ?></a></li>
+                    <li><a id="info" href="#info_perso"><?= $this->lng['profile']['titre-1'] ?></a></li>
+                    <li><a id="auto" href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a></li>
                 </ul>
             </nav>
             <div class="tabs">
@@ -75,21 +67,14 @@
         });
 
         if (window.location.hash == "#notification" || window.location.hash == "") {
-            history.pushState('', '', location.pathname);
-            switchTab("notification", "info_perso", "securite");
-        } else if (window.location.hash == "#info_perso") {
-            switchTab("info_perso", "notification", "securite");
+            tab = $('#noti');
         } else if (window.location.hash == "#securite") {
-            switchTab("securite", "notification", "info_perso");
+            tab = $('#secu');
+        } else if (window.location.hash == "#info_perso") {
+            tab = $('#info');
         }
-
-        function switchTab (selected, hidden, hidden2) {
-            $('.' + hidden).hide();
-            $('#' + hidden.substr(0, 4)).removeClass('active');
-            $('.' + hidden2).hide();
-            $('#' + hidden2.substr(0, 4)).removeClass('active');
-            $('.' + selected).show();
-            $('#' + selected.substr(0, 4)).addClass('active');
-        }
+        tab.trigger( "click" );
     });
 </script>
+
+
