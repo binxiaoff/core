@@ -69,14 +69,12 @@ class AutoBidSettingsManager
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
-        /** @var \client_settings $oClientSettings */
-        $oClientSettings = Loader::loadData('client_settings');
 
         $oSettings->get('Auto-bid global switch', 'type');
         $bGlobalActive = (bool)$oSettings->value;
 
         $bBetaTester = false;
-        if (false === empty($oClient->id_client) && true === (bool)$oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER)) {
+        if (false === empty($oClient->id_client) && true === $this->oClientSettingsManager->isBetaTester( $oClient)){
             $bBetaTester = true;
         }
 
