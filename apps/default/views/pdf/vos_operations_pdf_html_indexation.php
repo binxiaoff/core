@@ -11,98 +11,92 @@
 
 <div class="pdfHeader">
     <div class="logo"></div>
-<br /><br />
-<div style="float: left;">
-<b>Unilend – Société Française pour le financement des PME</b><br />
-6 Rue du général Clergerie<br />
-75116 Paris
-</div>
+    <br /><br />
+    <div style="float: left;">
+        <b>Unilend – Société Française pour le financement des PME</b><br />
+        6 Rue du général Clergerie<br />
+        75116 Paris
+    </div>
 
-<div style="float: left;padding:0 0 0 300px;">
-<b><?=$this->lng['preteur-operations-pdf']['paris-le']?> <?=(date('d/m/Y'))?></b>
-<br /><br /><br />
-<?
-if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
+    <div style="float: left;padding:0 0 0 300px;">
+        <b><?=$this->lng['preteur-operations-pdf']['paris-le']?> <?=(date('d/m/Y'))?></b>
+        <br /><br /><br />
+        <?
+        if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
 
-	$this->companies->get($this->oLendersAccounts->id_company,'id_company');
-	?>
-	<b><?=$this->companies->name?></b><br />
-    <?=$this->companies->adresse1?><br />
-    <?=$this->companies->zip.' '.$this->companies->city?>
+            $this->companies->get($this->oLendersAccounts->id_company,'id_company');
+            ?>
+            <b><?=$this->companies->name?></b><br />
+            <?=$this->companies->adresse1?><br />
+            <?=$this->companies->zip.' '.$this->companies->city?>
+            <?
+        }
+        else{
+            ?>
+            <b><?=$this->clients->prenom.' '.$this->clients->nom?></b><br />
+            <?=$this->clients_adresses->adresse1?><br />
+            <?=$this->clients_adresses->cp.' '.$this->clients_adresses->ville?>
+            <?
+        }
+        ?>
+    </div>
+
+    <div style="clear:both;"></div>
+    <br />
+    <b><?=$this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n']?><?=$this->clients->id_client?></b><br />
+    <?=$this->lng['preteur-operations-pdf']['titulaire']?> <?=(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0?$this->companies->name:$this->clients->prenom.' '.$this->clients->nom)?><br />
     <?
-}
-else{
-	?>
-	<b><?=$this->clients->prenom.' '.$this->clients->nom?></b><br />
-    <?=$this->clients_adresses->adresse1?><br />
-    <?=$this->clients_adresses->cp.' '.$this->clients_adresses->ville?>
-    <?
-}
-?>
-</div>
-
-<div style="clear:both;"></div>
-<br />
-<b><?=$this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n']?><?=$this->clients->id_client?></b><br />
-<?=$this->lng['preteur-operations-pdf']['titulaire']?> <?=(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0?$this->companies->name:$this->clients->prenom.' '.$this->clients->nom)?><br />
-<?
-if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
-	?><?=$this->lng['preteur-operations-pdf']['Representant-legal']?> <?=$this->clients->civilite.' '.$this->clients->prenom.' '.$this->clients->nom?><br /><?
-}
-?>
+    if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
+        ?><?=$this->lng['preteur-operations-pdf']['Representant-legal']?> <?=$this->clients->civilite.' '.$this->clients->prenom.' '.$this->clients->nom?><br /><?
+    }
+    ?>
 
 </div>
 <br /><br />
 
 <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
     <tr>
-        <th width="200px" id="order_operations" align="left" class="col1" style="padding-left: 0px;">
-            <div class="th-wrap" style='top:-3px;width: 130px;'>
-                <i title="<?=$this->lng['preteur-operations-pdf']['info-titre-operation']?>" class="tooltip-anchor icon-double"></i>
-                <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['operations']?>&nbsp;<i class="icon-arrows"></i></div>
-            </div>
-        </th>
-
-        <th width="200px" id="order_bdc" align="left" class="col1" style=" padding-left: 0px;">
-                <div class="th-wrap" style='top:-3px;width: 200px;'>
-                	<i title="<?=$this->lng['preteur-operations-pdf']['info-titre-loan-id']?>" class="tooltip-anchor icon-bdc"></i>
-					<div class="title-ope"><?=$this->lng['preteur-operations-pdf']['loan-id']?>&nbsp;<i class="icon-arrows"></i></div>
+        <th width="200px" id="order_operations" class="col1">
+            <div align="left" class="th-wrap" style='top:-3px;width:300px;'>
+                <div class="title-ope" style="color: black"><?= $this->lng['preteur-operations-pdf']['operations'] ?>&nbsp;
                 </div>
-            </th>
-
-        <th width="150px" id="order_projects" align="center">
-            <div class="th-wrap">
-                <i title="" class="icon-person tooltip-anchor" style="margin-left:-15px;" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-projets']?>"></i>
-                <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['projets']?>&nbsp;<i class="icon-arrows"></i></div>
             </div>
-
         </th>
-        <th width="140px" id="order_date">
-            <div class="th-wrap">
-                <i title="" class="icon-calendar tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-date-operation']?>"></i>
-                <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['date-de-loperation']?>&nbsp;<i class="icon-arrows"></i></div>
+        <th width="180px" id="order_date">
+            <div align="left" class="th-wrap">
+                <div class="title-ope" style="color: black"><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?>&nbsp;
+                </div>
             </div>
-
         </th>
-         <th width="180px" id="order_montant" >
-            <div class="th-wrap"  style="top:-2px;">
-                <i title="" class="icon-euro tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-montant-operation']?>"></i>
-                <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['montant-de-loperation']?>&nbsp;<i class="icon-arrows"></i></div>
+        <th width="180px" id="order_date">
+            <div align="left" class="th-wrap">
+                <div class="title-ope" style="color: black"><?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>&nbsp;
+                </div>
             </div>
-
         </th>
-        <th width="140px">
-            <div class="th-wrap" >
-                <i title="" class="icon-bank tooltip-anchor" data-original-title="<?=$this->lng['preteur-operations-pdf']['info-titre-solde-compte']?>"></i>
-                <div class="title-ope"><?=$this->lng['preteur-operations-pdf']['solde-du-compte']?></div>
+        <th width="180px" id="order_date">
+            <div align="left" class="th-wrap">
+                <div class="title-ope" style="color: black"><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?>&nbsp;
+                </div>
             </div>
-
+        </th>
+        <th width="180px" id="order_montant">
+            <div align="left" class="th-wrap" style="top:-2px;">
+                <div class="title-ope" style="color: black"><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?>&nbsp;
+                </div>
+            </div>
+        </th>
+        <th width="140px" id="solde">
+            <div align="left" class="th-wrap" style="top:-2px;">
+                <div class="title-ope" style="color: black"><?= $this->lng['preteur-operations-pdf']['info-titre-solde-compte'] ?>&nbsp;
+                </div>
+            </div>
         </th>
     </tr>
 
     <?
     $i=1;
-	$asterix_on = false;
+    $asterix_on = false;
     if(isset($this->lTrans)) {
         foreach ($this->lTrans as $t) {
 
@@ -273,29 +267,29 @@ if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_com
         }
     }
 
-	$soldetotal = $this->transactions->getSoldeDateLimite($t['id_client'],$this->date_fin);
+    $soldetotal = $this->transactions->getSoldeDateLimite($t['id_client'],$this->date_fin);
     ?>
     <tr>
-    	<td colspan="7" ></td>
+        <td colspan="7" ></td>
     </tr>
     <tr>
-    	<td colspan="7" ></td>
+        <td colspan="7" ></td>
     </tr>
     <tr>
-    	<td colspan="7" ></td>
+        <td colspan="7" ></td>
     </tr>
     <tr>
-    	<th colspan="2" class="pdfSolde"><?=$this->lng['preteur-operations-pdf']['solde-de-votre-compte']?></th>
-   		<td style="font-size: 17px;font-weight:bold;"><?=date('d-m-Y',strtotime($this->date_fin))?></td>
+        <th colspan="2" class="pdfSolde"><?=$this->lng['preteur-operations-pdf']['solde-de-votre-compte']?></th>
+        <td style="font-size: 17px;font-weight:bold;"><?= $this->lng['preteur-operations-pdf']['date-recap'] . ' ' . date('d-m-Y',strtotime($this->date_fin)) ?></td>
         <td></td>
-    	<td style="font-size: 17px;font-weight:bold;"><?=$this->ficelle->formatNumber($soldetotal)?> €</td>
+        <td style="font-size: 17px;font-weight:bold;"><?= $this->lng['preteur-operations-pdf']['solde-recap'] . ' ' . $this->ficelle->formatNumber($soldetotal)?> €</td>
     </tr>
 </table>
 
 <?php
 if($asterix_on) {
-	?>
-	<div style="padding-left: 10px;">* <?=$this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-pdf']?></div>
+    ?>
+    <div style="padding-left: 10px;">* <?=$this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-pdf']?></div>
     <?
 }
 ?>
@@ -304,52 +298,52 @@ if($asterix_on) {
 <br /><br />
 <div class="pdfFooter">
 
-<?=$this->lng['preteur-operations-pdf']['prestataire-de-services-de-paiement']?><br />
-<?=$this->lng['preteur-operations-pdf']['agent-prestataire-de-services-de-paiement']?><br />
+    <?=$this->lng['preteur-operations-pdf']['prestataire-de-services-de-paiement']?><br />
+    <?=$this->lng['preteur-operations-pdf']['agent-prestataire-de-services-de-paiement']?><br />
 
 
 </div>
 
- <script type="text/javascript">
-	$("#order_operations,#order_projects,#order_date").click(function() {
+<script type="text/javascript">
+    $("#order_operations,#order_projects,#order_date").click(function() {
 
-		if($(this).attr('id') == 'order_operations'){
-			var type = 'order_operations';
+        if($(this).attr('id') == 'order_operations'){
+            var type = 'order_operations';
 
-			if($("#order_operations.asc").length){ var order = 'desc';}
-			else{ var order = 'asc'; }
-		}
-		else if($(this).attr('id') == 'order_projects'){
-			var type = 'order_projects';
+            if($("#order_operations.asc").length){ var order = 'desc';}
+            else{ var order = 'asc'; }
+        }
+        else if($(this).attr('id') == 'order_projects'){
+            var type = 'order_projects';
 
-			if($("#order_projects.asc").length){ var order = 'desc';}
-			else{ var order = 'asc'; }
-		}
-		else if($(this).attr('id') == 'order_date'){
-			var type = 'order_date';
+            if($("#order_projects.asc").length){ var order = 'desc';}
+            else{ var order = 'asc'; }
+        }
+        else if($(this).attr('id') == 'order_date'){
+            var type = 'order_date';
 
-			if($("#order_date.asc").length){ var order = 'desc'; }
-			else{ var order = 'asc'; }
-		}
+            if($("#order_date.asc").length){ var order = 'desc'; }
+            else{ var order = 'asc'; }
+        }
 
-		$(".load_table_vos_operations").fadeIn();
+        $(".load_table_vos_operations").fadeIn();
 
-		var val = {
-			debut 				: $("#debut").val(),
-			fin 				: $("#fin").val(),
-			nbMois 				: $("#nbMois").val(),
-			annee 				: $("#annee").val(),
-			tri_type_transac 	: $("#tri_type_transac").val(),
-			tri_projects 		: $("#tri_projects").val(),
-			id_last_action		: $(this).attr('id'),
-			order 				: order,
-			type 				: type
-		}
+        var val = {
+            debut 				: $("#debut").val(),
+            fin 				: $("#fin").val(),
+            nbMois 				: $("#nbMois").val(),
+            annee 				: $("#annee").val(),
+            tri_type_transac 	: $("#tri_type_transac").val(),
+            tri_projects 		: $("#tri_projects").val(),
+            id_last_action		: $(this).attr('id'),
+            order 				: order,
+            type 				: type
+        }
 
-		$.post(add_url+"/ajax/vos_operations",val).done(function( data ) {
+        $.post(add_url+"/ajax/vos_operations",val).done(function( data ) {
 
-			$(".content_table_vos_operations").html(data);
-			$(".load_table_vos_operations").fadeOut();
-		});
-	});
-	</script>
+            $(".content_table_vos_operations").html(data);
+            $(".load_table_vos_operations").fadeOut();
+        });
+    });
+</script>
