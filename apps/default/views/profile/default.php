@@ -67,7 +67,7 @@
         });
 
         if (window.location.hash == "#notification" || window.location.hash == "") {
-            tab = $('#noti');
+            tab = $('#notif');
         } else if (window.location.hash == "#securite") {
             tab = $('#secu');
         } else if (window.location.hash == "#info_perso") {
