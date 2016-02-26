@@ -21,8 +21,8 @@
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
-                    <li id="notif">
-                        <a id="notif" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
+                    <li id="noti">
+                        <a id="noti" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
                     </li>
                     <li id="secu">
                         <a id="title_2" href="#"><?= $this->lng['profile']['titre-3'] ?></a>
@@ -59,6 +59,7 @@
 </div>
 
 <script type="text/javascript">
+
     $( window ).load(function() {
         $('#notif').click(function() {
             location.hash = "notification";
@@ -75,32 +76,20 @@
 
         if (window.location.hash == "#notification" || window.location.hash == "") {
             history.pushState('', '', location.pathname);
-            $(".notification").show();
-            $(".auto").hide();
-            $(".info_perso").hide();
-            $(".secu").hide();
-            $("#notif").addClass('active');
-            $("#auto").removeClass('active');
-            $("#info").removeClass('active');
-            $("#secu").removeClass('active');
+            switchTab("notification", "info_perso", "securite");
         } else if (window.location.hash == "#info_perso") {
-            $(".notif").hide();
-            $(".auto").hide();
-            $(".info").show();
-            $(".secu").hide();
-            $("#notif").removeClass('active');
-            $("#auto").removeClass('active');
-            $("#info").addClass('active');
-            $("#secu").removeClass('active');
+            switchTab("info_perso", "notification", "securite");
         } else if (window.location.hash == "#securite") {
-            $(".notif").hide();
-            $(".auto").hide();
-            $(".info").hide();
-            $(".secu").show();
-            $("#notif").removeClass('active');
-            $("#auto").removeClass('active');
-            $("#info").removeClass('active');
-            $("#secu").addClass('active');
+            switchTab("securite", "notification", "info_perso");
+        }
+
+        function switchTab (selected, hidden, hidden2) {
+            $('.' + hidden).hide();
+            $('#' + hidden.substr(0, 4)).removeClass('active');
+            $('.' + hidden2).hide();
+            $('#' + hidden2.substr(0, 4)).removeClass('active');
+            $('.' + selected).show();
+            $('#' + selected.substr(0, 4)).addClass('active');
         }
     });
 </script>
