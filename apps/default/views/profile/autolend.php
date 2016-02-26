@@ -3,10 +3,10 @@
     <div class="shell">
         <nav class="tabs-nav">
             <ul class="navProfile">
-                <li id="notification"><a href="#"><?= $this->lng['profile']['titre-4'] ?></a></li>
-                <li id="securite"><a href="<?= $this->lurl ?>/profile#securite"><?= $this->lng['profile']['titre-3'] ?></a></li>
-                <li id="info_perso"><a href="<?= $this->lurl ?>/profile#info_perso"><?= $this->lng['profile']['titre-1'] ?></a></li>
-                <li class="active" id="autolend"><a href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a></li>
+                <li><a id="notification" href="#"><?= $this->lng['profile']['titre-4'] ?></a></li>
+                <li><a id="securite" href="#"><?= $this->lng['profile']['titre-3'] ?></a></li>
+                <li><a id="info_perso" href="#"><?= $this->lng['profile']['titre-1'] ?></a></li>
+                <li class="active"><a id="autolend" href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a></li>
             </ul>
         </nav>
         <header class="header-autobid inner-nav">
