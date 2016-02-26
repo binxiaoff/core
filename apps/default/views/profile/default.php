@@ -76,5 +76,3 @@
         tab.trigger( "click" );
     });
 </script>
-
-
