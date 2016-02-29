@@ -5436,7 +5436,7 @@ class cronController extends bootstrap
         // Loaded for class constants
         $this->loadData('clients_status');
 
-        $oLogger = new ULogger('notifications', $this->logPath, 'notifications.log');
+        $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
         $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $id_project);
 
         $this->projects->get($id_project, 'id_project');
@@ -5653,7 +5653,7 @@ class cronController extends bootstrap
     private function sendPlacedBidsSummaryEmail(array $aCustomerId, $sFrequency)
     {
         $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'Placed buds notifications start');
+        $oLogger->addRecord(ULogger::DEBUG, 'Placed bids notifications start');
         $oLogger->addRecord(ULogger::DEBUG, 'Number of customer to process: ' . count($aCustomerId));
 
         /** @var Email email */
