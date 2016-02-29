@@ -2,7 +2,6 @@
 namespace Unilend\Service;
 
 use Unilend\core\Loader;
-use Unilend\Service\AutoBidSettingsManager;
 
 /**
  * Class ClientSettingsManager
