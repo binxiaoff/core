@@ -108,11 +108,13 @@ class MailerManager
                 'url' => $this->sLUrl,
                 'prenom_p' => $oClient->prenom,
                 'nom_entreprise' => $oCompany->name,
+                'project_name' => $oProject->title,
                 'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
                 'taux_bid' => $this->oFicelle->formatNumber($oBid->rate, 1),
                 'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                 'heure_bid' => date('H:i:s', strtotime($oBid->added)),
                 'projet-p' => $this->sLUrl . '/' . $pageProjects,
+                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
                 'lien_fb' => $lien_fb,
                 'lien_tw' => $lien_tw
@@ -658,6 +660,7 @@ class MailerManager
                 'heure_bid' => $this->oDate->formatDate($oBid->added, 'H\hi'),
                 'fin_chrono' => $sInterval,
                 'projet-bid' => $this->sLUrl . '/projects/detail/' . $oProject->slug,
+                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
                 'lien_fb' => $lien_fb,
                 'lien_tw' => $lien_tw
@@ -841,6 +844,7 @@ class MailerManager
                 'iban' => $sIban,
                 'bic' => $sBic,
                 'titulaire' => $sTitulaire,
+                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
                 'lien_fb' => $lien_fb,
                 'lien_tw' => $lien_tw
@@ -910,6 +914,7 @@ class MailerManager
                 'iban' => $sIban,
                 'bic' => $sBic,
                 'titulaire' => $sTitulaire,
+                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
                 'lien_fb' => $lien_fb,
                 'lien_tw' => $lien_tw
