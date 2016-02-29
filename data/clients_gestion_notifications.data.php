@@ -39,21 +39,6 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
         parent::clients_gestion_notifications($bdd, $params);
     }
 
-    public function get($list_field_value)
-    {
-        return parent::get($list_field_value);
-    }
-
-    public function update($list_field_value)
-    {
-        parent::update($list_field_value);
-    }
-
-    public function delete($list_field_value)
-    {
-        parent::delete($list_field_value);
-    }
-
     public function create($list_field_value = array())
     {
         parent::create($list_field_value);
@@ -67,10 +52,9 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM clients_gestion_notifications' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query('SELECT * FROM clients_gestion_notifications' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')));
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -83,38 +67,34 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM clients_gestion_notifications ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM clients_gestion_notifications ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($list_field_value)
     {
         $list = '';
         foreach ($list_field_value as $champ => $valeur) {
-            $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
+            $list .= ' AND ' . $champ . ' = "' . $valeur . '"';
         }
 
-        $sql    = 'SELECT * FROM clients_gestion_notifications WHERE 1=1 ' . $list . ' ';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM clients_gestion_notifications WHERE 1 = 1 ' . $list);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
     // On recup les notifs du preteurs
     public function getNotifs($id_client)
     {
-        $sql = 'SELECT * FROM clients_gestion_notifications WHERE id_client = "' . $id_client . '"';
-
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query('SELECT * FROM clients_gestion_notifications WHERE id_client = "' . $id_client . '"');
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$record['id_notif']]['immediatement']    = $record['immediatement'];
-            $result[$record['id_notif']]['quotidienne']      = $record['quotidienne'];
-            $result[$record['id_notif']]['hebdomadaire']     = $record['hebdomadaire'];
-            $result[$record['id_notif']]['mensuelle']        = $record['mensuelle'];
-            $result[$record['id_notif']]['uniquement_notif'] = $record['uniquement_notif'];
-            $result[$record['id_notif']]['immediatement']    = $record['immediatement'];
+            $result[$record['id_notif']] = array(
+                'immediatement'    => $record['immediatement'],
+                'quotidienne'      => $record['quotidienne'],
+                'hebdomadaire'     => $record['hebdomadaire'],
+                'mensuelle'        => $record['mensuelle'],
+                'uniquement_notif' => $record['uniquement_notif']
+            );
         }
         return $result;
     }
@@ -129,268 +109,66 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
         }
     }
 
-
-    // requte pour les cron de gestion d'alerte
-    public function selectNotifs($champ = 'quotidienne', $id_notif = '', $start = '', $nb = '')
+    /**
+     * Retrieve the list of mail notifications for customers who have notification of the given type
+     * @param string $sFrequency
+     * @param int $iNotificationType
+     * @return array
+     */
+    public function getCustomersByNotification($sFrequency, $iNotificationType)
     {
-
-        if ($id_notif != '') {
-            $id_notif = ' AND cgmn.id_notif IN(' . $id_notif . ') ';
+        $aResult = array();
+        $rResult = $this->bdd->query(
+            $this->getCustomerNotificationQuery($sFrequency, $iNotificationType, 'id_client') . '
+            GROUP BY cgn.id_client
+            ORDER BY cgn.id_client ASC'
+        );
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aResult[] = (int) $aRecord['id_client'];
         }
-
-
-        // quotidienne (19h30 tous les jours)
-        if ($champ == 'quotidienne') {
-            $date_now = date('Y-m-d H:i') . ':00';// 19:30:00
-            //$date_now = '2015-03-30 19:30:00'; // <------------- test
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins1 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 1, date('Y', $date_now_time))) . ':00';
-
-            // Superieur à la date d'hier et infèrieur à la date du lancement de la requete
-            $where = ' AND cgmn.date_notif > "' . $date_moins1 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_quotidienne = 0 ' . $id_notif;
-        } // hebdomadaire (chaque samedi matin à 9h00)
-        elseif ($champ == 'hebdomadaire') {
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), date('d'), date('Y'))) . ':00';
-            //$date_now = '2015-03-30 09:00:00';// <------------- test
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins7 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 7, date('Y', $date_now_time))) . ':00';
-
-            // Superieur à il y a 7 jours 9h00 du matin et infèrieur à la date du jour à 9h00 du matin
-            $where = ' AND cgmn.date_notif > "' . $date_moins7 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_hebdomadaire = 0 ' . $id_notif;
-        } // mensuelle (tous les 1er jours du mois à 9h00)
-        elseif ($champ == 'mensuelle') {
-
-            //$last_day_of_month = date('t'); // le 1er du mois a 09:00:00
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), 1, date('Y'))) . ':00';
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins_1mois = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time) - 1, date('d', $date_now_time), date('Y', $date_now_time))) . ':00';
-            // Supérieur au 1er du mois dernier et infèrieur au 1er du mois en cours
-            $where = ' AND cgmn.date_notif > "' . $date_moins_1mois . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_mensuelle = 0 ' . $id_notif;
-        }
-
-        $sql = '
-			SELECT
-				cgmn.*
-			FROM clients_gestion_mails_notif cgmn
-			WHERE
-				(SELECT cgn.' . $champ . ' FROM clients_gestion_notifications cgn WHERE cgn.id_client = cgmn.id_client AND cgn.id_notif = cgmn.id_notif) = 1 ' . $where . ' AND cgmn.' . $champ . ' = 0'
-            . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
+        return $aResult;
     }
 
-
-    // requte pour les cron de gestion d'alerte
-    public function selectNotifs_old($champ = 'quotidienne', $start = '', $nb = '')
+    public function getCustomersNotifications(array $aCustomerId, $sFrequency, $iNotificationType)
     {
-
-        // quotidienne (19h30 tous les jours)
-        if ($champ == 'quotidienne') {
-            $date_now = date('Y-m-d H:i') . ':00';// 19:30:00
-            //$date_now = '2015-01-06 19:30:00'; // <------------- test
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins1 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 1, date('Y', $date_now_time))) . ':00';
-
-
-            $where = ' AND cgmn.date_notif > "' . $date_moins1 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_quotidienne = 0 ';
-        } // hebdomadaire (chaque samedi matin à 9h00)
-        elseif ($champ == 'hebdomadaire') {
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), date('d'), date('Y'))) . ':00';
-            //$date_now = '2015-01-20 09:00:00';// <------------- test
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins7 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 7, date('Y', $date_now_time))) . ':00';
-
-            $where = ' AND cgmn.date_notif > "' . $date_moins7 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_hebdomadaire = 0 ';
-
-        } // mensuelle (tous les 1er jours du mois à 9h00)
-        elseif ($champ == 'mensuelle') {
-
-            //$last_day_of_month = date('t'); // le 1er du mois a 09:00:00
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), 1, date('Y'))) . ':00';
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins_1mois = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time) - 1, date('d', $date_now_time), date('Y', $date_now_time))) . ':00';
-
-            $where = ' AND cgmn.date_notif > "' . $date_moins_1mois . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_mensuelle = 0 ';
+        $aResult = array();
+        $rResult = $this->bdd->query(
+            $this->getCustomerNotificationQuery($sFrequency, $iNotificationType) . '
+            AND cgn.id_client IN (' . implode(',', $aCustomerId) . ')
+            ORDER BY cgmn.id_clients_gestion_mails_notif'
+        );
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aResult[] = $aRecord;
         }
-
-        $sql = '
-			SELECT
-				cgmn.*
-			FROM clients_gestion_mails_notif cgmn
-			WHERE
-				(SELECT cgn.' . $champ . ' FROM clients_gestion_notifications cgn WHERE cgn.id_client = cgmn.id_client AND cgn.id_notif = cgmn.id_notif) = 1 ' . $where . ' AND cgmn.' . $champ . ' = 0'
-            . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
+        return $aResult;
     }
 
-    // requte pour les cron de gestion d'alerte
-    public function selectNotifsByClient($id_client, $champ = 'quotidienne', $id_notif = '', $start = '', $nb = '')
+    private function getCustomerNotificationQuery($sFrequency, $iNotificationType, $sFieldName = null)
     {
-
-        if ($id_notif != '') {
-            $id_notif = ' AND cgmn.id_notif IN(' . $id_notif . ') ';
+        if ($sFrequency === 'quotidienne') { // Quotidienne (chaque jour à 20h00)
+            $where = '
+                cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(20, 0, 0, date('m'), date('d') - 1, date('Y'))) . '"
+                AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(20, 0, 0, date('m'), date('d'), date('Y'))) . '"';
+        } elseif ($sFrequency === 'hebdomadaire') { // Hebdomadaire (chaque samedi matin à 9h00)
+            $where = '
+                cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), date('d') - 7, date('Y'))) . '"
+                AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), date('d'), date('Y'))) . '"';
+        } elseif ($sFrequency === 'mensuelle') { // Mensuelle (tous les 1er jours du mois à 9h00)
+            $where = '
+                cgmn.date_notif > "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m') - 1, 1, date('Y'))) . '"
+                AND cgmn.date_notif <= "' . date('Y-m-d H:i:s', mktime(9, 0, 0, date('m'), 1, date('Y'))) . '"';
         }
-
-
-        // quotidienne (19h30 tous les jours)
-        if ($champ == 'quotidienne') {
-            $date_now = date('Y-m-d H:i') . ':00';// 19:30:00
-            //$date_now = '2015-03-30 19:30:00'; // <------------- test
-
-            if ($id_notif == 2) {
-                $date_now = date('Y-m-d') . ' 20:00:00';// on fait tout le check a cette heure la
-            }
-
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins1 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 1, date('Y', $date_now_time))) . ':00';
-
-            // Superieur à la date d'hier et infèrieur à la date du lancement de la requete
-            $where = ' AND cgmn.date_notif > "' . $date_moins1 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_quotidienne = 0 ' . $id_notif;
-        } // hebdomadaire (chaque samedi matin à 9h00)
-        elseif ($champ == 'hebdomadaire') {
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), date('d'), date('Y'))) . ':00';
-            //$date_now = '2015-03-30 09:00:00';// <------------- test
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins7 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 7, date('Y', $date_now_time))) . ':00';
-
-            // Superieur à il y a 7 jours 9h00 du matin et infèrieur à la date du jour à 9h00 du matin
-            $where = ' AND cgmn.date_notif > "' . $date_moins7 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_hebdomadaire = 0 ' . $id_notif;
-        } // mensuelle (tous les 1er jours du mois à 9h00)
-        elseif ($champ == 'mensuelle') {
-
-            //$last_day_of_month = date('t'); // le 1er du mois a 09:00:00
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), 1, date('Y'))) . ':00';
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins_1mois = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time) - 1, date('d', $date_now_time), date('Y', $date_now_time))) . ':00';
-            // Supérieur au 1er du mois dernier et infèrieur au 1er du mois en cours
-            $where = ' AND cgmn.date_notif > "' . $date_moins_1mois . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_mensuelle = 0 ' . $id_notif;
-        }
-
-        $sql = '
-			SELECT
-				cgmn.*
-			FROM clients_gestion_mails_notif cgmn
-			WHERE
-				1 = 1 ' . $where . ' AND cgmn.id_client = ' . $id_client . ' AND cgmn.' . $champ . ' = 0'
-            . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // requte pour les cron de gestion d'alerte
-    public function selectIdclientNotifs($champ = 'quotidienne', $id_notif = '', $start = '', $nb = '')
-    {
-
-        if ($id_notif != '') {
-            $id_notif = ' AND cgmn.id_notif IN(' . $id_notif . ') ';
-        }
-
-        if ($id_notif == 2) {
-            $date_now = date('Y-m-d') . ' 20:00:00';// on fait tout le check a cette heure la
-        }
-
-        // quotidienne (19h30 tous les jours)
-        if ($champ == 'quotidienne') {
-            $date_now = date('Y-m-d H:i') . ':00';// 19:30:00
-            //$date_now = '2015-03-30 19:30:00'; // <------------- test
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins1 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 1, date('Y', $date_now_time))) . ':00';
-
-            // Superieur à la date d'hier et infèrieur à la date du lancement de la requete
-            $where = ' AND cgmn.date_notif > "' . $date_moins1 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_quotidienne = 0 ' . $id_notif;
-        } // hebdomadaire (chaque samedi matin à 9h00)
-        elseif ($champ == 'hebdomadaire') {
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), date('d'), date('Y'))) . ':00';
-            //$date_now = '2015-03-30 09:00:00';// <------------- test
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins7 = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time), date('d', $date_now_time) - 7, date('Y', $date_now_time))) . ':00';
-
-            // Superieur à il y a 7 jours 9h00 du matin et infèrieur à la date du jour à 9h00 du matin
-            $where = ' AND cgmn.date_notif > "' . $date_moins7 . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_hebdomadaire = 0 ' . $id_notif;
-        } // mensuelle (tous les 1er jours du mois à 9h00)
-        elseif ($champ == 'mensuelle') {
-
-            //$last_day_of_month = date('t'); // le 1er du mois a 09:00:00
-
-            $date_now = date('Y-m-d H:i', mktime(9, 0, 0, date('m'), 1, date('Y'))) . ':00';
-
-            $date_now_time = strtotime($date_now);
-
-            $date_moins_1mois = date('Y-m-d H:i',
-                    mktime(date('H', $date_now_time), date('i', $date_now_time), 0, date('m', $date_now_time) - 1, date('d', $date_now_time), date('Y', $date_now_time))) . ':00';
-            // Supérieur au 1er du mois dernier et infèrieur au 1er du mois en cours
-            $where = ' AND cgmn.date_notif > "' . $date_moins_1mois . '" AND cgmn.date_notif <= "' . $date_now . '" AND status_check_mensuelle = 0 ' . $id_notif;
-        }
-
-        $sql = '
-			SELECT
-				cgmn.id_client
-			FROM clients_gestion_mails_notif cgmn
-			WHERE
-				1 = 1 ' . $where . ' AND cgmn.' . $champ . ' = 0 GROUP BY cgmn.id_client ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record['id_client'];
-        }
-        return $result;
+        return '
+            SELECT cgmn.' . (is_null($sFieldName) ? '*' : $sFieldName) . '
+            FROM clients_gestion_mails_notif cgmn
+            INNER JOIN clients_gestion_notifications cgn ON (cgn.id_client = cgmn.id_client AND cgn.id_notif = cgmn.id_notif)
+            INNER JOIN clients c ON c.id_client = cgn.id_client
+            WHERE ' . $where . '
+                AND c.status = 1
+                AND cgn.' . $sFrequency . ' = 1
+                AND cgmn.' . $sFrequency . ' = 0
+                AND cgmn.status_check_' . $sFrequency . ' = 0
+                AND cgmn.id_notif = ' . $iNotificationType;
     }
 
     public static function getAllPeriod()

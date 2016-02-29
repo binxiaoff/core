@@ -18,7 +18,6 @@
 
 <div class="main form-page account-page account-page-personal">
     <div class="shell">
-
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
@@ -32,7 +31,7 @@
                         <a id="title_3" href="#"><?= $this->lng['profile']['titre-1'] ?></a>
                     </li>
                     <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
-                    <li id="autolend">
+                    <li id="auto">
                         <a href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a>
                     </li>
                     <?php endif; ?>
@@ -62,22 +61,28 @@
 </div>
 
 <script type="text/javascript">
-    $(function() {
-        $('#notification').click(function() {
-            location.hash = '';
-            history.pushState('', '', location.pathname);
-            $("#notification").scrollTop();
+
+    $( window ).load(function() {
+        $('#notif').click(function() {
+            location.hash = "notification";
         });
-        $('#securite').click(function() {
+        $('#secu').click(function() {
             location.hash = "securite";
-            $("#securite").scrollTop();
         });
-        $('#info_perso').click(function() {
+        $('#info').click(function() {
             location.hash = "info_perso";
-            $("#info_perso").scrollTop();
         });
-        $('#autolend').click(function() {
+        $('#auto').click(function() {
             window.location.replace("<?= $this->lurl ?>/profile/autolend");
         });
+
+        if (window.location.hash == "#notification" || window.location.hash == "") {
+            tab = $('#notif');
+        } else if (window.location.hash == "#securite") {
+            tab = $('#secu');
+        } else if (window.location.hash == "#info_perso") {
+            tab = $('#info');
+        }
+        tab.trigger( "click" );
     });
 </script>
