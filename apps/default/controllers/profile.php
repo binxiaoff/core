@@ -2607,23 +2607,24 @@ class profileController extends bootstrap
             $this->bActivatedLender = false;
         }
 
-        $this->bIsNovice       = $oAutoBidSettingsManager->isNovice($oLendersAccounts->id_lender_account);
-        $this->sValidationDate = $oAutoBid->getValidationDate($oLendersAccounts->id_lender_account);
-        $aAutoBidSettings      = $oAutoBidSettingsManager->getSettings($oLendersAccounts->id_lender_account, null, null, $aStatus = array( \autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'id_autobid_period ASC, evaluation ASC');
+        $this->bIsNovice        = $oAutoBidSettingsManager->isNovice($oLendersAccounts->id_lender_account);
+        $this->sValidationDate  = $oAutoBid->getValidationDate($oLendersAccounts->id_lender_account);
+        $this->aAutoBidSettings = array();
+        $aAutoBidPeriods        = $oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE, 'min ASC');
 
+        foreach ($aAutoBidPeriods as $aPeriod){
+            $this->aAutoBidSettings[$aPeriod['id_period']] = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
 
-        foreach ($aAutoBidSettings as $iKey => $aSetting) {
-            $oAutoBidPeriod->get($aSetting['id_autobid_period']);
-            $aAutoBidSettings[$iKey]['AverageRateUnilend'] = $oProject->getAvgRate($aSetting['evaluation'], $oAutoBidPeriod->min, $oAutoBidPeriod->max);
+            foreach ($this->aAutoBidSettings[$aPeriod['id_period']] as $iKey => $aSetting) {
+                $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
+            }
         }
-        $this->aAutoBidSettings = $aAutoBidSettings;
-        unset($aAutoBidSettings);
 
         $aSettingsSubmitted       = isset($_SESSION['forms']['autobid-param-submit']['values']) ? $_SESSION['forms']['autobid-param-submit']['values'] : array();
         $this->aErrors            = isset($_SESSION['forms']['autobid-param-submit']['errors']) ? $_SESSION['forms']['autobid-param-submit']['errors'] : array();
         $this->aSettingsSubmitted = array(
-            'amount'           => isset($aSettingsSubmitted['amount']) ? $aSettingsSubmitted['amount'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings[0]['amount'] : '',
-            'simple-taux-min'  => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings[0]['rate_min'] : '',
+            'amount'           => isset($aSettingsSubmitted['amount']) ? $aSettingsSubmitted['amount'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings[1][0]['amount'] : '',
+            'simple-taux-min'  => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings[1][0]['rate_min'] : '',
             'aAutobidSettings' => isset($aSettingsSubmitted['expert']) ? $aSettingsSubmitted['expert'] : (false === $this->bFirstTimeActivation) ? $this->aAutoBidSettings : ''
         );
 
