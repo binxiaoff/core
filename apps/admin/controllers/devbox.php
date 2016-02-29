@@ -1430,7 +1430,7 @@ class devboxController extends bootstrap
         $i = 0;
         while (($aRow = fgetcsv($rHandle, 0, "\t")) !== false) {
             $sInsee = $oVille->generateCodeInsee($aRow[5], $aRow[6]);
-            if (in_array($aRow[0], array(3, 4))) {
+            if (in_array($aRow[0], array(2, 3, 4, 9))) {
                 if ($oVille->exist($sInsee, 'insee')) {
                     $oVille->bdd->query('UPDATE `villes` SET active = 0, ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
                 } else {
