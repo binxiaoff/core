@@ -29,6 +29,7 @@
         <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
     </div>
 
+
     <div>
         <h2>Portefeuille</h2>
 
@@ -40,6 +41,69 @@
         <h3>Nombre de projets mis en ligne depuis son inscription : <?= $this->projectsPublished ?><h2>
     </div>
     <br/>
+    <div id="autobid">
+        <h2>Autolend Settings</h2>
+        <div id="allow-beta-user" style="padding-bottom: 15px;">
+            <span>
+            <?php if ($this->bIsBetaTester) : ?>
+                <img alt="ON" src="<?=$this->surl?>/images/admin/check_on.png">
+            <?php else: ?>
+                <img alt="OFF" src="<?=$this->surl?>/images/admin/check_off.png">
+            <?php endif; ?>
+                    BetaTester
+            </span>
+        <span style="padding-left: 50px"></span>
+            <input type="hidden" value="<?= ($this->bIsBetaTester) ? 'off' : 'on' ?>" id="NewSettingValue">
+            <a class="btn_link" href="<?= $this->lurl ?>/preteurs/saveBetaTesterSetting/" onclick="$(this).attr('href', '<?= $this->lurl ?>/preteurs/saveBetaTesterSetting/<?= $this->clients->id_client?>/'+ $('#NewSettingValue').val());">
+                <?= ($this->bIsBetaTester) ? 'Desactiver BetaTester' : 'Activer BetaTester'?>
+            </a>
+        </div>
+        <div>
+            <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['on']) : '' ?></span>
+            <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['off']) : '' ?></span>
+        </div>
+        <div style="padding-bottom: 15px;">Dernière mise à jour des settings: <?= isset($this->sValidationDate) ? $this->dates->formatDateMysqltoShortFR($this->sValidationDate) : '' ?></div>
+        <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
+            <table class="autobid-param-advanced-table">
+                <tr>
+                    <th class="empty"></th>
+                    <th scope="col" colspan="5" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-risk'] ?></th>
+                </tr>
+                <tr>
+                    <th scope="col" class="table-title"><?= $this->lng['autobid']['expert-settings-table-title-period'] ?></th>
+                    <th scope="col">3*</th>
+                    <th scope="col">3,5*</th>
+                    <th scope="col">4*</th>
+                    <th scope="col">4,5*</th>
+                    <th scope="col">5*</th>
+                </tr>
+            <?php foreach ($this->aAutoBidSettings as $iPeriodId => $aPeriodSettings) : ?>
+                <tr>
+                    <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . $iPeriodId]) ?></th>
+                    <?php foreach ($aPeriodSettings as $aSetting) : ?>
+                        <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
+                        <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
+                            <div class="cell-inner">
+                                <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
+                            </div>
+                        </td>
+                    <?php endforeach; ?>
+                </tr>
+            <?php endforeach; ?>
+                <tr>
+                    <td class="empty"></td>
+                    <td colspan="5" class="empty">
+                        <div class="table-legend">
+                            <span><span class="rate-legend legend-green"></span><?= $this->lng['autobid']['expert-settings-legend-inferior-rate'] ?></span>
+                            <span><span class="rate-legend legend-gray"></span><?= $this->lng['autobid']['expert-settings-legend-deactivated'] ?></span>
+                            <span><span class="rate-legend legend-red"></span><?= $this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
     <h2>Prêts</h2>
     <div class="table-filter clearfix">
         <p class="left">Historique des projets financés depuis le compte Unilend n°<?= $this->clients->id_client ?></p>

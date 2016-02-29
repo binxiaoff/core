@@ -28,8 +28,8 @@
 
 class client_setting_type extends client_setting_type_crud
 {
-    const TYPE_AUTO_BID_SWITCH      = 1;
-    const TYPE_AUTO_BID_BETA_TESTER = 2;
+    const TYPE_AUTO_BID_SWITCH = 1;
+    const TYPE_BETA_TESTER     = 2;
 
     public function __construct($bdd, $params = '')
     {
