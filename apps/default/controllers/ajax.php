@@ -1911,7 +1911,7 @@ class ajaxController extends bootstrap
         $sInstruction            = '';
 
         if (false === empty($_POST['setting']) && $oClient->get($_POST['id_client'])) {
-            if (\Unilend\Service\AutoBidSettingsManager::AUTO_BID_ON == $oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
+            if (\client_settings::AUTO_BID_ON == $oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
                 $oAutoBidSettingsManager->off($oClient);
                 $sInstruction = 'update_off_success';
             } else {

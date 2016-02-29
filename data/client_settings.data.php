@@ -28,6 +28,12 @@
 
 class client_settings extends client_settings_crud
 {
+    const BETA_TESTER_ON  = 1;
+    const BETA_TESTER_OFF = 0;
+
+    const AUTO_BID_ON  = 1;
+    const AUTO_BID_OFF = 0;
+
     public function __construct($bdd, $params = '')
     {
         parent::client_settings($bdd, $params);
