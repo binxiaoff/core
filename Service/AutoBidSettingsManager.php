@@ -35,7 +35,8 @@ class AutoBidSettingsManager
 
         if ($this->isQualified($oClient)
             && $this->oBidManager->canBid($oClient)
-            && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON)) {
+            && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON)
+        ) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_ON);
             $oLendersAccount->get($oClient->id_client, 'id_client_owner');
             $oAutoBidQueue->addToQueue($oLendersAccount->id_lender_account, \autobid_queue::TYPE_QUEUE_NEW);
@@ -66,18 +67,15 @@ class AutoBidSettingsManager
      */
     public function isQualified(\clients $oClient)
     {
+        if (empty($oClient->id_client)) {
+            return false;
+        }
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
 
         $oSettings->get('Auto-bid global switch', 'type');
-        $bGlobalActive = (bool)$oSettings->value;
 
-        $bBetaTester = false;
-        if (false === empty($oClient->id_client) && true === $this->oClientSettingsManager->isBetaTester( $oClient)){
-            $bBetaTester = true;
-        }
-
-        if ($bGlobalActive || $bBetaTester) {
+        if ($oSettings->value || $this->oClientSettingsManager->isBetaTester($oClient)) {
             return true;
         }
 
@@ -85,11 +83,11 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param $iLenderId
-     * @param $sEvaluation
-     * @param $iAutoBidPeriodId
-     * @param $fRate
-     * @param $iAmount
+     * @param int    $iLenderId
+     * @param string $sEvaluation
+     * @param int    $iAutoBidPeriodId
+     * @param float  $fRate
+     * @param int    $iAmount
      *
      * @return bool
      */
@@ -109,43 +107,48 @@ class AutoBidSettingsManager
             return false;
         }
 
-        if ($fRate < 4 || $fRate > 10) {
+        if ($fRate < \bids::BID_RATE_MIN || $fRate > \bids::BID_RATE_MAX) {
             return false;
         }
-        if ($oAutoBid->exist($iLenderId, 'evaluation = "' . $sEvaluation . '" AND id_autobid_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender')) {
-            $aAutoBids = $oAutoBid->select('evaluation = "' . $sEvaluation . '" AND id_autobid_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender = ' . $iLenderId);
 
-            if ($oBid->exist($aAutoBids[0]['id_autobid'], 'id_autobid')) {
-                foreach ($aAutoBids as $aBid) {
-                    $oAutoBid->get($aBid['id_autobid']);
-                    $oAutoBid->status = \autobid::STATUS_ARCHIVED;
-                    $oAutoBid->update();
-                }
+        $aAutoBids = $oAutoBid->select('evaluation = "' . $sEvaluation . '" AND id_autobid_period = ' . $iAutoBidPeriodId . ' AND status != ' . \autobid::STATUS_ARCHIVED . ' AND id_lender = ' . $iLenderId);
+
+        if (empty($aAutoBids)) {
+            $this->createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
+        } else {
+            $aAutoBidActive = array_shift($aAutoBids);
+
+            if ($oBid->exist($aAutoBidActive['id_autobid'], 'id_autobid')) {
+                $oAutoBid->get($aAutoBidActive['id_autobid']);
+                $aAutoBidActive->status = \autobid::STATUS_ARCHIVED;
+                $aAutoBidActive->update();
                 $this->createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
             } else {
-                $aAutoBidActive = array_shift($aAutoBids);
                 $oAutoBid->get($aAutoBidActive['id_autobid']);
                 $oAutoBid->rate_min = $fRate;
                 $oAutoBid->amount   = $iAmount;
                 $oAutoBid->update();
+            }
 
+            // It shouldn't have more than one autobit settings for each category, but if we have, archive them all.
+            if (false === empty($aAutoBids)) {
                 foreach ($aAutoBids as $aBid) {
                     $oAutoBid->get($aBid['id_autobid']);
                     $oAutoBid->status = \autobid::STATUS_ARCHIVED;
                     $oAutoBid->update();
                 }
             }
-        } else {
-            $this->createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
         }
+
+        return true;
     }
 
     /**
-     * @param $iLenderId
-     * @param $sEvaluation
-     * @param $iAutoBidPeriodId
-     * @param $fRate
-     * @param $iAmount
+     * @param int    $iLenderId
+     * @param string $sEvaluation
+     * @param int    $iAutoBidPeriodId
+     * @param float  $fRate
+     * @param int    $iAmount
      *
      * @return bool
      */
@@ -170,10 +173,10 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param       $iLenderId
-     * @param       $sEvaluation
-     * @param       $iAutoBidPeriodId
-     * @param array $aStatus
+     * @param int    $iLenderId
+     * @param string $sEvaluation
+     * @param int    $iAutoBidPeriodId
+     * @param array  $aStatus
      *
      * @return mixed
      */
@@ -216,9 +219,9 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param $iLenderId
-     * @param $fRate
-     * @param $iAmount
+     * @param int   $iLenderId
+     * @param float $fRate
+     * @param int   $iAmount
      */
     public function saveNoviceSetting($iLenderId, $fRate, $iAmount)
     {
@@ -234,8 +237,8 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param $sEvaluation
-     * @param $iDuration
+     * @param string $sEvaluation
+     * @param int    $iDuration in month
      *
      * @return mixed
      */
@@ -245,12 +248,12 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param $iLenderId
-     * @param $sEvaluation
-     * @param $iAutoBidPeriodId
-     * @param $fRate
-     * @param $iAmount
-     * @param $iNewStatus
+     * @param int $iLenderId
+     * @param string $sEvaluation
+     * @param int $iAutoBidPeriodId
+     * @param float $fRate
+     * @param int $iAmount
+     * @param int $iNewStatus
      */
     public function activateDeactivateSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $iNewStatus)
     {
@@ -269,7 +272,7 @@ class AutoBidSettingsManager
 
 
     /**
-     * @param $iClientID
+     * @param int $iClientID
      *
      * @return array
      */
@@ -280,8 +283,8 @@ class AutoBidSettingsManager
 
         $aDates = array();
 
-        foreach ($aAutoBidHistory as $aHistoryAction){
-            $aAction = unserialize($aHistoryAction['serialize']);
+        foreach ($aAutoBidHistory as $aHistoryAction) {
+            $aAction                            = unserialize($aHistoryAction['serialize']);
             $aDates[$aAction['autobid_switch']] = $aHistoryAction['added'];
         }
         return $aDates;
@@ -320,7 +323,8 @@ class AutoBidSettingsManager
      * @return mixed
      */
 
-    public function getValidationDate(\lenders_accounts $oLenderAccount){
+    public function getValidationDate(\lenders_accounts $oLenderAccount)
+    {
 
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
