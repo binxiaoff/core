@@ -1,6 +1,6 @@
 <?php if (isset($_SESSION['freeow'])): ?>
     <script type="text/javascript">
-        $(function () {
+        $(function() {
             var title = "<?=$_SESSION['freeow']['title']?>",
                 message = "<?=$_SESSION['freeow']['message']?>",
                 opts = {},
@@ -20,28 +20,13 @@
         <li>Portefeuille & Performances</li>
     </ul>
 
-    <?php if ($this->clients_status->status == \clients_status::TO_BE_CHECKED): ?>
-        <div class="attention">
-            Attention : compte non validé - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php elseif (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REPLY, \clients_status::COMPLETENESS_REMINDER))): ?>
-        <div class="attention" style="background-color:#F9B137">
-            Attention : compte en complétude - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php elseif (in_array($this->clients_status->status, array(\clients_status::MODIFICATION))): ?>
-        <div class="attention" style="background-color:#F2F258">
-            Attention : compte en modification - créé le <?= date('d/m/Y', $this->timeCreate) ?>
-        </div>
-    <?php endif; ?>
+    <div><?= $this->sClientStatusMessage ?></div>
 
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
     <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter
-            Prêteur</a>
-        <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>"
-           class="btn_link">Modifier Prêteur</a>
-        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>"
-           class="btn_link">Historique des emails</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
+        <a href="<?= $this->lurl ?>/preteurs/email_history/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Historique des emails</a>
     </div>
 
     <div>

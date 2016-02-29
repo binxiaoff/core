@@ -89,7 +89,7 @@ class queriesController extends bootstrap
         $this->queries = $this->loadData('queries');
         $this->queries->get($this->params[0], 'id_query');
 
-        preg_match_all("/@[_a-zA-Z1-9]+@/", $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
+        preg_match_all('/@[_a-zA-Z1-9]+@/', $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
 
         $this->sqlParams = $this->queries->super_unique($this->sqlParams);
     }
@@ -101,18 +101,28 @@ class queriesController extends bootstrap
 
         $this->queries = $this->loadData('queries');
         $this->queries->get($this->params[0], 'id_query');
-        $this->queries->sql = str_replace(
+        $this->queries->sql = trim(str_replace(
             array('[ID_USER]'),
             array($this->sessionIdUser),
             $this->queries->sql
-        );
+        ));
 
-        preg_match_all("/@[_a-zA-Z1-9]+@/", $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
+        if (
+            1 !== preg_match('/^SELECT\s/i', $this->queries->sql)
+            || 1 === preg_match('/[^A-Z](ALTER|INSERT|DELETE|DROP|TRUNCATE|UPDATE)[^A-Z]/i', $this->queries->sql)
+        ) {
+            $this->result    = array();
+            $this->sqlParams = array();
+            trigger_error('Stat query may be dangerous: ' . $this->queries->sql, E_USER_WARNING);
+            return;
+        }
+
+        preg_match_all('/@[_a-zA-Z1-9]+@/', $this->queries->sql, $this->sqlParams, PREG_SET_ORDER);
 
         $this->sqlParams = $this->queries->super_unique($this->sqlParams);
 
         foreach ($this->sqlParams as $param) {
-            $this->queries->sql = str_replace($param[0], $_POST['param_' . str_replace('@', '', $param[0])], $this->queries->sql);
+            $this->queries->sql = str_replace($param[0], mysql_real_escape_string($_POST['param_' . str_replace('@', '', $param[0])], $this->bdd->connect_id), $this->queries->sql);
         }
 
         $this->result = $this->queries->run($this->params[0], $this->queries->sql);

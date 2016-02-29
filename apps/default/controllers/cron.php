@@ -134,6 +134,65 @@ class cronController extends bootstrap
         }
     }
 
+    public function _mail_echeance_emprunteur()
+    {
+        if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
+            $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
+            $oLoans           = $this->loadData('loans');
+
+            $this->mails_text->get('mail-echeance-emprunteur', 'lang = "' . $this->language . '" AND type');
+            $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
+
+            foreach ($aUpcomingRepayments as $aRepayment) {
+                $this->projects->get($aRepayment['id_project']);
+                $this->companies->get($this->projects->id_company);
+
+                if (false === empty($this->companies->prenom_dirigeant) && false === empty($this->companies->email_dirigeant)) {
+                    $sFirstName  = $this->companies->prenom_dirigeant;
+                    $sMailClient = $this->companies->email_dirigeant;
+                } else {
+                    $this->clients->get($this->companies->id_client_owner);
+
+                    $sFirstName  = $this->clients->prenom;
+                    $sMailClient = $this->clients->email;
+                }
+
+                $aMail = array(
+                    'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),
+                    'echeance'           => $this->ficelle->formatNumber($aRepayment['montant'] / 100),
+                    'prochaine_echeance' => date('d/m/Y', strtotime($aRepayment['date_echeance_emprunteur'])),
+                    'surl'               => $this->surl,
+                    'url'                => $this->furl,
+                    'nom_entreprise'     => $this->companies->name,
+                    'montant'            => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
+                    'prenom_e'           => $sFirstName,
+                    'lien_fb'            => $this->like_fb,
+                    'lien_tw'            => $this->twitter
+                );
+
+                $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
+                $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
+                $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
+                $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, $sSender);
+                $this->email->setSubject(stripslashes($sMailSubject));
+                $this->email->setHTMLBody(stripslashes($sMailBody));
+
+                if ($this->Config['env'] == 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($sMailClient));
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+            }
+
+            $this->stopCron();
+        }
+    }
+
     // toutes les minute on check //
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
@@ -2413,6 +2472,7 @@ class cronController extends bootstrap
                     file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file);
 
                     foreach ($lrecus as $r) {
+                        $transactions->unsetData();
                         $code = $r['codeOpInterbancaire'];
 
                         // Status virement/prelevement
@@ -3889,18 +3949,25 @@ class cronController extends bootstrap
         }
     }
 
-    // passe a 1h30 (pour decaler avec l'etat fiscal) du matin le 1er du mois
+    /**
+     * List of repayments of the month
+     * Executed every day and concatenated to month file
+     */
     public function _echeances_par_mois()
     {
         if (true === $this->startCron('echeances_par_mois', 5)) {
             ini_set('memory_limit', '1G');
 
-            $dateMoins1Mois = mktime(date("H"), date("i"), 0, date("m") - 1, date("d"), date("Y"));
-            $dateMoins1Mois = date('Y-m', $dateMoins1Mois);
+            if (isset($this->params[0]) && 1 === preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $this->params[0])) {
+                $sPreviousDay = $this->params[0];
+            } else {
+                $sPreviousDay = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - 1, date('Y')));
+            }
 
-            $csv = "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
-
-            $sql = '
+            $sFileName = 'echeances_' . date('Ymd', mktime(0, 0, 0, substr($sPreviousDay, 5, 2) + 1, 1, substr($sPreviousDay, 0, 4))) . '.csv';
+            $sFilePath = $this->path . 'protected/sftp/etat_fiscal/' . $sFileName;
+            $sCSV      = file_exists($sFilePath) ? '' : "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;type_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
+            $sQuery    = '
                 SELECT
                     c.id_client,
                     la.id_lender_account,
@@ -3925,6 +3992,7 @@ class cronController extends bootstrap
                     la.fin_exoneration,
                     e.id_project,
                     e.id_loan,
+                    l.id_type_contract,
                     e.ordre,
                     e.montant,
                     e.capital,
@@ -3942,33 +4010,32 @@ class cronController extends bootstrap
                     e.date_echeance_emprunteur,
                     e.date_echeance_emprunteur_reel
                 FROM echeanciers e
-                LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
+                LEFT JOIN loans l ON l.id_loan = e.id_loan
+                LEFT JOIN lenders_accounts la ON la.id_lender_account = e.id_lender
                 LEFT JOIN clients c ON c.id_client = la.id_client_owner
                 LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
                 LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
-                WHERE LEFT(e.date_echeance_reel, 7) = "' . $dateMoins1Mois . '"
+                WHERE DATE(e.date_echeance_reel) = "' . $sPreviousDay . '"
                     AND e.status = 1
                     AND e.status_ra = 0
                 ORDER BY e.date_echeance ASC';
 
-            $resultat = $this->bdd->query($sql);
-            while ($record = $this->bdd->fetch_array($resultat)) {
-                for ($i = 0; $i <= 23; $i++) {
-                    $csv .= str_replace('.', ',', $record[$i]) . ";";
-                }
-                $csv .= "\n";
+            $aResults = $this->bdd->query($sQuery);
+            while ($aRow = $this->bdd->fetch_assoc($aResults)) {
+                array_walk($aRow, function(&$aRow, $sFieldName) {
+                    $aRow = str_replace('.', ',', $aRow);
+                });
+                $sCSV .= implode(';', $aRow) . "\n";
             }
 
-            $filename = 'echeances_' . date('Ymd');
+            file_put_contents($sFilePath, $sCSV, FILE_APPEND);
 
-            file_put_contents($this->path . 'protected/sftp/etat_fiscal/' . $filename . '.csv', $csv);
-            // Enregistrement sur le sftp
-            $connection = ssh2_connect('ssh.reagi.com', 22);
-            ssh2_auth_password($connection, 'sfpmei', '769kBa5v48Sh3Nug');
-            $sftp       = ssh2_sftp($connection);
-            $sftpStream = @fopen('ssh2.sftp://' . $sftp . '/home/sfpmei/emissions/etat_fiscal/' . $filename . '.csv', 'w');
-            fwrite($sftpStream, $csv);
-            fclose($sftpStream);
+            $rConnection = ssh2_connect('ssh.reagi.com', 22);
+            ssh2_auth_password($rConnection, 'sfpmei', '769kBa5v48Sh3Nug');
+            $rSFTP = ssh2_sftp($rConnection);
+            $rFile = @fopen('ssh2.sftp://' . $rSFTP . '/home/sfpmei/emissions/etat_fiscal/' . $sFileName, 'w');
+            fwrite($rFile, $sCSV);
+            fclose($rFile);
 
             $this->stopCron();
         }
@@ -4007,66 +4074,52 @@ class cronController extends bootstrap
             $annee         = date('Y');
             $dateDebutTime = mktime(0, 0, 0, $mois - 1, 1, $annee);
             $dateDebutSql  = date('Y-m-d', $dateDebutTime);
-            $dateDebut     = date('d/m/Y', $dateDebutTime);
             $dateFinTime   = mktime(0, 0, 0, $mois, 0, $annee);
             $dateFinSql    = date('Y-m-d', $dateFinTime);
-            $dateFin       = date('d/m/Y', $dateFinTime);
 
-            //////////////////////
             // personnes morale //
+            $Morale1    = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', '2'); // entreprises
+            $etranger   = $echeanciers->getEcheanceBetweenDatesEtranger($dateDebutSql, $dateFinSql); // etrangers
+            $MoraleInte = (array_sum(array_column($Morale1, 'interets')) + array_sum(array_column($etranger, 'interets'))) / 100;
 
-            $Morale1  = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', '2'); // entreprises
-            $etranger = $echeanciers->getEcheanceBetweenDatesEtranger($dateDebutSql, $dateFinSql); // etrangers
+            $prelevementRetenuSoucre[1] = $Morale1[1]['retenues_source'] + $etranger[1]['retenues_source'];
 
-            $MoraleInte = ($Morale1['interets'] / 100) + ($etranger['interets'] / 100);
-
-            // on recup les personnes morales et les personnes physique exonéré
-            //$InteRetenuSoucre = $PhysiqueExoInte + $MoraleInte;
-            $InteRetenuSoucre = $MoraleInte;
-
-            //$prelevementRetenuSoucre = $PhysiqueExo['retenues_source'] + $Morale['retenues_source'];
-            $prelevementRetenuSoucre = $Morale1['retenues_source'] + $etranger['retenues_source'];
-
-            /////////////////////
-            //////////////////////////
             // Physique non exoneré //
             $PhysiqueNoExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', array(1, 3));
-            $PhysiqueNoExoInte = ($PhysiqueNoExo['interets'] / 100) - ($etranger['interets'] / 100);
+            $PhysiqueNoExoInte[1] = ($PhysiqueNoExo[1]['interets'] - $etranger[1]['interets']) / 100;
+            $PhysiqueNoExoInte[2] = ($PhysiqueNoExo[2]['interets'] - $etranger[2]['interets']) / 100;
 
             // prelevements pour physiques non exonéré
-            $lesPrelevSurPhysiqueNoExo = $PhysiqueNoExo['prelevements_obligatoires'] - $etranger['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[1] = $PhysiqueNoExo[1]['prelevements_obligatoires'] - $etranger[1]['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[2] = $PhysiqueNoExo[2]['prelevements_obligatoires'] - $etranger[2]['prelevements_obligatoires'];
 
-            ////////////////////////
-            /////////////////////////////////////////
             // Physique non exoneré dans la peride //
-            $PhysiqueNonExoPourLaPeriode = $echeanciers->getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($dateDebutSql, $dateFinSql, '1', array(1, 3));
-            $PhysiqueNoExoInte += ($PhysiqueNonExoPourLaPeriode['interets'] / 100);
+            $PhysiqueNonExoPourLaPeriode = $echeanciers->getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($dateDebutSql, $dateFinSql);
+            $PhysiqueNoExoInte[1] += $PhysiqueNonExoPourLaPeriode[1]['interets'] / 100;
+            $PhysiqueNoExoInte[2] += $PhysiqueNonExoPourLaPeriode[2]['interets'] / 100;
 
             // prelevements pour physiques non exonéré
-            $lesPrelevSurPhysiqueNoExo += $PhysiqueNonExoPourLaPeriode['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[1] += $PhysiqueNonExoPourLaPeriode[1]['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueNoExo[2] += $PhysiqueNonExoPourLaPeriode[2]['prelevements_obligatoires'];
 
-            ////////////////////////
-            //////////////////////
             // Physique exoneré //
             $PhysiqueExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '1', array(1, 3));
-            $PhysiqueExoInte = ($PhysiqueExo['interets'] / 100);
+            $PhysiqueExoInte = array_sum(array_column($PhysiqueExo, 'interets')) / 100;
 
             // prelevements pour physiques exonéré
-            $lesPrelevSurPhysiqueExo = $PhysiqueExo['prelevements_obligatoires'];
+            $lesPrelevSurPhysiqueExo = array_sum(array_column($PhysiqueExo, 'prelevements_obligatoires'));
 
-            //////////////
             // Physique //
             $Physique     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '', array(1, 3));
-            $PhysiqueInte = ($Physique['interets'] / 100) - ($etranger['interets'] / 100);
+            $PhysiqueInte = (array_sum(array_column($Physique, 'interets')) - array_sum(array_column($etranger, 'interets'))) / 100;
 
             // prelevements pour physiques
-            $lesPrelevSurPhysique = $Physique['prelevements_obligatoires'] - $etranger['prelevements_obligatoires'];
-
-            $csg                          = $Physique['csg'] - $etranger['csg'];
-            $prelevements_sociaux         = $Physique['prelevements_sociaux'] - $etranger['prelevements_sociaux'];
-            $contributions_additionnelles = $Physique['contributions_additionnelles'] - $etranger['contributions_additionnelles'];
-            $prelevements_solidarite      = $Physique['prelevements_solidarite'] - $etranger['prelevements_solidarite'];
-            $crds                         = $Physique['crds'] - $etranger['crds'];
+            $lesPrelevSurPhysique         = array_sum(array_column($Physique, 'prelevements_obligatoires')) - array_sum(array_column($etranger, 'prelevements_obligatoires'));
+            $csg                          = array_sum(array_column($Physique, 'csg')) - array_sum(array_column($etranger, 'csg'));
+            $prelevements_sociaux         = array_sum(array_column($Physique, 'prelevements_sociaux')) - array_sum(array_column($etranger, 'prelevements_sociaux'));
+            $contributions_additionnelles = array_sum(array_column($Physique, 'contributions_additionnelles')) - array_sum(array_column($etranger, 'contributions_additionnelles'));
+            $prelevements_solidarite      = array_sum(array_column($Physique, 'prelevements_solidarite')) - array_sum(array_column($etranger, 'prelevements_solidarite'));
+            $crds                         = array_sum(array_column($Physique, 'crds')) - array_sum(array_column($etranger, 'crds'));
 
             $table = '
         <style>
@@ -4086,9 +4139,9 @@ class cronController extends bootstrap
             </tr>
             <tr>
                 <th style="background-color:#C9DAF2;">Période :</th>
-                <th style="background-color:#C9DAF2;">' . $dateDebut . '</th>
+                <th style="background-color:#C9DAF2;">' . date('d/m/Y', $dateDebutTime) . '</th>
                 <th style="background-color:#C9DAF2;">au</th>
-                <th style="background-color:#C9DAF2;">' . $dateFin . '</th>
+                <th style="background-color:#C9DAF2;">' . date('d/m/Y', $dateFinTime) . '</th>
             </tr>
             <tr>
                 <th style="background-color:#ECAEAE;" colspan="4">Prélèvements obligatoires</th>
@@ -4100,9 +4153,15 @@ class cronController extends bootstrap
                 <th style="background-color:#F4F3DA;">Taux</th>
             </tr>
             <tr>
-                <th style="background-color:#E6F4DA;">Soumis au prélèvement</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo) . '</td>
+                <th style="background-color:#E6F4DA;">Soumis au prélèvement (bons de caisse)</th>
+                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte[1]) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo[1]) . '</td>
+                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
+            </tr>
+            <tr>
+                <th style="background-color:#E6F4DA;">Soumis au prélèvement (prêt IFP)</th>
+                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte[2]) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo[2]) . '</td>
                 <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
             </tr>
             <tr>
@@ -4118,12 +4177,12 @@ class cronController extends bootstrap
                 <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
             </tr>
             <tr>
-                <th style="background-color:#ECAEAE;" colspan="4">Retenue à la source</th>
+                <th style="background-color:#ECAEAE;" colspan="4">Retenue à la source (bons de caisse)</th>
             </tr>
             <tr>
                 <th style="background-color:#E6F4DA;">Retenue à la source</th>
-                <td class="right">' . $this->ficelle->formatNumber($InteRetenuSoucre) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($prelevementRetenuSoucre) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($MoraleInte) . '</td>
+                <td class="right">' . $this->ficelle->formatNumber($prelevementRetenuSoucre[1]) . '</td>
                 <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($tauxRetenuSource) . '%</td>
             </tr>
             <tr>
@@ -6436,7 +6495,7 @@ class cronController extends bootstrap
 
             if ($settingsControleRemb->value == 1) {
                 // BIEN PRENDRE EN COMPTE LA DATE DE DEBUT DE LA REQUETE POUR NE PAS TRATER LES ANCIENS PROJETS REMB <------------------------------------| !!!!!!!!!
-                $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1 AND DATE(date_echeance) > "2015-06-30"', '', 0, 300); // on limite a 300 mails par executions
+                $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300); // on limite a 300 mails par executions
 
                 foreach ($lEcheances as $e) {
                     if (
@@ -7422,6 +7481,74 @@ class cronController extends bootstrap
             }
             $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
             $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for '. count($aLendersAccounts) .' lenders : ' . round(microtime(true) - $fTimeStart, 2));
+            $this->stopCron();
+        }
+    }
+
+    /***
+     * Removes welcome offers not used by lenders
+     * Executed once per night, at 2am
+     *
+     */
+    public function _checkWelcomeOfferValidity()
+    {
+        if (true === $this->startCron('Validité Offre de Bienvenue', 5)) {
+            $oSettings            = $this->loadData('settings');
+            $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
+            $oTransactions        = $this->loadData('transactions');
+            $oWalletsLines        = $this->loadData('wallets_lines');
+            $oBankUnilend         = $this->loadData('bank_unilend');
+            $oLendersAccounts     = $this->loadData('lenders_accounts');
+
+            $oSettings->get('Durée validité Offre de bienvenue', 'type');
+            $sOfferValidity = $oSettings->value;
+
+            $aUnusedWelcomeOffers = $oWelcomeOfferDetails->select('status = 0');
+            $oDateTime            = new \DateTime();
+
+            $iNumberOfUnusedWelcomeOffers = 0;
+
+            foreach ($aUnusedWelcomeOffers as $aWelcomeOffer) {
+                $oAdded    = DateTime::createFromFormat('Y-m-d H:i:s', $aWelcomeOffer['added']);
+                $oInterval = $oDateTime->diff($oAdded);
+
+                if ($oInterval->days >= $sOfferValidity) {
+                    $oWelcomeOfferDetails->get($aWelcomeOffer['id_offre_bienvenue_detail']);
+                    $oWelcomeOfferDetails->status = 2;
+                    $oWelcomeOfferDetails->update();
+
+                    $oTransactions->id_client                 = $aWelcomeOffer['id_client'];
+                    $oTransactions->montant                   = -$aWelcomeOffer['montant'];
+                    $oTransactions->id_offre_bienvenue_detail = $aWelcomeOffer['id_offre_bienvenue_detail'];
+                    $oTransactions->id_langue                 = 'fr';
+                    $oTransactions->date_transaction          = date('Y-m-d H:i:s');
+                    $oTransactions->status                    = '1';
+                    $oTransactions->etat                      = '1';
+                    $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
+                    $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
+                    $oTransactions->transaction               = 2;
+                    $oTransactions->create();
+
+                    $oLendersAccounts->get($aWelcomeOffer['id_client'], 'id_client_owner');
+
+                    $oWalletsLines->id_lender                = $oLendersAccounts->id_lender_account;
+                    $oWalletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
+                    $oWalletsLines->id_transaction           = $oTransactions->id_transaction;
+                    $oWalletsLines->status                   = 1;
+                    $oWalletsLines->type                     = 1;
+                    $oWalletsLines->amount                   = -$aWelcomeOffer['montant'];
+                    $oWalletsLines->create();
+
+                    $oBankUnilend->id_transaction = $oTransactions->id_transaction;
+                    $oBankUnilend->montant        = abs($oWelcomeOfferDetails->montant);
+                    $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
+                    $oBankUnilend->create();
+
+                    $iNumberOfUnusedWelcomeOffers +=1;
+                }
+            }
+            $this->oLogger->addRecord(ULogger::INFO, 'Nombre d\'offres de Bienvenue retirées : ' . $iNumberOfUnusedWelcomeOffers);
+
             $this->stopCron();
         }
     }

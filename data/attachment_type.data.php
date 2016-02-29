@@ -124,45 +124,47 @@ class attachment_type extends attachment_type_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getAllTypesForProjects($sLanguage, $bIncludeOthers = true)
+    public function getAllTypesForProjects($sLanguage, $bIncludeOthers = true, array $aTypes = null)
     {
-        $aTypes = array(
-            self::RELEVE_BANCAIRE_MOIS_N,
-            self::RELEVE_BANCAIRE_MOIS_N_1,
-            self::RELEVE_BANCAIRE_MOIS_N_2,
-            self::KBIS,
-            self::PRESENTATION_ENTRERPISE,
-            self::ETAT_ENDETTEMENT,
-            self::RIB,
-            self::CNI_PASSPORTE_DIRIGEANT,
-            self::CNI_PASSPORTE_VERSO,
-            self::DERNIERE_LIASSE_FISCAL,
-            self::LIASSE_FISCAL_N_1,
-            self::LIASSE_FISCAL_N_2,
-            self::RAPPORT_CAC,
-            self::PREVISIONNEL,
-            self::BALANCE_CLIENT,
-            self::BALANCE_FOURNISSEUR,
-            self::ETAT_PRIVILEGES_NANTISSEMENTS,
-            self::CGV,
-            self::CNI_BENEFICIAIRE_EFFECTIF_1,
-            self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
-            self::CNI_BENEFICIAIRE_EFFECTIF_2,
-            self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
-            self::CNI_BENEFICIAIRE_EFFECTIF_3,
-            self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
-            self::SITUATION_COMPTABLE_INTERMEDIAIRE,
-            self::DERNIERS_COMPTES_CONSOLIDES,
-            self::STATUTS,
-            self::PRESENTATION_PROJET,
-            self::DERNIERE_LIASSE_FISCAL_HOLDING,
-            self::KBIS_HOLDING,
-            self::PHOTOS_ACTIVITE,
-            self::AUTRE1,
-            self::AUTRE2,
-            self::AUTRE3,
-            self::AUTRE4
-        );
+        if (null === $aTypes) {
+            $aTypes = array(
+                self::RELEVE_BANCAIRE_MOIS_N,
+                self::RELEVE_BANCAIRE_MOIS_N_1,
+                self::RELEVE_BANCAIRE_MOIS_N_2,
+                self::KBIS,
+                self::PRESENTATION_ENTRERPISE,
+                self::ETAT_ENDETTEMENT,
+                self::RIB,
+                self::CNI_PASSPORTE_DIRIGEANT,
+                self::CNI_PASSPORTE_VERSO,
+                self::DERNIERE_LIASSE_FISCAL,
+                self::LIASSE_FISCAL_N_1,
+                self::LIASSE_FISCAL_N_2,
+                self::RAPPORT_CAC,
+                self::PREVISIONNEL,
+                self::BALANCE_CLIENT,
+                self::BALANCE_FOURNISSEUR,
+                self::ETAT_PRIVILEGES_NANTISSEMENTS,
+                self::CGV,
+                self::CNI_BENEFICIAIRE_EFFECTIF_1,
+                self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
+                self::CNI_BENEFICIAIRE_EFFECTIF_2,
+                self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
+                self::CNI_BENEFICIAIRE_EFFECTIF_3,
+                self::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
+                self::SITUATION_COMPTABLE_INTERMEDIAIRE,
+                self::DERNIERS_COMPTES_CONSOLIDES,
+                self::STATUTS,
+                self::PRESENTATION_PROJET,
+                self::DERNIERE_LIASSE_FISCAL_HOLDING,
+                self::KBIS_HOLDING,
+                self::PHOTOS_ACTIVITE,
+                self::AUTRE1,
+                self::AUTRE2,
+                self::AUTRE3,
+                self::AUTRE4
+            );
+        }
 
         $oTextes = new \textes($this->bdd);
         $aTranslations = $oTextes->selectFront('projet', $sLanguage);
