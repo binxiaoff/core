@@ -611,97 +611,14 @@ class echeanciers extends echeanciers_crud
 
 
     /// en place
-    public function getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($date1, $date2, $exonere = '', $morale = '')
+    public function getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($date1, $date2)
     {
         $anneemois = explode('-', $date1);
         $anneemois = $anneemois[0] . '-' . $anneemois[1];
-
-        if (is_array($morale)) {
-            $morale = implode(',', $morale);
-        }
-
-        $sql = 'SELECT
-        SUM(montant) as montant,
-        SUM(capital) as capital,
-        SUM(interets) as interets,
-        SUM(commission) as commission,
-        SUM(tva) as tva,
-        SUM(prelevements_obligatoires) as prelevements_obligatoires,
-        SUM(retenues_source) as retenues_source,
-        SUM(csg) as csg,
-        SUM(prelevements_sociaux) as prelevements_sociaux,
-        SUM(contributions_additionnelles) as contributions_additionnelles,
-        SUM(prelevements_solidarite) as prelevements_solidarite,
-        SUM(crds) as crds
-        FROM echeanciers e
-        LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
-        LEFT JOIN clients c ON l.id_client_owner = c.id_client
-        WHERE e.status = 1
-                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-        ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
-        if ($exonere == 1) {
-            $sql .= '
-             AND l.exonere = 1
-             AND "' . $anneemois . '" NOT BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
-        }
-        $sql .= '
-         AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
-
-        //echo $sql;
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result[0];
-    }
-
-
-    public function getEcheanceBetweenDatesEtranger($date1, $date2)
-    {
-        $sql = 'SELECT
-            SUM(montant) as montant,
-            SUM(capital) as capital,
-            SUM(interets) as interets,
-            SUM(commission) as commission,
-            SUM(tva) as tva,
-            SUM(prelevements_obligatoires) as prelevements_obligatoires,
-            SUM(retenues_source) as retenues_source,
-            SUM(csg) as csg,
-            SUM(prelevements_sociaux) as prelevements_sociaux,
-            SUM(contributions_additionnelles) as contributions_additionnelles,
-            SUM(prelevements_solidarite) as prelevements_solidarite,
-            SUM(crds) as crds
-            FROM echeanciers e
-            LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
-            LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            WHERE e.status = 1
-                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-            AND c.type IN (1, 3)
-            AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = l.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
-            AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
-
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result[0];
-    }
-
-    public function getEcheanceBetweenDates($date1, $date2, $exonere = '', $morale = '')
-    {
-        $anneemois = explode('-', $date1);
-        $anneemois = $anneemois[0] . '-' . $anneemois[1];
-
-        if (is_array($morale)) {
-            $morale = implode(',', $morale);
-        }
 
         $sql = '
             SELECT
+                l.id_type_contract,
                 SUM(montant) AS montant,
                 SUM(capital) AS capital,
                 SUM(interets) AS interets,
@@ -715,31 +632,120 @@ class echeanciers extends echeanciers_crud
                 SUM(prelevements_solidarite) AS prelevements_solidarite,
                 SUM(crds) AS crds
             FROM echeanciers e
-            LEFT JOIN lenders_accounts l ON e.id_lender = l.id_lender_account
-            LEFT JOIN clients c ON l.id_client_owner = c.id_client
+            LEFT JOIN loans l ON l.id_loan = e.id_loan
+            LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+            LEFT JOIN clients c ON la.id_client_owner = c.id_client
             WHERE e.status = 1
-                AND e.status_ra = 0 /*on ne veut pas de remb anticipe */
-            ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
+                AND e.status_ra = 0
+                AND c.type IN (1, 3)
+                AND la.exonere = 1
+                AND "' . $anneemois . '" NOT BETWEEN LEFT(la.debut_exoneration, 7) AND LEFT(la.fin_exoneration, 7)
+                AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"
+            GROUP BY l.id_type_contract';
+
+        $aReturn  = array();
+        $aResults = $this->bdd->query($sql);
+
+        while ($aResult = $this->bdd->fetch_assoc($aResults)) {
+            $aReturn[$aResult['id_type_contract']] = $aResult;
+        }
+
+        return $aReturn;
+    }
+
+
+    public function getEcheanceBetweenDatesEtranger($date1, $date2)
+    {
+        $sql = '
+            SELECT
+                l.id_type_contract,
+                SUM(montant) AS montant,
+                SUM(capital) AS capital,
+                SUM(interets) AS interets,
+                SUM(commission) AS commission,
+                SUM(tva) AS tva,
+                SUM(prelevements_obligatoires) AS prelevements_obligatoires,
+                SUM(retenues_source) AS retenues_source,
+                SUM(csg) AS csg,
+                SUM(prelevements_sociaux) AS prelevements_sociaux,
+                SUM(contributions_additionnelles) AS contributions_additionnelles,
+                SUM(prelevements_solidarite) AS prelevements_solidarite,
+                SUM(crds) AS crds
+            FROM echeanciers e
+            LEFT JOIN loans l ON l.id_loan = e.id_loan
+            LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+            LEFT JOIN clients c ON la.id_client_owner = c.id_client
+            WHERE e.status = 1
+                AND e.status_ra = 0
+                AND c.type IN (1, 3)
+                AND (SELECT resident_etranger FROM lenders_imposition_history lih WHERE lih.id_lender = la.id_lender_account AND lih.added <= e.date_echeance_reel ORDER BY added DESC LIMIT 1) > 0
+                AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"
+            GROUP BY l.id_type_contract';
+
+        $aReturn  = array();
+        $aResults = $this->bdd->query($sql);
+
+        while ($aResult = $this->bdd->fetch_assoc($aResults)) {
+            $aReturn[$aResult['id_type_contract']] = $aResult;
+        }
+
+        return $aReturn;
+    }
+
+    public function getEcheanceBetweenDates($date1, $date2, $exonere = '', $morale = '')
+    {
+        $anneemois = explode('-', $date1);
+        $anneemois = $anneemois[0] . '-' . $anneemois[1];
+
+        if (is_array($morale)) {
+            $morale = implode(',', $morale);
+        }
+
+        $sql = '
+            SELECT
+                l.id_type_contract,
+                SUM(montant) AS montant,
+                SUM(capital) AS capital,
+                SUM(interets) AS interets,
+                SUM(commission) AS commission,
+                SUM(tva) AS tva,
+                SUM(prelevements_obligatoires) AS prelevements_obligatoires,
+                SUM(retenues_source) AS retenues_source,
+                SUM(csg) AS csg,
+                SUM(prelevements_sociaux) AS prelevements_sociaux,
+                SUM(contributions_additionnelles) AS contributions_additionnelles,
+                SUM(prelevements_solidarite) AS prelevements_solidarite,
+                SUM(crds) AS crds
+            FROM echeanciers e
+            LEFT JOIN loans l ON l.id_loan = e.id_loan
+            LEFT JOIN lenders_accounts la ON e.id_lender = la.id_lender_account
+            LEFT JOIN clients c ON la.id_client_owner = c.id_client
+            WHERE e.status = 1
+                AND e.status_ra = 0
+                ' . ($morale != '' ? ' AND c.type IN (' . $morale . ')' : '');
 
         if ($exonere != '') {
             if ($exonere == '1') {
                 $sql .= '
-                     AND l.exonere = 1
-                     AND "' . $anneemois . '" BETWEEN LEFT(l.debut_exoneration,7) AND LEFT(l.fin_exoneration,7)';
+                     AND la.exonere = 1
+                     AND "' . $anneemois . '" BETWEEN LEFT(la.debut_exoneration, 7) AND LEFT(la.fin_exoneration, 7)';
             } else {
-                $sql .= ' AND l.exonere = ' . $exonere;
+                $sql .= ' AND la.exonere = ' . $exonere;
             }
         }
 
         $sql .= '
-            AND LEFT(date_echeance_reel,10) BETWEEN "' . $date1 . '" AND "' . $date2 . '"';
+                AND DATE(date_echeance_reel) BETWEEN "' . $date1 . '" AND "' . $date2 . '"
+            GROUP BY l.id_type_contract';
 
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+        $aReturn  = array();
+        $aResults = $this->bdd->query($sql);
+
+        while ($aResult = $this->bdd->fetch_assoc($aResults)) {
+            $aReturn[$aResult['id_type_contract']] = $aResult;
         }
-        return $result[0];
+
+        return $aReturn;
     }
 
     public function onMetAjourTVA($taux)
