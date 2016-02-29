@@ -53,7 +53,7 @@ class NotificationManager
             }
 
             $oMailNotification->id_client       = $iClientId;
-            $oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED;
+            $oMailNotification->id_notif        = $iTypeMail;
             $oMailNotification->date_notif      = date('Y-m-d H:i:s');
             $oMailNotification->id_notification = $oNotification->id_notification;
             $oMailNotification->id_transaction  = $iTransactionId;
