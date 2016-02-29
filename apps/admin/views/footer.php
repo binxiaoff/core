@@ -8,7 +8,8 @@
     window.ATL_JQ_PAGE_PROPS = $.extend(window.ATL_JQ_PAGE_PROPS, {
         // ==== default field values ====
         fieldValues: {
-            email: '<?php echo $_SESSION['user']['email'] ?>'
+            email: '<?php echo $_SESSION['user']['email'] ?>',
+            fullname: '<?php echo $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] ?>'
         }
     });
 </script>
