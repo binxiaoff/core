@@ -1,3 +1,7 @@
+<?php
+$oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+?>
+
 <?php foreach ($this->lNotifHeader as $r): ?>
     <div class="notif <?= ($r['status'] == 1 ? 'view' : '') ?>">
     <?php
@@ -126,6 +130,12 @@
                 <strong><?= $this->lng['notifications']['titre-autobid-balance'] ?></strong><br/>
                 <div class="content_notif">
                 <?= $this->lng['notifications']['content-autobid-balance-low'] ?>
+                </div><?php
+                break;
+            case \notifications::TYPE_AUTOBID_FIRST_ACTIVATION: ?>
+                <strong><?= $this->lng['notifications']['titre-autobid-activation'] ?></strong><br/>
+                <div class="content_notif">
+                <?= str_replace(array('[#ACTIVATION_TIME#]','[#LURL#]'), array($oAutoBidSettingsManager->getActivationTime($this->clients), $this->lurl), $this->lng['notifications']['content-autobid-activation']) ?>
                 </div><?php
                 break;
         }

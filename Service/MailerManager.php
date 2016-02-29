@@ -74,12 +74,6 @@ class MailerManager
 
         $this->oMailText->get('confirmation-bid', 'lang = "' . $this->sLanguage . '" AND type');
 
-        $this->oSettings->get('Facebook', 'type');
-        $lien_fb = $this->oSettings->value;
-
-        $this->oSettings->get('Twitter', 'type');
-        $lien_tw = $this->oSettings->value;
-
         $timeAdd = strtotime($oBid->added);
         $month   = $this->oDate->tableauMois['fr'][date('n', $timeAdd)];
 
@@ -93,18 +87,18 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
 
         $varMail = array(
-            'surl' => $sSUrl,
-            'url' => $sLUrl,
-            'prenom_p' => $oClient->prenom,
+            'surl'           => $sSUrl,
+            'url'            => $sLUrl,
+            'prenom_p'       => $oClient->prenom,
             'nom_entreprise' => $oCompany->name,
-            'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
-            'taux_bid' => $this->oFicelle->formatNumber($oBid->rate, 1),
-            'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-            'heure_bid' => date('H:i:s', strtotime($oBid->added)),
-            'projet-p' => $sLUrl . '/' . $pageProjets,
+            'valeur_bid'     => $this->oFicelle->formatNumber($oBid->amount / 100),
+            'taux_bid'       => $this->oFicelle->formatNumber($oBid->rate, 1),
+            'date_bid'       => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+            'heure_bid'      => date('H:i:s', strtotime($oBid->added)),
+            'projet-p'       => $sLUrl . '/' . $pageProjets,
             'motif_virement' => $sPurpose,
-            'lien_fb' => $lien_fb,
-            'lien_tw' => $lien_tw
+            'lien_fb'        => $this->getFacebookLink(),
+            'lien_tw'        => $this->getTwitterLink()
         );
 
         $tabVars   = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -158,27 +152,21 @@ class MailerManager
                 $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
                 $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
 
-                $this->oSettings->get('Facebook', 'type');
-                $sLinkFb = $this->oSettings->value;
-
-                $this->oSettings->get('Twitter', 'type');
-                $sLinkTw = $this->oSettings->value;
-
                 $varMail = array(
-                    'surl' => $sSUrl,
-                    'url' => $sLUrl,
-                    'prenom_p' => $oClient->prenom,
-                    'entreprise' => $oCompany->name,
-                    'projet' => $oProject->title,
-                    'montant' => $this->oFicelle->formatNumber($oBid->amount / 100),
-                    'proposition_pret' => $this->oFicelle->formatNumber($oBid->amount / 100),
+                    'surl'                  => $sSUrl,
+                    'url'                   => $sLUrl,
+                    'prenom_p'              => $oClient->prenom,
+                    'entreprise'            => $oCompany->name,
+                    'projet'                => $oProject->title,
+                    'montant'               => $this->oFicelle->formatNumber($oBid->amount / 100),
+                    'proposition_pret'      => $this->oFicelle->formatNumber($oBid->amount / 100),
                     'date_proposition_pret' => date('d', $sAdded) . ' ' . $month . ' ' . date('Y', $sAdded),
                     'taux_proposition_pret' => $oBid->rate,
-                    'compte-p' => '/projets-a-financer',
-                    'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
-                    'solde_p' => $fBalance,
-                    'lien_fb' => $sLinkFb,
-                    'lien_tw' => $sLinkTw
+                    'compte-p'              => '/projets-a-financer',
+                    'motif_virement'        => $oClient->getLenderPattern($oClient->id_client),
+                    'solde_p'               => $fBalance,
+                    'lien_fb'               => $this->getFacebookLink(),
+                    'lien_tw'               => $this->getTwitterLink()
                 );
 
                 $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -218,12 +206,6 @@ class MailerManager
         if ($this->oLogger instanceof ULogger) {
             $this->oLogger->addRecord(ULogger::INFO, 'Project funded - send email to borrower', array('Project ID' => $oProject->id_project));
         }
-
-        $this->oSettings->get('Facebook', 'type');
-        $lien_fb = $this->oSettings->value;
-
-        $this->oSettings->get('Twitter', 'type');
-        $lien_tw = $this->oSettings->value;
 
         $this->oSettings->get('Heure fin periode funding', 'type');
         $iFinFunding = $this->oSettings->value;
@@ -265,14 +247,14 @@ class MailerManager
             $this->oMailText->get('emprunteur-dossier-funde', 'lang = "' . $this->sLanguage . '" AND type');
 
             $varMail = array(
-                'surl' => $sSUrl,
-                'url' => $sLUrl,
-                'prenom_e' => utf8_decode($oBorrower->prenom),
-                'taux_moyen' => $fWeightedAvgRate,
+                'surl'          => $sSUrl,
+                'url'           => $sLUrl,
+                'prenom_e'      => utf8_decode($oBorrower->prenom),
+                'taux_moyen'    => $fWeightedAvgRate,
                 'temps_restant' => $tempsRest,
-                'projet' => $oProject->title,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'projet'        => $oProject->title,
+                'lien_fb'       => $this->getFacebookLink(),
+                'lien_tw'       => $this->getTwitterLink()
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -347,7 +329,7 @@ class MailerManager
 
         if ($oBorrower->status == 1) {
             $this->oMailText->get('emprunteur-dossier-funde-et-termine', 'lang = "' . $this->sLanguage . '" AND type');
-            $fWeightedAvgRate = $this->oFicelle->formatNumber((float)ProjectManager::getWeightedAvgRate($oProject));
+            $fWeightedAvgRate = $this->oFicelle->formatNumber((float) ProjectManager::getWeightedAvgRate($oProject));
 
             $oBorrowerPaymentSchedule->get($oProject->id_project, 'ordre = 1 AND id_project');
             $fMonthlyPayment = $oBorrowerPaymentSchedule->montant + $oBorrowerPaymentSchedule->commission + $oBorrowerPaymentSchedule->tva;
@@ -359,26 +341,20 @@ class MailerManager
             $sLinkMandat  = $sLUrl . '/pdf/mandat/' . $oBorrower->hash . '/' . $oProject->id_project;
             $sLinkPouvoir = $sLUrl . '/pdf/pouvoir/' . $oBorrower->hash . '/' . $oProject->id_project;
 
-            $this->oSettings->get('Facebook', 'type');
-            $sLinkFb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $sLinkTw = $this->oSettings->value;
-
             $varMail = array(
-                'surl' => $sSUrl,
-                'url' => $sLUrl,
-                'prenom_e' => $oBorrower->prenom,
-                'nom_e' => $oCompany->name,
-                'mensualite' => $this->oFicelle->formatNumber($fMonthlyPayment),
-                'montant' => $this->oFicelle->formatNumber($oProject->amount, 0),
-                'taux_moyen' => $fWeightedAvgRate,
+                'surl'                   => $sSUrl,
+                'url'                    => $sLUrl,
+                'prenom_e'               => $oBorrower->prenom,
+                'nom_e'                  => $oCompany->name,
+                'mensualite'             => $this->oFicelle->formatNumber($fMonthlyPayment),
+                'montant'                => $this->oFicelle->formatNumber($oProject->amount, 0),
+                'taux_moyen'             => $fWeightedAvgRate,
                 'link_compte_emprunteur' => $sLUrl . '/projects/detail/' . $oProject->id_project,
-                'link_mandat' => $sLinkMandat,
-                'link_pouvoir' => $sLinkPouvoir,
-                'projet' => $oProject->title,
-                'lien_fb' => $sLinkFb,
-                'lien_tw' => $sLinkTw
+                'link_mandat'            => $sLinkMandat,
+                'link_pouvoir'           => $sLinkPouvoir,
+                'projet'                 => $oProject->title,
+                'lien_fb'                => $this->getFacebookLink(),
+                'lien_tw'                => $this->getTwitterLink()
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -419,7 +395,7 @@ class MailerManager
         $this->oSettings->get('Adresse notification projet funde a 100', 'type');
         $sRecipient = $this->oSettings->value;
 
-        $fWeightedAvgRate = $this->oFicelle->formatNumber((float)ProjectManager::getWeightedAvgRate($oProject));
+        $fWeightedAvgRate = $this->oFicelle->formatNumber((float) ProjectManager::getWeightedAvgRate($oProject));
 
         $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
         $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
@@ -559,22 +535,22 @@ class MailerManager
                 $sFUrl = $this->aConfig['url'][$this->aConfig['env']]['default'];
 
                 $varMail = array(
-                    'surl' => $sSUrl,
-                    'url' => $sLUrl,
+                    'surl'                  => $sSUrl,
+                    'url'                   => $sLUrl,
                     'offre_s_selectionne_s' => $sSelectedOffers,
-                    'prenom_p' => $oClient->prenom,
-                    'nom_entreprise' => $oCompany->name,
-                    'fait' => $sDoes,
-                    'contrat_pret' => $sContract,
-                    'detail_loans' => $sLoansDetails,
-                    'offre_s' => $sOffers,
-                    'pret_s' => $sLoans,
-                    'projet-p' => $sFUrl . '/projects/detail/' . $oProject->slug,
-                    'link_explication' => $sLinkExplication,
-                    'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
-                    'lien_fb' => $lien_fb,
-                    'lien_tw' => $lien_tw,
-                    'annee' => date('Y')
+                    'prenom_p'              => $oClient->prenom,
+                    'nom_entreprise'        => $oCompany->name,
+                    'fait'                  => $sDoes,
+                    'contrat_pret'          => $sContract,
+                    'detail_loans'          => $sLoansDetails,
+                    'offre_s'               => $sOffers,
+                    'pret_s'                => $sLoans,
+                    'projet-p'              => $sFUrl . '/projects/detail/' . $oProject->slug,
+                    'link_explication'      => $sLinkExplication,
+                    'motif_virement'        => $oClient->getLenderPattern($oClient->id_client),
+                    'lien_fb'               => $this->getFacebookLink(),
+                    'lien_tw'               => $this->getTwitterLink(),
+                    'annee'                 => date('Y')
                 );
 
                 $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -617,19 +593,13 @@ class MailerManager
             $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
             $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
 
-            $this->oSettings->get('Facebook', 'type');
-            $lien_fb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $lien_tw = $this->oSettings->value;
-
             $varMail = array(
-                'surl' => $sSUrl,
-                'url' => $sLUrl,
+                'surl'     => $sSUrl,
+                'url'      => $sLUrl,
                 'prenom_e' => $oClient->prenom,
-                'projet' => $oProject->title,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'projet'   => $oProject->title,
+                'lien_fb'  => $this->getFacebookLink(),
+                'lien_tw'  => $this->getTwitterLink()
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -754,22 +724,17 @@ class MailerManager
             $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
             $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
 
-            $this->oSettings->get('Facebook', 'type');
-            $lien_fb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $lien_tw = $this->oSettings->value;
-
             $varMail = array(
-                'surl' => $sSUrl,
-                'url' => $sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'iban' => $sIban,
-                'bic' => $sBic,
-                'titulaire' => $sTitulaire,
+                'surl'           => $sSUrl,
+                'url'            => $sLUrl,
+                'prenom_p'       => $oClient->prenom,
+                'iban'           => $sIban,
+                'bic'            => $sBic,
+                'titulaire'      => $sTitulaire,
                 'motif_virement' => $sPurpose,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'lien_fb'        => $this->getFacebookLink(),
+                'lien_tw'        => $this->getTwitterLink(),
+                'annee'            => date('Y')
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -825,23 +790,18 @@ class MailerManager
             $sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
             $sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
 
-            $this->oSettings->get('Facebook', 'type');
-            $lien_fb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $lien_tw = $this->oSettings->value;
-
             $varMail = array(
-                'surl' => $sSUrl,
-                'url' => $sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'balance' => $iBalance,
-                'iban' => $sIban,
-                'bic' => $sBic,
-                'titulaire' => $sTitulaire,
+                'surl'           => $sSUrl,
+                'url'            => $sLUrl,
+                'prenom_p'       => $oClient->prenom,
+                'balance'        => $iBalance,
+                'iban'           => $sIban,
+                'bic'            => $sBic,
+                'titulaire'      => $sTitulaire,
                 'motif_virement' => $sPurpose,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'lien_fb'        => $this->getFacebookLink(),
+                'lien_tw'        => $this->getTwitterLink(),
+                'annee'          => date('Y')
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -862,5 +822,66 @@ class MailerManager
                 \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
             }
         }
+    }
+
+    public function sendFirstAutoBidActivation(\notifications $oNotification)
+    {
+        /** @var \clients $oClient */
+        $oClient                = Loader::loadData('clients');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount         = Loader::loadData('lenders_accounts');
+        /** @var \AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
+
+        $oLenderAccount->get($oNotification->id_lender);
+        $oClient->get($oLenderAccount->id_client_owner, 'id_client');
+
+        if ($oClient->status == 1) {
+            $this->oMailText->get('preteur-autobid-activation', 'lang = "' . $this->sLanguage . '" AND type');
+
+            $sSUrl    = $this->aConfig['static_url'][$this->aConfig['env']];
+            $sLUrl    = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
+
+            $varMail = array(
+                'surl'             => $sSUrl,
+                'url'              => $sLUrl,
+                'prenom_p'         => $oClient->prenom,
+                'heure_activation' => $oAutoBidSettingsManager->getActivationTime($oClient),
+                'motif_virement'   => $oClient->getLenderPattern($oClient->id_client),
+                'lien_fb'          => $this->getFacebookLink(),
+                'lien_tw'          => $this->getTwitterLink(),
+                'annee'            => date('Y')
+            );
+
+            $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
+
+            $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+            $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
+            $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
+
+            $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
+            $this->oEmail->setSubject(stripslashes($sujetMail));
+            $this->oEmail->setHTMLBody(stripslashes($texteMail));
+
+            if ($this->aConfig['env'] === 'prod') {
+                \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oClient->email, $tabFiler);
+                $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
+            } else {
+                $this->oEmail->addRecipient(trim($oClient->email));
+                \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+            }
+        }
+    }
+
+    private function getFacebookLink()
+    {
+        $this->oSettings->get('Facebook', 'type');
+        return $this->oSettings->value;
+    }
+
+    private function getTwitterLink()
+    {
+        $this->oSettings->get('Twitter', 'type');
+        return $this->oSettings->value;
     }
 }

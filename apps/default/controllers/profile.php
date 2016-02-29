@@ -2647,11 +2647,9 @@ class profileController extends bootstrap
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
                 if (false === $this->bAutoBidOn) {
-                    $oAutoBidSettingsManager->on($this->clients);
+                    $this->autoBidSettingOn();
                 }
-                $fRate   = $_POST['autobid-param-simple-taux-min'];
-                $iAmount = $_POST['autobid-amount'];
-                $oAutoBidSettingsManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $fRate, $iAmount);
+                $oAutoBidSettingsManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $_POST['autobid-param-simple-taux-min'], $_POST['autobid-amount']);
                 header('Location: ' . $this->lurl . '/profile/autolend#parametrage');
                 die;
             } else {
@@ -2716,7 +2714,7 @@ class profileController extends bootstrap
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
                 if (false === (bool)$oClientSettings->getSetting($this->clients->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
-                    $oAutoBidSettingsManager->on($this->clients);
+                    $this->autoBidSettingOn();
                 }
                 $iAmount = $_POST['autobid-amount'];
                 foreach ($aSettingsFromPOST as $sIndex => $aSetting) {
@@ -2748,6 +2746,25 @@ class profileController extends bootstrap
             }
         }
         echo $sInstruction;
+    }
+
+    private function autoBidSettingOn()
+    {
+        $oLendersAccounts      = Loader::loadData('lenders_accounts');
+        $oAutoBid              = Loader::loadData('autobid');
+
+        $oAutoBidSettingsManager  = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager->on($this->clients);
+
+        if ($oLendersAccounts->get($this->clients->id_client, 'id_client_owner') && $oAutoBid->counter('id_lender = ' . $oLendersAccounts->id_lender_account) == 0) {
+            $oNotificationManager = $this->get('NotificationManager');
+            $oNotificationManager->create(
+                \notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
+                \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
+                $this->clients->id_client,
+                'sendFirstAutoBidActivation'
+            );
+        }
     }
 
 }

@@ -39,6 +39,7 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
     const TYPE_PROJECT_PROBLEM              = 9;
     const TYPE_AUTOBID_BALANCE_LOW          = 10;
     const TYPE_AUTOBID_BALANCE_INSUFFICIENT = 11;
+    const TYPE_AUTOBID_FIRST_ACTIVATION     = 12;
 
     public function __construct($bdd, $params = '')
     {

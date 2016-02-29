@@ -293,4 +293,12 @@ class AutoBidSettingsManager
         }
     }
 
+    public function getActivationTime(\clients $oClient)
+    {
+        /** @var \client_settings $oClientSettings */
+        $oClientSettings = Loader::loadData('client_settings');
+        $oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client');
+        return str_replace(':', 'h', date('G:i', strtotime($oClientSettings->added)));
+    }
+
 }
