@@ -9,9 +9,6 @@ use Unilend\core\Loader;
  */
 class AutoBidSettingsManager
 {
-    const AUTO_BID_ON  = 1;
-    const AUTO_BID_OFF = 0;
-
     /** @var BidManager */
     private $oBidManager;
 
@@ -36,9 +33,10 @@ class AutoBidSettingsManager
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
 
-        if ($this->isQualified($oClient) && $this->oBidManager->canBid($oClient)) {
-            $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, self::AUTO_BID_ON);
-
+        if ($this->isQualified($oClient)
+            && $this->oBidManager->canBid($oClient)
+            && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON)) {
+            $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_ON);
             $oLendersAccount->get($oClient->id_client, 'id_client_owner');
             $oAutoBidQueue->addToQueue($oLendersAccount->id_lender_account, \autobid_queue::TYPE_QUEUE_NEW);
         }
@@ -54,10 +52,11 @@ class AutoBidSettingsManager
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
 
-        $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, self::AUTO_BID_OFF);
-
-        $oLendersAccount->get($oClient->id_client, 'id_client_owner');
-        $oAutoBidQueue->delete($oLendersAccount->id_lender_account, 'id_lender');
+        if ($this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)) {
+            $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_OFF);
+            $oLendersAccount->get($oClient->id_client, 'id_client_owner');
+            $oAutoBidQueue->delete($oLendersAccount->id_lender_account, 'id_lender');
+        }
     }
 
     /**
@@ -271,5 +270,21 @@ class AutoBidSettingsManager
     {
         $oClientSettings = Loader::loadData('client_settings');
         return (bool)$oClientSettings->getSetting($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client');
+    }
+
+
+    /**
+     * @param $iClientId
+     * @param $sValue
+     */
+    private function saveAutoBidSwitchHistory($iClientId, $sValue)
+    {
+        /** @var \clients_history_actions $oClientHistoryActions */
+        $oClientHistoryActions = Loader::loadData('clients_history_actions');
+
+        $sOnOff      = $sValue === \client_settings::AUTO_BID_ON ? 'on' : 'off';
+        $iUserId     = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : null;
+        $sSerialized = serialize(array('id_user' => $iUserId, 'id_client' => $iClientId, 'autobid_switch' => $sOnOff));
+        $oClientHistoryActions->histo(21, 'autobid_on_off', $iClientId, $sSerialized);
     }
 }

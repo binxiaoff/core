@@ -1,7 +1,5 @@
 <?php
 
-use \Unilend\core\Loader;
-
 class preteursController extends bootstrap
 {
     /**
@@ -1426,13 +1424,13 @@ class preteursController extends bootstrap
 
         $this->getMessageAboutClientStatus();
 
-        $oTextes                 = Loader::loadData('textes');
+        $oTextes                 = $this->loadData('textes');
         $this->lng['autobid']    = $oTextes->selectFront('autobid', $this->language, $this->App);
 
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
         $oClientSettingsManager  = $this->get('ClientSettingsManager');
-        $oAutoBidPeriod          = Loader::loadData('autobid_periods');
-        $oAutobid                = Loader::loadData('autobid');
+        $oAutoBidPeriod          = $this->loadData('autobid_periods');
+        $oAutobid                = $this->loadData('autobid');
         $this->aAutoBidSettings  = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
         $this->bAutoBidOn = $oAutoBidSettingsManager->isOn($this->clients);
 
@@ -1908,15 +1906,14 @@ class preteursController extends bootstrap
         $this->autoFireView = false;
 
         $oClientSettingsManager = $this->get('ClientSettingsManager');
-        $oClient = Loader::loadData('clients');
-        $oLendersAccount = Loader::loadData('lenders_accounts');
+        $oClient                = $this->loadData('clients');
+        $oLendersAccount        = $this->loadData('lenders_accounts');
 
          if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], array('on', 'off'))){
-
              $oClient->get($this->params[0]);
              $oLendersAccount->get($oClient->id_client, 'id_client_owner');
-             $sValue = ('on' == $this->params[1]) ? \Unilend\Service\ClientSettingsManager::BETA_TESTER_ON :  \Unilend\Service\ClientSettingsManager::BETA_TESTER_OFF;
-             $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_BETA_TESTER, $sValue);
+             $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
+             $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_BETA_TESTER, $sValue);
 
              header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $oLendersAccount->id_lender_account);
              die;

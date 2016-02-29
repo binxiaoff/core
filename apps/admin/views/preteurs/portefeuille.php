@@ -66,7 +66,7 @@
             <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['on']) : '' ?></span>
             <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['off']) : '' ?></span>
         </div>
-        <div style="padding-bottom: 15px;">Dernière mise à jour des settings: <?= $this->dates->formatDateMysqltoShortFR($this->sValidationDate) ?></div>
+        <div style="padding-bottom: 15px;">Dernière mise à jour des settings: <?= isset($this->sValidationDate) ? $this->dates->formatDateMysqltoShortFR($this->sValidationDate) : '' ?></div>
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
             <table class="autobid-param-advanced-table">
                 <tr>
