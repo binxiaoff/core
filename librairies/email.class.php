@@ -355,8 +355,7 @@ abstract class Mailer
             $recipients = $email->headers->get('To');
             list($headers, $message) = explode("\r\n\r\n", $email->__toString(), 2);
 
-            if ($filer != '') {
-                // On creer la ligne du filer
+            if ($filer instanceof \mails_filer) {
                 $filer->id_textemail  = $id_textemail;
                 $filer->email_nmp     = $email_nmp;
                 $filer->from          = trim(str_replace('From:', '', $email->headers->get('From')));
@@ -364,15 +363,17 @@ abstract class Mailer
                 $filer->subject       = $subject;
                 $filer->content       = addslashes($message);
                 $filer->headers       = $headers;
-                $filer->id_filermails = $filer->create();
+                $filer->create();
 
-                // On complete avec la clef pour le desabo
-                $filer->get($filer->id_filermails, 'id_filermails');
                 $filer->desabo = md5('EQ' . $filer->id_filermails . $filer->email_nmp . 'EQ');
                 $filer->update();
 
-                // On rempli le tableau de retour
-                $tabFiler = array('id_filermails' => $filer->id_filermails, 'id_textemail' => $filer->id_textemail, 'desabo' => $filer->desabo, 'email_nmp' => $filer->email_nmp);
+                $tabFiler = array(
+                    'id_filermails' => $filer->id_filermails,
+                    'id_textemail'  => $filer->id_textemail,
+                    'desabo'        => $filer->desabo,
+                    'email_nmp'     => $filer->email_nmp
+                );
             }
         }
     }
