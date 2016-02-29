@@ -219,7 +219,7 @@ class cronController extends bootstrap
 
                     $oProjectManager->checkAutoBidBalance($oProject);
 
-                    $this->sendNewProjectEmail($projects['id_project']);
+                    $this->sendNewProjectEmail($oProject->id_project);
                 }
             }
             if ($bHasProjectPublished) {
