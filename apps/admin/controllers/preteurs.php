@@ -1424,25 +1424,29 @@ class preteursController extends bootstrap
 
         $this->getMessageAboutClientStatus();
 
-        $oTextes                 = $this->loadData('textes');
-        $this->lng['autobid']    = $oTextes->selectFront('autobid', $this->language, $this->App);
+        $oTextes                   = $this->loadData('textes');
+        $this->lng['autobid']      = $oTextes->selectFront('autobid', $this->language, $this->App);
 
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
-        $oClientSettingsManager  = $this->get('ClientSettingsManager');
-        $oAutoBidPeriod          = $this->loadData('autobid_periods');
-        $oAutobid                = $this->loadData('autobid');
-        $this->aAutoBidSettings  = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
-        $this->bAutoBidOn = $oAutoBidSettingsManager->isOn($this->clients);
+        $oAutoBidSettingsManager   = $this->get('AutoBidSettingsManager');
+        $oClientSettingsManager    = $this->get('ClientSettingsManager');
+        $oAutoBidPeriod            = $this->loadData('autobid_periods');
 
-        foreach ($this->aAutoBidSettings as $iKey => $aSetting) {
-            $oAutoBidPeriod->get($aSetting['id_autobid_period']);
-            $this->aAutoBidSettings[$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $oAutoBidPeriod->min, $oAutoBidPeriod->max);
-        }
-
-        $this->sValidationDate     = $oAutobid->getValidationDate($this->lenders_accounts->id_lender_account);
+        $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->clients);
+        $this->sValidationDate     = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts);
         $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
         $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
         $this->bIsBetaTester       = $oClientSettingsManager->isBetaTester($this->clients);
+
+        $this->aAutoBidSettings    = array();
+        $aAutoBidPeriods           = $oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE, 'min ASC');
+
+        foreach ($aAutoBidPeriods as $aPeriod){
+            $this->aAutoBidSettings[$aPeriod['id_period']] = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+
+            foreach ($this->aAutoBidSettings[$aPeriod['id_period']] as $iKey => $aSetting) {
+                $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
+            }
+        }
     }
 
     public function _control_fiscal_city()

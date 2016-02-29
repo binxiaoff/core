@@ -58,10 +58,6 @@
                 <?= ($this->bIsBetaTester) ? 'Desactiver BetaTester' : 'Activer BetaTester'?>
             </a>
         </div>
-        <?php if (false === $this->bAutoBidOn) : ?>
-        La fonctionalité est desactivé pour ce prêteur.
-            <br />
-        <?php else : ?>
         <div>
             <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['on']) : '' ?></span>
             <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['off']) : '' ?></span>
@@ -81,71 +77,19 @@
                     <th scope="col">4,5*</th>
                     <th scope="col">5*</th>
                 </tr>
+            <?php foreach ($this->aAutoBidSettings as $iPeriodId => $aPeriodSettings) : ?>
                 <tr>
-                    <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_3_12]) ?></th>
-                    <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                        <?php if (\autobid_periods::PERIOD_3_12 == $aSetting['id_autobid_period']) : ?>
-                            <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                            <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                <div class="cell-inner">
-                                    <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                </div>
-                            </td>
-                        <?php endif; ?>
+                    <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . $iPeriodId]) ?></th>
+                    <?php foreach ($aPeriodSettings as $aSetting) : ?>
+                        <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
+                        <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
+                            <div class="cell-inner">
+                                <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
+                            </div>
+                        </td>
                     <?php endforeach; ?>
                 </tr>
-                <tr>
-                    <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_18_24]) ?></th>
-                    <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                        <?php if (\autobid_periods::PERIOD_18_24 == $aSetting['id_autobid_period']) : ?>
-                            <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                <div class="cell-inner">
-                                    <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                </div>
-                            </td>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </tr>
-                <tr>
-                    <th scope="row"><?= $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_36] ?></th>
-                    <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                        <?php if (\autobid_periods::PERIOD_36 == $aSetting['id_autobid_period']) : ?>
-                            <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                            <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                <div class="cell-inner">
-                                    <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                </div>
-                            </td>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </tr>
-                <tr>
-                    <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_48_60]) ?></th>
-                    <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                        <?php if (\autobid_periods::PERIOD_48_60 == $aSetting['id_autobid_period']) : ?>
-                            <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                            <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                <div class="cell-inner">
-                                    <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                </div>
-                            </td>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </tr>
-                <tr>
-                    <th scope="row"><?= $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_60_PLUS] ?></th>
-                    <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                        <?php if (\autobid_periods::PERIOD_60_PLUS == $aSetting['id_autobid_period']) : ?>
-                            <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                <div class="cell-inner">
-                                    <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                </div>
-                            </td>
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                </tr>
+            <?php endforeach; ?>
                 <tr>
                     <td class="empty"></td>
                     <td colspan="5" class="empty">
@@ -159,8 +103,6 @@
             </table>
         </div>
     </div>
-    <?php endif; ?>
-
 
     <h2>Prêts</h2>
     <div class="table-filter clearfix">

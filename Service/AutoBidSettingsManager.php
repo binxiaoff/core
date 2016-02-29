@@ -287,4 +287,16 @@ class AutoBidSettingsManager
         $sSerialized = serialize(array('id_user' => $iUserId, 'id_client' => $iClientId, 'autobid_switch' => $sOnOff));
         $oClientHistoryActions->histo(21, 'autobid_on_off', $iClientId, $sSerialized);
     }
+
+    /**
+     * @param \lenders_accounts $oLenderAccount
+     * @return mixed
+     */
+
+    public function getValidationDate(\lenders_accounts $oLenderAccount){
+
+        /** @var \autobid $oAutoBid */
+        $oAutoBid = Loader::loadData('autobid');
+        return $oAutoBid->getValidationDate($oLenderAccount->id_lender_account);
+    }
 }
