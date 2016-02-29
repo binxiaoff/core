@@ -270,7 +270,7 @@ class cronController extends bootstrap
 
                             $oMailerManager->sendFundedAndFinishedToBorrower($oProject);
                             $oMailerManager->sendFundedToStaff($oProject);
-@                            $oMailerManager->sendBidAccepted($oProject);
+                            $oMailerManager->sendBidAccepted($oProject);
                         } else {
                             $oProjectManager->treatFundFailed($oProject);
 
