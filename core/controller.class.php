@@ -451,7 +451,7 @@ class Controller
     }
 
     //Cree une nouvelle instance d'un objet
-    public function loadData($object, $params = array(), $db = '')
+    public function loadData($object, $params = array(), $db = null)
     {
         return \Unilend\core\Loader::loadData($object, $params, $db);
     }
