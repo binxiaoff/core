@@ -104,4 +104,63 @@ class companies extends companies_crud
         }
         return $aProjects;
     }
+
+    /**
+     * Retrieve the amount company still needs to pay to Unilend
+     * @param int $iCompanyId
+     * @return float
+     */
+    public function getOwedCapitalBySIREN()
+    {
+        if (empty($this->id_company)) {
+            return 0.0;
+        }
+        return (float) $this->bdd->result($this->bdd->query('
+            SELECT IFNULL(SUM(ee.capital) / 100, 0)
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects p ON ee.id_project = p.id_project
+            INNER JOIN companies c ON p.id_company = c.id_company
+            WHERE ee.status_emprunteur = 0 AND c.siren = "' . $this->siren . '"'
+        ));
+    }
+
+    /**
+     * @return array
+     */
+    public function getProjectsBySIREN()
+    {
+        if (empty($this->id_company)) {
+            return array();
+        }
+        $aProjects = array();
+        $aStatuses = array(
+            \projects_status::EN_FUNDING,
+            \projects_status::FUNDE,
+            \projects_status::REMBOURSEMENT,
+            \projects_status::PROBLEME,
+            \projects_status::PROBLEME_J_X,
+            \projects_status::RECOUVREMENT,
+            \projects_status::PROCEDURE_SAUVEGARDE,
+            \projects_status::REDRESSEMENT_JUDICIAIRE,
+            \projects_status::LIQUIDATION_JUDICIAIRE,
+            \projects_status::DEFAUT
+        );
+        $rResult   = $this->bdd->query('
+            SELECT p.id_project, p.slug, p.id_company, p.amount, p.period, p.title, p.added, p.updated, ps.label AS status_label, ps.status, IFNULL(CONCAT(sales_person.firstname, " ", sales_person.name), "") AS sales_person, IFNULL(CONCAT(analysts.firstname, " ", analysts.name), "") AS analyst
+            FROM companies current_company
+            INNER JOIN companies c ON current_company.siren = c.siren
+            INNER JOIN projects p ON c.id_company = p.id_company
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            LEFT JOIN users sales_person ON p.id_commercial = sales_person.id_user
+            LEFT JOIN users analysts ON p.id_analyste = analysts.id_user
+            WHERE ps.status IN (' . implode(', ', $aStatuses) . ')
+                AND current_company.id_company = ' . $this->id_company
+        );
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aProjects[] = $aRecord;
+        }
+        return $aProjects;
+    }
 }

@@ -1,12 +1,17 @@
 <script type="text/javascript">
     $(function() {
-        $("#date_dernier_privilege, #date_tresorerie").datepicker({
+        $('#date_dernier_privilege, #date_tresorerie').datepicker({
             showOn: 'both',
             buttonImage: '<?= $this->surl ?>/images/admin/calendar.gif',
             buttonImageOnly: true,
             changeMonth: true,
             changeYear: true,
             yearRange: '<?= (date('Y') - 40) ?>:<?= (date('Y')) ?>'
+        });
+
+        $('#company_projects').tablesorter();
+        $('.company_projects').click(function() {
+            $(location).attr('href', '<?= $this->lurl ?>/dossiers/edit/' + $(this).data('project'));
         });
 
         var displayBankName = function(event) {
@@ -17,11 +22,15 @@
             }
         };
 
-        $('#note_interne_banque').change(displayBankName);
-        $('#note_interne_banque').keyup(displayBankName);
-        $('#note_interne_banque').keydown(displayBankName);
+        $('#note_interne_banque')
+            .change(displayBankName)
+            .keyup(displayBankName)
+            .keydown(displayBankName);
     });
 </script>
+<style>
+    .company_projects {cursor: pointer;}
+</style>
 <div class="tab_title" id="title_etape4_1">Etape 4.1 - Notation externe</div>
 <div class="tab_content" id="etape4_1">
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" onsubmit="valid_etape4_1(<?= $this->projects->id_project ?>); return false;" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
@@ -138,6 +147,44 @@
                     </tr>
                 </tbody>
             </table>
+            <br/>
+            <h2>Capital restant dû à date : <?= $this->ficelle->formatNumber($this->fCompanyOwedCapital) ?> €</h2>
+            <br/>
+            <h2>Projets de cette société (SIREN identique)</h2>
+            <?php if (empty($this->aCompanyProjects)) : ?>
+                <h3>Aucun autre projet pour cette société</h3>
+            <?php else : ?>
+                <table class="tablesorter" id="company_projects">
+                    <thead>
+                        <tr>
+                            <th class="header">ID</th>
+                            <th class="header">Nom</th>
+                            <th class="header">Date demande</th>
+                            <th class="header">Date modification</th>
+                            <th class="header">Montant</th>
+                            <th class="header">Durée</th>
+                            <th class="header">Statut</th>
+                            <th class="header">Commercial</th>
+                            <th class="header">Analyste</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    <?php foreach ($this->aCompanyProjects as $iIndex => $aProject) : ?>
+                        <tr class="company_projects<?php if ($iIndex % 2) : ?> odd<?php endif; ?>" data-project="<?= $aProject['id_project'] ?>">
+                            <td><?= $aProject['id_project'] ?></td>
+                            <td><?= $aProject['title'] ?></td>
+                            <td><?= $this->dates->formatDate($aProject['added'], 'd/m/Y') ?></td>
+                            <td><?= $this->dates->formatDate($aProject['updated'], 'd/m/Y') ?></td>
+                            <td><?= $this->ficelle->formatNumber($aProject['amount']) ?>&nbsp;€</td>
+                            <td><?= $aProject['period'] ?> mois</td>
+                            <td><?= $aProject['status_label'] ?></td>
+                            <td><?= $aProject['sales_person'] ?></td>
+                            <td><?= $aProject['analyst'] ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php endif; ?>
         </div>
         <div id="valid_etape4_1" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
