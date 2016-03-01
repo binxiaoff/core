@@ -516,7 +516,7 @@
                             <?php break;
                         case \clients_status::CLOSED_BY_UNILEND : ?>
                             <tr>
-                                <td>Compte clôturé par Unilend <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?>
+                                <td>Compte passé hors ligne par Unilend <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?>
                                     par <?= $this->users->name ?>
                                 <?php if (false === empty($a['content'])) :?>
                                 <br>Motif : <?= $a['content'] ?>
