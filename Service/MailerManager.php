@@ -1,28 +1,38 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\librairies\ULogger;
 use Unilend\core\Loader;
+use Unilend\librairies\ULogger;
 
 class MailerManager
 {
     /** @var \settings */
     private $oSettings;
+
     /** @var \mails_filer */
     private $oMailFiler;
+
     /** @var \mails_text */
     private $oMailText;
-    /** @var  ULogger */
+
+    /** @var ULogger */
     private $oLogger;
+
     /** @var \email */
     private $oEmail;
+
     /** @var \ficelle */
     private $oFicelle;
+
+    /** @var array */
     private $aConfig;
+
     /** @var \dates */
     private $oDate;
-    /** @var  \tnmp */
+
+    /** @var \tnmp */
     private $oTNMP;
+
     /** @var \jours_ouvres */
     private $oWorkingDay;
     private $sSUrl;
@@ -88,12 +98,6 @@ class MailerManager
 
             $sPurpose = $oClient->getLenderPattern($oClient->id_client);
 
-            $this->oSettings->get('Facebook', 'type');
-            $lien_fb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $lien_tw = $this->oSettings->value;
-
             $timeAdd = strtotime($oBid->added);
             $month   = $this->oDate->tableauMois['fr'][date('n', $timeAdd)];
 
@@ -104,20 +108,20 @@ class MailerManager
             $oCompany->get($oProject->id_company, 'id_company');
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_p' => $oClient->prenom,
+                'surl'           => $this->sSUrl,
+                'url'            => $this->sLUrl,
+                'prenom_p'       => $oClient->prenom,
                 'nom_entreprise' => $oCompany->name,
-                'project_name' => $oProject->title,
-                'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
-                'taux_bid' => $this->oFicelle->formatNumber($oBid->rate, 1),
-                'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                'heure_bid' => date('H:i:s', strtotime($oBid->added)),
-                'projet-p' => $this->sLUrl . '/' . $pageProjects,
-                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
+                'project_name'   => $oProject->title,
+                'valeur_bid'     => $this->oFicelle->formatNumber($oBid->amount / 100),
+                'taux_bid'       => $this->oFicelle->formatNumber($oBid->rate, 1),
+                'date_bid'       => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                'heure_bid'      => date('H:i:s', strtotime($oBid->added)),
+                'projet-p'       => $this->sLUrl . '/' . $pageProjects,
+                'autobid_link'   => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'lien_fb'        => $this->getFacebookLink(),
+                'lien_tw'        => $this->getTwitterLink()
             );
 
             $tabVars   = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -152,7 +156,7 @@ class MailerManager
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
 
-        $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC,added ASC');
+        $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC, added ASC');
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid']);
             $oLenderAccount->get($oBid->id_lender_account);
@@ -169,20 +173,14 @@ class MailerManager
                 $sAdded = strtotime($oBid->added);
                 $month  = $this->oDate->tableauMois['fr'][date('n', $sAdded)];
 
-                $this->oSettings->get('Facebook', 'type');
-                $sLinkFb = $this->oSettings->value;
-
-                $this->oSettings->get('Twitter', 'type');
-                $sLinkTw = $this->oSettings->value;
-
                 $varMail = array(
-                    'surl' => $this->sSUrl,
-                    'url' => $this->sLUrl,
-                    'prenom_p' => $oClient->prenom,
-                    'entreprise' => $oCompany->name,
-                    'projet' => $oProject->title,
-                    'montant' => $this->oFicelle->formatNumber($oBid->amount / 100),
-                    'proposition_pret' => $this->oFicelle->formatNumber($oBid->amount / 100),
+                    'surl'                  => $this->sSUrl,
+                    'url'                   => $this->sLUrl,
+                    'prenom_p'              => $oClient->prenom,
+                    'entreprise'            => $oCompany->name,
+                    'projet'                => $oProject->title,
+                    'montant'               => $this->oFicelle->formatNumber($oBid->amount / 100),
+                    'proposition_pret'      => $this->oFicelle->formatNumber($oBid->amount / 100),
                     'date_proposition_pret' => date('d', $sAdded) . ' ' . $month . ' ' . date('Y', $sAdded),
                     'taux_proposition_pret' => $oBid->rate,
                     'compte-p'              => '/projets-a-financer',
@@ -213,10 +211,9 @@ class MailerManager
                 }
             }
         }
-
     }
 
-    public function sendFondedToBorrower(\projects $oProject)
+    public function sendFundedToBorrower(\projects $oProject)
     {
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
@@ -267,10 +264,10 @@ class MailerManager
             $this->oMailText->get('emprunteur-dossier-funde', 'lang = "' . $this->sLanguage . '" AND type');
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_e' => utf8_decode($oBorrower->prenom),
-                'taux_moyen' => $fWeightedAvgRate,
+                'surl'          => $this->sSUrl,
+                'url'           => $this->sLUrl,
+                'prenom_e'      => utf8_decode($oBorrower->prenom),
+                'taux_moyen'    => $fWeightedAvgRate,
                 'temps_restant' => $tempsRest,
                 'projet'        => $oProject->title,
                 'lien_fb'       => $this->getFacebookLink(),
@@ -287,7 +284,7 @@ class MailerManager
             $this->oEmail->setSubject(stripslashes($sujetMail));
             $this->oEmail->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->aConfig['env'] == 'prod') {
+            if ($this->aConfig['env'] === 'prod') {
                 \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oBorrower->email, $tabFiler);
                 $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
             } else {
@@ -333,7 +330,7 @@ class MailerManager
     }
 
     /**
-     * @param $oProject
+     * @param \projects $oProject
      */
     public function sendFundedAndFinishedToBorrower(\projects $oProject)
     {
@@ -359,14 +356,14 @@ class MailerManager
             $sLinkPouvoir = $this->sLUrl . '/pdf/pouvoir/' . $oBorrower->hash . '/' . $oProject->id_project;
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
+                'surl'                   => $this->sSUrl,
+                'url'                    => $this->sLUrl,
                 'prenom_e'               => $oBorrower->prenom,
                 'nom_e'                  => $oCompany->name,
                 'mensualite'             => $this->oFicelle->formatNumber($fMonthlyPayment),
                 'montant'                => $this->oFicelle->formatNumber($oProject->amount, 0),
                 'taux_moyen'             => $fWeightedAvgRate,
-                'link_compte_emprunteur' => $sLUrl . '/projects/detail/' . $oProject->id_project,
+                'link_compte_emprunteur' => $this->sLUrl . '/projects/detail/' . $oProject->id_project,
                 'link_mandat'            => $sLinkMandat,
                 'link_pouvoir'           => $sLinkPouvoir,
                 'projet'                 => $oProject->title,
@@ -545,8 +542,8 @@ class MailerManager
                 $lien_tw = $this->oSettings->value;
 
                 $varMail = array(
-                    'surl' => $this->sSUrl,
-                    'url' => $this->sLUrl,
+                    'surl'                  => $this->sSUrl,
+                    'url'                   => $this->sLUrl,
                     'offre_s_selectionne_s' => $sSelectedOffers,
                     'prenom_p'              => $oClient->prenom,
                     'nom_entreprise'        => $oCompany->name,
@@ -555,7 +552,7 @@ class MailerManager
                     'detail_loans'          => $sLoansDetails,
                     'offre_s'               => $sOffers,
                     'pret_s'                => $sLoans,
-                    'projet-p'              => $sFUrl . '/projects/detail/' . $oProject->slug,
+                    'projet-p'              => $this->sFUrl . '/projects/detail/' . $oProject->slug,
                     'link_explication'      => $sLinkExplication,
                     'motif_virement'        => $oClient->getLenderPattern($oClient->id_client),
                     'lien_fb'               => $this->getFacebookLink(),
@@ -688,15 +685,9 @@ class MailerManager
         if ($oClient->status == 1) {
             $this->oMailText->get('emprunteur-dossier-funding-ko', 'lang = "' . $this->sLanguage . '" AND type');
 
-            $this->oSettings->get('Facebook', 'type');
-            $lien_fb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $lien_tw = $this->oSettings->value;
-
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
+                'surl'     => $this->sSUrl,
+                'url'      => $this->sLUrl,
                 'prenom_e' => $oClient->prenom,
                 'projet'   => $oProject->title,
                 'lien_fb'  => $this->getFacebookLink(),
@@ -728,22 +719,12 @@ class MailerManager
 
     public function sendProjectFinishedToStaff(\projects $oProject)
     {
-        /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
-        /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
         /** @var \loans $oLoan */
         $oLoan = Loader::loadData('loans');
         /** @var \companies $oCompany */
         $oCompany = Loader::loadData('companies');
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
-        /** @var \echeanciers $oPaymentSchedule */
-        $oPaymentSchedule = Loader::loadData('echeanciers');
-        /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = Loader::loadData('accepted_bids');
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
 
@@ -819,24 +800,17 @@ class MailerManager
 
             $this->oMailText->get('preteur-autobid-solde-insuffisant', 'lang = "' . $this->sLanguage . '" AND type');
 
-            $this->oSettings->get('Facebook', 'type');
-            $lien_fb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $lien_tw = $this->oSettings->value;
-
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'iban' => $sIban,
-                'bic' => $sBic,
-                'titulaire' => $sTitulaire,
-                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
+                'surl'           => $this->sSUrl,
+                'url'            => $this->sLUrl,
+                'prenom_p'       => $oClient->prenom,
+                'iban'           => $sIban,
+                'bic'            => $sBic,
+                'titulaire'      => $sTitulaire,
+                'autobid_link'   => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
                 'lien_fb'        => $this->getFacebookLink(),
-                'lien_tw'        => $this->getTwitterLink(),
-                'annee'            => date('Y')
+                'lien_tw'        => $this->getTwitterLink()
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -889,25 +863,18 @@ class MailerManager
 
             $this->oMailText->get('preteur-autobid-solde-faible', 'lang = "' . $this->sLanguage . '" AND type');
 
-            $this->oSettings->get('Facebook', 'type');
-            $lien_fb = $this->oSettings->value;
-
-            $this->oSettings->get('Twitter', 'type');
-            $lien_tw = $this->oSettings->value;
-
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'balance' => $iBalance,
-                'iban' => $sIban,
-                'bic' => $sBic,
-                'titulaire' => $sTitulaire,
-                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
+                'surl'           => $this->sSUrl,
+                'url'            => $this->sLUrl,
+                'prenom_p'       => $oClient->prenom,
+                'balance'        => $iBalance,
+                'iban'           => $sIban,
+                'bic'            => $sBic,
+                'titulaire'      => $sTitulaire,
+                'autobid_link'   => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
                 'lien_fb'        => $this->getFacebookLink(),
-                'lien_tw'        => $this->getTwitterLink(),
-                'annee'          => date('Y')
+                'lien_tw'        => $this->getTwitterLink()
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -928,57 +895,6 @@ class MailerManager
                 \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
             }
         }
-    }
-
-    /**
-     * @param \DateTime $oStart
-     * @param \DateTime $oEnd
-     *
-     * @return string
-     */
-    private function formatDateDiff(\DateTime $oStart, \DateTime $oEnd)
-    {
-        $interval = $oEnd->diff($oStart);
-
-        $format = array();
-        if ($interval->y !== 0) {
-            $format[] = "%y " . self::plural($interval->y, 'année');
-        }
-        if ($interval->m !== 0) {
-            $format[] = "%m " . self::plural($interval->m, 'mois');
-        }
-        if ($interval->d !== 0) {
-            $format[] = "%d " . self::plural($interval->d, 'jour');
-        }
-        if ($interval->h !== 0) {
-            $format[] = "%h " . self::plural($interval->h, 'heure');
-        }
-        if ($interval->i !== 0) {
-            $format[] = "%i " . self::plural($interval->i, "minute");
-        }
-        if ($interval->s !== 0) {
-            if (!count($format)) {
-                return 'moins d\'une minute';
-            } else {
-                $format[] = "%s " . self::plural($interval->s, "second");
-            }
-        }
-
-        if (count($format) > 1) {
-            $format = array_shift($format) . " et " . array_shift($format);
-        } else {
-            $format = array_pop($format);
-        }
-
-        return $interval->format($format);
-    }
-
-    private static function plural($iNumber, $sTerm)
-    {
-        if ('s' === substr($sTerm, -1, 1)) {
-            return $sTerm;
-        }
-        return $iNumber > 1 ? $sTerm . 's' : $sTerm;
     }
 
     public function sendFirstAutoBidActivation(\notifications $oNotification)
@@ -1040,5 +956,56 @@ class MailerManager
     {
         $this->oSettings->get('Twitter', 'type');
         return $this->oSettings->value;
+    }
+
+    /**
+     * @param \DateTime $oStart
+     * @param \DateTime $oEnd
+     *
+     * @return string
+     */
+    private function formatDateDiff(\DateTime $oStart, \DateTime $oEnd)
+    {
+        $interval = $oEnd->diff($oStart);
+
+        $format = array();
+        if ($interval->y !== 0) {
+            $format[] = "%y " . self::plural($interval->y, 'année');
+        }
+        if ($interval->m !== 0) {
+            $format[] = "%m " . self::plural($interval->m, 'mois');
+        }
+        if ($interval->d !== 0) {
+            $format[] = "%d " . self::plural($interval->d, 'jour');
+        }
+        if ($interval->h !== 0) {
+            $format[] = "%h " . self::plural($interval->h, 'heure');
+        }
+        if ($interval->i !== 0) {
+            $format[] = "%i " . self::plural($interval->i, "minute");
+        }
+        if ($interval->s !== 0) {
+            if (!count($format)) {
+                return 'moins d\'une minute';
+            } else {
+                $format[] = "%s " . self::plural($interval->s, "second");
+            }
+        }
+
+        if (count($format) > 1) {
+            $format = array_shift($format) . " et " . array_shift($format);
+        } else {
+            $format = array_pop($format);
+        }
+
+        return $interval->format($format);
+    }
+
+    private static function plural($iNumber, $sTerm)
+    {
+        if ('s' === substr($sTerm, -1, 1)) {
+            return $sTerm;
+        }
+        return $iNumber > 1 ? $sTerm . 's' : $sTerm;
     }
 }

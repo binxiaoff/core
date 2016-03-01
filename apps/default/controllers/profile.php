@@ -2600,7 +2600,7 @@ class profileController extends bootstrap
         $this->sValidationDate      = $oAutoBidSettingsManager->getValidationDate($oLendersAccounts);
 
         if (false === $this->bAutoBidOn) {
-            $this->bFirstTimeActivation = $oAutoBid->counter('id_lender = ' . $oLendersAccounts->id_lender_account) == 0 ;
+            $this->bFirstTimeActivation = ($oAutoBid->counter('id_lender = ' . $oLendersAccounts->id_lender_account) == 0) ;
         }
 
         if (false === in_array($oClientStatus->status, array(\clients_status::VALIDATED))) {
@@ -2662,10 +2662,10 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $oAutoBidSettingsManager  = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
 
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oSettings        = $this->loadData('settings');
+        $oLendersAccounts = Loader::loadData('lenders_accounts');
+        $oSettings        = Loader::loadData('settings');
         $oAutoBidPeriod   = $this->loadData('autobid_periods');
 
         $oSettings->get('pret min', 'type');
@@ -2708,7 +2708,7 @@ class profileController extends bootstrap
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
                 if (false === $oAutoBidSettingsManager->isOn($this->clients)) {
-                    $oAutoBidSettingsManager->on($this->clients);
+                    $this->autoBidSettingOn();
                 }
                 $iAmount = $_POST['autobid-amount'];
                 foreach ($aSettingsFromPOST as $sIndex => $aSetting) {

@@ -21,19 +21,11 @@
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
-                    <li class="active">
-                        <a id="notification" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
-                    </li>
-                    <li id="securite">
-                        <a id="title_2" href="#"><?= $this->lng['profile']['titre-3'] ?></a>
-                    </li>
-                    <li id="info_perso">
-                        <a id="title_3" href="#"><?= $this->lng['profile']['titre-1'] ?></a>
-                    </li>
+                    <li><a id="notif" href="#notification"><?= $this->lng['profile']['titre-4'] ?></a></li>
+                    <li><a id="secu" href="#securite"><?= $this->lng['profile']['titre-3'] ?></a></li>
+                    <li><a id="info" href="#info_perso"><?= $this->lng['profile']['titre-1'] ?></a></li>
                     <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
-                    <li id="auto">
-                        <a href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a>
-                    </li>
+                    <li><a id="auto" href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a></li>
                     <?php endif; ?>
                 </ul>
             </nav>

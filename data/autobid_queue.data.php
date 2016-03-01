@@ -28,9 +28,9 @@
 
 class autobid_queue extends autobid_queue_crud
 {
-    const TYPE_QUEUE_NEW    = 0;
+    const TYPE_QUEUE_NEW      = 0;
     const TYPE_QUEUE_REJECTED = 1;
-    const TYPE_QUEUE_BID  = 2;
+    const TYPE_QUEUE_BID      = 2;
 
     public function __construct($bdd, $params = '')
     {
@@ -49,8 +49,8 @@ class autobid_queue extends autobid_queue_crud
 
         $sql = 'SELECT * FROM `autobid_queue`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -63,16 +63,13 @@ class autobid_queue extends autobid_queue_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `autobid_queue` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `autobid_queue` ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_queue')
     {
-        $sql    = 'SELECT * FROM `autobid_queue` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM `autobid_queue` WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
@@ -84,10 +81,10 @@ class autobid_queue extends autobid_queue_crud
                    INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
                    INNER JOIN lenders_accounts la ON la.id_lender_account = aq.id_lender
                    WHERE ' . $iPeriod . ' BETWEEN ap.min AND ap.max
-                   AND ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
-                   AND a.evaluation = "' . $sEvaluation . '"
-                   AND a.rate_min <= ' . $fRate . '
-                   AND a.status = ' . \autobid::STATUS_ACTIVE;
+                       AND ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
+                       AND a.evaluation = "' . $sEvaluation . '"
+                       AND a.rate_min <= ' . $fRate . '
+                       AND a.status = ' . \autobid::STATUS_ACTIVE;
 
         $sQuery  = 'SELECT * FROM ( '
                         . $sBasicQuery . '
@@ -115,7 +112,7 @@ class autobid_queue extends autobid_queue_crud
         $this->delete($iLenderId, 'id_lender');
 
         $this->id_lender = $iLenderId;
-        $this->type    = $iType;
+        $this->type      = $iType;
         $this->create();
     }
 }

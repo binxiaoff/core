@@ -10,21 +10,31 @@ use Unilend\librairies\ULogger;
  */
 class BidManager
 {
+    /** @var string */
     private $sLanguage;
+
     /** @var \dates */
     private $oDate;
+
     /** @var \ficelle */
     private $oFicelle;
+
     /** @var \tnmp */
     private $oTNMP;
+
     /** @var \email */
     private $oEmail;
+
     /** @var array */
     private $aConfig;
-    /** @var  ULogger */
+
+    /** @var ULogger */
     private $oLogger;
+
     /** @var NotificationManager */
     private $oNotificationManager;
+    /** @var AutoBidSettingsManager */
+    private $oAutoBidManager;
 
     public function __construct()
     {
@@ -40,6 +50,7 @@ class BidManager
         $this->oEmail = Loader::loadLib('email');
 
         $this->oNotificationManager = Loader::loadService('NotificationManager');
+        $this->oAutoBidManager      = Loader::loadService('AutoBidManager');
 
         $this->sLanguage = 'fr';
     }
@@ -53,15 +64,15 @@ class BidManager
     }
 
     /**
-     * @param \clients $oClient
+     * @param \lenders_accounts $oLenderAccount
      *
      * @return bool
      */
-    public function canBid(\clients $oClient)
+    public function canBid(\lenders_accounts $oLenderAccount)
     {
         /** @var \clients_status $oClientStatus */
         $oClientStatus = Loader::loadData('clients_status');
-        if ($oClientStatus->getLastStatut($oClient->id_client) && $oClientStatus->status == 60) {
+        if ($oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == 60) {
             return true;
         }
         return false;
@@ -170,7 +181,7 @@ class BidManager
                         $oWelcomeOfferDetails->id_bid_remb        = $oBid->id_bid;
                         $oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
                         $oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_CUT;
-                        $oWelcomeOfferDetails->montant            = ($iAmountRepayment * 100);
+                        $oWelcomeOfferDetails->montant            = $iAmountRepayment * 100;
                         $oWelcomeOfferDetails->create();
                     }
                 } else {
@@ -196,20 +207,24 @@ class BidManager
     /**
      * @param \autobid  $oAutoBid
      * @param \projects $oProject
-     * @param           $fRate
+     * @param float     $fRate
      */
     public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate)
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
             $oBid = Loader::loadData('bids');
+            /** @var \lenders_accounts $LenderAccount */
+            $oLenderAccount = Loader::loadData('lenders_accounts');
 
-            $oBid->id_autobid        = $oAutoBid->id_autobid;
-            $oBid->id_lender_account = $oAutoBid->id_lender;
-            $oBid->id_project        = $oProject->id_project;
-            $oBid->amount            = $oAutoBid->amount * 100;
-            $oBid->rate              = $fRate;
-            $this->bid($oBid);
+            if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidManager->isOn($oLenderAccount)) {
+                $oBid->id_autobid        = $oAutoBid->id_autobid;
+                $oBid->id_lender_account = $oAutoBid->id_lender;
+                $oBid->id_project        = $oProject->id_project;
+                $oBid->amount            = $oAutoBid->amount * 100;
+                $oBid->rate              = $fRate;
+                $this->bid($oBid);
+            }
         }
     }
 
@@ -225,6 +240,7 @@ class BidManager
             //todo : do a hotfix to remove status_email_bid_ko when all the old ko mail are sent.
             $oBid->status_email_bid_ko = 1;
             $oBid->update();
+
             if (false === empty($oBid->id_autobid)) {
                 /** @var \autobid_queue $oAutoBidQueue */
                 $oAutoBidQueue = Loader::loadData('autobid_queue');
@@ -252,7 +268,7 @@ class BidManager
 
     /**
      * @param \bids $oBid
-     * @param       $fCurrentRate
+     * @param float $fCurrentRate
      */
     public function refreshAutoBidRateOrReject(\bids $oBid, $fCurrentRate)
     {

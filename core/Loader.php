@@ -7,28 +7,21 @@ namespace Unilend\core;
  */
 class Loader
 {
-    public static function loadData($object, $params = array(), $db = '')
+    public static function loadData($object, array $params = array(), $db = null)
     {
         $config = self::loadConfig();
 
-        if ($db == '') {
+        if (null === $db) {
             $db = new \bdd($config['bdd_config'][$config['env']], $config['bdd_option'][$config['env']]);
         }
 
         $path = $config['path'][$config['env']];
 
-        //On regarde si la classe mere existe, si elle n'existe pas, on la genere
-        if (!file_exists($path . 'data/crud/' . $object . '.crud.php')) {
-            //generation de la classe mere
-            if (!self::generateCRUD($object, $db, $path)) {
-                return false;
-            }
-        }
-
-        //On regarde si la classe fille existe, si elle n'existe pas, on la genere
-        if (!file_exists($path . 'data/' . $object . '.data.php')) {
-            //generation de la classe mere
-            self::generateDATA($object, $db, $path);
+        if (
+            false === file_exists($path . 'data/crud/' . $object . '.crud.php') && false === self::generateCRUD($object, $db, $path)
+            || false === file_exists($path . 'data/' . $object . '.data.php') && false === self::generateDATA($object, $db, $path)
+        ) {
+            return false;
         }
 
         $object = '\\' . $object;
@@ -36,15 +29,11 @@ class Loader
         return new $object($db, $params);
     }
 
-    //Genere un fichier CRUD a partir d'une table
     private static function generateCRUD($table, $db, $path)
     {
-        //On recupere la structure de la table
-        $sql    = "desc " . $table;
-        $result = $db->query($sql);
+        $result = $db->query('DESC ' . $table);
 
         if ($result) {
-            //On compte le nombre de cle primaire
             $nb_cle = 0;
             while ($record = $db->fetch_array($result)) {
                 if ($record['Key'] == 'PRI') {
@@ -52,11 +41,8 @@ class Loader
                 }
             }
 
-            //On recupere la structure de la table
-            $sql    = "desc " . $table;
-            $result = $db->query($sql);
+            $result = $db->query('DESC ' . $table);
 
-            //initialisation
             $slug           = false;
             $declaration    = '';
             $initialisation = '';
@@ -66,13 +52,11 @@ class Loader
             $clist          = '';
             $cvalues        = '';
             $id             = array();
-            while ($record = $db->fetch_array($result)) {
+            while ($record = $db->fetch_assoc($result)) {
                 $declaration .= "\tpublic \$" . $record['Field'] . ";\r\n";
                 $initialisation .= "\t\t\$this->" . $record['Field'] . " = '';\r\n";
                 $remplissage .= "\t\t\t\$this->" . $record['Field'] . " = \$record['" . $record['Field'] . "'];\r\n";
                 $escapestring .= "\t\t\$this->" . $record['Field'] . " = \$this->bdd->escape_string(\$this->" . $record['Field'] . ");\r\n";
-
-                //On stock les clé primaire dans un tableau
 
                 if ($record['Key'] == 'PRI') {
                     $id[] = $record['Field'];
@@ -83,7 +67,6 @@ class Loader
                     $updatefields .= "`" . $record['Field'] . "`=NOW(),";
                 }
 
-                //On check si il y a un slug present dans les champs
                 if ($record['Field'] == 'slug') {
                     $slug = true;
                 }
@@ -118,7 +101,6 @@ class Loader
             $clist        = substr($clist, 0, strlen($clist) - 1);
             $cvalues      = substr($cvalues, 0, strlen($cvalues) - 1);
 
-            //chargement du sample en fonction du nombre de clé primaires
             if ($nb_cle == 1) {
                 $dao = file_get_contents($path . 'core/crud.sample.php');
 
@@ -163,26 +145,22 @@ class Loader
             fclose($c);
 
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
-    //Genere un fichier DATA a partir d'une table
     private static function generateDATA($table, $db, $path)
     {
-        $sql    = "desc " . $table;
-        $result = $db->query($sql);
+        $result = $db->query('DESC ' . $table);
 
         if ($result) {
             $id = array();
-            while ($record = $db->fetch_array($result)) {
+            while ($record = $db->fetch_assoc($result)) {
                 if ($record['Key'] == 'PRI') {
                     $id[] = $record['Field'];
                 }
             }
 
-            //si la clé primaire est unique
             if (count($id) == 1) {
                 $dao = file_get_contents($path . 'core/data.sample.php');
             } else {
@@ -201,45 +179,41 @@ class Loader
             fclose($c);
 
             return true;
-        } else {
-            return false;
         }
+        return false;
     }
 
-    public static function loadService($sService, $aParams = array())
+    public static function loadService($sService, array $aParams = array())
     {
         $config = self::loadConfig();
         $sPath  = $config['path'][$config['env']];
 
         $sService = trim($sService, "/ \t\n\r\0\x0B");
-        if (!file_exists($sPath . 'Service/' . $sService . '.php')) {
+        if (false === file_exists($sPath . 'Service/' . $sService . '.php')) {
             return false;
-        } else {
-            $sService   = str_replace('/', '\\', $sService);
-            $sClassName = 'Unilend\Service\\' . $sService;
-            return new $sClassName($aParams);
         }
+        $sService   = str_replace('/', '\\', $sService);
+        $sClassName = 'Unilend\Service\\' . $sService;
+        return new $sClassName($aParams);
     }
 
-
-    public static function loadLib($sLibrary, $aParams = array(), $bInstancing = true)
+    public static function loadLib($sLibrary, array $aParams = array(), $bInstancing = true)
     {
         $config       = self::loadConfig();
         $sProjectPath = $config['path'][$config['env']];
+        $sClassPath   = '';
+        $aPath        = explode('/', $sLibrary);
 
-        $sClassPath = '';
-        $aPath      = explode("/", $sLibrary);
         if (count($aPath) > 1) {
             $sLibrary   = array_pop($aPath);
-            $sClassPath = implode("/", $aPath) . '/';
+            $sClassPath = implode('/', $aPath) . '/';
         }
-        if (!file_exists($sProjectPath . 'librairies/' . $sClassPath . $sLibrary . '.class.php')) {
+
+        if (false === file_exists($sProjectPath . 'librairies/' . $sClassPath . $sLibrary . '.class.php')) {
             return false;
-        } else {
-            if ($bInstancing) {
-                $sClassName = '\\' . $sLibrary;
-                return new $sClassName($aParams);
-            }
+        } elseif ($bInstancing) {
+            $sClassName = '\\' . $sLibrary;
+            return new $sClassName($aParams);
         }
     }
 
