@@ -23,8 +23,16 @@
         });
     });
 </script>
+<?php if ($this->Config['env'] != 'prod'): ?>
+<script>
+    jQuery.ajax(
+        { url: "https://unilend.atlassian.net/s/4c6a101758c3c334ffe9cd010c34dc33-T/en_USrrn36f/71001/b6b48b2829824b869586ac216d119363/2.0.10/_/download/batch/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector-embededjs/com.atlassian.jira.collector.plugin.jira-issue-collector-plugin:issuecollector-embededjs.js?locale=en-US&collectorId=f40c1120", type: "get", cache: true, dataType: "script" }
+    );
+</script>
+<?php endif; ?>
 <div id="header">
     <div class="logo_header">
+
         <a href="<?= $this->lurl ?>" title="Administration du site"><img src="<?= $this->surl ?>/styles/default/images/logo.png" alt="Unilend"/></a>
     </div>
     <div class="titre_header">Administration de votre site</div>
