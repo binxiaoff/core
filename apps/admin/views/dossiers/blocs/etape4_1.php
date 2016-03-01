@@ -24,7 +24,7 @@
 </script>
 <div class="tab_title" id="title_etape4_1">Etape 4.1 - Notation externe</div>
 <div class="tab_content" id="etape4_1">
-    <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
+    <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" onsubmit="valid_etape4_1(<?= $this->projects->id_project ?>); return false;" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">
             <table class="form" style="width: 100%;">
                 <tbody>
@@ -101,7 +101,7 @@
                     </tr>
                     <tr>
                         <th><label>Score sectoriel Xerfi</label></th>
-                        <td colspan="3"><?php if (isset($this->aRatings['score_xerfi'])) : ?><?= $this->aRatings['score_xerfi'] ?><?php else : ?>N/A<?php endif; ?></td>
+                        <td colspan="3"><?php if (isset($this->aRatings['xerfi'], $this->aRatings['xerfi_unilend'])) : ?><?= $this->aRatings['xerfi'] ?> / <?= $this->aRatings['xerfi_unilend'] ?><?php else : ?>N/A<?php endif; ?></td>
                     </tr>
                     <tr>
                         <th><label for="date_dernier_privilege">Date du privilège le plus récent</label></th>
@@ -141,7 +141,7 @@
         </div>
         <div id="valid_etape4_1" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
-            <input type="button" class="btn_link" value="Sauvegarder" onclick="valid_etape4_1(<?= $this->projects->id_project ?>)">
+            <input type="submit" class="btn_link" value="Sauvegarder"/>
         </div>
     </form>
 </div>

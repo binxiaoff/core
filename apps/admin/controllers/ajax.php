@@ -634,6 +634,34 @@ class ajaxController extends bootstrap
                             $oCompanyRating->value                     = $mValue;
                             $oCompanyRating->create();
                         }
+
+                        /** @var companies $oCompany */
+                        $oCompany = $this->loadData('companies');
+                        if ($oCompany->get($oProject->id_company) && false === empty($oCompany->code_naf)) {
+                            /** @var xerfi $oXerfi */
+                            $oXerfi = $this->loadData('xerfi');
+
+                            if (false === $oXerfi->get($oCompany->code_naf)) {
+                                $sXerfiScore   = 'N/A';
+                                $sXerfiUnilend = 'PAS DE DONNEES';
+                            } elseif ('' === $oXerfi->score) {
+                                $sXerfiScore   = 'N/A';
+                                $sXerfiUnilend = $oXerfi->unilend_rating;
+                            } else {
+                                $sXerfiScore   = $oXerfi->score;
+                                $sXerfiUnilend = $oXerfi->unilend_rating;
+                            }
+
+                            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+                            $oCompanyRating->type                      = 'xerfi';
+                            $oCompanyRating->value                     = $sXerfiScore;
+                            $oCompanyRating->create();
+
+                            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+                            $oCompanyRating->type                      = 'xerfi_unilend';
+                            $oCompanyRating->value                     = $sXerfiUnilend;
+                            $oCompanyRating->create();
+                        }
                     }
 
                     $oProject->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
