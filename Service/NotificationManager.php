@@ -8,13 +8,13 @@
 
 namespace Unilend\Service;
 
-
 use Unilend\core\Loader;
 
 class NotificationManager
 {
     /** @var MailerManager */
     private $oMailerManager;
+
     public function __construct()
     {
         $this->oMailerManager = Loader::loadService('MailerManager');
@@ -43,9 +43,13 @@ class NotificationManager
         $oNotification->create();
 
         if ($oNotificationSettings->getNotif($iClientId, $iTypeMail, 'uniquement_notif') == false) {
-            if (($oNotificationSettings->getNotif($iClientId, $iTypeMail, 'immediatement') == true
-                    || false === $oNotificationSettings->exist(array('id_client' => $iClientId, 'id_notif' => $iTypeMail)))
-                && '' !== $sMailFunction) {
+            if (
+                (
+                    $oNotificationSettings->getNotif($iClientId, $iTypeMail, 'immediatement') == true
+                    || false === $oNotificationSettings->exist(array('id_client' => $iClientId, 'id_notif' => $iTypeMail))
+                )
+                && '' !== $sMailFunction
+            ) {
                 $this->oMailerManager->$sMailFunction($oNotification);
                 $oMailNotification->immediatement = 1;
             } else {

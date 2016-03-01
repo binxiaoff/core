@@ -1,8 +1,8 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\librairies\ULogger;
 use Unilend\core\Loader;
+use Unilend\librairies\ULogger;
 
 /**
  * Class LoanManager
@@ -60,5 +60,4 @@ class LoanManager
             }
         }
     }
-
 }

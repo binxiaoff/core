@@ -64,7 +64,6 @@ class AutoBidSettingsManager
 
     /**
      * @param \clients $oClient
-     *
      * @return bool
      */
     public function isQualified(\clients $oClient)
@@ -90,7 +89,6 @@ class AutoBidSettingsManager
      * @param int    $iAutoBidPeriodId
      * @param float  $fRate
      * @param int    $iAmount
-     *
      * @return bool
      */
     public function saveSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
@@ -151,7 +149,6 @@ class AutoBidSettingsManager
      * @param int    $iAutoBidPeriodId
      * @param float  $fRate
      * @param int    $iAmount
-     *
      * @return bool
      */
     private function createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
@@ -179,8 +176,7 @@ class AutoBidSettingsManager
      * @param string $sEvaluation
      * @param int    $iAutoBidPeriodId
      * @param array  $aStatus
-     *
-     * @return mixed
+     * @return bool
      */
     public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null)
     {
@@ -189,7 +185,6 @@ class AutoBidSettingsManager
 
     /**
      * @param \lenders_accounts $oLendersAccount
-     *
      * @return bool
      */
     public function isNovice(\lenders_accounts $oLendersAccount)
@@ -240,9 +235,8 @@ class AutoBidSettingsManager
 
     /**
      * @param string $sEvaluation
-     * @param int    $iDuration in month
-     *
-     * @return mixed
+     * @param int    $iDuration
+     * @return int
      */
     public function predictAmount($sEvaluation, $iDuration)
     {
