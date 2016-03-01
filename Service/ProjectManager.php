@@ -154,10 +154,8 @@ class ProjectManager
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
             if ($oProjectStatus->status == \projects_status::AUTO_BID) {
                 $this->bidAllAutoBid($oProject);
-            } else {
-                if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                    $this->refreshAllAutoBidRate($oProject);
-                }
+            } elseif ($oProjectStatus->status == \projects_status::EN_FUNDING) {
+                $this->refreshAllAutoBidRate($oProject);
             }
         }
     }
@@ -665,6 +663,8 @@ class ProjectManager
             return self::getWeightedAvgRateFromBid($oProject);
         } elseif ($oProjectStatus->status == \projects_status::FUNDE) {
             return self::getWeightedAvgRateFromLoan($oProject);
+        } else {
+            return false;
         }
     }
 
@@ -698,7 +698,7 @@ class ProjectManager
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
-        $oEndDate = new \DateTime($oProject->date_retrait_full);
+        $oEndDate  = new \DateTime($oProject->date_retrait_full);
         if ($oProject->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($oProject->date_fin);
         }

@@ -216,7 +216,7 @@ class MailerManager
 
     }
 
-    public function sendFondedToBorrower(\projects $oProject)
+    public function sendFundedToBorrower(\projects $oProject)
     {
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
@@ -740,22 +740,12 @@ class MailerManager
 
     public function sendProjectFinishedToStaff(\projects $oProject)
     {
-        /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
-        /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
         /** @var \loans $oLoan */
         $oLoan = Loader::loadData('loans');
         /** @var \companies $oCompany */
         $oCompany = Loader::loadData('companies');
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
-        /** @var \echeanciers $oPaymentSchedule */
-        $oPaymentSchedule = Loader::loadData('echeanciers');
-        /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = Loader::loadData('accepted_bids');
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
 

@@ -26,58 +26,58 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param \clients $oClient
+     * @param \lenders_accounts $oLenderAccount
      */
-    public function on(\clients $oClient)
+    public function on(\lenders_accounts $oLenderAccount)
     {
-        /** @var \lenders_accounts $oLendersAccount */
-        $oLendersAccount = Loader::loadData('lenders_accounts');
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
 
-        if ($this->isQualified($oClient)
-            && $this->oBidManager->canBid($oClient)
+        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->isQualified($oLenderAccount)
+            && $this->oBidManager->canBid($oLenderAccount)
             && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON)
         ) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_ON);
-            $oLendersAccount->get($oClient->id_client, 'id_client_owner');
-            $oAutoBidQueue->addToQueue($oLendersAccount->id_lender_account, \autobid_queue::TYPE_QUEUE_NEW);
+            $oAutoBidQueue->addToQueue($oLenderAccount->id_lender_account, \autobid_queue::TYPE_QUEUE_NEW);
         }
     }
 
     /**
-     * @param \clients $oClient
+     * @param \lenders_accounts $oLenderAccount
      */
-    public function off(\clients $oClient)
+    public function off(\lenders_accounts $oLenderAccount)
     {
-        /** @var \lenders_accounts $oLendersAccount */
-        $oLendersAccount = Loader::loadData('lenders_accounts');
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
 
-        if ($this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)) {
+        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_OFF);
-            $oLendersAccount->get($oClient->id_client, 'id_client_owner');
-            $oAutoBidQueue->delete($oLendersAccount->id_lender_account, 'id_lender');
+            $oAutoBidQueue->delete($oLenderAccount->id_lender_account, 'id_lender');
         }
     }
 
     /**
-     * @param \clients $oClient
+     * @param \lenders_accounts $oLenderAccount
      *
      * @return bool
      */
-    public function isQualified(\clients $oClient)
+    public function isQualified(\lenders_accounts $oLenderAccount)
     {
-        if (empty($oClient->id_client)) {
+        if (empty($oLenderAccount->id_lender_account)) {
             return false;
         }
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
 
         $oSettings->get('Auto-bid global switch', 'type');
 
-        if ($oSettings->value || $this->oClientManager->isBetaTester($oClient)) {
+        if ($oSettings->value || (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientManager->isBetaTester($oClient))) {
             return true;
         }
 
@@ -200,7 +200,8 @@ class AutoBidSettingsManager
         $bIsNovice             = true;
 
         if ($oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0
-            && $oAutobid->counter('id_lender = ' . $oLendersAccount->id_lender_account) > 0) {
+            && $oAutobid->counter('id_lender = ' . $oLendersAccount->id_lender_account) > 0
+        ) {
             if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = ' . \autobid::STATUS_INACTIVE, 'id_lender')) {
                 $bIsNovice = false;
             } else {
@@ -227,9 +228,12 @@ class AutoBidSettingsManager
      */
     public function saveNoviceSetting($iLenderId, $fRate, $iAmount)
     {
+        /** @var \autobid_periods $oAutoBidPeriods */
         $oAutoBidPeriods = Loader::loadData('autobid_periods');
-        $aAutoBidPeriods = $oAutoBidPeriods->select();
-        $aRiskValues     = array("A", "B", "C", "D", "E");
+        /** @var \projects $oProject */
+        $oProject        = Loader::loadData('projects');
+        $aAutoBidPeriods = $oAutoBidPeriods->select('status = ' . \autobid_periods::STATUS_ACTIVE);
+        $aRiskValues     = $oProject->getAvailableRisks();
 
         foreach ($aAutoBidPeriods as $aPeriod) {
             foreach ($aRiskValues as $sEvaluation) {
@@ -250,19 +254,17 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param int $iLenderId
+     * @param int    $iLenderId
      * @param string $sEvaluation
-     * @param int $iAutoBidPeriodId
-     * @param float $fRate
-     * @param int $iAmount
-     * @param int $iNewStatus
+     * @param int    $iAutoBidPeriodId
+     * @param int    $iNewStatus
      */
     public function activateDeactivateSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $iNewStatus)
     {
         $oAutoBid = Loader::loadData('autobid');
         $oAutoBid->get(
             $iLenderId,
-            'status != ' . \autobid::STATUS_ARCHIVED. ' AND evaluation = "' . $sEvaluation . '" AND id_autobid_period = '
+            'status != ' . \autobid::STATUS_ARCHIVED . ' AND evaluation = "' . $sEvaluation . '" AND id_autobid_period = '
             . $iAutoBidPeriodId . ' AND id_lender'
         );
 
@@ -322,12 +324,16 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param \clients $oClient
+     * @param \lenders_accounts $oLenderAccount
      *
      * @return bool
      */
-    public function isOn(\clients $oClient)
+    public function isOn(\lenders_accounts $oLenderAccount)
     {
-        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
+        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner)) {
+            return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
+        }
     }
 }

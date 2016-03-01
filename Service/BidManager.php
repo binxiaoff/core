@@ -25,6 +25,8 @@ class BidManager
     private $oLogger;
     /** @var NotificationManager */
     private $oNotificationManager;
+    /** @var AutoBidSettingsManager */
+    private $oAutoBidManager;
 
     public function __construct()
     {
@@ -40,6 +42,7 @@ class BidManager
         $this->oEmail = Loader::loadLib('email');
 
         $this->oNotificationManager = Loader::loadService('NotificationManager');
+        $this->oAutoBidManager      = Loader::loadService('AutoBidManager');
 
         $this->sLanguage = 'fr';
     }
@@ -53,15 +56,15 @@ class BidManager
     }
 
     /**
-     * @param \clients $oClient
+     * @param \lenders_accounts $oLenderAccount
      *
      * @return bool
      */
-    public function canBid(\clients $oClient)
+    public function canBid(\lenders_accounts $oLenderAccount)
     {
         /** @var \clients_status $oClientStatus */
         $oClientStatus = Loader::loadData('clients_status');
-        if ($oClientStatus->getLastStatut($oClient->id_client) && $oClientStatus->status == 60) {
+        if ($oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == 60) {
             return true;
         }
         return false;
@@ -203,13 +206,17 @@ class BidManager
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
             $oBid = Loader::loadData('bids');
+            /** @var \lenders_accounts $LenderAccount */
+            $oLenderAccount = Loader::loadData('lenders_accounts');
 
-            $oBid->id_autobid        = $oAutoBid->id_autobid;
-            $oBid->id_lender_account = $oAutoBid->id_lender;
-            $oBid->id_project        = $oProject->id_project;
-            $oBid->amount            = $oAutoBid->amount * 100;
-            $oBid->rate              = $fRate;
-            $this->bid($oBid);
+            if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidManager->isOn($oLenderAccount)) {
+                $oBid->id_autobid        = $oAutoBid->id_autobid;
+                $oBid->id_lender_account = $oAutoBid->id_lender;
+                $oBid->id_project        = $oProject->id_project;
+                $oBid->amount            = $oAutoBid->amount * 100;
+                $oBid->rate              = $fRate;
+                $this->bid($oBid);
+            }
         }
     }
 

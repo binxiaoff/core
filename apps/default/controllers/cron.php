@@ -3484,7 +3484,7 @@ class cronController extends bootstrap
                         $oProject->status_solde = 1;
                         $oProject->update();
 
-                        $oMailerManager->sendFondedToBorrower($oProject);
+                        $oMailerManager->sendFundedToBorrower($oProject);
                     }
 
                     $oProjectManager->autoBid($oProject);
