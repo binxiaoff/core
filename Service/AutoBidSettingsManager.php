@@ -54,7 +54,9 @@ class AutoBidSettingsManager
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
 
-        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)) {
+        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientSettingsManager->saveClientSetting($oClient,
+                \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)
+        ) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_OFF);
             $oAutoBidQueue->delete($oLenderAccount->id_lender_account, 'id_lender');
         }
@@ -90,6 +92,7 @@ class AutoBidSettingsManager
      * @param int    $iAutoBidPeriodId
      * @param float  $fRate
      * @param int    $iAmount
+     *
      * @return bool
      */
     public function saveSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
@@ -150,6 +153,7 @@ class AutoBidSettingsManager
      * @param int    $iAutoBidPeriodId
      * @param float  $fRate
      * @param int    $iAmount
+     *
      * @return bool
      */
     private function createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount)
@@ -177,6 +181,7 @@ class AutoBidSettingsManager
      * @param string $sEvaluation
      * @param int    $iAutoBidPeriodId
      * @param array  $aStatus
+     *
      * @return bool
      */
     public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null)
@@ -186,6 +191,7 @@ class AutoBidSettingsManager
 
     /**
      * @param \lenders_accounts $oLendersAccount
+     *
      * @return bool
      */
     public function isNovice(\lenders_accounts $oLendersAccount)
@@ -241,6 +247,7 @@ class AutoBidSettingsManager
     /**
      * @param string $sEvaluation
      * @param int    $iDuration
+     *
      * @return int
      */
     public function predictAmount($sEvaluation, $iDuration)

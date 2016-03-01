@@ -146,6 +146,7 @@ class ProjectManager
 
     /**
      * @param \projects $oProject
+     *
      * @return bool
      */
     public function autoBid(\projects $oProject)
@@ -211,7 +212,7 @@ class ProjectManager
                         'sendAutoBidBalanceInsufficient',
                         $oProject->id_project
                     );
-                } elseif ($iBalance < (3 * $aAutoBidSetting['amount'])) {
+                } elseif ($iBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
                     $this->oNotificationManager->create(
                         \notifications::TYPE_AUTOBID_BALANCE_LOW,
                         \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,

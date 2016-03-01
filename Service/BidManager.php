@@ -127,7 +127,7 @@ class BidManager
         }
 
         $oTransaction->id_client        = $iClientId;
-        $oTransaction->montant          = - $fAmountX100;
+        $oTransaction->montant          = -$fAmountX100;
         $oTransaction->id_langue        = 'fr';
         $oTransaction->date_transaction = date('Y-m-d H:i:s');
         $oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
@@ -142,7 +142,7 @@ class BidManager
         $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
         $oWalletsLine->status                   = \wallets_lines::STATUS_VALID;
         $oWalletsLine->type                     = \wallets_lines::VIRTUAL;
-        $oWalletsLine->amount                   = - $fAmountX100;
+        $oWalletsLine->amount                   = -$fAmountX100;
         $oWalletsLine->id_project               = $oBid->id_project;
         $oWalletsLine->create();
 

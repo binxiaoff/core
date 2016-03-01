@@ -20,7 +20,7 @@ class NotificationManager
         $this->oMailerManager = Loader::loadService('MailerManager');
     }
 
-    public function create($iTypeNotification, $iTypeMail, $iClientId, $sMailFunction = '', $iProjectId = '', $fAmount = '', $iBidId = '', $iTransactionId = '')
+    public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
@@ -35,20 +35,20 @@ class NotificationManager
         if ($oLenderAccount->get($iClientId, 'id_client_owner')) {
             $iLenderId = $oLenderAccount->id_lender_account;
         }
-        $oNotification->type       = $iTypeNotification;
+        $oNotification->type       = $iNotificationType;
         $oNotification->id_lender  = $iLenderId;
         $oNotification->id_project = $iProjectId;
         $oNotification->amount     = $fAmount * 100;
         $oNotification->id_bid     = $iBidId;
         $oNotification->create();
 
-        if ($oNotificationSettings->getNotif($iClientId, $iTypeMail, 'uniquement_notif') == false) {
+        if ($oNotificationSettings->getNotif($iClientId, $iMailType, 'uniquement_notif') == false) {
             if (
                 (
-                    $oNotificationSettings->getNotif($iClientId, $iTypeMail, 'immediatement') == true
-                    || false === $oNotificationSettings->exist(array('id_client' => $iClientId, 'id_notif' => $iTypeMail))
+                    $oNotificationSettings->getNotif($iClientId, $iMailType, 'immediatement') == true
+                    || false === $oNotificationSettings->exist(array('id_client' => $iClientId, 'id_notif' => $iMailType))
                 )
-                && '' !== $sMailFunction
+                && null !== $sMailFunction && method_exists($this->oMailerManager, $sMailFunction)
             ) {
                 $this->oMailerManager->$sMailFunction($oNotification);
                 $oMailNotification->immediatement = 1;
@@ -57,7 +57,7 @@ class NotificationManager
             }
 
             $oMailNotification->id_client       = $iClientId;
-            $oMailNotification->id_notif        = $iTypeMail;
+            $oMailNotification->id_notif        = $iMailType;
             $oMailNotification->date_notif      = date('Y-m-d H:i:s');
             $oMailNotification->id_notification = $oNotification->id_notification;
             $oMailNotification->id_transaction  = $iTransactionId;

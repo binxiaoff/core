@@ -32,6 +32,8 @@ class autobid extends autobid_crud
     const STATUS_ACTIVE   = 1;
     const STATUS_ARCHIVED = 2;
 
+    const THRESHOLD_AUTO_BID_BALANCE_LOW = 3;
+
     public function __construct($bdd, $params = '')
     {
         parent::autobid($bdd, $params);
