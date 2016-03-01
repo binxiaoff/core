@@ -10,14 +10,14 @@
     <div class="col-right">
         <div class="switch-notice">
         <?php if ($this->bAutoBidOn) : ?>
-            <p><?= $this->lng['autobid']['overwiew-text-active'] ?></p>
+            <p><?= $this->lng['autobid']['overview-text-active'] ?></p>
         <?php else : ?>
             <?php if ($this->bActivatedLender && $this->bFirstTimeActivation) : ?>
                 <p><?= $this->lng['autobid']['overview-text-first-activation'] ?></p>
             <?php elseif ($this->bActivatedLender && false === $this->bFirstTimeActivation) : ?>
                 <p><?= $this->lng['autobid']['overview-text-nth-activation'] ?></p>
             <?php elseif (false === $this->bActivatedLender) : ?>
-                <p><?= $this->lng['autobid']['overwiew-text-completeness'] ?></p>
+                <p><?= $this->lng['autobid']['overview-text-completeness'] ?></p>
             <?php endif; ?>
         <?php endif; ?>
         </div>
@@ -35,24 +35,22 @@
                     setting: $('#autobid-switch-1').val(),
                     id_client: "<?= $this->clients->id_client ?>"
                 };
-                console.log(Settings);
-
                 if ($('#autobid-switch-1').val() == <?= \client_settings::AUTO_BID_ON ?>) {
                     $.post(add_url + "/profile/AutoBidSettingOff", Settings).done(function (data) {
                         if (data == "update_off_success") {
                             $('.switch-container').toggleClass('checked');
                             $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_OFF ?>');
-                            $('#parametrage').hide();
+                            $('#param').hide();
                             $('#tab-2').hide();
                         }
                     })
                 } else {
-                    $('.header-autobid li').removeClass('active');
-                    $(this).parent().addClass('active');
-                    $('.autobid-tab').removeClass('visible');
-                    $('#tab-'+$(this).attr('data-dest')).addClass('visible');
-                    $('#parametrage').show();
-                    $('#tab-2').show();
+                    $('#tab-2').addClass('visible');
+                    $('#tab-1').removeClass('visible');
+                    $('#param').addClass('active');
+                    $('#param').show();
+                    $('#consult').removeClass('active');
+                    $('#param').trigger("click");
                 }
             });
         }
