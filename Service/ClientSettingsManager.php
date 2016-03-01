@@ -16,6 +16,7 @@ class ClientSettingsManager {
     public function __construct()
     {
         $this->oClientSettings = Loader::loadData('client_settings');
+        Loader::loadData('client_setting_type'); //load for use of constants
     }
 
     /**
