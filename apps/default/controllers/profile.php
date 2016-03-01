@@ -1,12 +1,11 @@
 <?php
-use \Unilend\core\Loader;
 
 class profileController extends bootstrap
 {
-	/**
-	 * @var attachment_helper
-	 */
-	private $attachmentHelper;
+    /**
+     * @var attachment_helper
+     */
+    private $attachmentHelper;
 
     public function __construct($command, $config, $app)
     {
@@ -40,7 +39,9 @@ class profileController extends bootstrap
     public function _default()
     {
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
+        $oLendersAccounts        = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($oLendersAccounts);
 
         if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
             $this->_particulier();
@@ -2491,83 +2492,85 @@ class profileController extends bootstrap
      * @param integer $attachmentType
      * @return bool
      */
-	private function uploadAttachment($lenderAccountId, $attachmentType)
-	{
-		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
-			$this->upload = $this->loadLib('upload');
-		}
+    private function uploadAttachment($lenderAccountId, $attachmentType)
+    {
+        if(false === isset($this->upload) || false === $this->upload instanceof upload) {
+            $this->upload = $this->loadLib('upload');
+        }
 
-		if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
-			$this->attachment = $this->loadData('attachment');
-		}
+        if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+            $this->attachment = $this->loadData('attachment');
+        }
 
-		if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
-			$this->attachment_type = $this->loadData('attachment_type');
-		}
+        if (false === isset($this->attachment_type) || false === $this->attachment_type instanceof attachment_type) {
+            $this->attachment_type = $this->loadData('attachment_type');
+        }
 
-		if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
-			$this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
-		}
+        if (false === isset($this->attachmentHelper) || false === $this->attachmentHelper instanceof attachment_helper) {
+            $this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
+        }
 
-		switch($attachmentType) {
-			case attachment_type::CNI_PASSPORTE :
-				$field = 'cni_passeport';
-				break;
-			case attachment_type::CNI_PASSPORTE_VERSO :
-				$field = 'cni_passeport_verso';
-				break;
-			case attachment_type::JUSTIFICATIF_DOMICILE :
-				$field = 'justificatif_domicile';
-				break;
-			case attachment_type::RIB :
-				$field = 'rib';
-				break;
-			case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
-				$field = 'attestation_hebergement_tiers';
-				break;
-			case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
-				$field = 'cni_passport_tiers_hebergeant';
-				break;
-			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
-				$field = 'cni_passeport_dirigeant';
-				break;
-			case attachment_type::DELEGATION_POUVOIR :
-				$field = 'delegation_pouvoir';
-				break;
-			case attachment_type::KBIS :
-				$field = 'extrait_kbis';
-				break;
-			case attachment_type::JUSTIFICATIF_FISCAL :
-				$field = 'document_fiscal';
-				break;
-			case attachment_type::AUTRE1 :
-				$field = 'autre1';
-				break;
-			case attachment_type::AUTRE2 :
-				$field = 'autre2';
-				break;
-			case attachment_type::AUTRE3:
-				$field = 'autre3';
-				break;
-			default :
-				return false;
-		}
+        switch($attachmentType) {
+            case attachment_type::CNI_PASSPORTE :
+                $field = 'cni_passeport';
+                break;
+            case attachment_type::CNI_PASSPORTE_VERSO :
+                $field = 'cni_passeport_verso';
+                break;
+            case attachment_type::JUSTIFICATIF_DOMICILE :
+                $field = 'justificatif_domicile';
+                break;
+            case attachment_type::RIB :
+                $field = 'rib';
+                break;
+            case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
+                $field = 'attestation_hebergement_tiers';
+                break;
+            case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
+                $field = 'cni_passport_tiers_hebergeant';
+                break;
+            case attachment_type::CNI_PASSPORTE_DIRIGEANT :
+                $field = 'cni_passeport_dirigeant';
+                break;
+            case attachment_type::DELEGATION_POUVOIR :
+                $field = 'delegation_pouvoir';
+                break;
+            case attachment_type::KBIS :
+                $field = 'extrait_kbis';
+                break;
+            case attachment_type::JUSTIFICATIF_FISCAL :
+                $field = 'document_fiscal';
+                break;
+            case attachment_type::AUTRE1 :
+                $field = 'autre1';
+                break;
+            case attachment_type::AUTRE2 :
+                $field = 'autre2';
+                break;
+            case attachment_type::AUTRE3:
+                $field = 'autre3';
+                break;
+            default :
+                return false;
+        }
 
-		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
+        $resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
 
-		if(false === $resultUpload) {
-			$this->form_ok = false;
-			$this->error_fichier = true;
-		}
+        if(false === $resultUpload) {
+            $this->form_ok = false;
+            $this->error_fichier = true;
+        }
 
-		return $resultUpload;
-	}
+        return $resultUpload;
+    }
 
     public function _autolend()
     {
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oLendersAccounts        = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
-        if (false === $oAutoBidSettingsManager->isQualified($this->clients)) {
+        if (false === $oAutoBidSettingsManager->isQualified($oLendersAccounts)) {
             header('Location: ' . $this->lurl . '/profile');
             die;
         }
@@ -2575,24 +2578,22 @@ class profileController extends bootstrap
         $this->loadCss('default/autobid');
         $this->loadJs('default/main');
 
-        $oClientStatus         = Loader::loadData('clients_status');
-        $oLendersAccounts      = Loader::loadData('lenders_accounts');
-        $oSettings             = Loader::loadData('settings');
-        $oAutoBid              = Loader::loadData('autobid');
-        $oProject              = Loader::loadData('projects');
-        $oAutoBidPeriod        = Loader::loadData('autobid_periods');
+        $oClientStatus         = $this->loadData('clients_status');
+        $oSettings             = $this->loadData('settings');
+        $oAutoBid              = $this->loadData('autobid');
+        $oAutoBidPeriod        = $this->loadData('autobid_periods');
+        $oProject              = $this->loadData('projects');
 
         $this->lng['autobid']  = $this->ln->selectFront('autobid', $this->language, $this->App);
 
         $oClientStatus->getLastStatut($this->clients->id_client);
-        $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
         $oSettings->get('Auto-bid step', 'type');
         $this->fAutoBidStep = $oSettings->value;
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int) $oSettings->value;
 
-        $this->bAutoBidOn           = $oAutoBidSettingsManager->isOn($this->clients);
+        $this->bAutoBidOn           = $oAutoBidSettingsManager->isOn($oLendersAccounts);
         $this->bFirstTimeActivation = false;
         $this->bActivatedLender     = true;
         $this->fAverageRateUnilend  = round($oProject->getAvgRate(), 1);
@@ -2611,7 +2612,7 @@ class profileController extends bootstrap
         $aAutoBidPeriods        = $oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE, 'min ASC');
 
         foreach ($aAutoBidPeriods as $aPeriod){
-            $this->aAutoBidSettings[$aPeriod['id_period']] = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+            $this->aAutoBidSettings[$aPeriod['id_period']] = $oAutoBidSettingsManager->getSettings($oLendersAccounts->id_lender_account, null, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
 
             foreach ($this->aAutoBidSettings[$aPeriod['id_period']] as $iKey => $aSetting) {
                 $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
@@ -2646,7 +2647,7 @@ class profileController extends bootstrap
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
                 if (false === $this->bAutoBidOn) {
-                    $this->autoBidSettingOn();
+                    $oAutoBidSettingsManager->on($oLendersAccounts);
                 }
                 $oAutoBidSettingsManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $_POST['autobid-param-simple-taux-min'], $_POST['autobid-amount']);
                 header('Location: ' . $this->lurl . '/profile/autolend#parametrage');
@@ -2662,16 +2663,18 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
+        /** @var $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
 
-        $oLendersAccounts = Loader::loadData('lenders_accounts');
-        $oSettings        = Loader::loadData('settings');
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oSettings        = $this->loadData('settings');
         $oAutoBidPeriod   = $this->loadData('autobid_periods');
+        $oProject         = $this->loadData('projects');
 
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int) $oSettings->value;
 
-        $aRiskValues           = array("A", "B", "C", "D", "E");
+        $aRiskValues           = $oProject->getAvailableRisks();
         $iNumberOfSettingLines = 25;
         foreach ($oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE) as $aPeriod){
             $aAutoBidPeriods[] = $aPeriod['id_period'];
@@ -2707,8 +2710,8 @@ class profileController extends bootstrap
             }
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
-                if (false === $oAutoBidSettingsManager->isOn($this->clients)) {
-                    $this->autoBidSettingOn();
+                if (false === $oAutoBidSettingsManager->isOn($oLendersAccounts)) {
+                    $oAutoBidSettingsManager->on($oLendersAccounts);
                 }
                 $iAmount = $_POST['autobid-amount'];
                 foreach ($aSettingsFromPOST as $sIndex => $aSetting) {
@@ -2728,37 +2731,18 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
         $oClient                 = $this->loadData('clients');
         $oClientSettings         = $this->loadData('client_settings');
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oLendersAccounts        = $this->loadData('lenders_accounts');
         $sInstruction            = '';
 
-        if (false === empty($_POST['setting']) && $oClient->get($_POST['id_client'])) {
+        if (false === empty($_POST['setting']) && $oClient->get($_POST['id_client']) && $oLendersAccounts->get($oClient->id_client, 'id_client_owner')) {
             if (\client_settings::AUTO_BID_ON == $oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
-                $oAutoBidSettingsManager->off($oClient);
+                $oAutoBidSettingsManager->off($oLendersAccounts);
                 $sInstruction = 'update_off_success';
             }
         }
         echo $sInstruction;
     }
-
-    private function autoBidSettingOn()
-    {
-        $oLendersAccounts      = Loader::loadData('lenders_accounts');
-        $oAutoBid              = Loader::loadData('autobid');
-
-        $oAutoBidSettingsManager  = $this->get('AutoBidSettingsManager');
-        $oAutoBidSettingsManager->on($this->clients);
-
-        if ($oLendersAccounts->get($this->clients->id_client, 'id_client_owner') && $oAutoBid->counter('id_lender = ' . $oLendersAccounts->id_lender_account) == 0) {
-            $oNotificationManager = $this->get('NotificationManager');
-            $oNotificationManager->create(
-                \notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
-                \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
-                $this->clients->id_client,
-                'sendFirstAutoBidActivation'
-            );
-        }
-    }
-
 }

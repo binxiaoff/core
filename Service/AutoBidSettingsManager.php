@@ -18,11 +18,15 @@ class AutoBidSettingsManager
     /** @var ClientManager */
     private $oClientManager;
 
+    /** @var NotificationManager */
+    private $oNotificationManager;
+
     public function __construct()
     {
         $this->oBidManager            = Loader::loadService('BidManager');
         $this->oClientSettingsManager = Loader::loadService('ClientSettingsManager');
         $this->oClientManager         = Loader::loadService('ClientManager');
+        $this->oNotificationManager   = Loader::loadService('NotificationManager');
     }
 
     /**
@@ -32,8 +36,12 @@ class AutoBidSettingsManager
     {
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
+
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
+
+        /** @var \autobid $oAutoBid */
+        $oAutoBid = Loader::loadData('autobid');
 
         if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->isQualified($oLenderAccount)
             && $this->oBidManager->canBid($oLenderAccount)
@@ -41,6 +49,15 @@ class AutoBidSettingsManager
         ) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_ON);
             $oAutoBidQueue->addToQueue($oLenderAccount->id_lender_account, \autobid_queue::TYPE_QUEUE_NEW);
+
+            if ($oAutoBid->counter('id_lender = ' . $oLenderAccount->id_lender_account) == 0) {
+                $this->oNotificationManager->create(
+                    \notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
+                    \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
+                    $this->clients->id_client,
+                    'sendFirstAutoBidActivation'
+                );
+            }
         }
     }
 
@@ -54,8 +71,8 @@ class AutoBidSettingsManager
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
 
-        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientSettingsManager->saveClientSetting($oClient,
-                \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)
+        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner)
+            && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)
         ) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_OFF);
             $oAutoBidQueue->delete($oLenderAccount->id_lender_account, 'id_lender');
@@ -79,7 +96,9 @@ class AutoBidSettingsManager
 
         $oSettings->get('Auto-bid global switch', 'type');
 
-        if ($oSettings->value || (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientManager->isBetaTester($oClient))) {
+        if ($oSettings->value ||
+            (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientManager->isBetaTester($oClient)))
+        {
             return true;
         }
 
@@ -134,7 +153,7 @@ class AutoBidSettingsManager
                 $oAutoBid->update();
             }
 
-            // It shouldn't have more than one autobit settings for each category, but if we have, archive them all.
+            // It shouldn't have more than one autobid settings for each category, but if we have, archive them all.
             if (false === empty($aAutoBids)) {
                 foreach ($aAutoBids as $aBid) {
                     $oAutoBid->get($aBid['id_autobid']);
@@ -338,6 +357,13 @@ class AutoBidSettingsManager
             return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
         }
     }
+
+    /**
+     * @param \clients $oClient
+     *
+     * @return mixed
+     */
+
     public function getActivationTime(\clients $oClient)
     {
         /** @var \client_settings $oClientSettings */
