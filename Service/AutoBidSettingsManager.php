@@ -220,7 +220,7 @@ class AutoBidSettingsManager
         $bIsNovice             = true;
 
         if ($this->hasAutoBidActivationHistory($oLendersAccount) && $oAutobid->counter('id_lender = ' . $oLendersAccount->id_lender_account) > 0) {
-            if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = ' . \autobid::STATUS_INACTIVE, 'id_lender')) {
+            if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = "' . \autobid::STATUS_INACTIVE, 'id_lender')) {
                 $bIsNovice = false;
             } else {
                 $aAutobids = $this->getSettings($oLendersAccount->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), null);
@@ -256,6 +256,7 @@ class AutoBidSettingsManager
         foreach ($aAutoBidPeriods as $aPeriod) {
             foreach ($aRiskValues as $sEvaluation) {
                 $this->saveSetting($iLenderId, $sEvaluation, $aPeriod['id_period'], $fRate, $iAmount);
+                $this->activateDeactivateSetting($iLenderId, $sEvaluation, $aPeriod['id_period'], \autobid::STATUS_ACTIVE);
             }
         }
     }
