@@ -1125,8 +1125,9 @@ class dossiersController extends bootstrap
             $oProjectNeed = $this->loadData('project_need');
             $this->aNeeds = $oProjectNeed->getTree();
 
-            $this->aCompanyProjects    = $this->companies->getProjectsBySIREN();
-            $this->fCompanyOwedCapital = $this->companies->getOwedCapitalBySIREN();
+            $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
+            $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
+            $this->bIsProblematicCompany = $this->companies->countProblemsBySIREN() > 0;
 
             $this->aRatings = array();
             if (false === empty($this->projects->id_company_rating_history)) {

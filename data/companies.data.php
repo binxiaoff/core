@@ -163,4 +163,34 @@ class companies extends companies_crud
         }
         return $aProjects;
     }
+
+    /**
+     * @return bool
+     */
+    public function countProblemsBySIREN()
+    {
+        if (empty($this->id_company)) {
+            return 0;
+        }
+
+        $aStatuses = array(
+            \projects_status::PROBLEME,
+            \projects_status::PROBLEME_J_X,
+            \projects_status::RECOUVREMENT,
+            \projects_status::PROCEDURE_SAUVEGARDE,
+            \projects_status::REDRESSEMENT_JUDICIAIRE,
+            \projects_status::LIQUIDATION_JUDICIAIRE,
+            \projects_status::DEFAUT
+        );
+        return (int) $this->bdd->result($this->bdd->query('
+            SELECT COUNT(*)
+            FROM companies current_company
+            INNER JOIN companies c ON current_company.siren = c.siren
+            INNER JOIN projects p ON c.id_company = p.id_company
+            INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE ps.status IN (' . implode(', ', $aStatuses) . ')
+                AND current_company.id_company = ' . $this->id_company
+        ));
+    }
 }

@@ -35,6 +35,10 @@
 <div class="tab_content" id="etape4_1">
     <form method="post" name="dossier_etape4_1" id="dossier_etape4_1" onsubmit="valid_etape4_1(<?= $this->projects->id_project ?>); return false;" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/edit/<?= $this->params[0] ?>" target="_parent">
         <div id="contenu_etape4_1">
+            <?php if ($this->bIsProblematicCompany) : ?>
+                <div class="attention">Cette société a déjà eu des problèmes</div>
+                <br/>
+            <?php endif; ?>
             <table class="form" style="width: 100%;">
                 <tbody>
                     <tr>
