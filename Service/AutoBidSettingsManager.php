@@ -12,15 +12,17 @@ class AutoBidSettingsManager
     /** @var BidManager */
     private $oBidManager;
 
-    /**
-     * @var ClientSettingsManager
-     */
+    /** @var ClientSettingsManager */
     private $oClientSettingsManager;
+
+    /** @var ClientManager */
+    private $oClientManager;
 
     public function __construct()
     {
         $this->oBidManager            = Loader::loadService('BidManager');
         $this->oClientSettingsManager = Loader::loadService('ClientSettingsManager');
+        $this->oClientManager         = Loader::loadService('ClientManager');
     }
 
     /**
@@ -75,7 +77,7 @@ class AutoBidSettingsManager
 
         $oSettings->get('Auto-bid global switch', 'type');
 
-        if ($oSettings->value || $this->oClientSettingsManager->isBetaTester($oClient)) {
+        if ($oSettings->value || $this->oClientManager->isBetaTester($oClient)) {
             return true;
         }
 
@@ -180,27 +182,29 @@ class AutoBidSettingsManager
      *
      * @return mixed
      */
-    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE))
+    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null)
     {
-        return Loader::loadData('autobid')->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus);
+        return Loader::loadData('autobid')->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus, $sOrder);
     }
 
     /**
-     * @param int $iLenderId
+     * @param \lenders_accounts $oLendersAccount
      *
      * @return bool
      */
-    public function isNovice($iLenderId)
+    public function isNovice(\lenders_accounts $oLendersAccount)
     {
-        $oAutoBid              = Loader::loadData('autobid');
+        /** @var \autobid $oAutobid */
+        $oAutobid              = Loader::loadData('autobid');
         $oClientHistoryActions = Loader::loadData('clients_history_actions');
         $bIsNovice             = true;
 
-        if ($oClientHistoryActions->counter('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off" ') > 0 && $oAutoBid->counter('id_lender = ' . $iLenderId) > 0) {
-            if ($oAutoBid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_INACTIVE, null, null, 1)) {
+        if ($oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0
+            && $oAutobid->counter('id_lender = ' . $oLendersAccount->id_lender_account) > 0) {
+            if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = ' . \autobid::STATUS_INACTIVE, 'id_lender')) {
                 $bIsNovice = false;
             } else {
-                $aAutobids = $oAutoBid->select('id_lender = ' . $iLenderId . ' AND status = ' . \autobid::STATUS_ACTIVE);
+                $aAutobids = $this->getSettings($oLendersAccount->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), null);
                 $fRate     = $aAutobids[0]['rate_min'];
                 $iAmount   = $aAutobids[0]['amount'];
 
@@ -246,7 +250,31 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param $iClientID
+     * @param int $iLenderId
+     * @param string $sEvaluation
+     * @param int $iAutoBidPeriodId
+     * @param float $fRate
+     * @param int $iAmount
+     * @param int $iNewStatus
+     */
+    public function activateDeactivateSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $iNewStatus)
+    {
+        $oAutoBid = Loader::loadData('autobid');
+        $oAutoBid->get(
+            $iLenderId,
+            'status != ' . \autobid::STATUS_ARCHIVED. ' AND evaluation = "' . $sEvaluation . '" AND id_autobid_period = '
+            . $iAutoBidPeriodId . ' AND id_lender'
+        );
+
+        if (in_array($iNewStatus, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE))) {
+            $oAutoBid->status = $iNewStatus;
+            $oAutoBid->update();
+        }
+    }
+
+
+    /**
+     * @param int $iClientID
      *
      * @return array
      */
@@ -265,19 +293,8 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param \clients $oClient
-     *
-     * @return bool
-     */
-    public function isOn(\clients $oClient)
-    {
-        $oClientSettings = Loader::loadData('client_settings');
-        return (bool)$oClientSettings->getSetting($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client');
-    }
-
-
-    /**
      * @param $iClientId
+     *
      * @param $sValue
      */
     private function saveAutoBidSwitchHistory($iClientId, $sValue)
@@ -293,14 +310,24 @@ class AutoBidSettingsManager
 
     /**
      * @param \lenders_accounts $oLenderAccount
+     *
      * @return mixed
      */
 
     public function getValidationDate(\lenders_accounts $oLenderAccount)
     {
-
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
         return $oAutoBid->getValidationDate($oLenderAccount->id_lender_account);
+    }
+
+    /**
+     * @param \clients $oClient
+     *
+     * @return bool
+     */
+    public function isOn(\clients $oClient)
+    {
+        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
     }
 }

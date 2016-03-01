@@ -95,17 +95,18 @@ class autobid extends autobid_crud
         return $this->bdd->result($rResult, 0, 0);
     }
 
-    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE))
+    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null)
     {
         $sWhereLender     = null === $iLenderId ? '' : ' AND a.id_lender = ' . $iLenderId;
         $sWhereEvaluation = null === $sEvaluation ? '' : ' AND a.evaluation = "' . $sEvaluation . '"';
         $sWherePeriod     = null === $iAutoBidPeriodId ? '' : ' AND a.id_autobid_period = ' . $iAutoBidPeriodId;
+        $sOrderBy         = null === $sOrder ? '' : ' ORDER BY ' . $sOrder;
 
         $sQuery = 'SELECT a.*
                    FROM autobid a
                    INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
                    WHERE ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
-                   AND a.status in (' . implode($aStatus, ',') . ')' . $sWhereLender . $sWhereEvaluation . $sWherePeriod;
+                   AND a.status in (' . implode($aStatus, ',') . ')' . $sWhereLender . $sWhereEvaluation . $sWherePeriod . $sOrderBy;
 
         $aAutoBids = array();
         $rResult   = $this->bdd->query($sQuery);
