@@ -11,10 +11,10 @@
         </nav>
         <header class="header-autobid inner-nav">
             <ul>
-                <li class="active" id="consultation">
+                <li class="active" id="consult">
                     <a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a>
                 </li>
-                <li id="parametrage" style="<?= ($this->bAutoBidOn) ? '' : 'display:none;'  ?>">
+                <li id="param" style="<?= ($this->bAutoBidOn) ? '' : 'display:none;'  ?>">
                     <a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a>
                 </li>
             </ul>
@@ -42,9 +42,17 @@
         });
         $('#consult').click(function () {
             location.hash = "consultation";
+            $('#tab-1').addClass('visible');
+            $('#tab-2').removeClass('visible');
+            $('#consult').addClass('active');
+            $('#param').removeClass('active');
         });
         $('#param').click(function () {
             location.hash = "parametrage";
+            $('#tab-2').addClass('visible');
+            $('#tab-1').removeClass('visible');
+            $('#param').addClass('active');
+            $('#consult').removeClass('active');
         });
 
         // Autobid inner nav
@@ -57,11 +65,10 @@
         });
 
         if (window.location.hash == "#consultation" || window.location.hash == "") {
-            tab = $('#consult');
+            $('#consult').trigger("click");
         } else if (window.location.hash == "#parametrage") {
-            tab = $('#param');
+            $('#param').trigger("click");
         }
-        tab.trigger("click");
     });
 </script>
 
