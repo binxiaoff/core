@@ -2566,6 +2566,7 @@ class profileController extends bootstrap
     public function _autolend()
     {
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oClientSettingsManager  = $this->get('ClientSettingsManager');
 
         if (false === $oAutoBidSettingsManager->isQualified($this->clients)) {
             header('Location: ' . $this->lurl . '/profile');
@@ -2592,7 +2593,7 @@ class profileController extends bootstrap
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int) $oSettings->value;
 
-        $this->bAutoBidOn           = $oAutoBidSettingsManager->isOn($this->clients);
+        $this->bAutoBidOn           = $oClientSettingsManager->isOn($this->clients, \client_setting_type::TYPE_AUTO_BID_SWITCH);
         $this->bFirstTimeActivation = false;
         $this->bActivatedLender     = true;
         $this->fAverageRateUnilend  = round($oProject->getAvgRate(), 1);
@@ -2664,7 +2665,8 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $oAutoBidSettingsManager  = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oClientSettingsManager  = $this->get('ClientSettingsManager');
 
         $oLendersAccounts = Loader::loadData('lenders_accounts');
         $oSettings        = Loader::loadData('settings');
@@ -2709,7 +2711,7 @@ class profileController extends bootstrap
             }
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
-                if (false === $oAutoBidSettingsManager->isOn($this->clients)) {
+                if (false === $oClientSettingsManager->isOn($this->clients, \client_setting_type::TYPE_AUTO_BID_SWITCH)) {
                     $oAutoBidSettingsManager->on($this->clients);
                 }
                 $iAmount = $_POST['autobid-amount'];

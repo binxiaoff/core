@@ -53,7 +53,18 @@ class ClientSettingsManager {
      */
     public function isBetaTester(\clients $oClient)
     {
-        return (bool) $this->oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_BETA_TESTER);
+        return $this->isOn($oClient, \client_setting_type::TYPE_BETA_TESTER);
+    }
+
+    /**
+     * @param \clients $oClient
+     * @param int $iTypeSetting
+     *
+     * @return bool
+     */
+    public function isOn(\clients $oClient, $iTypeSetting)
+    {
+        return (bool)$this->oClientSettings->getSetting($oClient->id_client, $iTypeSetting);
     }
 
 }

@@ -291,19 +291,6 @@ class AutoBidSettingsManager
     }
 
     /**
-     * @param \clients $oClient
-     *
-     * @return bool
-     */
-    public function isOn(\clients $oClient)
-    {
-        /** @var \client_settings $oClientSettings */
-        $oClientSettings = Loader::loadData('client_settings');
-        return (bool)$oClientSettings->getSetting($oClient->id_client, \client_setting_type::TYPE_AUTO_BID_SWITCH);
-    }
-
-
-    /**
      * @param $iClientId
      * @param $sValue
      */
