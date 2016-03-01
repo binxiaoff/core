@@ -4556,8 +4556,11 @@ class cronController extends bootstrap
 
                         $iSumBidsPlaced += $oBid->amount / 100;
 
+                        $sSpanAutobid = empty($oBid->id_autobid) ? '': '<span style="border-radius: 6px; color: #ffffff; font-weight: bold; background: #d9aa34; padding: 3px 6px 3px 6px; text-decoration: none; margin: 3px">A</span>';
+
                         $sBidsListHTML .= '
                             <tr style="color:#b20066;">
+                                <td>' . $sSpanAutobid . '</td>
                                 <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->amount / 100, 0) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->rate, 1) . ' %</td>
@@ -4566,6 +4569,7 @@ class cronController extends bootstrap
 
                     $sBidsListHTML .= '
                         <tr>
+                            <td></td>
                             <td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
                             <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumBidsPlaced, 0) . '&nbsp;&euro;</td>
                             <td style="border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;"></td>
@@ -4693,8 +4697,11 @@ class cronController extends bootstrap
 
                         $iSumRejectedBids += $oNotification->amount / 100;
 
+                        $sSpanAutobid = empty($oBid->id_autobid) ? '': '<span style="border-radius: 6px; color: #ffffff; font-weight: bold; background: #d9aa34; padding: 3px 6px 3px 6px; text-decoration: none; margin: 3px">A</span>';
+
                         $sBidsListHTML .= '
                             <tr style="color:#b20066;">
+                                <td>' . $sSpanAutobid . '</td>
                                 <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oNotification->amount / 100, 0) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->rate, 1) . ' %</td>
@@ -4703,6 +4710,7 @@ class cronController extends bootstrap
 
                     $sBidsListHTML .= '
                         <tr>
+                            <td></td>
                             <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
                             <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumRejectedBids, 0) . '&nbsp;&euro;</td>
                             <td style="border-top:1px solid #727272;"></td>
