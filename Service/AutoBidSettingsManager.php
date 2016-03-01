@@ -12,15 +12,17 @@ class AutoBidSettingsManager
     /** @var BidManager */
     private $oBidManager;
 
-    /**
-     * @var ClientSettingsManager
-     */
+    /** @var ClientSettingsManager */
     private $oClientSettingsManager;
+
+    /** @var ClientManager */
+    private $oClientManager;
 
     public function __construct()
     {
         $this->oBidManager            = Loader::loadService('BidManager');
         $this->oClientSettingsManager = Loader::loadService('ClientSettingsManager');
+        $this->oClientManager         = Loader::loadService('ClientManager');
     }
 
     /**
@@ -75,7 +77,7 @@ class AutoBidSettingsManager
 
         $oSettings->get('Auto-bid global switch', 'type');
 
-        if ($oSettings->value || $this->oClientSettingsManager->isBetaTester($oClient)) {
+        if ($oSettings->value || $this->oClientManager->isBetaTester($oClient)) {
             return true;
         }
 
@@ -292,6 +294,7 @@ class AutoBidSettingsManager
 
     /**
      * @param $iClientId
+     *
      * @param $sValue
      */
     private function saveAutoBidSwitchHistory($iClientId, $sValue)
@@ -307,14 +310,24 @@ class AutoBidSettingsManager
 
     /**
      * @param \lenders_accounts $oLenderAccount
+     *
      * @return mixed
      */
 
     public function getValidationDate(\lenders_accounts $oLenderAccount)
     {
-
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
         return $oAutoBid->getValidationDate($oLenderAccount->id_lender_account);
+    }
+
+    /**
+     * @param \clients $oClient
+     *
+     * @return bool
+     */
+    public function isOn(\clients $oClient)
+    {
+        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
     }
 }

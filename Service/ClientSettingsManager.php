@@ -22,6 +22,7 @@ class ClientSettingsManager {
      * @param \clients $oClient
      * @param $iSettingType
      * @param $sValue
+     *
      * @return bool
      */
     public function saveClientSetting(\clients $oClient, $iSettingType, $sValue)
@@ -49,22 +50,13 @@ class ClientSettingsManager {
 
     /**
      * @param \clients $oClient
-     * @return bool
-     */
-    public function isBetaTester(\clients $oClient)
-    {
-        return $this->isOn($oClient, \client_setting_type::TYPE_BETA_TESTER);
-    }
-
-    /**
-     * @param \clients $oClient
-     * @param int $iTypeSetting
+     * @param int      $iTypeSetting
      *
-     * @return bool
+     * @return string
      */
-    public function isOn(\clients $oClient, $iTypeSetting)
+    public function getSetting(\clients $oClient, $iTypeSetting)
     {
-        return (bool)$this->oClientSettings->getSetting($oClient->id_client, $iTypeSetting);
+        return $this->oClientSettings->getSetting($oClient->id_client, $iTypeSetting);
     }
 
 }
