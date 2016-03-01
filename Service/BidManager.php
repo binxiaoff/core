@@ -10,19 +10,27 @@ use Unilend\librairies\ULogger;
  */
 class BidManager
 {
+    /** @var string */
     private $sLanguage;
+
     /** @var \dates */
     private $oDate;
+
     /** @var \ficelle */
     private $oFicelle;
+
     /** @var \tnmp */
     private $oTNMP;
+
     /** @var \email */
     private $oEmail;
+
     /** @var array */
     private $aConfig;
-    /** @var  ULogger */
+
+    /** @var ULogger */
     private $oLogger;
+
     /** @var NotificationManager */
     private $oNotificationManager;
     /** @var AutoBidSettingsManager */
@@ -119,7 +127,7 @@ class BidManager
         }
 
         $oTransaction->id_client        = $iClientId;
-        $oTransaction->montant          = -$fAmountX100;
+        $oTransaction->montant          = - $fAmountX100;
         $oTransaction->id_langue        = 'fr';
         $oTransaction->date_transaction = date('Y-m-d H:i:s');
         $oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
@@ -134,7 +142,7 @@ class BidManager
         $oWalletsLine->id_transaction           = $oTransaction->id_transaction;
         $oWalletsLine->status                   = \wallets_lines::STATUS_VALID;
         $oWalletsLine->type                     = \wallets_lines::VIRTUAL;
-        $oWalletsLine->amount                   = -$fAmountX100;
+        $oWalletsLine->amount                   = - $fAmountX100;
         $oWalletsLine->id_project               = $oBid->id_project;
         $oWalletsLine->create();
 
@@ -173,7 +181,7 @@ class BidManager
                         $oWelcomeOfferDetails->id_bid_remb        = $oBid->id_bid;
                         $oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
                         $oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_CUT;
-                        $oWelcomeOfferDetails->montant            = ($iAmountRepayment * 100);
+                        $oWelcomeOfferDetails->montant            = $iAmountRepayment * 100;
                         $oWelcomeOfferDetails->create();
                     }
                 } else {
@@ -199,7 +207,7 @@ class BidManager
     /**
      * @param \autobid  $oAutoBid
      * @param \projects $oProject
-     * @param           $fRate
+     * @param float     $fRate
      */
     public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate)
     {
@@ -232,6 +240,7 @@ class BidManager
             //todo : do a hotfix to remove status_email_bid_ko when all the old ko mail are sent.
             $oBid->status_email_bid_ko = 1;
             $oBid->update();
+
             if (false === empty($oBid->id_autobid)) {
                 /** @var \autobid_queue $oAutoBidQueue */
                 $oAutoBidQueue = Loader::loadData('autobid_queue');
@@ -259,7 +268,7 @@ class BidManager
 
     /**
      * @param \bids $oBid
-     * @param       $fCurrentRate
+     * @param float $fCurrentRate
      */
     public function refreshAutoBidRateOrReject(\bids $oBid, $fCurrentRate)
     {

@@ -15,21 +15,31 @@ class ProjectManager
 {
     /** @var NotificationManager */
     private $oNotificationManager;
+
     /** @var \email */
     private $oEmail;
+
     /** @var \ficelle */
     private $oFicelle;
+
+    /** @var array */
     private $aConfig;
+
     /** @var \dates */
     private $oDate;
-    /** @var  \tnmp */
+
+    /** @var \tnmp */
     private $oTNMP;
-    /** @var  ULogger */
+
+    /** @var ULogger */
     private $oLogger;
-    /** @var  BidManager */
+
+    /** @var BidManager */
     private $oBidManager;
-    /** @var  LoanManager */
+
+    /** @var LoanManager */
     private $oLoanManager;
+
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
@@ -75,7 +85,7 @@ class ProjectManager
     {
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
-        /** @var \bids_logs $oBidLogi */
+        /** @var \bids_logs $oBidLog */
         $oBidLog = Loader::loadData('bids_logs');
 
         $aLogContext      = array();
@@ -136,7 +146,6 @@ class ProjectManager
 
     /**
      * @param \projects $oProject
-     *
      * @return bool
      */
     public function autoBid(\projects $oProject)
@@ -249,7 +258,6 @@ class ProjectManager
 
     public function buildLoans(\projects $oProject)
     {
-
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
         /** @var \loans $oLoan */
@@ -261,7 +269,6 @@ class ProjectManager
 
         $this->cleanTempRefusedAutoBid($oProject);
 
-        // on passe le projet en fundé
         $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject->id_project);
 
         if ($this->oLogger instanceof ULogger) {
@@ -280,7 +287,7 @@ class ProjectManager
             $oBid->get($aBid['id_bid']);
             if ($iBidBalance < $oProject->amount) {
                 $iBidBalance += ($aBid['amount'] / 100);
-                // Pour la partie qui depasse le montant de l'emprunt ( ca cest que pour le mec a qui on decoupe son montant)
+                // Pour la partie qui depasse le montant de l'emprunt (ça c'est que pour le mec à qui on découpé son bid)
                 if ($iBidBalance > $oProject->amount) {
                     $fAmountToCredit = $iBidBalance - $oProject->amount;
                     $this->oBidManager->rejectPartially($oBid, $fAmountToCredit);
@@ -291,7 +298,7 @@ class ProjectManager
                 if ($this->oLogger instanceof ULogger) {
                     $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' : The bid (' . $aBid['id_bid'] . ') status has been updated to 1');
                 }
-            } else {// Pour les encheres qui depassent on rend l'argent
+            } else { // Pour les encheres qui depassent on rend l'argent
                 // On regarde si on a pas deja un remb pour ce bid
                 $this->oBidManager->reject($oBid);
             }
@@ -301,7 +308,6 @@ class ProjectManager
             }
         }
 
-        // Traite the accepted bid by lender
         $aLenderList = $oBid->getLenders($oProject->id_project, array(\bids::STATUS_BID_ACCEPTED));
         foreach ($aLenderList as $aLender) {
             $iLenderId   = $aLender['id_lender_account'];
@@ -601,6 +607,7 @@ class ProjectManager
     public function createPaymentSchedule(\projects $oProject)
     {
         ini_set('memory_limit', '512M');
+
         /** @var \echeanciers_emprunteur $oPaymentSchedule */
         $oPaymentSchedule = Loader::loadData('echeanciers_emprunteur');
         /** @var \echeanciers $oRepaymentSchedule */

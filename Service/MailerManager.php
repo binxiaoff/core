@@ -1,28 +1,38 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\librairies\ULogger;
 use Unilend\core\Loader;
+use Unilend\librairies\ULogger;
 
 class MailerManager
 {
     /** @var \settings */
     private $oSettings;
+
     /** @var \mails_filer */
     private $oMailFiler;
+
     /** @var \mails_text */
     private $oMailText;
-    /** @var  ULogger */
+
+    /** @var ULogger */
     private $oLogger;
+
     /** @var \email */
     private $oEmail;
+
     /** @var \ficelle */
     private $oFicelle;
+
+    /** @var array */
     private $aConfig;
+
     /** @var \dates */
     private $oDate;
-    /** @var  \tnmp */
+
+    /** @var \tnmp */
     private $oTNMP;
+
     /** @var \jours_ouvres */
     private $oWorkingDay;
     private $sSUrl;
@@ -104,20 +114,20 @@ class MailerManager
             $oCompany->get($oProject->id_company, 'id_company');
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_p' => $oClient->prenom,
+                'surl'           => $this->sSUrl,
+                'url'            => $this->sLUrl,
+                'prenom_p'       => $oClient->prenom,
                 'nom_entreprise' => $oCompany->name,
-                'project_name' => $oProject->title,
-                'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
-                'taux_bid' => $this->oFicelle->formatNumber($oBid->rate, 1),
-                'date_bid' => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                'heure_bid' => date('H:i:s', strtotime($oBid->added)),
-                'projet-p' => $this->sLUrl . '/' . $pageProjects,
-                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
+                'project_name'   => $oProject->title,
+                'valeur_bid'     => $this->oFicelle->formatNumber($oBid->amount / 100),
+                'taux_bid'       => $this->oFicelle->formatNumber($oBid->rate, 1),
+                'date_bid'       => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                'heure_bid'      => date('H:i:s', strtotime($oBid->added)),
+                'projet-p'       => $this->sLUrl . '/' . $pageProjects,
+                'autobid_link'   => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'lien_fb'        => $lien_fb,
+                'lien_tw'        => $lien_tw
             );
 
             $tabVars   = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -152,7 +162,7 @@ class MailerManager
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
 
-        $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC,added ASC');
+        $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC, added ASC');
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid']);
             $oLenderAccount->get($oBid->id_lender_account);
@@ -176,20 +186,20 @@ class MailerManager
                 $sLinkTw = $this->oSettings->value;
 
                 $varMail = array(
-                    'surl' => $this->sSUrl,
-                    'url' => $this->sLUrl,
-                    'prenom_p' => $oClient->prenom,
-                    'entreprise' => $oCompany->name,
-                    'projet' => $oProject->title,
-                    'montant' => $this->oFicelle->formatNumber($oBid->amount / 100),
-                    'proposition_pret' => $this->oFicelle->formatNumber($oBid->amount / 100),
+                    'surl'                  => $this->sSUrl,
+                    'url'                   => $this->sLUrl,
+                    'prenom_p'              => $oClient->prenom,
+                    'entreprise'            => $oCompany->name,
+                    'projet'                => $oProject->title,
+                    'montant'               => $this->oFicelle->formatNumber($oBid->amount / 100),
+                    'proposition_pret'      => $this->oFicelle->formatNumber($oBid->amount / 100),
                     'date_proposition_pret' => date('d', $sAdded) . ' ' . $month . ' ' . date('Y', $sAdded),
                     'taux_proposition_pret' => $oBid->rate,
-                    'compte-p' => '/projets-a-financer',
-                    'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
-                    'solde_p' => $fBalance,
-                    'lien_fb' => $sLinkFb,
-                    'lien_tw' => $sLinkTw
+                    'compte-p'              => '/projets-a-financer',
+                    'motif_virement'        => $oClient->getLenderPattern($oClient->id_client),
+                    'solde_p'               => $fBalance,
+                    'lien_fb'               => $sLinkFb,
+                    'lien_tw'               => $sLinkTw
                 );
 
                 $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -213,7 +223,6 @@ class MailerManager
                 }
             }
         }
-
     }
 
     public function sendFundedToBorrower(\projects $oProject)
@@ -273,14 +282,14 @@ class MailerManager
             $this->oMailText->get('emprunteur-dossier-funde', 'lang = "' . $this->sLanguage . '" AND type');
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_e' => utf8_decode($oBorrower->prenom),
-                'taux_moyen' => $fWeightedAvgRate,
+                'surl'          => $this->sSUrl,
+                'url'           => $this->sLUrl,
+                'prenom_e'      => utf8_decode($oBorrower->prenom),
+                'taux_moyen'    => $fWeightedAvgRate,
                 'temps_restant' => $tempsRest,
-                'projet' => $oProject->title,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'projet'        => $oProject->title,
+                'lien_fb'       => $lien_fb,
+                'lien_tw'       => $lien_tw
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -293,7 +302,7 @@ class MailerManager
             $this->oEmail->setSubject(stripslashes($sujetMail));
             $this->oEmail->setHTMLBody(stripslashes($texteMail));
 
-            if ($this->aConfig['env'] == 'prod') {
+            if ($this->aConfig['env'] === 'prod') {
                 \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $oBorrower->email, $tabFiler);
                 $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
             } else {
@@ -339,7 +348,7 @@ class MailerManager
     }
 
     /**
-     * @param $oProject
+     * @param \projects $oProject
      */
     public function sendFundedAndFinishedToBorrower(\projects $oProject)
     {
@@ -371,19 +380,19 @@ class MailerManager
             $sLinkTw = $this->oSettings->value;
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_e' => $oBorrower->prenom,
-                'nom_e' => $oCompany->name,
-                'mensualite' => $this->oFicelle->formatNumber($fMonthlyPayment),
-                'montant' => $this->oFicelle->formatNumber($oProject->amount, 0),
-                'taux_moyen' => $fWeightedAvgRate,
+                'surl'                   => $this->sSUrl,
+                'url'                    => $this->sLUrl,
+                'prenom_e'               => $oBorrower->prenom,
+                'nom_e'                  => $oCompany->name,
+                'mensualite'             => $this->oFicelle->formatNumber($fMonthlyPayment),
+                'montant'                => $this->oFicelle->formatNumber($oProject->amount, 0),
+                'taux_moyen'             => $fWeightedAvgRate,
                 'link_compte_emprunteur' => $this->sLUrl . '/projects/detail/' . $oProject->id_project,
-                'link_mandat' => $sLinkMandat,
-                'link_pouvoir' => $sLinkPouvoir,
-                'projet' => $oProject->title,
-                'lien_fb' => $sLinkFb,
-                'lien_tw' => $sLinkTw
+                'link_mandat'            => $sLinkMandat,
+                'link_pouvoir'           => $sLinkPouvoir,
+                'projet'                 => $oProject->title,
+                'lien_fb'                => $sLinkFb,
+                'lien_tw'                => $sLinkTw
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -557,22 +566,22 @@ class MailerManager
                 $lien_tw = $this->oSettings->value;
 
                 $varMail = array(
-                    'surl' => $this->sSUrl,
-                    'url' => $this->sLUrl,
+                    'surl'                  => $this->sSUrl,
+                    'url'                   => $this->sLUrl,
                     'offre_s_selectionne_s' => $sSelectedOffers,
-                    'prenom_p' => $oClient->prenom,
-                    'nom_entreprise' => $oCompany->name,
-                    'fait' => $sDoes,
-                    'contrat_pret' => $sContract,
-                    'detail_loans' => $sLoansDetails,
-                    'offre_s' => $sOffers,
-                    'pret_s' => $sLoans,
-                    'projet-p' => $this->sFUrl . '/projects/detail/' . $oProject->slug,
-                    'link_explication' => $sLinkExplication,
-                    'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
-                    'lien_fb' => $lien_fb,
-                    'lien_tw' => $lien_tw,
-                    'annee' => date('Y')
+                    'prenom_p'              => $oClient->prenom,
+                    'nom_entreprise'        => $oCompany->name,
+                    'fait'                  => $sDoes,
+                    'contrat_pret'          => $sContract,
+                    'detail_loans'          => $sLoansDetails,
+                    'offre_s'               => $sOffers,
+                    'pret_s'                => $sLoans,
+                    'projet-p'              => $this->sFUrl . '/projects/detail/' . $oProject->slug,
+                    'link_explication'      => $sLinkExplication,
+                    'motif_virement'        => $oClient->getLenderPattern($oClient->id_client),
+                    'lien_fb'               => $lien_fb,
+                    'lien_tw'               => $lien_tw,
+                    'annee'                 => date('Y')
                 );
 
                 $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -707,12 +716,12 @@ class MailerManager
             $lien_tw = $this->oSettings->value;
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
+                'surl'     => $this->sSUrl,
+                'url'      => $this->sLUrl,
                 'prenom_e' => $oClient->prenom,
-                'projet' => $oProject->title,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'projet'   => $oProject->title,
+                'lien_fb'  => $lien_fb,
+                'lien_tw'  => $lien_tw
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -828,16 +837,16 @@ class MailerManager
             $lien_tw = $this->oSettings->value;
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'iban' => $sIban,
-                'bic' => $sBic,
-                'titulaire' => $sTitulaire,
-                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
+                'surl'           => $this->sSUrl,
+                'url'            => $this->sLUrl,
+                'prenom_p'       => $oClient->prenom,
+                'iban'           => $sIban,
+                'bic'            => $sBic,
+                'titulaire'      => $sTitulaire,
+                'autobid_link'   => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'lien_fb'        => $lien_fb,
+                'lien_tw'        => $lien_tw
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
@@ -897,17 +906,17 @@ class MailerManager
             $lien_tw = $this->oSettings->value;
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'balance' => $iBalance,
-                'iban' => $sIban,
-                'bic' => $sBic,
-                'titulaire' => $sTitulaire,
-                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
+                'surl'           => $this->sSUrl,
+                'url'            => $this->sLUrl,
+                'prenom_p'       => $oClient->prenom,
+                'balance'        => $iBalance,
+                'iban'           => $sIban,
+                'bic'            => $sBic,
+                'titulaire'      => $sTitulaire,
+                'autobid_link'   => $this->sLUrl . '/profile/autolend#parametrage',
                 'motif_virement' => $sPurpose,
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'lien_fb'        => $lien_fb,
+                'lien_tw'        => $lien_tw
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
