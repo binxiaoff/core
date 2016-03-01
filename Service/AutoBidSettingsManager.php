@@ -143,8 +143,8 @@ class AutoBidSettingsManager
 
             if ($oBid->exist($aAutoBidActive['id_autobid'], 'id_autobid')) {
                 $oAutoBid->get($aAutoBidActive['id_autobid']);
-                $aAutoBidActive->status = \autobid::STATUS_ARCHIVED;
-                $aAutoBidActive->update();
+                $oAutoBid->status = \autobid::STATUS_ARCHIVED;
+                $oAutoBid->update();
                 $this->createSetting($iLenderId, $sEvaluation, $iAutoBidPeriodId, $fRate, $iAmount);
             } else {
                 $oAutoBid->get($aAutoBidActive['id_autobid']);

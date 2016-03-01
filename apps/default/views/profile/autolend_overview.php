@@ -51,6 +51,14 @@
                     $('#param').show();
                     $('#consult').removeClass('active');
                     $('#param').trigger("click");
+                    $('#settings_modifications_novice').hide();
+                    $('#settings_instructions_novice').show();
+                    $('#autobid-amount').prop('disabled', false);
+                    $('#autobid-param-simple-taux-min-field').hide();
+                    $('#select-autobid-taux').show();
+                    $('.link-more').show();
+                    $('#validate_settings_novice').show();
+                    $('#cancel_modification_settings').show();
                 }
             });
         }

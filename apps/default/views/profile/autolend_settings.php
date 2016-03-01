@@ -61,7 +61,7 @@
                     </label>
                     <input type="text" name="autobid-param-simple-taux-min-field" id="autobid-param-simple-taux-min-field"
                            class="field required"
-                           value="<?= (isset($this->aSettingsSubmitted)) ? $this->ficelle->formatNumber($this->aSettingsSubmitted['simple-taux-min'], 1) : '' ?> %"
+                           value="<?= (false === empty($this->aSettingsSubmitted['simple-taux-min'])) ? $this->ficelle->formatNumber($this->aSettingsSubmitted['simple-taux-min'], 1) : '' ?> %"
                            disabled="disabled"/>
                     <div id="select-autobid-taux" style="display:none;">
                         <select name="autobid-param-simple-taux-min" id="autobid-param-simple-taux-min" class="custom-select field-small required" >

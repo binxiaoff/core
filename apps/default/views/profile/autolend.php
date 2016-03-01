@@ -53,6 +53,8 @@
             $('#tab-1').removeClass('visible');
             $('#param').addClass('active');
             $('#consult').removeClass('active');
+            $('#param').show();
+
         });
 
         // Autobid inner nav
