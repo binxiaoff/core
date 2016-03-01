@@ -217,12 +217,9 @@ class AutoBidSettingsManager
     {
         /** @var \autobid $oAutobid */
         $oAutobid              = Loader::loadData('autobid');
-        $oClientHistoryActions = Loader::loadData('clients_history_actions');
         $bIsNovice             = true;
 
-        if ($oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0
-            && $oAutobid->counter('id_lender = ' . $oLendersAccount->id_lender_account) > 0
-        ) {
+        if ($this->hasAutoBidActivationHistory($oLendersAccount) && $oAutobid->counter('id_lender = ' . $oLendersAccount->id_lender_account) > 0) {
             if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = ' . \autobid::STATUS_INACTIVE, 'id_lender')) {
                 $bIsNovice = false;
             } else {
@@ -370,6 +367,19 @@ class AutoBidSettingsManager
         $oClientSettings = Loader::loadData('client_settings');
         $oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client');
         return str_replace(':', 'h', date('G:i', strtotime($oClientSettings->added)));
+    }
+
+    /**
+     * @param \lenders_accounts $oLendersAccount
+     *
+     * @return bool
+     */
+
+    public function hasAutoBidActivationHistory(\lenders_accounts $oLendersAccount)
+    {
+        /** @var \clients_history_actions $oClientHistoryActions */
+        $oClientHistoryActions = Loader::loadData('clients_history_actions');
+        return $oClientHistoryActions->counter('id_client = ' . $oLendersAccount->id_client_owner . ' AND nom_form = "autobid_on_off" ') > 0;
     }
 
 }

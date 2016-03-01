@@ -2594,15 +2594,11 @@ class profileController extends bootstrap
         $this->iMinimumBidAmount = (int) $oSettings->value;
 
         $this->bAutoBidOn           = $oAutoBidSettingsManager->isOn($oLendersAccounts);
-        $this->bFirstTimeActivation = false;
+        $this->bFirstTimeActivation = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($oLendersAccounts);
         $this->bActivatedLender     = true;
         $this->fAverageRateUnilend  = round($oProject->getAvgRate(), 1);
         $this->bIsNovice            = $oAutoBidSettingsManager->isNovice($oLendersAccounts);
         $this->sValidationDate      = $oAutoBidSettingsManager->getValidationDate($oLendersAccounts);
-
-        if (false === $this->bAutoBidOn) {
-            $this->bFirstTimeActivation = ($oAutoBid->counter('id_lender = ' . $oLendersAccounts->id_lender_account) == 0) ;
-        }
 
         if (false === in_array($oClientStatus->status, array(\clients_status::VALIDATED))) {
             $this->bActivatedLender = false;
