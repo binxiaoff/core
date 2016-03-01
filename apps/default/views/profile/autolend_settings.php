@@ -112,10 +112,10 @@
                         <th scope="col"><div class="autobid-stars stars-45"></div></th>
                         <th scope="col"><div class="autobid-stars stars-50"></div></th>
                     </tr>
+                    <?php foreach ($this->aAutoBidSettings as $iPeriodId => $aPeriodSettings) : ?>
                     <tr>
-                        <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_3_12]) ?></th>
-                        <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                            <?php if (\autobid_periods::PERIOD_3_12 == $aSetting['id_autobid_period']) : ?>
+                        <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . $iPeriodId]) ?></th>
+                        <?php foreach ($aPeriodSettings as $aSetting) : ?>
                                 <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                                 <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                     <div class="cell-inner">
@@ -141,141 +141,9 @@
                                         </div>
                                     </div>
                                 </td>
-                            <?php endif; ?>
                         <?php endforeach; ?>
                     </tr>
-                    <tr>
-                        <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_18_24]) ?>
-                        </th>
-                        <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                            <?php if (\autobid_periods::PERIOD_18_24 == $aSetting['id_autobid_period']) : ?>
-                                <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                    <div class="cell-inner">
-                                        <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
-                                        </div>
-                                        <div class="param-advanced-bottom">
-                                            <div class="param-advanced-buttons" style="display: none;">
-                                                <button class="param-advanced-button" value="1">+</button>
-                                                <button class="param-advanced-button" value="0">-</button>
-                                            </div>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value"
-                                                   value="<?= $aSetting['rate_min'] ?>">
-                                            <input type="hidden" id="param-advanced-unilend-rate" name="param-advanced-unilend-rate"
-                                                   value="<?= $aSetting['AverageRateUnilend'] ?>">
-                                            <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period"
-                                                   value="<?= $aSetting['id_autobid_period'] ?>">
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation"
-                                                   value="<?= $aSetting['evaluation'] ?>">
-                                        </div>
-                                    </div>
-                                </td>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?= $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_36] ?>
-                        </th>
-                        <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                            <?php if (\autobid_periods::PERIOD_36 == $aSetting['id_autobid_period']) : ?>
-                                <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                    <div class="cell-inner">
-                                        <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
-                                        </div>
-                                        <div class="param-advanced-bottom">
-                                            <div class="param-advanced-buttons" style="display: none;">
-                                                <button class="param-advanced-button" value="1">+</button>
-                                                <button class="param-advanced-button" value="0">-</button>
-                                            </div>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value"
-                                                   value="<?= $aSetting['rate_min'] ?>">
-                                            <input type="hidden" id="param-advanced-unilend-rate" name="param-advanced-unilend-rate"
-                                                   value="<?= $aSetting['AverageRateUnilend'] ?>">
-                                            <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period"
-                                                   value="<?= $aSetting['id_autobid_period'] ?>">
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation"
-                                                   value="<?= $aSetting['evaluation'] ?>">
-                                        </div>
-                                    </div>
-                                </td>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_48_60]) ?>
-                        </th>
-                        <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                            <?php if (\autobid_periods::PERIOD_48_60 == $aSetting['id_autobid_period']) : ?>
-                                <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                    <div class="cell-inner">
-                                        <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
-                                        </div>
-                                        <div class="param-advanced-bottom">
-                                            <div class="param-advanced-buttons" style="display: none;">
-                                                <button class="param-advanced-button" value="1">+</button>
-                                                <button class="param-advanced-button" value="0">-</button>
-                                            </div>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value"
-                                                   value="<?= $aSetting['rate_min'] ?>">
-                                            <input type="hidden" id="param-advanced-unilend-rate" name="param-advanced-unilend-rate"
-                                                   value="<?= $aSetting['AverageRateUnilend'] ?>">
-                                            <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period"
-                                                   value="<?= $aSetting['id_autobid_period'] ?>">
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation"
-                                                   value="<?= $aSetting['evaluation'] ?>">
-                                        </div>
-                                    </div>
-                                </td>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </tr>
-                    <tr>
-                        <th scope="row"><?= $this->lng['autobid']['autobid-period-' . \autobid_periods::PERIOD_60_PLUS] ?>
-                        </th>
-                        <?php foreach ($this->aAutoBidSettings as $aSetting) : ?>
-                            <?php if (\autobid_periods::PERIOD_60_PLUS == $aSetting['id_autobid_period']) : ?>
-                                <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
-                                    <div class="cell-inner">
-                                        <div class="param-advanced-switch" style="display: none;">
-                                            <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   id="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"
-                                                   value="<?= (\autobid::STATUS_ACTIVE == $aSetting['status']) ? \autobid::STATUS_ACTIVE : \autobid::STATUS_INACTIVE ?>" />
-                                        </div>
-                                        <div class="param-advanced-bottom">
-                                            <div class="param-advanced-buttons" style="display: none;">
-                                                <button class="param-advanced-button" value="1">+</button>
-                                                <button class="param-advanced-button" value="0">-</button>
-                                            </div>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value"
-                                                   value="<?= $aSetting['rate_min'] ?>">
-                                            <input type="hidden" id="param-advanced-unilend-rate" name="param-advanced-unilend-rate"
-                                                   value="<?= $aSetting['AverageRateUnilend'] ?>">
-                                            <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period"
-                                                   value="<?= $aSetting['id_autobid_period'] ?>">
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation"
-                                                   value="<?= $aSetting['evaluation'] ?>">
-                                        </div>
-                                    </div>
-                                </td>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    </tr>
+                    <?php endforeach; ?>
                     <tr>
                         <td class="empty"></td>
                         <td colspan="5" class="empty">

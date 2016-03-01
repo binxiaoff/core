@@ -1423,6 +1423,30 @@ class preteursController extends bootstrap
         $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
 
         $this->getMessageAboutClientStatus();
+
+        $oTextes                   = $this->loadData('textes');
+        $this->lng['autobid']      = $oTextes->selectFront('autobid', $this->language, $this->App);
+
+        $oAutoBidSettingsManager   = $this->get('AutoBidSettingsManager');
+        $oClientManager            = $this->get('ClientManager');
+        $oAutoBidPeriod            = $this->loadData('autobid_periods');
+
+        $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->clients);
+        $this->sValidationDate     = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts);
+        $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
+        $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
+        $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
+
+        $this->aAutoBidSettings    = array();
+        $aAutoBidPeriods           = $oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE, 'min ASC');
+
+        foreach ($aAutoBidPeriods as $aPeriod){
+            $this->aAutoBidSettings[$aPeriod['id_period']] = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+
+            foreach ($this->aAutoBidSettings[$aPeriod['id_period']] as $iKey => $aSetting) {
+                $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
+            }
+        }
     }
 
     public function _control_fiscal_city()
@@ -1878,5 +1902,25 @@ class preteursController extends bootstrap
                 trigger_error('Unknown Client Status', E_USER_NOTICE);
                 break;
         }
+    }
+
+    public function _saveBetaTesterSetting()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $oClientSettingsManager = $this->get('ClientSettingsManager');
+        $oClient                = $this->loadData('clients');
+        $oLendersAccount        = $this->loadData('lenders_accounts');
+
+         if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], array('on', 'off'))){
+             $oClient->get($this->params[0]);
+             $oLendersAccount->get($oClient->id_client, 'id_client_owner');
+             $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
+             $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_BETA_TESTER, $sValue);
+
+             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $oLendersAccount->id_lender_account);
+             die;
+         }
     }
 }

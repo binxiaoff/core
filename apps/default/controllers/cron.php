@@ -219,7 +219,7 @@ class cronController extends bootstrap
 
                     $oProjectManager->checkAutoBidBalance($oProject);
 
-                    $this->sendNewProjectEmail($projects['id_project']);
+                    $this->sendNewProjectEmail($oProject->id_project);
                 }
             }
             if ($bHasProjectPublished) {
@@ -270,7 +270,7 @@ class cronController extends bootstrap
 
                             $oMailerManager->sendFundedAndFinishedToBorrower($oProject);
                             $oMailerManager->sendFundedToStaff($oProject);
-                            $oMailerManager->sendBidAcceptedToLender($oProject);
+                            $oMailerManager->sendBidAccepted($oProject);
                         } else {
                             $oProjectManager->treatFundFailed($oProject);
 
@@ -3484,7 +3484,7 @@ class cronController extends bootstrap
                         $oProject->status_solde = 1;
                         $oProject->update();
 
-                        $oMailerManager->sendFondedToBorrower($oProject);
+                        $oMailerManager->sendFundedToBorrower($oProject);
                     }
 
                     $oProjectManager->autoBid($oProject);
@@ -3496,7 +3496,7 @@ class cronController extends bootstrap
         }
     }
 
-    // On check bid ko si oui ou non un mail de degel est parti. Si c'est non on envoie un mail
+    //todo : do a hotfix to remove the cron when all the old ko mail are sent.
     public function _checkEmailBidKO()
     {
         if (true === $this->startCron('checkEmailBidKO', 1)) {

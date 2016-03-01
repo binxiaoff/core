@@ -320,7 +320,7 @@ class syntheseController extends bootstrap
         $this->bFirstTimeActivation      = false;
         $this->aClientAutoBidSetting     = array_shift($oClientSettings->select('id_client = ' . $this->clients->id_client));
 
-        if ($this->aClientAutoBidSetting && \Unilend\Service\AutoBidSettingsManager::AUTO_BID_OFF == $this->aClientAutoBidSetting['value']) {
+        if ($this->aClientAutoBidSetting && \client_settings::AUTO_BID_OFF == $this->aClientAutoBidSetting['value']) {
             $aClientAutoBidHistory      = $oClientHistoryActions->select('id_client = ' . $this->clients->id_client . ' AND nom_form = "autobid_on_off"');
             $this->bFirstTimeActivation = empty($aClientAutoBidHistory);
         }

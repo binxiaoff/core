@@ -10,21 +10,31 @@ use Unilend\librairies\ULogger;
  */
 class BidManager
 {
+    /** @var string */
     private $sLanguage;
+
     /** @var \dates */
     private $oDate;
+
     /** @var \ficelle */
     private $oFicelle;
+
     /** @var \tnmp */
     private $oTNMP;
+
     /** @var \email */
     private $oEmail;
+
     /** @var array */
     private $aConfig;
-    /** @var  ULogger */
+
+    /** @var ULogger */
     private $oLogger;
-    /** @var MailerManager */
-    private $oMailerManager;
+
+    /** @var NotificationManager */
+    private $oNotificationManager;
+    /** @var AutoBidSettingsManager */
+    private $oAutoBidManager;
 
     public function __construct()
     {
@@ -39,7 +49,8 @@ class BidManager
         $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail = Loader::loadLib('email');
 
-        $this->oMailerManager = Loader::loadService('MailerManager');
+        $this->oNotificationManager = Loader::loadService('NotificationManager');
+        $this->oAutoBidManager      = Loader::loadService('AutoBidManager');
 
         $this->sLanguage = 'fr';
     }
@@ -53,15 +64,15 @@ class BidManager
     }
 
     /**
-     * @param \clients $oClient
+     * @param \lenders_accounts $oLenderAccount
      *
      * @return bool
      */
-    public function canBid(\clients $oClient)
+    public function canBid(\lenders_accounts $oLenderAccount)
     {
         /** @var \clients_status $oClientStatus */
         $oClientStatus = Loader::loadData('clients_status');
-        if ($oClientStatus->getLastStatut($oClient->id_client) && $oClientStatus->status == 60) {
+        if ($oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == 60) {
             return true;
         }
         return false;
@@ -81,12 +92,6 @@ class BidManager
         $oWalletsLine = Loader::loadData('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = Loader::loadData('offres_bienvenues_details');
-        /** @var \notifications $oNotification */
-        $oNotification = Loader::loadData('notifications');
-        /** @var \clients_gestion_notifications $oNotificationSettings */
-        $oNotificationSettings = Loader::loadData('clients_gestion_notifications');
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
 
@@ -176,7 +181,7 @@ class BidManager
                         $oWelcomeOfferDetails->id_bid_remb        = $oBid->id_bid;
                         $oWelcomeOfferDetails->status             = \offres_bienvenues_details::STATUS_NEW;
                         $oWelcomeOfferDetails->type               = \offres_bienvenues_details::TYPE_CUT;
-                        $oWelcomeOfferDetails->montant            = ($iAmountRepayment * 100);
+                        $oWelcomeOfferDetails->montant            = $iAmountRepayment * 100;
                         $oWelcomeOfferDetails->create();
                     }
                 } else {
@@ -185,27 +190,16 @@ class BidManager
             }
         }
 
-        ///// NOTIFICATION OFFRE PLACEE ///////
-        $oNotification->type       = \clients_gestion_type_notif::TYPE_BID_PLACED;
-        $oNotification->id_lender  = $oBid->id_lender_account;
-        $oNotification->id_project = $oBid->id_project;
-        $oNotification->amount     = $fAmountX100;
-        $oNotification->id_bid     = $oBid->id_bid;
-        $oNotification->create();
-        ///// FIN NOTIFICATION OFFRE PLACEE ///////
-        if ($oNotificationSettings->getNotif($iClientId, \clients_gestion_type_notif::TYPE_BID_PLACED, 'immediatement') == true) {
-            $this->oMailerManager->sendBidConfirmation($oBid);
-            $oMailNotification->immediatement = 1;
-        } else {
-            $oMailNotification->immediatement = 0;
-        }
-
-        $oMailNotification->id_client       = $iClientId;
-        $oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED;
-        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $oMailNotification->id_notification = $oNotification->id_notification;
-        $oMailNotification->id_transaction  = $oTransaction->id_transaction;
-        $oMailNotification->create();
+        $this->oNotificationManager->create(
+            \clients_gestion_type_notif::TYPE_BID_PLACED,
+            \clients_gestion_type_notif::TYPE_BID_PLACED,
+            $iClientId,
+            'sendBidConfirmation',
+            $oBid->id_project,
+            $fAmount,
+            $oBid->id_bid,
+            $oTransaction->id_transaction
+        );
 
         return true;
     }
@@ -213,20 +207,24 @@ class BidManager
     /**
      * @param \autobid  $oAutoBid
      * @param \projects $oProject
-     * @param           $fRate
+     * @param float     $fRate
      */
     public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate)
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
             $oBid = Loader::loadData('bids');
+            /** @var \lenders_accounts $LenderAccount */
+            $oLenderAccount = Loader::loadData('lenders_accounts');
 
-            $oBid->id_autobid        = $oAutoBid->id_autobid;
-            $oBid->id_lender_account = $oAutoBid->id_lender;
-            $oBid->id_project        = $oProject->id_project;
-            $oBid->amount            = $oAutoBid->amount * 100;
-            $oBid->rate              = $fRate;
-            $this->bid($oBid);
+            if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidManager->isOn($oLenderAccount)) {
+                $oBid->id_autobid        = $oAutoBid->id_autobid;
+                $oBid->id_lender_account = $oAutoBid->id_lender;
+                $oBid->id_project        = $oProject->id_project;
+                $oBid->amount            = $oAutoBid->amount * 100;
+                $oBid->rate              = $fRate;
+                $this->bid($oBid);
+            }
         }
     }
 
@@ -236,9 +234,13 @@ class BidManager
     public function reject(\bids $oBid)
     {
         if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            $this->credit($oBid, $oBid->amount / 100);
+            $oTransaction = $this->creditRejectedBid($oBid, $oBid->amount / 100);
+            $this->notificationRejection($oBid, $oTransaction);
             $oBid->status = \bids::STATUS_BID_REJECTED;
+            //todo : do a hotfix to remove status_email_bid_ko when all the old ko mail are sent.
+            $oBid->status_email_bid_ko = 1;
             $oBid->update();
+
             if (false === empty($oBid->id_autobid)) {
                 /** @var \autobid_queue $oAutoBidQueue */
                 $oAutoBidQueue = Loader::loadData('autobid_queue');
@@ -247,20 +249,26 @@ class BidManager
         }
     }
 
+    /**
+     * @param \bids $oBid
+     * @param       $fRepaymentAmount
+     */
     public function rejectPartially(\bids $oBid, $fRepaymentAmount)
     {
         if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
-            $this->credit($oBid, $fRepaymentAmount);
+            $oTransaction = $this->creditRejectedBid($oBid, $fRepaymentAmount);
+            $this->notificationRejection($oBid, $oTransaction);
             // Save new amount of the bid after repayment
             $oBid->amount -= $fRepaymentAmount * 100;
             $oBid->status = \bids::STATUS_BID_ACCEPTED;
             $oBid->update();
+            // We don't update the auto-bid queue, because the bid is accepted partially.
         }
     }
 
     /**
      * @param \bids $oBid
-     * @param       $fCurrentRate
+     * @param float $fCurrentRate
      */
     public function refreshAutoBidRateOrReject(\bids $oBid, $fCurrentRate)
     {
@@ -277,7 +285,13 @@ class BidManager
         }
     }
 
-    private function credit($oBid, $fAmount)
+    /**
+     * @param $oBid
+     * @param $fAmount
+     *
+     * @return \transactions
+     */
+    private function creditRejectedBid($oBid, $fAmount)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
@@ -287,10 +301,6 @@ class BidManager
         $oWalletsLine = Loader::loadData('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = Loader::loadData('offres_bienvenues_details');
-        /** @var \notifications $oNotification */
-        $oNotification = Loader::loadData('notifications');
-        /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
 
         $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
         $fAmountX100 = $fAmount * 100;
@@ -339,18 +349,29 @@ class BidManager
             }
         }
 
-        $oNotification->type       = \notifications::TYPE_BID_REJECTED; // rejet
-        $oNotification->id_lender  = $oBid->id_lender_account;
-        $oNotification->id_project = $oBid->id_project;
-        $oNotification->amount     = $fAmountX100;
-        $oNotification->id_bid     = $oBid->id_bid;
-        $oNotification->create();
+        return $oTransaction;
 
-        $oMailNotification->id_client       = $oLenderAccount->id_client_owner;
-        $oMailNotification->id_notif        = \clients_gestion_type_notif::TYPE_BID_REJECTED;
-        $oMailNotification->date_notif      = date('Y-m-d H:i:s');
-        $oMailNotification->id_notification = $oNotification->id_notification;
-        $oMailNotification->id_transaction  = $oTransaction->id_transaction;
-        $oMailNotification->create();
+    }
+
+    /**
+     * @param \bids         $oBid
+     * @param \transactions $oTransaction
+     */
+    private function notificationRejection(\bids $oBid, \transactions $oTransaction)
+    {
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = Loader::loadData('lenders_accounts');
+        if ($oLenderAccount->get($oBid->id_lender_account)) {
+            $this->oNotificationManager->create(
+                \notifications::TYPE_BID_REJECTED,
+                \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                $oLenderAccount->id_client_owner,
+                'sendBidRejected',
+                $oBid->id_project,
+                $oTransaction->montant / 100,
+                $oBid->id_bid,
+                $oTransaction->id_transaction
+            );
+        }
     }
 }
