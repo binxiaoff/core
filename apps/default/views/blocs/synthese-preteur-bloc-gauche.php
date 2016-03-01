@@ -36,6 +36,9 @@
         <h2><?= $this->lng['preteur-synthese']['title-offers-widget'] ?> <span><?= $this->iDisplayTotalNumberOfBids ?><i class="icon-box-arrow"></i></span></h2>
         <div class="body">
             <div class="post-box clearfix">
+                <?php if ($this->bHasNoBidsOnProjectsInFunding ) : ?>
+                <p><?= $this->lng['preteur-synthese']['text-no-bids-on-projects-in-funding'] ?></p>
+                <?php else : ?>
                 <?php foreach ($this->aOngoingBidsByProject as $aProject) : ?>
                     <div class="project_bloc">
                         <h3><?= $aProject['title'] ?>,
@@ -76,14 +79,15 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
+                <?php endif; ?>
                 <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
                 <div class="autobid_switch">
                     <div class="text" style="float: left;">
                         <h2><?= $this->lng['preteur-synthese']['title-autobid-switch'] ?></h2>
                         <?php if ($this->bFirstTimeActivation) : ?>
-                        <p><a href="" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-explanation'] ?></a></p>
+                        <p><a href="<?= $this->lurl ?>/autolend/" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-explanation'] ?></a></p>
                         <?php else: ?>
-                        <p><a href="" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-settings'] ?></a></p>
+                        <p><a href="<?= $this->lurl ?>/profile/autolend#parametrage" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-settings'] ?></a></p>
                         <?php endif; ?>
                     </div>
                 </div>
