@@ -42,6 +42,7 @@
                             $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_OFF ?>');
                             $('#param').hide();
                             $('#tab-2').hide();
+                            $('.switch-notice').html('<p><?= $this->lng['autobid']['overview-text-nth-activation'] ?></p>');
                         }
                     })
                 } else {
