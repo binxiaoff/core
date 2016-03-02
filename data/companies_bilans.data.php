@@ -66,4 +66,20 @@ class companies_bilans extends companies_bilans_crud
         $result = $this->bdd->query('SELECT * FROM companies_bilans WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
+
+    public function calcultateFromBalance()
+    {
+        $oCompanyBalance = new company_balance($this->bdd);
+        $aBalances       = $oCompanyBalance->getBalanceSheetsByAnnualAccount(array($this->id_bilan));
+
+        $this->ca                          = $aBalances[$this->id_bilan]['FL'];
+        $this->resultat_brute_exploitation = $aBalances[$this->id_bilan]['GG'] + $aBalances[$this->id_bilan]['GA'] + $aBalances[$this->id_bilan]['GB'] + $aBalances[$this->id_bilan]['GC'] + $aBalances[$this->id_bilan]['GD'] - $aBalances[$this->id_bilan]['FP'] - $aBalances[$this->id_bilan]['FQ'] + $aBalances[$this->id_bilan]['GE'];
+        $this->resultat_exploitation       = $aBalances[$this->id_bilan]['GG'];
+        $this->resultat_financier          = $aBalances[$this->id_bilan]['GV'];
+        $this->produit_exceptionnel        = $aBalances[$this->id_bilan]['HA'] + $aBalances[$this->id_bilan]['HB'] + $aBalances[$this->id_bilan]['HC'];
+        $this->charges_exceptionnelles     = $aBalances[$this->id_bilan]['HE'] + $aBalances[$this->id_bilan]['HF'] + $aBalances[$this->id_bilan]['HG'];
+        $this->resultat_exceptionnel       = $this->produit_exceptionnel - $this->charges_exceptionnelles;
+        $this->resultat_net                = $aBalances[$this->id_bilan]['HN'];
+        $this->update();
+    }
 }

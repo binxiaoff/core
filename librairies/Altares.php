@@ -206,14 +206,12 @@ class Altares
                     $oCompanyAnnualAccounts->id_company              = $oCompany->id_company;
                     $oCompanyAnnualAccounts->cloture_exercice_fiscal = $oBalanceSheet->dateClotureN;
                     $oCompanyAnnualAccounts->duree_exercice_fiscal   = $oBalanceSheet->dureeN;
-//                    $oCompanyAnnualAccounts->ca                          = $aBalances['FL'];
-//                    $oCompanyAnnualAccounts->resultat_brute_exploitation = $aBalances['GG'] + $aBalances['GA'] + $aBalances['GB'] + $aBalances['GC'] + $aBalances['GD'] - $aBalances['FP'] - $aBalances['FQ'] + $aBalances['GE'];
-//                    $oCompanyAnnualAccounts->resultat_exploitation       = $aBalances['GG'];
-//                    $oCompanyAnnualAccounts->investissements             = $aBalances['0J'];
                     $oCompanyAnnualAccounts->create();
+                    $oCompanyAnnualAccounts->calcultateFromBalance();
 
                     $oCompanyAssetsDebts->id_bilan = $oCompanyAnnualAccounts->id_bilan;
                     $oCompanyAssetsDebts->create();
+                    $oCompanyAssetsDebts->calcultateFromBalance();
                 } else {
                     $oCompanyAnnualAccounts->get($aAnnualAccounts[0]['id_bilan'], 'id_bilan');
                     foreach ($oCompanyBalance->select('id_bilan = ' . $oCompanyAnnualAccounts->id_bilan) as $aBalance) {

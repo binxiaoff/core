@@ -712,6 +712,14 @@ class ajaxController extends bootstrap
                             }
                         }
                     }
+
+                    foreach ($aAnnualAccountsIds as $iAnnualAccountId) {
+                        $oCompanyDebtsAssets->get($iAnnualAccountId, 'id_bilan');
+                        $oCompanyDebtsAssets->calcultateFromBalance();
+
+                        $oCompanyAnnualAccounts->get($iAnnualAccountId, 'id_bilan');
+                        $oCompanyAnnualAccounts->calcultateFromBalance();
+                    }
                 }
             } elseif ($_POST['etape'] == 5) {
             } elseif ($_POST['etape'] == 6) {

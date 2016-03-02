@@ -66,4 +66,28 @@ class companies_actif_passif extends companies_actif_passif_crud
         $result = $this->bdd->query('SELECT * FROM companies_actif_passif WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
+
+    public function calcultateFromBalance()
+    {
+        $oCompanyBalance = new company_balance($this->bdd);
+        $aBalances       = $oCompanyBalance->getBalanceSheetsByAnnualAccount(array($this->id_bilan));
+
+        $this->immobilisations_corporelles        = $aBalances[$this->id_bilan]['AN'] + $aBalances[$this->id_bilan]['AP'] + $aBalances[$this->id_bilan]['AR'] + $aBalances[$this->id_bilan]['AT'] + $aBalances[$this->id_bilan]['AV'] + $aBalances[$this->id_bilan]['AX'];
+        $this->immobilisations_incorporelles      = $aBalances[$this->id_bilan]['AB'] + $aBalances[$this->id_bilan]['AD'] + $aBalances[$this->id_bilan]['AF'] + $aBalances[$this->id_bilan]['AH'] + $aBalances[$this->id_bilan]['AJ'] + $aBalances[$this->id_bilan]['AL'];
+        $this->immobilisations_financieres        = $aBalances[$this->id_bilan]['CS'] + $aBalances[$this->id_bilan]['CU'] + $aBalances[$this->id_bilan]['BB'] + $aBalances[$this->id_bilan]['BD'] + $aBalances[$this->id_bilan]['BF'] + $aBalances[$this->id_bilan]['BH'];
+        $this->stocks                             = $aBalances[$this->id_bilan]['BL'] + $aBalances[$this->id_bilan]['BN'] + $aBalances[$this->id_bilan]['BP'] + $aBalances[$this->id_bilan]['BR'] + $aBalances[$this->id_bilan]['BT'];
+        $this->creances_clients                   = $aBalances[$this->id_bilan]['BV'] + $aBalances[$this->id_bilan]['BX'] + $aBalances[$this->id_bilan]['BZ'] + $aBalances[$this->id_bilan]['CB'];
+        $this->disponibilites                     = $aBalances[$this->id_bilan]['CF'];
+        $this->valeurs_mobilieres_de_placement    = $aBalances[$this->id_bilan]['CD'];
+        $this->comptes_regularisation             = $aBalances[$this->id_bilan]['CH'] + $aBalances[$this->id_bilan]['CW'] + $aBalances[$this->id_bilan]['CM'] + $aBalances[$this->id_bilan]['CN'];
+        $this->capitaux_propres                   = $aBalances[$this->id_bilan]['DL'] + $aBalances[$this->id_bilan]['DO'];
+        $this->provisions_pour_risques_et_charges = $aBalances[$this->id_bilan]['CK'] + $aBalances[$this->id_bilan]['DR'];
+        $this->amortissement_sur_immo             = $aBalances[$this->id_bilan]['BK'];
+        $this->depreciation_actif_circulant       = $aBalances[$this->id_bilan]['CK'];
+        $this->dettes_financieres                 = $aBalances[$this->id_bilan]['DS'] + $aBalances[$this->id_bilan]['DT'] + $aBalances[$this->id_bilan]['DU'] + $aBalances[$this->id_bilan]['DV'];
+        $this->dettes_fournisseurs                = $aBalances[$this->id_bilan]['DW'] + $aBalances[$this->id_bilan]['DX'];
+        $this->autres_dettes                      = $aBalances[$this->id_bilan]['DY'] + $aBalances[$this->id_bilan]['DZ'] + $aBalances[$this->id_bilan]['EA'];
+        $this->comptes_regularisation             = $aBalances[$this->id_bilan]['EB'] + $aBalances[$this->id_bilan]['ED'];
+        $this->update();
+    }
 }
