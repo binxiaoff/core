@@ -12,13 +12,39 @@ $this->lng['etape-1']          = $this->ln->selectFront('depot-de-dossier-etape1
 $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 $this->lng['landing-page']     = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
+switch (current(explode('/', substr(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), 1)))) {
+    case 'emprunter-avec-cacl':
+        $this->bShortTunnel = true;
+        $_SESSION['depot-de-dossier']['partner'] = 'cacl';
+        break;
+    default:
+        $this->bShortTunnel = false;
+        unset($_SESSION['depot-de-dossier']['partner']);
+        break;
+}
+
+if ($this->bShortTunnel) {
+    $_GET['utm_source'] = '';
+    $_GET['utm_source2'] = '';
+    $_SESSION['utm_source'] = '';
+    $_SESSION['utm_source2'] = '';
+}
+
 $this->ficelle->source(
     isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
     $this->lurl . (isset($this->params[0]) ? '/' . $this->params[0] : ''),
     isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
 );
 
-if (isset($_SESSION['forms']['depot-de-dossier'])) {
+$bProcessForm = false;
+
+if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
+    $bProcessForm = true;
+    $_SESSION['forms']['depot-de-dossier']['values'] = $_POST;
+} elseif (isset($_GET['montant'], $_GET['siren'], $_GET['email']) && false === isset($_SESSION['forms']['depot-de-dossier']['values'])) {
+    $bProcessForm = true;
+    $_SESSION['forms']['depot-de-dossier']['values'] = $_GET;
+} elseif (isset($_SESSION['forms']['depot-de-dossier'])) {
     $this->aForm = $_SESSION['forms']['depot-de-dossier'];
     unset($_SESSION['forms']['depot-de-dossier']);
 }
@@ -34,24 +60,29 @@ foreach (array('siren', 'montant', 'email', 'prenom', 'nom', 'mobile') as $sFiel
     }
 }
 
-if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
-    $_SESSION['forms']['depot-de-dossier']['values'] = $_POST;
-
-    if (false === empty($_POST['email']) && false === $this->ficelle->isEmail($_POST['email'])) {
+if ($bProcessForm) {
+    if (false === isset($_SESSION['forms']['depot-de-dossier']['values']['short_tunnel'])
+        && (empty($_SESSION['forms']['depot-de-dossier']['values']['email'])
+        || false === $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']))
+    ) {
         $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['email'] = true;
     }
 
-    if (empty($_POST['montant'])) {
+    if (empty($_SESSION['forms']['depot-de-dossier']['values']['montant'])) {
         $_SESSION['forms']['depot-de-dossier']['response']          = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['montant'] = true;
     }
 
-    if (empty($_POST['siren']) || $_POST['siren'] != (int) $_POST['siren'] || strlen($_POST['siren']) !== 9) {
+    if (
+        empty($_SESSION['forms']['depot-de-dossier']['values']['siren'])
+        || $_SESSION['forms']['depot-de-dossier']['values']['siren'] != (int) $_SESSION['forms']['depot-de-dossier']['values']['siren']
+        || strlen($_SESSION['forms']['depot-de-dossier']['values']['siren']) !== 9
+    ) {
         $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['siren'] = true;
     } else {
-        $iAmount                                                    = str_replace(array(',', ' '), array('.', ''), $_POST['montant']);
+        $iAmount                                                    = str_replace(array(',', ' '), array('.', ''), $_SESSION['forms']['depot-de-dossier']['values']['montant']);
         $_SESSION['forms']['depot-de-dossier']['values']['montant'] = $iAmount;
 
         if ($iAmount != (int) $iAmount) {
@@ -68,7 +99,7 @@ if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
         die;
     }
 
-    header('Location: ' . (isset($sRedirectURL) ? $sRedirectURL : $this->lurl) . '/depot_de_dossier/etape1');
+    header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
     die;
 }
 

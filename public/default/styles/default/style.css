@@ -503,8 +503,10 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 .footer-partners h6 { font-size:14px; color:#a1a5a7; float:left; padding:0 65px 0 0; line-height:85px; }
 .footer-partners ul { float:left; list-style:none outside none; padding:0; font-size:0; line-height:0; vertical-align:middle; height:60px; padding-top:25px; }
 .footer-partners li { display:inline-block; vertical-align:middle; *display:inline; *zoom:1; }
-.footer-partners li + li { padding-left:100px; }
+.footer-partners li + li { padding-left:60px; }
 .footer-partners li img { vertical-align:middle; display:inline-block; }
+.footer-partners .logo-partner { width: 193px; height: 90px; }
+.footer-partners img[name="seal"] { width: 80px; height: 40px; }
 
 
 /* === Figure === */
@@ -614,6 +616,7 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 .testimonials .slides li { float:left; width:960px; }
 
 .testimonial-thumb { float:left; padding:13px 50px 0 10px; }
+.testimonial-thumb img { width: 148px; height: 47px; }
 .testimonial-body { overflow:hidden; }
 .testimonial-body p { color:#808080; padding-bottom:30px; }
 .testimonial-body p.author { text-align:right; font-weight:bold; font-size:14px; padding:0 40px 0 0; }
@@ -846,6 +849,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .project-c .img-holder.borderless { padding: 0; border: 0; }
 .project-c .img-holder .link { position:absolute; bottom: -30px; left: 0; font-size: 12px; line-height: 20px; font-weight:bold; color: #b10366; text-decoration:underline; }
 .project-c .img-holder .link:hover { text-decoration:none; }
+.project-c .img-holder img { width: 254px; height: 169px; }
 .project-c .info { position: relative; margin-top: -10px; width: 275px; font-weight:bold; font-size: 12px; line-height: 14px; }
 .project-c h3 { font: bold 18px/22px Arial; letter-spacing: 0; text-transform: capitalize;}
 .project-c .info p { padding-bottom: 10px; }
@@ -1004,6 +1008,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .projects-table .thumb { margin-left: 10px; }
 
 .unProjet .btn.multi { min-width: 90px; padding-left: 0; padding-right: 0; }
+.unProjet .thumb { width: 108px; height: 72px; }
 
 /* ==========================================================================
     #Form Manage

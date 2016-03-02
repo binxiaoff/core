@@ -123,6 +123,7 @@ class transfertsController extends bootstrap
                 }
 
                 $this->receptions->id_project      = $this->projects->id_project;
+                $this->receptions->id_client       = $companies->id_client_owner;
                 $this->receptions->status_bo       = 1;
                 $this->receptions->type_remb       = $type_remb;
                 $this->receptions->remb            = 1;

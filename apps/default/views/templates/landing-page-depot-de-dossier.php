@@ -4,9 +4,12 @@
     <meta charset="utf-8">
     <meta name="description" content="<?= $this->meta_description ?>">
     <meta name="keywords" content="<?= $this->meta_keywords ?>">
+    <?php if (0 == $this->tree->indexation) : ?>
+        <meta name="robots" content="noindex">
+    <?php endif; ?>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=0">
-    <title><?= $this->meta_title ?><?= ($this->baseline_title != '' ? ' - ' . $this->baseline_title : '') ?></title>
+    <title><?= $this->meta_title ?><?= (empty($this->baseline_title) ? '' : ' - ' . $this->baseline_title) ?></title>
     <link rel="shortcut icon" href="<?= $this->url ?>/landing-page/css/images/favicon.ico">
     <link rel="stylesheet" href="<?= $this->url ?>/landing-page/css/jquery.c2selectbox.css" type="text/css">
     <link rel="stylesheet" href="<?= $this->url ?>/landing-page/css/style.css" type="text/css">
@@ -30,7 +33,7 @@
     </style>
 </head>
 <body>
-<?php if ($this->google_analytics != '') { ?>
+<?php if ($this->google_analytics != '') : ?>
     <script>
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', '<?=$this->google_analytics?>']);
@@ -60,37 +63,37 @@
             f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
     <!-- End Google Tag Manager -->
-<?php } ?>
+<?php endif; ?>
 <div class="shell page-landing">
     <div class="container cf">
         <section class="content left">
             <header class="page-header cf">
                 <a target="_blank" href="<?= $this->content['lp-lien-logo-221'] ?>" class="logo left">
-                    <img src="<?= $this->url ?>/landing-page/css/images/logo.png" alt="Unilend"/>
+                    <img src="<?= $this->url ?>/landing-page/css/images/logo.png" alt="Unilend">
                 </a>
-                <?php if ($this->content['lp-emprunteur-empruntis'] != '') { ?>
-                    <img class="empruntis" src="<?= $this->photos->display($this->content['lp-emprunteur-empruntis']) ?>" alt="Empruntis"/>
-                <?php } ?>
+                <?php if ($this->content['lp-emprunteur-empruntis'] != '') : ?>
+                    <img class="empruntis" src="<?= $this->photos->display($this->content['lp-emprunteur-empruntis']) ?>" alt="<?= addslashes($this->complement['lp-emprunteur-empruntis']) ?>">
+                <?php endif; ?>
             </header>
             <section class="process">
                 <h1><?= $this->content['lp-titre-landing-page-222'] ?></h1>
                 <ul class="cf">
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-gauche-image-223']) ?>" alt="<?= addslashes($this->content['lp-gauche-texte-225']) ?>"/>
+                        <img src="<?= $this->photos->display($this->content['lp-gauche-image-223']) ?>" alt="<?= addslashes($this->content['lp-gauche-texte-225']) ?>">
                         <p>
                             <strong><?= $this->content['lp-gauche-chiffre-224'] ?></strong>
                             <span><?= $this->content['lp-gauche-texte-225'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-centre-image-226']) ?>" alt="<?= addslashes($this->content['lp-centre-texte-228']) ?>"/>
+                        <img src="<?= $this->photos->display($this->content['lp-centre-image-226']) ?>" alt="<?= addslashes($this->content['lp-centre-texte-228']) ?>">
                         <p>
                             <strong><?= $this->content['lp-centre-chiffre-227'] ?></strong>
                             <span><?= $this->content['lp-centre-texte-228'] ?></span>
                         </p>
                     </li>
                     <li>
-                        <img src="<?= $this->photos->display($this->content['lp-droite-image-229']) ?>" alt="<?= addslashes($this->content['lp-droite-texte-231']) ?>"/>
+                        <img src="<?= $this->photos->display($this->content['lp-droite-image-229']) ?>" alt="<?= addslashes($this->content['lp-droite-texte-231']) ?>">
                         <p>
                             <strong><?= $this->content['lp-droite-chiffre-230'] ?></strong>
                             <span><?= $this->content['lp-droite-texte-231'] ?></span>
@@ -106,9 +109,9 @@
         <aside class="signup right">
             <h2><?= $this->content['lp-titre-formulaire'] ?></h2>
             <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post" id="depot_de_dossier" name="depot_de_dossier">
-                <?php if (isset($this->aForm['response'])) { ?>
+                <?php if (isset($this->aForm['response'])) : ?>
                     <div class="form-row error" style="display:inline;"><?= $this->aForm['response'] ?></div>
-                <?php } ?>
+                <?php endif; ?>
                 <div class="form-row">
                     <span class="euro-sign">€</span>
                     <input type="text" name="montant" id="montant"
@@ -128,6 +131,9 @@
                            data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
                     <em class="caractmax<?= isset($this->aForm['errors']['siren']) ? ' error' : '' ?>"><?= $this->lng['landing-page']['9-caracteres-numeriques'] ?></em>
                 </div>
+                <?php if (true === $this->bShortTunnel) : ?>
+                    <input type="hidden" name="shortunnel" value="1">
+                <?php else : ?>
                 <div class="form-row">
                     <input type="email" name="email" id="email"
                            placeholder="<?= $this->lng['landing-page']['email'] ?>"
@@ -135,6 +141,7 @@
                            class="field<?= isset($this->aForm['errors']['email']) ? ' LV_invalid_field' : '' ?>"
                            data-validators="Email">
                 </div>
+                <?php endif; ?>
                 <input type="hidden" name="spy_inscription_landing_page_depot_dossier" value="1">
                 <button type="submit" class="button submit">
                     <?= $this->content['lp-bouton-formulaire-241'] ?>
@@ -143,34 +150,33 @@
             </form>
         </aside>
     </div>
-    <?php if (count($this->nbProjects) > 0) { ?>
+    <?php if (count($this->nbProjects) > 0) : ?>
         <section class="featured-articles">
             <div class="carousel">
                 <ul class="slides cf">
-                <?php foreach ($this->lProjetsFunding as $project) { ?>
+                <?php foreach ($this->lProjetsFunding as $project) : ?>
                     <li style="list-style:none;">
                         <div class="slide">
-                            <img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>"/>
+                            <img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $project['photo_projet'] ?>" alt="<?= addslashes($project['title']) ?>">
                             <strong><?= $project['title'] ?></strong>
-                            <span></span>
                             <p><?= $project['nature_project'] ?></p>
                         </div>
                     </li>
-                <?php } ?>
+                <?php endforeach; ?>
                 </ul>
                 <a href="#" class="prev-slide"></a>
                 <a href="#" class="next-slide"></a>
             </div>
         </section>
-    <?php } ?>
+    <?php endif; ?>
     <section class="partners cf">
-        <span><img src="<?= $this->photos->display($this->content['lp-image-1-233'], '', 'partenaires_landing_page') ?>"/></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-2-234'], '', 'partenaires_landing_page') ?>"/></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-3-235'], '', 'partenaires_landing_page') ?>"/></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4-236'], '', 'partenaires_landing_page') ?>"/></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5-237'], '', 'partenaires_landing_page') ?>"/></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6-238'], '', 'partenaires_landing_page') ?>"/></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], '', 'partenaires_landing_page') ?>"/></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-1-233'], '', 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-2-234'], '', 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-3-235'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4-236'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5-237'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6-238'], '', 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], '', 'partenaires_landing_page') ?>"></span>
     </section>
 </div>
 <!--[if lte IE 9]>
