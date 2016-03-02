@@ -11,7 +11,7 @@ class syntheseController extends bootstrap
 
         $this->setHeader('header_account');
 
-        if ( ! $this->clients->checkAccess()) {
+        if (!$this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
         } else {
@@ -60,13 +60,13 @@ class syntheseController extends bootstrap
         // form qs
         if (isset($_POST['send_form_qs'])) {
             $form_ok = true;
-            if ( ! isset($_POST['secret-question']) || $_POST['secret-question'] == '') {
+            if (!isset($_POST['secret-question']) || $_POST['secret-question'] == '') {
                 $form_ok = false;
             }
-            if ( ! isset($_POST['secret-response']) || $_POST['secret-response'] == '') {
+            if (!isset($_POST['secret-response']) || $_POST['secret-response'] == '') {
                 $form_ok = false;
             }
-            if ( ! in_array('', array($this->clients->secrete_question, $this->clients->secrete_reponse))) {
+            if (!in_array('', array($this->clients->secrete_question, $this->clients->secrete_reponse))) {
                 $form_ok = false;
             }
 
@@ -184,15 +184,18 @@ class syntheseController extends bootstrap
             // Revenus mensuel
             $tabSumRembParMois[$annee]             = $this->echeanciers->getSumRembByMonthsCapital($this->lenders_accounts->id_lender_account, $annee); // captial remboursé / mois
             $tabSumIntbParMois[$annee]             = $this->echeanciers->getSumIntByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // intérets brut / mois
-            $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // revenues fiscales / mois
+            $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ',
+                $annee); // revenues fiscales / mois
 
             // on fait le tour sur l'année
             for ($i = 1; $i <= 12; $i++) {
                 $a                                            = $i;
                 $a                                            = ($i < 10 ? '0' . $a : $a);
                 $this->sumRembParMois[$annee][$i]             = number_format(isset($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0, 2, '.', ''); // capital remboursé / mois
-                $this->sumIntbParMois[$annee][$i]             = number_format(isset($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // interets net / mois
-                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // prelevements fiscaux
+                $this->sumIntbParMois[$annee][$i]             = number_format(isset($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0,
+                    2, '.', ''); // interets net / mois
+                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.',
+                    ''); // prelevements fiscaux
 
                 // on organise l'affichage
                 if ($d == 3) {
@@ -254,7 +257,7 @@ class syntheseController extends bootstrap
 
         if ($this->iNumberOfCompanies === 0) {
             $this->iDiversificationLevel = 0;
-            $this->sDisplayedMessage    = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-niveau-0']);
+            $this->sDisplayedMessage     = str_replace('[#SURL#]', $this->surl, $this->lng['preteur-synthese']['tri-niveau-0']);
         }
 
         if ($this->iNumberOfCompanies >= 1 && $this->iNumberOfCompanies <= 19) {
@@ -286,7 +289,7 @@ class syntheseController extends bootstrap
                 $this->sTypeMessageTooltip = 'tri';
                 $this->sDisplayedMessage   = $this->lng['preteur-synthese']['tri-' . (($aLastIRR['tri_value'] > 0) ? 'positif-niveau-' : 'negatif-niveau-') . $this->iDiversificationLevel];
             } else {
-                $fLossRate        = $oLenderAccountStats->getLossRate($this->lenders_accounts->id_lender_account, $this->lenders_accounts);
+                $fLossRate = $oLenderAccountStats->getLossRate($this->lenders_accounts->id_lender_account, $this->lenders_accounts);
 
                 if ($fLossRate > 0) {
                     $this->sDisplayedValue     = $this->ficelle->formatNumber(-$fLossRate) . '%';
@@ -306,31 +309,36 @@ class syntheseController extends bootstrap
         $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         $this->bHasNoBidsOnProjectsInFunding = true;
-        $this->bFirstTimeActivation          = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);
+        $this->bFirstTimeActivation          = !$oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);
         $this->iDisplayTotalNumberOfBids     = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
 
         foreach ($aProjectsInFunding as $iKey => $aProject) {
-            $aProjectsInFunding[$iKey]['oEndFunding']           = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
-            $aProjectsInFunding[$iKey]['aPendingBids']          = $this->bids->select('id_project = ' . $aProject['id_project'] .
-                                                                                      ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                                                                                      ' AND status = ' . \bids::STATUS_BID_PENDING,
-                                                                                      'id_bid DESC');
+            $aProjectsInFunding[$iKey]['oEndFunding']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
+            $aProjectsInFunding[$iKey]['aPendingBids'] = $this->bids->select(
+                'id_project = ' . $aProject['id_project'] .
+                ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
+                ' AND status = ' . \bids::STATUS_BID_PENDING,
+                'id_bid DESC'
+            );
 
-            $aProjectsInFunding[$iKey]['aRejectedBid']          = array_shift($this->bids->select('id_project = ' . $aProject['id_project'] .
-                                                                                                  ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                                                                                                  ' AND status = ' . \bids::STATUS_BID_REJECTED,
-                                                                                                  'id_bid DESC', null, '1'));
+            $aProjectsInFunding[$iKey]['aRejectedBid'] = array_shift(
+                $this->bids->select(
+                    'id_project = ' . $aProject['id_project'] .
+                    ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
+                    ' AND status = ' . \bids::STATUS_BID_REJECTED,
+                    'id_bid DESC',
+                    null,
+                    '1'
+                )
+            );
 
             $aProjectsInFunding[$iKey]['iNumberOfRejectedBids'] = $this->bids->counter('id_project = ' . $aProject['id_project'] .
-                                                                                        ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                                                                                        ' AND status = ' . \bids::STATUS_BID_REJECTED);
+                ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
+                ' AND status = ' . \bids::STATUS_BID_REJECTED);
 
-            $this->bHasNoBidsOnProjectsInFunding  = ($this->bHasNoBidsOnProjectsInFunding  || empty($aProjectsInFunding[$iKey]['aRejectedBid']) || empty($aProjectsInFunding[$iKey]['aPendingBids']));
+            $this->bHasNoBidsOnProjectsInFunding = ($this->bHasNoBidsOnProjectsInFunding || empty($aProjectsInFunding[$iKey]['aRejectedBid']) || empty($aProjectsInFunding[$iKey]['aPendingBids']));
         }
 
-
-        $this->aOngoingBidsByProject     = $aProjectsInFunding;
-
-
+        $this->aOngoingBidsByProject = $aProjectsInFunding;
     }
 }
