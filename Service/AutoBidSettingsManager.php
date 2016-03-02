@@ -54,7 +54,7 @@ class AutoBidSettingsManager
                 $this->oNotificationManager->create(
                     \notifications::TYPE_AUTOBID_FIRST_ACTIVATION,
                     \clients_gestion_type_notif::TYPE_AUTOBID_FIRST_ACTIVATION,
-                    $this->clients->id_client,
+                    $oClient->id_client,
                     'sendFirstAutoBidActivation'
                 );
             }
