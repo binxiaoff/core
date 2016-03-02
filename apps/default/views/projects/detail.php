@@ -456,6 +456,12 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                                                     <?php endfor; ?>
                                                 </tr>
                                                 <tr>
+                                                    <td class="intitule"><?= $this->lng['preteur-projets']['depreciation-actif-circulant'] ?></td>
+                                                    <?php for ($i = 0; $i < 3; $i++): ?>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['depreciation_actif_circulant'], 0) ?>&nbsp;€</td>
+                                                    <?php endfor; ?>
+                                                </tr>
+                                                <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['dettes-financieres'] ?></td>
                                                     <?php for ($i = 0; $i < 3; $i++): ?>
                                                         <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['dettes_financieres'], 0) ?>&nbsp;€</td>
