@@ -374,8 +374,8 @@
                 <td><input type="text" name="bic" id="bic" class="input_large" value="<?= $this->lenders_accounts->bic ?>"/></td>
             </tr>
             <tr>
-                <th><label for="iban1">IBAN :</label></th>
-                <td>
+                <th style="text-align: right; vertical-align: top; padding: 5px 0px 10px 5px;><label for="iban1">IBAN :</label></th>
+                <td style="padding: 0 0 10px 0;">
                     <table>
                         <tr>
                             <td><input type="text" name="iban1" id="iban1" class="input_court" value="<?= $this->iban1 ?>"/></td>
@@ -386,7 +386,7 @@
                             <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= $this->iban6 ?>"/></td>
                             <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= $this->iban7 ?>"/></td>
                         </tr>
-                        <tr><td colspan="7"><input type="submit" value="Valider ce RIB / Iban" class="btn" id="valider_rib_iban" name="valider_rib_iban"></td></tr>
+                        <tr><td colspan="7"><input type="submit" value="Valider les modifications sur le RIB" class="btn" id="valider_rib_iban" name="valider_rib_iban"></td></tr>
                     </table>
                 </td>
             </tr>
