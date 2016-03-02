@@ -33,7 +33,7 @@
             $('.switch-input').on('change', function () {
                 var Settings = {
                     setting: $('#autobid-switch-1').val(),
-                    id_client: "<?= $this->clients->id_client ?>"
+                    id_lender: "<?= $this->oLendersAccounts->id_lender_account ?>"
                 };
                 if ($('#autobid-switch-1').val() == <?= \client_settings::AUTO_BID_ON ?>) {
                     $.post(add_url + "/profile/AutoBidSettingOff", Settings).done(function (data) {

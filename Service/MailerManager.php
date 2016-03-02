@@ -596,6 +596,8 @@ class MailerManager
         $oLenderAccount = Loader::loadData('lenders_accounts');
         /** @var \projects $oProject */
         $oProject = Loader::loadData('projects');
+        /** @var \autobid $oAutoBid */
+        $oAutoBid = Loader::loadData('autobid');
 
         $oBid->get($oNotification->id_bid);
         $oLenderAccount->get($oBid->id_lender_account);
@@ -610,15 +612,17 @@ class MailerManager
             $sInterval  = $this->formatDateDiff($oNow, $oEndDate);
             $bIsAutoBid = false === empty($oBid->id_autobid);
 
-            if ($oEndDate <= $oNow) {
-                if ($bIsAutoBid) {
+            if ($bIsAutoBid) {
+                $oAutoBid->get($oBid->id_autobid);
+
+                if ($oEndDate <= $oNow) {
                     $sMailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
                 } else {
-                    $sMailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
+                    $sMailTemplate = 'preteur-autobid-ko';
                 }
             } else {
-                if ($bIsAutoBid) {
-                    $sMailTemplate = 'preteur-autobid-ko';
+                if ($oEndDate <= $oNow) {
+                    $sMailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
                 } else {
                     $sMailTemplate = 'preteur-bid-ko';
                 }
@@ -639,6 +643,7 @@ class MailerManager
                 'prenom_p' => $oClient->prenom,
                 'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
                 'taux_bid' => $this->oFicelle->formatNumber($oBid->rate),
+                'autobid_rate_min' => $oAutoBid->rate_min,
                 'nom_entreprise' => $oCompany->name,
                 'projet-p' => $this->sLUrl . '/projects/detail/' . $oProject->slug,
                 'date_bid' => date('d', $iAddedBid) . ' ' . $sMonthFr . ' ' . date('Y', $iAddedBid),

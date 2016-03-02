@@ -533,9 +533,9 @@ class ajaxController extends bootstrap
         $this->projects               = $this->loadData('projects');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
         $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
@@ -594,8 +594,10 @@ class ajaxController extends bootstrap
         $this->projects               = $this->loadData('projects');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
         $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
+
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
+
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 

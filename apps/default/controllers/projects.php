@@ -110,8 +110,10 @@ class projectsController extends bootstrap
 
         $this->lng['landing-page']           = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
+        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+
         $this->bIsConnected                  = $this->clients->checkAccess();
-        $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->clients);
+        $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         $this->restriction_ip                = in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]);
 
         if ($this->bIsConnected) {
@@ -144,8 +146,6 @@ class projectsController extends bootstrap
             $this->companies_details->get($this->companies->id_company, 'id_company');
             // l'emprunteur
             $this->emprunteur->get($this->companies->id_client_owner, 'id_client');
-            // On recupere le lender
-            $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
             // Statut du projet
             $this->projects_status->getLastStatut($this->projects->id_project);
             // statut client
