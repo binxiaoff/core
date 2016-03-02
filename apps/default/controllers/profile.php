@@ -2613,6 +2613,9 @@ class profileController extends bootstrap
 
             foreach ($this->aAutoBidSettings[$aPeriod['id_period']] as $iKey => $aSetting) {
                 $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
+                $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['period_min']         = $aPeriod['min'];
+                $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['period_max']         = $aPeriod['max'];
+                $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['note']               = constant('\projects::RISK_' . $aSetting['evaluation']);
             }
         }
 

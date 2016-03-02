@@ -92,8 +92,8 @@
     <div id="expert-settings" style="<?= ($this->bIsNovice) ? 'display:none;' : '' ?>">
 
         <div class="apply-global-medium-rate" style="display: none;">
-            <p><?= str_replace('[#GLOBAL-AVG-RATE#]', $this->fAverageRateUnilend, $this->lng['autobid']['unilend-global-rate']) ?></p>
-            <p><? $this->lng['autobid']['apply-unilend-global-rate-instruction'] ?></p>
+            <p><?= str_replace('[#GLOBAL-AVG-RATE#]', $this->ficelle->formatNumber($this->fAverageRateUnilend, 1), $this->lng['autobid']['unilend-global-rate']) ?></p>
+            <p><?= $this->lng['autobid']['apply-unilend-global-rate-instruction'] ?></p>
             <button class="btn btn-small grise1" type="button" id="global-rate-Unilend"><?= $this->lng['autobid']['apply-unilend-global-rate-button'] ?></button>
         </div>
 
@@ -126,18 +126,17 @@
                                         </div>
                                         <div class="param-advanced-bottom" >
                                             <div class="param-advanced-buttons" style="display: none;">
-                                                <button class="param-advanced-button" value="1">+</button>
-                                                <button class="param-advanced-button" value="0">-</button>
+                                                <button class="param-advanced-button" value="0.1">+</button>
+                                                <button class="param-advanced-button" value="-0.1">-</button>
                                             </div>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value"
-                                                   value="<?= $aSetting['rate_min'] ?>">
-                                            <input type="hidden" name="param-advanced-unilend-rate" id="param-advanced-unilend-rate"
-                                                   value="<?= $aSetting['AverageRateUnilend'] ?>">
                                             <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period"
-                                                   value="<?= $aSetting['id_autobid_period'] ?>">
-                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation"
-                                                   value="<?= $aSetting['evaluation'] ?>">
+                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-value" class="param-advanced-value" value="<?= $aSetting['rate_min'] ?>">
+                                            <input type="hidden" name="param-advanced-unilend-rate" value="<?= $aSetting['AverageRateUnilend'] ? $this->ficelle->formatNumber($aSetting['AverageRateUnilend'], 1) : ''; ?>">
+                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-period" value="<?= $aSetting['id_autobid_period'] ?>">
+                                            <input type="hidden" id="<?= $aSetting['id_autobid'] ?>-param-advanced-evaluation" value="<?= $aSetting['evaluation'] ?>">
+                                            <input type="hidden" value="<?= $aSetting['note'] ?>" name="param-advanced-note">
+                                            <input type="hidden" value="<?= $aSetting['period_min'] ?>" name="param-advanced-period-min">
+                                            <input type="hidden" value="<?= $aSetting['period_max'] ?>" name="param-advanced-period-max">
                                         </div>
                                     </div>
                                 </td>
@@ -159,11 +158,8 @@
 
         <div class="table-infos right" style="display: none;" id="table-infos_right">
             <div class="param-advanced-tooltip">
-                <span class="global-rate">8,2%</span>
-                <p><strong>TAUX MOYEN</strong><br>
-                    Pour une note de 3 <img src="img/single-star.png" alt=""><br>
-                    et durée de 3 à 12 mois</p>
-
+                <span class="global-rate"></span>
+                <p class="indice-rate"></p>
                 <div class="global-progress-container">
                     <span id="param-advanced-global-progress-label"></span>
                     <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
@@ -172,12 +168,11 @@
                 <div class="medium-rate-note">
                     <span>Je souhaite appliquer le taux moyen constaté ?</span>
                     <div class="medium-rate-buttons">
-                        <button class="btn btn-small" type="button" onclick="">Oui</button>
-                        <button class="btn btn-small grise1" type="button" onclick="">Non</button>
+                        <button class="btn btn-small btn-apply-avg-rate" type="button">Oui</button>
+                        <button class="btn btn-small grise1 btn-close-widget" type="button">Non</button>
                     </div>
                 </div>
             </div>
-            <button class="btn" id="param-advanced-btn-submit" type="button" onclick="">Valider</button>
         </div>
     </div>
     <div class="row">
@@ -290,11 +285,45 @@ $(window).load(function(){
     });
 
 
-    $('.cell-inner').click(function () {
-        $('.table-infos').show();
+    $('.cell-inner').off().click(function () {
 
+        if (!$('#autobid-block').hasClass('autobid-param-advanced-locked')) {
+            var cell = $(this);
+            var widget = $('#table-infos_right');
+            var e_avg_rate_cell = $(this).find('input[name=param-advanced-unilend-rate]');
+            var avg_rate = e_avg_rate_cell.val();
+            var note = $(this).find('input[name=param-advanced-note]').val();
+            var period_min = $(this).find('input[name=param-advanced-period-min]').val();
+            var period_max = $(this).find('input[name=param-advanced-period-max]').val();
+            var avg_rate_indice = '<?= $this->lng['autobid']['widget-average-rate-indice'] ?>'
+                .replace('[#note#]', note)
+                .replace('[#period_min#]', period_min)
+                .replace('[#period_max#]', period_max);
+            if (avg_rate.length === 0) {
+                avg_rate = '<?= $this->ficelle->formatNumber($this->fAverageRateUnilend, 1) ?>';
+                avg_rate_indice = '<?= $this->lng['autobid']['widget-platform-average-rate-indice'] ?>';
+            }
+            widget.find('.global-rate').html(avg_rate+'%');
+            widget.find('.indice-rate').html(avg_rate_indice);
 
+            widget.find('.btn-apply-avg-rate').click(function(){
+                cell.find('.param-advanced-label').html(avg_rate+'%');
+                cell.find('.param-advanced-value').val(avg_rate.replace(",", "."));
+            });
 
+            widget.find('.btn-close-widget').click(function(){
+                widget.hide();
+            });
+
+            var rate = cell.find('.param-advanced-value').val();
+            drawPercentage(rate);
+            widget.show();
+        }
+    });
+
+    $('.cell-inner .param-advanced-button').click(function(){
+        var rate = $(this).parents('.cell-inner').find('.param-advanced-value').val();
+        drawPercentage(rate);
     });
 
 // Block advanced params
@@ -310,38 +339,22 @@ $(window).load(function(){
         });
     }
 
-    if($('.param-advanced-button').length){
-        $('.param-advanced-button').on('click', function() {
+    if ($('.param-advanced-button').length) {
+        $('.param-advanced-button').on('click', function () {
+            var inputRate = $(this).parents('.param-advanced-bottom').find('.param-advanced-value');
+            var labelRate = $(this).parents('.param-advanced-bottom').find('.param-advanced-label');
+            var AvgRateUnilend = parseFloat($(this).parents('.param-advanced-bottom').find('input[name=param-advanced-unilend-rate]').val());
+            var currentVal = Number(parseFloat(inputRate.val()).toFixed(1));
+            var newVal = Number(currentVal + parseFloat($(this).val())).toFixed(1);
 
-            var that = $(this),
-                input = that.parent().next(),
-                inputUnilend = input.next(),
-                currentVal = Number(parseFloat(input.val()).toFixed(1)),
-                newVal,
-                newValString,
-                AvgRateUnilend = Number(parseFloat(inputUnilend.val()).toFixed(1));
-
-            if($(this).text() === '+'){
-                if (currentVal < 9.9 ){
-                    newVal = Number(currentVal+=0.1).toFixed(1);
-                } else {
-                    newVal = currentVal;
-                }
-            } else {
-                if (currentVal > 4 ){
-                    newVal = Number(currentVal-=0.1).toFixed(1);
-                } else {
-                    newVal = currentVal;
-                }
+            if (newVal > 9.9 || newVal < 4) {
+                newVal = currentVal;
             }
+            inputRate.val(newVal);
+            labelRate.html(newVal.toString().replace(".", ",") + '%');
 
-            input.val(newVal);
-            newValString = newVal.toString().replace(".", ",");
-            var label = inputUnilend.next();
-            label.html(newValString+'%');
-
-            if (isNaN(AvgRateUnilend) === false ) {
-                if (newVal <= AvgRateUnilend ){
+            if (isNaN(AvgRateUnilend) === false) {
+                if (newVal <= AvgRateUnilend) {
                     $(this).closest('td').removeClass('param-over');
                 } else {
                     $(this).closest('td').addClass('param-over');
@@ -367,43 +380,47 @@ $(window).load(function(){
 
     $('#global-rate-Unilend').click(function() {
         $('.param-advanced-value').each(function () {
-            var that = $(this),
-                input = that.next(),
-                label = input.next(),
-                GlobalRateUnilend  = <?= $this->fAverageRateUnilend ?>,
-                StringGlobalRateUnilend = GlobalRateUnilend.toString().replace(".", ",");
-            that.val(GlobalRateUnilend);
-            label.html(StringGlobalRateUnilend+'%');
+            $(this).val(<?= $this->fAverageRateUnilend ?>);
+            $(this).parents('.param-advanced-bottom').find('.param-advanced-label').html(<?= $this->fAverageRateUnilend ?>.toString().replace(".", ",")+'%');
         })
     });
 
-    // Semi circle progress bar
-    if($('#param-advanced-global-progress').length){
-        var bg = $('#param-advanced-global-progress'),
-            ctx = ctx = bg[0].getContext('2d'),
-            imd = null,
-            circ = Math.PI,
-            quart = Math.PI / 2;
+    function drawPercentage(rate){
+        $.ajax({
+            url: "<?=$this->lurl?>/ajax/bidAcceptationPossibility/"+rate,
+            type: 'GET',
+            error: function() {
+                alert('An error has occurred');
+            },
+            success: function(percentage) {
+                $('#param-advanced-global-progress').html('');
+                var bg = $('#param-advanced-global-progress'),
+                    ctx = ctx = bg[0].getContext('2d'),
+                    imd = null,
+                    circ = Math.PI,
+                    quart = Math.PI / 2;
 
-        ctx.beginPath();
-        ctx.strokeStyle = '#b10366';
-        ctx.closePath();
-        ctx.fill();
-        ctx.lineWidth = 20.0;
+                ctx.beginPath();
+                ctx.strokeStyle = '#b10366';
+                ctx.closePath();
+                ctx.fill();
+                ctx.lineWidth = 20.0;
 
-        imd = ctx.getImageData(0, 0, 109, 109);
+                imd = ctx.getImageData(0, 0, 109, 109);
 
-        var draw = function(current) {
-            ctx.putImageData(imd, 0, 0);
-            ctx.beginPath();
-            ctx.arc(55, 55, 44, -(quart), ((circ) * current) - quart, false);
+                var draw = function(percentage) {
+                    ctx.putImageData(imd, 0, 0);
+                    ctx.beginPath();
+                    ctx.arc(55, 55, 44, -(quart), ((circ) * percentage) - quart, false);
 
-            ctx.stroke();
-            $('#param-advanced-global-progress-label').html(current*100+'%');
-        }
+                    ctx.stroke();
+                    $('#param-advanced-global-progress-label').html(percentage*100+'%');
+                }
 
-        // Draw progress bar: draw(arg) where arg = progress from 0 to 1
-        draw(.75);
+                // Draw progress bar: draw(arg) where arg = progress from 0 to 1
+                draw(percentage);
+            }
+        });
     }
 });
 </script>
