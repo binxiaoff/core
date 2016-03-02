@@ -41,10 +41,10 @@ class companies_actif_passif extends companies_actif_passif_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `companies_actif_passif`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM companies_actif_passif' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -57,16 +57,13 @@ class companies_actif_passif extends companies_actif_passif_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `companies_actif_passif` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM companies_actif_passif' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_actif_passif')
     {
-        $sql    = 'SELECT * FROM `companies_actif_passif` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM companies_actif_passif WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 }

@@ -579,16 +579,17 @@ class ajaxController extends bootstrap
                 $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
                 $this->clients->update();
             } elseif ($_POST['etape'] == 3) {
-                $this->projects = $this->loadData('projects');
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->amount               = $this->ficelle->cleanFormatedNumber($_POST['montant_etape3']);
-                $this->projects->period               = $_POST['duree_etape3'];
-                $this->projects->title                = $_POST['titre_etape3'];
-                $this->projects->objectif_loan        = $_POST['objectif_etape3'];
-                $this->projects->presentation_company = $_POST['presentation_etape3'];
-                $this->projects->means_repayment      = $_POST['moyen_etape3'];
-                $this->projects->comments             = $_POST['comments_etape3'];
-                $this->projects->update();
+                /** @var projects $oProject */
+                $oProject = $this->loadData('projects');
+                $oProject->get($_POST['id_project'], 'id_project');
+                $oProject->amount               = $this->ficelle->cleanFormatedNumber($_POST['montant_etape3']);
+                $oProject->period               = $_POST['duree_etape3'];
+                $oProject->title                = $_POST['titre_etape3'];
+                $oProject->objectif_loan        = $_POST['objectif_etape3'];
+                $oProject->presentation_company = $_POST['presentation_etape3'];
+                $oProject->means_repayment      = $_POST['moyen_etape3'];
+                $oProject->comments             = $_POST['comments_etape3'];
+                $oProject->update();
             } elseif ($_POST['etape'] == 4.1) {
                 /** @var projects $oProject */
                 $oProject = $this->loadData('projects');
@@ -670,21 +671,28 @@ class ajaxController extends bootstrap
                     $oProject->update();
                 }
             } elseif ($_POST['etape'] == 4.2) {
-                $this->projects             = $this->loadData('projects');
-                $this->companies_bilans     = $this->loadData('companies_bilans');
-                $this->company_balance      = $this->loadData('company_balance');
-                $this->company_balance_type = $this->loadData('company_balance_type');
+                /** @var projects $oProject */
+                $oProject               = $this->loadData('projects');
+                /** @var companies_actif_passif $oCompanyDebtsAssets */
+                $oCompanyDebtsAssets    = $this->loadData('companies_actif_passif');
+                /** @var companies_bilans $oCompanyAnnualAccounts */
+                $oCompanyAnnualAccounts = $this->loadData('companies_bilans');
+                /** @var company_balance $oCompanyBalance */
+                $oCompanyBalance        = $this->loadData('company_balance');
+                /** @var company_balance_type $oCompanyBalanceType */
+                $oCompanyBalanceType    = $this->loadData('company_balance_type');
 
-                if ($this->projects->get($_POST['id_project'], 'id_project')) {
-                    $aAnnualAccounts    = $this->companies_bilans->select('id_company = ' . $this->projects->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+                if ($oProject->get($_POST['id_project'], 'id_project')) {
+                    $aAnnualAccounts    = $oCompanyAnnualAccounts->select('id_company = ' . $oProject->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
                     $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
                     $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
                     $aBalanceSheets     = array();
-                    foreach ($this->company_balance->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
+
+                    foreach ($oCompanyBalance->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
                         $aBalanceSheets[$aAnnualAccount['id_bilan']][$aAnnualAccount['id_balance_type']] = $aAnnualAccount;
                     }
 
-                    foreach ($this->company_balance_type->getAllByCode() as $sCode => $aBalanceType) {
+                    foreach ($oCompanyBalanceType->getAllByCode() as $sCode => $aBalanceType) {
                         if (isset($_POST[$sCode])) {
                             $iBalanceTypeId = $aBalanceType['id_balance_type'];
 
@@ -692,14 +700,14 @@ class ajaxController extends bootstrap
                                 $iValue = $this->ficelle->cleanFormatedNumber($sValue);
 
                                 if (isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]) && $aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['value'] != $iValue) {
-                                    $this->company_balance->get($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['id_balance']);
-                                    $this->company_balance->value = $iValue;
-                                    $this->company_balance->update();
+                                    $oCompanyBalance->get($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['id_balance']);
+                                    $oCompanyBalance->value = $iValue;
+                                    $oCompanyBalance->update();
                                 } elseif (false === isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId])) {
-                                    $this->company_balance->id_bilan        = $iAnnualAccountsId;
-                                    $this->company_balance->id_balance_type = $iBalanceTypeId;
-                                    $this->company_balance->value           = $iValue;
-                                    $this->company_balance->create();
+                                    $oCompanyBalance->id_bilan        = $iAnnualAccountsId;
+                                    $oCompanyBalance->id_balance_type = $iBalanceTypeId;
+                                    $oCompanyBalance->value           = $iValue;
+                                    $oCompanyBalance->create();
                                 }
                             }
                         }
@@ -707,12 +715,13 @@ class ajaxController extends bootstrap
                 }
             } elseif ($_POST['etape'] == 5) {
             } elseif ($_POST['etape'] == 6) {
-                $this->projects = $this->loadData('projects');
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->question1 = $_POST['question1'];
-                $this->projects->question2 = $_POST['question2'];
-                $this->projects->question3 = $_POST['question3'];
-                $this->projects->update();
+                /** @var projects $oProject */
+                $oProject = $this->loadData('projects');
+                $oProject->get($_POST['id_project'], 'id_project');
+                $oProject->question1 = $_POST['question1'];
+                $oProject->question2 = $_POST['question2'];
+                $oProject->question3 = $_POST['question3'];
+                $oProject->update();
             }
         }
     }
