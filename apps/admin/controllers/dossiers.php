@@ -162,7 +162,6 @@ class dossiersController extends bootstrap
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
             $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
-            $this->aBalanceCodes        = $this->company_balance_type->getAllByCode();
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
             if (empty($this->projects->id_dernier_bilan)) {
@@ -1147,7 +1146,7 @@ class dossiersController extends bootstrap
     {
         $fTotal = 0.0;
         foreach ($aBalances as $sBalance) {
-            $fTotal += $aBalanceSheet[$this->aBalanceCodes[$sBalance]['id_balance_type']];
+            $fTotal += $aBalanceSheet[$sBalance];
         }
         return $fTotal;
     }

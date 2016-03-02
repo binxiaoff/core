@@ -46,14 +46,15 @@ class company_balance extends company_balance_crud
         $aAnnualAccounts    = array();
         $oBalanceTypes      = new \company_balance_type($this->bdd);
         $aBalanceTypes      = $oBalanceTypes->getAllByType();
+        $aBalanceTypes      = array_column($aBalanceTypes, 'code', 'id_balance_type');
         $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
 
         foreach ($aAnnualAccountsIds as $iAnnualAccountsId) {
-            $aAnnualAccounts[$iAnnualAccountsId] = array_fill_keys(array_keys($aBalanceTypes), 0);
+            $aAnnualAccounts[$iAnnualAccountsId] = array_fill_keys($aBalanceTypes, 0);
         }
 
         foreach ($this->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
-            $aAnnualAccounts[$aAnnualAccount['id_bilan']][$aAnnualAccount['id_balance_type']] = $aAnnualAccount['value'];
+            $aAnnualAccounts[$aAnnualAccount['id_bilan']][$aBalanceTypes[$aAnnualAccount['id_balance_type']]] = $aAnnualAccount['value'];
         }
 
         return $aAnnualAccounts;
