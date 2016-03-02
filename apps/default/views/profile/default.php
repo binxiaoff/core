@@ -68,6 +68,8 @@
             window.location.replace("<?= $this->lurl ?>/profile/autolend");
         });
 
+        var tab;
+
         if (window.location.hash == "#notification" || window.location.hash == "") {
             tab = $('#notif');
         } else if (window.location.hash == "#securite") {

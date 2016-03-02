@@ -11,11 +11,11 @@
         </nav>
         <header class="header-autobid inner-nav">
             <ul>
-                <li class="active" id="consult">
-                    <a href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a>
+                <li id="consult"class="active">
+                    <a id="consult_link" href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a>
                 </li>
                 <li id="param" style="<?= ($this->bAutoBidOn) ? '' : 'display:none;'  ?>">
-                    <a href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a>
+                    <a id="parameter" href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a>
                 </li>
             </ul>
         </header>
@@ -40,21 +40,11 @@
         $('#info_perso').click(function () {
             window.location.replace("<?= $this->lurl ?>/profile#info_perso");
         });
-        $('#consult').click(function () {
+        $('#consult_link').click(function () {
             location.hash = "consultation";
-            $('#tab-1').addClass('visible');
-            $('#tab-2').removeClass('visible');
-            $('#consult').addClass('active');
-            $('#param').removeClass('active');
         });
-        $('#param').click(function () {
+        $('#parameter').click(function () {
             location.hash = "parametrage";
-            $('#tab-2').addClass('visible');
-            $('#tab-1').removeClass('visible');
-            $('#param').addClass('active');
-            $('#consult').removeClass('active');
-            $('#param').show();
-
         });
 
         // Autobid inner nav
@@ -66,11 +56,13 @@
             $('#tab-' + $(this).attr('data-dest')).addClass('visible');
         });
 
+        var tab;
         if (window.location.hash == "#consultation" || window.location.hash == "") {
-            $('#consult').trigger("click");
+            tab = $('#consult_link');
         } else if (window.location.hash == "#parametrage") {
-            $('#param').trigger("click");
+            tab = $('#parameter');
         }
+        tab.trigger("click");
     });
 </script>
 

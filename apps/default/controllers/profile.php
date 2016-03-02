@@ -2594,8 +2594,8 @@ class profileController extends bootstrap
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int) $oSettings->value;
 
-        $this->bAutoBidOn           = $oAutoBidSettingsManager->isOn($oLendersAccounts);
-        $this->bFirstTimeActivation = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($oLendersAccounts);
+        $this->bAutoBidOn           = $oAutoBidSettingsManager->isOn($this->oLendersAccounts);
+        $this->bFirstTimeActivation = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->oLendersAccounts);
         $this->bActivatedLender     = true;
         $this->fAverageRateUnilend  = round($oProject->getAvgRate(), 1);
         $this->bIsNovice            = $oAutoBidSettingsManager->isNovice($this->oLendersAccounts);
@@ -2609,7 +2609,7 @@ class profileController extends bootstrap
         $aAutoBidPeriods        = $oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE, 'min ASC');
 
         foreach ($aAutoBidPeriods as $aPeriod){
-            $this->aAutoBidSettings[$aPeriod['id_period']] = $oAutoBidSettingsManager->getSettings($oLendersAccounts->id_lender_account, null, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+            $this->aAutoBidSettings[$aPeriod['id_period']] = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
 
             foreach ($this->aAutoBidSettings[$aPeriod['id_period']] as $iKey => $aSetting) {
                 $this->aAutoBidSettings[$aPeriod['id_period']][$iKey]['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
@@ -2644,9 +2644,9 @@ class profileController extends bootstrap
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
                 if (false === $this->bAutoBidOn) {
-                    $oAutoBidSettingsManager->on($oLendersAccounts);
+                    $oAutoBidSettingsManager->on($this->oLendersAccounts);
                 }
-                $oAutoBidSettingsManager->saveNoviceSetting($oLendersAccounts->id_lender_account, $_POST['autobid-param-simple-taux-min'], $_POST['autobid-amount']);
+                $oAutoBidSettingsManager->saveNoviceSetting($this->oLendersAccounts->id_lender_account, $_POST['autobid-param-simple-taux-min'], $_POST['autobid-amount']);
                 header('Location: ' . $this->lurl . '/profile/autolend#parametrage');
                 die;
             } else {
@@ -2731,7 +2731,7 @@ class profileController extends bootstrap
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount          = $this->loadData('lenders_accounts');
         $oClientSettings         = $this->loadData('client_settings');
-        $oLendersAccounts        = $this->loadData('lenders_accounts');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
         $sInstruction            = '';
 
         if (false === empty($_POST['setting']) && $oLenderAccount->get($_POST['id_lender'])) {
