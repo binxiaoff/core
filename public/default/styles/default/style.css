@@ -906,7 +906,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 /* ===========================
     Statistic Table
 ============================ */
-.statistic-table { margin-bottom: 60px; }
+.statistic-table { margin-bottom: 10px; }
 .statistic-table table { width: 100%; }
 .statistic-table table table { margin: 1px 0; }
 .statistic-table th { background:#b10366; height: 28px; line-height: 28px; font-size: 13px; font-weight:bold; text-transform: uppercase; }
@@ -915,7 +915,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .statistic-table td.inner-table:first-child { padding: 0; }
 .statistic-table table table th { background: #f7e5ef; height: 28px; font-size: 13px; color: #919396; text-transform: capitalize;}
 .statistic-table table table td:first-child { padding-left: 35px; }
-.statistic-table tr.total-row td { background: #e5e5e5; font-weight:bold; color: #a1a5a7; }
+.statistic-table tr.total-row td { background: #e5e5e5; font-weight:bold; color: #a1a5a7; line-height: 30px; }
 .statistic-table tr.total-row td:first-child { padding-left: 18px; }
 .statistic-tables.year-nav a { height: 41px; padding: 0 15px; line-height: 41px; font-size: 14px; font-weight:bold; }
 
