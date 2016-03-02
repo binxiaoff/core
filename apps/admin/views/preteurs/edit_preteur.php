@@ -386,6 +386,7 @@
                             <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= $this->iban6 ?>"/></td>
                             <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= $this->iban7 ?>"/></td>
                         </tr>
+                        <tr><td colspan="7"><input type="submit" value="Valider ce RIB / Iban" class="btn" id="valider_rib_iban" name="valider_rib_iban"></td></tr>
                     </table>
                 </td>
             </tr>

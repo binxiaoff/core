@@ -310,6 +310,10 @@ class preteursController extends bootstrap
             $this->iban7 = substr($this->lenders_accounts->iban, 24, 3);
         }
 
+        if (isset($_POST['valider_rib_iban']) && '' !== $_POST['valider_rib_iban']) {
+            $this->changeBankAccount($this->lenders_accounts);
+        }
+
         if ($this->clients->telephone != '') {
             trim(chunk_split($this->clients->telephone, 2, ' '));
         }
@@ -420,7 +424,6 @@ class preteursController extends bootstrap
                 $this->clients->ville_naissance = $_POST['com-naissance'];
                 $this->clients->insee_birth     = $_POST['insee_birth'];
 
-                // Naissance
                 $naissance                        = explode('/', $_POST['naissance']);
                 $j                                = $naissance[0];
                 $m                                = $naissance[1];
@@ -428,22 +431,13 @@ class preteursController extends bootstrap
                 $this->clients->naissance         = $y . '-' . $m . '-' . $j;
                 $this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
 
-                // id nationalite
                 $this->clients->id_nationalite = $_POST['nationalite'];
-
-                // On créer le client
                 $this->clients->id_langue = 'fr';
                 $this->clients->type      = 1;
                 $this->clients->fonction  = '';
 
                 $this->lenders_accounts->id_company_owner = 0;
-                $this->lenders_accounts->bic = str_replace(' ', '', strtoupper($_POST['bic']));
 
-                $iban = '';
-                for ($i = 1; $i <= 7; $i++) {
-                    $iban .= strtoupper($_POST['iban' . $i]);
-                }
-                $this->lenders_accounts->iban = str_replace(' ', '', $iban);
                 $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
                 if ($this->lenders_accounts->origine_des_fonds == '1000000') {
                     $this->lenders_accounts->precision = $_POST['preciser'];
@@ -766,6 +760,10 @@ class preteursController extends bootstrap
                     $this->companies->phone_dirigeant    = '';
                 }
 
+                if (isset($_POST['valider_rib_iban']) && '' !== $_POST['valider_rib_iban']) {
+                    $this->changeBankAccount($this->lenders_accounts);
+                }
+
                 // Si form societe ok
                 $this->clients->id_langue       = 'fr';
                 $this->clients->type            = 2;
@@ -779,14 +777,6 @@ class preteursController extends bootstrap
                     $this->companies->id_client_owner = $this->clients->id_client;
                     $this->companies->create();
                 }
-
-                $this->lenders_accounts->bic = str_replace(' ', '', strtoupper($_POST['bic']));
-
-                $iban = '';
-                for ($i = 1; $i <= 7; $i++) {
-                    $iban .= strtoupper($_POST['iban' . $i]);
-                }
-                $this->lenders_accounts->iban = str_replace(' ', '', $iban);
 
                 $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
                 if ($this->lenders_accounts->origine_des_fonds == '1000000') $this->lenders_accounts->precision = $_POST['preciser'];
@@ -1781,5 +1771,29 @@ class preteursController extends bootstrap
                 trigger_error('Unknown Client Status', E_USER_NOTICE);
                 break;
         }
+    }
+
+    private function changeBankAccount($oLendersAccounts) {
+        $sSwift = strtoupper($_POST['bic']);
+
+        if ($sSwift != '' && $this->ficelle->swift_validate(trim($sSwift)) == false) {
+            $_SESSION['freeow']['title']   = 'Erreur BIC';
+            $_SESSION['freeow']['message'] = 'Le BIC est invalide';
+        } else {
+            $oLendersAccounts->bic = str_replace(' ', '', strtoupper($sSwift));
+        }
+
+        $sIban = '';
+        for ($i = 1; $i <= 7; $i++) {
+            $sIban .= strtoupper($_POST['iban' . $i]);
+        }
+
+        if ($sIban != '' && $this->ficelle->isIBAN($sIban) != 1) {
+            $_SESSION['freeow']['title']   = 'Erreur IBAN';
+            $_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
+        } else {
+            $oLendersAccounts->iban = str_replace(' ', '', $sIban);
+        }
+        $oLendersAccounts->update();
     }
 }
