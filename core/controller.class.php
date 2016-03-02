@@ -451,9 +451,9 @@ class Controller
     }
 
     //Cree une nouvelle instance d'un objet
-    public function loadData($object, $params = array(), $db = null)
+    public function loadData($object, $params = array())
     {
-        return \Unilend\core\Loader::loadData($object, $params, $db);
+        return \Unilend\core\Loader::loadData($object, $params);
     }
 
     //Cree une nouvelle instance d'une librairie
