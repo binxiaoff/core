@@ -320,8 +320,8 @@ class projects extends projects_crud
 
         foreach ($lProjets as $k => $p) {
             if ($p['id_project'] == $id_project) {
-                $previous = $lProjets[$k - 1]['slug'];
-                $next     = $lProjets[$k + 1]['slug'];
+                $previous = isset($lProjets[$k - 1]) ? $lProjets[$k - 1]['slug'] : null;
+                $next     = isset($lProjets[$k + 1]) ? $lProjets[$k + 1]['slug'] : null;
                 break;
             }
         }

@@ -40,7 +40,7 @@
                                 </span>
                                 <a class="popup-link mdpoublie" href="<?= $this->lurl ?>/thickbox/pop_up_mdp"><?= $this->lng['header']['mot-de-passe-oublie'] ?></a>
                             </div>
-                            <?php if ($_SESSION['login']['nb_tentatives_precedentes'] > 10 && isset($_POST['project_detail'])) { ?>
+                            <?php if (isset($_POST['project_detail'], $_SESSION['login']) && $_SESSION['login']['nb_tentatives_precedentes'] > 10) { ?>
                                 <div class="row">
                                     <input type="text" name="captcha" class="field field-mini input_captcha_login" id="captcha" value="captcha">
                                     <div class="content_captcha_login" style="float:left;width:126px;">
@@ -62,7 +62,7 @@
                     </div>
                     <div style="clear:both;"></div>
                     <a target="_parent" class="btn" id="seconnecter" style="width:210px; display:block;margin:auto;"><?= $this->lng['preteur-projets']['se-connecter'] ?></a>
-                    <?php if ($_SESSION['login']['nb_tentatives_precedentes'] <= 10 && $_SESSION['login']['nb_tentatives_precedentes'] > 1 && isset($_POST['project_detail'])) { ?>
+                    <?php if (isset($_POST['project_detail'], $_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] <= 10 && $_SESSION['login']['nb_tentatives_precedentes'] > 1) { ?>
                         <p class="error_login error_wait" style="display:block; text-align:center;">
                             <?= $this->lng['header']['vous-devez-attendre'] ?>
                             <?= $_SESSION['login']['duree_waiting'] ?>
@@ -74,7 +74,7 @@
                                 $(".seconnecteropen").html('true');
                             }, <?= ($_SESSION['login']['duree_waiting'] * 1000) ?>);
                         </script>
-                    <?php } elseif ($_SESSION['login']['nb_tentatives_precedentes'] <= 1 && isset($_POST['project_detail'])) { ?>
+                    <?php } elseif (isset($_POST['project_detail'], $_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] <= 1) { ?>
                         <p class="error_login" style="text-align:center;"><?= $this->error_login ?></p>
                     <?php } ?>
 
@@ -106,9 +106,9 @@
             <?php } ?>
             <div class="widget-cat" style="padding-top:25px;">
                 <i class="plusmoins" id="close-sinscrire"></i>
-                <div class="sinscrire"<?= ($this->retour_form != false ? 'style="display:block;"' : '') ?> >
+                <div class="sinscrire"<?= (empty($this->retour_form) ? '' : 'style="display:block;"') ?> >
                     <form target="_parent" method="post" action="<?= $this->url_form ?>/projects/detail/<?= $this->params[0] ?><?= $this->utm_source ?>" name="projectsinscrire" id="projectsinscrire">
-                        <div style="display:none" class="sinscrireopen"><?= ($this->retour_form != false ? 'true' : 'false') ?></div>
+                        <div style="display:none" class="sinscrireopen"><?= (empty($this->retour_form) ? 'false' : 'true') ?></div>
                         <div class="row">
                             <input class="field field-medium required" type="text" value="<?= (isset($_POST['nom']) ? $_POST['nom'] : '') ?>" placeholder="<?= $this->lng['landing-page']['nom'] ?>" name="nom" id="signup-first-name" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
                         </div>
@@ -125,7 +125,9 @@
                     </form>
                 </div>
                 <a target="_parent" class="btn sinscrire_cta" id="sinscrire" style=""><?= $this->lng['preteur-projets']['sinscrire'] ?></a>
-                <p class="error_login" style="text-align:center;display:inline;"><?= $this->retour_form ?></p>
+                <?php if (false === empty($this->retour_form)) : ?>
+                    <p class="error_login" style="text-align:center;display:inline;"><?= $this->retour_form ?></p>
+                <?php endif; ?>
                 <script type="text/javascript">
                     $("#sinscrire").click(function () {
                         if ($(".sinscrireopen").html() == 'false') {
