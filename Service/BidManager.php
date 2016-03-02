@@ -191,7 +191,7 @@ class BidManager
         }
 
         $this->oNotificationManager->create(
-            \clients_gestion_type_notif::TYPE_BID_PLACED,
+            \notifications::TYPE_BID_PLACED,
             \clients_gestion_type_notif::TYPE_BID_PLACED,
             $iClientId,
             'sendBidConfirmation',

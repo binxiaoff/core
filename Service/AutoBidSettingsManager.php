@@ -54,8 +54,8 @@ class AutoBidSettingsManager
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
 
-        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientSettingsManager->saveClientSetting($oClient,
-                \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)
+        if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner)
+            && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_OFF)
         ) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_OFF);
             $oAutoBidQueue->delete($oLenderAccount->id_lender_account, 'id_lender');

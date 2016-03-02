@@ -306,7 +306,7 @@ class syntheseController extends bootstrap
         $oClientHistoryActions        = $this->loadData('clients_history_actions');
         $oClientSettings              = $this->loadData('client_settings');
         $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->clients);
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         foreach ($aProjectsInFunding as $iKey => $aProject) {
             $aProjectsInFunding[$iKey]['oEndFunding']           = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);

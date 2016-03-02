@@ -11,16 +11,28 @@
                     ?>
                     <b><?= $this->lng['notifications']['offre-partiellement-refusee'] ?></b><br/>
                     <div class="content_notif">
-                        <?php $montant = $this->bids->amount - $r['amount']; ?>
-                        <?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?>
-                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b><?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
+                        <?php
+                        $montant = $this->bids->amount - $r['amount'];
+                        if (empty($this->bids->id_autobid)) {
+                            echo $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'];
+                        } else {
+                            echo $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a-autobid'];
+                        }
+                        ?>
+                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
                         <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a>
                         <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
                     </div>
                 <?php } else { ?>
                     <b><?= $this->lng['notifications']['offre-refusee'] ?></b><br/>
                     <div class="content_notif">
-                        <?= $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'] ?>
+                        <?php
+                        if (empty($this->bids->id_autobid)) {
+                            echo $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a'];
+                        } else {
+                            echo $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a-autobid'];
+                        }
+                        ?>
                         <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?>
                         <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
                         <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-nest-plus-recevable'] ?>
@@ -45,10 +57,22 @@
                 ?>
                 <b><?= $this->lng['notifications']['offre-placee'] ?></b><br/>
                 <div class="content_notif">
-                    <?= $this->lng['notifications']['offre-placee-votre-offre-de-pret-de'] ?>
+                    <?php
+                $oAutobid = $this->loadData('autobid');
+                    if (empty($this->bids->id_autobid)) {
+                        echo $this->lng['notifications']['offre-placee-votre-offre-de-pret-de'];
+                    } else {
+                        echo $this->lng['notifications']['offre-placee-votre-offre-de-pret-de-autobid'];
+                    }
+                    ?>
                     <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->bids->amount / 100) ?> €</b> <?= $this->lng['notifications']['offre-placee-a'] ?>
                     <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-placee-sur-le-projet'] ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-placee-point'] ?>
+                    <?php
+                    if ($oAutobid->get($this->bids->id_autobid)) {
+                       echo str_replace('[#AUTOBID_RATE_MIN#]', $oAutobid->rate_min, $this->lng['notifications']['content-notifications-bid-placed']);
+                    }
+                    ?>
                 </div><?php
                 break;
             case \notifications::TYPE_LOAN_ACCEPTED:

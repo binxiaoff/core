@@ -33,7 +33,7 @@
             $('.switch-input').on('change', function () {
                 var Settings = {
                     setting: $('#autobid-switch-1').val(),
-                    id_client: "<?= $this->clients->id_client ?>"
+                    id_lender: "<?= $this->oLendersAccounts->id_lender_account ?>"
                 };
                 console.log(Settings);
 
