@@ -161,13 +161,13 @@
                 <span class="global-rate"></span>
                 <p class="indice-rate"></p>
                 <div class="medium-rate-note">
-                    <span>Je souhaite appliquer le taux moyen constaté ?</span>
+                    <span><?=$this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
                     <div class="medium-rate-buttons">
-                        <button class="btn btn-small btn-apply-avg-rate" type="button">Oui</button>
-                        <button class="btn btn-small grise1 btn-close-widget" type="button">Non</button>
+                        <button class="btn btn-small btn-apply-avg-rate" type="button"><?=$this->lng['autobid']['yes'] ?></button>
+                        <button class="btn btn-small grise1 btn-close-widget" type="button"><?=$this->lng['autobid']['no'] ?></button>
                     </div>
                 </div>
-                <span class="global-progress-note">Taux auquel je souhaite prêter</span>
+                <span class="global-progress-note"><?=$this->lng['autobid']['widget-title-acceptation-rate'] ?></span>
                 <div class="global-progress-container">
                     <span id="param-advanced-global-progress-label"></span>
                     <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
@@ -347,8 +347,8 @@ $(window).load(function(){
             var currentVal = Number(parseFloat(inputRate.val()).toFixed(1));
             var newVal = Number(currentVal + parseFloat($(this).val())).toFixed(1);
 
-            if (newVal >= 9.9) {
-                newVal = '9.9';
+            if (newVal >= 10.0) {
+                newVal = '10.0';
             }
             if (newVal <= 4.0) {
                 newVal = '4.0';
