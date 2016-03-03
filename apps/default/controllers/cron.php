@@ -256,7 +256,11 @@ class cronController extends bootstrap
                     if ($oProject->date_fin != '0000-00-00 00:00:00') {
                         $oEndDate = new \DateTime($oProject->date_fin);
                     }
-                    if ($oEndDate <= new \DateTime()) {
+                    $oNow = new \DateTime();
+                    if ($oEndDate <= $oNow ) {
+                        $oProject->date_fin = $oNow->format('Y-m-d H:i:s');
+                        $oProject->update();
+
                         $bHasProjectFinished = true;
                         // Solde total obtenue dans l'enchere
                         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);

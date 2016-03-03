@@ -638,22 +638,22 @@ class MailerManager
             $lien_tw = $this->oSettings->value;
 
             $varMail = array(
-                'surl' => $this->sSUrl,
-                'url' => $this->sLUrl,
-                'prenom_p' => $oClient->prenom,
-                'valeur_bid' => $this->oFicelle->formatNumber($oBid->amount / 100),
-                'taux_bid' => $this->oFicelle->formatNumber($oBid->rate),
+                'surl'             => $this->sSUrl,
+                'url'              => $this->sLUrl,
+                'prenom_p'         => $oClient->prenom,
+                'valeur_bid'       => $this->oFicelle->formatNumber($oBid->amount / 100),
+                'taux_bid'         => $this->oFicelle->formatNumber($oBid->rate),
                 'autobid_rate_min' => $oAutoBid->rate_min,
-                'nom_entreprise' => $oCompany->name,
-                'projet-p' => $this->sLUrl . '/projects/detail/' . $oProject->slug,
-                'date_bid' => date('d', $iAddedBid) . ' ' . $sMonthFr . ' ' . date('Y', $iAddedBid),
-                'heure_bid' => $this->oDate->formatDate($oBid->added, 'H\hi'),
-                'fin_chrono' => $sInterval,
-                'projet-bid' => $this->sLUrl . '/projects/detail/' . $oProject->slug,
-                'autobid_link' => $this->sLUrl . '/profile/autolend#parametrage',
-                'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
-                'lien_fb' => $lien_fb,
-                'lien_tw' => $lien_tw
+                'nom_entreprise'   => $oCompany->name,
+                'projet-p'         => $this->sLUrl . '/projects/detail/' . $oProject->slug,
+                'date_bid'         => date('d', $iAddedBid) . ' ' . $sMonthFr . ' ' . date('Y', $iAddedBid),
+                'heure_bid'        => $this->oDate->formatDate($oBid->added, 'H\hi'),
+                'fin_chrono'       => $sInterval,
+                'projet-bid'       => $this->sLUrl . '/projects/detail/' . $oProject->slug,
+                'autobid_link'     => $this->sLUrl . '/profile/autolend#parametrage',
+                'motif_virement'   => $oClient->getLenderPattern($oClient->id_client),
+                'lien_fb'          => $lien_fb,
+                'lien_tw'          => $lien_tw
             );
 
             $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
