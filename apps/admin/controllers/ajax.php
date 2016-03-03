@@ -1331,8 +1331,7 @@ class ajaxController extends bootstrap
                 }
 
                 if ($this->current_projects_status->status != \projects_status::REJETE) {
-                    $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
-                    $moyenne  = round($moyenne1, 1);
+                    $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1);
                     $etape_6  = '
                     <div class="tab_title" id="title_etape6">Etape 6</div>
                     <div class="tab_content" id="etape6">
@@ -1341,31 +1340,31 @@ class ajaxController extends bootstrap
                                 <tr>
                                     <th style="vertical-align:top;"><label for="performance_fianciere">Performance financière</label></th>
                                     <td>
-                                        <span id="performance_fianciere">' . $this->projects_notes->performance_fianciere . '</span> /10
+                                        <span id="performance_fianciere">' . $this->projects_notes->performance_fianciere . '</span> / 10
                                     </td>
                                     <th style="vertical-align:top;"><label for="marche_opere">Marché opéré</label></th>
                                     <td style="vertical-align:top;">
-                                        <span id="marche_opere">' . $this->projects_notes->marche_opere . '</span> /10
+                                        <span id="marche_opere">' . $this->projects_notes->marche_opere . '</span> / 10
                                     </td>
                                     <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
-                                    <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
+                                    <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                     <th><label for="notation_externe">Notation externe</label></th>
-                                    <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
+                                    <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="vertical-align:top;">
                                         <table>
                                             <tr>
                                                 <th><label for="structure">Structure</label></th>
-                                                <td><input tabindex="1" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="1" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="rentabilite">Rentabilité</label></th>
-                                                <td><input tabindex="2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="tresorerie">Trésorerie</label></th>
-                                                <td><input tabindex="3" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="3" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -1373,18 +1372,18 @@ class ajaxController extends bootstrap
                                         <table>
                                             <tr>
                                                 <th><label for="global">Global</label></th>
-                                                <td><input tabindex="4" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="4" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="individuel">Individuel</label></th>
-                                                <td><input tabindex="5" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="5" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td colspan="4"></td>
                                 </tr>
                                 <tr class="lanote">
-                                    <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote" onkeyup="nodizaines(this.value,this.id);">' . $moyenne . '/10</span></th>
+                                    <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote" onkeyup="nodizaines(this.value,this.id);">' . $moyenne . ' / 10</span></th>
                                 </tr>
                                 <tr>
                                     <td colspan="8" style="text-align:center;">
@@ -1412,40 +1411,35 @@ class ajaxController extends bootstrap
 
                     <script type="text/javascript">
                     $(".cal_moyen").keyup(function() {
-                        // --- Chiffre et marché ---
-                        var structure = parseFloat($("#structure").val().replace(",","."));
+                        var structure   = parseFloat($("#structure").val().replace(",","."));
                         var rentabilite = parseFloat($("#rentabilite").val().replace(",","."));
-                        var tresorerie = parseFloat($("#tresorerie").val().replace(",","."));
-                        var global = parseFloat($("#global").val().replace(",","."));
-                        var individuel = parseFloat($("#individuel").val().replace(",","."));
+                        var tresorerie  = parseFloat($("#tresorerie").val().replace(",","."));
+                        var global      = parseFloat($("#global").val().replace(",","."));
+                        var individuel  = parseFloat($("#individuel").val().replace(",","."));
 
-                        structure = (Math.round(structure*10)/10);
-                        rentabilite = (Math.round(rentabilite*10)/10);
-                        tresorerie = (Math.round(tresorerie*10)/10);
-                        global = (Math.round(global*10)/10);
-                        individuel = (Math.round(individuel*10)/10);
+                        structure   = Math.round(structure * 10) / 10;
+                        rentabilite = Math.round(rentabilite * 10) / 10;
+                        tresorerie  = Math.round(tresorerie * 10) / 10;
+                        global      = Math.round(global * 10) / 10;
+                        individuel  = Math.round(individuel * 10) / 10;
 
-                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
-                        performance_fianciere = (Math.round(performance_fianciere*10)/10);
+                        var performance_fianciere = (structure + rentabilite + tresorerie) / 3;
+                        performance_fianciere = Math.round(performance_fianciere * 10) / 10;
 
-                        var marche_opere = ((global+individuel)/2);
-                        marche_opere = (Math.round(marche_opere*10)/10);
-
-                        // --- Fin chiffre et marché ---
+                        var marche_opere = (global + individuel) / 2;
+                        marche_opere = Math.round(marche_opere * 10) / 10;
 
                         var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres").val().replace(",","."));
                         var notation_externe = parseFloat($("#notation_externe").val().replace(",","."));
 
-                        qualite_moyen_infos_financieres = (Math.round(qualite_moyen_infos_financieres*10)/10);
-                        notation_externe = (Math.round(notation_externe*10)/10);
+                        qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
+                        notation_externe = Math.round(notation_externe * 10) / 10;
 
-                        var moyenne1 = (((performance_fianciere*0.4)+(marche_opere*0.3)+(qualite_moyen_infos_financieres*0.2)+(notation_externe*0.1)));
-
-                        moyenne = (Math.round(moyenne1*10)/10);
+                        moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
 
                         $("#marche_opere").html(marche_opere);
                         $("#performance_fianciere").html(performance_fianciere);
-                        $(".moyenneNote").html(moyenne+"/10");
+                        $(".moyenneNote").html(moyenne + " / 10");
                     });
                     </script>';
                 } else {
@@ -1576,7 +1570,7 @@ class ajaxController extends bootstrap
                 $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
                 $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
-                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
+                $this->projects_notes->note                            = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1);
                 $this->projects_notes->avis                            = $_POST['avis'];
 
                 if ($update == true) {
@@ -1647,14 +1641,14 @@ class ajaxController extends bootstrap
                         <table class="form tableNotes" style="width: 100%;">
                             <tr>
                                 <th><label for="performance_fianciere2">Performance financière</label></th>
-                                <td><span id="performance_fianciere2">' . $this->projects_notes->performance_fianciere . '</span> /10</td>
+                                <td><span id="performance_fianciere2">' . $this->projects_notes->performance_fianciere . '</span> / 10</td>
                                 <th><label for="marche_opere">Marché opéré</label></th>
-                                <td><span id="marche_opere2">' . $this->projects_notes->marche_opere . '</span> /10</td>
+                                <td><span id="marche_opere2">' . $this->projects_notes->marche_opere . '</span> / 10</td>
 
                                 <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
-                                <td><input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
+                                <td><input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
                                 <th><label for="notation_externe2">Notation externe</label></th>
-                                <td><input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
+                                <td><input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
                             </tr>
 
                             <tr>
@@ -1662,15 +1656,15 @@ class ajaxController extends bootstrap
                                     <table>
                                         <tr>
                                             <th><label for="structure2">Structure</label></th>
-                                            <td><input tabindex="9" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <td><input tabindex="9" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
                                             <th><label for="rentabilite2">Rentabilité</label></th>
-                                            <td><input tabindex="10" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <td><input tabindex="10" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
                                             <th><label for="tresorerie2">Trésorerie</label></th>
-                                            <td><input tabindex="11" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <td><input tabindex="11" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
 
                                     </table>
@@ -1679,11 +1673,11 @@ class ajaxController extends bootstrap
                                     <table>
                                         <tr>
                                             <th><label for="global2">Global</label></th>
-                                            <td><input tabindex="12" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <td><input tabindex="12" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
                                             <th><label for="individuel">Individuel</label></th>
-                                            <td><input tabindex="13" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <td><input tabindex="13" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
 
                                     </table>
@@ -1692,7 +1686,7 @@ class ajaxController extends bootstrap
                             </tr>
 
                             <tr class="lanote">
-                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote2">' . $this->projects_notes->note . '/10</span></th>
+                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote2">' . $this->projects_notes->note . '/ 10</span></th>
                             </tr>
 
                             <tr>
@@ -1722,52 +1716,35 @@ class ajaxController extends bootstrap
                     </div>
                     <script type="text/javascript">
                         $(".cal_moyen").keyup(function() {
-                            // --- Chiffre et marché ---
-
-                            // Variables
-                            var structure = parseFloat($("#structure2").val().replace(",","."));
+                            var structure   = parseFloat($("#structure2").val().replace(",","."));
                             var rentabilite = parseFloat($("#rentabilite2").val().replace(",","."));
-                            var tresorerie = parseFloat($("#tresorerie2").val().replace(",","."));
+                            var tresorerie  = parseFloat($("#tresorerie2").val().replace(",","."));
+                            var global      = parseFloat($("#global2").val().replace(",","."));
+                            var individuel  = parseFloat($("#individuel2").val().replace(",","."));
 
-                            var global = parseFloat($("#global2").val().replace(",","."));
-                            var individuel = parseFloat($("#individuel2").val().replace(",","."));
+                            structure   = Math.round(structure * 10) / 10;
+                            rentabilite = Math.round(rentabilite * 10) / 10;
+                            tresorerie  = Math.round(tresorerie * 10) / 10;
+                            global      = Math.round(global * 10) / 10;
+                            individuel  = Math.round(individuel * 10) / 10;
 
-                            // Arrondis
-                            structure = (Math.round(structure*10)/10);
-                            rentabilite = (Math.round(rentabilite*10)/10);
-                            tresorerie = (Math.round(tresorerie*10)/10);
+                            var performance_fianciere = (structure + rentabilite + tresorerie) / 3;
+                            performance_fianciere = Math.round(performance_fianciere * 10) / 10;
 
-                            global = (Math.round(global*10)/10);
-                            individuel = (Math.round(individuel*10)/10);
+                            var marche_opere = (global + individuel) / 2;
+                            marche_opere = Math.round(marche_opere * 10) / 10;
 
-                            // Calcules
-                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
-                            performance_fianciere = (Math.round(performance_fianciere*10)/10);
-
-                            // Arrondis
-                            var marche_opere = ((global+individuel)/2);
-                            marche_opere = (Math.round(marche_opere*10)/10);
-
-                            // --- Fin chiffre et marché ---
-
-                            // Variables
                             var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres2").val().replace(",","."));
                             var notation_externe = parseFloat($("#notation_externe2").val().replace(",","."));
 
-                            // Arrondis
-                            qualite_moyen_infos_financieres = (Math.round(qualite_moyen_infos_financieres*10)/10);
-                            notation_externe = (Math.round(notation_externe*10)/10);
+                            qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
+                            notation_externe = Math.round(notation_externe * 10) / 10;
 
-                            // Calcules
-                            var moyenne1 = (((performance_fianciere*0.4)+(marche_opere*0.3)+(qualite_moyen_infos_financieres*0.2)+(notation_externe*0.1)));
+                            moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
 
-                            // Arrondis
-                            moyenne = (Math.round(moyenne1*10)/10);
-
-                            // Affichage
                             $("#marche_opere2").html(marche_opere);
                             $("#performance_fianciere2").html(performance_fianciere);
-                            $(".moyenneNote2").html(moyenne+"/10");
+                            $(".moyenneNote2").html(moyenne + " / 10");
                         });
                     </script>
                     ';
@@ -1860,7 +1837,7 @@ class ajaxController extends bootstrap
                 $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
                 $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
-                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
+                $this->projects_notes->note                            = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1);
                 $this->projects_notes->avis_comite                     = $_POST['avis_comite'];
 
                 // on enregistre
