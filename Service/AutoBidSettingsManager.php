@@ -9,9 +9,6 @@ use Unilend\core\Loader;
  */
 class AutoBidSettingsManager
 {
-    /** @var BidManager */
-    private $oBidManager;
-
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
 
@@ -21,12 +18,15 @@ class AutoBidSettingsManager
     /** @var NotificationManager */
     private $oNotificationManager;
 
+    /** @var LenderManager */
+    private $oLenderManager;
+
     public function __construct()
     {
-        $this->oBidManager            = Loader::loadService('BidManager');
         $this->oClientSettingsManager = Loader::loadService('ClientSettingsManager');
         $this->oClientManager         = Loader::loadService('ClientManager');
         $this->oNotificationManager   = Loader::loadService('NotificationManager');
+        $this->oLenderManager         = Loader::loadService('LenderManager');
     }
 
     /**
@@ -44,7 +44,7 @@ class AutoBidSettingsManager
         $oAutoBid = Loader::loadData('autobid');
 
         if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->isQualified($oLenderAccount)
-            && $this->oBidManager->canBid($oLenderAccount)
+            && $this->oLenderManager->canBid($oLenderAccount)
             && $this->oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH, \client_settings::AUTO_BID_ON)
         ) {
             $this->saveAutoBidSwitchHistory($oClient->id_client, \client_settings::AUTO_BID_ON);

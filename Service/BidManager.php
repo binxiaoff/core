@@ -33,8 +33,9 @@ class BidManager
 
     /** @var NotificationManager */
     private $oNotificationManager;
+
     /** @var AutoBidSettingsManager */
-    private $oAutoBidManager;
+    private $oAutoBidSettingsManager;
 
     public function __construct()
     {
@@ -50,7 +51,7 @@ class BidManager
         $this->oEmail = Loader::loadLib('email');
 
         $this->oNotificationManager = Loader::loadService('NotificationManager');
-        $this->oAutoBidManager      = Loader::loadService('AutoBidManager');
+        $this->oLenderManager       = Loader::loadService('LenderManager');
 
         $this->sLanguage = 'fr';
     }
@@ -61,21 +62,6 @@ class BidManager
     public function setLogger(ULogger $oLogger)
     {
         $this->oLogger = $oLogger;
-    }
-
-    /**
-     * @param \lenders_accounts $oLenderAccount
-     *
-     * @return bool
-     */
-    public function canBid(\lenders_accounts $oLenderAccount)
-    {
-        /** @var \clients_status $oClientStatus */
-        $oClientStatus = Loader::loadData('clients_status');
-        if ($oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == 60) {
-            return true;
-        }
-        return false;
     }
 
     public function bid(\bids $oBid)
@@ -217,7 +203,7 @@ class BidManager
             /** @var \lenders_accounts $LenderAccount */
             $oLenderAccount = Loader::loadData('lenders_accounts');
 
-            if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidManager->isOn($oLenderAccount)) {
+            if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
                 $oBid->id_autobid        = $oAutoBid->id_autobid;
                 $oBid->id_lender_account = $oAutoBid->id_lender;
                 $oBid->id_project        = $oProject->id_project;
