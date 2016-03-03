@@ -1893,7 +1893,7 @@ class preteursController extends bootstrap
                 $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé à la demande du prêteur</div>';
                 break;
             case \clients_status::CLOSED_BY_UNILEND:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé par Unilend</div>';
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte passé hors ligne par Unilend</div>';
                 break;
             case \clients_status::VALIDATED:
                 $this->sClientStatusMessage = '';

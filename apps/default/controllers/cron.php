@@ -3007,7 +3007,7 @@ class cronController extends bootstrap
 
     /**
      * List of repayments of the month
-     * Executed every day and concatenated to month file
+     * Executed every day and concatenated to monthly file
      */
     public function _echeances_par_mois()
     {
@@ -3015,15 +3015,18 @@ class cronController extends bootstrap
             ini_set('memory_limit', '1G');
 
             if (isset($this->params[0]) && 1 === preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $this->params[0])) {
-                $sPreviousDay = $this->params[0];
+                $iPreviousDay = strtotime($this->params[0]);
             } else {
-                $sPreviousDay = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - 1, date('Y')));
+                $iPreviousDay = mktime(0, 0, 0, date('m'), date('d') - 1, date('Y'));
             }
 
-            $sFileName = 'echeances_' . date('Ymd', mktime(0, 0, 0, substr($sPreviousDay, 5, 2) + 1, 1, substr($sPreviousDay, 0, 4))) . '.csv';
-            $sFilePath = $this->path . 'protected/sftp/etat_fiscal/' . $sFileName;
-            $sCSV      = file_exists($sFilePath) ? '' : "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;type_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
-            $sQuery    = '
+            $sDailyFileName   = 'echeances_' . date('Ymd', $iPreviousDay) . '.csv';
+            $sMonthlyFileName = 'echeances_' . date('Ym', $iPreviousDay) . '.csv';
+            $sMonthlyFilePath = $this->path . 'protected/sftp/etat_fiscal';
+            $sDailyFilePath   = $this->path . 'protected/sftp/etat_fiscal/' . date('Ym', $iPreviousDay);
+            $sHeaders         = "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;type_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
+            $sDailyCSV        = '';
+            $sQuery           = '
                 SELECT
                     c.id_client,
                     la.id_lender_account,
@@ -3071,27 +3074,39 @@ class cronController extends bootstrap
                 LEFT JOIN clients c ON c.id_client = la.id_client_owner
                 LEFT JOIN clients_adresses ca ON ca.id_client = c.id_client
                 LEFT JOIN pays_v2 p ON p.id_pays = ca.id_pays_fiscal
-                WHERE DATE(e.date_echeance_reel) = "' . $sPreviousDay . '"
+                WHERE DATE(e.date_echeance_reel) = "' . date('Y-m-d', $iPreviousDay) . '"
                     AND e.status = 1
                     AND e.status_ra = 0
                 ORDER BY e.date_echeance ASC';
+
+            if (false === is_dir($sDailyFilePath)) {
+                mkdir($sDailyFilePath);
+            }
 
             $aResults = $this->bdd->query($sQuery);
             while ($aRow = $this->bdd->fetch_assoc($aResults)) {
                 array_walk($aRow, function(&$aRow, $sFieldName) {
                     $aRow = str_replace('.', ',', $aRow);
                 });
-                $sCSV .= implode(';', $aRow) . "\n";
+                $sDailyCSV .= implode(';', $aRow) . "\n";
             }
+            file_put_contents($sDailyFilePath . '/' . $sDailyFileName, $sDailyCSV);
 
-            file_put_contents($sFilePath, $sCSV, FILE_APPEND);
+            $rLocalFile = fopen($sMonthlyFilePath . '/' . $sMonthlyFileName, 'w');
+            fwrite($rLocalFile, $sHeaders);
+            foreach (glob($sDailyFilePath . '/echeances_*.csv') as $sFile) {
+                fwrite($rLocalFile, file_get_contents($sFile));
+            }
+            fclose($rLocalFile);
 
-            $rConnection = ssh2_connect('ssh.reagi.com', 22);
-            ssh2_auth_password($rConnection, 'sfpmei', '769kBa5v48Sh3Nug');
-            $rSFTP = ssh2_sftp($rConnection);
-            $rFile = @fopen('ssh2.sftp://' . $rSFTP . '/home/sfpmei/emissions/etat_fiscal/' . $sFileName, 'w');
-            fwrite($rFile, $sCSV);
-            fclose($rFile);
+            if ($this->Config['env'] === 'prod') {
+                $rConnection = ssh2_connect('ssh.reagi.com', 22);
+                ssh2_auth_password($rConnection, 'sfpmei', '769kBa5v48Sh3Nug');
+                $rSFTP       = ssh2_sftp($rConnection);
+                $rRemoteFile = fopen('ssh2.sftp://' . $rSFTP . '/home/sfpmei/emissions/etat_fiscal/' . $sMonthlyFileName, 'w');
+                fwrite($rRemoteFile, file_get_contents($sMonthlyFilePath . '/' . $sMonthlyFileName));
+                fclose($rRemoteFile);
+            }
 
             $this->stopCron();
         }
