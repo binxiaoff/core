@@ -231,7 +231,7 @@
                                                         <div style="position: relative">
                                                         <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
                                                             <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
-                                                            <span style="position: relative; left: -54px;">
+                                                            <span style="position: relative; left: -12px;">
                                                             <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                                             <?= $aBid['ordre'] ?>
                                                             </span>
