@@ -340,8 +340,7 @@ $(window).load(function(){
     }
 
     if ($('.param-advanced-button').length) {
-        $('.param-advanced-button').on('click', function (e) {
-            e.stopPropagation();
+        $('.param-advanced-button').on('click', function () {
             var cell = $(this).parents('.cell-inner')
             var inputRate = cell.find('.param-advanced-value');
             var labelRate = cell.find('.param-advanced-label');
