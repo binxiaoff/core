@@ -37,6 +37,9 @@ class BidManager
     /** @var AutoBidSettingsManager */
     private $oAutoBidSettingsManager;
 
+    /** @var $oLenderManager */
+    private $oLenderManager;
+
     public function __construct()
     {
         $this->aConfig = Loader::loadConfig();
@@ -50,8 +53,10 @@ class BidManager
         $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail = Loader::loadLib('email');
 
-        $this->oNotificationManager = Loader::loadService('NotificationManager');
-        $this->oLenderManager       = Loader::loadService('LenderManager');
+        $this->oNotificationManager    = Loader::loadService('NotificationManager');
+        $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
+        $this->oLenderManager = Loader::loadService('LenderManager');
+
 
         $this->sLanguage = 'fr';
     }
@@ -81,6 +86,8 @@ class BidManager
         /** @var \autobid_queue $oAutoBidQueue */
         $oAutoBidQueue = Loader::loadData('autobid_queue');
 
+        Loader::loadData('transactions_types'); //load for constant use
+
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
 
@@ -103,7 +110,7 @@ class BidManager
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
-        if (false === $oClient->get($iClientId) || false === $this->canBid($oClient)) {
+        if (false === $oClient->get($iClientId) || false === $this->oLenderManager->canBid($oLenderAccount)) {
             return false;
         }
 
