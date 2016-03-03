@@ -388,6 +388,8 @@ $(window).load(function(){
                 $('#settings_instructions_expert').hide();
                 $('#autobid-amount').prop('disabled', true);
                 $('.apply-global-medium-rate').hide();
+                $('.link-less').hide();
+                $('#validate_settings_expert').hide();
             }
         })
     });

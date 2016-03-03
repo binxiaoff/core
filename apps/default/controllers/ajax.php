@@ -1901,15 +1901,4 @@ class ajaxController extends bootstrap
             $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
         }
     }
-
-    public function _bidAcceptationPossibility()
-    {
-        $oBids          = $this->loadData('bids');
-
-        $fPossibility = 0.5;
-        if (isset($this->params[0]) && $this->params[0] > \bids::BID_RATE_MIN && $this->params[0] <= \bids::BID_RATE_MAX) {
-            $fPossibility = $oBids->getAcceptationPossibilityRounded($this->params[0]);
-        }
-        echo $fPossibility / 100;
-    }
 }
