@@ -65,7 +65,7 @@
     </ul>
     <h1>Opérations emprunteurs</h1>
     <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/transferts/preteurs/csv" class="btn_link">Export CSV</a>
+        <a href="<?= $this->lurl ?>/transferts/emprunteurs/csv" class="btn_link">Export CSV</a>
     </div>
     <table class="tablesorter">
         <thead>
