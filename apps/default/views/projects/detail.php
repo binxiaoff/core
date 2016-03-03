@@ -246,7 +246,10 @@
                                                     <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
                                                     <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
                                                     </td>
-                                                    <td class="<?= ($aBid['status'] == 1 ? 'green-span' : ($aBid['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$aBid['status']] ?></td>
+                                                    <td>
+                                                        <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span>
+                                                        <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'green-span' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'red-span' : '')) ?>"><?= $this->status[$aBid['status']] ?></span>
+                                                    </td>
                                                 </tr>
                                             <?php endif; ?>
                                         <?php endforeach; ?>
