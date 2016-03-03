@@ -2581,7 +2581,6 @@ class profileController extends bootstrap
 
         $oClientStatus         = $this->loadData('clients_status');
         $oSettings             = $this->loadData('settings');
-        $oAutoBid              = $this->loadData('autobid');
         $oAutoBidPeriod        = $this->loadData('autobid_periods');
         $oProject              = $this->loadData('projects');
 
@@ -2596,14 +2595,10 @@ class profileController extends bootstrap
 
         $this->bAutoBidOn           = $oAutoBidSettingsManager->isOn($this->oLendersAccounts);
         $this->bFirstTimeActivation = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->oLendersAccounts);
-        $this->bActivatedLender     = true;
+        $this->bActivatedLender     = in_array($oClientStatus->status, array(\clients_status::VALIDATED));
         $this->fAverageRateUnilend  = round($oProject->getAvgRate(), 1);
         $this->bIsNovice            = $oAutoBidSettingsManager->isNovice($this->oLendersAccounts);
         $this->sValidationDate      = $oAutoBidSettingsManager->getValidationDate($this->oLendersAccounts);
-
-        if (false === in_array($oClientStatus->status, array(\clients_status::VALIDATED))) {
-            $this->bActivatedLender = false;
-        }
 
         $this->aAutoBidSettings = array();
         $aAutoBidPeriods        = $oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE, 'min ASC');
@@ -2674,15 +2669,16 @@ class profileController extends bootstrap
         $oSettings->get('pret min', 'type');
         $this->iMinimumBidAmount = (int) $oSettings->value;
 
-        $aRiskValues           = $oProject->getAvailableRisks();
-        $iNumberOfSettingLines = 25;
         foreach ($oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE) as $aPeriod){
             $aAutoBidPeriods[] = $aPeriod['id_period'];
         }
+        $aRiskValues           = $oProject->getAvailableRisks();
+        $iNumberOfSettingLines = count($aRiskValues) * count($aAutoBidPeriods);
 
         if (isset($_POST['param-advanced-btn-submit'])) {
             $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
             $aSettingsFromPOST = array();
+
             foreach ($_POST as $sSettingType => $sValue) {
                 $aSettingTypeExploded = explode('-', $sSettingType);
                 if (count($aSettingTypeExploded) >= 4 && is_numeric($aSettingTypeExploded[0])) {
@@ -2704,7 +2700,7 @@ class profileController extends bootstrap
                     $_SESSION['forms']['autobid-param-submit']['errors']['general-error'] = true;
                 }
 
-                if (false === is_numeric($aSetting['value']) || $aSetting['value'] < \bids::BID_RATE_MIN|| $aSetting['value'] > \bids::BID_RATE_MAX) {
+                if (false === is_numeric($aSetting['value']) || $aSetting['value'] < \bids::BID_RATE_MIN || $aSetting['value'] > \bids::BID_RATE_MAX) {
                     $_SESSION['forms']['autobid-param-submit']['errors']['rate'] = true;
                 }
             }
