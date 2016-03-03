@@ -511,7 +511,7 @@ class ProjectManager
                     $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
                     // particulier
-                    if (in_array($oClient->type, array(1, 3))) {
+                    if (in_array($oClient->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
                         if ($etranger > 0) {
                             $montant_prelevements_obligatoires    = 0;
                             $montant_contributions_additionnelles = 0;
