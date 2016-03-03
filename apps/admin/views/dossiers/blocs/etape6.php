@@ -64,11 +64,11 @@
             <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>
             <div class="btnDroite listBtn_etape6">
                 <?php if(false === $this->bReadonlyRiskNote): ?>
-                    <input type="button" onclick="valid_rejete_etape6(3,<?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
+                    <input type="button" onclick="valid_rejete_etape6(3, <?= $this->projects->id_project ?>)" class="btn" value="Sauvegarder">
                 <?php endif; ?>
                 <?php if ($this->current_projects_status->status == 31): ?>
-                    <input type="button" onclick="valid_rejete_etape6(1,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
-                    <input type="button" onclick="valid_rejete_etape6(2,<?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
+                    <input type="button" onclick="valid_rejete_etape6(1, <?= $this->projects->id_project ?>)" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
+                    <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/6/<?= $this->projects->id_project ?>" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                 <?php endif; ?>
             </div>
         </div>

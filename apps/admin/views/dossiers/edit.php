@@ -473,22 +473,23 @@
                         <th><label for="status">Statut :</label></th>
                         <td id="current_statut">
                             <?php
-                            $sDisplayPeriodHS    = 'none';
-                            $sDisplayMsgPeriodHs = 'none';
-                            $sDisplayStatus      = 'block';
-                            $sDisplayMsgProject  = 'block';
-
-                            if (count($this->lProjects_status) > 0) {
-                                if (
-                                    (in_array($this->projects->period, array(0, 1000000)) || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
-                                    && $this->current_projects_status->status == \projects_status::PREP_FUNDING
-                                ) {
-                                    $sDisplayPeriodHS    = 'block';
-                                    $sDisplayStatus      = 'none';
-                                    $sDisplayMsgPeriodHs = 'block';
-                                    $sDisplayMsgProject  = 'none';
-                                }
+                                $sDisplayPeriodHS    = 'none';
+                                $sDisplayMsgPeriodHs = 'none';
+                                $sDisplayStatus      = 'block';
+                                $sDisplayMsgProject  = 'block';
                             ?>
+                            <?php if (count($this->lProjects_status) > 0) : ?>
+                                <?php
+                                    if (
+                                        (in_array($this->projects->period, array(0, 1000000)) || empty($this->aAttachments[3]['path'])) // No RIB or no duration selected
+                                        && $this->current_projects_status->status == \projects_status::PREP_FUNDING
+                                    ) {
+                                        $sDisplayPeriodHS    = 'block';
+                                        $sDisplayStatus      = 'none';
+                                        $sDisplayMsgPeriodHs = 'block';
+                                        $sDisplayMsgProject  = 'none';
+                                    }
+                                ?>
                                 <span id="displayPeriodHS" style="display:<?= $sDisplayPeriodHS ?>;">
                                     <?= $this->current_projects_status->label ?>
                                 </span>
@@ -497,13 +498,13 @@
                                     <option <?= ($this->current_projects_status->status == $s['status'] ? 'selected' : '') ?> value="<?= $s['status'] ?>"><?= $s['label'] ?></option>
                                 <?php } ?>
                                 </select>
-                                <?php
-                            } else {
-                                ?><input type="hidden" name="status" id="status"
-                                         value="<?= $this->current_projects_status->status ?>" /><?
-                                echo $this->current_projects_status->label;
-                            }
-                            ?>
+                            <?php  else : ?>
+                                <input type="hidden" name="status" id="status" value="<?= $this->current_projects_status->status ?>" />
+                                <?= $this->current_projects_status->label ?>
+                                <?php if (false === empty($this->sRejectionReason)) : ?>
+                                    (<?= $this->sRejectionReason ?>)
+                                <?php endif; ?>
+                            <?php endif; ?>
                         </td>
                         <td>
                             <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>

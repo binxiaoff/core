@@ -1401,7 +1401,7 @@ class ajaxController extends bootstrap
                             <div class="btnDroite listBtn_etape6">
                                 <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6"  value="Sauvegarder">
                                 <input type="button" onclick="valid_rejete_etape6(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
-                                <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
+                                <a href="' . $this->lurl . '/dossiers/ajax_rejection/6/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                             </div>';
                     }
 
@@ -1585,9 +1585,15 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 2) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects->id_project);
 
-                    //////////////////////////////////////
-                    /// MAIL emprunteur-dossier-rejete ///
-                    //////////////////////////////////////
+                    /** @var \projects_status_history_details $oHistoryDetails */
+                    $oHistoryDetails                            = $this->loadData('projects_status_history_details');
+                    $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
+                    $oHistoryDetails->create();
+
+                    /** @var \project_rejection_reason $oRejectionReason */
+                    $oRejectionReason = $this->loadData('project_rejection_reason');
+                    $oRejectionReason->get($_POST['rejection_reason']);
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
@@ -1617,7 +1623,7 @@ class ajaxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
@@ -1633,7 +1639,10 @@ class ajaxController extends bootstrap
                 $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
                 $select .= $this->current_projects_status->label;
 
-                // pas encore fait
+                if (isset($oRejectionReason)) {
+                    $select .= ' (' . $oRejectionReason->label . ')';
+                }
+
                 if ($this->current_projects_status->status != \projects_status::REJET_ANALYSTE) {
                     $etape_7 = '
                     <div class="tab_title" id="title_etape7">Etape 7</div>
@@ -1706,7 +1715,7 @@ class ajaxController extends bootstrap
                     if ($this->current_projects_status->status == \projects_status::COMITE) {
                         $etape_7 .= '
                             <input type="button" onclick="valid_rejete_etape7(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
-                            <input type="button" onclick="valid_rejete_etape7(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
+                            <a href="' . $this->lurl . '/dossiers/ajax_rejection/7/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                             <input type="button" onclick="valid_rejete_etape7(4,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" value="Plus d\'informations">';
                     }
 
@@ -1909,9 +1918,15 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 2) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects->id_project);
 
-                    //////////////////////////////////////
-                    /// MAIL emprunteur-dossier-rejete ///
-                    //////////////////////////////////////
+                    /** @var \projects_status_history_details $oHistoryDetails */
+                    $oHistoryDetails                            = $this->loadData('projects_status_history_details');
+                    $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->comity_rejection_reason  = $_POST['rejection_reason'];
+                    $oHistoryDetails->create();
+
+                    /** @var \project_rejection_reason $oRejectionReason */
+                    $oRejectionReason = $this->loadData('project_rejection_reason');
+                    $oRejectionReason->get($_POST['rejection_reason']);
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
@@ -1941,7 +1956,7 @@ class ajaxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
@@ -1954,6 +1969,7 @@ class ajaxController extends bootstrap
                     $btn_etape7 = '
                         <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         <input type="button" onclick="valid_rejete_etape6(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
+                        <a href="' . $this->lurl . '/dossiers/ajax_rejection/6/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                         <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
                     ';
                 }
@@ -1974,10 +1990,13 @@ class ajaxController extends bootstrap
                         $select .= '<option ' . ($this->current_projects_status->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
                     }
                     $select .= '</select>';
-
                 } else {
                     $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
                     $select .= $this->current_projects_status->label;
+
+                    if (isset($oRejectionReason)) {
+                        $select .= ' (' . $oRejectionReason->label . ')';
+                    }
                 }
 
                 echo json_encode(array('liste' => $select, 'btn_etape6' => $btn_etape7, 'content_risk' => $content_risk));

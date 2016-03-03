@@ -279,7 +279,6 @@ function check_status_dossier(surl, status, id_project) {
     }
 }
 
-
 function addMemo(id, type) {
     var content_memo = $('#content_memo').val();
     var val = {content_memo: content_memo, id: id, type: type};
@@ -552,21 +551,18 @@ function valid_rejete_etape6(status, id_project) {
     else if (status == 3) var message = 'sauvegarder';
 
     if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
-
-        var structure = parseFloat($('#structure').val().replace(',', '.'));
-        var rentabilite = parseFloat($('#rentabilite').val().replace(',', '.'));
-        var tresorerie = parseFloat($('#tresorerie').val().replace(',', '.'));
-
-        var individuel = parseFloat($('#individuel').val().replace(',', '.'));
-        var global = parseFloat($('#global').val().replace(',', '.'));
-
-        var performance_fianciere = parseFloat($('#performance_fianciere').html().replace(',', '.'));
-        var marche_opere = parseFloat($('#marche_opere').html().replace(',', '.'));
-        var qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres').val().replace(',', '.'));
-        var notation_externe = parseFloat($('#notation_externe').val().replace(',', '.'));
-        var avis = ckedAvis.getData();
-
-        var form_ok = true;
+        var structure                       = parseFloat($('#structure').val().replace(',', '.')),
+            rentabilite                     = parseFloat($('#rentabilite').val().replace(',', '.')),
+            tresorerie                      = parseFloat($('#tresorerie').val().replace(',', '.')),
+            individuel                      = parseFloat($('#individuel').val().replace(',', '.')),
+            global                          = parseFloat($('#global').val().replace(',', '.')),
+            performance_fianciere           = parseFloat($('#performance_fianciere').html().replace(',', '.')),
+            marche_opere                    = parseFloat($('#marche_opere').html().replace(',', '.')),
+            qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres').val().replace(',', '.')),
+            notation_externe                = parseFloat($('#notation_externe').val().replace(',', '.')),
+            avis                            = ckedAvis.getData(),
+            rejection_reason                = $('#rejection_reason option:selected').val(),
+            form_ok = true;
 
 
         if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(qualite_moyen_infos_financieres) != false || isNaN(notation_externe) != false) {
@@ -574,7 +570,6 @@ function valid_rejete_etape6(status, id_project) {
             alert('Vous devez renseigner un chiffre infèrieur ou égale à 10 dans les 7 premiers champs');
         }
         else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || qualite_moyen_infos_financieres > 10 || notation_externe > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || qualite_moyen_infos_financieres == 0 || notation_externe == 0) {
-
             if (status == 1) {
                 form_ok = false;
                 alert('Vous devez renseigner un chiffre infèrieur ou égale à 10');
@@ -583,6 +578,10 @@ function valid_rejete_etape6(status, id_project) {
         else if (avis.length < 50 && status == 1) {
             form_ok = false;
             alert('Vous devez renseigner un avis (50 caractères minimum)');
+        }
+        else if (status == 2 && rejection_reason == '') {
+            form_ok = false;
+            alert('Vous devez renseigner le motif de rejet');
         }
 
         if (form_ok == true) {
@@ -598,27 +597,23 @@ function valid_rejete_etape6(status, id_project) {
                 marche_opere: marche_opere,
                 qualite_moyen_infos_financieres: qualite_moyen_infos_financieres,
                 notation_externe: notation_externe,
-                avis: avis
+                avis: avis,
+                rejection_reason: rejection_reason
             }).done(function (data) {
-
                 if (data != 'nok') {
-
-                    // Arrondis
                     $('#structure').val(Math.round(structure * 10) / 10);
                     $('#rentabilite').val(Math.round(rentabilite * 10) / 10);
                     $('#tresorerie').val(Math.round(tresorerie * 10) / 10);
-
                     $('#global').val(Math.round(global * 10) / 10);
                     $('#individuel').val(Math.round(individuel * 10) / 10);
-
                     $('#performance_fianciere').html(Math.round(performance_fianciere * 10) / 10);
                     $('#marche_opere').html(Math.round(marche_opere * 10) / 10);
                     $('#qualite_moyen_infos_financieres').val(Math.round(qualite_moyen_infos_financieres * 10) / 10);
                     $('#notation_externe').val(Math.round(notation_externe * 10) / 10);
 
-                    var obj = jQuery.parseJSON(data);
-                    var liste = obj.liste;
-                    var etape_7 = obj.etape_7;
+                    var obj     = jQuery.parseJSON(data),
+                        liste   = obj.liste,
+                        etape_7 = obj.etape_7;
 
                     $('#valid_etape6').slideDown();
 
@@ -632,7 +627,6 @@ function valid_rejete_etape6(status, id_project) {
                         $('.btnValid_rejet_etape6').remove();
 
                         if (status == 1) {
-
                             if ($('#content_etape7').html() == '') {
                                 $('#content_etape7').html(etape_7);
                             }
@@ -641,13 +635,13 @@ function valid_rejete_etape6(status, id_project) {
                                 $('.btnValid_rejet_etape7').show();
                             }
                         }
+                        else if (status == 2) {
+                            parent.$.fn.colorbox.close();
+                        }
                     }
                 }
-
             });
         }
-
-
     }
 }
 
@@ -667,9 +661,9 @@ function valid_rejete_etape7(status, id_project) {
             marche_opere                    = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
             qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres_comite').val().replace(',', '.')),
             notation_externe                = parseFloat($('#notation_externe_comite').val().replace(',', '.')),
-            avis_comite                     = ckedAvis_comite.getData();
-
-        var form_ok = true;
+            avis_comite                     = ckedAvis_comite.getData(),
+            rejection_reason                = $('#rejection_reason option:selected').val(),
+            form_ok = true;
 
         if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(qualite_moyen_infos_financieres) != false || isNaN(notation_externe) != false) {
             form_ok = false;
@@ -685,6 +679,10 @@ function valid_rejete_etape7(status, id_project) {
             form_ok = false;
             alert('Vous devez renseigner un avis (50 caractères minimum)');
         }
+        else if (status == 2 && rejection_reason == '') {
+            form_ok = false;
+            alert('Vous devez renseigner le motif de rejet');
+        }
 
         if (form_ok == true) {
             $.post(add_url + '/ajax/valid_rejete_etape7', {
@@ -699,15 +697,14 @@ function valid_rejete_etape7(status, id_project) {
                 individuel_comite: individuel,
                 marche_opere_comite: marche_opere,
                 qualite_moyen_infos_financieres_comite: qualite_moyen_infos_financieres,
-                notation_externe_comite: notation_externe
+                notation_externe_comite: notation_externe,
+                rejection_reason: rejection_reason
             }).done(function (data) {
-
-
                 if (data != 'nok') {
-                    var obj = jQuery.parseJSON(data);
-                    var liste = obj.liste;
-                    var btn_etape6 = obj.btn_etape6;
-                    var risk = obj.content_risk;
+                    var obj        = jQuery.parseJSON(data),
+                        liste      = obj.liste,
+                        btn_etape6 = obj.btn_etape6,
+                        risk        = obj.content_risk;
 
                     $('#valid_etape7').slideDown();
 
@@ -723,12 +720,10 @@ function valid_rejete_etape7(status, id_project) {
 
                         $('.btnValid_rejet_etape6').remove();
                     }
-                    // Plus d'infos
                     if (status == 4) {
                         $('#content_etape7').hide();
                         $('.listBtn_etape6').html(btn_etape6);
                     }
-                    // valide
                     else if (status == 1) {
                         $('.content_risk').html(risk);
                         $('.content_risk').show();
@@ -739,6 +734,9 @@ function valid_rejete_etape7(status, id_project) {
                         var recharge = '<script type="text/javascript">$("#status").change(function() { if($("#status").val() == 40){ $(".change_statut").hide();}else{$(".change_statut").show();}});</script>';
 
                         $('.recharge').html(recharge);
+                    }
+                    else if (status == 2) {
+                        parent.$.fn.colorbox.close();
                     }
                 }
             });

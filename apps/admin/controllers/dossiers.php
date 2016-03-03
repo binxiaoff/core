@@ -1120,9 +1120,29 @@ class dossiersController extends bootstrap
                 }
             }
 
-            /** @var project_need $oProjectNeed */
+            /** @var \project_need $oProjectNeed */
             $oProjectNeed = $this->loadData('project_need');
             $this->aNeeds = $oProjectNeed->getTree();
+
+            if (
+                $this->current_projects_status->status == \projects_status::REJET_ANALYSTE
+                || $this->current_projects_status->status == \projects_status::REJET_COMITE
+            ) {
+                /** @var \projects_status_history_details $oProjectStatusHistoryDetails */
+                $oStatusHistoryDetails = $this->loadData('projects_status_history_details');
+
+                if ($oStatusHistoryDetails->get($this->current_projects_status_history->id_project_status_history, 'id_project_status_history')) {
+                    /** @var \project_rejection_reason $oRejectionReason */
+                    $oRejectionReason = $this->loadData('project_rejection_reason');
+
+                    if (
+                        $this->current_projects_status->status == \projects_status::REJET_ANALYSTE && $oRejectionReason->get($oStatusHistoryDetails->analyst_rejection_reason)
+                        || $this->current_projects_status->status == \projects_status::REJET_COMITE && $oRejectionReason->get($oStatusHistoryDetails->comity_rejection_reason)
+                    ) {
+                        $this->sRejectionReason = $oRejectionReason->label;
+                    }
+                }
+            }
 
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
             $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
@@ -1468,6 +1488,18 @@ class dossiersController extends bootstrap
                 }
             }
         }
+    }
+
+    public function _ajax_rejection()
+    {
+        $this->hideDecoration();
+
+        /** @var \project_rejection_reason $oProjectRejectionReason */
+        $oProjectRejectionReason = $this->loadData('project_rejection_reason');
+        $this->aRejectionReasons = $oProjectRejectionReason->select();
+        $this->iStep             = $this->params[0];
+        $this->iProjectId        = $this->params[1];
+
     }
 
     public function _changeClient()
