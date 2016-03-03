@@ -160,17 +160,17 @@
             <div class="param-advanced-tooltip">
                 <span class="global-rate"></span>
                 <p class="indice-rate"></p>
-                <div class="global-progress-container">
-                    <span id="param-advanced-global-progress-label"></span>
-                    <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
-                    <span class="global-progress-note">Taux auquel je souhaite prêter</span>
-                </div>
                 <div class="medium-rate-note">
                     <span>Je souhaite appliquer le taux moyen constaté ?</span>
                     <div class="medium-rate-buttons">
                         <button class="btn btn-small btn-apply-avg-rate" type="button">Oui</button>
                         <button class="btn btn-small grise1 btn-close-widget" type="button">Non</button>
                     </div>
+                </div>
+                <span class="global-progress-note">Taux auquel je souhaite prêter</span>
+                <div class="global-progress-container">
+                    <span id="param-advanced-global-progress-label"></span>
+                    <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
                 </div>
             </div>
         </div>
@@ -285,13 +285,11 @@ $(window).load(function(){
     });
 
 
-    $('.cell-inner').off().click(function () {
+    $('.cell-inner').click(function () {
 
         if (!$('#autobid-block').hasClass('autobid-param-advanced-locked')) {
             var cell = $(this);
             var widget = $('#table-infos_right');
-            var e_avg_rate_cell = $(this).find('input[name=param-advanced-unilend-rate]');
-            var avg_rate = e_avg_rate_cell.val();
             var note = $(this).find('input[name=param-advanced-note]').val();
             var period_min = $(this).find('input[name=param-advanced-period-min]').val();
             var period_max = $(this).find('input[name=param-advanced-period-max]').val();
@@ -299,6 +297,8 @@ $(window).load(function(){
                 .replace('[#note#]', note)
                 .replace('[#period_min#]', period_min)
                 .replace('[#period_max#]', period_max);
+            var e_avg_rate_cell = cell.find('input[name=param-advanced-unilend-rate]');
+            var avg_rate = e_avg_rate_cell.val();
             if (avg_rate.length === 0) {
                 avg_rate = '<?= $this->ficelle->formatNumber($this->fAverageRateUnilend, 1) ?>';
                 avg_rate_indice = '<?= $this->lng['autobid']['widget-platform-average-rate-indice'] ?>';
@@ -306,9 +306,12 @@ $(window).load(function(){
             widget.find('.global-rate').html(avg_rate+'%');
             widget.find('.indice-rate').html(avg_rate_indice);
 
-            widget.find('.btn-apply-avg-rate').click(function(){
+            widget.find('.btn-apply-avg-rate').off().click(function(e){
+                e.stopPropagation();
                 cell.find('.param-advanced-label').html(avg_rate+'%');
                 cell.find('.param-advanced-value').val(avg_rate.replace(",", "."));
+                var rate = cell.find('.param-advanced-value').val();
+                drawPercentage(rate);
             });
 
             widget.find('.btn-close-widget').click(function(){
@@ -317,15 +320,10 @@ $(window).load(function(){
 
             var rate = cell.find('.param-advanced-value').val();
             drawPercentage(rate);
+
             widget.show();
         }
     });
-
-    $('.cell-inner .param-advanced-button').click(function(){
-        var rate = $(this).parents('.cell-inner').find('.param-advanced-value').val();
-        drawPercentage(rate);
-    });
-
 // Block advanced params
     if($('.param-advanced-switch-input').length){
         $('.param-advanced-switch-input').on('change', function() {
@@ -340,18 +338,26 @@ $(window).load(function(){
     }
 
     if ($('.param-advanced-button').length) {
-        $('.param-advanced-button').on('click', function () {
-            var inputRate = $(this).parents('.param-advanced-bottom').find('.param-advanced-value');
-            var labelRate = $(this).parents('.param-advanced-bottom').find('.param-advanced-label');
-            var AvgRateUnilend = parseFloat($(this).parents('.param-advanced-bottom').find('input[name=param-advanced-unilend-rate]').val());
+        $('.param-advanced-button').on('click', function (e) {
+            e.stopPropagation();
+            var cell = $(this).parents('.cell-inner')
+            var inputRate = cell.find('.param-advanced-value');
+            var labelRate = cell.find('.param-advanced-label');
+            var AvgRateUnilend = parseFloat(cell.find('input[name=param-advanced-unilend-rate]').val().replace(",", "."));
             var currentVal = Number(parseFloat(inputRate.val()).toFixed(1));
             var newVal = Number(currentVal + parseFloat($(this).val())).toFixed(1);
 
-            if (newVal > 9.9 || newVal < 4) {
-                newVal = currentVal;
+            if (newVal >= 9.9) {
+                newVal = '9.9';
             }
+            if (newVal <= 4.0) {
+                newVal = '4.0';
+            }
+
             inputRate.val(newVal);
             labelRate.html(newVal.toString().replace(".", ",") + '%');
+            parseFloat(newVal).toFixed(1);
+            drawPercentage(newVal);
 
             if (isNaN(AvgRateUnilend) === false) {
                 if (newVal <= AvgRateUnilend) {
@@ -386,41 +392,30 @@ $(window).load(function(){
     });
 
     function drawPercentage(rate){
-        $.ajax({
-            url: "<?=$this->lurl?>/ajax/bidAcceptationPossibility/"+rate,
-            type: 'GET',
-            error: function() {
-                alert('An error has occurred');
-            },
-            success: function(percentage) {
-                $('#param-advanced-global-progress').html('');
-                var bg = $('#param-advanced-global-progress'),
-                    ctx = ctx = bg[0].getContext('2d'),
-                    imd = null,
-                    circ = Math.PI,
-                    quart = Math.PI / 2;
+        var all_acceptation = $.parseJSON('<?= $this->sAcceptationRate; ?>');
+        var percentage = all_acceptation[rate];
+        var canvas = $('#param-advanced-global-progress')[0];
+        canvas.width = canvas.width;
+        var bg = $('#param-advanced-global-progress'),
+            ctx = bg[0].getContext('2d'),
+            circ = Math.PI,
+            quart = Math.PI / 2;
 
-                ctx.beginPath();
-                ctx.strokeStyle = '#b10366';
-                ctx.closePath();
-                ctx.fill();
-                ctx.lineWidth = 20.0;
+        ctx.beginPath();
+        ctx.strokeStyle = '#b10366';
+        ctx.closePath();
+        ctx.fill();
+        ctx.lineWidth = 20.0;
 
-                imd = ctx.getImageData(0, 0, 109, 109);
+        var imd = ctx.getImageData(0, 0, 109, 109);
 
-                var draw = function(percentage) {
-                    ctx.putImageData(imd, 0, 0);
-                    ctx.beginPath();
-                    ctx.arc(55, 55, 44, -(quart), ((circ) * percentage) - quart, false);
+        ctx.putImageData(imd, 0, 0);
+        ctx.beginPath();
+        ctx.arc(55, 55, 44, -(quart), ((circ) * (percentage / 100)) - quart, false);
 
-                    ctx.stroke();
-                    $('#param-advanced-global-progress-label').html(percentage*100+'%');
-                }
+        ctx.stroke();
+        $('#param-advanced-global-progress-label').html(percentage +'%');
 
-                // Draw progress bar: draw(arg) where arg = progress from 0 to 1
-                draw(percentage);
-            }
-        });
     }
 });
 </script>

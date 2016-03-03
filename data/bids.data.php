@@ -308,14 +308,14 @@ class bids extends bids_crud
         return $aBids;
     }
 
-    public function getAcceptationPossibilityRounded($fRate)
+    public function getAcceptationPossibilityRounded()
     {
         $oCache      = Cache::getInstance();
-        $sKey        = $oCache->makeKey('bids_getAcceptationPossibilityRounded', $fRate);
+        $sKey        = $oCache->makeKey('bids_getAcceptationPossibilityRounded');
         $mPercentage = $oCache->get($sKey);
 
         if (false === $mPercentage) {
-            $sQuery = 'SELECT count(DISTINCT b.id_bid)
+            $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
                         FROM bids b
                         INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
                         INNER JOIN projects p ON p.id_project = b.id_project
@@ -323,24 +323,29 @@ class bids extends bids_crud
                         INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
                         INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
                         WHERE ps.status >= ' . \projects_status::FUNDE . '
-                        AND ps.status != ' . \projects_status::FUNDING_KO;
-            $rQuery   = $this->bdd->query($sQuery);
-            $iCountTotal = $this->bdd->result($rQuery, 0, 0);
-
-            $sQuery .= ' AND b.rate >=' . $fRate;
-            $rQuery   = $this->bdd->query($sQuery);
-            $iCount = $this->bdd->result($rQuery, 0, 0);
-
-            $mPercentage = ($iCount / $iCountTotal) * 100;
-
-            if ($mPercentage < 1) {
-                $mPercentage = 1;
-            } elseif ($mPercentage > 99) {
-                $mPercentage = 99;
-            } else {
-                $mPercentage = round($mPercentage, 0);
+                        AND ps.status != ' . \projects_status::FUNDING_KO . ' GROUP BY b.rate ORDER BY b.rate DESC';
+            $rQuery  = $this->bdd->query($sQuery);
+            $aResult = array();
+            $iTotal = 0;
+            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
+                $aResult[] = $aRow;
+                $iTotal += $aRow['count_bid'];
             }
 
+            $mPercentage    = array();
+            $iSubTotal = 0;
+            foreach ($aResult as $aRate) {
+                $iSubTotal += $aRate['count_bid'];
+                $sRate = (string) number_format($aRate['rate'], 1);
+                $mPercentage[$sRate] = ($iSubTotal / $iTotal) * 100;
+                if ($mPercentage[$sRate] < 1) {
+                    $mPercentage[$sRate] = 1;
+                } elseif ($mPercentage[$sRate] > 99) {
+                    $mPercentage[$sRate] =  99;
+                } else {
+                    $mPercentage[$sRate] = (int) $mPercentage[$sRate];
+                }
+            }
             $oCache->set($sKey, $mPercentage, Cache::MEDIUM_TIME);
         }
 

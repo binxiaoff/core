@@ -2582,6 +2582,7 @@ class profileController extends bootstrap
         $oClientStatus         = $this->loadData('clients_status');
         $oSettings             = $this->loadData('settings');
         $oAutoBidPeriod        = $this->loadData('autobid_periods');
+        $oBid                  = $this->loadData('bids');
         $oProject              = $this->loadData('projects');
 
         $this->lng['autobid']  = $this->ln->selectFront('autobid', $this->language, $this->App);
@@ -2599,6 +2600,7 @@ class profileController extends bootstrap
         $this->fAverageRateUnilend  = round($oProject->getAvgRate(), 1);
         $this->bIsNovice            = $oAutoBidSettingsManager->isNovice($this->oLendersAccounts);
         $this->sValidationDate      = $oAutoBidSettingsManager->getValidationDate($this->oLendersAccounts);
+        $this->sAcceptationRate     = json_encode($oBid->getAcceptationPossibilityRounded());
 
         $this->aAutoBidSettings = array();
         $aAutoBidPeriods        = $oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE, 'min ASC');
@@ -2675,7 +2677,7 @@ class profileController extends bootstrap
         $aRiskValues           = $oProject->getAvailableRisks();
         $iNumberOfSettingLines = count($aRiskValues) * count($aAutoBidPeriods);
 
-        if (isset($_POST['param-advanced-btn-submit'])) {
+        if (isset($_POST['validate_settings_expert'])) {
             $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
             $aSettingsFromPOST = array();
 
