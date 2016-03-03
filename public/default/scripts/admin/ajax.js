@@ -658,21 +658,16 @@ function valid_rejete_etape7(status, id_project) {
     else if (status == 4) var message = 'vouloir plus d\'informations sur';
 
     if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
-        // Variables
-        var structure = parseFloat($('#structure2').val().replace(',', '.'));
-        var rentabilite = parseFloat($('#rentabilite2').val().replace(',', '.'));
-        var tresorerie = parseFloat($('#tresorerie2').val().replace(',', '.'));
-
-        var global = parseFloat($('#global2').val().replace(',', '.'));
-        var individuel = parseFloat($('#individuel2').val().replace(',', '.'));
-
-        var performance_fianciere = parseFloat($('#performance_fianciere2').html().replace(',', '.'));
-        var marche_opere = parseFloat($('#marche_opere2').html().replace(',', '.'));
-        var qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres2').val().replace(',', '.'));
-        var notation_externe = parseFloat($('#notation_externe2').val().replace(',', '.'));
-
-        //var note = parseFloat($('#moyenneNote_etape7').val().replace(',','.'));
-        var avis_comite = ckedAvis_comite.getData();
+        var structure                       = parseFloat($('#structure_comite').val().replace(',', '.')),
+            rentabilite                     = parseFloat($('#rentabilite_comite').val().replace(',', '.')),
+            tresorerie                      = parseFloat($('#tresorerie_comite').val().replace(',', '.')),
+            global                          = parseFloat($('#global_comite').val().replace(',', '.')),
+            individuel                      = parseFloat($('#individuel_comite').val().replace(',', '.')),
+            performance_fianciere           = parseFloat($('#performance_fianciere_comite').html().replace(',', '.')),
+            marche_opere                    = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
+            qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres_comite').val().replace(',', '.')),
+            notation_externe                = parseFloat($('#notation_externe_comite').val().replace(',', '.')),
+            avis_comite                     = ckedAvis_comite.getData();
 
         var form_ok = true;
 
@@ -696,15 +691,15 @@ function valid_rejete_etape7(status, id_project) {
                 status: status,
                 id_project: id_project,
                 avis_comite: avis_comite,
-                structure: structure,
-                rentabilite: rentabilite,
-                tresorerie: tresorerie,
-                performance_fianciere: performance_fianciere,
-                global: global,
-                individuel: individuel,
-                marche_opere: marche_opere,
-                qualite_moyen_infos_financieres: qualite_moyen_infos_financieres,
-                notation_externe: notation_externe
+                structure_comite: structure,
+                rentabilite_comite: rentabilite,
+                tresorerie_comite: tresorerie,
+                performance_fianciere_comite: performance_fianciere,
+                global_comite: global,
+                individuel_comite: individuel,
+                marche_opere_comite: marche_opere,
+                qualite_moyen_infos_financieres_comite: qualite_moyen_infos_financieres,
+                notation_externe_comite: notation_externe
             }).done(function (data) {
 
 

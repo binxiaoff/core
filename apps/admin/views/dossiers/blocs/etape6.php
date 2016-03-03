@@ -19,7 +19,7 @@
                         <table>
                             <tr>
                                 <th><label for="structure">Structure</label></th>
-                                <td><input tabindex="1" class="input_court cal_moyen" type="text" value="<?= ($this->projects_notes->structure) ?>" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="1" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                             </tr>
                             <tr>
                                 <th><label for="rentabilite">Rentabilité</label></th>

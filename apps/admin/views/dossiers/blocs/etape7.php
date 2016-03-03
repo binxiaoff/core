@@ -1,34 +1,34 @@
 <div id="content_etape7">
     <?php if ($this->current_projects_status->status >= \projects_status::COMITE) : ?>
-        <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1); ?>
+        <?php $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres_comite * 0.2 + $this->projects_notes->notation_externe_comite * 0.4, 1); ?>
         <div class="tab_title" id="title_etape7">Etape 7</div>
         <div class="tab_content" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
                 <tr>
-                    <th><label for="performance_fianciere2">Performance financière</label></th>
-                    <td><span id="performance_fianciere2"><?= $this->projects_notes->performance_fianciere ?></span> / 10</td>
-                    <th style="vertical-align:top;"><label for="marche_opere2">Marché opéré</label></th>
-                    <td style="vertical-align:top;"><span id="marche_opere2"><?= $this->projects_notes->marche_opere ?></span> / 10</td>
+                    <th><label for="performance_fianciere_comite">Performance financière</label></th>
+                    <td><span id="performance_fianciere_comite"><?= $this->projects_notes->performance_fianciere_comite ?></span> / 10</td>
+                    <th style="vertical-align:top;"><label for="marche_opere_comite">Marché opéré</label></th>
+                    <td style="vertical-align:top;"><span id="marche_opere_comite"><?= $this->projects_notes->marche_opere_comite ?></span> / 10</td>
                     <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
-                    <td><input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                    <td><input tabindex="14" id="qualite_moyen_infos_financieres_comite" name="qualite_moyen_infos_financieres_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                     <th><label for="notation_externe2">Notation externe</label></th>
-                    <td><input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                    <td><input tabindex="15" id="notation_externe_comite" name="notation_externe_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="vertical-align:top;">
                         <table>
                             <tr>
                                 <th><label for="structure2">Structure</label></th>
-                                <td><input tabindex="9" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure ?>" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="9" id="structure_comite" name="structure_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->structure_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                             </tr>
                             <tr>
                                 <th><label for="rentabilite2">Rentabilité</label></th>
-                                <td><input tabindex="10" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite ?>" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="10" id="rentabilite_comite" name="rentabilite_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->rentabilite_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                             </tr>
                             <tr>
                                 <th><label for="tresorerie2">Trésorerie</label></th>
                                 <td>
-                                    <input tabindex="11" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie ?>" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10
+                                    <input tabindex="11" id="tresorerie_comite" name="tresorerie_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->tresorerie_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10
                                 </td>
                             </tr>
                         </table>
@@ -37,18 +37,18 @@
                         <table>
                             <tr>
                                 <th><label for="global2">Global</label></th>
-                                <td><input tabindex="12" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global ?>" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="12" id="global_comite" name="global_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->global_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                             </tr>
                             <tr>
                                 <th><label for="individuel2">Individuel</label></th>
-                                <td><input tabindex="13" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel ?>" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                                <td><input tabindex="13" id="individuel_comite" name="individuel_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->individuel_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                             </tr>
                         </table>
                     </td>
                     <td colspan="4"></td>
                 </tr>
                 <tr class="lanote">
-                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote2"><?= $moyenne ?> / 10</span></th>
+                    <th colspan="8" style="text-align:center;">Note : <span class="moyenneNote_comite"><?= $moyenne ?> / 10</span></th>
                 </tr>
                 <tr>
                     <td colspan="8" style="text-align:center;">
@@ -64,11 +64,11 @@
             </table>
             <script type="text/javascript">
                 $(".cal_moyen").keyup(function() {
-                    var structure   = parseFloat($("#structure2").val().replace(",", "."));
-                    var rentabilite = parseFloat($("#rentabilite2").val().replace(",", "."));
-                    var tresorerie  = parseFloat($("#tresorerie2").val().replace(",", "."));
-                    var global      = parseFloat($("#global2").val().replace(",", "."));
-                    var individuel  = parseFloat($("#individuel2").val().replace(",", "."));
+                    var structure   = parseFloat($("#structure_comite").val().replace(",", "."));
+                    var rentabilite = parseFloat($("#rentabilite_comite").val().replace(",", "."));
+                    var tresorerie  = parseFloat($("#tresorerie_comite").val().replace(",", "."));
+                    var global      = parseFloat($("#global_comite").val().replace(",", "."));
+                    var individuel  = parseFloat($("#individuel_comite").val().replace(",", "."));
 
                     structure   = Math.round(structure * 10) / 10;
                     rentabilite = Math.round(rentabilite * 10) / 10;
@@ -82,17 +82,17 @@
                     var marche_opere = (global + individuel) / 2;
                     marche_opere = Math.round(marche_opere * 10) / 10;
 
-                    var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres2").val().replace(",", "."));
-                    var notation_externe = parseFloat($("#notation_externe2").val().replace(",", "."));
+                    var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres_comite").val().replace(",", "."));
+                    var notation_externe = parseFloat($("#notation_externe_comite").val().replace(",", "."));
 
                     qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
                     notation_externe = Math.round(notation_externe * 10) / 10;
 
                     moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
 
-                    $("#marche_opere2").html(marche_opere);
-                    $("#performance_fianciere2").html(performance_fianciere);
-                    $(".moyenneNote2").html(moyenne + " / 10");
+                    $("#marche_opere_comite").html(marche_opere);
+                    $("#performance_fianciere_comite").html(performance_fianciere);
+                    $(".moyenneNote_comite").html(moyenne + " / 10");
                 });
             </script>
             <br/><br/>

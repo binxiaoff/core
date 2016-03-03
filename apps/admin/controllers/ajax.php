@@ -1686,7 +1686,7 @@ class ajaxController extends bootstrap
                             </tr>
 
                             <tr class="lanote">
-                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote2">' . $this->projects_notes->note . '/ 10</span></th>
+                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note . '/ 10</span></th>
                             </tr>
 
                             <tr>
@@ -1716,11 +1716,11 @@ class ajaxController extends bootstrap
                     </div>
                     <script type="text/javascript">
                         $(".cal_moyen").keyup(function() {
-                            var structure   = parseFloat($("#structure2").val().replace(",","."));
-                            var rentabilite = parseFloat($("#rentabilite2").val().replace(",","."));
-                            var tresorerie  = parseFloat($("#tresorerie2").val().replace(",","."));
-                            var global      = parseFloat($("#global2").val().replace(",","."));
-                            var individuel  = parseFloat($("#individuel2").val().replace(",","."));
+                            var structure   = parseFloat($("#structure_comite").val().replace(",","."));
+                            var rentabilite = parseFloat($("#rentabilite_comite").val().replace(",","."));
+                            var tresorerie  = parseFloat($("#tresorerie_comite").val().replace(",","."));
+                            var global      = parseFloat($("#global_comite").val().replace(",","."));
+                            var individuel  = parseFloat($("#individuel_comite").val().replace(",","."));
 
                             structure   = Math.round(structure * 10) / 10;
                             rentabilite = Math.round(rentabilite * 10) / 10;
@@ -1734,17 +1734,17 @@ class ajaxController extends bootstrap
                             var marche_opere = (global + individuel) / 2;
                             marche_opere = Math.round(marche_opere * 10) / 10;
 
-                            var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres2").val().replace(",","."));
-                            var notation_externe = parseFloat($("#notation_externe2").val().replace(",","."));
+                            var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres_comite").val().replace(",","."));
+                            var notation_externe = parseFloat($("#notation_externe_comite").val().replace(",","."));
 
                             qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
                             notation_externe = Math.round(notation_externe * 10) / 10;
 
                             moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
 
-                            $("#marche_opere2").html(marche_opere);
-                            $("#performance_fianciere2").html(performance_fianciere);
-                            $(".moyenneNote2").html(moyenne + " / 10");
+                            $("#marche_opere_comite").html(marche_opere);
+                            $("#performance_fianciere_comite").html(performance_fianciere);
+                            $(".moyenneNote_comite").html(moyenne + " / 10");
                         });
                     </script>
                     ';
@@ -1828,17 +1828,17 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
-                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
-                $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
-                $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
-                $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
-                $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
-                $this->projects_notes->note                            = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1);
-                $this->projects_notes->avis_comite                     = $_POST['avis_comite'];
+                $this->projects_notes->structure_comite                       = number_format($_POST['structure_comite'], 1, '.', '');
+                $this->projects_notes->rentabilite_comite                     = number_format($_POST['rentabilite_comite'], 1, '.', '');
+                $this->projects_notes->tresorerie_comite                      = number_format($_POST['tresorerie_comite'], 1, '.', '');
+                $this->projects_notes->individuel_comite                      = number_format($_POST['individuel_comite'], 1, '.', '');
+                $this->projects_notes->global_comite                          = number_format($_POST['global_comite'], 1, '.', '');
+                $this->projects_notes->performance_fianciere_comite           = number_format($_POST['performance_fianciere_comite'], 1, '.', '');
+                $this->projects_notes->marche_opere_comite                    = number_format($_POST['marche_opere_comite'], 1, '.', '');
+                $this->projects_notes->qualite_moyen_infos_financieres_comite = number_format($_POST['qualite_moyen_infos_financieres_comite'], 1, '.', '');
+                $this->projects_notes->notation_externe_comite                = number_format($_POST['notation_externe_comite'], 1, '.', '');
+                $this->projects_notes->note_comite                            = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres_comite * 0.2 + $this->projects_notes->notation_externe_comite * 0.4, 1);
+                $this->projects_notes->avis_comite                            = $_POST['avis_comite'];
 
                 // on enregistre
                 if ($update == true) {
@@ -1860,26 +1860,27 @@ class ajaxController extends bootstrap
                 // I = 1
                 // J = 0
 
-                if ($this->projects_notes->note >= 0 && $this->projects_notes->note < 2) {
+                if ($this->projects_notes->note_comite >= 0 && $this->projects_notes->note_comite < 2) {
                     $lettre = 'I';
-                } elseif ($this->projects_notes->note >= 2 && $this->projects_notes->note < 4) {
+                } elseif ($this->projects_notes->note_comite >= 2 && $this->projects_notes->note_comite < 4) {
                     $lettre = 'G';
-                } elseif ($this->projects_notes->note >= 4 && $this->projects_notes->note < 5.5) {
+                } elseif ($this->projects_notes->note_comite >= 4 && $this->projects_notes->note_comite < 5.5) {
                     $lettre = 'E';
-                } elseif ($this->projects_notes->note >= 5.5 && $this->projects_notes->note < 6.5) {
+                } elseif ($this->projects_notes->note_comite >= 5.5 && $this->projects_notes->note_comite < 6.5) {
                     $lettre = 'D';
-                } elseif ($this->projects_notes->note >= 6.5 && $this->projects_notes->note < 7.5) {
+                } elseif ($this->projects_notes->note_comite >= 6.5 && $this->projects_notes->note_comite < 7.5) {
                     $lettre = 'C';
-                } elseif ($this->projects_notes->note >= 7.5 && $this->projects_notes->note < 8.5) {
+                } elseif ($this->projects_notes->note_comite >= 7.5 && $this->projects_notes->note_comite < 8.5) {
                     $lettre = 'B';
-                } elseif ($this->projects_notes->note >= 8.5 && $this->projects_notes->note <= 10) {
+                } elseif ($this->projects_notes->note_comite >= 8.5 && $this->projects_notes->note_comite <= 10) {
                     $lettre = 'A';
                 }
 
                 $this->projects->risk = $lettre;
                 $this->projects->update();
 
-                $btn_etape6 = '';
+                $btn_etape7   = '';
+                $content_risk = '';
 
                 if ($_POST['status'] == 1) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
@@ -1950,7 +1951,7 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 4) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects->id_project);
 
-                    $btn_etape6 = '
+                    $btn_etape7 = '
                         <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         <input type="button" onclick="valid_rejete_etape6(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
                         <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
@@ -1979,7 +1980,7 @@ class ajaxController extends bootstrap
                     $select .= $this->current_projects_status->label;
                 }
 
-                echo json_encode(array('liste' => $select, 'btn_etape6' => $btn_etape6, 'content_risk' => $content_risk));
+                echo json_encode(array('liste' => $select, 'btn_etape6' => $btn_etape7, 'content_risk' => $content_risk));
             } else {
                 echo 'nok';
             }
