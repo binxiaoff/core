@@ -75,9 +75,11 @@
                     </div>
                 </div>
             </div>
+            <?php if (false === $this->bFirstTimeActivation) : ?>
             <div class="row">
                 <a href="#" class="link-more" style="display:none;"><?= $this->lng['autobid']['settings-link-to-expert-mode'] ?></a>
             </div>
+            <?php endif; ?>
             <div class="row text-center" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" id="validate_settings_novice">
                 <button class="btn" type="submit" name="send-form-autobid-param-simple">
                     <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
@@ -379,7 +381,14 @@ $(window).load(function(){
 
         $.post(add_url + "/profile/autoBidExpertForm", Settings).done(function (data) {
             if (data == 'settings_saved') {
-                window.location.reload();
+                $('#autobid-block').addClass('autobid-param-advanced-locked');
+                $('#settings_modifications_expert').show();
+                $('#table-infos_right').hide();
+                $('.param-advanced-switch').hide();
+                $('.param-advanced-buttons').hide();
+                $('#settings_instructions_expert').hide();
+                $('#autobid-amount').prop('disabled', true);
+                $('.apply-global-medium-rate').hide();
             }
         })
     });
