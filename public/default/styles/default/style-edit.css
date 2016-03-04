@@ -197,6 +197,7 @@ h1.inscription{letter-spacing: -0.12em;}
 
 
 .error_wait{display:none;}
+.error_wait img {width: 32px; height: 32px;}
 .captcha_login{float:right;margin-top:-7px;}
 .reload_captcha_login{float:right;cursor:pointer;}
 .content_captcha_login{width:133px;display:inline-block;float:right;}

@@ -12,6 +12,24 @@ $this->lng['etape-1']          = $this->ln->selectFront('depot-de-dossier-etape1
 $this->lng['depot-de-dossier'] = $this->ln->selectFront('depot-de-dossier', $this->language, $this->App);
 $this->lng['landing-page']     = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
+switch (current(explode('/', substr(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), 1)))) {
+    case 'emprunter-avec-cacl':
+        $this->bShortTunnel = true;
+        $_SESSION['depot-de-dossier']['partner'] = 'cacl';
+        break;
+    default:
+        $this->bShortTunnel = false;
+        unset($_SESSION['depot-de-dossier']['partner']);
+        break;
+}
+
+if ($this->bShortTunnel) {
+    $_GET['utm_source'] = '';
+    $_GET['utm_source2'] = '';
+    $_SESSION['utm_source'] = '';
+    $_SESSION['utm_source2'] = '';
+}
+
 $this->ficelle->source(
     isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
     $this->lurl . (isset($this->params[0]) ? '/' . $this->params[0] : ''),
@@ -43,9 +61,9 @@ foreach (array('siren', 'montant', 'email', 'prenom', 'nom', 'mobile') as $sFiel
 }
 
 if ($bProcessForm) {
-    if (
-        empty($_SESSION['forms']['depot-de-dossier']['values']['email'])
-        || false === $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email'])
+    if (false === isset($_SESSION['forms']['depot-de-dossier']['values']['short_tunnel'])
+        && (empty($_SESSION['forms']['depot-de-dossier']['values']['email'])
+        || false === $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']))
     ) {
         $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['email'] = true;
@@ -81,7 +99,7 @@ if ($bProcessForm) {
         die;
     }
 
-    header('Location: ' . (isset($sRedirectURL) ? $sRedirectURL : $this->lurl) . '/depot_de_dossier/etape1');
+    header('Location: ' . $this->lurl . '/depot_de_dossier/etape1');
     die;
 }
 
