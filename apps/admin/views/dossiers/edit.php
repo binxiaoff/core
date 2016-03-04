@@ -736,7 +736,10 @@
     <br/><br/>
 
     <h2>Mémos</h2>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a></div>
+    <div class="btnDroite">
+        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a>
+        <a href="<?= $this->lurl ?>/dossiers/export/<?= $this->projects->id_project ?>" class="btn_link">CSV données financières</a>
+    </div>
     <?php if (count($this->lProjects_comments) > 0): ?>
         <div id="table_memo">
             <table class="tablesorter">

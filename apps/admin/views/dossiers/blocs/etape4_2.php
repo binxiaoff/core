@@ -33,8 +33,8 @@
 <div id="annual_accounts_dates_popup" style="display: none;">
     <h2>Modifier l'exercice fiscal</h2>
     <form action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post">
-        <input type="text" class="numbers" name="cloture_exercice_fiscal" class="input_dp datepicker" placeholder="Date de cloture"/>
-        <input type="text" class="numbers" name="duree_exercice_fiscal" class="input_court numbers" placeholder="Durée (mois)"/> mois
+        <input type="text" name="cloture_exercice_fiscal" class="numbers input_dp datepicker" placeholder="Date de cloture"/>
+        <input type="text" name="duree_exercice_fiscal" class="numbers input_court numbers" placeholder="Durée (mois)"/> mois
         <br/><br/>
         <div style="text-align: right">
             <input type="hidden" name="id_annual_accounts"/>

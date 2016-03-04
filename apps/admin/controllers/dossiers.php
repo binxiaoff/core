@@ -1490,6 +1490,51 @@ class dossiersController extends bootstrap
         }
     }
 
+    public function _export()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+
+        /** @var \projects $oProject */
+        $oProject = $this->loadData('projects');
+
+        if (empty($this->params[0]) || false === $oProject->get($this->params[0])) {
+            return;
+        }
+
+        /** @var \companies $oCompany */
+        $oCompany = $this->loadData('companies');
+        $oCompany->get($oProject->id_company);
+
+        /** @var \companies_bilans $oAnnualAccounts */
+        $oAnnualAccounts = $this->loadData('companies_bilans');
+
+        /** @var \company_balance $oCompanyBalance */
+        $oCompanyBalance = $this->loadData('company_balance');
+
+        $this->settings->get('TVA', 'type');
+        $this->fVATRate = $this->settings->value;
+
+        $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+        $aAnnualAccountsIds             = array_column($this->aAnnualAccounts, 'id_bilan');
+        $this->aBalanceSheets           = $oCompanyBalance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
+        $this->bIsProblematicCompany    = $oCompany->countProblemsBySIREN() > 0;
+        $this->iDeclaredRevenue         = $oProject->ca_declara_client;
+        $this->iDeclaredOperatingIncome = $oProject->resultat_exploitation_declara_client;
+        $this->iDeclaredCapitalStock    = $oProject->fonds_propres_declara_client;
+        $this->aCompanyProjects         = $oCompany->getProjectsBySIREN();
+        $this->fCompanyOwedCapital      = $oCompany->getOwedCapitalBySIREN();
+
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment;filename=risque-' . $oProject->id_project . '.csv');
+
+        ob_start();
+        $this->fireView();
+        $sCSV = ob_get_contents();
+        ob_end_clean();
+        print mb_convert_encoding($sCSV, 'UTF-16LE', 'UTF-8');
+    }
+
     public function _ajax_rejection()
     {
         $this->hideDecoration();
