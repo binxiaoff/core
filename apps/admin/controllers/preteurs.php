@@ -1778,7 +1778,7 @@ class preteursController extends bootstrap
                 $this->sClientStatusMessage = '';
                 break;
             default;
-                trigger_error('Unknown Client Status', E_USER_NOTICE);
+                trigger_error('Unknown Client Status : ' . $oClientsStatus->status, E_USER_NOTICE);
                 break;
         }
     }
