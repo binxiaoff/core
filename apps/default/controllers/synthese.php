@@ -308,37 +308,39 @@ class syntheseController extends bootstrap
         //Ongoing Bids Widget
         $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
-        $this->bHasNoBidsOnProjectsInFunding = true;
-        $this->bFirstTimeActivation          = !$oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);
+        $this->bFirstTimeActivation          = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);
         $this->iDisplayTotalNumberOfBids     = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
+        $aProjectsWithBids = array();
 
         foreach ($aProjectsInFunding as $iKey => $aProject) {
-            $aProjectsInFunding[$iKey]['oEndFunding']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
-            $aProjectsInFunding[$iKey]['aPendingBids'] = $this->bids->select(
-                'id_project = ' . $aProject['id_project'] .
-                ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                ' AND status = ' . \bids::STATUS_BID_PENDING,
-                'id_bid DESC'
-            );
-
-            $aProjectsInFunding[$iKey]['aRejectedBid'] = array_shift(
-                $this->bids->select(
+            if (0 < $this->bids->counter('id_project = ' . $aProject['id_project'] . ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account)) {
+                $this->aOngoingBidsByProject[$iKey]                 = $aProject;
+                $this->aOngoingBidsByProject[$iKey]['oEndFunding']  = \DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
+                $this->aOngoingBidsByProject[$iKey]['aPendingBids'] = $this->bids->select(
                     'id_project = ' . $aProject['id_project'] .
                     ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                    ' AND status = ' . \bids::STATUS_BID_REJECTED,
-                    'id_bid DESC',
-                    null,
-                    '1'
-                )
-            );
+                    ' AND status = ' . \bids::STATUS_BID_PENDING,
+                    'id_bid DESC'
+                );
 
-            $aProjectsInFunding[$iKey]['iNumberOfRejectedBids'] = $this->bids->counter('id_project = ' . $aProject['id_project'] .
-                ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                ' AND status = ' . \bids::STATUS_BID_REJECTED);
+                $this->aOngoingBidsByProject[$iKey]['aRejectedBid'] = array_shift(
+                    $this->bids->select(
+                        'id_project = ' . $aProject['id_project'] .
+                        ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
+                        ' AND status = ' . \bids::STATUS_BID_REJECTED,
+                        'id_bid DESC',
+                        null,
+                        '1'
+                    )
+                );
 
-            $this->bHasNoBidsOnProjectsInFunding = ($this->bHasNoBidsOnProjectsInFunding || empty($aProjectsInFunding[$iKey]['aRejectedBid']) || empty($aProjectsInFunding[$iKey]['aPendingBids']));
+                $this->aOngoingBidsByProject[$iKey]['iNumberOfRejectedBids'] = $this->bids->counter('id_project = ' . $aProject['id_project'] .
+                    ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
+                    ' AND status = ' . \bids::STATUS_BID_REJECTED);
+
+                $aProjectsWithBids[] = $aProject['id_project'];
+            }
         }
-
-        $this->aOngoingBidsByProject = $aProjectsInFunding;
+        $this->bHasNoBidsOnProjectsInFunding = (0 === count($aProjectsWithBids)) ;
     }
 }

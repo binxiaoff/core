@@ -37,48 +37,50 @@
         <div class="body">
             <div class="post-box clearfix">
                 <?php if ($this->bHasNoBidsOnProjectsInFunding ) : ?>
-                <p><?= $this->lng['preteur-synthese']['text-no-bids-on-projects-in-funding'] ?></p>
+                    <p><?= $this->lng['preteur-synthese']['text-no-bids-on-projects-in-funding'] ?></p>
                 <?php else : ?>
-                <?php foreach ($this->aOngoingBidsByProject as $aProject) : ?>
-                    <div class="project_bloc">
-                        <h3><?= $aProject['title'] ?>,
-                            <small><?= $this->lng['preteur-synthese']['reste'] ?>:
-                                <span id="project_<?= $aProject['id_project'] ?>">
-                                    <script type="text/javascript">
-                                        var cible<?= $aProject['id_project'] ?> = new Date('<?= $aProject['oEndFunding']->format('D F d Y H:i:s') ?>');
-                                        var time<?= $aProject['id_project'] ?> = parseInt(cible<?= $aProject['id_project'] ?>.getTime() / 1000, 10);
-                                        setTimeout('decompte(time<?= $aProject['id_project'] ?>,"project_<?= $aProject['id_project'] ?>")', 500);
-                                    </script>
-                                </span>
-                            </small>
-                        </h3>
-                    <?php foreach ($aProject['aPendingBids'] as $aBid) : ?>
-                        <div class="row bid">
-                            <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
-                            <span class="amount"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</span>
-                            <span class="rate"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</span>
-                            <span class="circle_pending"></span>
-                            <span class="pending"><?= $this->lng['preteur-synthese']['label-pending-bid'] ?></span>
-                        </div>
-                    <?php endforeach; ?>
-                        <div class="rejected_bids_<?= $aProject['id_project'] ?>">
+                    <?php foreach ($this->aOngoingBidsByProject as $aProject) : ?>
+                        <div class="project_bloc">
+                            <h3><?= $aProject['title'] ?>,
+                                <small><?= $this->lng['preteur-synthese']['reste'] ?>:
+                                    <span id="project_<?= $aProject['id_project'] ?>">
+                                        <script type="text/javascript">
+                                            var cible<?= $aProject['id_project'] ?> = new Date('<?= $aProject['oEndFunding']->format('D F d Y H:i:s') ?>');
+                                            var time<?= $aProject['id_project'] ?> = parseInt(cible<?= $aProject['id_project'] ?>.getTime() / 1000, 10);
+                                            setTimeout('decompte(time<?= $aProject['id_project'] ?>,"project_<?= $aProject['id_project'] ?>")', 500);
+                                        </script>
+                                    </span>
+                                </small>
+                            </h3>
+                        <?php foreach ($aProject['aPendingBids'] as $aBid) : ?>
                             <div class="row bid">
-                                <span class="<?= (empty($aProject['aRejectedBid']['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
-                                <span class="amount"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['amount'] / 100, 0) ?> €</span>
-                                <span class="rate"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['rate'], 1) ?> %</span>
-                                <span class="circle_rejected"></span>
-                                <span class="rejected"><?= $this->lng['preteur-synthese']['label-rejected-bid'] ?>
-                                    <a href="<?= $this->lurl . '/projects/detail/' . $aProject['slug'] ?>"><?= $this->lng['preteur-synthese']['label-new-offer'] ?></a>
-                                </span>
+                                <span class="<?= (empty($aBid['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                <span class="amount"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</span>
+                                <span class="rate"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</span>
+                                <span class="circle_pending"></span>
+                                <span class="pending"><?= $this->lng['preteur-synthese']['label-pending-bid'] ?></span>
                             </div>
-                            <?php if ($aProject['iNumberOfRejectedBids'] > 1) : ?>
-                            <div class="row bid">
-                                <span class="btn_show_rejected_bids" data-id-project="<?= $aProject['id_project'] ?>">...</span>
+                        <?php endforeach; ?>
+                            <?php if (false === empty($aProject['aRejectedBid'])) : ?>
+                            <div class="rejected_bids_<?= $aProject['id_project'] ?>">
+                                <div class="row bid">
+                                    <span class="<?= (empty($aProject['aRejectedBid']['id_autobid'])) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                    <span class="amount"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['amount'] / 100, 0) ?> €</span>
+                                    <span class="rate"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['rate'], 1) ?> %</span>
+                                    <span class="circle_rejected"></span>
+                                    <span class="rejected"><?= $this->lng['preteur-synthese']['label-rejected-bid'] ?>
+                                        <a href="<?= $this->lurl . '/projects/detail/' . $aProject['slug'] ?>"><?= $this->lng['preteur-synthese']['label-new-offer'] ?></a>
+                                    </span>
+                                </div>
+                                <?php if ($aProject['iNumberOfRejectedBids'] > 1) : ?>
+                                <div class="row bid">
+                                    <span class="btn_show_rejected_bids" data-id-project="<?= $aProject['id_project'] ?>">...</span>
+                                </div>
+                                <?php endif; ?>
                             </div>
                             <?php endif; ?>
                         </div>
-                    </div>
-                <?php endforeach; ?>
+                    <?php endforeach; ?>
                 <?php endif; ?>
                 <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
                 <div class="autobid_switch">
