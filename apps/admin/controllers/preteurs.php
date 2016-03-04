@@ -938,7 +938,7 @@ class preteursController extends bootstrap
             \clients_status::MODIFICATION
         );
 
-        $this->lPreteurs     = $this->clients->selectPreteursByStatus(implode(',', $aStatusNotValidated), '', 'added_status DESC');
+        $this->lPreteurs     = $this->clients->selectPreteursByStatus(implode(',', $aStatusNotValidated), '', 'status_client DESC, c.added DESC');
     }
 
     public function _completude()
