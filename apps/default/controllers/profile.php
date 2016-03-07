@@ -2580,33 +2580,33 @@ class profileController extends bootstrap
         $this->loadCss('default/autobid');
         $this->loadJs('default/main');
 
-        $oClientStatus         = $this->loadData('clients_status');
-        $oSettings             = $this->loadData('settings');
-        $oAutoBidPeriod        = $this->loadData('autobid_periods');
-        $oBid                  = $this->loadData('bids');
-        $oProject              = $this->loadData('projects');
+        $oClientStatus  = $this->loadData('clients_status');
+        $oSettings      = $this->loadData('settings');
+        $oAutoBidPeriod = $this->loadData('autobid_periods');
+        $oBid           = $this->loadData('bids');
+        $oProject       = $this->loadData('projects');
 
-        $this->lng['autobid']  = $this->ln->selectFront('autobid', $this->language, $this->App);
+        $this->lng['autobid'] = $this->ln->selectFront('autobid', $this->language, $this->App);
 
         $oClientStatus->getLastStatut($this->clients->id_client);
 
         $oSettings->get('Auto-bid step', 'type');
         $this->fAutoBidStep = $oSettings->value;
         $oSettings->get('pret min', 'type');
-        $this->iMinimumBidAmount = (int) $oSettings->value;
+        $this->iMinimumBidAmount = (int)$oSettings->value;
 
-        $this->fAverageRateUnilend  = round($oProject->getAvgRate(), 1);
-        $this->sAcceptationRate     = json_encode($oBid->getAcceptationPossibilityRounded());
+        $this->fAverageRateUnilend = round($oProject->getAvgRate(), 1);
+        $this->sAcceptationRate    = json_encode($oBid->getAcceptationPossibilityRounded());
 
         $this->aAutoBidSettings = array();
-        $aAutoBidSettings = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
-        foreach($aAutoBidSettings as $aSetting) {
+        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        foreach ($aAutoBidSettings as $aSetting) {
             $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
             if ($aPeriod) {
-                $aSetting['AverageRateUnilend'] = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
-                $aSetting['period_min']         = $aPeriod['min'];
-                $aSetting['period_max']         = $aPeriod['max'];
-                $aSetting['note']               = constant('\projects::RISK_' . $aSetting['evaluation']);
+                $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
+                $aSetting['period_min']                                   = $aPeriod['min'];
+                $aSetting['period_max']                                   = $aPeriod['max'];
+                $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
                 $this->aAutoBidSettings[$aSetting['id_autobid_period']][] = $aSetting;
             }
         }
@@ -2614,14 +2614,14 @@ class profileController extends bootstrap
         $aSettingsSubmitted       = isset($_SESSION['forms']['autobid-param-submit']['values']) ? $_SESSION['forms']['autobid-param-submit']['values'] : array();
         $this->aErrors            = isset($_SESSION['forms']['autobid-param-submit']['errors']) ? $_SESSION['forms']['autobid-param-submit']['errors'] : array();
         $this->aSettingsSubmitted = array(
-            'amount'           => isset($aSettingsSubmitted['amount']) ? $aSettingsSubmitted['amount'] : isset($this->aAutoBidSettings[1][0]['amount']) ? $this->aAutoBidSettings[1][0]['amount'] : '',
-            'simple-taux-min'  => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : isset($this->aAutoBidSettings[1][0]['rate_min']) ? $this->aAutoBidSettings[1][0][''] : '',
+            'amount' => isset($aSettingsSubmitted['amount']) ? $aSettingsSubmitted['amount'] : isset($this->aAutoBidSettings[1][0]['amount']) ? $this->aAutoBidSettings[1][0]['amount'] : '',
+            'simple-taux-min' => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : isset($this->aAutoBidSettings[1][0]['rate_min']) ? $this->aAutoBidSettings[1][0][''] : '',
             'aAutobidSettings' => isset($aSettingsSubmitted['expert']) ? $aSettingsSubmitted['expert'] : (false === empty($this->aAutoBidSettings)) ? $this->aAutoBidSettings : ''
         );
 
         unset($_SESSION['forms']['autobid-param-submit']);
 
-        if (isset($_POST['send-form-autobid-param-simple'])){
+        if (isset($_POST['send-form-autobid-param-simple'])) {
             if (empty($_POST['autobid-amount']) ||
                 false === is_numeric($_POST['autobid-amount']) ||
                 $_POST['autobid-amount'] < $this->iMinimumBidAmount
@@ -2664,9 +2664,9 @@ class profileController extends bootstrap
         $oProject         = $this->loadData('projects');
 
         $oSettings->get('pret min', 'type');
-        $this->iMinimumBidAmount = (int) $oSettings->value;
+        $this->iMinimumBidAmount = (int)$oSettings->value;
 
-        foreach ($oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE) as $aPeriod){
+        foreach ($oAutoBidPeriod->select('status = ' . \autobid_periods::STATUS_ACTIVE) as $aPeriod) {
             $aAutoBidPeriods[] = $aPeriod['id_period'];
         }
         $aRiskValues           = $oProject->getAvailableRisks();
@@ -2746,18 +2746,18 @@ class profileController extends bootstrap
 
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
-        $oClientStatus         = $this->loadData('clients_status');
+        $oClientStatus           = $this->loadData('clients_status');
         $oClientStatus->getLastStatut($this->clients->id_client);
 
         $aResponse = array('success' => false, 'info' => array());
 
         if (isset($this->params[0]) && $oLendersAccounts->get($this->params[0]) && $this->clients->id_client == $oLendersAccounts->id_client_owner) {
-            $aResponse['success'] = true;
-            $aResponse['info']['autobid_on'] = $oAutoBidSettingsManager->isOn($oLendersAccounts);
-            $aResponse['info']['lender_active'] = in_array($oClientStatus->status, array(\clients_status::VALIDATED));
-            $aResponse['info']['is_qualified'] = $oAutoBidSettingsManager->isQualified($oLendersAccounts);
+            $aResponse['success']                 = true;
+            $aResponse['info']['autobid_on']      = $oAutoBidSettingsManager->isOn($oLendersAccounts);
+            $aResponse['info']['lender_active']   = in_array($oClientStatus->status, array(\clients_status::VALIDATED));
+            $aResponse['info']['is_qualified']    = $oAutoBidSettingsManager->isQualified($oLendersAccounts);
             $aResponse['info']['never_activated'] = false === $oAutoBidSettingsManager->hasAutoBidActivationHistory($oLendersAccounts);
-            $aResponse['info']['is_novice'] = $oAutoBidSettingsManager->isNovice($oLendersAccounts);
+            $aResponse['info']['is_novice']       = $oAutoBidSettingsManager->isNovice($oLendersAccounts);
             $aResponse['info']['validation_date'] = $oAutoBidSettingsManager->getValidationDate($oLendersAccounts);
         }
 

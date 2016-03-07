@@ -9,6 +9,9 @@ use Unilend\core\Loader;
  */
 class AutoBidSettingsManager
 {
+    //todo: To be defined
+    const CGV_AUTOBID = 92;
+
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
 
@@ -95,10 +98,11 @@ class AutoBidSettingsManager
         $oClient = Loader::loadData('clients');
 
         $oSettings->get('Auto-bid global switch', 'type');
-
-        if ($oSettings->value ||
-            (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientManager->isBetaTester($oClient)))
-        {
+        if ($oSettings->value && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientManager->isAcceptedCGV($oClient, self::CGV_AUTOBID)
+            || (
+                false === empty($oLenderAccount->id_client_owner)
+                && $this->oClientManager->isBetaTester($oClient)
+            )) {
             return true;
         }
 

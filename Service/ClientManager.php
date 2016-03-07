@@ -26,7 +26,19 @@ class ClientManager
      */
     public function isBetaTester(\clients $oClient)
     {
-        return (bool) $this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
+        return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_BETA_TESTER);
     }
 
+    /**
+     * @param \clients $oClient
+     * @param          $iLegalDocId
+     *
+     * @return bool
+     */
+    public function isAcceptedCGV(\clients $oClient, $iLegalDocId)
+    {
+        /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
+        $oAcceptationLegalDocs = Loader::loadData('acceptations_legal_docs');
+        return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
+    }
 }
