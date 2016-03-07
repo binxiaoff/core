@@ -1432,7 +1432,7 @@ class preteursController extends bootstrap
         $oAutoBidPeriod            = $this->loadData('autobid_periods');
 
         $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
-        $this->sValidationDate     = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts);
+        $this->sValidationDate     = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts)->format('d/m/Y H:i:s');
         $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
         $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);

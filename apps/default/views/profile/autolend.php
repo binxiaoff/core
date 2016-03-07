@@ -119,7 +119,9 @@
                             $('#param').show();
                             $('#switch-notice-nth-active').show();
                             $('#last-upadated-date').show();
-                            var sValidationDate = '<?=$this->lng['autobid']['settings-page-date-last-update']?>'.replace('[#DATE#]', data.info.validation_date);
+                            var sValidationDate = '<?=$this->lng['autobid']['settings-page-date-last-update']?>'
+                                .replace('[#DATE#]', data.info.validation_date)
+                                .replace('[#TIME#]', data.info.validation_time);
                             $('#last-upadated-date').html(sValidationDate);
                             $('.link-more').show();
                             $('#settings_modifications_novice').html('<?=$this->lng['autobid']['settings-button-modify-parameters']?>');

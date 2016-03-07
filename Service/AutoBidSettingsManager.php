@@ -343,7 +343,7 @@ class AutoBidSettingsManager
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
-        return $oAutoBid->getValidationDate($oLenderAccount->id_lender_account);
+        return new \DateTime($oAutoBid->getValidationDate($oLenderAccount->id_lender_account));
     }
 
     /**

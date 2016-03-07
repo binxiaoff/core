@@ -2752,13 +2752,16 @@ class profileController extends bootstrap
         $aResponse = array('success' => false, 'info' => array());
 
         if (isset($this->params[0]) && $oLendersAccounts->get($this->params[0]) && $this->clients->id_client == $oLendersAccounts->id_client_owner) {
+            $oValidateTime = $oAutoBidSettingsManager->getValidationDate($oLendersAccounts);
+
             $aResponse['success']                 = true;
             $aResponse['info']['autobid_on']      = $oAutoBidSettingsManager->isOn($oLendersAccounts);
             $aResponse['info']['lender_active']   = in_array($oClientStatus->status, array(\clients_status::VALIDATED));
             $aResponse['info']['is_qualified']    = $oAutoBidSettingsManager->isQualified($oLendersAccounts);
             $aResponse['info']['never_activated'] = false === $oAutoBidSettingsManager->hasAutoBidActivationHistory($oLendersAccounts);
             $aResponse['info']['is_novice']       = $oAutoBidSettingsManager->isNovice($oLendersAccounts);
-            $aResponse['info']['validation_date'] = $oAutoBidSettingsManager->getValidationDate($oLendersAccounts);
+            $aResponse['info']['validation_date'] = $oValidateTime->format('d/m/Y');
+            $aResponse['info']['validation_time'] = $oValidateTime->format('H:i:s');
         }
 
         echo json_encode($aResponse);
