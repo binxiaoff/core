@@ -25,6 +25,7 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
+use Unilend\librairies\Cache;
 
 class autobid_periods extends autobid_periods_crud
 {
@@ -79,5 +80,22 @@ class autobid_periods extends autobid_periods_crud
         $sql    = 'SELECT * FROM `autobid_periods` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
+    }
+
+    public function getDurations($iPeriodId)
+    {
+        $oCache     = Cache::getInstance();
+        $sKey       = $oCache->makeKey('autobid_period', 'getDurations', $iPeriodId);
+        $mDurations = $oCache->get($sKey);
+
+        if (false === $mDurations) {
+            if ($this->get($iPeriodId)) {
+                $mDurations['min'] = $this->min;
+                $mDurations['max'] = $this->max;
+                $oCache->set($sKey, $mDurations, Cache::LONG_TIME);
+            }
+        }
+
+        return $mDurations;
     }
 }

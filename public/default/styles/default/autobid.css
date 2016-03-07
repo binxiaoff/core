@@ -395,7 +395,7 @@ td.param-off div.cell-inner div.param-advanced-bottom div.param-advanced-buttons
 }
 
 /*-- Block simple params*/
-.autobid-param-form-simple {
+.autobid-param-form, .autobid-param-form-simple {
     max-width: 600px;
     margin: 20px auto;
 }
@@ -408,21 +408,21 @@ td.param-off div.cell-inner div.param-advanced-bottom div.param-advanced-buttons
 .autobid-param-form-simple form .row {
     position: relative;
 }
-.autobid-param-form-simple form .row label {
+.autobid-param-form .row label{
     font-size: 18px;
     float: left;
 }
-.autobid-param-form-simple form .row .unit {
+.autobid-param-form .row .unit {
     position: absolute;
     top: 15px;
     right: 15px;
 }
-.autobid-param-form-simple form .row label .label-note {
+.autobid-param-form .row label .label-note{
     font-size: 14px;
     font-style: italic;
     display: block;
 }
-.autobid-param-form-simple form .row input.field {
+.autobid-param-form .row input.field {
     float: right;
     max-width: 80px;
     margin-top: 10px;
@@ -430,16 +430,16 @@ td.param-off div.cell-inner div.param-advanced-bottom div.param-advanced-buttons
     text-align: center;
     font-style: normal;
 }
-.autobid-param-form-simple form .row .link-more, .link-less {
+.autobid-param-form .row .link-more, .link-less {
     text-transform: uppercase;
 
 }
-.autobid-param-form-simple form .row .c2-sb-wrap {
+.autobid-param-form-simple .row .c2-sb-wrap {
     float: right;
     margin-top: 10px;
     max-width: 135px;
 }
-.autobid-param-form-simple form .row .c2-sb-text {
+.autobid-param-form-simple .row .c2-sb-text {
     max-width: 68px;
 }
 .autobid-param-form-simple .btn {

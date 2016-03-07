@@ -1,19 +1,14 @@
-<?php if (false === $this->bFirstTimeActivation) : ?>
-    <p><?= str_replace('[#DATE#]', $this->dates->formatDateMysqltoFrTxtMonth($this->sValidationDate), $this->lng['autobid']['settings-page-date-last-update']) ?></p>
-<?php endif; ?>
+<p id="last-upadated-date" style="display: none"></p>
 
 
 <div id="autobid_modify_parameters">
     <div class="row text-center">
-        <?php if ($this->bIsNovice) : ?>
         <button class="btn" type="button" id="settings_modifications_novice">
-            <?= ($this->bFirstTimeActivation) ? $this->lng['autobid']['settings-button-define-parameters'] : $this->lng['autobid']['settings-button-modify-parameters'] ?>
+            <?= $this->lng['autobid']['settings-button-modify-parameters'] ?>
         </button>
-        <?php else: ?>
         <button class="btn" type="button" id="settings_modifications_expert">
-            <?= ($this->bFirstTimeActivation) ? $this->lng['autobid']['settings-button-define-parameters'] : $this->lng['autobid']['settings-button-modify-parameters'] ?>
+            <?= $this->lng['autobid']['settings-button-modify-parameters'] ?>
         </button>
-        <?php endif; ?>
     </div>
 </div>
 
@@ -32,6 +27,7 @@
 </div>
 
 <div class="autobid-block"> <!-- autobid-param-simple-->
+    <input type="hidden" name="settings-mode" id="settings-mode" value="novice"/>
 
     <div id="settings_instructions_novice" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>">
         <p><?= $this->lng['autobid']['settings-simple-instructions'] ?></p>
@@ -39,8 +35,7 @@
     <div id="settings_instructions_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>">
         <p><?= $this->lng['autobid']['settings-expert-instructions'] ?></p>
     </div>
-
-    <div class="autobid-param-form-simple">
+    <div class="autobid-param-form">
         <form action="<?= $this->lurl ?>/profile/autolend" method="post" enctype="multipart/form-data">
             <div class="row">
                 <label for=""><?= $this->lng['autobid']['settings-label-amount'] ?>
@@ -48,51 +43,49 @@
                 </label>
                 <input type="text" name="autobid-amount" id="autobid-amount"
                        value="<?= (isset($this->aSettingsSubmitted)) ? $this->aSettingsSubmitted['amount'] : '' ?>"
-                       onclick="value=''"
                        class="field required<?= (isset($this->aErrors['amount'])) ? ' LV_invalid_field' : '' ?>"
                        data-validators="Presence&amp;Numericality {minimum: <?= $this->iMinimumBidAmount ?>}"
                        onkeyup="noDecimale(this.value,this.id);"
-                       <?= (empty($this->aErrors)) ? 'disabled="disabled"' : '' ?>/>
+                    <?= (empty($this->aErrors)) ? 'disabled="disabled"' : '' ?>/>
             </div>
-            <div id="rate-settings-novice" style="<?= ($this->bIsNovice) ? '' : 'display:none;' ?>">
-                <div class="row">
-                    <label for=""><?= $this->lng['autobid']['settings-simple-label-rate'] ?>
-                        <span class="label-note"><?= $this->lng['autobid']['settings-simple-example-rate'] ?></span>
-                    </label>
-                    <input type="text" name="autobid-param-simple-taux-min-field" id="autobid-param-simple-taux-min-field"
-                           class="field required"
-                           value="<?= (false === empty($this->aSettingsSubmitted['simple-taux-min'])) ? $this->ficelle->formatNumber($this->aSettingsSubmitted['simple-taux-min'], 1) : '' ?> %"
-                           disabled="disabled"/>
-                    <div id="select-autobid-taux" style="display:none;">
-                        <select name="autobid-param-simple-taux-min" id="autobid-param-simple-taux-min" class="custom-select field-small required" >
-                            <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
-                            <?php foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, -$this->fAutoBidStep) as $fRate) : ?>
-                                <option value="<?= $fRate ?>" <?= (round($fRate,1) == round($this->aSettingsSubmitted['simple-taux-min'],1)) ? 'selected' : '' ?> >
-                                    <?= $this->ficelle->formatNumber($fRate, 1) ?>%
-                                </option>
-                            <?php endforeach; ?>
-                        </select>
+            <div id="novice-settings" class="autobid-param-form-simple" style="display:none">
+                <div id="rate-settings-novice" style="'display:none;">
+                    <div class="row">
+                        <label for=""><?= $this->lng['autobid']['settings-simple-label-rate'] ?>
+                            <span class="label-note"><?= $this->lng['autobid']['settings-simple-example-rate'] ?></span>
+                        </label>
+                        <input type="text" name="autobid-param-simple-taux-min-field" id="autobid-param-simple-taux-min-field"
+                               class="field required"
+                               value="<?= (false === empty($this->aSettingsSubmitted['simple-taux-min'])) ? $this->ficelle->formatNumber($this->aSettingsSubmitted['simple-taux-min'], 1) : '' ?> %"
+                               disabled="disabled"/>
+                        <div id="select-autobid-taux" style="display:none;">
+                            <select name="autobid-param-simple-taux-min" id="autobid-param-simple-taux-min" class="custom-select field-small required" >
+                                <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
+                                <?php foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, -$this->fAutoBidStep) as $fRate) : ?>
+                                    <option value="<?= $fRate ?>" <?= (round($fRate,1) == round($this->aSettingsSubmitted['simple-taux-min'],1)) ? 'selected' : '' ?> >
+                                        <?= $this->ficelle->formatNumber($fRate, 1) ?>%
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <?php if (false === $this->bFirstTimeActivation) : ?>
-            <div class="row">
-                <a href="#" class="link-more" style="display:none;"><?= $this->lng['autobid']['settings-link-to-expert-mode'] ?></a>
-            </div>
-            <?php endif; ?>
-            <div class="row text-center" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" id="validate_settings_novice">
-                <button class="btn" type="submit" name="send-form-autobid-param-simple">
-                    <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
-                </button>
-                <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
-                    <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
-                </button>
+                <div class="row">
+                    <a href="#" class="link-more" style="display:none;"><?= $this->lng['autobid']['settings-link-to-expert-mode'] ?></a>
+                </div>
+                <div class="row text-center" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" id="validate_settings_novice">
+                    <button class="btn" type="submit" name="send-form-autobid-param-simple">
+                        <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
+                    </button>
+                    <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
+                        <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
+                    </button>
+                </div>
             </div>
         </form>
     </div>
 
-    <div id="expert-settings" style="<?= ($this->bIsNovice) ? 'display:none;' : '' ?>">
-
+    <div id="expert-settings" style="display:none">
         <div class="apply-global-medium-rate" style="display: none;">
             <p><?= str_replace('[#GLOBAL-AVG-RATE#]', $this->ficelle->formatNumber($this->fAverageRateUnilend, 1), $this->lng['autobid']['unilend-global-rate']) ?></p>
             <p><?= $this->lng['autobid']['apply-unilend-global-rate-instruction'] ?></p>
@@ -158,37 +151,37 @@
                 </table>
             </div>
 
-        <div class="table-infos right" style="display: none;" id="table-infos_right">
-            <div class="param-advanced-tooltip">
-                <span class="global-rate"></span>
-                <p class="indice-rate"></p>
-                <div class="medium-rate-note">
-                    <span><?=$this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
-                    <div class="medium-rate-buttons">
-                        <button class="btn btn-small btn-apply-avg-rate" type="button"><?=$this->lng['autobid']['yes'] ?></button>
-                        <button class="btn btn-small grise1 btn-close-widget" type="button"><?=$this->lng['autobid']['no'] ?></button>
+            <div class="table-infos right" style="display: none;" id="table-infos_right">
+                <div class="param-advanced-tooltip">
+                    <span class="global-rate"></span>
+                    <p class="indice-rate"></p>
+                    <div class="medium-rate-note">
+                        <span><?=$this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
+                        <div class="medium-rate-buttons">
+                            <button class="btn btn-small btn-apply-avg-rate" type="button"><?=$this->lng['autobid']['yes'] ?></button>
+                            <button class="btn btn-small grise1 btn-close-widget" type="button"><?=$this->lng['autobid']['no'] ?></button>
+                        </div>
                     </div>
-                </div>
-                <span class="global-progress-note"><?=$this->lng['autobid']['widget-title-acceptation-rate'] ?></span>
-                <div class="global-progress-container">
-                    <span id="param-advanced-global-progress-label"></span>
-                    <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
+                    <span class="global-progress-note"><?=$this->lng['autobid']['widget-title-acceptation-rate'] ?></span>
+                    <div class="global-progress-container">
+                        <span id="param-advanced-global-progress-label"></span>
+                        <canvas id="param-advanced-global-progress" width="109" height="109"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-    <div class="row">
-        <a href="#" class="link-less" style="display:none;"><?= $this->lng['autobid']['settings-link-to-novice-mode'] ?></a>
-    </div>
+        <div class="row">
+            <a href="#" class="link-less" style="display:none;"><?= $this->lng['autobid']['settings-link-to-novice-mode'] ?></a>
+        </div>
 
-    <div class="row text-center" >
-        <button class="btn" id="validate_settings_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" >
-            <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
-        </button>
-        <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
-            Annuler
-        </button>
-    </div>
+        <div class="row text-center" >
+            <button class="btn" id="validate_settings_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" >
+                <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
+            </button>
+            <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
+                Annuler
+            </button>
+        </div>
     </div>
 </div>
 
@@ -220,72 +213,6 @@ $(window).load(function(){
 
         }
     });
-
-    $('#settings_modifications_novice').click(function () {
-        $('#settings_modifications_novice').hide();
-        $('#settings_instructions_novice').show();
-        $('#autobid-amount').prop('disabled', false);
-        $('#autobid-param-simple-taux-min-field').hide();
-        $('#select-autobid-taux').show();
-        $('.link-more').show();
-        $('#validate_settings_novice').show();
-        $('#cancel_modification_settings').show();
-    });
-
-    $('.link-less').click(function () {
-        $('#expert-settings').hide();
-        $('#settings_instructions_novice').show();
-        $('#settings_instructions_expert').hide();
-        $('.link-more').show();
-        $('#validate_settings_novice').show();
-        $('#expert-settings-consult').show();
-        $('.param-advanced-switch').hide();
-        $('.param-advanced-buttons').hide();
-        $('.apply-global-medium-rate').hide();
-        $('#validate_settings').hide();
-        $('#autobid-block').addClass('autobid-param-advanced-locked');
-        $('.link-less').hide();
-        $('.c2-sb-list-item-link').removeClass('c2-sb-list-item-link-active');
-        $('.c2-sb-text').html('Choisir');
-        $('#rate-settings-novice').show();
-        $('#select-autobid-taux').show();
-        $('#autobid-param-simple-taux-min-field').hide();
-    });
-
-
-    $('#settings_modifications_expert').click(function () {
-        $('#settings_modifications_expert').hide();
-        $('#settings_instructions_expert').show();
-        $('#autobid-amount').prop('disabled', false);
-        $('#expert-settings-consult').hide();
-        $('.param-advanced-switch').show();
-        $('.param-advanced-buttons').show();
-        $('.apply-global-medium-rate').show();
-        $('#validate_settings_expert').show();
-        $('#cancel_modification_settings_expert').show();
-        $('#autobid-block').removeClass('autobid-param-advanced-locked');
-        $('.link-less').show();
-        $('#cancel_modification_settings').show();
-    });
-
-    $('.link-more').click(function () {
-        $('#expert-settings').show();
-        $('#settings_instructions_novice').hide();
-        $('#settings_instructions_expert').show();
-        $('#select-autobid-taux').hide();
-        $('#rate-settings-novice').hide();
-        $('.link-more').hide();
-        $('#validate_settings_novice').hide();
-        $('#expert-settings-consult').hide();
-        $('.param-advanced-switch').show();
-        $('.param-advanced-buttons').show();
-        $('.apply-global-medium-rate').show();
-        $('#validate_settings_expert').show();
-        $('#cancel_modification_settings_expert').show();
-        $('#autobid-block').removeClass('autobid-param-advanced-locked');
-        $('.link-less').show();
-    });
-
 
     $('.cell-inner').click(function () {
 
@@ -370,30 +297,6 @@ $(window).load(function(){
         });
     }
 
-    $('#validate_settings_expert').click(function () {
-        var Settings = {
-            id_client: "<?= $this->clients->id_client ?>"
-        };
-        $(':input').each(function(){
-            Settings[$(this).attr('id')] = $(this).val();
-        });
-
-        $.post(add_url + "/profile/autoBidExpertForm", Settings).done(function (data) {
-            if (data == 'settings_saved') {
-                $('#autobid-block').addClass('autobid-param-advanced-locked');
-                $('#settings_modifications_expert').show();
-                $('#table-infos_right').hide();
-                $('.param-advanced-switch').hide();
-                $('.param-advanced-buttons').hide();
-                $('#settings_instructions_expert').hide();
-                $('#autobid-amount').prop('disabled', true);
-                $('.apply-global-medium-rate').hide();
-                $('.link-less').hide();
-                $('#validate_settings_expert').hide();
-            }
-        })
-    });
-
     $('#global-rate-Unilend').click(function() {
         $('.param-advanced-value').each(function () {
             $(this).val(<?= $this->fAverageRateUnilend ?>);
@@ -425,7 +328,6 @@ $(window).load(function(){
 
         ctx.stroke();
         $('#param-advanced-global-progress-label').html(percentage +'%');
-
     }
 });
 </script>

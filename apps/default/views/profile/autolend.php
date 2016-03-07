@@ -1,4 +1,3 @@
-
 <div class="main form-page account-page account-page-personal">
     <div class="shell">
         <nav class="tabs-nav">
@@ -14,7 +13,7 @@
                 <li id="consult"class="active">
                     <a id="consult_link" href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a>
                 </li>
-                <li id="param" style="<?= ($this->bAutoBidOn) ? '' : 'display:none;'  ?>">
+                <li id="param" style="display:none;">
                     <a id="parameter" href="#parametrage" data-dest="2"><?= $this->lng['autobid']['title-tab-settings'] ?></a>
                 </li>
             </ul>
@@ -63,6 +62,216 @@
             tab = $('#parameter');
         }
         tab.trigger("click");
+
+        // Switch On/Off handler
+        $('.switch-input').on('change', function () {
+            var Settings = {
+                setting: $('#autobid-switch-1').val(),
+                id_lender: "<?= $this->oLendersAccounts->id_lender_account ?>"
+            };
+            if ($('#autobid-switch-1').val() == <?= \client_settings::AUTO_BID_ON ?>) {
+                $.post(add_url + "/profile/AutoBidSettingOff", Settings).done(function (data) {
+                    if (data == "update_off_success") {
+                        //location.reload();
+                        $('.switch-container').removeClass('checked');
+                        $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_OFF ?>');
+                    }
+                })
+            } else {
+                $('#tab-2').addClass('visible');
+                $('#tab-1').removeClass('visible');
+                $('#param').addClass('active');
+                $('#param').show();
+                $('#consult').removeClass('active');
+                $('#param').trigger("click");
+
+                if ($('#settings-mode').val() === 'novice') {
+                    noviceModification();
+                } else {
+                    expertModification();
+                }
+            }
+        });
+
+        $.ajax({
+            url: "<?=$this->lurl?>/profile/autobidDetails/<?= $this->oLendersAccounts->id_lender_account ?>",
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if(data.success === true) {
+                    if (data.info.autobid_on) {
+                        $('.switch-container').addClass('checked');
+                        $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_ON ?>');
+                        $('#switch-notice-active').show();
+                    }
+
+                    if (!data.info.lender_active) {
+                        $('#switch-notice-lender-inactive').show();
+                        $('.switch-input').off();
+                    }
+
+                    if (data.info.is_qualified) {
+                        if (data.info.never_activated) {
+                            $('#switch-notice-first-active').show();
+                            $('#settings_modifications_novice').html('<?=$this->lng['autobid']['settings-button-define-parameters']?>');
+                            $('#settings_modifications_expert').html('<?=$this->lng['autobid']['settings-button-define-parameters']?>');
+                        } else {
+                            $('#param').show();
+                            $('#switch-notice-nth-active').show();
+                            $('#last-upadated-date').show();
+                            var sValidationDate = '<?=$this->lng['autobid']['settings-page-date-last-update']?>'.replace('[#DATE#]', data.info.validation_date);
+                            $('#last-upadated-date').html(sValidationDate);
+                            $('.link-more').show();
+                            $('#settings_modifications_novice').html('<?=$this->lng['autobid']['settings-button-modify-parameters']?>');
+                            $('#settings_modifications_expert').html('<?=$this->lng['autobid']['settings-button-modify-parameters']?>');
+                        }
+
+                        if (data.info.is_novice) {
+                            $('#settings-mode').val('novice');
+                            noviceConsultation();
+                        } else {
+                            $('#settings-mode').val('expert');
+                            expertConsultation();
+                        }
+                    }
+                }
+            }
+        });
+
+        $('#settings_modifications_novice').click(function () {
+            noviceModification();
+        });
+
+        $('.link-less').click(function () {
+            noviceModification();
+        });
+
+        $('#settings_modifications_expert').click(function () {
+            expertModification();
+        });
+
+        $('.link-more').click(function () {
+            expertModification();
+        });
+
+        $('#validate_settings_expert').click(function () {
+            var Settings = {
+                id_client: "<?= $this->clients->id_client ?>"
+            };
+            $(':input').each(function(){
+                Settings[$(this).attr('id')] = $(this).val();
+            });
+
+            $.post(add_url + "/profile/autoBidExpertForm", Settings).done(function (data) {
+                if (data == 'settings_saved') {
+                    expertConsultation();
+                }
+            })
+        });
+
+        function noviceConsultation(){
+            $('#settings_instructions_novice').hide();
+            $('#settings_instructions_expert').hide();
+
+            $('#settings_modifications_novice').show();
+            $('#settings_modifications_expert').hide();
+
+            $('#novice-settings').show();
+            $('#expert-settings').hide();
+
+            $('#autobid-amount').prop('disabled', true);
+
+            $('#autobid-param-simple-taux-min-field').show();
+            $('#select-autobid-taux').hide();
+            $('#rate-settings-novice').show();
+
+            $('.link-more').hide();
+
+            $('#validate_settings_novice').hide();
+            $('#cancel_modification_settings').hide();
+        }
+
+        function noviceModification() {
+            $('#settings_instructions_novice').show();
+            $('#settings_instructions_expert').hide();
+
+            $('#novice-settings').show();
+            $('#expert-settings').hide();
+
+            $('#settings_modifications_novice').hide();
+            $('#settings_modifications_expert').hide();
+
+            $('#autobid-amount').prop('disabled', false);
+
+            $('#rate-settings-novice').show();
+            $('#select-autobid-taux').show();
+            $('#autobid-param-simple-taux-min-field').hide();
+
+            $('.link-more').show();
+
+            $('#validate_settings_novice').show();
+            $('#cancel_modification_settings').show();
+        }
+
+        function expertConsultation() {
+            $('#settings_modifications_novice').hide();
+            $('#settings_modifications_expert').show();
+
+            $('#expert-settings').show();
+            $('#novice-settings').show();
+
+            $('#autobid-amount').prop('disabled', true);
+
+            $('#autobid-param-simple-taux-min-field').hide();
+            $('#select-autobid-taux').hide();
+
+            $('.link-more').hide();
+            $('.link-less').show();
+
+            $('#validate_settings_novice').hide();
+
+            $('#cancel_modification_settings').hide();
+
+            $('#autobid-block').addClass('autobid-param-advanced-locked');
+
+            $('#table-infos_right').hide();
+
+            $('.param-advanced-switch').hide();
+            $('.param-advanced-buttons').hide();
+            $('#settings_instructions_expert').hide();
+            $('.apply-global-medium-rate').hide();
+            $('#validate_settings_expert').hide();
+        }
+
+        function expertModification() {
+            $('#settings_instructions_novice').hide();
+            $('#settings_instructions_expert').show();
+
+            $('#novice-settings').hide();
+            $('#expert-settings').show();
+
+            $('#settings_modifications_novice').hide();
+            $('#settings_modifications_expert').hide();
+
+            $('#autobid-amount').prop('disabled', false);
+
+            $('#autobid-param-simple-taux-min-field').hide();
+            $('#select-autobid-taux').hide();
+
+            $('.link-more').hide();
+            $('.link-less').show();
+
+            $('#validate_settings_novice').hide();
+            $('#cancel_modification_settings').hide();
+
+            $('#autobid-block').removeClass('autobid-param-advanced-locked');
+
+            $('.param-advanced-switch').show();
+            $('.param-advanced-buttons').show();
+            $('#settings_instructions_expert').show();
+            $('.apply-global-medium-rate').show();
+            $('#validate_settings_expert').show();
+        }
     });
 </script>
 
