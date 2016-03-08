@@ -2694,7 +2694,7 @@ class cronController extends bootstrap
                                             $sLenderPattern = str_replace(' ', '', $clients->getLenderPattern($clients->id_client));
 
                                             if (
-                                                false !== strpos(str_replace(' ', '', $motif), $sLenderPattern)
+                                                (false !== strpos(str_replace(' ', '', $motif), $sLenderPattern) || true === $clients->isLenderPattern($clients->id_client, str_replace(' ', '', $motif)))
                                                 && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                             ) {
                                                 $receptions->get($receptions->id_reception, 'id_reception');
