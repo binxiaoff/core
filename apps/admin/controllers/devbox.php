@@ -1660,4 +1660,58 @@ class devboxController extends bootstrap
         fclose($rHandle);
         echo 'done';
     }
+
+    public function _importRecoveryRepayment()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'recouvrement.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var \transactions $oTransaction */
+        $oTransaction = $this->loadData('transactions');
+        /** @var \wallets_lines $oWalletLine */
+        $oWalletLine = $this->loadData('wallets_lines');
+        /** @var \lenders_accounts $oLender */
+        $oLender = $this->loadData('lenders_accounts');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $oTransaction->unsetData();
+            $oWalletLine->unsetData();
+
+            $sClientId  = $aRow[0];
+            $sProjectId = $aRow[1];
+            $fAmount    = intval(str_replace(',', '.', $aRow[2]) * 100);
+
+            if ($oLender->get($sClientId, 'id_client_owner')) {
+                $oTransaction->id_project       = $sProjectId;
+                $oTransaction->id_client        = $sClientId;
+                $oTransaction->montant          = $fAmount;
+                $oTransaction->id_langue        = 'fr';
+                $oTransaction->date_transaction = date('Y-m-d H:i:s');
+                $oTransaction->status           = transactions::PAYMENT_STATUS_OK;
+                $oTransaction->etat             = transactions::STATUS_VALID;
+                $oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+                $oTransaction->type_transaction = transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+                $oTransaction->transaction      = transactions::VIRTUAL;
+                $oTransaction->create();
+
+                $oWalletLine->id_lender                = $oLender->id_lender_account;
+                $oWalletLine->type_financial_operation = wallets_lines::TYPE_REPAYMENT;
+                $oWalletLine->id_transaction           = $oTransaction->id_transaction;
+                $oWalletLine->status                   = wallets_lines::STATUS_VALID;
+                $oWalletLine->type                     = wallets_lines::VIRTUAL;
+                $oWalletLine->amount                   = $fAmount;
+                $oWalletLine->create();
+            }
+        }
+        fclose($rHandle);
+        echo 'done';
+    }
 }

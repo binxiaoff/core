@@ -2975,6 +2975,7 @@ class cronController extends bootstrap
             $offres_bienvenue             = $transac->sumByday('16', $leMois, $lannee); // 16 unilend offre bienvenue
             $offres_bienvenue_retrait     = $transac->sumByday('17', $leMois, $lannee); // 17 unilend offre bienvenue retrait
             $unilend_bienvenue            = $transac->sumByday('18', $leMois, $lannee); // 18 unilend offre bienvenue
+            $rembRecouvPreteurs           = $transac->sumByday('26', $leMois, $lannee);
 
             $listDates = array();
             for ($i = 1; $i <= $nbJours; $i++) {
@@ -3272,15 +3273,13 @@ class cronController extends bootstrap
                     $capitalPreteur = $echangeDate['capital'];
                     $capitalPreteur += $echangeDateRA['capital'];
                     $capitalPreteur = ($capitalPreteur / 100);
+                    $capitalPreteur += $rembRecouvPreteurs[$date]['montant'];
 
                     // somme net net preteurs par jour
                     $interetNetPreteur = ($echangeDate['interets'] / 100) - $retenuesFiscales;
 
-                    // Montant preteur
-                    $montantPreteur = ($interetNetPreteur + $capitalPreteur);
-
                     // Affectation Ech. Empr.
-                    $affectationEchEmpr = $lrembPreteurs[$date]['montant'] + $lrembPreteurs[$date]['etat'] + $commission;
+                    $affectationEchEmpr = $lrembPreteurs[$date]['montant'] + $lrembPreteurs[$date]['etat'] + $commission + $rembRecouvPreteurs[$date]['montant'];
 
                     // ecart Mouv Internes
                     $ecartMouvInternes = round(($affectationEchEmpr) - $commission - $retenuesFiscales - $capitalPreteur - $interetNetPreteur, 2);
