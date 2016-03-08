@@ -2615,7 +2615,7 @@ class profileController extends bootstrap
         $this->aErrors            = isset($_SESSION['forms']['autobid-param-submit']['errors']) ? $_SESSION['forms']['autobid-param-submit']['errors'] : array();
         $this->aSettingsSubmitted = array(
             'amount' => isset($aSettingsSubmitted['amount']) ? $aSettingsSubmitted['amount'] : isset($this->aAutoBidSettings[1][0]['amount']) ? $this->aAutoBidSettings[1][0]['amount'] : '',
-            'simple-taux-min' => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : isset($this->aAutoBidSettings[1][0]['rate_min']) ? $this->aAutoBidSettings[1][0][''] : '',
+            'simple-taux-min' => isset($aSettingsSubmitted['simple']['autobid-param-simple-taux-min']) ? $aSettingsSubmitted['simple']['autobid-param-simple-taux-min'] : isset($this->aAutoBidSettings[1][0]['rate_min']) ? $this->aAutoBidSettings[1][0]['rate_min'] : '',
             'aAutobidSettings' => isset($aSettingsSubmitted['expert']) ? $aSettingsSubmitted['expert'] : (false === empty($this->aAutoBidSettings)) ? $this->aAutoBidSettings : ''
         );
 
@@ -2638,7 +2638,7 @@ class profileController extends bootstrap
             }
 
             if (empty($_SESSION['forms']['autobid-param-submit']['errors'])) {
-                if (false === $this->bAutoBidOn) {
+                if (false === $oAutoBidSettingsManager->isOn($this->oLendersAccounts)) {
                     $oAutoBidSettingsManager->on($this->oLendersAccounts);
                 }
                 $oAutoBidSettingsManager->saveNoviceSetting($this->oLendersAccounts->id_lender_account, $_POST['autobid-param-simple-taux-min'], $_POST['autobid-amount']);
@@ -2743,7 +2743,7 @@ class profileController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = true;
-
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
         $oClientStatus           = $this->loadData('clients_status');
@@ -2760,8 +2760,7 @@ class profileController extends bootstrap
             $aResponse['info']['is_qualified']    = $oAutoBidSettingsManager->isQualified($oLendersAccounts);
             $aResponse['info']['never_activated'] = false === $oAutoBidSettingsManager->hasAutoBidActivationHistory($oLendersAccounts);
             $aResponse['info']['is_novice']       = $oAutoBidSettingsManager->isNovice($oLendersAccounts);
-            $aResponse['info']['validation_date'] = $oValidateTime->format('d/m/Y');
-            $aResponse['info']['validation_time'] = $oValidateTime->format('H:i:s');
+            $aResponse['info']['validation_date'] = strftime('%d %B %G', $oValidateTime->format('U'));
         }
 
         echo json_encode($aResponse);

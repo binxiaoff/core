@@ -10,7 +10,7 @@
         </nav>
         <header class="header-autobid inner-nav">
             <ul>
-                <li id="consult"class="active">
+                <li id="consult" class="active">
                     <a id="consult_link" href="#consultation" data-dest="1"><?= $this->lng['autobid']['title-tab-overview'] ?></a>
                 </li>
                 <li id="param" style="display:none;">
@@ -51,8 +51,12 @@
             e.preventDefault();
             $('.header-autobid li').removeClass('active');
             $(this).parent().addClass('active');
+            $(this).parent().show();
             $('.autobid-tab').removeClass('visible');
+            $('.autobid-tab').hide();
             $('#tab-' + $(this).attr('data-dest')).addClass('visible');
+            $('#tab-' + $(this).attr('data-dest')).show();
+
         });
 
         var tab;
@@ -72,19 +76,14 @@
             if ($('#autobid-switch-1').val() == <?= \client_settings::AUTO_BID_ON ?>) {
                 $.post(add_url + "/profile/AutoBidSettingOff", Settings).done(function (data) {
                     if (data == "update_off_success") {
-                        //location.reload();
-                        $('.switch-container').removeClass('checked');
-                        $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_OFF ?>');
+                        autoBidTabsOff();
+                        autoBidSwitchOff();
+                        $('#switch-notice-nth-active').show();
                     }
                 })
             } else {
-                $('#tab-2').addClass('visible');
-                $('#tab-1').removeClass('visible');
-                $('#param').addClass('active');
-                $('#param').show();
-                $('#consult').removeClass('active');
-                $('#param').trigger("click");
-
+                autoBidTabsOn();
+                $('#parameter').trigger("click");
                 if ($('#settings-mode').val() === 'novice') {
                     noviceModification();
                 } else {
@@ -94,15 +93,21 @@
         });
 
         $.ajax({
-            url: "<?=$this->lurl?>/profile/autobidDetails/<?= $this->oLendersAccounts->id_lender_account ?>",
+            url: "<?= $this->lurl ?>/profile/autobidDetails/<?= $this->oLendersAccounts->id_lender_account ?>",
             type: 'GET',
             dataType: 'json',
             success: function(data) {
                 if(data.success === true) {
                     if (data.info.autobid_on) {
-                        $('.switch-container').addClass('checked');
-                        $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_ON ?>');
-                        $('#switch-notice-active').show();
+                        autoBidSwitchOn();
+                        autoBidTabsOn();
+                    } else {
+                        autoBidTabsOff();
+                        if (data.info.never_activated){
+                            $('#switch-notice-first-active').show();
+                        } else {
+                            $('#switch-notice-nth-active').show();
+                        }
                     }
 
                     if (!data.info.lender_active) {
@@ -112,21 +117,21 @@
 
                     if (data.info.is_qualified) {
                         if (data.info.never_activated) {
-                            $('#switch-notice-first-active').show();
-                            $('#settings_modifications_novice').html('<?=$this->lng['autobid']['settings-button-define-parameters']?>');
-                            $('#settings_modifications_expert').html('<?=$this->lng['autobid']['settings-button-define-parameters']?>');
+                            $('#settings_modifications_novice').html('<?= $this->lng['autobid']['settings-button-define-parameters'] ?>');
+                            $('#settings_modifications_expert').html('<?= $this->lng['autobid']['settings-button-define-parameters'] ?>');
                         } else {
-                            $('#param').show();
-                            $('#switch-notice-nth-active').show();
+                            if (data.info.autobid_on) {
+                                autoBidSwitchOn();
+                                autoBidTabsOn();
+                            }
                             $('#last-upadated-date').show();
-                            var sValidationDate = '<?=$this->lng['autobid']['settings-page-date-last-update']?>'
-                                .replace('[#DATE#]', data.info.validation_date)
-                                .replace('[#TIME#]', data.info.validation_time);
+                            var sValidationDate = '<?= $this->lng['autobid']['settings-page-date-last-update'] ?>'
+                                .replace('[#DATE#]', data.info.validation_date);
                             $('#last-upadated-date').html(sValidationDate);
+                            $('#settings_modifications_novice').html('<?= $this->lng['autobid']['settings-button-modify-parameters'] ?>');
                             $('.link-more').show();
-                            $('#settings_modifications_novice').html('<?=$this->lng['autobid']['settings-button-modify-parameters']?>');
-                            $('#settings_modifications_expert').html('<?=$this->lng['autobid']['settings-button-modify-parameters']?>');
-                        }
+                            $('#settings_modifications_expert').html('<?= $this->lng['autobid']['settings-button-modify-parameters'] ?>');
+                            }
 
                         if (data.info.is_novice) {
                             $('#settings-mode').val('novice');
@@ -146,6 +151,8 @@
 
         $('.link-less').click(function () {
             noviceModification();
+            $('.c2-sb-list-item-link').removeClass('c2-sb-list-item-link-active');
+            $('.c2-sb-text').html('Choisir');
         });
 
         $('#settings_modifications_expert').click(function () {
@@ -167,6 +174,9 @@
             $.post(add_url + "/profile/autoBidExpertForm", Settings).done(function (data) {
                 if (data == 'settings_saved') {
                     expertConsultation();
+                    autoBidSwitchOn();
+                    $('#switch-notice-nth-active').hide();
+                    $('#switch-notice-lender-inactive').hide();
                 }
             })
         });
@@ -209,10 +219,14 @@
             $('#select-autobid-taux').show();
             $('#autobid-param-simple-taux-min-field').hide();
 
-            $('.link-more').show();
+            if ($('#autobid-amount').val()) {
+                $('.link-more').show();
+            }
 
             $('#validate_settings_novice').show();
             $('#cancel_modification_settings').show();
+
+            $('.unit').removeClass('.unit');
         }
 
         function expertConsultation() {
@@ -226,11 +240,10 @@
 
             $('#autobid-param-simple-taux-min-field').hide();
             $('#select-autobid-taux').hide();
+            $('#rate-settings-novice').hide();
 
             $('.link-more').hide();
-            $('.link-less').show();
-
-            $('#validate_settings_novice').hide();
+            $('.link-less').hide();
 
             $('#cancel_modification_settings').hide();
 
@@ -270,9 +283,35 @@
 
             $('.param-advanced-switch').show();
             $('.param-advanced-buttons').show();
-            $('#settings_instructions_expert').show();
             $('.apply-global-medium-rate').show();
             $('#validate_settings_expert').show();
+        }
+
+        function autoBidSwitchOn() {
+            $('.switch-container').addClass('checked');
+            $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_ON ?>');
+            $('#switch-notice-active').show();
+            $('#tab-1').addClass('visible');
+        }
+
+        function autoBidSwitchOff() {
+            $('.switch-container').removeClass('checked');
+            $('#autobid-switch-1').val('<?= \client_settings::AUTO_BID_OFF ?>');
+            $('#switch-notice-active').hide();
+            $('#tab-1').addClass('visible');
+        }
+
+        function autoBidTabsOn() {
+            $('#tab-2').addClass('visible');
+            $('#param').show();
+        }
+
+        function autoBidTabsOff() {
+            $('#consult').addClass('active');
+            $('#param').hide();
+            $('#tab-2').hide();
+            $('#tab-1').addClass('visible');
+            $('#tab-1').show();
         }
     });
 </script>

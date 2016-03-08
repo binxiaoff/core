@@ -336,9 +336,8 @@ class AutoBidSettingsManager
     /**
      * @param \lenders_accounts $oLenderAccount
      *
-     * @return mixed
+     * @return \DateTime
      */
-
     public function getValidationDate(\lenders_accounts $oLenderAccount)
     {
         /** @var \autobid $oAutoBid */
@@ -363,7 +362,7 @@ class AutoBidSettingsManager
     /**
      * @param \clients $oClient
      *
-     * @return mixed
+     * @return bool|string
      */
 
     public function getActivationTime(\clients $oClient)
