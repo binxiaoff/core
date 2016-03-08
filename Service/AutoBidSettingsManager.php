@@ -305,14 +305,14 @@ class AutoBidSettingsManager
      */
     public function getLastDateOnOff($iClientID)
     {
+        /** @var \clients_history_actions $oClientsHistoryActions */
         $oClientsHistoryActions = Loader::loadData('clients_history_actions');
         $aAutoBidHistory        = $oClientsHistoryActions->getLastAutoBidOnOffActions($iClientID);
-
-        $aDates = array();
+        $aDates                 = array();
 
         foreach ($aAutoBidHistory as $aHistoryAction) {
             $aAction                            = unserialize($aHistoryAction['serialize']);
-            $aDates[$aAction['autobid_switch']] = $aHistoryAction['added'];
+            $aDates[$aAction['autobid_switch']] = \DateTime::createFromFormat('Y-m-d h:i:s', $aHistoryAction['added']);
         }
         return $aDates;
     }

@@ -59,10 +59,17 @@
             </a>
         </div>
         <div>
-            <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['on']) : '' ?></span>
-            <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->dates->formatDateMysqltoShortFR($this->aSettingsDates['off']) : '' ?></span>
+            <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->aSettingsDates['on']->format('d/m/Y') : '' ?></span>
+            <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->aSettingsDates['off']->format('d/m/Y') : '' ?></span>
         </div>
-        <div style="padding-bottom: 15px;">Dernière mise à jour des settings: <?= isset($this->sValidationDate) ? $this->dates->formatDateMysqltoShortFR($this->sValidationDate) : '' ?></div>
+        <div style="padding-bottom: 15px;">Dernière mise à jour des settings: <?= isset($this->sValidationDate) ? $this->sValidationDate : '' ?></div>
+
+        <div style="margin-bottom: 15px;">
+            <span>Montant: </span>
+            <input type="text" name="autobid-amount" id="autobid-amount"
+                   value="<?= (isset($this->aAutoBidSettings)) ? $this->aAutoBidSettings[1][0]['amount'] : '' ?>"
+                   disabled="disabled"/>
+        </div>
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
             <table class="autobid-param-advanced-table">
                 <tr>
