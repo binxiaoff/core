@@ -114,9 +114,7 @@ class alimentationController extends bootstrap
         }
 
         // Motif virement
-        $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-        $this->motif = $this->clients->getLenderPattern($id_client);
-
+        $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
         // Prelevement
         if (isset($_POST['sendPrelevement'])) {
