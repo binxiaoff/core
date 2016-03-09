@@ -6,7 +6,10 @@
         </div>
         <div class="row rel">
             <input type="text" name="capital_social_inscription" id="capital_social_inscription" title="<?= $this->lng['etape1']['capital-sociale'] ?>" value="<?= ($this->companies->capital != 0 ? number_format($this->companies->capital, 2, '.', ' ') : $this->lng['etape1']['capital-sociale']) ?>" class="field field-large euro-field required" onkeyup="lisibilite_nombre(this.value,this.id);" data-validators="Presence&amp;Numericality">
-            <input type="text" name="siret_inscription" id="siret_inscription" title="<?= $this->lng['etape1']['siret'] ?>" value="<?= ($this->companies->siret != '' ? $this->companies->siret : $this->lng['etape1']['siret']) ?>" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 14, maximum: 14}" class="field field-large required">
+            <input type="text" name="siren_inscription" id="siren_inscription"
+                   title="<?= $this->lng['etape1']['placeholder-field-siren'] ?>"
+                   value="<?= ($this->companies->siren != '' ? $this->companies->siren : $this->lng['etape1']['placeholder-field-siren']) ?>"
+                   data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}" class="field field-large required">
         </div>
         <div class="row">
             <input type="text" name="phone_inscription" id="phone_inscription" value="<?= ($this->companies->phone != '' ? str_replace(' ', '', $this->companies->phone) : $this->lng['etape1']['telephone']) ?>" title="<?= $this->lng['etape1']['telephone'] ?>" class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
@@ -22,9 +25,12 @@
         </div>
         <div class="row row-triple-fields">
             <input type="text" name="postalE" id="postalE" class="field field-small required" data-autocomplete="post_code"
-                   placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= ($this->companies->zip != 0 ? $this->companies->zip : '') ?>" />
+                   placeholder="<?=$this->lng['etape1']['code-postal']?>"
+                   title="<?= $this->lng['etape1']['code-postal'] ?>"
+                   value="<?= ($this->companies->zip != 0 ? $this->companies->zip : '') ?>" />
             <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-autocomplete="city"
-                   placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>" />
+                   placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>"
+                   value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>" />
             <select name="pays1E" id="pays1E" class="custom-select required field-small">
                 <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                 <option value=""><?= $this->lng['etape1']['pays'] ?></option>
