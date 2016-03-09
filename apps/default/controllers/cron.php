@@ -7468,7 +7468,7 @@ class cronController extends bootstrap
         exec('java -cp ' . $this->Config['dataloader_path'][$this->Config['env']] . 'dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
 
         $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
-        $oLogger            = new ULogger('SendDataloader', $this->logPath, 'cron.log');
+        $oLogger            = new ULogger('SendDataloader', $this->logPath, 'cron.' . date('Ymd') . '.log');
         $oLogger->addRecord(ULogger::INFO, 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
             array(__FILE__ . ' on line ' . __LINE__));
     }
