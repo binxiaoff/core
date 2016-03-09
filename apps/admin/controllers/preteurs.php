@@ -75,6 +75,7 @@ class preteursController extends bootstrap
 
     public function _gestion()
     {
+        $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
@@ -207,7 +208,7 @@ class preteursController extends bootstrap
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
         $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
-        $this->lTrans       = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
+        $this->lTrans       = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23,26) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
 
         $this->lesStatuts = array(
             1  => $this->lng['profile']['versement-initial'],
@@ -222,7 +223,9 @@ class preteursController extends bootstrap
             19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
             20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
             22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
+            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
+            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
+        );
 
         $this->getMessageAboutClientStatus();
     }
@@ -344,8 +347,6 @@ class preteursController extends bootstrap
 
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
-
-        $this->lAcceptCGV = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
         if (isset($_POST['send_completude'])) {
             $this->sendCompletenessRequest();
@@ -1773,13 +1774,13 @@ class preteursController extends bootstrap
                 $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé à la demande du prêteur</div>';
                 break;
             case \clients_status::CLOSED_BY_UNILEND:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé par Unilend</div>';
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte passé hors ligne par Unilend</div>';
                 break;
             case \clients_status::VALIDATED:
                 $this->sClientStatusMessage = '';
                 break;
             default;
-                trigger_error('Unknown Client Status', E_USER_NOTICE);
+                trigger_error('Unknown Client Status : ' . $oClientsStatus->status, E_USER_NOTICE);
                 break;
         }
     }

@@ -28,6 +28,24 @@
 
 class transactions extends transactions_crud
 {
+    const PAYMENT_TYPE_VISA       = 0;
+    const PAYMENT_TYPE_MASTERCARD = 3;
+    const PAYMENT_TYPE_AUTO       = 1;
+    const PAYMENT_TYPE_AMEX       = 2;
+
+    const PAYMENT_STATUS__NOK = 0;
+    const PAYMENT_STATUS_OK   = 1;
+
+    const STATUS_PENDING  = 0;
+    const STATUS_VALID    = 1;
+    const STATUS_CANCELED = 3;
+
+    const PHYSICAL = 1;
+    const VIRTUAL  = 2;
+
+    const DISPLAY_IN_FO = 0;
+    const HIDE_IN_FO = 1;
+
     public function __construct($bdd, $params = '')
     {
         parent::transactions($bdd, $params);
@@ -676,7 +694,8 @@ class transactions extends transactions_crud
             CASE t.type_transaction
                 WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
                 WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                                WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                WHEN 26 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
                 ELSE ""
             END as title,
 
@@ -714,7 +733,8 @@ class transactions extends transactions_crud
                 CASE t.type_transaction
                     WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
                     WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                                        WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                    WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                    WHEN 26 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
                     ELSE ""
                 END as title,
 
