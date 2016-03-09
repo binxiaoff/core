@@ -695,7 +695,8 @@ class operationsController extends bootstrap
             19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
             20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
             22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']);
+            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
+            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']);
 
         $sql_forcage_id_client = "";
         if ($liste_id_a_forcer != 0) {
@@ -721,7 +722,7 @@ class operationsController extends bootstrap
                     $time_ya_xh           = date('Y-m-d', $time_ya_xh_stamp);
                     $date_debut_a_indexer = "2013-01-01";
                 }
-                $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
+                $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23,26)
                         AND t.status = 1
                         AND t.etat = 1
                         AND t.display = 0

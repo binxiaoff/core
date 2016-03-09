@@ -2975,6 +2975,7 @@ class cronController extends bootstrap
             $offres_bienvenue             = $transac->sumByday('16', $leMois, $lannee); // 16 unilend offre bienvenue
             $offres_bienvenue_retrait     = $transac->sumByday('17', $leMois, $lannee); // 17 unilend offre bienvenue retrait
             $unilend_bienvenue            = $transac->sumByday('18', $leMois, $lannee); // 18 unilend offre bienvenue
+            $rembRecouvPreteurs           = $transac->sumByday('26', $leMois, $lannee);
 
             $listDates = array();
             for ($i = 1; $i <= $nbJours; $i++) {
@@ -3272,15 +3273,13 @@ class cronController extends bootstrap
                     $capitalPreteur = $echangeDate['capital'];
                     $capitalPreteur += $echangeDateRA['capital'];
                     $capitalPreteur = ($capitalPreteur / 100);
+                    $capitalPreteur += $rembRecouvPreteurs[$date]['montant'];
 
                     // somme net net preteurs par jour
                     $interetNetPreteur = ($echangeDate['interets'] / 100) - $retenuesFiscales;
 
-                    // Montant preteur
-                    $montantPreteur = ($interetNetPreteur + $capitalPreteur);
-
                     // Affectation Ech. Empr.
-                    $affectationEchEmpr = $lrembPreteurs[$date]['montant'] + $lrembPreteurs[$date]['etat'] + $commission;
+                    $affectationEchEmpr = $lrembPreteurs[$date]['montant'] + $lrembPreteurs[$date]['etat'] + $commission + $rembRecouvPreteurs[$date]['montant'];
 
                     // ecart Mouv Internes
                     $ecartMouvInternes = round(($affectationEchEmpr) - $commission - $retenuesFiscales - $capitalPreteur - $interetNetPreteur, 2);
@@ -6882,7 +6881,10 @@ class cronController extends bootstrap
                 16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
                 17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
                 19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-                20 => $this->lng['preteur-operations-vos-operations']['gain-parrain']
+                20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
+                22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
+                23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
+                26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
             );
 
             $sql_forcage_id_client = "";
@@ -6907,7 +6909,7 @@ class cronController extends bootstrap
                 }
                 if ($client_a_indexer) {
                     if ($this->clients->get($clt['id_client'], 'id_client')) {
-                        $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20)
+                        $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,22,23,26)
                             AND t.status = 1
                             AND t.etat = 1
                             AND t.display = 0

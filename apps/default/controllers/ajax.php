@@ -1716,17 +1716,18 @@ class ajaxController extends bootstrap
             19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
             20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
             22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']
+            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
+            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
         );
 
         ////////// DEBUT PARTIE TRI TYPE TRANSAC /////////////
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23',
+            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
             2 => '3,4,7,8',
             3 => '3,4,7',
             4 => '8',
             5 => '2',
-            6 => '5,23'
+            6 => '5,23,26'
         );
 
         if (isset($_POST['tri_type_transac'])) {
