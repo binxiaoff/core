@@ -122,7 +122,7 @@ class operationsController extends bootstrap
         $oActiveSheet->setCellValue('H1', 'Capital perçu');
         $oActiveSheet->setCellValue('I1', 'Intérêts perçus');
         $oActiveSheet->setCellValue('J1', 'Capital restant dû');
-        $oActiveSheet->setCellValue('K1', 'Note');
+        $oActiveSheet->setCellValue('K1', $this->lng['preteur-operations-detail']['titre-note']);
 
         foreach ($this->lSumLoans as $iRowIndex => $aProjectLoans) {
             $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);
@@ -154,28 +154,28 @@ class operationsController extends bootstrap
         $sNote = '';
         switch ($sRisk) {
             case 'A':
-                $sNote = '5 étoiles';
+                $sNote = '5';
                 break;
             case 'B':
-                $sNote = '4,5 étoiles';
+                $sNote = '4,5';
                 break;
             case 'C':
-                $sNote = '4 étoiles';
+                $sNote = '4';
                 break;
             case 'D':
-                $sNote = '3,5 étoiles';
+                $sNote = '3,5';
                 break;
             case 'E':
-                $sNote = '3 étoiles';
+                $sNote = '3';
                 break;
             case 'F':
-                $sNote = '2,5 étoiles';
+                $sNote = '2,5';
                 break;
             case 'G':
-                $sNote = '2 étoiles';
+                $sNote = '2';
                 break;
             case 'H':
-                $sNote = '1,5 étoiles';
+                $sNote = '1,5';
                 break;
             default:
                 $sNote = '';
