@@ -924,7 +924,7 @@ class MailerManager
                 'surl'             => $sSUrl,
                 'url'              => $sLUrl,
                 'prenom_p'         => $oClient->prenom,
-                'heure_activation' => $oAutoBidSettingsManager->getActivationTime($oClient),
+                'heure_activation' => $oAutoBidSettingsManager->getActivationTime($oClient)->format('G\hi'),
                 'motif_virement'   => $oClient->getLenderPattern($oClient->id_client),
                 'lien_fb'          => $this->getFacebookLink(),
                 'lien_tw'          => $this->getTwitterLink(),

@@ -155,7 +155,7 @@
             case \notifications::TYPE_AUTOBID_FIRST_ACTIVATION: ?>
                 <strong><?= $this->lng['notifications']['titre-autobid-activation'] ?></strong><br/>
                 <div class="content_notif">
-                <?= str_replace(array('[#ACTIVATION_TIME#]','[#LURL#]'), array($this->get('AutoBidSettingsManager')->getActivationTime($this->clients), $this->lurl), $this->lng['notifications']['content-autobid-activation']) ?>
+                <?= str_replace(array('[#ACTIVATION_TIME#]','[#LURL#]'), array($this->get('AutoBidSettingsManager')->getActivationTime($this->clients)->format('G\hi'), $this->lurl), $this->lng['notifications']['content-autobid-activation']) ?>
                 </div><?php
                 break;
         }
