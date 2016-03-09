@@ -326,10 +326,7 @@ class projectsController extends bootstrap
                     ///// FIN NOTIFICATION OFFRE PLACEE ///////
 
                     if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 2, 'immediatement') == true) {
-                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                        $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                        $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                        $motif = $this->clients->getLenderPattern($this->clients->id_client);
 
                         //*********************************//
                         //*** ENVOI DU MAIL CONFIRM BID ***//

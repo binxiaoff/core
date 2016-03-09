@@ -919,10 +919,7 @@ class ajaxController extends bootstrap
             }
 
             if ($verif == 'ok') {
-                $p           = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                $nom         = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                $this->motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
                 // on effectue une demande de virement
                 // on retire la somme dur les transactions, bank_line et wallet
@@ -997,10 +994,7 @@ class ajaxController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    $p           = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                    $nom         = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                    $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                    $motif       = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                    $motif       = $this->clients->getLenderPattern($this->clients->id_client);
                     $pageProjets = $this->tree->getSlug(4, $this->language);
 
                     $varMail = array(

@@ -288,10 +288,7 @@ class pdfController extends bootstrap
             $this->motif = mb_strtoupper($id_project . 'E' . $p . preg_replace('/\s/', '', $nom), 'UTF-8');
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
         } else {
-            $p           = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
-            $nom         = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
-            $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-            $this->motif = mb_strtoupper($id_client . 'P' . $p . $nom, 'UTF-8');
+            $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
         }
 
