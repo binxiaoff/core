@@ -2,6 +2,7 @@
 namespace Unilend\Service;
 
 use Unilend\core\Loader;
+use Unilend\librairies\Cache;
 
 /**
  * Class ClientSettingsManager
@@ -35,6 +36,7 @@ class ClientSettingsManager {
             if ($sValue != $oClientSettings->value) {
                 $oClientSettings->value = $sValue;
                 $oClientSettings->update();
+                $this->flushSettingCache($oClient, $iSettingType);
                 return true;
             } else {
                 return false;
@@ -45,19 +47,35 @@ class ClientSettingsManager {
             $oClientSettings->id_type   = $iSettingType;
             $oClientSettings->value     = $sValue;
             $oClientSettings->create();
+            $this->flushSettingCache($oClient, $iSettingType);
             return true;
         }
     }
 
     /**
      * @param \clients $oClient
-     * @param int      $iTypeSetting
+     * @param int      $iSettingType
      *
      * @return string
      */
-    public function getSetting(\clients $oClient, $iTypeSetting)
+    public function getSetting(\clients $oClient, $iSettingType)
     {
-        return $this->oClientSettings->getSetting($oClient->id_client, $iTypeSetting);
+        $oCache  = Cache::getInstance();
+        $sKey    = $oCache->makeKey(__CLASS__, __METHOD__, $oClient->id_client, $iSettingType);
+        $mValue  = $oCache->get($sKey);
+
+        if (false === $mValue) {
+            $mValue = $this->oClientSettings->getSetting($oClient->id_client, $iSettingType);
+            $oCache->set($sKey, $mValue);
+        }
+
+        return $mValue;
     }
 
+    private function flushSettingCache(\clients $oClient, $iSettingType)
+    {
+        $oCache = Cache::getInstance();
+        $sKey   = $oCache->makeKey(__CLASS__, 'getSetting', $oClient->id_client, $iSettingType);
+        $oCache->delete($sKey);
+    }
 }

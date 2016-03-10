@@ -80,19 +80,20 @@ class client_settings extends client_settings_crud
 
     public function getSetting($iClientId, $iTypeId)
     {
-        $sSetting = '';
-
-        $sQuery  = 'SELECT value FROM client_settings WHERE id_client = ' . $iClientId . ' AND id_type = ' . $iTypeId;
+        $sQuery  = 'SELECT cs.value, cst.default_value
+                    FROM (
+                      SELECT id_type, default_value
+                      FROM client_setting_type
+                      WHERE id_type = ' . $iTypeId . '
+                    ) cst
+                    LEFT JOIN client_settings cs ON cs.id_type = cst.id_type AND id_client = ' . $iClientId;
         $oResult = $this->bdd->query($sQuery);
-        if ($this->bdd->num_rows() === 1) {
-            $sSetting = $this->bdd->result($oResult);
-        } else {
-            $sQuery  = 'SELECT default_value FROM client_setting_type WHERE id_type = ' . $iTypeId;
-            $oResult = $this->bdd->query($sQuery);
-            if ($this->bdd->num_rows() === 1) {
-                $sSetting = $this->bdd->result($oResult);
-            }
+
+        $sSetting = $this->bdd->result($oResult);
+        if (null === $sSetting) {
+            $sSetting = $this->bdd->result($oResult, 0, 1);
         }
+
         return $sSetting;
     }
 }

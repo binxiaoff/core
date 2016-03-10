@@ -10,6 +10,9 @@ use Unilend\librairies\ULogger;
  */
 class BidManager
 {
+    const MODE_REBID_AUTO_BID_CREATE = 1;
+    const MODE_REBID_AUTO_BID_UPDATE = 2;
+
     /** @var string */
     private $sLanguage;
 
@@ -55,7 +58,7 @@ class BidManager
 
         $this->oNotificationManager    = Loader::loadService('NotificationManager');
         $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
-        $this->oLenderManager = Loader::loadService('LenderManager');
+        $this->oLenderManager          = Loader::loadService('LenderManager');
 
 
         $this->sLanguage = 'fr';
@@ -259,19 +262,28 @@ class BidManager
         }
     }
 
-    /**
-     * @param \bids $oBid
-     * @param float $fCurrentRate
-     */
-    public function refreshAutoBidRateOrReject(\bids $oBid, $fCurrentRate)
+    public function reBidAutoBidOrReject(\bids $oBid, $fCurrentRate, $iMode)
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
             if ($oAutoBid->rate_min <= $fCurrentRate) {
-                $oBid->status = \bids::STATUS_BID_PENDING;
-                $oBid->rate   = $fCurrentRate;
-                $oBid->update();
+                if (self::MODE_REBID_AUTO_BID_CREATE === $iMode) {
+                    $iBidOrder = $oBid->counter('id_project = ' . $oBid->id_project) + 1;
+
+                    $oNewBid         = clone $oBid;
+                    $oNewBid->ordre  = $iBidOrder;
+                    $oNewBid->rate   = $fCurrentRate;
+                    $oNewBid->status = \bids::STATUS_BID_PENDING;
+                    $oNewBid->create();
+
+                    $oBid->status = \bids::STATUS_BID_REJECTED;
+                    $oBid->update();
+                } else {
+                    $oBid->rate   = $fCurrentRate;
+                    $oBid->status = \bids::STATUS_BID_PENDING;
+                    $oBid->update();
+                }
             } else {
                 $this->reject($oBid);
             }

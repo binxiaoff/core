@@ -193,11 +193,32 @@ class cronController extends bootstrap
         }
     }
 
+    public function _pre_publish_project()
+    {
+        if (true === $this->startCron('pre_publish_project', 10)) {
+            ini_set('max_execution_time', '600');
+            ini_set('memory_limit', '1G');
+            /** @var \projects $oProject */
+            $oProject        = $this->loadData('projects');
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER);
+
+            foreach ($aProjectToFund as $aProject) {
+                $oPublicationDate = new \DateTime($aProject['date_publication_full']);
+                if ($oPublicationDate <= new \DateTime() && $oProject->get($aProject['id_project'])) {
+                    $oProjectManager->prePublish($oProject);
+                }
+            }
+            $this->stopCron();
+        }
+    }
+
     // toutes les minute on check //
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
     {
-        if (true === $this->startCron('check_projet_a_funder', 5)) {
+        if (true === $this->startCron('check_projet_a_funder', 10)) {
             /** @var \projects $oProject */
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
@@ -205,7 +226,7 @@ class cronController extends bootstrap
 
             $bHasProjectPublished = false;
 
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER);
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED);
 
             foreach ($aProjectToFund as $aProject) {
                 $oPublicationDate = new \DateTime($aProject['date_publication_full']);
@@ -216,8 +237,6 @@ class cronController extends bootstrap
 
                     // Zippage pour groupama
                     $this->zippage($aProject['id_project']);
-
-                    $oProjectManager->checkAutoBidBalance($oProject);
 
                     $this->sendNewProjectEmail($oProject->id_project);
                 }
@@ -237,6 +256,9 @@ class cronController extends bootstrap
     public function _check_projet_en_funding()
     {
         if ($this->startCron('check_projet_en_funding', 15)) {
+            ini_set('max_execution_time', '300');
+            ini_set('memory_limit', '1G');
+
             /** @var projects $oProject */
             $oProject = $this->loadData('projects');
             /** @var \bids $oBid */
@@ -247,17 +269,31 @@ class cronController extends bootstrap
             $oMailerManager = $this->get('MailerManager');
 
             $bHasProjectFinished = false;
-            $oProjectManager->setLogger(new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.' . date('Ymd') . '.log'));
+            $oLoggerEndProject   = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.' . date('Ymd') . '.log');
 
-            $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING);
+            $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0');
             foreach ($aProjectsList as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
-                    $oEndDate = new \DateTime($oProject->date_retrait_full);
-                    if ($oProject->date_fin != '0000-00-00 00:00:00') {
-                        $oEndDate = new \DateTime($oProject->date_fin);
-                    }
+                    $oEndDate = $oProjectManager->getProjectEndDate($oProject);
                     $oNow = new \DateTime();
-                    if ($oEndDate <= $oNow ) {
+
+                    if ($oEndDate > $oNow) {
+                        $oProjectManager->setLogger($this->oLogger);
+                        $oProjectManager->checkBids($oProject);
+
+                        $oProjectManager->autoBid($oProject);
+
+                        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
+
+                        if ($iBidTotal >= $oProject->amount && $oProject->status_solde == 0) {
+                            $oProject->date_funded  = date('Y-m-d H:i:s');
+                            $oProject->status_solde = 1;
+                            $oProject->update();
+
+                            $oMailerManager->sendFundedToBorrower($oProject);
+                        }
+                    } else {
+                        $oProjectManager->setLogger($oLoggerEndProject);
                         $oProject->date_fin = $oNow->format('Y-m-d H:i:s');
                         $oProject->update();
 
@@ -3469,46 +3505,6 @@ class cronController extends bootstrap
                     }
                 }
                 echo "Toutes les d&eacute;clarations sont g&eacute;n&eacute;r&eacute;es <br />";
-            }
-
-            $this->stopCron();
-        }
-    }
-
-    // Toutes les minutes on check les bids pour les passer en ENCOURS/OK/NOK (check toutes les 5 min et toutes les minutes de 15h30 à 16h00)
-    public function _checkBids()
-    {
-        if (true === $this->startCron('checkBids', 5)) {
-            ini_set('max_execution_time', '300');
-            ini_set('memory_limit', '1G');
-
-            /** @var projects $oProject */
-            $oProject = $this->loadData('projects');
-            /** @var bids $oBid */
-            $oBid =  $this->loadData('bids');
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
-            $oProjectManager->setLogger($this->oLogger);
-            /** @var \Unilend\Service\MailerManager $oMailerManager */
-            $oMailerManager = $this->get('MailerManager');
-
-            foreach ($oProject->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0') as $aProject) {
-                if ($oProject->get($aProject['id_project'])) {
-                    $oProjectManager->checkBids($oProject);
-
-                    $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
-
-                    if ($iBidTotal >= $oProject->amount && $oProject->status_solde == 0) {
-                        $oProject->date_funded = date('Y-m-d H:i:s');
-                        $oProject->status_solde = 1;
-                        $oProject->update();
-
-                        $oMailerManager->sendFundedToBorrower($oProject);
-                    }
-
-                    $oProjectManager->autoBid($oProject);
-                }
-
             }
 
             $this->stopCron();

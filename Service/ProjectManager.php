@@ -40,6 +40,9 @@ class ProjectManager
     /** @var LoanManager */
     private $oLoanManager;
 
+    /** @var AutoBidSettingsManager */
+    private $oAutoBidSettingsManager;
+
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
@@ -50,6 +53,7 @@ class ProjectManager
         $this->oBidManager          = Loader::loadService('BidManager');
         $this->oLoanManager         = Loader::loadService('LoanManager');
         $this->oNotificationManager = Loader::loadService('NotificationManager');
+        $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
 
         $this->oNMP       = Loader::loadData('nmp');
         $this->oNMPDesabo = Loader::loadData('nmp_desabo');
@@ -71,13 +75,19 @@ class ProjectManager
         $this->oLogger = $oLogger;
     }
 
+    public function prePublish(\projects $oProject)
+    {
+        /** @var \projects_status_history $oProjectsStatusHistory */
+        $oProjectsStatusHistory = Loader::loadData('projects_status_history');
+        $this->checkAutoBidBalance($oProject);
+        $this->autoBid($oProject);
+        $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject->id_project);
+    }
+
     public function publish(\projects $oProjects)
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
         $oProjectsStatusHistory = Loader::loadData('projects_status_history');
-
-        $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID, $oProjects->id_project);
-        $this->autoBid($oProjects);
         $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $oProjects->id_project);
     }
 
@@ -106,13 +116,14 @@ class ProjectManager
             foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0', 'rate ASC, added ASC') as $aBid) {
                 if ($iBidsAccumulated < $iBorrowAmount) {
                     $iBidsAccumulated += ($aBid['amount'] / 100);
-                } else { // Les bid qui depassent on leurs redonne leur argent et on met en ko
+                } else {
                     $bBidsLogs = true;
                     $oBid->get($aBid['id_bid']);
 
                     if (0 == $oBid->id_autobid) { // non-auto-bid
                         $this->oBidManager->reject($oBid);
                     } else {
+                        // For a autobid, we don't send reject notification, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $oBid->status = \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY;
                     }
 
@@ -153,19 +164,11 @@ class ProjectManager
     {
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = Loader::loadData('projects_status');
-        $oEndDate       = new \DateTime($oProject->date_retrait_full);
-        if ($oProject->date_fin != '0000-00-00 00:00:00') {
-            $oEndDate = new \DateTime($oProject->date_fin);
-        }
-        if (new \DateTime() >= $oEndDate) {
-            return false;
-        }
-
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
-            if ($oProjectStatus->status == \projects_status::AUTO_BID) {
+            if ($oProjectStatus->status == \projects_status::A_FUNDER) {
                 $this->bidAllAutoBid($oProject);
             } elseif ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                $this->refreshAllAutoBidRate($oProject);
+                $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
             }
         }
     }
@@ -176,11 +179,9 @@ class ProjectManager
         $oAutoBidQueue = Loader::loadData('autobid_queue');
         /** @var \autobid $oAutoBid */
         $oAutoBid     = Loader::loadData('autobid');
-        $iPeriod      = (int)$oProject->period;
-        $sEvaluation  = $oProject->risk;
         $iCurrentRate = \bids::BID_RATE_MAX;
 
-        $aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, $iCurrentRate);
+        $aAutoBidList = $oAutoBidQueue->getAutoBids($oProject->period, $oProject->risk, $iCurrentRate);
         foreach ($aAutoBidList as $aAutoBidSetting) {
             if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
                 $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $iCurrentRate);
@@ -196,12 +197,14 @@ class ProjectManager
         $oTransaction = Loader::loadData('transactions');
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = Loader::loadData('lenders_accounts');
 
-        $iPeriod      = (int)$oProject->period;
-        $sEvaluation  = $oProject->risk;
-        $aAutoBidList = $oAutoBidQueue->getAutoBids($iPeriod, $sEvaluation, \bids::BID_RATE_MAX);
+        $aAutoBidList = $oAutoBidQueue->getAutoBids($oProject->period, $oProject->risk, \bids::BID_RATE_MAX);
         foreach ($aAutoBidList as $aAutoBidSetting) {
-            if ($oClient->get($aAutoBidSetting['id_client'])) {
+            if ($oClient->get($aAutoBidSetting['id_client'])
+                && $oLenderAccount->get($aAutoBidSetting['id_lender'])
+                && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
                 $iBalance = $oTransaction->getSolde($oClient->id_client);
 
                 if ($iBalance < $aAutoBidSetting['amount']) {
@@ -225,7 +228,7 @@ class ProjectManager
         }
     }
 
-    private function refreshAllAutoBidRate($oProject)
+    private function reBidAutoBid(\projects $oProject, $iMode)
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
@@ -239,21 +242,21 @@ class ProjectManager
         while ($aAutoBidList = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
             foreach ($aAutoBidList as $aAutobid) {
                 if ($oBid->get($aAutobid['id_bid'])) {
-                    $this->oBidManager->refreshAutoBidRateOrReject($oBid, $fCurrentRate);
+                    $this->oBidManager->reBidAutoBidOrReject($oBid, $fCurrentRate, $iMode);
                 }
             }
         }
     }
 
-    public function cleanTempRefusedAutoBid(\projects $oProject)
+    private function reBidAutoBidDeeply(\projects $oProject, $iMode)
     {
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
         $this->checkBids($oProject);
         $aRefusedAutoBid = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY, 1);
         if (false === empty($aRefusedAutoBid)) {
-            $this->refreshAllAutoBidRate($oProject);
-            $this->cleanTempRefusedAutoBid($oProject);
+            $this->reBidAutoBid($oProject, $iMode);
+            $this->reBidAutoBidDeeply($oProject, $iMode);
         }
     }
 
@@ -268,7 +271,7 @@ class ProjectManager
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
 
-        $this->cleanTempRefusedAutoBid($oProject);
+        $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
 
         $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject->id_project);
 
