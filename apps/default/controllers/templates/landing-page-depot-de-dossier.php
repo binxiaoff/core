@@ -61,9 +61,12 @@ foreach (array('siren', 'montant', 'email', 'prenom', 'nom', 'mobile') as $sFiel
 }
 
 if ($bProcessForm) {
-    if (false === isset($_SESSION['forms']['depot-de-dossier']['values']['short_tunnel'])
-        && (empty($_SESSION['forms']['depot-de-dossier']['values']['email'])
-        || false === $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email']))
+    if (
+        false === $this->bShortTunnel
+        && (
+            empty($_SESSION['forms']['depot-de-dossier']['values']['email'])
+            || false === $this->ficelle->isEmail($_SESSION['forms']['depot-de-dossier']['values']['email'])
+        )
     ) {
         $_SESSION['forms']['depot-de-dossier']['response']        = $this->lng['landing-page']['champs-obligatoires'];
         $_SESSION['forms']['depot-de-dossier']['errors']['email'] = true;

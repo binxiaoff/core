@@ -694,7 +694,8 @@ class transactions extends transactions_crud
             CASE t.type_transaction
                 WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
                 WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                                WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                WHEN 26 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
                 ELSE ""
             END as title,
 
@@ -732,7 +733,8 @@ class transactions extends transactions_crud
                 CASE t.type_transaction
                     WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
                     WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                                        WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                    WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                    WHEN 26 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
                     ELSE ""
                 END as title,
 

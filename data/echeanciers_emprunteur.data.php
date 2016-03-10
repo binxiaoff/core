@@ -28,31 +28,9 @@
 
 class echeanciers_emprunteur extends echeanciers_emprunteur_crud
 {
-
     public function __construct($bdd, $params = '')
     {
         parent::echeanciers_emprunteur($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_echeancier_emprunteur')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    public function delete($id, $field = 'id_echeancier_emprunteur')
-    {
-        parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -119,29 +97,27 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     // retourne le montant restant à payer pour le projet
     public function get_restant_du($id_project, $date_debut)
     {
-        $sql     = 'SELECT SUM(montant)  as montant /*+SUM(capital)+SUM(interets)+SUM(commission)+SUM(tva) as montant*/
-                      FROM `echeanciers_emprunteur`
-                      WHERE id_project =' . $id_project . '
-                      AND status_emprunteur = 0
-                      AND LEFT(date_echeance_emprunteur,10) > "' . $date_debut . '"
-                        ';
+        $sql = '
+            SELECT SUM(montant) AS montant
+            FROM echeanciers_emprunteur
+            WHERE id_project = ' . $id_project . '
+                AND status_emprunteur = 0
+                AND DATE(date_echeance_emprunteur) > "' . $date_debut . '"';
         $result  = $this->bdd->query($sql);
-        $montant = ($this->bdd->result($result, 0, 0));
-        return $montant;
+        return $this->bdd->result($result, 0, 0);
     }
 
     // retourne le montant restant à payer pour le projet
     public function get_capital_restant_du($id_project, $date_debut)
     {
-        $sql     = 'SELECT SUM(capital)  as montant /*+SUM(capital)+SUM(interets)+SUM(commission)+SUM(tva) as montant*/
-                      FROM `echeanciers_emprunteur`
-                      WHERE id_project =' . $id_project . '
-                      AND status_emprunteur = 0
-                      AND LEFT(date_echeance_emprunteur,10) > "' . $date_debut . '"
-                        ';
+        $sql = '
+            SELECT SUM(capital) AS montant
+            FROM echeanciers_emprunteur
+            WHERE id_project = ' . $id_project . '
+                AND status_emprunteur = 0
+                AND DATE(date_echeance_emprunteur) > "' . $date_debut . '"';
         $result  = $this->bdd->query($sql);
-        $montant = ($this->bdd->result($result, 0, 0));
-        return $montant;
+        return $this->bdd->result($result, 0, 0);
     }
 
     // retourne la somme total a rembourser pour un porjet
@@ -163,12 +139,13 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
      */
     public function getUpcomingRepayments($iDaysInterval)
     {
-        $sNextWeekPayment = 'SELECT ee.* FROM
-                echeanciers_emprunteur ee
-                INNER JOIN projects_last_status_history plsh ON plsh.id_project = ee.id_project
-                INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
-                INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-                WHERE ps.status = '. \projects_status::REMBOURSEMENT .' AND status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL '. $iDaysInterval .' DAY) = DATE(date_echeance_emprunteur)';
+        $sNextWeekPayment = '
+            SELECT ee.*
+            FROM echeanciers_emprunteur ee
+            INNER JOIN projects_last_status_history plsh ON plsh.id_project = ee.id_project
+            INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE ps.status = '. \projects_status::REMBOURSEMENT .' AND status_emprunteur = 0 AND DATE_ADD(CURDATE(), INTERVAL '. $iDaysInterval .' DAY) = DATE(date_echeance_emprunteur)';
 
         $rResult          = $this->bdd->query($sNextWeekPayment);
         $aNextWeekPayment = array();
@@ -177,5 +154,4 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         }
         return $aNextWeekPayment;
     }
-
 }
