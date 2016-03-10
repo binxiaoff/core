@@ -1304,7 +1304,7 @@ class cronController extends bootstrap
                         $projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::RECOUVREMENT, $p['id_project']);
 
                         // date du probleme
-                        $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROBLEME . ')', 'added DESC');
+                        $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROBLEME . ')', 'id_project_status_history DESC');
 
                         $timeAdd = strtotime($statusProbleme[0]['added']);
                         $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
@@ -2802,7 +2802,6 @@ class cronController extends bootstrap
                                 $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
                                 $oPrelevements          = $this->loadData('prelevements');
                                 $oProjectsRemb          = $this->loadData('projects_remb');
-                                $oProjectsStatusHistory = $this->loadData('projects_status_history');
                                 $oTransactions          = $this->loadData('transactions');
 
                                 if (
@@ -6530,7 +6529,7 @@ class cronController extends bootstrap
                         && $clients->get($lenders->id_client_owner, 'id_client')
                     ) {
                         if (1 == $clients->status) {
-                            $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'added DESC', 0, 1);
+                            $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'id_project_status_history DESC', 0, 1);
                             $dateDernierStatut = $dernierStatut[0]['added'];
                             $timeAdd           = strtotime($dateDernierStatut);
                             $day               = date('d', $timeAdd);
@@ -6666,7 +6665,7 @@ class cronController extends bootstrap
 
                         $projects_remb_log->get($projects_remb_log->id_project_remb_log, 'id_project_remb_log');
 
-                        $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'added DESC', 0, 1);
+                        $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
                         $dateDernierStatut = $dernierStatut[0]['added'];
                         $timeAdd           = strtotime($dateDernierStatut);
                         $day               = date('d', $timeAdd);

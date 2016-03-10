@@ -153,7 +153,7 @@ class projectsController extends bootstrap
             $this->clients_status->getLastStatut($this->clients->id_client);
 
             // On recupere le dernier statut histo du projet pour la date de remb anticipé(DC)
-            $this->lastStatushisto = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC', 0, 1);
+            $this->lastStatushisto = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
             $this->lastStatushisto = $this->lastStatushisto[0];
 
             // si le status est inferieur a "a funder" on autorise pas a voir le projet
