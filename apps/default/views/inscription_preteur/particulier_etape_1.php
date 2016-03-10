@@ -59,9 +59,9 @@
             <select name="pays1" id="pays1" class="country custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
-                <?php foreach ($this->lPays as $p) { ?>
+                <?php foreach ($this->lPays as $p) : ?>
                     <option <?=($this->modif == true && $this->clients_adresses->id_pays_fiscal == $p['id_pays']?'selected':($this->clients_adresses->id_pays_fiscal == 0 && $p['id_pays'] == 1?'selected':''))?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option>
-                <?php } ?>
+                <?php endforeach; ?>
             </select>
         </div>
         <div class="row">
@@ -83,22 +83,24 @@
                 <select name="pays2" id="pays2" class="country custom-select required field-small">
                     <option value=""><?=$this->lng['etape1']['pays']?></option>
                     <option value=""><?=$this->lng['etape1']['pays']?></option>
-                    <?php foreach ($this->lPays as $p) { ?>
+                    <?php foreach ($this->lPays as $p) : ?>
                         <option <?=($this->modif == true && $this->clients_adresses->id_pays == $p['id_pays']?'selected':($this->clients_adresses->id_pays == 0 && $p['id_pays'] == 1?'selected':''))?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option>
-                    <?php } ?>
+                    <?php endforeach; ?>
                 </select>
             </div>
         </div>
         <div class="row row-alt">
+            <span style="color:#C84747; display: none" id="error-message-nationality">
+                <?= $this->lng['etape1']['error-message-selected-nationality-other']?></span>
             <span class="inline-text inline-text-alt"><?=$this->lng['etape1']['telephone']?> :</span>
             <input type="text" name="phone" id="phone" value="<?=($this->clients->telephone!=''?$this->clients->telephone:$this->lng['etape1']['telephone'])?>" title="<?=$this->lng['etape1']['telephone']?>" class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
             <span class="inline-text inline-text-alt"><?=$this->lng['etape1']['nationalite']?> :</span>
             <select name="nationalite" id="nationalite" class="custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['nationalite']?></option>
                 <option value=""><?=$this->lng['etape1']['nationalite']?></option>
-                <?php foreach ($this->lNatio as $p) { ?>
+                <?php foreach ($this->lNatio as $p) : ?>
                     <option <?=($this->modif == true && $this->clients->id_nationalite == $p['id_nationalite']?'selected':($this->clients->id_nationalite == 0 && $p['id_nationalite'] == 1?'selected':''))?> value="<?=$p['id_nationalite']?>"><?=$p['fr_f']?></option>
-                <?php } ?>
+                <?php endforeach; ?>
             </select>
         </div>
         <div class="row small-select">
@@ -106,9 +108,9 @@
             <select name="jour_naissance" id="jour_naissance" class="custom-select required field-tiny">
                 <option value=""><?=$this->lng['etape1']['jour']?></option>
                 <option value=""><?=$this->lng['etape1']['jour']?></option>
-                <?php for ($i = 1; $i <= 31; $i++) { ?>
+                <?php for ($i = 1; $i <= 31; $i++) : ?>
                     <option <?=($this->modif == true && $this->jour == $i?'selected':'')?> value="<?=$i?>"><?=$i?></option>
-                <?php } ?>
+                <?php endfor; ?>
             </select>
             <select name="mois_naissance" id="mois_naissance" class="custom-select required field-tiny">
                 <option value=""><?=$this->lng['etape1']['mois']?></option>
@@ -142,9 +144,9 @@
             <select name="pays3" id="pays3" class="country custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
-                <?php foreach($this->lPays as $p) { ?>
+                <?php foreach($this->lPays as $p) : ?>
                     <option <?=($this->modif == true && $this->clients->id_pays_naissance == $p['id_pays']?'selected':($this->clients->id_pays_naissance == 0 && $p['id_pays'] == 1?'selected':''))?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option>
-                <?php } ?>
+                <?php endforeach; ?>
             </select>
         </div>
     </div>

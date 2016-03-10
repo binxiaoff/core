@@ -122,6 +122,14 @@
                 }
             });
         });
+
+        $("#nationalite").change(function(){
+            if($("#nationalite").val() == 35) {
+                $("#error-message-nationality").show();
+            } else {
+                $("#error-message-nationality").hide();
+            }
+        })
     });
 
     // display particulier
@@ -191,6 +199,10 @@
         if ('' == $("#naissance").val() || ('' == $('#insee_birth').val() && 1 == $('#pays3').val()) || controleCity($('#naissance'), $('#pays3'), false) == false) {
             $("#naissance").removeClass("LV_valid_field");
             $("#naissance").addClass("LV_invalid_field");
+            radio = false;
+        }
+
+        if($("#nationalite").val() == 35) {
             radio = false;
         }
 
