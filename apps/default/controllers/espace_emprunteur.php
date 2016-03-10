@@ -353,6 +353,8 @@ class espace_emprunteurController extends Bootstrap
                     $aProjectsPreFunding[$iKey]['project_status_label'] = 'en-attente-de-mise-en-ligne';
                     break;
             }
+            $fPredictAmountAutoBid = $this->get('AutoBidSettingsManager')->predictAmount($aProject['risk'], $aProject['period']);
+            $aProjectsPreFunding[$iKey]['predict_autobid'] = round(($fPredictAmountAutoBid / $aProject['amount']) * 100, 1);
         }
         return $aProjectsPreFunding;
     }
