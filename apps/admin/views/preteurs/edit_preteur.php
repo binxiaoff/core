@@ -386,7 +386,14 @@
                             <td><input type="text" name="iban6" id="iban6" class="input_court" value="<?= $this->iban6 ?>"/></td>
                             <td><input type="text" name="iban7" id="iban7" class="input_court" value="<?= $this->iban7 ?>"/></td>
                         </tr>
-                        <tr><td colspan="7"><input type="submit" value="Valider les modifications sur le RIB" class="btn" id="valider_rib_iban" name="valider_rib_iban"></td></tr>
+                        <tr>
+                            <td colspan="5">
+                                <span class="btn" id="change_bank_account_btn" name="change_bank_account_btn">Valider les modifications sur le RIB</span>
+                            </td>
+                            <td colspan="2" valign="middle">
+                                <p id="iban_ok" style="margin:0px;"></p>
+                            </td>
+                        </tr>
                     </table>
                 </td>
             </tr>
@@ -766,6 +773,36 @@
             $('.statut_dirigeant_e').show('slow');
             $('.statut_dirigeant_e3').show('slow');
         }
+    });
+
+    $("#change_bank_account_btn").click(function () {
+        var rib = {
+            bic: $('#bic').val(),
+            iban1: $('#iban1').val(),
+            iban2: $('#iban2').val(),
+            iban3: $('#iban3').val(),
+            iban4: $('#iban4').val(),
+            iban5: $('#iban5').val(),
+            iban6: $('#iban6').val(),
+            iban7: $('#iban7').val(),
+            id_client: "<?= $this->clients->id_client ?>"
+        };
+
+        $.post(add_url + "/preteurs/change_bank_account", rib).done(function (data) {
+            if (data == 'bic_ko') {
+                $('#iban_ok').text('BIC Incorrect');
+                $('#iban_ok').css("color", "red");
+            } else if (data == 'iban_ko') {
+                $('#iban_ok').text('IBAN Incorrect');
+                $('#iban_ok').css("color", "red");
+            } else if (data == 'both_ko') {
+                $('#iban_ok').text('BIC + IBAN Incorrect');
+                $('#iban_ok').css("color", "red");
+            } else {
+                $('#iban_ok').text('BIC / IBAN Modifié');
+                $('#iban_ok').css("color", "green");
+            }
+        });
     });
 
     $("#origine_des_fonds").change(function () {

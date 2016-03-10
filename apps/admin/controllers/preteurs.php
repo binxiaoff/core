@@ -310,10 +310,6 @@ class preteursController extends bootstrap
             $this->iban7 = substr($this->lenders_accounts->iban, 24, 3);
         }
 
-        if (isset($_POST['valider_rib_iban']) && '' !== $_POST['valider_rib_iban']) {
-            $this->changeBankAccount($this->lenders_accounts);
-        }
-
         if ($this->clients->telephone != '') {
             trim(chunk_split($this->clients->telephone, 2, ' '));
         }
@@ -758,10 +754,6 @@ class preteursController extends bootstrap
                     $this->companies->fonction_dirigeant = '';
                     $this->companies->email_dirigeant    = '';
                     $this->companies->phone_dirigeant    = '';
-                }
-
-                if (isset($_POST['valider_rib_iban']) && '' !== $_POST['valider_rib_iban']) {
-                    $this->changeBankAccount($this->lenders_accounts);
                 }
 
                 // Si form societe ok
@@ -1773,12 +1765,19 @@ class preteursController extends bootstrap
         }
     }
 
-    private function changeBankAccount($oLendersAccounts) {
-        $sSwift = strtoupper($_POST['bic']);
+    public function _change_bank_account()
+    {
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
 
-        if ($sSwift != '' && $this->ficelle->swift_validate(trim($sSwift)) == false) {
-            $_SESSION['freeow']['title']   = 'Erreur BIC';
-            $_SESSION['freeow']['message'] = 'Le BIC est invalide';
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $sSwift = strtoupper($_POST['bic']);
+        $sRibChangeStatus = 'ok';
+
+        if ($this->ficelle->swift_validate(trim($sSwift)) == false) {
+            $sRibChangeStatus = 'bic_ko';
         } else {
             $oLendersAccounts->bic = str_replace(' ', '', strtoupper($sSwift));
         }
@@ -1787,13 +1786,17 @@ class preteursController extends bootstrap
         for ($i = 1; $i <= 7; $i++) {
             $sIban .= strtoupper($_POST['iban' . $i]);
         }
-
-        if ($sIban != '' && $this->ficelle->isIBAN($sIban) != 1) {
-            $_SESSION['freeow']['title']   = 'Erreur IBAN';
-            $_SESSION['freeow']['message'] = 'L\'IBAN est invalide';
-        } else {
+        if ($sIban != '' && $this->ficelle->isIBAN($sIban) == 1 && 'ok' === $sRibChangeStatus) {
             $oLendersAccounts->iban = str_replace(' ', '', $sIban);
+        } else if ($sIban != '' && $this->ficelle->isIBAN($sIban) != 1 && 'bic_ko' === $sRibChangeStatus) {
+            $sRibChangeStatus = 'both_ko';
+        } else if ($sIban != '' && $this->ficelle->isIBAN($sIban) != 1 && 'ok' === $sRibChangeStatus) {
+            $sRibChangeStatus = 'iban_ko';
         }
+
+        echo $sRibChangeStatus;
+
         $oLendersAccounts->update();
     }
+
 }
