@@ -209,29 +209,22 @@ class cronController extends bootstrap
     public function _check_projet_a_funder()
     {
         if (true === $this->startCron('check_projet_a_funder', 5)) {
-            $this->projects                = $this->loadData('projects');
-            $this->projects_status         = $this->loadData('projects_status');
-            $this->projects_status_history = $this->loadData('projects_status_history');
+            $oProjects              = $this->loadData('projects');
+            $oProjectsStatusHistory = $this->loadData('projects_status_history');
+            $aProjects              = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
 
-            $this->settings->get('Heure debut periode funding', 'type');
-            $this->heureDebutFunding = $this->settings->value;
+            foreach ($aProjects as $aProject) {
+                $aPublicationDate = explode(':', $aProject['date_publication_full']);
+                $aPublicationDate = $aPublicationDate[0] . ':' . $aPublicationDate[1];
+                echo 'datePublication : ' . $aPublicationDate . '<br>';
+                echo 'today : ' . date('Y-m-d H:i') . '<br><br>';
 
-            $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::A_FUNDER);
+                $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $aProject['id_project']);
 
-            foreach ($this->lProjects as $projects) {
-                $tabdatePublication = explode(':', $projects['date_publication_full']);
-                $datePublication    = $tabdatePublication[0] . ':' . $tabdatePublication[1];
-                $today              = date('Y-m-d H:i');
-                echo 'datePublication : ' . $datePublication . '<br>';
-                echo 'today : ' . $today . '<br><br>';
-
-                if ($datePublication == $today) {// on lance en fonction de l'heure definie dans le bo
-                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $projects['id_project']);
-
-                    // Zippage pour groupama
-                    $this->zippage($projects['id_project']);
-                    $this->sendNewProjectEmail($projects['id_project']);
-                }
+                // Zippage pour groupama
+                $this->zippage($aProject['id_project']);
+                $this->sendNewProjectEmail($aProject['id_project']);
+                $this->sendProjectOnlineEmailBorrower($aProject['id_project']);
             }
             $oCache = \Unilend\librairies\Cache::getInstance();
             $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
@@ -5533,7 +5526,58 @@ class cronController extends bootstrap
         }
     }
 
-    /**
+    // Fonction qui crée le mail nouveau projet pour l'emprunteur (immediatement)
+    private function sendProjectOnlineEmailBorrower($iIdProject)
+    {
+        $oProject   = $this->loadData('projects');
+        $oCompanies = $this->loadData('companies');
+
+        $oProject->get($iIdProject);
+        $oCompanies->get($oProject->id_company);
+        $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
+
+        if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
+            $sFirstName  = $oCompanies->prenom_dirigeant;
+            $sMailClient = $oCompanies->email_dirigeant;
+        } else {
+            $this->clients->get($oCompanies->id_client_owner);
+            $sFirstName  = $this->clients->prenom;
+            $sMailClient = $this->clients->email;
+        }
+
+        $aMail = array(
+            'surl'           => $this->surl,
+            'url'            => $this->furl,
+            'nom_entreprise' => $oCompanies->name,
+            'projet_p'       => $this->furl . '/projects/detail/' . $oProject->slug,
+            'montant'        => $this->ficelle->formatNumber((float) $oProject->amount, 0),
+            'duree'          => $oProject->period,
+            'prenom_e'       => $sFirstName,
+            'lien_fb'        => $this->like_fb,
+            'lien_tw'        => $this->twitter,
+            'annee'          => date('Y')
+        );
+
+        $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
+        $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
+        $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
+        $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+
+        $oEmail = $this->loadLib('email');
+        $oEmail->setFrom($this->mails_text->exp_email, $sSender);
+        $oEmail->setSubject(stripslashes($sMailSubject));
+        $oEmail->setHTMLBody(stripslashes($sMailBody));
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
+            $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+        } else {
+            $oEmail->addRecipient(trim($sMailClient));
+            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+        }
+    }
+
+        /**
      * Send new projects summary email
      * @param array $aCustomerId
      * @param string $sFrequency (quotidienne/hebdomadaire)
