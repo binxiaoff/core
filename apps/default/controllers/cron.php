@@ -211,8 +211,7 @@ class cronController extends bootstrap
         if (true === $this->startCron('check_projet_a_funder', 5)) {
             $oProjects              = $this->loadData('projects');
             $oProjectsStatusHistory = $this->loadData('projects_status_history');
-
-            $aProjects = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
+            $aProjects              = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
 
             foreach ($aProjects as $aProject) {
                 $aPublicationDate = explode(':', $aProject['date_publication_full']);
@@ -5528,12 +5527,12 @@ class cronController extends bootstrap
     }
 
     // Fonction qui crée le mail nouveau projet pour l'emprunteur (immediatement)
-    private function sendProjectOnlineEmailBorrower($sIdProject)
+    private function sendProjectOnlineEmailBorrower($iIdProject)
     {
         $oProject   = $this->loadData('projects');
         $oCompanies = $this->loadData('companies');
 
-        $oProject->get($sIdProject, 'id_project');
+        $oProject->get($iIdProject);
         $oCompanies->get($oProject->id_company);
         $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
 
@@ -5542,7 +5541,6 @@ class cronController extends bootstrap
             $sMailClient = $oCompanies->email_dirigeant;
         } else {
             $this->clients->get($oCompanies->id_client_owner);
-
             $sFirstName  = $this->clients->prenom;
             $sMailClient = $this->clients->email;
         }
@@ -5565,17 +5563,17 @@ class cronController extends bootstrap
         $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
         $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
 
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, $sSender);
-        $this->email->setSubject(stripslashes($sMailSubject));
-        $this->email->setHTMLBody(stripslashes($sMailBody));
+        $oEmail = $this->loadLib('email');
+        $oEmail->setFrom($this->mails_text->exp_email, $sSender);
+        $oEmail->setSubject(stripslashes($sMailSubject));
+        $oEmail->setHTMLBody(stripslashes($sMailBody));
 
         if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
+            Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
             $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
         } else {
-            $this->email->addRecipient(trim($sMailClient));
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            $oEmail->addRecipient(trim($sMailClient));
+            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
 
