@@ -391,13 +391,11 @@ class ajaxController extends bootstrap
                     // si inscription
                     if ($this->clients->status_transition == 1) {
                         $this->clients_history->id_client = $this->clients->id_client;
-                        $this->clients_history->type      = $this->clients->status_pre_emp;
                         $this->clients_history->status    = 2; // statut inscription
                         $this->clients_history->create();
                     }
 
                     $this->clients_history->id_client = $this->clients->id_client;
-                    $this->clients_history->type      = $this->clients->status_pre_emp;
                     $this->clients_history->status    = 3; // statut depot de dossier validé
                     $this->clients_history->create();
 
@@ -822,9 +820,6 @@ class ajaxController extends bootstrap
                     } else {
                         $this->clients->email = $_POST['email'];
                     }
-                    // On precise que c'est un emprunteur
-                    $this->clients->status_pre_emp = 2;
-
                     $this->clients->id_client = $this->clients->create();
 
                     $this->clients_adresses->id_client = $this->clients->id_client;

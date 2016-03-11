@@ -1510,7 +1510,7 @@ class cronController extends bootstrap
                     $bicDestinataire  = $retraitBic;
                     //$retraitDom;
                 } // emprunteur
-                elseif ($this->clients->status_pre_emp > 1) {
+                elseif ($this->clients->isBorrower()) {
                     $this->companies->get($v['id_client'], 'id_client_owner');
                     $ibanDestinataire = $this->companies->iban;
                     $bicDestinataire  = $this->companies->bic;

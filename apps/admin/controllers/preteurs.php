@@ -117,10 +117,8 @@ class preteursController extends bootstrap
             \transactions_types::TYPE_LENDER_REGULATION
         );
         $this->z = count($this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (' . implode(',', $aTransactionTypes) . ') AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-        //preteur "hors ligne"
-        $this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
-        //preteur "total"
-        $this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
+        $this->y = $this->clients->counter('clients.status = 0 AND clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
+        $this->x = $this->clients->counter('clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
     }
 
     public function _search()
@@ -891,7 +889,7 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '0', '300');
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
@@ -1629,8 +1627,9 @@ class preteursController extends bootstrap
 
     private function changeClientStatus($iClientId, $iStatus, $iOrigin)
     {
-        if (false === $this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId)) {
-            $this->clients->get($iClientId, 'id_client');
+        $this->clients->get($iClientId, 'id_client');
+
+        if (false === $this->clients->isBorrower()) {
             $this->clients->status = $iStatus;
             $this->clients->update();
 

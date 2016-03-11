@@ -310,7 +310,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->select('status_pre_emp IN(2,3) AND status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
     }
 
     public function _requete_dossiers_csv()
@@ -325,7 +325,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->select('status_pre_emp IN(2,3) AND status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
 
         $header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
         $header = utf8_encode($header);
@@ -1230,7 +1230,6 @@ class statsController extends bootstrap
             LEFT JOIN clients_adresses ca ON l.id_client_owner = ca.id_client
             LEFT JOIN companies comp ON l.id_company_owner = comp.id_company
             WHERE c.status = 1
-            AND status_pre_emp IN (1,3)
             ORDER BY l.added DESC';
 
         if (isset($this->params[0]) && $this->params[0] == 'csv') {

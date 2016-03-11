@@ -79,9 +79,6 @@ class emprunteursController extends bootstrap
             $this->companies->email_facture = trim($_POST['email']);
             $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
 
-            // On precise que c'est un emprunteur
-            $this->clients->status_pre_emp = 2;
-
             $this->companies->name   = $_POST['societe'];
             $this->companies->sector = $_POST['secteur'];
 
@@ -229,7 +226,7 @@ class emprunteursController extends bootstrap
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
 
-        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->status_pre_emp >= 2) {
+        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'id_client') && $this->clients->isBorrower()) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->companies->get($this->clients->id_client, 'id_client_owner');
 
@@ -243,7 +240,7 @@ class emprunteursController extends bootstrap
                 $this->clients->nom    = $this->ficelle->majNom($_POST['nom']);
                 $this->clients->prenom = $this->ficelle->majNom($_POST['prenom']);
 
-                $checkEmailExistant = $this->clients->select('email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client . ' AND status_pre_emp > 1');
+                $checkEmailExistant = $this->clients->select('email = "' . $_POST['email'] . '" AND id_client != ' . $this->clients->id_client);
                 if (count($checkEmailExistant) > 0) {
                     $les_id_client_email_exist = '';
                     foreach ($checkEmailExistant as $checkEmailEx) {
