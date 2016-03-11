@@ -212,13 +212,9 @@ class cronController extends bootstrap
             $oProjects              = $this->loadData('projects');
             $oProjectsStatusHistory = $this->loadData('projects_status_history');
 
-            $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
-
             $aProjects = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
 
             foreach ($aProjects as $aProject) {
-                $this->companies->get($aProject['id_company']);
-
                 $aPublicationDate = explode(':', $aProject['date_publication_full']);
                 $aPublicationDate = $aPublicationDate[0] . ':' . $aPublicationDate[1];
                 echo 'datePublication : ' . $aPublicationDate . '<br>';
@@ -229,46 +225,7 @@ class cronController extends bootstrap
                 // Zippage pour groupama
                 $this->zippage($aProject['id_project']);
                 $this->sendNewProjectEmail($aProject['id_project']);
-
-                if (false === empty($this->companies->prenom_dirigeant) && false === empty($this->companies->email_dirigeant)) {
-                    $sFirstName  = $this->companies->prenom_dirigeant;
-                    $sMailClient = $this->companies->email_dirigeant;
-                } else {
-                    $this->clients->get($this->companies->id_client_owner);
-
-                    $sFirstName  = $this->clients->prenom;
-                    $sMailClient = $this->clients->email;
-                }
-
-                $aMail = array(
-                    'surl'           => $this->surl,
-                    'url'            => $this->furl,
-                    'nom_entreprise' => $this->companies->name,
-                    'projet_p'       => $this->furl . '/projects/detail/' . $aProject['slug'],
-                    'montant'        => $this->ficelle->formatNumber((float) $aProject['amount'], 0),
-                    'duree'          => $aProject['period'],
-                    'prenom_e'       => $sFirstName,
-                    'lien_fb'        => $this->like_fb,
-                    'lien_tw'        => $this->twitter
-                );
-
-                $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
-                $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
-                $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
-                $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $sSender);
-                $this->email->setSubject(stripslashes($sMailSubject));
-                $this->email->setHTMLBody(stripslashes($sMailBody));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($sMailClient));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                $this->sendProjectOnlineEmailBorrower($aProject['id_project']);
             }
             $oCache = \Unilend\librairies\Cache::getInstance();
             $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
@@ -5570,7 +5527,59 @@ class cronController extends bootstrap
         }
     }
 
-    /**
+    // Fonction qui crée le mail nouveau projet pour l'emprunteur (immediatement)
+    private function sendProjectOnlineEmailBorrower($sIdProject)
+    {
+        $oProject   = $this->loadData('projects');
+        $oCompanies = $this->loadData('companies');
+
+        $oProject->get($sIdProject, 'id_project');
+        $oCompanies->get($oProject->id_company);
+        $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
+
+        if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
+            $sFirstName  = $oCompanies->prenom_dirigeant;
+            $sMailClient = $oCompanies->email_dirigeant;
+        } else {
+            $this->clients->get($oCompanies->id_client_owner);
+
+            $sFirstName  = $this->clients->prenom;
+            $sMailClient = $this->clients->email;
+        }
+
+        $aMail = array(
+            'surl'           => $this->surl,
+            'url'            => $this->furl,
+            'nom_entreprise' => $oCompanies->name,
+            'projet_p'       => $this->furl . '/projects/detail/' . $oProject->slug,
+            'montant'        => $this->ficelle->formatNumber((float) $oProject->amount, 0),
+            'duree'          => $oProject->period,
+            'prenom_e'       => $sFirstName,
+            'lien_fb'        => $this->like_fb,
+            'lien_tw'        => $this->twitter,
+            'annee'          => date('Y')
+        );
+
+        $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
+        $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
+        $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
+        $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($this->mails_text->exp_email, $sSender);
+        $this->email->setSubject(stripslashes($sMailSubject));
+        $this->email->setHTMLBody(stripslashes($sMailBody));
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
+            $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+        } else {
+            $this->email->addRecipient(trim($sMailClient));
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
+    }
+
+        /**
      * Send new projects summary email
      * @param array $aCustomerId
      * @param string $sFrequency (quotidienne/hebdomadaire)
