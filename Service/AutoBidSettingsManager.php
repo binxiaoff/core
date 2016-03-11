@@ -89,7 +89,7 @@ class AutoBidSettingsManager
      */
     public function isQualified(\lenders_accounts $oLenderAccount)
     {
-        if (empty($oLenderAccount->id_lender_account)) {
+        if (empty($oLenderAccount->id_lender_account) || empty($oLenderAccount->id_client_owner)) {
             return false;
         }
         /** @var \settings $oSettings */
@@ -97,12 +97,15 @@ class AutoBidSettingsManager
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
 
-        $oSettings->get('Auto-bid global switch', 'type');
-        if ($oSettings->value && $oClient->get($oLenderAccount->id_client_owner) && $this->oClientManager->isAcceptedCGV($oClient, self::CGV_AUTOBID)
-            || (
-                false === empty($oLenderAccount->id_client_owner)
-                && $this->oClientManager->isBetaTester($oClient)
-            )) {
+        if (false === $oSettings->get('Auto-bid global switch', 'type')) {
+            return false;
+        }
+
+        if (false === $oClient->get($oLenderAccount->id_client_owner)) {
+           return false;
+        }
+
+        if ($oSettings->value && $this->oClientManager->isAcceptedCGV($oClient, self::CGV_AUTOBID) ||  $this->oClientManager->isBetaTester($oClient)) {
             return true;
         }
 

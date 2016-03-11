@@ -306,6 +306,7 @@ class syntheseController extends bootstrap
         }
 
         //Ongoing Bids Widget
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         $this->bFirstTimeActivation          = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);
