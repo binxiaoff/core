@@ -49,7 +49,7 @@ class rootController extends bootstrap
 
             // Redirection inscription preteur
             if ($this->tree->id_tree == 127) {
-                if ($this->clients->checkAccess() && in_array($this->clients->status_pre_emp, array(1, 3))) {
+                if ($this->clients->checkAccess() && $this->clients->isLender()) {
                     if ($this->clients->etape_inscription_preteur < 3) {
                         $etape = ($this->clients->etape_inscription_preteur + 1);
 
@@ -200,15 +200,11 @@ class rootController extends bootstrap
                     header('Location:' . $this->lurl);
                     die;
                 } else {
-                    // 1 preteur
                     if ($this->tree->arbo == 1) {
-                        $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
-                    } // 2 emprunteur
-                    elseif ($this->tree->arbo == 2) {
-                        $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'emprunteur', $this->clients->id_client);
+                        $this->clients->checkAccessLender();
+                    } elseif ($this->tree->arbo == 2) {
+                        $this->clients->checkAccessBorrower($this->clients->id_client);;
                     }
-
-                    // On prend le header account
                     $this->setHeader('header_account');
                 }
             }
@@ -805,38 +801,11 @@ class rootController extends bootstrap
                     // To send HTML mail, the Content-type header must be set
                     $headers = 'MIME-Version: 1.0' . "\r\n";
                     $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                    // Additional headers
-
-                    //$headers .= 'To: equinoa <unilend@equinoa.fr>' . "\r\n";
                     $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
 
                     // Mail it
                     mail($to, $subject, $message, $headers);
                 }
-            }
-        }
-    }
-
-    public function _changeCompte()
-    {
-        // On check si y a un compte
-        if (! $this->clients->checkAccess()) {
-            header('Location: ' . $this->lurl);
-            die;
-        }
-
-        if (isset($this->params[0]) && isset($_SESSION['client'])) {
-            // on redirige sur le compte preteur
-            if ($this->params[0] == 1) {
-                $_SESSION['status_pre_emp'] = 1;
-                header('Location: ' . $this->lurl . '/synthese');
-                die;
-            } // on redirige sur le compte emprunteur
-            else {
-                $_SESSION['status_pre_emp'] = 2;
-                header('Location: ' . $this->lurl . '/espace_emprunteur');
-                die;
             }
         }
     }
@@ -1119,7 +1088,7 @@ class rootController extends bootstrap
         include_once $this->path . '/apps/default/controllers/pdf.php';
 
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
+            $this->clients->checkAccessLender();
 
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $id_tree_cgu = $this->settings->value;

@@ -38,6 +38,15 @@ class projects extends projects_crud
     const DISPLAY_PROJECT_ON  = 0;
     const DISPLAY_PROJECT_OFF = 1;
 
+    const RISK_A = 5;
+    const RISK_B = 4.5;
+    const RISK_C = 4;
+    const RISK_D = 3.5;
+    const RISK_E = 3;
+    const RISK_F = 2.5;
+    const RISK_G = 2;
+    const RISK_H = 1.5;
+
     public function __construct($bdd, $params = '')
     {
         parent::projects($bdd, $params);
@@ -279,12 +288,10 @@ class projects extends projects_crud
             p.id_project,
             p.date_publication_full
             FROM projects p
-            WHERE (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1)  IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            WHERE (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1)  IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-
-        $positionStart = $start + $nb;
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
@@ -427,7 +434,7 @@ class projects extends projects_crud
                     ( SELECT ps.status FROM projects_status ps
                     LEFT JOIN projects_status_history psh ON ( ps.id_project_status = psh.id_project_status )
                     WHERE psh.id_project = p.id_project ORDER BY
-                    psh.added DESC LIMIT 1) IN (' . $statusString . ')';
+                    psh.id_project_status_history DESC LIMIT 1) IN (' . $statusString . ')';
 
         $result = $this->bdd->query($sql);
         $record = $this->bdd->result($result);
@@ -449,7 +456,7 @@ class projects extends projects_crud
                         FROM projects_status ps
                         LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status)
                         WHERE psh.id_project = p.id_project
-                        ORDER BY psh.added DESC LIMIT 1
+                        ORDER BY psh.id_project_status_history DESC LIMIT 1
                     ) IN (' . $statusString . ')';
         $result = $this->bdd->query($sql);
         $record = $this->bdd->result($result);

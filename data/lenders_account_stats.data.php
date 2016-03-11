@@ -125,7 +125,7 @@ class lenders_account_stats extends lenders_account_stats_crud
                             WHERE
                                 ps2.status = ' . \projects_status::PROBLEME . '
                                 AND psh2.id_project = e.id_project
-                            ORDER BY psh2.added DESC
+                            ORDER BY psh2.id_project_status_history DESC
                             LIMIT 1)
                     ) > 180 THEN "0" ELSE e.capital + e.interets END
                     END AS montant

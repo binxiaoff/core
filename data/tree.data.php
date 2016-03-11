@@ -28,72 +28,58 @@
 
 class tree extends tree_crud
 {
-
     /**
      * Constant for sort press article in descendant order
      * This constant is arbo id in BDD
      */
     const PRESS_SPEAKS = 101;
 
-    function tree($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::tree($bdd, $params);
     }
 
-    function get($list_field_value)
-    {
-        return parent::get($list_field_value);
-    }
-
-    function update($list_field_value)
-    {
-        parent::update($list_field_value);
-    }
-
-    function delete($list_field_value)
-    {
-        parent::delete($list_field_value);
-    }
-
-    function create($list_field_value = array())
+    public function create($list_field_value = array())
     {
         parent::create($list_field_value);
     }
 
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
-        if ($order != '')
+        }
+        if ($order != '') {
             $order = ' ORDER BY ' . $order;
+        }
         $sql = 'SELECT * FROM tree' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
+        $result   = array();
         $resultat = $this->bdd->query($sql);
-        $result = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
+        }
 
-        $sql = 'SELECT count(*) FROM tree ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM tree ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
-    function exist($list_field_value)
+    public function exist($list_field_value)
     {
-        foreach ($list_field_value as $champ => $valeur)
+        $list = '';
+        foreach ($list_field_value as $champ => $valeur) {
             $list .= ' AND ' . $champ . ' = "' . $valeur . '" ';
+        }
 
-        $sql = 'SELECT * FROM tree WHERE 1=1 ' . $list . ' ';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM tree WHERE 1 = 1 ' . $list);
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
@@ -104,16 +90,12 @@ class tree extends tree_crud
     public $typesElements = array('Texte', 'Textearea', 'Texteditor', 'Lien Interne', 'Lien Externe', 'Image', 'Fichier', 'Fichier Protected', 'Date', 'Checkbox');
 
     // Affichage des elements de formulaire en fonction du type d'élément
-    function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
+    public function displayFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
     {
         if ($type == 'tree') {
-            // Remize a zero de l'objet
             $this->params['tree_elements']->unsetData();
-
-            // Recuperation de la valeur de l'element pour la page
             $this->params['tree_elements']->get($element['id_element'], 'id_tree = ' . $id_tree . ' AND id_langue = "' . $langue . '" AND id_element');
 
-            // Construction des differents elements
             switch ($element['type_element']) {
                 case 'Texte':
                     echo '
@@ -354,13 +336,9 @@ class tree extends tree_crud
                     break;
             }
         } else {
-            // Remize a zero de l'objet
             $this->params['blocs_elements']->unsetData();
-
-            // Recuperation de la valeur de l'element pour le bloc
             $this->params['blocs_elements']->get($element['id_element'], 'id_bloc = ' . $id_tree . ' AND id_langue = "' . $langue . '" AND id_element');
 
-            // Construction des differents elements
             switch ($element['type_element']) {
                 case 'Texte':
                     echo '
@@ -604,7 +582,7 @@ class tree extends tree_crud
     }
 
     // Traitement du formulaire des elements en fonction du type d'element
-    function handleFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
+    public function handleFormElement($id_tree, $element, $type = 'tree', $langue = 'fr')
     {
         if ($type == 'tree') {
             // Traitement des differents elements
@@ -620,30 +598,30 @@ class tree extends tree_crud
                         $this->params['upload']->setUploadDir($this->params['spath'], 'images/');
 
                         if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue] = $this->params['upload']->getName();
-                            $this->params['tree_elements']->id_tree = $id_tree;
+                            $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
+                            $this->params['tree_elements']->id_tree    = $id_tree;
                             $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue = $langue;
-                            $this->params['tree_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                            $this->params['tree_elements']->id_langue  = $langue;
+                            $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                             $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->status = 1;
+                            $this->params['tree_elements']->status     = 1;
                             $this->params['tree_elements']->create();
                         } else {
-                            $this->params['tree_elements']->id_tree = $id_tree;
+                            $this->params['tree_elements']->id_tree    = $id_tree;
                             $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue = $langue;
-                            $this->params['tree_elements']->value = '';
+                            $this->params['tree_elements']->id_langue  = $langue;
+                            $this->params['tree_elements']->value      = '';
                             $this->params['tree_elements']->complement = '';
-                            $this->params['tree_elements']->status = 1;
+                            $this->params['tree_elements']->status     = 1;
                             $this->params['tree_elements']->create();
                         }
                     } else {
-                        $this->params['tree_elements']->id_tree = $id_tree;
+                        $this->params['tree_elements']->id_tree    = $id_tree;
                         $this->params['tree_elements']->id_element = $element['id_element'];
-                        $this->params['tree_elements']->id_langue = $langue;
-                        $this->params['tree_elements']->value = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                        $this->params['tree_elements']->id_langue  = $langue;
+                        $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
                         $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['tree_elements']->status = 1;
+                        $this->params['tree_elements']->status     = 1;
                         $this->params['tree_elements']->create();
                     }
                     break;
@@ -659,30 +637,30 @@ class tree extends tree_crud
                         $this->params['upload']->setUploadDir($this->params['spath'], 'fichiers/');
 
                         if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue] = $this->params['upload']->getName();
-                            $this->params['tree_elements']->id_tree = $id_tree;
+                            $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
+                            $this->params['tree_elements']->id_tree    = $id_tree;
                             $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue = $langue;
-                            $this->params['tree_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                            $this->params['tree_elements']->id_langue  = $langue;
+                            $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                             $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->status = 1;
+                            $this->params['tree_elements']->status     = 1;
                             $this->params['tree_elements']->create();
                         } else {
-                            $this->params['tree_elements']->id_tree = $id_tree;
+                            $this->params['tree_elements']->id_tree    = $id_tree;
                             $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue = $langue;
-                            $this->params['tree_elements']->value = '';
+                            $this->params['tree_elements']->id_langue  = $langue;
+                            $this->params['tree_elements']->value      = '';
                             $this->params['tree_elements']->complement = '';
-                            $this->params['tree_elements']->status = 1;
+                            $this->params['tree_elements']->status     = 1;
                             $this->params['tree_elements']->create();
                         }
                     } else {
-                        $this->params['tree_elements']->id_tree = $id_tree;
+                        $this->params['tree_elements']->id_tree    = $id_tree;
                         $this->params['tree_elements']->id_element = $element['id_element'];
-                        $this->params['tree_elements']->id_langue = $langue;
-                        $this->params['tree_elements']->value = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                        $this->params['tree_elements']->id_langue  = $langue;
+                        $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
                         $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['tree_elements']->status = 1;
+                        $this->params['tree_elements']->status     = 1;
                         $this->params['tree_elements']->create();
                     }
                     break;
@@ -698,41 +676,41 @@ class tree extends tree_crud
                         $this->params['upload']->setUploadDir($this->params['path'], 'protected/templates/');
 
                         if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue] = $this->params['upload']->getName();
-                            $this->params['tree_elements']->id_tree = $id_tree;
+                            $_POST[$element['slug'] . '_' . $langue]   = $this->params['upload']->getName();
+                            $this->params['tree_elements']->id_tree    = $id_tree;
                             $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue = $langue;
-                            $this->params['tree_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                            $this->params['tree_elements']->id_langue  = $langue;
+                            $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                             $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['tree_elements']->status = 1;
+                            $this->params['tree_elements']->status     = 1;
                             $this->params['tree_elements']->create();
                         } else {
-                            $this->params['tree_elements']->id_tree = $id_tree;
+                            $this->params['tree_elements']->id_tree    = $id_tree;
                             $this->params['tree_elements']->id_element = $element['id_element'];
-                            $this->params['tree_elements']->id_langue = $langue;
-                            $this->params['tree_elements']->value = '';
+                            $this->params['tree_elements']->id_langue  = $langue;
+                            $this->params['tree_elements']->value      = '';
                             $this->params['tree_elements']->complement = '';
-                            $this->params['tree_elements']->status = 1;
+                            $this->params['tree_elements']->status     = 1;
                             $this->params['tree_elements']->create();
                         }
                     } else {
-                        $this->params['tree_elements']->id_tree = $id_tree;
+                        $this->params['tree_elements']->id_tree    = $id_tree;
                         $this->params['tree_elements']->id_element = $element['id_element'];
-                        $this->params['tree_elements']->id_langue = $langue;
-                        $this->params['tree_elements']->value = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                        $this->params['tree_elements']->id_langue  = $langue;
+                        $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
                         $this->params['tree_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['tree_elements']->status = 1;
+                        $this->params['tree_elements']->status     = 1;
                         $this->params['tree_elements']->create();
                     }
                     break;
 
                 default:
-                    $this->params['tree_elements']->id_tree = $id_tree;
+                    $this->params['tree_elements']->id_tree    = $id_tree;
                     $this->params['tree_elements']->id_element = $element['id_element'];
-                    $this->params['tree_elements']->id_langue = $langue;
-                    $this->params['tree_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                    $this->params['tree_elements']->id_langue  = $langue;
+                    $this->params['tree_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                     $this->params['tree_elements']->complement = '';
-                    $this->params['tree_elements']->status = 1;
+                    $this->params['tree_elements']->status     = 1;
                     $this->params['tree_elements']->create();
                     break;
             }
@@ -750,30 +728,30 @@ class tree extends tree_crud
                         $this->params['upload']->setUploadDir($this->params['spath'], 'images/');
 
                         if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue] = $this->params['upload']->getName();
-                            $this->params['blocs_elements']->id_bloc = $id_tree;
+                            $_POST[$element['slug'] . '_' . $langue]    = $this->params['upload']->getName();
+                            $this->params['blocs_elements']->id_bloc    = $id_tree;
                             $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue = $langue;
-                            $this->params['blocs_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                            $this->params['blocs_elements']->id_langue  = $langue;
+                            $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                             $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->status = 1;
+                            $this->params['blocs_elements']->status     = 1;
                             $this->params['blocs_elements']->create();
                         } else {
-                            $this->params['blocs_elements']->id_bloc = $id_tree;
+                            $this->params['blocs_elements']->id_bloc    = $id_tree;
                             $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue = $langue;
-                            $this->params['blocs_elements']->value = '';
+                            $this->params['blocs_elements']->id_langue  = $langue;
+                            $this->params['blocs_elements']->value      = '';
                             $this->params['blocs_elements']->complement = '';
-                            $this->params['blocs_elements']->status = 1;
+                            $this->params['blocs_elements']->status     = 1;
                             $this->params['blocs_elements']->create();
                         }
                     } else {
-                        $this->params['blocs_elements']->id_bloc = $id_tree;
+                        $this->params['blocs_elements']->id_bloc    = $id_tree;
                         $this->params['blocs_elements']->id_element = $element['id_element'];
-                        $this->params['blocs_elements']->id_langue = $langue;
-                        $this->params['blocs_elements']->value = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                        $this->params['blocs_elements']->id_langue  = $langue;
+                        $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
                         $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['blocs_elements']->status = 1;
+                        $this->params['blocs_elements']->status     = 1;
                         $this->params['blocs_elements']->create();
                     }
                     break;
@@ -789,30 +767,30 @@ class tree extends tree_crud
                         $this->params['upload']->setUploadDir($this->params['spath'], 'fichiers/');
 
                         if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue] = $this->params['upload']->getName();
-                            $this->params['blocs_elements']->id_bloc = $id_tree;
+                            $_POST[$element['slug'] . '_' . $langue]    = $this->params['upload']->getName();
+                            $this->params['blocs_elements']->id_bloc    = $id_tree;
                             $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue = $langue;
-                            $this->params['blocs_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                            $this->params['blocs_elements']->id_langue  = $langue;
+                            $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                             $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->status = 1;
+                            $this->params['blocs_elements']->status     = 1;
                             $this->params['blocs_elements']->create();
                         } else {
-                            $this->params['blocs_elements']->id_bloc = $id_tree;
+                            $this->params['blocs_elements']->id_bloc    = $id_tree;
                             $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue = $langue;
-                            $this->params['blocs_elements']->value = '';
+                            $this->params['blocs_elements']->id_langue  = $langue;
+                            $this->params['blocs_elements']->value      = '';
                             $this->params['blocs_elements']->complement = '';
-                            $this->params['blocs_elements']->status = 1;
+                            $this->params['blocs_elements']->status     = 1;
                             $this->params['blocs_elements']->create();
                         }
                     } else {
-                        $this->params['blocs_elements']->id_bloc = $id_tree;
+                        $this->params['blocs_elements']->id_bloc    = $id_tree;
                         $this->params['blocs_elements']->id_element = $element['id_element'];
-                        $this->params['blocs_elements']->id_langue = $langue;
-                        $this->params['blocs_elements']->value = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                        $this->params['blocs_elements']->id_langue  = $langue;
+                        $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
                         $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['blocs_elements']->status = 1;
+                        $this->params['blocs_elements']->status     = 1;
                         $this->params['blocs_elements']->create();
                     }
                     break;
@@ -828,41 +806,41 @@ class tree extends tree_crud
                         $this->params['upload']->setUploadDir($this->params['path'], 'protected/templates/');
 
                         if ($this->params['upload']->doUpload($element['slug'] . '_' . $langue, $this->nom_fichier)) {
-                            $_POST[$element['slug'] . '_' . $langue] = $this->params['upload']->getName();
-                            $this->params['blocs_elements']->id_bloc = $id_tree;
+                            $_POST[$element['slug'] . '_' . $langue]    = $this->params['upload']->getName();
+                            $this->params['blocs_elements']->id_bloc    = $id_tree;
                             $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue = $langue;
-                            $this->params['blocs_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                            $this->params['blocs_elements']->id_langue  = $langue;
+                            $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                             $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                            $this->params['blocs_elements']->status = 1;
+                            $this->params['blocs_elements']->status     = 1;
                             $this->params['blocs_elements']->create();
                         } else {
-                            $this->params['blocs_elements']->id_bloc = $id_tree;
+                            $this->params['blocs_elements']->id_bloc    = $id_tree;
                             $this->params['blocs_elements']->id_element = $element['id_element'];
-                            $this->params['blocs_elements']->id_langue = $langue;
-                            $this->params['blocs_elements']->value = '';
+                            $this->params['blocs_elements']->id_langue  = $langue;
+                            $this->params['blocs_elements']->value      = '';
                             $this->params['blocs_elements']->complement = '';
-                            $this->params['blocs_elements']->status = 1;
+                            $this->params['blocs_elements']->status     = 1;
                             $this->params['blocs_elements']->create();
                         }
                     } else {
-                        $this->params['blocs_elements']->id_bloc = $id_tree;
+                        $this->params['blocs_elements']->id_bloc    = $id_tree;
                         $this->params['blocs_elements']->id_element = $element['id_element'];
-                        $this->params['blocs_elements']->id_langue = $langue;
-                        $this->params['blocs_elements']->value = $_POST[$element['slug'] . '_' . $langue . '-old'];
+                        $this->params['blocs_elements']->id_langue  = $langue;
+                        $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue . '-old'];
                         $this->params['blocs_elements']->complement = $_POST['nom_' . $element['slug'] . '_' . $langue];
-                        $this->params['blocs_elements']->status = 1;
+                        $this->params['blocs_elements']->status     = 1;
                         $this->params['blocs_elements']->create();
                     }
                     break;
 
                 default:
-                    $this->params['blocs_elements']->id_bloc = $id_tree;
+                    $this->params['blocs_elements']->id_bloc    = $id_tree;
                     $this->params['blocs_elements']->id_element = $element['id_element'];
-                    $this->params['blocs_elements']->id_langue = $langue;
-                    $this->params['blocs_elements']->value = $_POST[$element['slug'] . '_' . $langue];
+                    $this->params['blocs_elements']->id_langue  = $langue;
+                    $this->params['blocs_elements']->value      = $_POST[$element['slug'] . '_' . $langue];
                     $this->params['blocs_elements']->complement = '';
-                    $this->params['blocs_elements']->status = 1;
+                    $this->params['blocs_elements']->status     = 1;
                     $this->params['blocs_elements']->create();
                     break;
             }
@@ -870,21 +848,21 @@ class tree extends tree_crud
     }
 
     // Recuperation de l'id max pour la création d'une page (clé primaire multiple, pas d'auto incremente)
-    function getMaxId()
+    public function getMaxId()
     {
-        $sql = 'SELECT MAX(id_tree) as id FROM tree';
+        $sql    = 'SELECT MAX(id_tree) as id FROM tree';
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     // Recuperation des enfants et construction html de l'arbo
     // $type  : Si 0 = Arbo principale
     //            Si 1 = Arbo preteur
     //            Si 2 = Arbo emprunteur
-    function getChilds($id_parent, $langue = 'fr', $arbre, $type = 0)
+    public function getChilds($id_parent, $langue = 'fr', $arbre, $type = 0)
     {
-        $sSense = (self::PRESS_SPEAKS == (int)$id_parent) ? 'DESC' : 'ASC';
-        $lRubriques = $this->select('id_parent = ' . $id_parent . ' AND id_langue = "' . $langue . '" AND arbo = ' . $type, 'ordre '.$sSense);
+        $sSense     = (self::PRESS_SPEAKS == (int) $id_parent) ? 'DESC' : 'ASC';
+        $lRubriques = $this->select('id_parent = ' . $id_parent . ' AND id_langue = "' . $langue . '" AND arbo = ' . $type, 'ordre ' . $sSense);
 
         // Creation de l'arbo
         foreach ($lRubriques as $rub) {
@@ -909,10 +887,10 @@ class tree extends tree_crud
 
             // Mise en gras des principales rubriques (id_parent = 1)
             if ($rub['id_parent'] == 1) {
-                $b = '<strong>';
+                $b  = '<strong>';
                 $sb = '</strong>';
             } else {
-                $b = '';
+                $b  = '';
                 $sb = '';
             }
 
@@ -962,7 +940,7 @@ class tree extends tree_crud
     }
 
     // Recuperation et affichage de l'arbo du site
-    function getArbo($id = '1', $langue = 'fr', $typeArbo = 0)
+    public function getArbo($id = '1', $langue = 'fr', $typeArbo = 0)
     {
         //en fonction du type d'arbo demandé on appelle la fonction appropriée
 
@@ -976,7 +954,9 @@ class tree extends tree_crud
         $this->arbre = '<img src="' . $this->params['surl'] . '/images/admin/home.png" border="0" alt="Home" />';
 
         // Si il s'agit de l'arbo de izinoa on affiche les options "editer + ajouter" à la maison
-        if ($typeArbo == 0) $this->arbre .= $edit . '' . $add;
+        if ($typeArbo == 0) {
+            $this->arbre .= $edit . '' . $add;
+        }
 
         $this->arbre .= '<ul id="browser" class="filetree">';
 
@@ -988,65 +968,47 @@ class tree extends tree_crud
     }
 
     // Construction de l'arbo pour un select
-    function listChilds($id_parent, $indent, $tableau, $id_langue = 'fr')
+    public function listChilds($id_parent, $indent, $tableau, $id_langue = 'fr')
     {
         if ($indent != '') {
             $indent .= '---';
         }
 
-        $sql = 'SELECT * FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '" ORDER BY ordre ASC ';
+        $sql    = 'SELECT * FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '" ORDER BY ordre ASC ';
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_assoc($result)) {
             $tableau[] = array('id_tree' => $record['id_tree'], 'title' => $indent . $record['menu_title'], 'id_parent' => $id_parent, 'slug' => $record['slug']);
-            $tableau = $this->listChilds($record['id_tree'], $indent, $tableau, $id_langue);
+            $tableau   = $this->listChilds($record['id_tree'], $indent, $tableau, $id_langue);
         }
 
-        return $tableau;
-    }
-
-    // Construction de l'arbo pour un select de cat secondaires
-    function listChildsBis($lID, $id_langue = 'fr')
-    {
-        $sql = 'SELECT * FROM tree WHERE id_tree IN (' . $lID . ') AND id_langue = "' . $id_langue . '" ORDER BY ordre ASC ';
-        $result = $this->bdd->query($sql);
-        $tableau = array();
-
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $sql2 = 'SELECT * FROM tree WHERE id_parent = ' . $record['id_tree'] . ' AND id_langue = "' . $id_langue . '" ORDER BY ordre ASC ';
-            $result2 = $this->bdd->query($sql2);
-
-            while ($record2 = $this->bdd->fetch_assoc($result2)) {
-                $tableau[] = array('id_tree' => $record2['id_tree'], 'title' => $record2['menu_title'], 'id_parent' => $record['id_tree'], 'title_parent' => $record['menu_title'], 'slug' => $record2['slug']);
-            }
-        }
         return $tableau;
     }
 
     // Récupération de la premiere position des pages d'une rubrique
-    function getFirstPosition($id_parent)
+    public function getFirstPosition($id_parent)
     {
-        $sql = 'SELECT ordre FROM tree WHERE id_parent = ' . $id_parent . ' ORDER BY ordre ASC LIMIT 1';
+        $sql    = 'SELECT ordre FROM tree WHERE id_parent = ' . $id_parent . ' ORDER BY ordre ASC LIMIT 1';
         $result = $this->bdd->query($sql);
 
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     // Récupération de la derniere position des pages d'une rubrique
-    function getLastPosition($id_parent)
+    public function getLastPosition($id_parent)
     {
-        $sql = 'SELECT ordre FROM tree WHERE id_parent = ' . $id_parent . ' ORDER BY ordre DESC LIMIT 1';
+        $sql    = 'SELECT ordre FROM tree WHERE id_parent = ' . $id_parent . ' ORDER BY ordre DESC LIMIT 1';
         $result = $this->bdd->query($sql);
 
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     // Monter une page dans l'arborescence
     // Si pb cf tree_menu
-    function moveUp($id)
+    public function moveUp($id)
     {
         $id_parent = $this->getParent($id);
-        $position = $this->getPosition($id);
+        $position  = $this->getPosition($id);
 
         $sql = 'UPDATE tree SET ordre = ordre + 1 WHERE id_parent = ' . $id_parent . ' AND ordre < ' . $position . ' ORDER BY ordre DESC LIMIT 1';
         $this->bdd->query($sql);
@@ -1058,10 +1020,10 @@ class tree extends tree_crud
 
     // Descendre une page dans l'arborescence
     // Si pb cf tree_menu
-    function moveDown($id)
+    public function moveDown($id)
     {
         $id_parent = $this->getParent($id);
-        $position = $this->getPosition($id);
+        $position  = $this->getPosition($id);
 
         $sql = 'UPDATE tree SET ordre = ordre - 1 WHERE id_parent = ' . $id_parent . ' AND ordre > ' . $position . ' ORDER BY ordre ASC LIMIT 1';
         $this->bdd->query($sql);
@@ -1072,27 +1034,27 @@ class tree extends tree_crud
     }
 
     // Récupération de l'ID parent de la rubrique
-    function getParent($id)
+    public function getParent($id)
     {
-        $sql = 'SELECT id_parent FROM tree WHERE id_tree = ' . $id;
+        $sql    = 'SELECT id_parent FROM tree WHERE id_tree = ' . $id;
         $result = $this->bdd->query($sql);
 
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     // Récupération de la position de la page
-    function getPosition($id)
+    public function getPosition($id)
     {
-        $sql = 'SELECT ordre FROM tree WHERE id_tree = ' . $id;
+        $sql    = 'SELECT ordre FROM tree WHERE id_tree = ' . $id;
         $result = $this->bdd->query($sql);
 
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     // Reordonner une rubrique
-    function reordre($id_parent)
+    public function reordre($id_parent)
     {
-        $sql = 'SELECT DISTINCT(id_tree) FROM tree WHERE id_parent=' . $id_parent . ' ORDER BY ordre ASC ';
+        $sql    = 'SELECT DISTINCT(id_tree) FROM tree WHERE id_parent=' . $id_parent . ' ORDER BY ordre ASC ';
         $result = $this->bdd->query($sql);
 
         $i = 0;
@@ -1104,11 +1066,11 @@ class tree extends tree_crud
     }
 
     // Suppression en cascade des pages d'un parent
-    function deleteCascade($id_parent)
+    public function deleteCascade($id_parent)
     {
         $id_grand_parent = $this->getParent($id_parent);
 
-        $sql = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent;
+        $sql    = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent;
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($result)) {
@@ -1119,7 +1081,7 @@ class tree extends tree_crud
 
         if (is_array($final)) {
             foreach ($final as $f) {
-                if (!is_null($f)) {
+                if (! is_null($f)) {
                     $this->delete(array('id_tree' => $f));
                 }
             }
@@ -1131,14 +1093,14 @@ class tree extends tree_crud
     }
 
     // On rement le champ template des page à 0 dans la table tree
-    function deleteTemplate($id_template)
+    public function deleteTemplate($id_template)
     {
         $sql = 'UPDATE tree SET id_template = 0 WHERE id_template = "' . $id_template . '"';
         $this->bdd->query($sql);
     }
 
     // Récupération des menus de la navigation principale
-    function getNavigation($id_parent, $langue = 'fr', $result = array())
+    public function getNavigation($id_parent, $langue = 'fr', $result = array())
     {
         $sql = 'SELECT * FROM tree
                 WHERE status = 1 AND status_menu = 1 AND id_langue = "' . $langue . '" AND id_parent = "' . $id_parent . '"
@@ -1154,7 +1116,7 @@ class tree extends tree_crud
     }
 
     // Récupération des menus hors navigation principale
-    function getMenu($slug, $langue = 'fr', $lurl)
+    public function getMenu($slug, $langue = 'fr', $lurl)
     {
         $sql = 'SELECT tm.*, m.id_menu, (IF(tm.complement="LX", (IF(tm.value LIKE "https://%", tm.value, IF(tm.value LIKE "http://%", tm.value, CONCAT("http://",tm.value)))), CONCAT("' . $lurl . '/",(SELECT slug FROM tree WHERE id_tree = tm.value AND id_langue= "' . $langue . '")))) as url
                FROM menus m
@@ -1166,7 +1128,7 @@ class tree extends tree_crud
                ORDER BY tm.ordre ASC';
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
@@ -1176,27 +1138,27 @@ class tree extends tree_crud
     }
 
     // Récupération du slug de la page
-    function getSlug($id, $langue = 'fr')
+    public function getSlug($id, $langue = 'fr')
     {
-        $sql = 'SELECT slug FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
+        $sql    = 'SELECT slug FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
         $result = $this->bdd->query($sql);
 
         return $this->bdd->result($result, 0, 0);
     }
 
     // Récupération du title de la page
-    function getTitle($id, $langue = 'fr')
+    public function getTitle($id, $langue = 'fr')
     {
-        $sql = 'SELECT title FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
+        $sql    = 'SELECT title FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
         $result = $this->bdd->query($sql);
 
         return $this->bdd->result($result, 0, 0);
     }
 
     // Récupération du premier parent (premiere rubrique juste sous la home donc id_parent = 1)
-    function getFirstParent($id, $langue = 'fr')
+    public function getFirstParent($id, $langue = 'fr')
     {
-        $sql = 'SELECT id_tree,id_parent FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
+        $sql    = 'SELECT id_tree,id_parent FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($result)) {
@@ -1211,9 +1173,9 @@ class tree extends tree_crud
     }
 
     // Récupération du parent avec template unlock
-    function getFirstUnlock($id, $langue = 'fr')
+    public function getFirstUnlock($id, $langue = 'fr')
     {
-        $sql = 'SELECT
+        $sql    = 'SELECT
                     t.id_tree AS id_tree,
                     t.id_parent AS id_parent,
                     (SELECT tp.affichage FROM templates tp WHERE t.id_template = tp.id_template) AS affichage
@@ -1232,9 +1194,9 @@ class tree extends tree_crud
     }
 
     // Récupération du premier parent qu'on choisi
-    function getSelectedParent($id, $langue = 'fr', $id_parent = 1)
+    public function getSelectedParent($id, $langue = 'fr', $id_parent = 1)
     {
-        $sql = 'SELECT id_tree,id_parent FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
+        $sql    = 'SELECT id_tree,id_parent FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id;
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($result)) {
@@ -1249,7 +1211,7 @@ class tree extends tree_crud
     }
 
     // Recuperation du breadcrumb
-    function getBreadCrumbTemp($id_tree, $langue = 'fr', $tableau = array(), $first = true)
+    public function getBreadCrumbTemp($id_tree, $langue = 'fr', $tableau = array(), $first = true)
     {
         $sql = 'SELECT * FROM tree WHERE id_langue = "' . $langue . '" AND id_tree = ' . $id_tree;
 
@@ -1266,24 +1228,24 @@ class tree extends tree_crud
         return $tableau;
     }
 
-    function getBreadCrumb($id_tree, $langue = 'fr')
+    public function getBreadCrumb($id_tree, $langue = 'fr')
     {
         return array_reverse($this->getBreadCrumbTemp($id_tree, $langue));
     }
 
     // Recuperation des enfants et construction html de l'arbo plan du site
-    function getChildsPDS($id_parent, $langue = 'fr')
+    public function getChildsPDS($id_parent, $langue = 'fr')
     {
-        $lRubriques = $this->select('id_langue = "' . $langue . '" AND status = 1 AND id_parent = ' . $id_parent, 'ordre ASC');//,71
+        $lRubriques = $this->select('id_langue = "' . $langue . '" AND status = 1 AND prive = 0 AND id_parent = ' . $id_parent, 'ordre ASC');
 
         // Creation de l'arbo
         foreach ($lRubriques as $rub) {
             // Mise en gras des principales rubriques (id_parent = 1)
             if ($rub['id_parent'] == 1) {
-                $b = '<strong>';
+                $b  = '<strong>';
                 $sb = '</strong>';
             } else {
-                $b = '';
+                $b  = '';
                 $sb = '';
             }
 
@@ -1311,7 +1273,7 @@ class tree extends tree_crud
     }
 
     // Recuperation et affichage de l'arbo du plan du site
-    function getPlanDuSite($langue = 'fr')
+    public function getPlanDuSite($langue = 'fr')
     {
         $this->arbre = '<ul class="plansite">';
 
@@ -1325,12 +1287,12 @@ class tree extends tree_crud
     }
 
     // Recuperation du prochain article d'une rubrique
-    function getNextPage($id_tree, $langue = 'fr')
+    public function getNextPage($id_tree, $langue = 'fr')
     {
         $id_parent = $this->getParent($id_tree);
-        $position = $this->getPosition($id_tree);
+        $position  = $this->getPosition($id_tree);
 
-        $sql = 'SELECT slug,title,id_tree FROM tree WHERE id_parent = "' . $id_parent . '" AND ordre = ' . ($position + 1) . ' AND status = 1 AND id_langue = "' . $langue . '"';
+        $sql    = 'SELECT slug,title,id_tree FROM tree WHERE id_parent = "' . $id_parent . '" AND ordre = ' . ($position + 1) . ' AND status = 1 AND id_langue = "' . $langue . '"';
         $result = $this->bdd->query($sql);
         $record = $this->bdd->fetch_array($result);
 
@@ -1338,12 +1300,12 @@ class tree extends tree_crud
     }
 
     // Recuperation du precedent article d'une rubrique
-    function getPreviousPage($id_tree, $langue = 'fr')
+    public function getPreviousPage($id_tree, $langue = 'fr')
     {
         $id_parent = $this->getParent($id_tree);
-        $position = $this->getPosition($id_tree);
+        $position  = $this->getPosition($id_tree);
 
-        $sql = 'SELECT slug,title,id_tree FROM tree WHERE id_parent = "' . $id_parent . '" AND ordre = ' . ($position - 1) . ' AND status = 1 AND id_langue = "' . $langue . '"';
+        $sql    = 'SELECT slug,title,id_tree FROM tree WHERE id_parent = "' . $id_parent . '" AND ordre = ' . ($position - 1) . ' AND status = 1 AND id_langue = "' . $langue . '"';
         $result = $this->bdd->query($sql);
         $record = $this->bdd->fetch_array($result);
 
@@ -1351,23 +1313,23 @@ class tree extends tree_crud
     }
 
     // Recuperation des ID pages (dernier niveau de l'arbo) a partir d'une rubrique
-    function listIdchild($id_parent, $langue = 'fr', $tableau = array())
+    public function listIdchild($id_parent, $langue = 'fr', $tableau = array())
     {
-        $sql = 'SELECT * FROM tree WHERE id_langue = "' . $langue . '" AND id_parent = ' . $id_parent;
+        $sql    = 'SELECT * FROM tree WHERE id_langue = "' . $langue . '" AND id_parent = ' . $id_parent;
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_assoc($result)) {
             $tableau[] = $record['id_tree'];
-            $tableau = $this->listIdchild($record['id_tree'], $tableau);
+            $tableau   = $this->listIdchild($record['id_tree'], $tableau);
         }
 
         return $tableau;
     }
 
     // La suite ...
-    function getLastChildren($id_parent, $id_template, $langue = 'fr', $start = '', $nb = '')
+    public function getLastChildren($id_parent, $id_template, $langue = 'fr', $start = '', $nb = '')
     {
-        $sql = 'SELECT * FROM tree WHERE id_template = "' . $id_template . '" AND id_tree IN (' . implode(',', $this->listIdchild($id_parent, $langue)) . ') AND id_langue = "' . $langue . '" ORDER BY added DESC ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql      = 'SELECT * FROM tree WHERE id_template = "' . $id_template . '" AND id_tree IN (' . implode(',', $this->listIdchild($id_parent, $langue)) . ') AND id_langue = "' . $langue . '" ORDER BY added DESC ' . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $resultat = $this->bdd->query($sql);
 
         $result = array();
@@ -1378,9 +1340,9 @@ class tree extends tree_crud
     }
 
     // Status à 0 en cascade pour les enfants d'une page que l'on passe à 0
-    function statusCascade($id_parent, $id_langue = 'fr')
+    public function statusCascade($id_parent, $id_langue = 'fr')
     {
-        $sql = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '"';
+        $sql    = 'SELECT id_tree FROM tree WHERE id_parent = ' . $id_parent . ' AND id_langue = "' . $id_langue . '"';
         $result = $this->bdd->query($sql);
 
         while ($record = $this->bdd->fetch_array($result)) {
@@ -1390,7 +1352,7 @@ class tree extends tree_crud
 
         if (is_array($final)) {
             foreach ($final as $f) {
-                if (!is_null($f)) {
+                if (! is_null($f)) {
                     $this->get(array('id_tree' => $f, 'id_langue' => $id_langue));
                     $this->status = 0;
                     $this->update(array('id_tree' => $f, 'id_langue' => $id_langue));
@@ -1400,16 +1362,18 @@ class tree extends tree_crud
     }
 
     // Select pour le sitemap
-    function selectMap($where = '', $order = '', $start = '', $nb = '')
+    public function selectMap($where = '', $order = '', $start = '', $nb = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
-        if ($order != '')
+        }
+        if ($order != '') {
             $order = ' ORDER BY ' . $order;
+        }
         $sql = 'SELECT t.slug as slug, t.updated as updated FROM tree t' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -1417,19 +1381,20 @@ class tree extends tree_crud
     }
 
     // Counter pour le site map
-    function counterMap($where = '')
+    public function counterMap($where = '')
     {
-        if ($where != '')
+        if ($where != '') {
             $where = ' WHERE ' . $where;
+        }
 
         $sql = 'SELECT count(t.id_tree) FROM tree t ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     // Recuperation des enfants et construction sitemap
-    function getChildSitemap($id_parent, $langue = 'fr', $cms = 'iZinoa')
+    public function getChildSitemap($id_parent, $langue = 'fr', $cms = 'iZinoa')
     {
         $lRubriques = $this->selectMap('t.id_parent = ' . $id_parent . ' AND t.id_langue = "' . $langue . '" AND t.id_template > 0 AND t.status = 1 AND t.prive = 0 AND (SELECT tp.affichage FROM templates tp WHERE tp.id_template = t.id_template) = 0', 't.ordre ASC');
 
@@ -1449,7 +1414,7 @@ class tree extends tree_crud
     }
 
     // Recuperation du sitemap
-    function getSitemap($langue = 'fr', $cms = 'iZinoa')
+    public function getSitemap($langue = 'fr', $cms = 'iZinoa')
     {
         $this->sitemap = '<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd" xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
@@ -1466,7 +1431,7 @@ class tree extends tree_crud
     }
 
     // --- recherche ---
-    function search($search, $filtre_recherche, $langue = 'fr')
+    public function search($search, $filtre_recherche, $langue = 'fr')
     {
         $search = $this->bdd->escape_string($search);
 
@@ -1484,8 +1449,9 @@ class tree extends tree_crud
 
 
                 AND t.id_tree NOT IN(16,130)';
-        if ($filtre_recherche != '')
+        if ($filtre_recherche != '') {
             $sql .= 'AND e.name IN (' . $filtre_recherche . ') ';
+        }
 
         $sql .= 'GROUP BY t.slug ORDER BY t.ordre ASC';
 
@@ -1493,20 +1459,20 @@ class tree extends tree_crud
 
         // OR t.title LIKE "%'.$search.'%"
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $replace = strip_tags($record['value']);
+            $replace  = strip_tags($record['value']);
             $mystring = strtolower($replace);
-            $findme = strtolower($search);
-            $pos = strpos($mystring, $findme);
+            $findme   = strtolower($search);
+            $pos      = strpos($mystring, $findme);
             if ($pos === false) {
 
             } else {
                 // sous contenu 2
                 if ($record['id_template'] == 7) {
                     $this->get(array('id_tree' => $record['id_parent'], 'id_langue' => $langue));
-                    $result[$this->slug]['slug'] = $this->slug;
+                    $result[$this->slug]['slug']  = $this->slug;
                     $result[$this->slug]['title'] = $this->title;
                 } else {
-                    $result[$record['slug']]['slug'] = $record['slug'];
+                    $result[$record['slug']]['slug']  = $record['slug'];
                     $result[$record['slug']]['title'] = $record['title'];
                 }
             }
@@ -1516,7 +1482,7 @@ class tree extends tree_crud
         $sql = 'SELECT
         p.slug as slug,
         p.title as title,
-        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
+        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) as status
         FROM projects p
         WHERE p.status = 0
         AND p.display = 0
@@ -1528,7 +1494,7 @@ class tree extends tree_crud
         $resultatProjects = $this->bdd->query($sql);
 
         while ($recordProjects = $this->bdd->fetch_array($resultatProjects)) {
-            $result[$recordProjects['slug']]['slug'] = '/projects/detail/' . $recordProjects['slug'];
+            $result[$recordProjects['slug']]['slug']  = '/projects/detail/' . $recordProjects['slug'];
             $result[$recordProjects['slug']]['title'] = $recordProjects['title'];
         }
 
@@ -1536,57 +1502,8 @@ class tree extends tree_crud
         return $result;
     }
 
-    // --- recherche ---
-    function search_old($search, $filtre_recherche, $langue = 'fr')
-    {
-        $sql = 'SELECT t.slug as slug, t.title as title
-                FROM ((tree_elements te
-                LEFT JOIN tree t ON t.id_tree = te.id_tree)
-                LEFT JOIN elements e ON e.id_element  = te.id_element)
-                WHERE t.status = 1
-                AND t.id_langue = "' . $langue . '"
-                AND te.value LIKE "%' . $search . '%" ';
-        if ($filtre_recherche != '')
-            $sql .= 'AND e.name IN (' . $filtre_recherche . ') ';
-
-        $sql .= 'GROUP BY t.slug ORDER BY t.ordre ASC';
-
-        $resultat = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-
-        return $result;
-    }
-
-    // --- fin recherche ---
-
-
-    // Récupération de la date de publication d'une page presse
-    function Get_article_presse_a_rendre_public($id_parent_dossier_presse)
-    {
-        /*pour ne pas réactiver des pages mises hors ligne volontairement et ayant une date de publication passé on bloque ce process à 5jours */
-
-        $sql = 'SELECT t.id_tree,te.value
-                FROM tree t, tree_elements te, elements e
-                WHERE t.id_tree = te.id_tree
-                AND te.id_element = e.id_element
-                AND e.slug = "date-publication"
-                AND t.status = 0
-                AND t.id_parent = ' . $id_parent_dossier_presse . '
-                ';
-
-        $resultat = $this->bdd->query($sql);
-        $result = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     // Récupération dees articles presse en fonction de la date de publication ou de création de page
-    function select_enfant_presse($id_parent_dossier_presse)
+    public function select_enfant_presse($id_parent_dossier_presse)
     {
         $sql = "SELECT  t.id_tree,
                                         (SELECT CAST(STR_TO_DATE(te.value, '%d/%c/%Y') as DATETIME)
@@ -1627,11 +1544,11 @@ class tree extends tree_crud
                 ";
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
-
 }
+

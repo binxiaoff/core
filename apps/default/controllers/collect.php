@@ -337,8 +337,7 @@ class collectController extends bootstrap
                 $this->clients->secrete_reponse  = md5($reponse);
                 $this->clients->type             = $forme_preteur;
 
-                $this->clients->status_pre_emp             = 1; // preteur
-                $this->clients->status                     = 1; // online
+                $this->clients->status = 1; // online
                 $this->clients->status_inscription_preteur = 1; // inscription terminé
                 $this->clients->etape_inscription_preteur  = 1; // etape 1 ok
                 $this->clients->source                     = $utm_source;
