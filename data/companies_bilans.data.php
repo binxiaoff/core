@@ -45,7 +45,7 @@ class companies_bilans extends companies_bilans_crud
 
         $result   = array();
         $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;

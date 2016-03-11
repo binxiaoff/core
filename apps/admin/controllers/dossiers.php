@@ -286,6 +286,13 @@ class dossiersController extends bootstrap
                 die;
             } elseif (isset($this->params[1]) && $this->params[1] == 'altares') {
                 if (false === empty($this->companies->siren)) {
+                    $this->loadData('companies_actif_passif'); // Used in order to generate CRUD
+                    $this->loadData('companies_bilans'); // Used in order to generate CRUD
+                    $this->loadData('company_balance'); // Used in order to generate CRUD
+                    $this->loadData('company_balance_type'); // Used in order to generate CRUD
+                    $this->loadData('company_rating'); // Used in order to generate CRUD
+                    $this->loadData('company_rating_history'); // Used in order to generate CRUD
+
                     $oAltares = new Altares($this->bdd);
                     $oResult  = $oAltares->getEligibility($this->companies->siren);
 
