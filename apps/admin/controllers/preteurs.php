@@ -1769,36 +1769,48 @@ class preteursController extends bootstrap
 
     public function _change_bank_account()
     {
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
-
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $sSwift = strtoupper($_POST['bic']);
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
+
+        $sSwift           = strtoupper($_POST['bic']);
+        $bBicOk           = true;
+        $bIbanOk          = true;
+        $sIban            = '';
         $sRibChangeStatus = 'ok';
 
-        if ($this->ficelle->swift_validate(trim($sSwift)) == false) {
-            $sRibChangeStatus = 'bic_ko';
-        } else {
+        if ($this->ficelle->swift_validate(trim($sSwift))) {
             $oLendersAccounts->bic = str_replace(' ', '', strtoupper($sSwift));
+        } else {
+            $bBicOk = false;
         }
 
-        $sIban = '';
         for ($i = 1; $i <= 7; $i++) {
+            if (empty($_POST['iban' . $i])) {
+                $bIbanOk = false;
+                break;
+            }
             $sIban .= strtoupper($_POST['iban' . $i]);
         }
-        if ($sIban != '' && $this->ficelle->isIBAN($sIban) == 1 && 'ok' === $sRibChangeStatus) {
+
+        if ($bIbanOk && $this->ficelle->isIBAN($sIban)) {
             $oLendersAccounts->iban = str_replace(' ', '', $sIban);
-        } else if ($sIban != '' && $this->ficelle->isIBAN($sIban) != 1 && 'bic_ko' === $sRibChangeStatus) {
+        } else {
+            $bIbanOk = false;
+        }
+
+        if (false === $bBicOk && false === $bIbanOk) {
             $sRibChangeStatus = 'both_ko';
-        } else if ($sIban != '' && $this->ficelle->isIBAN($sIban) != 1 && 'ok' === $sRibChangeStatus) {
+        } else if (false === $bBicOk) {
+            $sRibChangeStatus = 'bic_ko';
+        } else if (false === $bIbanOk) {
             $sRibChangeStatus = 'iban_ko';
         }
 
-        echo $sRibChangeStatus;
-
         $oLendersAccounts->update();
+        echo $sRibChangeStatus;
     }
 
 }
