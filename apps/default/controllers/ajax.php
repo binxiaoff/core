@@ -127,24 +127,24 @@ class ajaxController extends bootstrap
         $this->loans             = $this->loadData('loans');
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
 
-        $where       = '';
-        $ordre       = $this->tabOrdreProject[$_POST['ordreProject']];
+        $where = '';
+        $ordre = $this->tabOrdreProject[$_POST['ordreProject']];
 
         $_SESSION['ordreProject'] = $_POST['ordreProject'];
 
         // sort projects by rate
         $aRateRange = array();
         if (isset($_SESSION['tri']['taux'])) {
-            $key                = $_SESSION['tri']['taux'];
+            $key = $_SESSION['tri']['taux'];
             switch ($key) {
                 case 1:
-                    $aRateRange         = explode('-', $this->triPartxInt[0]);
+                    $aRateRange = explode('-', $this->triPartxInt[0]);
                     break;
                 case 2:
-                    $aRateRange         = explode('-', $this->triPartxInt[1]);
+                    $aRateRange = explode('-', $this->triPartxInt[1]);
                     break;
                 case 3:
-                    $aRateRange         = explode('-', $this->triPartxInt[2]);
+                    $aRateRange = explode('-', $this->triPartxInt[2]);
                     break;
                 default:
                     break;
@@ -329,8 +329,8 @@ class ajaxController extends bootstrap
             // sort projects by rate
             $aRateRange = array();
             if (isset($_SESSION['tri']['taux'])) {
-                $key                = $_SESSION['tri']['taux'];
-                $aRateRange         = explode('-', $this->triPartxInt[$key - 1]);
+                $key        = $_SESSION['tri']['taux'];
+                $aRateRange = explode('-', $this->triPartxInt[$key - 1]);
 
                 // where pour le js
                 $this->where = $key;
