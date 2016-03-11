@@ -122,6 +122,7 @@ class operationsController extends bootstrap
         $oActiveSheet->setCellValue('H1', 'Capital perçu');
         $oActiveSheet->setCellValue('I1', 'Intérêts perçus');
         $oActiveSheet->setCellValue('J1', 'Capital restant dû');
+        $oActiveSheet->setCellValue('K1', $this->lng['preteur-operations-detail']['titre-note']);
 
         foreach ($this->lSumLoans as $iRowIndex => $aProjectLoans) {
             $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);
@@ -134,10 +135,52 @@ class operationsController extends bootstrap
             $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), (string) round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
             $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
             $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+
+            $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
+            $sNote = $this->getProjectNote($sRisk);
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $sNote);
         }
 
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
         $oWriter->save('php://output');
+    }
+
+    /**
+     * @param string $sRisk a letter that gives the risk value [A-H]
+     * @return string
+     */
+    private function getProjectNote($sRisk)
+    {
+        $sNote = '';
+        switch ($sRisk) {
+            case 'A':
+                $sNote = '5';
+                break;
+            case 'B':
+                $sNote = '4,5';
+                break;
+            case 'C':
+                $sNote = '4';
+                break;
+            case 'D':
+                $sNote = '3,5';
+                break;
+            case 'E':
+                $sNote = '3';
+                break;
+            case 'F':
+                $sNote = '2,5';
+                break;
+            case 'G':
+                $sNote = '2';
+                break;
+            case 'H':
+                $sNote = '1,5';
+                break;
+            default:
+                $sNote = '';
+        }
+        return $sNote;
     }
 
     private function commonLoans()
