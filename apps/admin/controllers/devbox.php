@@ -917,7 +917,7 @@ class devboxController extends bootstrap
                     ELSE b.id_project
                 END as le_id_project,
 
-                (SELECT psh.added FROM projects_status_history psh WHERE psh.id_project = le_id_project AND id_project_status = 8 ORDER BY added ASC LIMIT 1) as date_tri,
+                (SELECT psh.added FROM projects_status_history psh WHERE psh.id_project = le_id_project AND id_project_status = 8 ORDER BY id_project_status_history ASC LIMIT 1) as date_tri,
 
                 (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
 
@@ -1413,6 +1413,60 @@ class devboxController extends bootstrap
                 $sql = "INSERT INTO `offres_bienvenues_details` (`id_offre_bienvenue`, `motif`, `id_client`, `id_bid`, `id_bid_remb`, `montant`, `status`, `type`, `added`, `updated`)
                         VALUES (1, 'Offre de bienvenue', $iClientId, 0, 0, 2000, 0, 0, now(), now())";
                 $oOffre->bdd->query($sql);
+            }
+        }
+        fclose($rHandle);
+        echo 'done';
+    }
+
+    public function _importRecoveryRepayment()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Encode: UTF-8, new line : LF
+        if (($rHandle = fopen($this->path . '/protected/import/' . 'recouvrement.csv', 'r')) === false) {
+            return;
+        }
+
+        /** @var \transactions $oTransaction */
+        $oTransaction = $this->loadData('transactions');
+        /** @var \wallets_lines $oWalletLine */
+        $oWalletLine = $this->loadData('wallets_lines');
+        /** @var \lenders_accounts $oLender */
+        $oLender = $this->loadData('lenders_accounts');
+
+        while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
+            $oTransaction->unsetData();
+            $oWalletLine->unsetData();
+
+            $sClientId  = $aRow[0];
+            $sProjectId = $aRow[1];
+            $fAmount    = intval(str_replace(',', '.', $aRow[2]) * 100);
+
+            if ($oLender->get($sClientId, 'id_client_owner')) {
+                $oTransaction->id_project       = $sProjectId;
+                $oTransaction->id_client        = $sClientId;
+                $oTransaction->montant          = $fAmount;
+                $oTransaction->id_langue        = 'fr';
+                $oTransaction->date_transaction = date('Y-m-d H:i:s');
+                $oTransaction->status           = transactions::PAYMENT_STATUS_OK;
+                $oTransaction->etat             = transactions::STATUS_VALID;
+                $oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+                $oTransaction->type_transaction = transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT;
+                $oTransaction->transaction      = transactions::VIRTUAL;
+                $oTransaction->create();
+
+                $oWalletLine->id_lender                = $oLender->id_lender_account;
+                $oWalletLine->type_financial_operation = wallets_lines::TYPE_REPAYMENT;
+                $oWalletLine->id_transaction           = $oTransaction->id_transaction;
+                $oWalletLine->status                   = wallets_lines::STATUS_VALID;
+                $oWalletLine->type                     = wallets_lines::VIRTUAL;
+                $oWalletLine->amount                   = $fAmount;
+                $oWalletLine->create();
             }
         }
         fclose($rHandle);
