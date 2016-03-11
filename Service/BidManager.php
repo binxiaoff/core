@@ -278,6 +278,8 @@ class BidManager
                     $oNewBid->create();
 
                     $oBid->status = \bids::STATUS_BID_REJECTED;
+                    //todo : do a hotfix to remove status_email_bid_ko when all the old ko mail are sent.
+                    $oBid->status_email_bid_ko = 1;
                     $oBid->update();
                 } else {
                     $oBid->rate   = $fCurrentRate;
