@@ -97,8 +97,8 @@ if (count($this->aProjectList) > 0) :
                 <th>Période</th>
                 <th>Risk</th>
                 <th>Nombre de bids</th>
-                <th>Taux moyen</th>
-                <th>Montant moyen pondéré</th>
+                <th>Montant moyen</th>
+                <th>Taux moyen pondéré</th>
                 <th>Montant moyen d'AutoLend</th>
                 <th>Taux moyen pondéré d'AutoLend</th>
                 <th>Status de project</th>
