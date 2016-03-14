@@ -8,9 +8,8 @@ use Unilend\librairies\Cache;
  * Class ClientSettingsManager
  * @package Unilend\Service
  */
-
-class ClientSettingsManager {
-
+class ClientSettingsManager
+{
     /** @var \client_settings ClientSettings */
     private $oClientSettings;
 
@@ -22,8 +21,8 @@ class ClientSettingsManager {
 
     /**
      * @param \clients $oClient
-     * @param $iSettingType
-     * @param $sValue
+     * @param          $iSettingType
+     * @param          $sValue
      *
      * @return bool
      */
@@ -60,9 +59,9 @@ class ClientSettingsManager {
      */
     public function getSetting(\clients $oClient, $iSettingType)
     {
-        $oCache  = Cache::getInstance();
-        $sKey    = $oCache->makeKey(__CLASS__, 'getSetting', $oClient->id_client, $iSettingType);
-        $mValue  = $oCache->get($sKey);
+        $oCache = Cache::getInstance();
+        $sKey   = $oCache->makeKey(__CLASS__, 'getSetting', $oClient->id_client, $iSettingType);
+        $mValue = $oCache->get($sKey);
 
         if (false === $mValue) {
             $mValue = $this->oClientSettings->getSetting($oClient->id_client, $iSettingType);
