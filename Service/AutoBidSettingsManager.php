@@ -10,7 +10,7 @@ use Unilend\core\Loader;
 class AutoBidSettingsManager
 {
     //todo: To be defined
-    const CGV_AUTOBID = 92;
+    const CGV_AUTOBID = 456;
 
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
@@ -102,10 +102,10 @@ class AutoBidSettingsManager
         }
 
         if (false === $oClient->get($oLenderAccount->id_client_owner)) {
-           return false;
+            return false;
         }
 
-        if ($oSettings->value && $this->oClientManager->isAcceptedCGV($oClient, self::CGV_AUTOBID) ||  $this->oClientManager->isBetaTester($oClient)) {
+        if ($oSettings->value && $this->oClientManager->isAcceptedCGV($oClient, self::CGV_AUTOBID) || $this->oClientManager->isBetaTester($oClient)) {
             return true;
         }
 
@@ -223,8 +223,8 @@ class AutoBidSettingsManager
     public function isNovice(\lenders_accounts $oLendersAccount)
     {
         /** @var \autobid $oAutobid */
-        $oAutobid              = Loader::loadData('autobid');
-        $bIsNovice             = true;
+        $oAutobid  = Loader::loadData('autobid');
+        $bIsNovice = true;
 
         if ($this->hasAutoBidActivationHistory($oLendersAccount) && $oAutobid->counter('id_lender = ' . $oLendersAccount->id_lender_account) > 0) {
             if ($oAutobid->exist($oLendersAccount->id_lender_account . '" AND status = "' . \autobid::STATUS_INACTIVE, 'id_lender')) {
