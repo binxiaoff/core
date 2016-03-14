@@ -61,7 +61,7 @@ class ClientSettingsManager {
     public function getSetting(\clients $oClient, $iSettingType)
     {
         $oCache  = Cache::getInstance();
-        $sKey    = $oCache->makeKey(__CLASS__, __METHOD__, $oClient->id_client, $iSettingType);
+        $sKey    = $oCache->makeKey(__CLASS__, 'getSetting', $oClient->id_client, $iSettingType);
         $mValue  = $oCache->get($sKey);
 
         if (false === $mValue) {
