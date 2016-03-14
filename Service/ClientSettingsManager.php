@@ -10,6 +10,8 @@ use Unilend\librairies\Cache;
  */
 class ClientSettingsManager
 {
+    const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
+
     /** @var \client_settings ClientSettings */
     private $oClientSettings;
 
@@ -60,7 +62,7 @@ class ClientSettingsManager
     public function getSetting(\clients $oClient, $iSettingType)
     {
         $oCache = Cache::getInstance();
-        $sKey   = $oCache->makeKey(__CLASS__, 'getSetting', $oClient->id_client, $iSettingType);
+        $sKey   = $oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
         $mValue = $oCache->get($sKey);
 
         if (false === $mValue) {
@@ -74,7 +76,7 @@ class ClientSettingsManager
     private function flushSettingCache(\clients $oClient, $iSettingType)
     {
         $oCache = Cache::getInstance();
-        $sKey   = $oCache->makeKey(__CLASS__, 'getSetting', $oClient->id_client, $iSettingType);
+        $sKey   = $oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
         $oCache->delete($sKey);
     }
 }
