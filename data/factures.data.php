@@ -29,7 +29,7 @@
 
 class factures extends factures_crud
 {
-    const TYPE_COMMISSION_FINANCEMENT = 1;
+    const TYPE_COMMISSION_FINANCEMENT   = 1;
     const TYPE_COMMISSION_REMBOURSEMENT = 2;
 
     public function __construct($bdd, $params = '')

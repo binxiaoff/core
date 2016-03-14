@@ -18,7 +18,7 @@ class inscription_preteurController extends bootstrap
 
     public function _default()
     {
-        header('location:' . $this->lurl . '/inscription_preteur/etape1');
+        header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
         die;
     }
 
@@ -67,20 +67,21 @@ class inscription_preteurController extends bootstrap
             $this->clients->email  = $_SESSION['landing_client']['email'];
         }
 
+        // Si on a une session active
         if (isset($_SESSION['client'])) {
+            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
             // preteur ayant deja crée son compte
-            if ($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur == 3) {
+            if ($this->bIsLender && $this->clients->etape_inscription_preteur == 3) {
                 header('Location:' . $this->lurl . '/projects');
                 die;
             } // preteur n'ayant pas terminé la création de son compte
-            elseif ($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur < 3) {
+            elseif ($this->bIsLender  && $this->clients->etape_inscription_preteur < 3) {
                 $this->preteurOnline = true;
             } // Si c'est un emprunteur
-            elseif ($this->clients->status_pre_emp == 2) {
+            elseif ($this->bIsBorrower) {
                 $this->emprunteurCreatePreteur = true;
-                $this->clients->type           = 2;
+                $this->clients->type           = \clients::TYPE_LEGAL_ENTITY;
                 // tant qu'on a pas le systeme preteur/emprunteur
                 header('Location:' . $this->lurl . '/projects');
                 die;
@@ -136,17 +137,18 @@ class inscription_preteurController extends bootstrap
             $this->email       = $this->clients->email;
             $this->hash_client = $this->clients->hash;
 
+            $this->email = $this->clients->email;        // On enregistre l'adresse mail au cas où
+            $this->hash_client = $this->clients->hash;     // on enregistre le hash du client au cas où
+        }
 
-            if ($this->clients->telephone != '') {
-                $this->clients->telephone = trim(chunk_split(str_replace(' ', '', $this->clients->telephone), 2, ' '));
-            }
-
-            if ($this->companies->phone != '') {
-                $this->companies->phone = trim(chunk_split(str_replace(' ', '', $this->companies->phone), 2, ' '));
-            }
-            if ($this->companies->phone_dirigeant != '') {
-                $this->companies->phone_dirigeant = trim(chunk_split(str_replace(' ', '', $this->companies->phone_dirigeant), 2, ' '));
-            }
+        if ($this->clients->telephone != '') {
+            $this->clients->telephone = trim(chunk_split(str_replace(' ', '', $this->clients->telephone), 2, ' '));
+        }
+        if ($this->companies->phone != '') {
+            $this->companies->phone = trim(chunk_split(str_replace(' ', '', $this->companies->phone), 2, ' '));
+        }
+        if ($this->companies->phone_dirigeant != '') {
+            $this->companies->phone_dirigeant = trim(chunk_split(str_replace(' ', '', $this->companies->phone_dirigeant), 2, ' '));
         }
 
         if (isset($_POST['form_inscription_preteur_particulier_etape_1'])) {
@@ -261,6 +263,15 @@ class inscription_preteurController extends bootstrap
             } elseif ($_POST['email'] != $_POST['conf_email']) {
                 $bFormOk = false;
             } elseif ($this->clients->existEmail($_POST['email']) == false) {
+            //email
+            if ( ! isset($_POST['email']) || $_POST['email'] == $this->lng['etape1']['email']) {
+                $this->form_ok = false;
+            } elseif (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) == false) {
+                $this->form_ok = false;
+            } elseif ($_POST['email'] != $_POST['conf_email']) {
+                $this->form_ok = false;
+            } // On regarde si l'addresse en POST existe deja en BDD
+            elseif ($this->clients->existEmail($_POST['email']) == false) {
 
                 // Dans le cas d'une modification
                 if ($this->modif == true) {
@@ -400,25 +411,20 @@ class inscription_preteurController extends bootstrap
                     if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
                         $this->companies->delete($this->companies->id_company, 'id_company');
                     }
-                }
-                // FIN UPDATE //
-
-                // DEBUT CREATE //
-                else {
+                } else {
                     if ($this->error_email_exist == true) {
                         $this->clients->email = '';
                     }
-
 
                     $this->clients->source  = $_SESSION['utm_source'];
                     $this->clients->source2 = $_SESSION['utm_source2'];
 
                     // type de preteur
                     if ($this->clients->id_nationalite != 1) {
-                        $this->clients->type = 3;
+                        $this->clients->type = \clients::TYPE_PERSON_FOREIGNER;
                     } // physique etrangé
                     else {
-                        $this->clients->type = 1;
+                        $this->clients->type = \clients::TYPE_PERSON;
                     } // physique
 
                     // On créer le client
@@ -549,17 +555,16 @@ class inscription_preteurController extends bootstrap
 
                         // parametres pour valider le compte //
 
-                        $this->clients->status_pre_emp             = 1; // preteur
                         $this->clients->status                     = 1; // online
                         $this->clients->status_inscription_preteur = 1; // inscription terminé
                         $this->clients->etape_inscription_preteur  = 1; // etape 1 ok
 
                         // type de preteur
                         if ($this->clients->id_nationalite != 1) {
-                            $this->clients->type = 3;
+                            $this->clients->type = \clients::TYPE_PERSON_FOREIGNER;
                         } // physique etrangé
                         else {
-                            $this->clients->type = 1;
+                            $this->clients->type = \clients::TYPE_PERSON;
                         } // physique
 
                         $this->lenders_accounts->status = 1; // statut lender online
@@ -567,28 +572,24 @@ class inscription_preteurController extends bootstrap
                         // Enregistrement
                         $this->clients->update();
                         $this->lenders_accounts->update();
-
-                        ///////////////////////////////
-
                     }
-
                     header('location:' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
-
                 }
                 die;
             } else {
                 header('location:' . $this->lurl . '/inscription_preteur/etape1/' . $this->params[0]);
                 die;
             }
-        } // Formulaire societe etape 1
-        elseif (isset($_POST['send_form_inscription_preteur_societe_etape_1'])) {
-            $bFormOk = true;
+        } elseif (isset($_POST['send_form_inscription_preteur_societe_etape_1'])) {// Formulaire societe etape 1
+
+            $this->form_ok = true;
 
             $this->companies->name    = $_POST['raison_sociale_inscription'];
             $this->companies->forme   = $_POST['forme_juridique_inscription'];
             $this->companies->capital = str_replace(' ', '', $_POST['capital_social_inscription']);
             $this->companies->phone   = str_replace(' ', '', $_POST['phone_inscription']);
-            $this->companies->siren   = $_POST['siren_inscription'];
+            $this->companies->siret   = $_POST['siret_inscription'];
+            $this->companies->siren   = substr($this->companies->siret, 0, 9);
 
             ////////////////////////////////////
             // On verifie meme adresse ou pas //
@@ -663,7 +664,7 @@ class inscription_preteurController extends bootstrap
                     $bFormOk = false;
                 }
                 //secret-response
-                if ( ! isset($_POST['secret-responseE']) || $_POST['secret-responseE'] == $this->lng['etape1']['question-secrete']) {
+                if ( ! isset($_POST['secret-responseE']) || $_POST['secret-responseE'] == $this->lng['etape1']['responseE']) {
                     $bFormOk = false;
                 }
             }
@@ -684,9 +685,6 @@ class inscription_preteurController extends bootstrap
             if ( ! isset($_POST['siren_inscription']) || $_POST['siren_inscription'] == $this->lng['etape1']['placeholder-field-siren']) {
                 $bFormOk = false;
             }
-            /*if(!isset($_POST['siren_inscription']) || $_POST['siren_inscription'] == $this->lng['etape1']['siren']){
-                $bFormOk = false;
-            }*/
 
             //phone_inscription
             if ( ! isset($_POST['phone_inscription']) || $_POST['phone_inscription'] == $this->lng['etape1']['telephone']) {
@@ -808,10 +806,6 @@ class inscription_preteurController extends bootstrap
                         $bFormOk = false;
 
                     }
-                    /*if(isset($_POST['autre_inscription']) && $_POST['external-consultant'] == 3 && $_POST['autre_inscription'] == $this->lng['etape1']['autre']){
-                        $bFormOk = false;
-
-                    }    */
                 }
             }
 
@@ -1020,17 +1014,16 @@ class inscription_preteurController extends bootstrap
 
                         // parametres pour valider le compte //
 
-                        $this->clients->status_pre_emp             = 1; // preteur
                         $this->clients->status                     = 1; // online
                         $this->clients->status_inscription_preteur = 1; // inscription terminé
                         $this->clients->etape_inscription_preteur  = 1; // etape 1 ok
 
                         // type de preteur
                         if ($this->companies->id_pays != 1) {
-                            $this->clients->type = 4;
+                            $this->clients->type = \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
                         } // morale etrangée
                         else {
-                            $this->clients->type = 2;
+                            $this->clients->type = \clients::TYPE_LEGAL_ENTITY;
                         } // morale
 
                         $this->lenders_accounts->status = 1; // statut lender online
@@ -1038,18 +1031,11 @@ class inscription_preteurController extends bootstrap
                         // Enregistrement
                         $this->clients->update();
                         $this->lenders_accounts->update();
-
-                        ///////////////////////////////
-
                     }
-
                     header('location:' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
                     die;
-
                 }
-
             } else {
-
                 header('location:' . $this->lurl . '/inscription_preteur/etape1/' . $this->params[0]);
                 die;
             }
@@ -1108,15 +1094,15 @@ class inscription_preteurController extends bootstrap
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             // preteur ayant deja crée son compte
-            if ($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur == 3) {
+            if ($this->bIsLender && $this->clients->etape_inscription_preteur == 3) {
 
-                header('location:' . $this->lurl . '/inscription_preteur/etape1');
+                header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
                 die;
             } // preteur n'ayant pas terminé la création de son compte
-            elseif ($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur < 3) {
+            elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
                 $this->preteurOnline = true;
             } // Emprunteur/preteur n'ayant pas terminé la création de son compte
-            elseif ($this->clients->status_pre_emp == 3 && $this->clients->etape_inscription_preteur < 3) {
+            elseif ($this->bIsBorrower && $this->clients->etape_inscription_preteur < 3) {
                 $this->emprunteurCreatePreteur = true;
             }
         }
@@ -1165,6 +1151,7 @@ class inscription_preteurController extends bootstrap
             if (isset($_POST['send_form_inscription_preteur_particulier_etape_2'])) {
 
                 $bFormOk       = true;
+                $this->form_ok       = true;
                 $this->error_fichier = false;
 
                 // fichier
@@ -1348,13 +1335,13 @@ class inscription_preteurController extends bootstrap
                             $contenu .= '</ul>';
 
                             $this->clients_status->getLastStatut($this->clients->id_client);
-                            if ($this->clients_status->status == 10) {
-                                $statut_client = 10;
+                            if ($this->clients_status->status == \clients_status::TO_BE_CHECKED) {
+                                $statut_client = \clients_status::TO_BE_CHECKED;
                             }
-                            if (in_array($this->clients_status->status, array(20, 30, 40))) {
-                                $statut_client = 40;
+                            if (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) {
+                                $statut_client = \clients_status::COMPLETENESS_REPLY;
                             } else {
-                                $statut_client = 50;
+                                $statut_client = \clients_status::MODIFICATION;
                             }
 
                             // creation du statut "Modification"
@@ -1363,7 +1350,6 @@ class inscription_preteurController extends bootstrap
                             // destinataire
                             $this->settings->get('Adresse notification modification preteur', 'type');
                             $destinataire = $this->settings->value;
-                            //$destinataire = 'courtier.damien@gmail.com';
 
                             $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
 
@@ -1404,10 +1390,9 @@ class inscription_preteurController extends bootstrap
                             $this->email->setHTMLBody($texteMail);
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             // fin mail
-
                         }
-
                     }
+                    header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
 
                     header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
                     die;
@@ -1550,9 +1535,7 @@ class inscription_preteurController extends bootstrap
                         // fin mail
 
                         // email inscription preteur //
-
                     }
-
                     header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
                     die;
                 }
@@ -1622,14 +1605,14 @@ class inscription_preteurController extends bootstrap
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
             // preteur ayant deja crée son compte
-            if ($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur == 3) {
-                header('location:' . $this->lurl . '/inscription_preteur/etape1');
+            if ($this->bIsLender && $this->clients->etape_inscription_preteur == 3) {
+                header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
                 die;
             } // preteur n'ayant pas terminé la création de son compte
-            elseif ($this->clients->status_pre_emp == 1 && $this->clients->etape_inscription_preteur < 3) {
+            elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
                 $this->preteurOnline = true;
             } // Emprunteur/preteur n'ayant pas terminé la création de son compte
-            elseif ($this->clients->status_pre_emp == 3 && $this->clients->etape_inscription_preteur < 3) {
+            elseif ($this->bIsBorrowerAndLender && $this->clients->etape_inscription_preteur < 3) {
                 $this->emprunteurCreatePreteur = true;
             }
         }
@@ -1677,9 +1660,7 @@ class inscription_preteurController extends bootstrap
 
             // paiement CB
             if (isset($_POST['send_form_preteur_cb'])) {
-
                 $amount = str_replace(array(',', ' '), array('.', ''), $_POST['amount']);
-
                 if (is_numeric($amount) && $amount >= 20 && $amount <= 10000) {
                     $amount                                 = (number_format($amount, 2, '.', '') * 100);
                     $this->lenders_accounts->fonds          = $amount;
@@ -1751,16 +1732,13 @@ class inscription_preteurController extends bootstrap
                             exit();
                         } // Si erreur on envoie sur mon mail
                         elseif (isset($result)) {
-                            //mail('d.courtier@equinoa.com','unilend erreur payline','Inscription preteur etape 3 | ERROR : '.$result['result']['code']. ' '.$result['result']['longMessage']);
                             header('location:' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
                             die;
                         }
                     }
                 }
 
-            } // Virement
-            elseif (isset($_POST['send_form_preteur_virement'])) {
-
+            } elseif (isset($_POST['send_form_preteur_virement'])) {// Virement
                 $this->clients->etape_inscription_preteur = 3; // etape 3 ok
 
                 // type de versement virement
@@ -1818,24 +1796,18 @@ class inscription_preteurController extends bootstrap
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] == 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                // fin mail
-
-                header('location:' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/v/');
+                header('Location: ' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/v/');
                 die;
             }
-
         } else {
-            header('location:' . $this->lurl . '/inscription_preteur/etape1');
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape1');
             die;
         }
 
@@ -1894,8 +1866,6 @@ class inscription_preteurController extends bootstrap
             // RESPONSE FORMAT
             $response = $payline->getWebPaymentDetails($array);
             if (isset($response)) {
-                //print_r($response);
-
                 // On enregistre le resultat payline
                 $this->backpayline->code           = $response['result']['code'];
                 $this->backpayline->token          = $array['token'];
@@ -1935,7 +1905,6 @@ class inscription_preteurController extends bootstrap
 
                         // Historique client
                         $this->clients_history->id_client = $this->clients->id_client;
-                        $this->clients_history->type      = $this->clients->status_pre_emp;
                         $this->clients_history->status    = 2; // statut creation compte preteur
                         $this->clients_history->create();
 
@@ -2052,6 +2021,7 @@ class inscription_preteurController extends bootstrap
 
                         $this->clients->etape_inscription_preteur = 3; // etape 3 ok
 
+
                         // Enregistrement
                         $this->clients->update();
 
@@ -2062,12 +2032,9 @@ class inscription_preteurController extends bootstrap
                         $_SESSION['token']  = md5(md5(mktime() . $this->clients->securityKey));
                         $_SESSION['client'] = $client[0];
                         // fin mise en session
-
-
                         header('location:' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/cb/' . $this->transactions->id_transaction);
                         die;
-                    } else // si infos pas good
-                    {
+                    } else { // si infos pas good
                         header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
                         die;
                     }
@@ -2083,8 +2050,7 @@ class inscription_preteurController extends bootstrap
                     die;
                 } // Si erreur
                 else {
-                    mail('d.courtier@equinoa.com', 'unilend payline erreur', 'erreur sur page payment inscription preteur id_preteur :' . $this->clients->id_client . ' Reponse : ' . serialize($response));
-
+                    header('location:'.$this->lurl.'/inscription_preteur/erreur/'.$this->clients->hash);
                     header('location:' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
                     die;
                 }
@@ -2096,6 +2062,8 @@ class inscription_preteurController extends bootstrap
     {
         $this->emprunteurCreatePreteur = false;
 
+        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
+        // On recupere le client
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $this->page_preteur = 3;
 
@@ -2123,30 +2091,16 @@ class inscription_preteurController extends bootstrap
     {
         $this->emprunteurCreatePreteur = false;
 
-        // Si on a une session active
         if (isset($_SESSION['client'])) {
-
-            // On recup le mec
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
-
-            // Si c'est un preteur on interdit de se créer un deuxieme compte
-            if ($this->clients->status_pre_emp == 1) {
-                header('location:' . $this->lurl . '/inscription_preteur/etape1');
-                die;
-
-            } // Si c'est un emprunteur
-            elseif ($this->clients->status_pre_emp == 3) // deja statut changé en 3 car validation de linscription a la fin de letape 2
-            {
+            if ($this->bIsBorrower) {
                 $this->emprunteurCreatePreteur = true;
-
-                $this->clients->type = 2;
+                $this->clients->type           = \clients::TYPE_LEGAL_ENTITY;
             } else {
-                // Si emprunteur pas le droit de créer un autre compte en etant connecté
-                header('location:' . $this->lurl . '/inscription_preteur/etape1');
+                header('Location:' . $this->lurl . '/inscription_preteur/etape1');
                 die;
             }
         }
-        //////////////////////////////////
 
         if ($this->emprunteurCreatePreteur == true) {
             $conditionOk = true;
@@ -2156,22 +2110,24 @@ class inscription_preteurController extends bootstrap
             $conditionOk = false;
         }
 
-        // On recupere le client
         if ($conditionOk == true) {
-            // pour menu etapes
-            $this->page_preteur = 3;
-
-            //Recuperation des element de traductions
+            $this->page_preteur  = 3;
             $this->lng['etape3'] = $this->ln->selectFront('inscription-preteur-etape-3', $this->language, $this->App);
-
         } else {
-            header('location:' . $this->lurl . '/inscription_preteur/etape1/');
+            header('Location:' . $this->lurl . '/inscription_preteur/etape1/');
             die;
         }
     }
 
     public function _contact_form()
     {
+        // On masque les Head, header et footer originaux plus le debug
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+
+        //Recuperation des element de traductions
         $this->lng['contact'] = $this->ln->selectFront('contact', $this->language, $this->App);
 
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
@@ -2209,11 +2165,11 @@ class inscription_preteurController extends bootstrap
 
         // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
-        //$this->unLoadCss('default/izicom');
         $this->unLoadCss('default/colorbox');
         $this->unLoadCss('default/jquery.c2selectbox');
         //$this->unLoadCss('default/style');
         //$this->unLoadCss('default/style-edit');
+
 
 
         $this->loadCss('default/preteurs/new-style');

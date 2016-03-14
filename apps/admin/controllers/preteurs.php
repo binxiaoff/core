@@ -117,10 +117,8 @@ class preteursController extends bootstrap
             \transactions_types::TYPE_LENDER_REGULATION
         );
         $this->z = count($this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1 AND status_inscription_preteur = 1 AND (SELECT COUNT(t.id_transaction) FROM transactions t WHERE t.type_transaction IN (' . implode(',', $aTransactionTypes) . ') AND t.status = 1 AND t.etat = 1 AND t.id_client = c.id_client) < 1'));
-        //preteur "hors ligne"
-        $this->y = $this->clients->counter('status = 0 AND status_inscription_preteur = 1 AND status_pre_emp IN(1,3)');
-        //preteur "total"
-        $this->x = $this->clients->counter('status_inscription_preteur = 1  AND status_pre_emp IN(1,3)');
+        $this->y = $this->clients->counter('clients.status = 0 AND clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
+        $this->x = $this->clients->counter('clients.status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner)');
     }
 
     public function _search()
@@ -422,7 +420,6 @@ class preteursController extends bootstrap
                 $this->clients->ville_naissance = $_POST['com-naissance'];
                 $this->clients->insee_birth     = $_POST['insee_birth'];
 
-                // Naissance
                 $naissance                        = explode('/', $_POST['naissance']);
                 $j                                = $naissance[0];
                 $m                                = $naissance[1];
@@ -430,22 +427,13 @@ class preteursController extends bootstrap
                 $this->clients->naissance         = $y . '-' . $m . '-' . $j;
                 $this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
 
-                // id nationalite
                 $this->clients->id_nationalite = $_POST['nationalite'];
-
-                // On créer le client
                 $this->clients->id_langue = 'fr';
                 $this->clients->type      = 1;
                 $this->clients->fonction  = '';
 
                 $this->lenders_accounts->id_company_owner = 0;
-                $this->lenders_accounts->bic = str_replace(' ', '', strtoupper($_POST['bic']));
 
-                $iban = '';
-                for ($i = 1; $i <= 7; $i++) {
-                    $iban .= strtoupper($_POST['iban' . $i]);
-                }
-                $this->lenders_accounts->iban = str_replace(' ', '', $iban);
                 $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
                 if ($this->lenders_accounts->origine_des_fonds == '1000000') {
                     $this->lenders_accounts->precision = $_POST['preciser'];
@@ -568,12 +556,12 @@ class preteursController extends bootstrap
                 ////////////////
 
                 if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
-                    $aExistingClient       = $this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance);
+                    $aExistingClient       = array_shift($this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance));
                     $iOriginForUserHistory = 3;
 
-                    if (false === empty($aExistingClient)) {
+                    if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
                         $this->changeClientStatus($this->clients->id_client, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
-                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $this->clients->id_client, 'Doublon avec client ID : ' . $aExistingClient[0]['id_client']);
+                        $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $this->clients->id_client, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                         die;
                     } elseif (0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) { // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
@@ -782,14 +770,6 @@ class preteursController extends bootstrap
                     $this->companies->create();
                 }
 
-                $this->lenders_accounts->bic = str_replace(' ', '', strtoupper($_POST['bic']));
-
-                $iban = '';
-                for ($i = 1; $i <= 7; $i++) {
-                    $iban .= strtoupper($_POST['iban' . $i]);
-                }
-                $this->lenders_accounts->iban = str_replace(' ', '', $iban);
-
                 $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
                 if ($this->lenders_accounts->origine_des_fonds == '1000000') $this->lenders_accounts->precision = $_POST['preciser'];
                 else $this->lenders_accounts->precision = '';
@@ -909,7 +889,7 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
         } else {
             // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '', '0', '300');
+            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '0', '300');
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
@@ -940,7 +920,17 @@ class preteursController extends bootstrap
             \clients_status::MODIFICATION
         );
 
-        $this->lPreteurs     = $this->clients->selectPreteursByStatus(implode(',', $aStatusNotValidated), '', 'added_status DESC');
+        $this->lPreteurs     = $this->clients->selectPreteursByStatus(
+            implode(',', $aStatusNotValidated),
+            '',
+            'CASE status_client
+            WHEN ' . \clients_status::TO_BE_CHECKED . ' THEN 1
+            WHEN ' . \clients_status::COMPLETENESS_REPLY . ' THEN 2
+            WHEN ' . \clients_status::MODIFICATION . ' THEN 3
+            WHEN ' . \clients_status::COMPLETENESS . ' THEN 4
+            WHEN ' . \clients_status::COMPLETENESS_REPLY . ' THEN 5
+            WHEN ' . \clients_status::COMPLETENESS_REMINDER . ' THEN 6
+            END ASC, c.added DESC');
     }
 
     public function _completude()
@@ -1637,8 +1627,9 @@ class preteursController extends bootstrap
 
     private function changeClientStatus($iClientId, $iStatus, $iOrigin)
     {
-        if (false === $this->clients->isBorrower($this->loadData('projects'), $this->loadData('companies'), $iClientId)) {
-            $this->clients->get($iClientId, 'id_client');
+        $this->clients->get($iClientId, 'id_client');
+
+        if (false === $this->clients->isBorrower()) {
             $this->clients->status = $iStatus;
             $this->clients->update();
 
@@ -1784,4 +1775,51 @@ class preteursController extends bootstrap
                 break;
         }
     }
+
+    public function _change_bank_account()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
+
+        $sSwift           = strtoupper($_POST['bic']);
+        $bBicOk           = true;
+        $bIbanOk          = true;
+        $sIban            = '';
+        $sRibChangeStatus = 'ok';
+
+        if ($this->ficelle->swift_validate(trim($sSwift))) {
+            $oLendersAccounts->bic = str_replace(' ', '', strtoupper($sSwift));
+        } else {
+            $bBicOk = false;
+        }
+
+        for ($i = 1; $i <= 7; $i++) {
+            if (empty($_POST['iban' . $i])) {
+                $bIbanOk = false;
+                break;
+            }
+            $sIban .= strtoupper($_POST['iban' . $i]);
+        }
+
+        if ($bIbanOk && $this->ficelle->isIBAN($sIban)) {
+            $oLendersAccounts->iban = str_replace(' ', '', $sIban);
+        } else {
+            $bIbanOk = false;
+        }
+
+        if (false === $bBicOk && false === $bIbanOk) {
+            $sRibChangeStatus = 'both_ko';
+        } else if (false === $bBicOk) {
+            $sRibChangeStatus = 'bic_ko';
+        } else if (false === $bIbanOk) {
+            $sRibChangeStatus = 'iban_ko';
+        }
+
+        $oLendersAccounts->update();
+        echo $sRibChangeStatus;
+    }
+
 }

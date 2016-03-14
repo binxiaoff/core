@@ -310,7 +310,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->select('status_pre_emp IN(2,3) AND status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
     }
 
     public function _requete_dossiers_csv()
@@ -325,7 +325,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->select('status_pre_emp IN(2,3) AND status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
 
         $header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
         $header = utf8_encode($header);
@@ -374,7 +374,7 @@ class statsController extends bootstrap
             SELECT p.id_project as id_project, c.name,
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
-            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
+            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by id_project_status_history desc limit 1)) as status,
             c.altares_scoreVingt, c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
@@ -457,7 +457,7 @@ class statsController extends bootstrap
             SELECT p.id_project as id_project, c.name,
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
-            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
+            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by id_project_status_history desc limit 1)) as status,
             c.altares_scoreVingt, c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
@@ -1230,7 +1230,6 @@ class statsController extends bootstrap
             LEFT JOIN clients_adresses ca ON l.id_client_owner = ca.id_client
             LEFT JOIN companies comp ON l.id_company_owner = comp.id_company
             WHERE c.status = 1
-            AND status_pre_emp IN (1,3)
             ORDER BY l.added DESC';
 
         if (isset($this->params[0]) && $this->params[0] == 'csv') {
@@ -1243,7 +1242,7 @@ class statsController extends bootstrap
         $this->sql = 'SELECT p.id_project as id_project, c.name,
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
-            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
+            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by id_project_status_history desc limit 1)) as status,
             c.altares_scoreVingt, c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,

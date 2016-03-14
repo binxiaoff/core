@@ -1,16 +1,10 @@
-<?php if ($this->bIsBorrowerAndLender) { ?>
-    <div class="change espace" style="float: right; padding-top:  24px;  position:  relative;  margin-left: 5px; ">
-        <form action="<?= parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH) ?>" method="post">
-            <input type="hidden"
-                   name="<?= ($this->bDisplayLender) ? 'acceder-espace-emprunteur' : 'acceder-espace-preteur' ?>">
-            <input type="submit" class="btn btn small" style="float: right; "
-                   value="<?= ($this->bDisplayLender) ? $this->lng['header']['acceder-espace-emprunteur'] : $this->lng['header']['acceder-espace-preteur'] ?>"</input>
-        </form>
+<?php if ($this->bShowChoiceBorrowerOrLender) : ?>
+    <div class="change area" style="float: right; padding-top:  24px;  position:  relative;  margin-left: 5px; ">
+        <a href="<?= $this->url?>/synthese" class="btn btn-medium"><?= $this->lng['header']['acceder-preteur'] ?></a>
+        <a href="<?= $this->url?>/espace_emprunteur" class="btn btn-medium"><?= $this->lng['header']['acceder-emprunteur'] ?></a>
     </div>
-    <?php
-}
-if ($this->bDisplayLender) {
-    ?>
+<?php endif; ?>
+<?php if ($this->bDisplayHeaderLender) : ?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/synthese"
            class="header_account_name">
@@ -32,16 +26,14 @@ if ($this->bDisplayLender) {
                        href="<?= $this->surl ?>/pdf_cgv_preteurs"><?= $this->lng['header']['cgu-preteur'] ?></a></li>
                 <?php if ($this->bIsBorrowerAndLender) : ?>
                     <li>
-                        <a href="<?= $this->lurl ?>/espace_emprunteur"><?= $this->lng['acceder-emprunteur'] ?></a>
+                        <a href="<?= $this->lurl ?>/espace_emprunteur"><?= $this->lng['header']['acceder-emprunteur'] ?></a>
                     </li>
                 <?php endif; ?>
                 <li><a href="<?= $this->lurl ?>/logout"><?= $this->lng['header']['deconnexion'] ?></a></li>
             </ul>
         </div>
     </div><!-- /.login-panel -->
-    <?php
-} elseif ($this->bDisplayBorrower) {
-    ?>
+<?php elseif ($this->bDisplayHeaderBorrower) : ?>
     <div class="logedin-panel right">
         <a href="<?= $this->lurl ?>/espace_emprunteur/identite" class="header_account_name">
             <span style="font-size: 0.8em;"><strong><?= $this->lng['header']['siren'] . $this->oCompanyDisplay->siren ?></strong></span></a>
@@ -54,11 +46,10 @@ if ($this->bDisplayLender) {
                     </li>
                     <?php if ($this->bIsBorrowerAndLender) : ?>
                     <li>
-                        <a href="<?= $this->lurl ?>/synthese"><?= $this->lng['acceder-preteur'] ?></a>
+                        <a href="<?= $this->lurl ?>/synthese"><?= $this->lng['header']['acceder-preteur'] ?></a>
                     </li>
                     <?php endif; ?>
                 </ul>
             </div>
     </div><!-- /.login-panel -->
-    <?
-}
+<?php endif; ?>
