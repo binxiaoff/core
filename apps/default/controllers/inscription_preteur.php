@@ -969,7 +969,8 @@ class inscription_preteurController extends bootstrap
             'mdp'            => $_POST['pass'],
             'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
             'lien_fb'        => $lien_fb,
-            'lien_tw'        => $lien_tw
+            'lien_tw'        => $lien_tw,
+            'annee'          => date('Y')
         );
 
         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
