@@ -646,8 +646,8 @@
                         <td></td>
                         <td id="status_dossier">
                         <?php if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) { ?>
-                            <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossierV2(<?= \projects_status::ATTENTE_ANALYSTE ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
-                            <input type="button" id="status_dosier_rejeter" class="btn" onclick="check_status_dossierV2(<?= \projects_status::REJETE ?>, <?= $this->projects->id_project ?>);" style="background:#CC0000;border-color:#CC0000;font-size:10px;" value="Rejeter dossier">
+                            <input type="button" id="status_dosier_valider" class="btn" onclick="check_status_dossier(<?= \projects_status::ATTENTE_ANALYSTE ?>, <?= $this->projects->id_project ?>);" style="background:#009933;border-color:#009933;font-size:10px;" value="Revue du dossier">
+                            <a href="<?= $this->lurl ?>/dossiers/ajax_rejection/1/<?= $this->projects->id_project ?>" class="btn btn_link thickbox" style="background:#CC0000;border-color:#CC0000;font-size:10px;">Rejeter dossier</a>
                         <?php } ?>
                         </td>
                     </tr>

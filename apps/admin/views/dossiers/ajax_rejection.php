@@ -9,6 +9,10 @@
     <br/><br/>
     <div class="right">
         <button onclick="parent.$.fn.colorbox.close();" class="btn btnDisabled">Annuler</button>
-        <button onclick="valid_rejete_etape<?= $this->iStep ?>(2, <?= $this->iProjectId ?>);" class="btn">Rejeter</button>
+        <?php if (1 == $this->iStep) : ?>
+            <button onclick="check_status_dossier(<?= \projects_status::REJETE ?>, <?= $this->iProjectId ?>);" class="btn">Rejeter</button>
+        <?php else : ?>
+            <button onclick="valid_rejete_etape<?= $this->iStep ?>(2, <?= $this->iProjectId ?>);" class="btn">Rejeter</button>
+        <?php endif; ?>
     </div>
 </div>

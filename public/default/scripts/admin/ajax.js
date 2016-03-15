@@ -244,41 +244,6 @@ function activeUserZone(id_user, id_zone, zone) {
     xhr_object.send(null);
 }
 
-/* Fonction AJAX change le statut d'un dossier*/
-function check_status_dossier(surl, status, id_project) {
-    if (status == 40) {
-        var message = 'valider';
-    }
-    else if (status == 30) {
-        var message = 'rejeter';
-    }
-
-
-    if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
-        xhr_object = AjaxObject();
-        var param = no_cache();
-
-        var date_pub = document.getElementById('date_pub').value;
-        var date_pub = date_pub.replace(/\//g, "-");
-
-        xhr_object.onreadystatechange = function () {
-            if (xhr_object.readyState == 4 && xhr_object.status == 200) {
-                var reponse = xhr_object.responseText;
-                if (reponse == 'nok') {
-                    alert('Tous les critères obligatoires n\'ont pas été rentrés');
-                }
-                else {
-                    document.getElementById('current_statut').innerHTML = reponse;
-                    $('#status_dossier').remove();
-                }
-            }
-        };
-        xhr_object.open('GET', add_url + '/ajax/check_status_dossier/' + status + '/' + id_project + '/' + date_pub + '/' + param, false);
-        xhr_object.send(null);
-
-    }
-}
-
 function addMemo(id, type) {
     var content_memo = $('#content_memo').val();
     var val = {content_memo: content_memo, id: id, type: type};
@@ -502,21 +467,20 @@ function loadDashYear(annee) {
     };
     $.post(add_url + '/ajax/loadDashYear', val).done(function (data) {
         if (data != 'nok') {
-
             $(".contentLoadYear").html(data);
-
         }
     });
 }
 
-function check_status_dossierV2(status, id_project) {
+function check_status_dossier(status, id_project) {
     if (status == 25) var message = 'passer en revue';
     else if (status == 30) var message = 'rejeter';
 
     if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
-        $.post(add_url + '/ajax/check_status_dossierV2', {
+        $.post(add_url + '/ajax/check_status_dossier', {
             status: status,
-            id_project: id_project
+            id_project: id_project,
+            rejection_reason: $('#rejection_reason option:selected').val()
         }).done(function (data) {
             if (data != 'nok') {
                 var obj = jQuery.parseJSON(data),
@@ -527,10 +491,10 @@ function check_status_dossierV2(status, id_project) {
                 $('#current_statut').html(liste);
                 $('#status_dossier').remove();
                 $('#content_etape6').html(etape_6);
-            }
-            else if (data == 'nok') {
+            } else if (data == 'nok') {
                 alert('Tous les critères obligatoires n\'ont pas été rentrés');
             }
+            parent.$.fn.colorbox.close();
         });
     }
 }

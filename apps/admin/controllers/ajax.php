@@ -205,19 +205,6 @@ class ajaxController extends bootstrap
     }
 
     /* Fonction AJAX change le statut d'un dossier*/
-    public function _status_dossier()
-    {
-        $this->autoFireView = true;
-
-        $this->projects                = $this->loadData('projects');
-        $this->current_projects_status = $this->loadData('projects_status');
-
-
-        $this->projects->get($this->params[0], 'id_project');
-        $this->current_projects_status->getLastStatut($this->projects->id_project);
-    }
-
-    /* Fonction AJAX change le statut d'un dossier*/
     public function _date_publication()
     {
         $this->autoFireView = true;
@@ -228,255 +215,6 @@ class ajaxController extends bootstrap
 
         $this->projects->get($this->params[0], 'id_project');
         $this->current_projects_status->getLastStatut($this->projects->id_project);
-    }
-
-    /* Fonction AJAX change le statut d'un dossier*/
-    public function _check_status_dossier()
-    {
-        $this->autoFireView = true;
-
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->companies               = $this->loadData('companies');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_history         = $this->loadData('clients_history');
-
-        if (isset($this->params[0]) && isset($this->params[1])) {
-            if ($this->projects->get($this->params[1], 'id_project') &&
-                $this->projects->amount > 0 &&
-                $this->projects->target_rate != '0' &&
-                $this->companies->get($this->projects->id_company, 'id_company') &&
-                $this->companies->risk != '' && $this->projects->period > 0 &&
-                $this->params[2] != '' &&
-                $this->projects->date_publication != '0000-00-00' &&
-                $this->projects->date_retrait != '0000-00-00'
-                ||
-                $this->projects->get($this->params[1], 'id_project') &&
-                $this->companies->get($this->projects->id_company, 'id_company') &&
-                $this->params[0] == 30
-            ) {
-                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $this->params[0], $this->projects->id_project);
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-                //*****************************************//
-                //*** ENVOI DU MAIL Validation ou rejet ***//
-                //*****************************************//
-
-                // Recuperation du modele de mail
-                // validé
-                if ($this->params[0] == 40) {
-
-                    // Si statut a funder, en funding ou fundé
-                    if (in_array($this->params[0], array(40, 50, 60))) {
-                        /////////////////////////////////////
-                        // Partie check données manquantes //
-                        /////////////////////////////////////
-
-                        $companies        = $this->loadData('companies');
-                        $clients          = $this->loadData('clients');
-                        $clients_adresses = $this->loadData('clients_adresses');
-
-                        // on recup la companie
-                        $companies->get($this->projects->id_company, 'id_company');
-                        // et l'emprunteur
-                        $clients->get($companies->id_client_owner, 'id_client');
-                        // son adresse
-                        $clients_adresses->get($companies->id_client_owner, 'id_client');
-
-
-                        $mess = '<ul>';
-
-                        if ($this->projects->title == '') {
-                            $mess .= '<li>Titre projet</li>';
-                        }
-                        if ($this->projects->title_bo == '') {
-                            $mess .= '<li>Titre projet BO</li>';
-                        }
-                        if ($this->projects->period == '0') {
-                            $mess .= '<li>Periode projet</li>';
-                        }
-                        if ($this->projects->amount == '0') {
-                            $mess .= '<li>Montant projet</li>';
-                        }
-
-                        if ($companies->name == '') {
-                            $mess .= '<li>Nom entreprise</li>';
-                        }
-                        if ($companies->forme == '') {
-                            $mess .= '<li>Forme juridique</li>';
-                        }
-                        if ($companies->siren == '') {
-                            $mess .= '<li>SIREN entreprise</li>';
-                        }
-                        if ($companies->iban == '') {
-                            $mess .= '<li>IBAN entreprise</li>';
-                        }
-                        if ($companies->bic == '') {
-                            $mess .= '<li>BIC entreprise</li>';
-                        }
-                        if ($companies->tribunal_com == '') {
-                            $mess .= '<li>Tribunal de commerce entreprise</li>';
-                        }
-                        if ($companies->capital == '0') {
-                            $mess .= '<li>Capital entreprise</li>';
-                        }
-                        if ($companies->date_creation == '0000-00-00') {
-                            $mess .= '<li>Date creation entreprise</li>';
-                        }
-                        if ($companies->sector == 0) {
-                            $mess .= '<li>Secteur entreprise</li>';
-                        }
-
-                        if ($clients->nom == '') {
-                            $mess .= '<li>Nom emprunteur</li>';
-                        }
-                        if ($clients->prenom == '') {
-                            $mess .= '<li>Prenom emprunteur</li>';
-                        }
-                        if ($clients->fonction == '') {
-                            $mess .= '<li>Fonction emprunteur</li>';
-                        }
-                        if ($clients->telephone == '') {
-                            $mess .= '<li>Telephone emprunteur</li>';
-                        }
-                        if ($clients->email == '') {
-                            $mess .= '<li>Email emprunteur</li>';
-                        }
-
-                        if ($clients_adresses->adresse1 == '') {
-                            $mess .= '<li>Adresse emprunteur</li>';
-                        }
-                        if ($clients_adresses->cp == '') {
-                            $mess .= '<li>CP emprunteur</li>';
-                        }
-                        if ($clients_adresses->ville == '') {
-                            $mess .= '<li>Ville emprunteur</li>';
-                        }
-
-                        $mess .= '</ul>';
-
-                        if (strlen($mess) > 9) {
-                            $to = implode(',', $this->Config['DebugAlertesBusiness']);
-                            $to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
-                            // subject
-                            $subject = '[Rappel] Donnees projet manquantes';
-                            // message
-                            $message = '
-                            <html>
-                            <head>
-                              <title>[Rappel] Donnees projet manquantes</title>
-                            </head>
-                            <body>
-                                <p>Un projet qui vient d\'etre publie ne dispose pas de toutes les donnees necessaires</p>
-                                <p>Listes des informations manquantes sur le projet ' . $this->projects->id_project . ' : </p>
-                                ' . $mess . '
-                            </body>
-                            </html>
-                            ';
-
-                            // To send HTML mail, the Content-type header must be set
-                            $headers = 'MIME-Version: 1.0' . "\r\n";
-                            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                            // Additional headers
-
-                            $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-                            //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
-
-                            // Mail it
-                            mail($to, $subject, $message, $headers);
-                        }
-                    }
-                    // si inscription
-                    if ($this->clients->status_transition == 1) {
-                        $this->clients_history->id_client = $this->clients->id_client;
-                        $this->clients_history->type      = $this->clients->status_pre_emp;
-                        $this->clients_history->status    = 2; // statut inscription
-                        $this->clients_history->create();
-                    }
-
-                    $this->clients_history->id_client = $this->clients->id_client;
-                    $this->clients_history->type      = $this->clients->status_pre_emp;
-                    $this->clients_history->status    = 3; // statut depot de dossier validé
-                    $this->clients_history->create();
-
-                    $this->clients->status            = 1;
-                    $this->clients->status_transition = 0;
-                    $this->clients->update();
-
-                    $this->mails_text->get('emprunteur-dossier-valide', 'lang = "' . $this->language . '" AND type');
-                } elseif ($this->params[0] == 30) {
-                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
-                }
-
-                // FB
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
-
-                // Twitter
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
-
-                $timeDatedebut  = strtotime($this->projects->date_publication);
-                $monthDatedebut = $this->dates->tableauMois['fr'][date('n', $timeDatedebut)];
-                $datedebut      = date('d', $timeDatedebut) . ' ' . $monthDatedebut . ' ' . date('Y', $timeDatedebut);
-
-                $timeDateretrait  = strtotime($this->projects->date_retrait);
-                $monthDateretrait = $this->dates->tableauMois['fr'][date('n', $timeDateretrait)];
-                $date_retrait     = date('d', $timeDateretrait) . ' ' . $monthDateretrait . ' ' . date('Y', $timeDateretrait);
-
-                $varMail = array(
-                    'surl'                             => $this->surl,
-                    'url'                              => $this->furl,
-                    'prenom_e'                         => $this->clients->prenom,
-                    'link_compte_emprunteur'           => $this->furl . '/synthese_emprunteur',
-                    'date_presentation_dossier_debut'  => $datedebut,
-                    'heure_presentation_dossier_debut' => date('H', $timeDatedebut),
-                    'date_presentation_dossier_fin'    => $date_retrait,
-                    'heure_presentation_dossier_fin'   => date('H', $timeDateretrait),
-                    'lien_fb'                          => $lien_fb,
-                    'lien_tw'                          => $lien_tw
-                );
-
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
-
-                //on recup le statut courant
-                $this->current_projects_status = $this->loadData('projects_status');
-                $this->current_projects_status->getLastStatut($this->projects->id_project);
-
-                //on charge la liste des statut dispo
-                if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) {
-                    $this->lProjects_status = $this->projects_status->select(' status <= ' . \projects_status::EN_ATTENTE_PIECES, ' status ASC ');
-                } elseif ($this->current_projects_status->status >= \projects_status::REMBOURSEMENT) {
-                    $this->lProjects_status = $this->projects_status->select(' status >= ' . \projects_status::REMBOURSEMENT, ' status ASC ');
-                } else {
-                    $this->lProjects_status = array();
-                }
-                $this->bloc_statut = 'ok';
-            } else {
-                echo 'nok';
-            }
-        } else {
-            echo 'nok';
-        }
     }
 
     public function _addMemo()
@@ -498,9 +236,7 @@ class ajaxController extends bootstrap
                 $this->projects_comments->create();
                 $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $_POST['id'], 'added ASC');
             }
-
         }
-
     }
 
     public function _deleteMemo()
@@ -509,12 +245,8 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['id_project_comment']) && isset($_POST['id_project'])) {
             $this->projects_comments = $this->loadData('projects_comments');
-
-            // on supprime le memo
             $this->projects_comments->delete($_POST['id_project_comment'], 'id_project_comment');
 
-
-            // On raffiche le tableau
             $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $_POST['id_project'], 'added ASC');
         }
     }
@@ -1275,45 +1007,29 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _check_status_dossierV2()
+    public function _check_status_dossier()
     {
         $this->autoFireView = false;
 
         $this->projects                = $this->loadData('projects');
-        $this->projects_notes          = $this->loadData('projects_notes');
-        $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->companies               = $this->loadData('companies');
         $this->clients                 = $this->loadData('clients');
-        $this->clients_history         = $this->loadData('clients_history');
 
-        // on check si on a les posts
         if (isset($_POST['status'], $_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
 
-            // on verifie que les infos sont good
             if ($this->projects->amount <= 0 || $this->projects->period <= 0) {
                 $form_ok = false;
-            }
-            if (! $this->companies->get($this->projects->id_company, 'id_company')) {
+            } elseif (! $this->companies->get($this->projects->id_company, 'id_company')) {
                 $form_ok = false;
-            }
-            if (! $this->clients->get($this->companies->id_client_owner, 'id_client')) {
+            } elseif (! $this->clients->get($this->companies->id_client_owner, 'id_client')) {
                 $form_ok = false;
             }
 
             if ($form_ok == true) {
-                // on check si existe deja
-                if ($this->projects_notes->get($_POST['id_project'], 'id_project')) {
-                    $update = true;
-                } else {
-                    $update = false;
-                }
-
-                // on maj le statut
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
-                //on recup le statut courant
                 $this->current_projects_status = $this->loadData('projects_status');
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
 
@@ -1331,7 +1047,6 @@ class ajaxController extends bootstrap
                 }
 
                 if ($this->current_projects_status->status != \projects_status::REJETE) {
-                    $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1);
                     $etape_6  = '
                     <div class="tab_title" id="title_etape6">Etape 6</div>
                     <div class="tab_content" id="etape6">
@@ -1340,31 +1055,31 @@ class ajaxController extends bootstrap
                                 <tr>
                                     <th style="vertical-align:top;"><label for="performance_fianciere">Performance financière</label></th>
                                     <td>
-                                        <span id="performance_fianciere">' . $this->projects_notes->performance_fianciere . '</span> / 10
+                                        <span id="performance_fianciere"></span> / 10
                                     </td>
                                     <th style="vertical-align:top;"><label for="marche_opere">Marché opéré</label></th>
                                     <td style="vertical-align:top;">
-                                        <span id="marche_opere">' . $this->projects_notes->marche_opere . '</span> / 10
+                                        <span id="marche_opere"></span> / 10
                                     </td>
                                     <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
-                                    <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                    <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                     <th><label for="notation_externe">Notation externe</label></th>
-                                    <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                    <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="vertical-align:top;">
                                         <table>
                                             <tr>
                                                 <th><label for="structure">Structure</label></th>
-                                                <td><input tabindex="1" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                                <td><input tabindex="1" class="input_court cal_moyen" type="text" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="rentabilite">Rentabilité</label></th>
-                                                <td><input tabindex="2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                                <td><input tabindex="2" class="input_court cal_moyen" type="text" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="tresorerie">Trésorerie</label></th>
-                                                <td><input tabindex="3" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                                <td><input tabindex="3" class="input_court cal_moyen" type="text" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -1372,23 +1087,23 @@ class ajaxController extends bootstrap
                                         <table>
                                             <tr>
                                                 <th><label for="global">Global</label></th>
-                                                <td><input tabindex="4" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                                <td><input tabindex="4" class="input_court cal_moyen" type="text" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="individuel">Individuel</label></th>
-                                                <td><input tabindex="5" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                                <td><input tabindex="5" class="input_court cal_moyen" type="text" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td colspan="4"></td>
                                 </tr>
                                 <tr class="lanote">
-                                    <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote" onkeyup="nodizaines(this.value,this.id);">' . $moyenne . ' / 10</span></th>
+                                    <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote" onkeyup="nodizaines(this.value,this.id);">N/A</span></th>
                                 </tr>
                                 <tr>
                                     <td colspan="8" style="text-align:center;">
                                         <label for="avis" style="text-align:left;display: block;">Avis :</label><br />
-                                        <textarea name="avis" tabindex="8" style="height:700px;" id="avis" class="textarea_large avis" />' . $this->projects_notes->avis . '</textarea>
+                                        <textarea name="avis" tabindex="8" style="height:700px;" id="avis" class="textarea_large avis" /></textarea>
                                         <script type="text/javascript">var ckedAvis = CKEDITOR.replace(\'avis\',{ height: 700});</script>
                                     </td>
                                 </tr>
@@ -1445,18 +1160,21 @@ class ajaxController extends bootstrap
                 } else {
                     $etape_6 = '';
 
-                    //////////////////////////////////////
-                    /// MAIL emprunteur-dossier-rejete ///
-                    //////////////////////////////////////
+                    /** @var \projects_status_history_details $oHistoryDetails */
+                    $oHistoryDetails                              = $this->loadData('projects_status_history_details');
+                    $oHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
+                    $oHistoryDetails->create();
+
+                    /** @var \project_rejection_reason $oRejectionReason */
+                    $oRejectionReason = $this->loadData('project_rejection_reason');
+                    $oRejectionReason->get($_POST['rejection_reason']);
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
-
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
@@ -1487,6 +1205,10 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+                }
+
+                if (isset($oRejectionReason)) {
+                    $select .= ' (' . $oRejectionReason->label . ')';
                 }
 
                 echo json_encode(array('liste' => $select, 'etape_6' => $etape_6));
@@ -1979,7 +1701,7 @@ class ajaxController extends bootstrap
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
 
                 if ($this->current_projects_status->status == \projects_status::PREP_FUNDING) {
-                    $this->lProjects_status = $this->projects_status->select(' status IN (35,40) ', ' status ASC ');
+                    $this->lProjects_status = $this->projects_status->select(' status IN (' . \projects_status::PREP_FUNDING . ', ' . \projects_status::A_FUNDER . ') ', ' status ASC ');
                 } else {
                     $this->lProjects_status = array();
                 }
