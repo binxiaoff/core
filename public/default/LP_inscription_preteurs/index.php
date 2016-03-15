@@ -984,6 +984,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
 <script src="js/jquery.touchSwipe.min.js" type="text/javascript"></script>
 <script src="https://crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
 <script src="js/global.js" type="text/javascript"></script>
+<script src="/scripts/default/md5.min.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script>
     $(function () {
@@ -1435,6 +1436,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
 
                                 dataLayer.push ({
                                     'email_lead': email,
+                                    'UNIQUE_ID': md5(email),
                                     'source1_lead': utm_source,
                                     'source2_lead': utm_source2,
                                     'event': 'signupPreteurStep2OK'
