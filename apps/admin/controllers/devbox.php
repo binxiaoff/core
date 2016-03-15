@@ -17,6 +17,7 @@ class devboxController extends bootstrap
 
     /**
      * On test environment, script took 45 seconds and used 184 MB of memory
+     * DEV-225
      */
     public function _migrateAltaresScoring()
     {
@@ -66,6 +67,46 @@ class devboxController extends bootstrap
                 $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'date_valeur_altares', '" . $aRecord['altares_dateValeur'] . "')");
             }
         }
+    }
+
+    /**
+     * On test environment, script took 22 seconds
+     * DEV-221
+     */
+    public function _setProjectsLastAnnualAccounts()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        /** @var \projects $oProjects */
+        $oProjects        = $this->loadData('projects');
+        $iStartTime       = time();
+        $iUpdatedProjects = 0;
+        $rResult          = $this->bdd->query('
+            SELECT p.id_project
+            FROM projects p
+            INNER JOIN projects_last_status_history USING (id_project)
+            INNER JOIN projects_status_history USING (id_project_status_history)
+            INNER JOIN projects_status ps USING (id_project_status)
+            WHERE ps.status >= 9');
+
+        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
+            $oProjects->get($aRow['id_project']);
+            $rAnnualAccountResult = $this->bdd->query('SELECT id_bilan FROM companies_bilans WHERE id_company = ' . $oProjects->id_company . ' ORDER BY cloture_exercice_fiscal DESC LIMIT 1');
+
+            if (
+                false !== ($aAnnualAccount = $this->bdd->fetch_assoc($rAnnualAccountResult))
+                && $aAnnualAccount['id_bilan'] > 0
+                && $oProjects->id_dernier_bilan != $aAnnualAccount['id_bilan']
+            ) {
+                $oProjects->id_dernier_bilan = $aAnnualAccount['id_bilan'];
+                $oProjects->update();
+                ++$iUpdatedProjects;
+            }
+        }
+
+        echo 'Execution took ' . (time() - $iStartTime) . ' seconds<br>';
+        echo $iUpdatedProjects . ' rows updated';
     }
 
     // Ressort un csv avec les process des usersw≤
