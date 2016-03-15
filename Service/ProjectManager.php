@@ -50,9 +50,9 @@ class ProjectManager
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oBidManager          = Loader::loadService('BidManager');
-        $this->oLoanManager         = Loader::loadService('LoanManager');
-        $this->oNotificationManager = Loader::loadService('NotificationManager');
+        $this->oBidManager             = Loader::loadService('BidManager');
+        $this->oLoanManager            = Loader::loadService('LoanManager');
+        $this->oNotificationManager    = Loader::loadService('NotificationManager');
         $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
 
         $this->oNMP       = Loader::loadData('nmp');
@@ -204,7 +204,8 @@ class ProjectManager
         foreach ($aAutoBidList as $aAutoBidSetting) {
             if ($oClient->get($aAutoBidSetting['id_client'])
                 && $oLenderAccount->get($aAutoBidSetting['id_lender'])
-                && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
+                && $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+            ) {
                 $iBalance = $oTransaction->getSolde($oClient->id_client);
 
                 if ($iBalance < $aAutoBidSetting['amount']) {
@@ -501,6 +502,7 @@ class ProjectManager
                 $oLoan->get($l['id_loan']);
                 $tabl = $oLoan->getRepaymentSchedule($commission, $tva);
 
+                $aRepaymentSchedule = array();
                 // on crée les echeances de chaques preteurs
                 foreach ($tabl['repayment_schedule'] as $k => $e) {
                     // Date d'echeance preteur
@@ -577,26 +579,29 @@ class ProjectManager
                         }
                     }
 
-                    $oRepaymentSchedule->id_lender                    = $l['id_lender'];
-                    $oRepaymentSchedule->id_project                   = $oProject->id_project;
-                    $oRepaymentSchedule->id_loan                      = $l['id_loan'];
-                    $oRepaymentSchedule->ordre                        = $k;
-                    $oRepaymentSchedule->montant                      = $e['repayment'] * 100;
-                    $oRepaymentSchedule->capital                      = $e['capital'] * 100;
-                    $oRepaymentSchedule->interets                     = $e['interest'] * 100;
-                    $oRepaymentSchedule->commission                   = $e['commission'] * 100;
-                    $oRepaymentSchedule->tva                          = $e['vat_amount'] * 100;
-                    $oRepaymentSchedule->prelevements_obligatoires    = $montant_prelevements_obligatoires;
-                    $oRepaymentSchedule->contributions_additionnelles = $montant_contributions_additionnelles;
-                    $oRepaymentSchedule->crds                         = $montant_crds;
-                    $oRepaymentSchedule->csg                          = $montant_csg;
-                    $oRepaymentSchedule->prelevements_solidarite      = $montant_prelevements_solidarite;
-                    $oRepaymentSchedule->prelevements_sociaux         = $montant_prelevements_sociaux;
-                    $oRepaymentSchedule->retenues_source              = $montant_retenues_source;
-                    $oRepaymentSchedule->date_echeance                = $dateEcheance;
-                    $oRepaymentSchedule->date_echeance_emprunteur     = $dateEcheance_emprunteur;
-                    $oRepaymentSchedule->create();
+                    $aRepaymentSchedule[] = array(
+                        'id_lender'                    => $l['id_lender'],
+                        'id_project'                   => $oProject->id_project,
+                        'id_loan'                      => $l['id_loan'],
+                        'ordre'                        => $k,
+                        'montant'                      => $e['repayment'] * 100,
+                        'capital'                      => $e['capital'] * 100,
+                        'interets'                     => $e['interest'] * 100,
+                        'commission'                   => $e['commission'] * 100,
+                        'tva'                          => $e['vat_amount'] * 100,
+                        'prelevements_obligatoires'    => $montant_prelevements_obligatoires,
+                        'contributions_additionnelles' => $montant_contributions_additionnelles,
+                        'crds'                         => $montant_crds,
+                        'csg'                          => $montant_csg,
+                        'prelevements_solidarite'      => $montant_prelevements_solidarite,
+                        'prelevements_sociaux'         => $montant_prelevements_sociaux,
+                        'retenues_source'              => $montant_retenues_source,
+                        'date_echeance'                => $dateEcheance,
+                        'date_echeance_emprunteur'     => $dateEcheance_emprunteur,
+                    );
                 }
+                $oRepaymentSchedule->multiInsert($aRepaymentSchedule);
+
                 $iTreatedLoanNb++;
                 if ($this->oLogger instanceof ULogger) {
                     $this->oLogger->addRecord(

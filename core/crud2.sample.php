@@ -104,4 +104,21 @@ class --classe--
     {
         --initialisation--
     }
+
+    public function multiInsert($aData)
+    {
+        $aInsert = array();
+        $sColumnLabel = implode(',', array_keys($aData[0]));
+        foreach( $aData as $aRow ) {
+            $aInsertRow = array();
+            foreach ($aRow as $mColumn) {
+                $aInsertRow[] = '"' . $mColumn . '"';
+            }
+            $aInsert[] = '(' . implode(',', $aInsertRow) .')';
+        }
+
+        $sInsert = 'INSERT INTO `--table--` (' . $sColumnLabel . ') VALUES '.implode(',', $aInsert);
+
+        $this->bdd->query($sInsert);
+    }
 }
