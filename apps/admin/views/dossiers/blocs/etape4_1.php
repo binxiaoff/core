@@ -179,7 +179,7 @@
                             <td><?= $aProject['title'] ?></td>
                             <td><?= $this->dates->formatDate($aProject['added'], 'd/m/Y') ?></td>
                             <td><?= $this->dates->formatDate($aProject['updated'], 'd/m/Y') ?></td>
-                            <td><?= $this->ficelle->formatNumber($aProject['amount']) ?>&nbsp;€</td>
+                            <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>&nbsp;€</td>
                             <td><?= $aProject['period'] ?> mois</td>
                             <td><?= $aProject['status_label'] ?></td>
                             <td><?= $aProject['sales_person'] ?></td>
