@@ -968,6 +968,27 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
+    public function getRepaymentOfTheDay(\DateTime $oDate)
+    {
+        $sDate = $oDate->format('Y-m-d');
+
+        $sql = '
+           SELECT id_project,
+              ordre,
+              count(*) as nb_repayment,
+              count(case status when 1 then 1 else null end) as nb_repayment_paid
+            FROM echeanciers
+            WHERE DATE(date_echeance) =  "' . $sDate . '"
+            GROUP BY id_project, ordre';
+
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
+
     // retourne la somme total a rembourser pour un projet
     public function getSumRestanteARembByProject_only($id_project = '', $date_debut = "")
     {
