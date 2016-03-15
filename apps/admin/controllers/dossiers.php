@@ -2707,7 +2707,7 @@ class dossiersController extends bootstrap
         $this->echeanciers            = $this->loadData('echeanciers');
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-        $L_echeance         = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()", 'ordre ASC', 0, 1);
+        $L_echeance         = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW() GROUP BY ordre", 'ordre ASC', 0, 1);
         $next_echeanche     = isset($L_echeance[0]) ? $L_echeance[0] : null;
         $ordre_echeance_ra  = isset($L_echeance[0]) ? $L_echeance[0]['ordre'] + 1 : 1;
         $date_next_echeance = $next_echeanche['date_echeance'];
@@ -2729,7 +2729,6 @@ class dossiersController extends bootstrap
 
                 // on va recup la date de la derniere echeance qui suit le process de base
                 $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
-
 
                 if (count($L_echeance) > 0) {
                     // on refait le meme process pour la nouvelle date
