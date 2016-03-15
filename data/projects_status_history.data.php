@@ -191,7 +191,7 @@ class projects_status_history extends projects_status_history_crud
     {
         $sql = '
             SELECT
-                added
+                DATE_FORMAT(added, "%d-%m-%Y")
             FROM projects_status_history psh
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
             WHERE psh.id_project = ' . $sIdProject . ' AND ps.status = ' . $sIdProjectStatus . '
