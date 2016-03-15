@@ -367,7 +367,7 @@ class bootstrap extends Controller
 
             if ($this->bIsLender) {
                 $this->getDataLender();
-                if ('synthese' === $command->Name) {
+                if (false === in_array($command->Name, array('espace_emprunteur', 'root'))) {
                     $this->bDisplayHeaderLender        = true;
                     $this->bShowChoiceBorrowerOrLender = false;
                     $this->bDisplayHeaderBorrower      = false;
