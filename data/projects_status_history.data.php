@@ -186,4 +186,18 @@ class projects_status_history extends projects_status_history_crud
         }
         return $result;
     }
+
+    public function getDateProjectStatus($sIdProject, $sIdProjectStatus)
+    {
+        $sql = '
+            SELECT
+                added
+            FROM projects_status_history psh
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE psh.id_project = ' . $sIdProject . ' AND ps.status = ' . $sIdProjectStatus . '
+            ORDER BY psh.id_project_status_history DESC LIMIT 1';
+        $result = $this->bdd->query($sql);
+        $aResult = $this->bdd->result($result);
+        return $aResult;
+    }
 }

@@ -7359,6 +7359,10 @@ class cronController extends bootstrap
                                         }
                                     }
 
+                                    if (in_array($iStatus, array(7, 8))) {
+                                        $aReplacements['date_completude_etape2'] = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2);
+                                    }
+
                                     $aReplacements['liste_pieces']            = $this->projects_status_history->content;
                                     $aReplacements['raison_sociale']          = $this->companies->name;
                                     $aReplacements['prenom']                  = $this->clients->prenom;
@@ -7369,6 +7373,7 @@ class cronController extends bootstrap
                                     $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
                                     $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
                                     $aReplacements['sujet']                   = htmlentities($this->mails_text->subject, null, 'UTF-8');
+                                    $aReplacements['annee']                   = date('Y');
 
                                     $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
                                     $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
