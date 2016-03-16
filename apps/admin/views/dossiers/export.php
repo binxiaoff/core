@@ -487,6 +487,7 @@
     }
     ?>
 
+""
 "Passif"
 "Capital social";"DA";<?php
     $iColumn = 0;
@@ -747,6 +748,7 @@
     }
     ?>
 
+""
 "Autres infos"
 "2 : CBC, et soldes créditeurs de banques et CCP";"EH";<?php
     $iColumn = 0;
@@ -825,6 +827,7 @@
     }
     ?>
 
+""
 "Compte de résultat"
 "Chiffre d'Affaires nets";"FL";<?php
     $iColumn = 0;
@@ -1253,6 +1256,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
 }
 ?>
 
+""
 "Ratios et analyses"
 "Solvabilité"
 "Dette financière nette";<?php
@@ -1408,6 +1412,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     }
     ?>
 
+""
 "Endettement et structure"
 "FP / Total bilan net (%)";<?php
     $iPreviousNumber = null;
@@ -1548,6 +1553,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     }
     ?>
 
+""
 "Rotations"
 "FR";<?php
     $iPreviousNumber = null;
@@ -1771,6 +1777,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     }
     ?>
 
+""
 "Rentabilité"
 "EBE / CA";<?php
     $iPreviousNumber = null;

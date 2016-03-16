@@ -1152,6 +1152,7 @@ class dossiersController extends bootstrap
             }
 
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
+            $this->iCompanyProjectsCount = count($this->aCompanyProjects);
             $this->fCompanyOwedCapital   = $this->companies->getOwedCapitalBySIREN();
             $this->bIsProblematicCompany = $this->companies->countProblemsBySIREN() > 0;
 

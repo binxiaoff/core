@@ -26,6 +26,14 @@
             .change(displayBankName)
             .keyup(displayBankName)
             .keydown(displayBankName);
+
+        <?php if ($this->iCompanyProjectsCount > 8) : ?>
+            $('#company_projects').tablesorterPager({
+                container: $("#projectsPager"),
+                positionFixed: false,
+                size: 8
+            });
+        <?php endif; ?>
     });
 </script>
 <style>
@@ -154,11 +162,11 @@
             <br/>
             <h2>Capital restant dû à date : <?= $this->ficelle->formatNumber($this->fCompanyOwedCapital) ?> €</h2>
             <br/>
-            <h2>Projets de cette société (SIREN identique)</h2>
             <?php if (empty($this->aCompanyProjects)) : ?>
-                <h3>Aucun autre projet pour cette société</h3>
+                <h2>Aucun autre projet pour cette société (SIREN identique)</h2>
             <?php else : ?>
-                <table class="tablesorter" id="company_projects">
+                <h2><?= $this->iCompanyProjectsCount ?> projets de cette société (SIREN identique)</h2>
+                <table id="company_projects" class="tablesorter">
                     <thead>
                         <tr>
                             <th class="header">ID</th>
@@ -188,6 +196,20 @@
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+                <?php if ($this->iCompanyProjectsCount > 8) : ?>
+                    <div id="projectsPager" class="pager" style="text-align: center;">
+                        <form>
+                            <img src="<?= $this->surl ?>/images/admin/first.png" class="first"/>
+                            <img src="<?= $this->surl ?>/images/admin/prev.png" class="prev"/>
+                            <span class="pagedisplay"></span>
+                            <img src="<?= $this->surl ?>/images/admin/next.png" class="next"/>
+                            <img src="<?= $this->surl ?>/images/admin/last.png" class="last"/>
+                            <select class="pagesize" style="display: none;">
+                                <option value="8">8</option>
+                            </select>
+                        </form>
+                    </div>
+                <?php endif; ?>
             <?php endif; ?>
         </div>
         <div id="valid_etape4_1" class="valid_etape"><br/>Données sauvegardées</div>
