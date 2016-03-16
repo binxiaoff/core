@@ -115,10 +115,6 @@ class bootstrap extends Controller
                 $_GET[$key] = htmlspecialchars(strip_tags($value));
             }
         }
-        if (empty($_SESSION['email'])) {
-            $this->setSessionMail();
-        }
-        empty($_SESSION['email']) ? $this->addDataLayer('UNIQUE_ID', 'null') : $this->addDataLayer('UNIQUE_ID', md5($_SESSION['email']));
 
         // Mise en tableau de l'url
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
@@ -375,6 +371,12 @@ class bootstrap extends Controller
                 }
             }
         }
+        $this->setSessionMail();
+
+        /**
+         * Checks email in session then push md5 hash of this email in GTM's dataLayer
+         */
+        empty($_SESSION['email']) ? $this->addDataLayer('UNIQUE_ID', 'null') : $this->addDataLayer('UNIQUE_ID', md5($_SESSION['email']));
 
         // page projet tri
         // 1 : terminé bientôt
@@ -750,14 +752,19 @@ class bootstrap extends Controller
     }
 
     /**
-     * Set user's mail in session
+     * This looks for email address in SESSION, GET and POST parameters then add it to SESSION
      */
     private function setSessionMail()
     {
         $sData = '';
-        if (false == empty($_POST['email'])) {
+        if (false === empty($_SESSION['email'])) {
+            $sData = $_SESSION['email'];
+        }
+        if (isset($this->clients->email) && false === empty($this->clients->email)) {
+            $sData = $this->clients->email;
+        } else if (false === empty($_POST['email'])) {
             $sData = $_POST['email'];
-        } else if (false == empty($_GET['email'])) {
+        } else if (false === empty($_GET['email'])) {
             $sData = $_GET['email'];
         }
 
