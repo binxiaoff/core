@@ -115,6 +115,10 @@ class bootstrap extends Controller
                 $_GET[$key] = htmlspecialchars(strip_tags($value));
             }
         }
+        if (empty($_SESSION['email'])) {
+            $this->setSessionMail();
+        }
+        empty($_SESSION['email']) ? $this->addDataLayer('UNIQUE_ID', 'null') : $this->addDataLayer('UNIQUE_ID', md5($_SESSION['email']));
 
         // Mise en tableau de l'url
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
@@ -344,8 +348,6 @@ class bootstrap extends Controller
         if ($this->clients->checkAccess()) {
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-            $this->addDataLayer('UNIQUE_ID', md5($this->clients->email));
 
             $this->bIsLender                   = $this->clients->isLender();
             $this->bIsBorrower                 = $this->clients->isBorrower();
@@ -745,5 +747,20 @@ class bootstrap extends Controller
     protected function addDataLayer($sKey, $mValue)
     {
         $this->aDataLayer[$sKey] = $mValue;
+    }
+
+    /**
+     * Set user's mail in session
+     */
+    private function setSessionMail()
+    {
+        $sData = '';
+        if (false == empty($_POST['email'])) {
+            $sData = $_POST['email'];
+        } else if (false == empty($_GET['email'])) {
+            $sData = $_GET['email'];
+        }
+
+        $_SESSION['email'] = $sData;
     }
 }
