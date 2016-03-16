@@ -345,8 +345,7 @@ class bootstrap extends Controller
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            $this->addDataLayer('id_client', $this->clients->id_client);
-            $this->addDataLayer('email_client', $this->clients->email);
+            $this->addDataLayer('UNIQUE_ID', md5($this->clients->email));
 
             $this->bIsLender                   = $this->clients->isLender();
             $this->bIsBorrower                 = $this->clients->isBorrower();

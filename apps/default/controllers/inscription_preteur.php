@@ -1175,6 +1175,7 @@ class inscription_preteurController extends bootstrap
 
         // On recupere le client
         if ($conditionOk == true) {
+            $this->addDatalayer('UNIQUE_ID', md5($this->clients->email));
 
             // On recupere le lender account
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');

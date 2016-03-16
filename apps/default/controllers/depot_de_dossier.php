@@ -1124,6 +1124,8 @@ class depot_de_dossierController extends bootstrap
         $this->companies->get($this->projects->id_company);
         $this->clients->get($this->companies->id_client_owner);
 
+        $this->addDatalayer('UNIQUE_ID', md5($this->clients->email));
+
         if (false === empty($this->projects->id_prescripteur)) {
             $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
             $this->clients_prescripteur->get($this->prescripteurs->id_client, 'id_client');
