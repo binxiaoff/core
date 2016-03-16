@@ -315,7 +315,7 @@ class AutoBidSettingsManager
 
         foreach ($aAutoBidHistory as $aHistoryAction) {
             $aAction                            = unserialize($aHistoryAction['serialize']);
-            $aDates[$aAction['autobid_switch']] = \DateTime::createFromFormat('Y-m-d h:i:s', $aHistoryAction['added']);
+            $aDates[$aAction['autobid_switch']] = \DateTime::createFromFormat('Y-m-d H:i:s', $aHistoryAction['added']);
         }
         return $aDates;
     }
