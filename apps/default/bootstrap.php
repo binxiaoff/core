@@ -117,9 +117,6 @@ class bootstrap extends Controller
         }
         $this->setSessionSource();
 
-        $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
-        $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' Source to save into client object : ' . json_encode($_SESSION['source']));
-
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
         $this->handlePartenaire($urlParams);
 

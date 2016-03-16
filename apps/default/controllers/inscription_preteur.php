@@ -484,12 +484,6 @@ class inscription_preteurController extends bootstrap
                     if($this->clients->id_nationalite != 1)$this->clients->type = 3; // physique etrangé
                     else $this->clients->type = 1; // physique
 
-                    $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
-                    $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' client.source = ' . json_encode($this->clients->source) .
-                        ' client.source2 = ' . json_encode($this->clients->source2) . ' client.source3 = ' . json_encode($this->clients->source3) .
-                        ' client.slug_origine = ' . json_encode($this->clients->slug_origine));
-
-                    // On créer le client
                     $this->clients->id_client = $this->clients->create();
 
                     // Histo client //
@@ -972,13 +966,6 @@ class inscription_preteurController extends bootstrap
                      * Set the UTMs and slug_origine
                      */
                     $this->ficelle->setSource($this->clients);
-
-                    // On créer le client
-
-                    $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
-                    $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' client.source = ' . $this->clients->source .
-                        ' client.source2 = ' . json_encode($this->clients->source2) . ' client.source3 = ' . $this->clients->source3 .
-                        'client.slug_origine = ' . json_encode($this->clients->slug_origine));
 
                     $this->clients->id_client = $this->clients->create();
 

@@ -102,11 +102,6 @@ class depot_de_dossierController extends bootstrap
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
         }
 
-        $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
-        $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' client.source = ' . json_encode($this->clients->source) .
-            ' client.source2 = ' . json_encode($this->clients->source2) . ' client.source3 = ' . json_encode($this->clients->source3) .
-            ' client.slug_origine = ' . json_encode($this->clients->slug_origine));
-
         $this->clients->create();
 
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {

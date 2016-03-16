@@ -74,11 +74,6 @@ class collectController extends bootstrap
                  */
                 $this->ficelle->setSource($this->prospects);
 
-                $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
-                $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' prospect.source = ' . json_encode($this->prospects->source) .
-                    ' prospect.source2 = ' . json_encode($this->prospects->source2) . ' prospect.source3 = ' . json_encode($this->prospects->source3) .
-                    'prospect.slug_origine = ' . json_encode($this->prospects->slug_origine));
-
                 if (isset($form_update) && $form_update == true && $this->prospects->get($email, 'email')) {
                     $this->prospects->update();
                 } else {
@@ -344,11 +339,6 @@ class collectController extends bootstrap
                 else {
                     $this->clients->origine = 0;
                 } // pas d'offre
-
-                $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
-                $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' client.source = ' . json_encode($this->clients->source) .
-                    ' client.source2 = ' . json_encode($this->clients->source2) . ' client.source3 = ' . json_encode($this->clients->source3) .
-                    ' client.slug_origine = ' . json_encode($this->clients->slug_origine));
 
                 if ($form_update == true) {
                     $this->clients->update();
