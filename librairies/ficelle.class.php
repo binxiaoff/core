@@ -359,29 +359,23 @@ class ficelle
 
     }
 
-    // Source
-    public function source($utm_source = '', $url = '', $utm_source2 = '')
+    /**
+     * Set the source keys of the given object : UTMs + slug_origine
+     * @param $oClient object (either clients or prospects)
+     */
+    public function setSource(&$oClient)
     {
-        // source1
-        if ($utm_source != '') {
-            $_SESSION['utm_source'] = $utm_source;
-        } elseif (! isset($_SESSION['utm_source']) || $_SESSION['utm_source'] == '') {
-            if ($utm_source != '') {
-                $source = $utm_source;
-            } elseif ($url != '') {
-                $source = $url;
-            } else {
-                $source = '';
+        $aSourceColumn = array(
+            'source'       => 'utm_source',
+            'source2'      => 'utm_source2',
+            'source3'      => 'utm_campaign',
+            'slug_origine' => 'slug_origine'
+        );
+
+        foreach ($aSourceColumn as $sTableColumn => $sUtmKey) {
+            if (true === isset($_SESSION['source'][$sUtmKey])) {
+                $oClient->$sTableColumn = $_SESSION['source'][$sUtmKey];
             }
-
-            $_SESSION['utm_source'] = $source;
-        }
-
-        // source2
-        if ($utm_source2 != '') {
-            $_SESSION['utm_source2'] = $utm_source2;
-        } elseif (! isset($_SESSION['utm_source2'])) {
-            $_SESSION['utm_source2'] = $utm_source2;
         }
     }
 

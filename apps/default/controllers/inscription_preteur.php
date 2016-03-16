@@ -30,9 +30,6 @@ class inscription_preteurController extends bootstrap
 
     function _etape1()
     {
-        // source
-        $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/inscription_preteur/etape1', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
-
         // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
@@ -431,14 +428,6 @@ class inscription_preteurController extends bootstrap
                 $this->clients->slug = $this->bdd->generateSlug($this->clients->prenom.'-'.$this->clients->nom);
                 $this->lenders_accounts->id_company_owner = 0; // pas de companie pour les personnes physique
 
-                // Si mail existe deja
-                /*if($this->reponse_email != '' && $this->modif = true){
-                    $this->clients->email = $this->email;
-                }
-                elseif($this->reponse_email != ''){
-                    $this->clients->email = '';
-                }*/
-
                 // DEBUT UPDATE //
                 if($this->modif == true){
 
@@ -486,13 +475,19 @@ class inscription_preteurController extends bootstrap
                         $this->clients->email = '';
                     }
 
-
-                    $this->clients->source = $_SESSION['utm_source'];
-                    $this->clients->source2 = $_SESSION['utm_source2'];
+                    /**
+                     * Set the UTMs and slug_origine
+                     */
+                    $this->ficelle->setSource($this->clients);
 
                     // type de preteur
                     if($this->clients->id_nationalite != 1)$this->clients->type = 3; // physique etrangé
                     else $this->clients->type = 1; // physique
+
+                    $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
+                    $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' client.source = ' . json_encode($this->clients->source) .
+                        ' client.source2 = ' . json_encode($this->clients->source2) . ' client.source3 = ' . json_encode($this->clients->source3) .
+                        ' client.slug_origine = ' . json_encode($this->clients->slug_origine));
 
                     // On créer le client
                     $this->clients->id_client = $this->clients->create();
@@ -973,10 +968,18 @@ class inscription_preteurController extends bootstrap
                 // create
                 else
                 {
-                    $this->clients->source = $_SESSION['utm_source'];
-                    $this->clients->source2 = $_SESSION['utm_source2'];
+                    /**
+                     * Set the UTMs and slug_origine
+                     */
+                    $this->ficelle->setSource($this->clients);
 
                     // On créer le client
+
+                    $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
+                    $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' client.source = ' . $this->clients->source .
+                        ' client.source2 = ' . json_encode($this->clients->source2) . ' client.source3 = ' . $this->clients->source3 .
+                        'client.slug_origine = ' . json_encode($this->clients->slug_origine));
+
                     $this->clients->id_client = $this->clients->create();
 
                     // Histo client //

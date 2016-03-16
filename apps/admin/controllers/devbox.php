@@ -280,20 +280,6 @@ class devboxController extends bootstrap
         $this->Preteurs2      = $this->clients->get_preteurs_restriction($sql);
         $this->countPreteurs2 = count($this->Preteurs2);
 
-
-        /*foreach($this->Preteurs2 as $p2){
-            $this->prospects->nom = $p2['nom'];
-            $this->prospects->prenom = $p2['prenom'];
-            $this->prospects->email = $p2['email'];
-            $this->prospects->id_langue = $p2['id_langue'];
-            $this->prospects->source = $p2['source'];
-            $this->prospects->source2 = $p2['source2'];
-            $this->prospects->source3 = $p2['source3'];
-            $this->prospects->slug_origine = $p2['slug_origine'];
-            $this->prospects->create();
-        }
-        die;*/
-
         echo '<br>';
         echo '<br>';
 

@@ -89,15 +89,24 @@ class depot_de_dossierController extends bootstrap
         }
 
         $this->clients->id_langue      = $this->language;
-        $this->clients->slug_origine   = $this->tree->slug;
-        $this->clients->source         = $_SESSION['utm_source'];
-        $this->clients->source2        = $_SESSION['utm_source2'];
         $this->clients->status_pre_emp = 2;
+
+        /**
+         * Set the UTMs and slug_origine
+         */
+        $this->ficelle->setSource($this->clients);
+
         if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
         } else {
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
         }
+
+        $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
+        $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' client.source = ' . json_encode($this->clients->source) .
+            ' client.source2 = ' . json_encode($this->clients->source2) . ' client.source3 = ' . json_encode($this->clients->source3) .
+            ' client.slug_origine = ' . json_encode($this->clients->slug_origine));
+
         $this->clients->create();
 
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {

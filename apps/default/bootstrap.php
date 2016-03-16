@@ -115,11 +115,12 @@ class bootstrap extends Controller
                 $_GET[$key] = htmlspecialchars(strip_tags($value));
             }
         }
+        $this->setSessionSource();
 
-        // Mise en tableau de l'url
+        $oLogger = new \Unilend\librairies\ULogger('dev', $this->logPath, 'dev.log');
+        $oLogger->addRecord(\Unilend\librairies\ULogger::DEBUG, __METHOD__ . ' Source to save into client object : ' . json_encode($_SESSION['source']));
+
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
-
-        // On sniff le partenaire
         $this->handlePartenaire($urlParams);
 
         $sKey      = $this->oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
@@ -128,24 +129,18 @@ class bootstrap extends Controller
             $this->settings->get('Google Webmaster Tools', 'type');
             $this->google_webmaster_tools = $this->settings->value;
 
-            // Recuperation du code Google Analytics
             $this->settings->get('Google Analytics', 'type');
             $this->google_analytics = $this->settings->value;
 
-            // Recuperation de la Baseline Title
             $this->settings->get('Baseline Title', 'type');
             $this->baseline_title = $this->settings->value;
 
-
-            // Récup du lien fb
             $this->settings->get('Facebook', 'type');
             $this->like_fb = $this->settings->value;
 
-            // Récup du lien Twitter
             $this->settings->get('Twitter', 'type');
             $this->twitter = $this->settings->value;
 
-            // lien page cookies (id_tree)
             $this->settings->get('id page cookies', 'type');
             $this->id_tree_cookies = $this->settings->value;
 
@@ -167,19 +162,13 @@ class bootstrap extends Controller
             $this->twitter                = $aElements['Twitter'];
             $this->id_tree_cookies        = $aElements['TreeCookies'];
         }
-        // super login //
 
-        /////////////////
-
-        // Récuperation du menu footer
         $this->menuFooter = $this->tree->getMenu('footer', $this->language, $this->lurl);
-
         $this->navFooter1 = $this->tree->getMenu('footer-nav-1', $this->language, $this->lurl);
         $this->navFooter2 = $this->tree->getMenu('footer-nav-2', $this->language, $this->lurl);
         $this->navFooter3 = $this->tree->getMenu('footer-nav-3', $this->language, $this->lurl);
         $this->navFooter4 = $this->tree->getMenu('footer-nav-4', $this->language, $this->lurl);
 
-        // Notes
         $this->lNotes = array(
             'A' => 'etoile1',
             'B' => 'etoile2',
@@ -745,5 +734,67 @@ class bootstrap extends Controller
     protected function addDataLayer($sKey, $mValue)
     {
         $this->aDataLayer[$sKey] = $mValue;
+    }
+
+    /**
+     * This looks for UTMs in GET and POST parameters and returns them
+     * @return array
+     */
+    private function getUTM()
+    {
+        $aUTM = array();
+        if (false === empty($_POST)) {
+            $aData = $_POST;
+        } elseif (false === empty($_GET)) {
+            $aData = $_GET;
+        } else {
+            $aData = array();
+        }
+
+        foreach ($aData as $sKey => $mValue) {
+            if ('utm_' === strtolower(substr($sKey, 0, 4))) {
+                $aUTM[$sKey] = $mValue;
+            }
+        }
+        return $aUTM;
+    }
+
+    /**
+     * @return string
+     */
+    private function getSlug()
+    {
+        if (false === empty($_GET['slug_origine'])) {
+            $sSlugOrigine = $_GET['slug_origine'];
+        } elseif (false === empty($_POST['slug_origine'])) {
+            $sSlugOrigine = $_POST['slug_origine'];
+        } elseif (false === empty($this->tree->slug)) {
+            $sSlugOrigine = $this->tree->slug;
+        } else {
+            $sSlugOrigine = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            if ( '/' == $sSlugOrigine) {
+                $sSlugOrigine = '';
+            }
+        }
+        return $sSlugOrigine;
+    }
+
+    /**
+     * Set the source details in session
+     */
+    private function setSessionSource()
+    {
+        $aAvailableUtm = $this->getUTM();
+        $sSlugOrigine  = $this->getSlug();
+
+        if (false === empty($aAvailableUtm)) {
+            $_SESSION['source'] = $aAvailableUtm;
+            $_SESSION['source']['slug_origine'] = $sSlugOrigine;
+        } elseif (true === empty($_SESSION['source'])) {
+            $_SESSION['source'] = array(
+                'utm_source' => 'Directe',
+                'slug_origine' => $sSlugOrigine
+            );
+        }
     }
 }
