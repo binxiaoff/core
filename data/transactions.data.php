@@ -726,7 +726,7 @@ class transactions extends transactions_crud
                     ELSE b.id_project
                 END as le_id_project,
 
-                (SELECT psh.added FROM projects_status_history psh WHERE psh.id_project = le_id_project AND id_project_status = 8 ORDER BY id_project_status_history ASC LIMIT 1) as date_tri,
+                lo.updated as date_tri,
 
                 (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
 
