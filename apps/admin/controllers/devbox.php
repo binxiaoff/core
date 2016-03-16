@@ -61,7 +61,7 @@ class devboxController extends bootstrap
                 $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'score_altares', '" . $aRecord['altares_scoreVingt'] . "')");
             }
             if (false === empty($aRecord['altares_scoreSectorielCent'])) {
-                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'score_sectorial_altares', '" . $aRecord['altares_scoreSectorielCent'] . "')");
+                $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'score_sectoriel_altares', '" . $aRecord['altares_scoreSectorielCent'] . "')");
             }
             if (false === empty($aRecord['altares_dateValeur']) && '0000-00-00' !== $aRecord['altares_dateValeur']) {
                 $this->bdd->query('INSERT INTO company_rating (id_company_rating_history, type, value) VALUES (' . $iCompanyRatingHistoryId . ", 'date_valeur_altares', '" . $aRecord['altares_dateValeur'] . "')");

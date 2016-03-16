@@ -4,7 +4,7 @@
 "Notes externes";"";"Déclaration client"
 "Grade SFAC";"<?= empty($this->aRatings['grade_sfac']) ? 'N/A' : $this->aRatings['grade_sfac'] ?>";"Chiffe d'affaires declaré par client";"<?= $this->iDeclaredRevenue ?>"
 "Score Altares";"<?php if (isset($this->aRatings['score_altares'])) : ?><?= $this->aRatings['score_altares'] ?> / 20<?php else : ?>N/A<?php endif; ?>";"Résultat d'exploitation declaré par client";"<?= $this->iDeclaredOperatingIncome ?>"
-"Score sectoriel Altares";"<?php if (isset($this->aRatings['score_sectorial_altares'])) : ?><?= round($this->aRatings['score_sectorial_altares'] / 5) ?> / 20<?php else : ?>N/A<?php endif; ?>";"Fonds propres declarés par client";"<?= $this->iDeclaredCapitalStock ?>"
+"Score sectoriel Altares";"<?php if (isset($this->aRatings['score_sectoriel_altares'])) : ?><?= round($this->aRatings['score_sectoriel_altares'] / 5) ?> / 20<?php else : ?>N/A<?php endif; ?>";"Fonds propres declarés par client";"<?= $this->iDeclaredCapitalStock ?>"
 "Note Infolegale";"<?= empty($this->aRatings['note_infolegale']) ? 'N/A' : $this->aRatings['note_infolegale'] ?>"
 "Présence de RPC < 6 mois";"<?= isset($this->aRatings['rpc_6mois']) && '1' === $this->aRatings['rpc_6mois'] ? 'Oui' : 'Non' ?>"
 "Présence de RPC > 12 mois";"<?= isset($this->aRatings['rpc_12mois']) && '1' === $this->aRatings['rpc_12mois'] ? 'Oui' : 'Non' ?>"

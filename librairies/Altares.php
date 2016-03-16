@@ -131,7 +131,7 @@ class Altares
 
         if (false === empty($oProject->id_company_rating_history)) {
             foreach ($oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history) as $sRating => $mValue) {
-                if (false === in_array($sRating, array('eligibilite_altares', 'code_retour_altares', 'motif_altares', 'date_valeur_altares', 'score_altares', 'score_sectorial_altares'))) {
+                if (false === in_array($sRating, array('eligibilite_altares', 'code_retour_altares', 'motif_altares', 'date_valeur_altares', 'score_altares', 'score_sectoriel_altares'))) {
                     $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
                     $oCompanyRating->type                      = $sRating;
                     $oCompanyRating->value                     = $mValue;
@@ -173,7 +173,7 @@ class Altares
             $oCompanyRating->create();
 
             $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
-            $oCompanyRating->type                      = 'score_sectorial_altares';
+            $oCompanyRating->type                      = 'score_sectoriel_altares';
             $oCompanyRating->value                     = $oEligibilityInfo->score->scoreSectorielCent;
             $oCompanyRating->create();
         }

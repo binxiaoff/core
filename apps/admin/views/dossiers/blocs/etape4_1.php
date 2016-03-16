@@ -66,7 +66,7 @@
                     </tr>
                     <tr>
                         <th><label>Score sectoriel Altares</label></th>
-                        <td><?php if (isset($this->aRatings['score_sectorial_altares'])) : ?><?= round($this->aRatings['score_sectorial_altares'] / 5) ?> / 20<?php else : ?>N/A<?php endif; ?></td>
+                        <td><?php if (isset($this->aRatings['score_sectoriel_altares'])) : ?><?= round($this->aRatings['score_sectoriel_altares'] / 5) ?> / 20<?php else : ?>N/A<?php endif; ?></td>
                         <th><label for="fonds_propres_declara_client">Fonds propres declarés par client</label></th>
                         <td colspan="3"><input type="text" name="fonds_propres_declara_client" id="fonds_propres_declara_client" placeholder="€" class="input_moy numbers" value="<?= $this->ficelle->formatNumber($this->projects->fonds_propres_declara_client, 0) ?>"/></td>
                     </tr>
