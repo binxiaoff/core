@@ -262,12 +262,9 @@ class projects extends projects_crud
 
         $result        = array();
         $resultat      = $this->bdd->query($sql);
-        $positionStart = $start + $nb;
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
-            // on récupere la derniere position pour demarrer une autre requete au meme niveau
-            $result[0]['positionStart'] = $positionStart;
         }
         return $result;
     }

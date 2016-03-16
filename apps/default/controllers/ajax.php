@@ -156,7 +156,8 @@ class ajaxController extends bootstrap
             $where = ' AND p.date_fin < "' . date('Y-m-d') . '"';
         }
 
-        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, filter_var($_POST['positionStart'], FILTER_SANITIZE_NUMBER_INT), 10);
+        $sPositionStart = filter_var($_POST['positionStart'], FILTER_SANITIZE_NUMBER_INT);
+        $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, $sPositionStart, 10);
         $affichage             = '';
 
         foreach ($this->lProjetsFunding as $project) {
@@ -247,7 +248,8 @@ class ajaxController extends bootstrap
             </tr>
             ";
         }
-        $table = array('affichage' => $affichage, 'positionStart' => $this->lProjetsFunding[0]['positionStart']);
+        $sPositionStart += 10;
+        $table = array('affichage' => $affichage, 'positionStart' => $sPositionStart);
         echo json_encode($table);
     }
 
@@ -340,7 +342,6 @@ class ajaxController extends bootstrap
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ',' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
-            $this->type         = 0;
 
             $_SESSION['ordreProject'] = $this->ordreProject;
 

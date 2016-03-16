@@ -147,7 +147,7 @@
                     ?>
 
                 </table><!-- /.table -->
-                <div id="positionStart" style="display:none;"><?= $this->lProjetsFunding[0]['positionStart'] ?></div>
+                <div id="positionStart" style="display:none;"><?= isset($sPositionStart) ? $sPositionStart : 0 ?></div>
                 <div class="loadmore" style="display:none;">
                     <?= $this->lng['preteur-projets']['chargement-en-cours'] ?>
                 </div>

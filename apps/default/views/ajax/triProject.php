@@ -106,7 +106,7 @@
         </tr>
     <?php endforeach; ?>
 </table>
-<div id="positionStart" style="display:none;"><?= $this->lProjetsFunding[0]['positionStart'] ?></div>
+<div id="positionStart" style="display:none;"><?= isset($sPositionStart) ? $sPositionStart : 0 ?></div>
 <div class="loadmore" style="display:none;"><?= $this->lng['preteur-projets']['chargement-en-cours'] ?></div>
 <div class="nbProjet" style="display:none;"><?= $this->nbProjects ?></div>
 <div id="ordreProject" style="display:none;"><?= $this->ordreProject ?></div>
