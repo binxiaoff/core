@@ -376,7 +376,7 @@ class bootstrap extends Controller
         /**
          * Checks email in session then push md5 hash of this email in GTM's dataLayer
          */
-        empty($_SESSION['email']) ? $this->addDataLayer('UNIQUE_ID', 'null') : $this->addDataLayer('UNIQUE_ID', md5($_SESSION['email']));
+        empty($_SESSION['email']) ? $this->addDataLayer('UNIQUE_ID', '') : $this->addDataLayer('UNIQUE_ID', md5($_SESSION['email']));
 
         // page projet tri
         // 1 : terminé bientôt
