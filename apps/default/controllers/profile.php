@@ -1932,23 +1932,18 @@ class profileController extends bootstrap
 
     public function _particulier_doc()
     {
-
-        // Societe (si on est pas sur la bonne page)
-        if (in_array($this->clients->type, array(2, 4))) {
+        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             header('Location: ' . $this->lurl . '/profile/societe_doc');
             die;
         }
 
-        //Recuperation des element de traductions
         $this->lng['etape1']  = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
         $this->lng['etape2']  = $this->ln->selectFront('inscription-preteur-etape-2', $this->language, $this->App);
         $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
-        // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
 
-        // JS
         $this->unLoadJs('default/functions');
         $this->unLoadJs('default/main');
         $this->unLoadJs('default/ajax');
@@ -1957,193 +1952,31 @@ class profileController extends bootstrap
         $this->loadJs('default/main');
         $this->loadJs('default/ajax');
 
-        // Chargement des datas
-        $this->lenders_accounts       = $this->loadData('lenders_accounts');
-        $this->clients_status         = $this->loadData('clients_status');
-        $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->attachment             = $this->loadData('attachment');
-        $this->attachment_type        = $this->loadData('attachment_type');
+        /** @var \clients_status $oClientStatus */
+        $oClientStatus          = $this->loadData('clients_status');
+        /** @var \clients_status_history $oClientStatusHistory */
+        $oClientStatusHistory   = $this->loadData('clients_status_history');
+        /** @var \attachment_type $oAttachementType */
+        $oAttachementType       = $this->loadData('attachment_type');
 
-        // On recup le preteur
-        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-        $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+        $oClientStatus->getLastStatut($this->clients->id_client);
 
-        // statut client
-        $this->clients_status->getLastStatut($this->clients->id_client);
+        $sCompletenessRequestContent = $oClientStatusHistory->getCompletnessRequestContent($this->clients);
+        $this->aAttachmentTypes      = $oAttachementType->getAllTypesForLender($this->language);
+        $this->sAttachmentList       = '';
 
-
-        // upload
-        if (isset($_POST['send_form_upload_doc'])) {
-
-            // Histo client //
-            $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
-            $this->clients_history_actions->histo(12, 'upload doc profile', $this->clients->id_client, $serialize);
-            ////////////////
-            $this->error_fichiers = false;
-
-            $bCniPasseportUpdated         = false;
-            $bJustificatifDomicileUpdated = false;
-            $bRibUpdated                  = false;
-            $bCniPasseportVersoUpdated    = false;
-
-            // carte-nationale-didentite
-            if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
-                $fichier_cni_passeport = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE);
-                if (is_numeric($fichier_cni_passeport)) {
-                    $bCniPasseportUpdated = true;
-                }
-                $this->error_cni = false === $fichier_cni_passeport;
-            }
-
-            // justificatif-de-domicile
-            if (isset($_FILES['justificatif_domicile']) && $_FILES['justificatif_domicile']['name'] != '') {
-                $fichier_justificatif_domicile = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE);
-                if (is_numeric($fichier_justificatif_domicile)) {
-                    $bJustificatifDomicileUpdated = true;
-                }
-            }
-            // rib
-            if (isset($_FILES['rib']) && $_FILES['rib']['name'] != '') {
-                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-                if (is_numeric($fichier_rib)) {
-                    $bRibUpdated = true;
-                }
-
-            }
-
-            // CNI verso
-            if (isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '') {
-                $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-                if (is_numeric($fichier_cni_passeport_verso)) {
-                    $bCniPasseportVersoUpdated = true;
-                }
-            }
-
-            if ($this->error_fichiers == false) {
-
-                if ($bCniPasseportUpdated == true || $bJustificatifDomicileUpdated == true || $bRibUpdated == true || $bCniPasseportVersoUpdated == true) {
-
-                    $contenu = '<ul>';
-
-                    if ($bCniPasseportUpdated == true) {
-                        $contenu .= '<li>Fichier cni passeport</li>';
-                    }
-                    if ($bJustificatifDomicileUpdated == true) {
-                        $contenu .= '<li>Fichier justificatif de domicile</li>';
-                    }
-                    if ($bRibUpdated == true) {
-                        $contenu .= '<li>Fichier RIB</li>';
-                    }
-                    if ($bCniPasseportVersoUpdated == true) {
-                        $contenu .= '<li>Fichier cni passport verso</li>';
-                    }
-
-                    $contenu .= '</ul>';
-
-                    if (in_array($this->clients_status->status, array(20, 30, 40))) {
-                        $statut_client = 40;
-                    } else {
-                        $statut_client = 50;
-                    }
-
-                    // creation du statut "Modification"
-                    $this->clients_status_history->addStatus('-2', $statut_client, $this->clients->id_client, $contenu);
-
-                    // destinataire
-                    $this->settings->get('Adresse notification modification preteur', 'type');
-                    $destinataire = $this->settings->value;
-
-                    $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
-
-                    // Recuperation du modele de mail
-                    $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
-
-                    $surl         = $this->surl;
-                    $url          = $this->lurl;
-                    $id_preteur   = $this->clients->id_client;
-                    $nom          = utf8_decode($this->clients->nom);
-                    $prenom       = utf8_decode($this->clients->prenom);
-                    $montant      = $this->solde . ' euros';
-                    $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
-                    $email        = $this->clients->email;
-                    $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
-
-                    $sujetMail = htmlentities($this->mails_text->subject);
-                    eval("\$sujetMail = \"$sujetMail\";");
-
-                    $texteMail = $this->mails_text->content;
-                    eval("\$texteMail = \"$texteMail\";");
-
-                    $exp_name = $this->mails_text->exp_name;
-                    eval("\$exp_name = \"$exp_name\";");
-
-                    // Nettoyage de printemps
-                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                    $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->addRecipient(trim($destinataire));
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                    $this->email->setHTMLBody($texteMail);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-
-                    /// mail nmp pour le preteur particulier ///
-
-                    //************************************//
-                    //*** ENVOI DU MAIL  ***//
-                    //************************************//
-
-                    // Recuperation du modele de mail
-                    $this->mails_text->get('preteur-modification-compte', 'lang = "' . $this->language . '" AND type');
-
-                    // FB
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    // Twitter
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'    => $this->surl,
-                        'url'     => $this->lurl,
-                        'prenom'  => $this->clients->prenom,
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw
-                    );
-
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                        // Injection du mail NMP dans la queue
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
-                    ////////////////////////////////
-
-                    $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];
-
-                }
-                header('Location: ' . $this->lurl . '/profile/societe_doc');
-                die;
+        if (false === empty($sCompletenessRequestContent)) {
+            $oDOMElement = new DOMDocument();
+            $oDOMElement->loadHTML($sCompletenessRequestContent);
+            $oList = $oDOMElement->getElementsByTagName('ul');
+            if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
+                $this->sAttachmentList = $oList->item(0)->C14N();
             }
         }
 
+        if (isset($_POST['send_form_upload_doc'])) {
+            $this->validateCompletenessForm();
+        }
     }
 
     // SOCIETE //
@@ -2167,22 +2000,18 @@ class profileController extends bootstrap
 
     public function _societe_doc()
     {
-        // Particulier (si on est pas sur la bonne page)
-        if (in_array($this->clients->type, array(1, 3))) {
+        if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
             header('Location: ' . $this->lurl . '/profile/particulier_doc');
             die;
         }
 
-        //Recuperation des element de traductions
         $this->lng['etape1']  = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
         $this->lng['etape2']  = $this->ln->selectFront('inscription-preteur-etape-2', $this->language, $this->App);
         $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
-        // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
 
-        // JS
         $this->unLoadJs('default/functions');
         $this->unLoadJs('default/main');
         $this->unLoadJs('default/ajax');
@@ -2191,205 +2020,31 @@ class profileController extends bootstrap
         $this->loadJs('default/main');
         $this->loadJs('default/ajax');
 
-        // Chargement des datas
-        $this->companies              = $this->loadData('companies');
-        $this->lenders_accounts       = $this->loadData('lenders_accounts');
-        $this->clients_status         = $this->loadData('clients_status');
-        $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->attachment             = $this->loadData('attachment');
-        $this->attachment_type        = $this->loadData('attachment_type');
+        /** @var \clients_status $oClientStatus */
+        $oClientStatus          = $this->loadData('clients_status');
+        /** @var \clients_status_history $oClientStatusHistory */
+        $oClientStatusHistory   = $this->loadData('clients_status_history');
+        /** @var \attachment_type $oAttachementType */
+        $oAttachementType       = $this->loadData('attachment_type');
 
-        // On recup le preteur
-        $this->companies->get($this->clients->id_client, 'id_client_owner');
-        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-        $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+        $oClientStatus->getLastStatut($this->clients->id_client);
 
-        // statut client
-        $this->clients_status->getLastStatut($this->clients->id_client);
+        $sCompletenessRequestContent = $oClientStatusHistory->getCompletnessRequestContent($this->clients);
+        $this->aAttachmentTypes      = $oAttachementType->getAllTypesForLender($this->language);
+        $this->sAttachmentList       = '';
 
-
-        // upload
-        if (isset($_POST['send_form_upload_doc'])) {
-
-            // Histo client //
-            $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
-            $this->clients_history_actions->histo(12, 'upload doc profile', $this->clients->id_client, $serialize);
-            ////////////////
-            $this->error_fichiers = false;
-
-            $bCniPasseportDirigeantUpdated = false;
-            $bKbisUpdated                  = false;
-            $bRibUpdated                   = false;
-            $bCniPasseportVersoUpdated     = false;
-            $bDelegationPouvoirUpdated     = false;
-
-            // carte-nationale-didentite dirigeant
-            if (isset($_FILES['cni_passeport_dirigeant']) && $_FILES['cni_passeport_dirigeant']['name'] != '') {
-                $fichier_cni_passeport_dirigent = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT);
-                if (is_numeric($fichier_cni_passeport_dirigent)) {
-                    $bCniPasseportDirigeantUpdated = true;
-                }
-            }
-            // Extrait Kbis
-            if (isset($_FILES['extrait_kbis']) && $_FILES['extrait_kbis']['name'] != '') {
-                $fichier_extrait_kbis = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS);
-                if (is_numeric($fichier_extrait_kbis)) {
-                    $bKbisUpdated = true;
-                }
-            }
-            // rib
-            if (isset($_FILES['rib']) && $_FILES['rib']['name'] != '') {
-                $fichier_rib = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB);
-                if (is_numeric($fichier_rib)) {
-                    $bRibUpdated = true;
-                }
-            }
-
-            // CNI passport verso
-            if (isset($_FILES['cni_passeport_verso']) && $_FILES['cni_passeport_verso']['name'] != '') {
-                $fichier_cni_passeport_verso = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO);
-                if (is_numeric($fichier_cni_passeport_verso)) {
-                    $bCniPasseportVersoUpdated = true;
-                }
-            }
-            // Délégation de pouvoir
-            $fichier_delegation_pouvoir = $this->attachments[attachment_type::DELEGATION_POUVOIR];
-            if (isset($_FILES['delegation_pouvoir']) && $_FILES['delegation_pouvoir']['name'] != '') {
-                $fichier_delegation_pouvoir = $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR);
-                if (is_numeric($fichier_delegation_pouvoir)) {
-                    $bDelegationPouvoirUpdated = true;
-                }
-            }
-
-            if ($this->error_fichiers == false) {
-
-                if ($bCniPasseportDirigeantUpdated == true || $bKbisUpdated == true || $bRibUpdated == true || $bCniPasseportVersoUpdated == true || $bDelegationPouvoirUpdated == true) {
-
-                    if (in_array($this->clients_status->status, array(20, 30, 40))) {
-                        $statut_client = 40;
-                    } else {
-                        $statut_client = 50;
-                    }
-
-                    $contenu = '<ul>';
-
-                    if ($bCniPasseportDirigeantUpdated == true) {
-                        $contenu .= '<li>Fichier cni passeport dirigent</li>';
-                    }
-                    if ($bKbisUpdated == true) {
-                        $contenu .= '<li>Fichier extrait kbis</li>';
-                    }
-                    if ($bRibUpdated == true) {
-                        $contenu .= '<li>Fichier RIB</li>';
-                    }
-                    if ($bCniPasseportVersoUpdated == true) {
-                        $contenu .= '<li>Fichier cni passeport verso</li>';
-                    }
-                    if ($bDelegationPouvoirUpdated == true) {
-                        $contenu .= '<li>Fichier delegation de pouvoir</li>';
-                    }
-
-                    $contenu .= '</ul>';
-
-                    // creation du statut "Modification"
-                    $this->clients_status_history->addStatus('-2', $statut_client, $this->clients->id_client, $contenu);
-
-                    // destinataire
-                    $this->settings->get('Adresse notification modification preteur', 'type');
-                    $destinataire = $this->settings->value;
-
-                    $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
-
-                    // Recuperation du modele de mail
-                    $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
-
-                    $surl         = $this->surl;
-                    $url          = $this->lurl;
-                    $id_preteur   = $this->clients->id_client;
-                    $nom          = utf8_decode($this->clients->nom);
-                    $prenom       = utf8_decode($this->clients->prenom);
-                    $montant      = $this->solde . ' euros';
-                    $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
-                    $email        = $this->clients->email;
-                    $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
-
-                    $sujetMail = htmlentities($this->mails_text->subject);
-                    eval("\$sujetMail = \"$sujetMail\";");
-
-                    $texteMail = $this->mails_text->content;
-                    eval("\$texteMail = \"$texteMail\";");
-
-                    $exp_name = $this->mails_text->exp_name;
-                    eval("\$exp_name = \"$exp_name\";");
-
-                    // Nettoyage de printemps
-                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                    $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->addRecipient(trim($destinataire));
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                    $this->email->setHTMLBody($texteMail);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-
-                    /// mail nmp pour le preteur morale ///
-
-                    //************************************//
-                    //*** ENVOI DU MAIL  ***//
-                    //************************************//
-
-                    // Recuperation du modele de mail
-                    $this->mails_text->get('preteur-modification-compte', 'lang = "' . $this->language . '" AND type');
-
-                    // FB
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    // Twitter
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'    => $this->surl,
-                        'url'     => $this->lurl,
-                        'prenom'  => $this->clients->prenom,
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw
-                    );
-
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                        // Injection du mail NMP dans la queue
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
-                    ////////////////////////////////
-
-                    $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];
-
-                }
-                header('Location: ' . $this->lurl . '/profile/societe_doc');
-                die;
+        if (false === empty($sCompletenessRequestContent)) {
+            $oDOMElement = new DOMDocument();
+            $oDOMElement->loadHTML($sCompletenessRequestContent);
+            $oList = $oDOMElement->getElementsByTagName('ul');
+            if ($oList->length > 0 && $oList->item(0)->childNodes->length > 0) {
+                $this->sAttachmentList = $oList->item(0)->C14N();
             }
         }
 
-
+        if (isset($_POST['send_form_upload_doc'])) {
+            $this->validateCompletenessForm();
+        }
     }
 
     /**
@@ -2397,7 +2052,7 @@ class profileController extends bootstrap
      * @param integer $attachmentType
      * @return bool
      */
-	private function uploadAttachment($lenderAccountId, $attachmentType)
+	private function uploadAttachment($lenderAccountId, $attachmentType, $sFieldName = null)
 	{
 		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
 			$this->upload = $this->loadLib('upload');
@@ -2415,51 +2070,56 @@ class profileController extends bootstrap
 			$this->attachmentHelper = $this->loadLib('attachment_helper', array($this->attachment, $this->attachment_type, $this->path));;
 		}
 
-		switch($attachmentType) {
-			case attachment_type::CNI_PASSPORTE :
-				$field = 'cni_passeport';
-				break;
-			case attachment_type::CNI_PASSPORTE_VERSO :
-				$field = 'cni_passeport_verso';
-				break;
-			case attachment_type::JUSTIFICATIF_DOMICILE :
-				$field = 'justificatif_domicile';
-				break;
-			case attachment_type::RIB :
-				$field = 'rib';
-				break;
-			case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
-				$field = 'attestation_hebergement_tiers';
-				break;
-			case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
-				$field = 'cni_passport_tiers_hebergeant';
-				break;
-			case attachment_type::CNI_PASSPORTE_DIRIGEANT :
-				$field = 'cni_passeport_dirigeant';
-				break;
-			case attachment_type::DELEGATION_POUVOIR :
-				$field = 'delegation_pouvoir';
-				break;
-			case attachment_type::KBIS :
-				$field = 'extrait_kbis';
-				break;
-			case attachment_type::JUSTIFICATIF_FISCAL :
-				$field = 'document_fiscal';
-				break;
-			case attachment_type::AUTRE1 :
-				$field = 'autre1';
-				break;
-			case attachment_type::AUTRE2 :
-				$field = 'autre2';
-				break;
-			case attachment_type::AUTRE3:
-				$field = 'autre3';
-				break;
-			default :
-				return false;
-		}
+        if (null === $sFieldName) {
+            switch($attachmentType) {
+                case attachment_type::CNI_PASSPORTE :
+                    $sFieldName = 'cni_passeport';
+                    break;
+                case attachment_type::CNI_PASSPORTE_VERSO :
+                    $sFieldName = 'cni_passeport_verso';
+                    break;
+                case attachment_type::JUSTIFICATIF_DOMICILE :
+                    $sFieldName = 'justificatif_domicile';
+                    break;
+                case attachment_type::RIB :
+                    $sFieldName = 'rib';
+                    break;
+                case attachment_type::ATTESTATION_HEBERGEMENT_TIERS :
+                    $sFieldName = 'attestation_hebergement_tiers';
+                    break;
+                case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT :
+                    $sFieldName = 'cni_passport_tiers_hebergeant';
+                    break;
+                case attachment_type::CNI_PASSPORTE_DIRIGEANT :
+                    $sFieldName = 'cni_passeport_dirigeant';
+                    break;
+                case attachment_type::DELEGATION_POUVOIR :
+                    $sFieldName = 'delegation_pouvoir';
+                    break;
+                case attachment_type::KBIS :
+                    $sFieldName = 'extrait_kbis';
+                    break;
+                case attachment_type::JUSTIFICATIF_FISCAL :
+                    $sFieldName = 'document_fiscal';
+                    break;
+                case attachment_type::AUTRE1 :
+                    $sFieldName = 'autre1';
+                    break;
+                case attachment_type::AUTRE2 :
+                    $sFieldName = 'autre2';
+                    break;
+                case attachment_type::AUTRE3:
+                    $sFieldName = 'autre3';
+                    break;
+                case attachment_type::AUTRE4:
+                    $sFieldName = 'autre4';
+                    break;
+                default :
+                    return false;
+            }
+        }
 
-		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
+		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $sFieldName, $this->upload);
 
 		if(false === $resultUpload) {
 			$this->form_ok = false;
@@ -2468,4 +2128,89 @@ class profileController extends bootstrap
 
 		return $resultUpload;
 	}
+
+    private function sendAccountModificationEmail(\clients $oClient)
+    {
+        $this->mails_text->get('preteur-modification-compte', 'lang = "' . $this->language . '" AND type');
+        $this->settings->get('Facebook', 'type');
+        $lien_fb = $this->settings->value;
+        $this->settings->get('Twitter', 'type');
+        $lien_tw = $this->settings->value;
+
+        $varMail = array(
+            'surl'    => $this->surl,
+            'url'     => $this->lurl,
+            'prenom'  => $oClient->prenom,
+            'lien_fb' => $lien_fb,
+            'lien_tw' => $lien_tw
+        );
+
+        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+        $this->email->setSubject(stripslashes($sujetMail));
+        $this->email->setHTMLBody(stripslashes($texteMail));
+
+        if ($this->Config['env'] === 'prod') {
+            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
+            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+        } else {
+            $this->email->addRecipient(trim($oClient->email));
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
+    }
+
+    private function validateCompletenessForm()
+    {
+        /** @var \clients_history_actions $oClientHistoryActions */
+        $oClientHistoryActions  = $this->loadData('clients_history_actions');
+        /** @var \clients_status $oClientStatus */
+        $oClientStatus          = $this->loadData('clients_status');
+        /** @var \clients_status_history $oClientStatusHistory */
+        $oClientStatusHistory   = $this->loadData('clients_status_history');
+        /** @var \textes $oTextes */
+        $oTextes                = new \textes($this->bdd);
+        $aTranslations          = $oTextes->selectFront('projet', $this->language);
+
+        $oLenderAccount         = $this->loadData('lenders_accounts');
+        $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+
+        $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
+        $oClientHistoryActions->histo(12, 'upload doc profile', $this->clients->id_client, $serialize);
+
+        $this->error_fichiers = false;
+
+        if (false === empty($_POST) || false === empty($_FILES)) {
+            $sContentForHistory = '<ul>';
+            foreach (array_keys($_FILES) as $iAttachmentType) {
+                $this->uploadAttachment($this->lenders_accounts->id_lender_account, $iAttachmentType, $iAttachmentType);
+                $sContentForHistory .= '<li>' .$aTranslations['document-type-' . $iAttachmentType] . '</li>';
+            }
+            $sContentForHistory .= '</ul>';
+        }
+
+        if ($this->error_fichiers == false) {
+            if (false !== strpos($sContentForHistory, '<li>')) {
+                $sClientStatus = (in_array($oClientStatus->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) ? \clients_status::COMPLETENESS_REPLY : \clients_status::MODIFICATION ;
+
+                $oClientStatusHistory->addStatus('-2', $sClientStatus, $this->clients->id_client, $sContentForHistory);
+                $this->sendAccountModificationEmail($this->clients);
+
+                $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];
+            }
+
+            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                header('Location: ' . $this->lurl . '/profile/particulier_doc');
+                die;
+            } else {
+                header('Location: ' . $this->lurl . '/profile/societe_doc');
+                die;
+            }
+        }
+    }
 }

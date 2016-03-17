@@ -1,170 +1,111 @@
-<style type="text/css">
-	.tabs .tab{display:block;}
-	.field-large {width: 422px;}
-	.tab .form-choose{margin-bottom:0;}
-	.form-page form .row .pass-field-holder {width: 460px;}
-	.euro-field.field-large{padding-left:22px;}
-</style>
-
-<!--#include virtual="ssi-header-login.shtml"  -->
 <div class="main form-page account-page account-page-personal">
     <div class="shell">
 
         <div class="account-data">
-            <h2><?=$this->lng['profile']['validation-compte']?></h2>
-        	
-             <?
-			if(isset($_SESSION['reponse_upload']) && $_SESSION['reponse_upload'] != ''){
-				?><div class="reponseProfile"><?=$_SESSION['reponse_upload']?></div><?
-				unset($_SESSION['reponse_upload']);
-			}
-			?> 
-            <p><?=$this->lng['profile']['validation-compte-contenu']?></p>
-        	<em class="error_fichier" <?=($this->error_fichiers==true?'style="display:block;"':'')?>><?=$this->lng['etape2']['erreur-fichier']?></em>
+            <h2><?= $this->lng['profile']['validation-compte'] ?></h2>
+
+            <?php if (isset($_SESSION['reponse_upload']) && $_SESSION['reponse_upload'] != '') : ?>
+                <div class="reponseProfile"><?= $_SESSION['reponse_upload'] ?></div>
+                <?php unset($_SESSION['reponse_upload']); ?>
+            <?php endif; ?>
+
+            <p><?= $this->lng['profile']['validation-compte-contenu'] ?></p>
+            <div class="row">
+                <?= $this->sAttachmentList ?>
+            </div>
+
+            <em class="error_fichier" <?= ($this->error_fichier == true ? 'style="display:block;"' : '') ?>><?= $this->lng['etape2']['erreur-fichier'] ?></em>
+
             <form action="" method="post" name="form_upload_doc" id="form_upload_doc" enctype="multipart/form-data">
                 <div class="row row-upload">
-                    <label class="inline-text">
-                        <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-extrait-kbis']?>"></i>
-                         <?=$this->lng['etape2']['extrait-kbis']?> 
-                    </label>
+                    <div class="row-title"><?= $this->lng['profile']['document-type-field-title'] ?></div>
+                    <div class="row-title"><?= $this->lng['profile']['upload-field-title'] ?></div>
+                </div>
+                <div class="row row-upload show-scrollbar">
+                    <select class="custom-select required field field-large">
+                        <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                        <?php foreach ($this->aAttachmentTypes as $aAttachmentType) : ?>
+                            <option value="<?= $aAttachmentType['id'] ?>"><?= $aAttachmentType['label'] ?></option>
+                        <?php endforeach; ?>
+                    </select>
                     <div class="uploader">
-                            <input id="txt_kbis" type="text" class="field required <?=($this->error_extrait_kbis==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::KBIS]["path"]!= ''?$this->attachments[attachment_type::KBIS]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
+                        <input type="text"
+                               value="<?= $this->lng['etape2']['aucun-fichier-selectionne'] ?>"
+                               class="field required"
+                               readonly="readonly">
                         <div class="file-holder">
                             <span class="btn btn-small">
-                                <?=$this->lng['etape2']['parcourir']?>
+                                <?= $this->lng['etape2']['parcourir'] ?>
                                 <span class="file-upload">
-                                    <input type="file" class="file-field" name="extrait_kbis">
+                                    <input type="file" class="file-field">
                                 </span>
                             </span>
                         </div>
-                    </div><!-- /.uploader -->
-                </div><!-- /.row -->
-
-                <div class="row row-upload">
-                    <label class="inline-text">
-                        <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-delegation-de-pouvoir']?>"></i>
-            
-                        <?=$this->lng['etape2']['delegation-de-pouvoir']?>
-                    </label>
-            
-                    <div class="uploader">
-                        <input id="txt_delegation_pouvoir" type="text" class="field required <?=($this->error_delegation_pouvoir==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]!= ''?$this->attachments[attachment_type::DELEGATION_POUVOIR]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
-            
-                        <div class="file-holder">
-                            <span class="btn btn-small">
-                                <?=$this->lng['etape2']['parcourir']?>
-                                <span class="file-upload">
-                                    <input type="file" class="file-field" name="delegation_pouvoir">
-                                </span>
-                            </span>
-                        </div>
-                    </div><!-- /.uploader -->
-                </div><!-- /.row -->
-            
-                <div class="row row-upload">
-                    <label class="inline-text">
-                        <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-rib']?>"></i>
-            
-                        <?=$this->lng['etape2']['rib']?>
-                    </label>
-            
-                    <div class="uploader">
-                        <input id="txt_rib" type="text" class="field required <?=($this->error_rib==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::RIB]["path"]!= ''?$this->attachments[attachment_type::RIB]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
-            
-                        <div class="file-holder">
-                            <span class="btn btn-small">
-                                <?=$this->lng['etape2']['parcourir']?>
-            
-                                <span class="file-upload">
-                                    <input type="file" class="file-field" name="rib">
-                                </span>
-                            </span>
-                        </div>
-                    </div><!-- /.uploader -->
-                </div><!-- /.row -->
-                
-                <div class="row row-upload">
-                    <label class="inline-text">
-                        <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?=$this->lng['etape2']['info-cni-passeport-dirigeants']?>"></i>
-                        <?=$this->lng['etape2']['cni-passeport-dirigeants']?>
-                    </label>
-            
-                    <div class="uploader">
-                        <input id="txt_ci_dirigeant" type="text" class="field required <?=($this->error_cni_dirigent==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_DIRIGEANT]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
-            
-                        <div class="file-holder">
-                            <span class="btn btn-small">
-                                <?=$this->lng['etape2']['parcourir']?>
-            
-                                <span class="file-upload">
-                                    <input type="file" class="file-field" name="cni_passeport_dirigeant">
-                                </span>
-                            </span>
-                        </div>
-                    </div><!-- /.uploader -->
-                </div><!-- /.row -->
-                
-                <div class="row row-upload">
-                    <label class="inline-text">
-                        <div class="row-upload file-uploaded">
-                            <div class="uploader">
-                                <div class="file-holder">
-                                    <span class="btn btn-small btn-add-new-row">+<small><?=$this->lng['etape2']['telecharger-un-autre-document']?></small></span>
-                                </div>
-                            </div><!-- /.uploader -->
-                        </div><!-- /.row -->
-                    </label>
-                    <div class="uploader uploader-file" <?=($this->lenders_accounts->fichier_autre!= '' || $this->error_autre==true?'':'style="display:none;"')?> >
-                        <input id="txt_autre" type="text" class="field required <?=($this->error_autre==true?'LV_invalid_field':'')?>" readonly="readonly" value="<?=($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]!= ''?$this->attachments[attachment_type::CNI_PASSPORTE_VERSO]["path"]:$this->lng['etape2']['aucun-fichier-selectionne'])?>" />
-                        <div class="file-holder">
-                            <span class="btn btn-small">
-                                <?=$this->lng['etape2']['parcourir']?>
-                                <span class="file-upload">
-                                    <input type="file" class="file-field" name="cni_passeport_verso">
-                                </span>
-                            </span>
-                        </div>
-                    </div><!-- /.uploader -->
-                </div><!-- /.row -->
-                <script type="text/javascript">
-                    $(".btn-add-new-row").click(function() {$(".uploader-file").fadeIn();});
-                </script>
-                
+                    </div>
+                </div>
+                <div class="row">
+                    <span class="btn btn-small btn-add-row">+</span>
+                    <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                </div>
                 <div class="form-foot row row-cols centered">
-                	<input type="hidden" name="send_form_upload_doc">
-                    <button class="btn" type="button" onClick="$('#form_upload_doc').submit();"><?=$this->lng['profile']['valider']?> <i class="icon-arrow-next"></i></button>
+                    <input type="hidden" name="send_form_upload_doc">
+                    <button class="btn" type="button" onClick="$('#form_upload_doc').submit();"><?= $this->lng['profile']['valider'] ?>
+                        <i class="icon-arrow-next"></i></button>
                 </div><!-- /.form-foot foot-cols -->
             </form>
+            <div style="clear: both;"></div>
         </div>
-	</div>
+    </div>
 </div>
+<style type="text/css">
+    .row.error {font-weight: bold; color: #c84747;}
+    .row > select.field-large {float: left; width: 453px;}
+    .row .row-title {font-weight: bold; display: inline-block; border: 1px solid #b10366; color: #b10366; height: 35px; border-radius: 4px; text-transform: uppercase; line-height: 35px; padding: 0 10px; width: 360px;}
+    .row ul {padding-bottom: 1em;}
+    form .row .uploader input.field {margin-left: 5px; width: 295px;}
+    .row.form-foot button[type=submit] {padding: 0 30px;}
+    .btn-add-row {font-size: 20px; top: 0;}
+    .btn-remove-row {font-size: 20px; margin-top: 5px;}
+    .file-holder > .btn {float: left; margin: 5px 0 0 5px;}
+</style>
 
 <script type="application/javascript">
-// formulaire informations bancaires
-$("#form_upload_doc").submit(function( event ) {
-	var form_ok = true;
-	
-	// fichiers
-	// ci_dirigeant
-	if($('#txt_ci_dirigeant').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>'){
-		form_ok = false;
-		$("#txt_ci_dirigeant").removeClass("LV_valid_field");$("#txt_ci_dirigeant").addClass("LV_invalid_field");
-	}
-	else {$("#txt_ci_dirigeant").removeClass("LV_invalid_field");$("#txt_ci_dirigeant").addClass("LV_valid_field");}
-	
-	// rib
-	if($('#txt_rib').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>'){
-		form_ok = false;
-		$("#txt_rib").removeClass("LV_valid_field");$("#txt_rib").addClass("LV_invalid_field");
-	}
-	else {$("#txt_rib").removeClass("LV_invalid_field");$("#txt_rib").addClass("LV_valid_field");}
-	// txt_kbis
-	if($('#txt_kbis').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>'){
-		form_ok = false;
-		$("#txt_kbis").removeClass("LV_valid_field");$("#txt_kbis").addClass("LV_invalid_field");
-	}
-	else {$("#txt_kbis").removeClass("LV_invalid_field");$("#txt_kbis").addClass("LV_valid_field");}
-	
-	if(form_ok == false){ event.preventDefault(); }
-});
+    var uploadFieldId = 1;
+    $(function() {
+        $('.row.row-upload').find('select').change(function() {
+            var attachmentTypeId = $(this).val();
+            $(this).parents('.row.row-upload').find('input.file-field').attr('name', attachmentTypeId);
+        });
+
+        $uploadRow = $('.row.row-upload:nth-child(2)').clone().hide().prop('id', 'upload-row-pattern');
+        $uploadRow.children('select').removeClass('custom-select');
+        $('#form_upload_doc').append($uploadRow);
+    });
+
+    $(document).on('change', 'input.file-field', function() {
+        var val = $(this).val();
+
+        if (val.length != 0 || val != '') {
+            val = val.replace(/\\/g, '/').replace(/.*\//, '');
+            $(this).closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
+        }
+    });
+
+    $('.btn-add-row').click(function () {
+         var uploadRow = $('#upload-row-pattern').clone().show().prop('id', 'upload-row-pattern_' + uploadFieldId);
+
+        $(this).parent('.row').before(uploadRow);
+        uploadRow.children('select').addClass('custom-select').c2Selectbox();
+        var removeButton = $('<span class="btn btn-small btn-remove-row">-</span>').on('click', function() {
+            $(this).parents('.row.row-upload').remove();
+        });
+        uploadRow.find('.file-holder').append(removeButton);
+
+        $('#upload-row-pattern_'+ uploadFieldId).find('select').change(function() {
+            var attachmentTypeId = $(this).val();
+            $(this).parents('.row.row-upload').find('input.file-field').attr('name', attachmentTypeId);
+        });
+
+        uploadFieldId ++;
+    });
 </script>
