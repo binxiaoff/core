@@ -3,10 +3,13 @@
         <div class="account-data">
             <h2><?= $this->lng['profile']['validation-compte'] ?></h2>
 
-            <?php if (isset($_SESSION['reponse_upload']) && $_SESSION['reponse_upload'] != '') : ?>
-                <div class="reponseProfile"><?= $_SESSION['reponse_upload'] ?></div>
-                <?php unset($_SESSION['reponse_upload']); ?>
-            <?php endif; ?>
+            <?php if (isset($_SESSION['form_profile_doc']) && $_SESSION['reponse_upload'] != '') : ?>
+                <div class="reponseProfile">
+                    <?= $_SESSION['form_profile_doc']['reponse_upload'] ?>
+                    <?= $_SESSION['form_profile_doc']['detail_upload'] ?>
+                </div>
+                <?php unset($_SESSION['form_profile_doc']); ?>
+            <?php else : ?>
 
             <p><?= $this->lng['profile']['validation-compte-contenu'] ?></p>
             <div class="row">
@@ -53,6 +56,7 @@
                 </div><!-- /.form-foot foot-cols -->
             </form>
             <div style="clear: both;"></div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

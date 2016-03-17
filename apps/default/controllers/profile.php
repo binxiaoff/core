@@ -2121,7 +2121,7 @@ class profileController extends bootstrap
 
 		$resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $sFieldName, $this->upload);
 
-		if(false === $resultUpload) {
+		if(false === $resultUpload || is_null($resultUpload)) {
 			$this->form_ok = false;
 			$this->error_fichier = true;
 		}
@@ -2180,37 +2180,34 @@ class profileController extends bootstrap
         $oLenderAccount         = $this->loadData('lenders_accounts');
         $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
 
-        $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
-        $oClientHistoryActions->histo(12, 'upload doc profile', $this->clients->id_client, $serialize);
-
-        $this->error_fichiers = false;
+        $sSerialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
+        $oClientHistoryActions->histo(12, 'upload doc profile', $this->clients->id_client, $sSerialize);
 
         if (false === empty($_POST) || false === empty($_FILES)) {
             $sContentForHistory = '<ul>';
             foreach (array_keys($_FILES) as $iAttachmentType) {
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, $iAttachmentType, $iAttachmentType);
-                $sContentForHistory .= '<li>' .$aTranslations['document-type-' . $iAttachmentType] . '</li>';
+                if (is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, $iAttachmentType, $iAttachmentType))) {
+                    $sContentForHistory .= '<li>' .$aTranslations['document-type-' . $iAttachmentType] . '</li>';
+                }
             }
             $sContentForHistory .= '</ul>';
         }
 
-        if ($this->error_fichiers == false) {
-            if (false !== strpos($sContentForHistory, '<li>')) {
-                $sClientStatus = (in_array($oClientStatus->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) ? \clients_status::COMPLETENESS_REPLY : \clients_status::MODIFICATION ;
+        if (false !== strpos($sContentForHistory, '<li>')) {
+            $sClientStatus = (in_array($oClientStatus->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) ? \clients_status::COMPLETENESS_REPLY : \clients_status::MODIFICATION ;
 
-                $oClientStatusHistory->addStatus('-2', $sClientStatus, $this->clients->id_client, $sContentForHistory);
-                $this->sendAccountModificationEmail($this->clients);
+            $oClientStatusHistory->addStatus('-2', $sClientStatus, $this->clients->id_client, $sContentForHistory);
+            $this->sendAccountModificationEmail($this->clients);
+            $_SESSION['form_profile_doc']['reponse_upload'] = $this->lng['profile']['message-completness-document-upload'];
+            $_SESSION['form_profile_doc']['detail_upload']  = $sContentForHistory;
+        }
 
-                $_SESSION['reponse_upload'] = $this->lng['profile']['sauvegardees'];
-            }
-
-            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
-                header('Location: ' . $this->lurl . '/profile/particulier_doc');
-                die;
-            } else {
-                header('Location: ' . $this->lurl . '/profile/societe_doc');
-                die;
-            }
+        if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+            header('Location: ' . $this->lurl . '/profile/particulier_doc');
+            die;
+        } else {
+            header('Location: ' . $this->lurl . '/profile/societe_doc');
+            die;
         }
     }
 }
