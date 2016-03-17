@@ -7361,7 +7361,7 @@ class cronController extends bootstrap
 
                                     if (in_array($iStatus, array(7, 8))) {
                                         $sCompletenessDate = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2, 1);
-                                        $aReplacements['date_completude_etape2'] = $sCompletenessDate->format('D-M-Y');
+                                        $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $sCompletenessDate->getTimestamp());
                                     }
 
                                     $aReplacements['liste_pieces']            = $this->projects_status_history->content;
