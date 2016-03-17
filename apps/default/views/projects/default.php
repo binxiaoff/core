@@ -239,10 +239,11 @@
 <script type="text/javascript">
 
     $(document).ready(function () {
-            var load = false;
-        var offset = $('.unProjet:last').offset();
+        $(window).scroll(appendProjects);
 
-        $(window).scroll(function () { // On surveille l'évènement scroll
+        function appendProjects () {
+            var offset = $('.unProjet:last').offset();
+            var load = false;
 
             /* Si l'élément offset est en bas de scroll, si aucun chargement
              n'est en cours, si le nombre de projet affiché est supérieur
@@ -254,6 +255,7 @@
 
                 // la valeur passe à vrai, on va charger
                 load = true;
+                $(window).off("scroll");
 
                 //On récupère l'id du dernier projet affiché
                 var last_id = $('.unProjet:last').attr('id');
@@ -262,9 +264,14 @@
                 $('.loadmore').show();
 
                 //On lance la fonction ajax
-                var val = {last: last_id, positionStart: $('#positionStart').html(), ordreProject: $('#ordreProject').html(), where: $('#where').html(), type: $('#valType').html()};
+                var val = {
+                    last: last_id,
+                    positionStart: $('#positionStart').html(),
+                    ordreProject: $('#ordreProject').html(),
+                    where: $('#where').html(),
+                    type: $('#valType').html()
+                };
                 $.post(add_url + '/ajax/load_project', val).done(function (data) {
-
                     obj = JSON.parse(data);
                     var positionStart = obj.positionStart;
                     var affichage = obj.affichage;
@@ -279,11 +286,11 @@
                     offset = $('.unProjet:last').offset();
                     //On remet la valeur à faux car c'est fini
                     load = false;
+                    $(window).scroll(appendProjects);
 
                     $('#positionStart').html(positionStart);
                 });
             }
-        });
 
     });
 

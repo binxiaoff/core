@@ -50,7 +50,7 @@
                     <script>
                         var cible<?= $aProject['id_project'] ?> = new Date('<?= $this->dates->formatDate($aProject['date_retrait'], 'F d'); ?>, <?= $this->dates->formatDate($aProject['date_retrait'], 'Y'); ?> <?= $heure_retrait ?>');
                         var letime<?= $aProject['id_project'] ?> = parseInt(cible<?=$aProject['id_project']?>.getTime() / 1000, 10);
-                        setTimeout('decompte(letime <?= $aProject['id_project'] ?>,"val<?=$aProject['id_project']?>")', 500);
+                        setTimeout('decompte(letime<?= $aProject['id_project'] ?>,"val<?=$aProject['id_project']?>")', 500);
                     </script>
                     <?php
                 } else {
