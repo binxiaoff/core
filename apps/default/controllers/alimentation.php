@@ -180,9 +180,8 @@ class alimentationController extends bootstrap
                 $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
                 $this->transactions->type_transaction = 7; // on signal que c'est une alimentation par prelevement
                 $this->transactions->transaction      = 1; // transaction physique
-                $this->transactions->id_transaction   = $this->transactions->create();
+                $this->transactions->create();
 
-                // prelevements
                 $this->prelevements->id_client        = $this->clients->id_client;
                 $this->prelevements->id_transaction   = $this->transactions->id_transaction;
                 $this->prelevements->montant          = $_POST['montant_prelevement'] * 100;
@@ -192,32 +191,19 @@ class alimentationController extends bootstrap
                 $this->prelevements->jour_prelevement = $_POST['jour_prelevement'];
                 $this->prelevements->type             = 1;
                 $this->prelevements->motif            = $this->motif;
-                $this->prelevements->id_prelevement   = $this->prelevements->create();
-
-                // Motif virement
-                $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                $this->prelevements->create();
 
                 //******************************//
                 //*** ENVOI DU MAIL preteur-alimentation ***//
                 //******************************//
-
-                // Recuperation du modele de mail
                 $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
 
-                // FB
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
 
-                // Twitter
                 $this->settings->get('Twitter', 'type');
                 $lien_tw = $this->settings->value;
 
-                $pageProjets = $this->tree->getSlug(4, $this->language);
-
-                // Variables du mailing
                 $varMail = array(
                     'surl'           => $this->surl,
                     'url'            => $this->lurl,
@@ -225,28 +211,24 @@ class alimentationController extends bootstrap
                     'fonds_depot'    => ($_POST['montant_prelevement'] / 100),
                     'solde_p'        => $this->solde + ($_POST['montant_prelevement'] / 100),
                     'link_mandat'    => $this->surl . '/images/default/mandat.jpg',
-                    'motif_virement' => $motif,
-                    'projets'        => $this->lurl . '/' . $pageProjets,
+                    'motif_virement' => $this->clients->getLenderPattern($this->clients->id_client),
+                    'projets'        => $this->lurl . '/' . $this->tree->getSlug(4, $this->language),
                     'lien_fb'        => $lien_fb,
                     'lien_tw'        => $lien_tw
                 );
 
-                // Construction du tableau avec les balises EMV
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                // Attribution des données aux variables
                 $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                // Envoi du mail
                 $this->email = $this->loadLib('email', array());
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') {
+                if ($this->Config['env'] === 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
@@ -418,81 +400,58 @@ class alimentationController extends bootstrap
                         $this->transactions->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
                         $this->transactions->update();
 
-                        // On recupere le lender
                         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
                         $this->lenders_accounts->status = 1;
                         $this->lenders_accounts->update();
 
-                        // On enrgistre la transaction dans le wallet
                         $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
                         $this->wallets_lines->type_financial_operation = 30; // Inscription preteur
                         $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                         $this->wallets_lines->status                   = 1;
                         $this->wallets_lines->type                     = 1;
                         $this->wallets_lines->amount                   = $response['payment']['amount'];
-                        $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
+                        $this->wallets_lines->create();
 
                         // Transaction physique donc on enregistre aussi dans la bank lines
                         $this->bank_lines->id_wallet_line    = $this->wallets_lines->id_wallet_line;
                         $this->bank_lines->id_lender_account = $this->lenders_accounts->id_lender_account;
-                        //$this->bank_lines->type = '' <--- ?
                         $this->bank_lines->status = 1;
                         $this->bank_lines->amount = $response['payment']['amount'];
                         $this->bank_lines->create();
 
-                        $this->notifications->type            = 6; // alim cb
-                        $this->notifications->id_lender       = $this->lenders_accounts->id_lender_account;
-                        $this->notifications->amount          = $response['payment']['amount'];
-                        $this->notifications->id_notification = $this->notifications->create();
+                        $this->notifications->type      = \notifications::TYPE_CREDIT_CARD_CREDIT;
+                        $this->notifications->id_lender = $this->lenders_accounts->id_lender_account;
+                        $this->notifications->amount    = $response['payment']['amount'];
+                        $this->notifications->create();
 
-                        //////// GESTION ALERTES //////////
-                        $this->clients_gestion_mails_notif->id_client                      = $this->lenders_accounts->id_client_owner;
-                        $this->clients_gestion_mails_notif->id_notif                       = 7; // alim cb
-                        $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
-                        $this->clients_gestion_mails_notif->id_notification                = $this->notifications->id_notification;
-                        $this->clients_gestion_mails_notif->id_transaction                 = $this->transactions->id_transaction;
-                        $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
-                        //////// FIN GESTION ALERTES //////////
+                        $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
+                        $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT;
+                        $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                        $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                        $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
+                        $this->clients_gestion_mails_notif->create();
 
-                        // on met l'etape inscription a 3
                         if ($this->clients->etape_inscription_preteur < 3) {
-                            $this->clients->etape_inscription_preteur = 3; // etape 3 ok
+                            $this->clients->etape_inscription_preteur = 3;
                             $this->clients->update();
                         }
 
-                        // envoi email bib ok maintenant ou non
                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 7, 'immediatement') == true) {
-
-                            //////// GESTION ALERTES //////////
                             $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                            $this->clients_gestion_mails_notif->immediatement = 1;
                             $this->clients_gestion_mails_notif->update();
-                            //////// FIN GESTION ALERTES //////////
-
-                            // Motif virement
-                            $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                            $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                            $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                            $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
 
                             //******************************//
                             //*** ENVOI DU MAIL preteur-alimentation ***//
                             //******************************//
-
-                            // Recuperation du modele de mail
                             $this->mails_text->get('preteur-alimentation-cb', 'lang = "' . $this->language . '" AND type');
 
-                            // FB
                             $this->settings->get('Facebook', 'type');
                             $lien_fb = $this->settings->value;
 
-                            // Twitter
                             $this->settings->get('Twitter', 'type');
                             $lien_tw = $this->settings->value;
 
-                            $pageProjets = $this->tree->getSlug(4, $this->language);
-
-                            // Variables du mailing
                             $varMail = array(
                                 'surl'            => $this->surl,
                                 'url'             => $this->lurl,
@@ -500,29 +459,25 @@ class alimentationController extends bootstrap
                                 'fonds_depot'     => ($response['payment']['amount'] / 100),
                                 'solde_p'         => $this->solde + ($response['payment']['amount'] / 100),
                                 'link_mandat'     => $this->surl . '/images/default/mandat.jpg',
-                                'motif_virement'  => $motif,
-                                'projets'         => $this->lurl . '/' . $pageProjets,
+                                'motif_virement'  => $this->clients->getLenderPattern($this->clients->id_client),
+                                'projets'         => $this->lurl . '/' . $this->tree->getSlug(4, $this->language),
                                 'gestion_alertes' => $this->lurl . '/profile',
                                 'lien_fb'         => $lien_fb,
                                 'lien_tw'         => $lien_tw
                             );
 
-                            // Construction du tableau avec les balises EMV
                             $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                            // Attribution des donnÃ©es aux variables
                             $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                            // Envoi du mail
                             $this->email = $this->loadLib('email', array());
                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
-                            if ($this->Config['env'] == 'prod'){
+                            if ($this->Config['env'] === 'prod') {
                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                             } else {
