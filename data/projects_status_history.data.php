@@ -189,13 +189,12 @@ class projects_status_history extends projects_status_history_crud
 
     public function getDateProjectStatus($sIdProject, $sIdProjectStatus, $bIsFirstOccurence)
     {
-        $sIsFirstOccurence = $bIsFirstOccurence ? "ASC" : "DESC";
+        $sIsFirstOccurence = $bIsFirstOccurence ? "MIN" : "MAX";
         $sql = '
-            SELECT added
+            SELECT '. $sIsFirstOccurence .'(added)
             FROM projects_status_history psh
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE psh.id_project = ' . $sIdProject . ' AND ps.status = ' . $sIdProjectStatus . '
-            ORDER BY psh.id_project_status_history '. $sIsFirstOccurence .' LIMIT 1';
+            WHERE psh.id_project = ' . $sIdProject . ' AND ps.status = ' . $sIdProjectStatus;
         $result = $this->bdd->query($sql);
         $sResult = $this->bdd->result($result);
 
