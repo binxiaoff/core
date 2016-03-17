@@ -128,9 +128,9 @@ class ajaxController extends bootstrap
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
 
         $where = '';
-        $ordre = $this->tabOrdreProject[$_POST['ordreProject']];
+        $ordre = $this->tabOrdreProject[$_GET['ordreProject']];
 
-        $_SESSION['ordreProject'] = $_POST['ordreProject'];
+        $_SESSION['ordreProject'] = $_GET['ordreProject'];
 
         // sort projects by rate
         $aRateRange = array();
@@ -152,11 +152,11 @@ class ajaxController extends bootstrap
         }
 
         // filter completed projects
-        if (isset($_POST['type']) && $_POST['type'] == 4) {
+        if (isset($_GET['type']) && $_GET['type'] == 4) {
             $where = ' AND p.date_fin < "' . date('Y-m-d') . '"';
         }
 
-        $sPositionStart = filter_var($_POST['positionStart'], FILTER_SANITIZE_NUMBER_INT) + 10;
+        $sPositionStart = filter_var($_GET['positionStart'], FILTER_SANITIZE_NUMBER_INT) + 10;
         $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, $sPositionStart, 10);
         $affichage             = '';
 

@@ -243,7 +243,7 @@
     $(function () {
         $(window).scroll(appendProjects);
 
-        function appendProjects () {
+        function appendProjects() {
             var load = false;
             var offset = $('.unProjet:last').offset();
 
@@ -266,10 +266,19 @@
                 $('.loadmore').show();
 
                 //On lance la fonction ajax
-                var val = {last: last_id, positionStart: $('#positionStart').html(), ordreProject: $('#ordreProject').html(), where: $('#where').html(), type: $('#valType').html()};
-                $.post(add_url + '/ajax/load_project', val)
-                    .done(function (data) {
-                        obj = JSON.parse(data);
+                var val = {
+                    last: last_id,
+                    positionStart: $('#positionStart').html(),
+                    ordreProject: $('#ordreProject').html(),
+                    where: $('#where').html(),
+                    type: $('#valType').html()
+                };
+                $.ajax({
+                    url: add_url + '/ajax/load_project/',
+                    type: 'GET',
+                    data: val,
+                    dataType: 'json',
+                    success: function(obj) {
                         var positionStart = obj.positionStart;
                         var affichage = obj.affichage;
 
@@ -286,7 +295,8 @@
                         $(window).scroll(appendProjects);
 
                         $('#positionStart').html(positionStart);
-                    });
+                    }
+                });
             }
         }
     });

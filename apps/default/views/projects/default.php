@@ -241,7 +241,7 @@
     $(document).ready(function () {
         $(window).scroll(appendProjects);
 
-        function appendProjects () {
+        function appendProjects() {
             var offset = $('.unProjet:last').offset();
             var load = false;
 
@@ -271,28 +271,32 @@
                     where: $('#where').html(),
                     type: $('#valType').html()
                 };
-                $.post(add_url + '/ajax/load_project', val).done(function (data) {
-                    obj = JSON.parse(data);
-                    var positionStart = obj.positionStart;
-                    var affichage = obj.affichage;
+                $.ajax({
+                    url: add_url + '/ajax/load_project/',
+                    type: 'GET',
+                    data: val,
+                    dataType: 'json',
+                    success: function(obj) {
+                        var positionStart = obj.positionStart;
+                        var affichage = obj.affichage;
 
-                    //On masque le loader
-                    $('.loadmore').fadeOut(500);
-                    /* On affiche le résultat après
-                     le dernier projet */
-                    $('.unProjet:last').after(affichage);
-                    /* On actualise la valeur offset
-                     du dernier projet */
-                    offset = $('.unProjet:last').offset();
-                    //On remet la valeur à faux car c'est fini
-                    load = false;
-                    $(window).scroll(appendProjects);
+                        //On masque le loader
+                        $('.loadmore').fadeOut(500);
+                        /* On affiche le résultat après
+                         le dernier projet */
+                        $('.unProjet:last').after(affichage);
+                        /* On actualise la valeur offset
+                         du dernier projet */
+                        offset = $('.unProjet:last').offset();
+                        //On remet la valeur à faux car c'est fini
+                        load = false;
+                        $(window).scroll(appendProjects);
 
-                    $('#positionStart').html(positionStart);
+                        $('#positionStart').html(positionStart);
+                    }
                 });
             }
-
-    });
+        });
 
     $("select").change(function () {
         var val = $(this).val();
