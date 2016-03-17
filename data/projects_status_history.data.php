@@ -186,4 +186,19 @@ class projects_status_history extends projects_status_history_crud
         }
         return $result;
     }
+
+    public function getDateProjectStatus($sIdProject, $sIdProjectStatus, $bIsFirstOccurence)
+    {
+        $sIsFirstOccurence = $bIsFirstOccurence ? "MIN" : "MAX";
+        $sql = '
+            SELECT '. $sIsFirstOccurence .'(added)
+            FROM projects_status_history psh
+            INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+            WHERE psh.id_project = ' . $sIdProject . ' AND ps.status = ' . $sIdProjectStatus;
+        $result = $this->bdd->query($sql);
+        $sResult = $this->bdd->result($result);
+
+        $oResult = new \DateTime($sResult);
+        return $oResult;
+    }
 }
