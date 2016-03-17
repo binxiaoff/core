@@ -1482,7 +1482,7 @@ class tree extends tree_crud
         $sql = 'SELECT
         p.slug as slug,
         p.title as title,
-        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1) as status
+        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) as status
         FROM projects p
         WHERE p.status = 0
         AND p.display = 0

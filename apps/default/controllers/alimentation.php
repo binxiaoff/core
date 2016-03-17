@@ -2,31 +2,33 @@
 
 class alimentationController extends bootstrap
 {
-    var $Command;
 
-    function alimentationController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
 
+        // On prend le header account
         $this->setHeader('header_account');
 
-        if (! $this->clients->checkAccess()) {
+        // On check si y a un compte
+        if ( ! $this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
         } else {
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
+            $this->clients->checkAccessLender();
         }
 
         $this->page = 'alimentation';
 
+        //Recuperation des element de traductions
         $this->lng['preteur-alimentation'] = $this->ln->selectFront('preteur-alimentation', $this->language, $this->App);
         $this->lng['etape3']               = $this->ln->selectFront('inscription-preteur-etape-3', $this->language, $this->App);
 
     }
 
-    function _default()
+    public function _default()
     {
         // On recup la lib et le reste payline
         require_once($this->path . 'protected/payline/include.php');
@@ -138,15 +140,8 @@ class alimentationController extends bootstrap
             if (! isset($_POST['jour_prelevement']) || $_POST['jour_prelevement'] == '') {
                 $form_ok = false;
             }
-            /*if(!isset($_POST['accept-cgu']) || $_POST['accept-cgu'] == false)
-            {
-                $form_ok = false;
-            }*/
-
             // si infos prelevement ok
             if ($form_ok == true) {
-
-                // acceptation des cgu
                 if ($this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc')) {
                     $accepet_ok = true;
                 } else {
@@ -162,8 +157,6 @@ class alimentationController extends bootstrap
                     $this->acceptations_legal_docs->create();
                 }
 
-
-                // transaction
                 $this->transactions->id_client        = $this->clients->id_client;
                 $this->transactions->montant          = $montant * 100;
                 $this->transactions->id_langue        = 'fr';
@@ -196,12 +189,6 @@ class alimentationController extends bootstrap
                 $this->prelevements->type             = 1;
                 $this->prelevements->motif            = $this->motif;
                 $this->prelevements->id_prelevement   = $this->prelevements->create();
-
-                // Motif virement
-                /*$p = substr($this->clients->prenom,0,1);
-                $nom = $this->clients->nom;
-                $id_client = str_pad($this->clients->id_client,6,0,STR_PAD_LEFT);
-                $motif = strtoupper($id_client.$p.$nom);*/
 
                 $motif = $this->clients->getLenderPattern($this->clients->id_client);
 
@@ -251,113 +238,27 @@ class alimentationController extends bootstrap
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
-                if ($this->Config['env'] == 'prod') // nmp
-                {
+                if ($this->Config['env'] == 'prod') {
                     Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                    // Injection du mail NMP dans la queue
                     $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                 } else {
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                // fin mail
-
                 header('location:' . $this->lurl . '/alimentation/confirmation/p');
                 die;
             }
 
         }
-
-        // Virement
-        //if(isset($_POST['sendVirement'])  && isset($_POST['accept-cgu']) && $_POST['accept-cgu'] != false)
         if (isset($_POST['sendVirement'])) {
-
-            // Histo client //
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
             $this->clients_history_actions->histo(1, 'alim virement', $this->clients->id_client, $serialize);
-            ////////////////
-
-            // aucun envoie de virement ici
-
-            // acceptation des cgu
-            /*if($this->acceptations_legal_docs->get($this->lienConditionsGenerales,'id_client = "'.$this->clients->id_client.'" AND id_legal_doc')) $accepet_ok = true;
-            else $accepet_ok = false;
-
-            $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGenerales;
-            $this->acceptations_legal_docs->id_client = $this->clients->id_client;
-
-            if($accepet_ok == true)$this->acceptations_legal_docs->update();
-            else $this->acceptations_legal_docs->create();*/
-
-
-            //******************************//
-            //*** ENVOI DU MAIL preteur-alimentation ***//
-            //******************************//
-
-            // Recuperation du modele de mail
-            /*$this->mails_text->get('preteur-alimentation','lang = "'.$this->language.'" AND type');
-
-            // Variables du mailing
-            $surl = $this->surl;
-            $url = $this->lurl;
-            $email = $this->clients->email;
-            $link_mandat = $this->surl.'/images/default/mandat.jpg';
-            $prenom = $this->clients->prenom;
-            $message = 'virement en attente';
-
-            // FB
-            $this->settings->get('Facebook','type');
-            $lien_fb = $this->settings->value;
-
-            // Twitter
-            $this->settings->get('Twitter','type');
-            $lien_tw = $this->settings->value;
-
-
-            // Variables du mailing
-            $varMail = array(
-            'surl' => $surl,
-            'url' => $url,
-            'prenom_p' => utf8_decode($prenom),
-            'fonds_depot' => '',
-            'solde_p' => $this->solde,
-            'link_mandat' => $link_mandat,
-            'lien_fb' => $lien_fb,
-            'lien_tw' => $lien_tw);
-
-
-            // Construction du tableau avec les balises EMV
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-            // Attribution des données aux variables
-            $sujetMail = strtr($this->mails_text->subject,$tabVars);
-            $texteMail = strtr(utf8_decode($this->mails_text->content),$tabVars);
-            $exp_name = strtr(utf8_decode($this->mails_text->exp_name),$tabVars);
-
-            // Envoi du mail
-            $this->email = $this->loadLib('email',array());
-            $this->email->setFrom($this->mails_text->exp_email,$exp_name);
-            $this->email->addRecipient(trim($this->clients->email));
-            //$this->email->addBCCRecipient($this->clients->email);
-
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-            Mailer::sendNMP($this->email,$this->mails_filer,$this->mails_text->id_textemail,$this->clients->email,$tabFiler);*/
-
-            // Injection du mail NMP dans la queue
-            //$this->tnmp->sendMailNMP($tabFiler,$varMail,$this->mails_text->nmp_secure,$this->mails_text->id_nmp,$this->mails_text->nmp_unique,$this->mails_text->mode);
-            // fin mail
-
 
             header('location:' . $this->lurl . '/alimentation/confirmation/v');
             die;
         }
 
-        // payment CB
-        //if(isset($_POST['sendPaymentCb']) && isset($_POST['accept-cgu']) && $_POST['accept-cgu'] != false)
         if (isset($_POST['sendPaymentCb'])) {
-
             $amount = str_replace(array(',', ' '), array('.', ''), $_POST['amount']);
 
             if (is_numeric($amount) && $amount >= 20 && $amount <= 10000) {
@@ -366,19 +267,6 @@ class alimentationController extends bootstrap
                 // Histo client //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
                 $this->clients_history_actions->histo(2, 'alim cb', $this->clients->id_client, $serialize);
-                ////////////////
-
-
-                // acceptation des cgu
-                /*if($this->acceptations_legal_docs->get($this->lienConditionsGenerales,'id_client = "'.$this->clients->id_client.'" AND id_legal_doc')) $accepet_ok = true;
-                else $accepet_ok = false;
-
-                $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGenerales;
-                $this->acceptations_legal_docs->id_client = $this->clients->id_client;
-
-                if($accepet_ok == true)$this->acceptations_legal_docs->update();
-                else $this->acceptations_legal_docs->create();*/
-
 
                 $this->transactions->id_client        = $this->clients->id_client;
                 $this->transactions->montant          = $amount;
@@ -436,7 +324,6 @@ class alimentationController extends bootstrap
                 $this->transactions->serialize_payline = serialize($result);
                 $this->transactions->update();
 
-
                 // si on retourne quelque chose
                 if (isset($result)) {
                     if ($result['result']['code'] == '00000') {
@@ -445,22 +332,18 @@ class alimentationController extends bootstrap
                     } // Si erreur on envoie sur mon mail
                     elseif (isset($result)) {
 
-                        mail('d.courtier@equinoa.com', 'unilend erreur payline', 'alimentation preteur (client : ' . $this->clients->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
+                        mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $this->clients->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
 
                         header('location:' . $this->lurl . '/alimentation/erreur/' . $this->clients->hash);
                         die;
                     }
                 }
             }
-
         }
-
-        // transferts (executé en ajax)
     }
 
-    function _payment()
+    public function _payment()
     {
-
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;
         $this->autoFireView   = false;
@@ -480,10 +363,8 @@ class alimentationController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
 
-
         // On recupere le client
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-
             $array   = array();
             $payline = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
 
@@ -507,8 +388,6 @@ class alimentationController extends bootstrap
             // RESPONSE FORMAT
             $response = $payline->getWebPaymentDetails($array);
             if (isset($response)) {
-                //print_r($response);
-
                 // On enregistre le resultat payline
                 $this->backpayline->code           = $response['result']['code'];
                 $this->backpayline->token          = $array['token'];
@@ -632,30 +511,21 @@ class alimentationController extends bootstrap
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
-                            if ($this->Config['env'] == 'prod') // nmp
-                            {
+                            if ($this->Config['env'] == 'prod'){
                                 Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                                // Injection du mail NMP dans la queue
                                 $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                             } else {
                                 $this->email->addRecipient(trim($this->clients->email));
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
-                            // fin mail
-
                         }
-
-
                         header('location:' . $this->lurl . '/alimentation/confirmation/cb/' . $this->transactions->id_transaction);
                         die;
-                    } else // je redirige sur la page par defaut
-                    {
+                    } else {
                         header('location:' . $this->lurl . '/alimentation');
                         die;
                     }
-                } // Paiement annulé
-                elseif ($response['result']['code'] == '02319') {
+                } elseif ($response['result']['code'] == '02319') { // Paiement annulé
                     $this->transactions->get($response['order']['ref'], 'id_transaction');
                     $this->transactions->id_backpayline = $this->backpayline->id_backpayline;
                     $this->transactions->statut         = '0';
@@ -664,9 +534,8 @@ class alimentationController extends bootstrap
 
                     header('location:' . $this->lurl . '/alimentation');
                     die;
-                } // Si erreur
-                else {
-                    mail('d.courtier@equinoa.com', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $this->clients->id_client . ') : ' . serialize($response));
+                } else {
+                    mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $this->clients->id_client . ') : ' . serialize($response));
 
                     header('location:' . $this->lurl . '/alimentation/erreur/');
                     die;
@@ -675,9 +544,8 @@ class alimentationController extends bootstrap
         }
     }
 
-    function _confirmation()
+    public function _confirmation()
     {
-
         if (isset($this->params[0]) && $this->params[0] == 'v') {
             header('location:' . $this->lurl . '/' . $this->tree->getSlug(138, $this->language));
         } elseif (isset($this->params[0]) && $this->params[0] == 'cb') {
@@ -690,19 +558,9 @@ class alimentationController extends bootstrap
         }
     }
 
-    function _erreur()
+    public function _erreur()
     {
-        // On recupere le client
-        /*if(isset($this->params[0]) && $this->clients->get($this->params[0],'hash'))
-        {
 
-        }
-        else
-        {
-            header('location:'.$this->lurl.'/alimentation');
-            die;
-        }*/
     }
-
 
 }

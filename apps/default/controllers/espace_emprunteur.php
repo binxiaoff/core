@@ -11,15 +11,17 @@ class espace_emprunteurController extends Bootstrap
         if ($command->Function !== 'securite') {
             $this->setHeader('header_account');
 
-            if (!$this->clients->checkAccess()) {
+            if ( ! $this->clients->checkAccess()) {
                 header('Location:' . $this->lurl);
                 die;
             }
-            $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
-            $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
 
-            if ((int)$aAllCompanyProjects[0]['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects[0]['project_status'] < projects_status::PREP_FUNDING) {
-                header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects[0]['hash']);
+            $this->clients->checkAccessBorrower();
+            $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
+            $aAllCompanyProjects = array_shift($this->companies->getProjectsForCompany($this->companies->id_company));
+
+            if ((int)$aAllCompanyProjects['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects['project_status'] <= projects_status::PREP_FUNDING) {
+                header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects['hash']);
                 die;
             }
         }
@@ -32,7 +34,6 @@ class espace_emprunteurController extends Bootstrap
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
         $this->dates = $this->loadLib('dates');
-
     }
 
     public function _default()
@@ -91,6 +92,7 @@ class espace_emprunteurController extends Bootstrap
 
     public function _contact()
     {
+        $this->page = 'contact';
         $this->lng['contact']   = $this->ln->selectFront('contact', $this->language, $this->App);
         $oRequestSubjects       = $this->loadData('contact_request_subjects');
         $this->aRequestSubjects = $oRequestSubjects->getAllSubjects($this->language);
@@ -192,11 +194,14 @@ class espace_emprunteurController extends Bootstrap
 
     public function _profil()
     {
+        $this->page = 'profil';
 
     }
 
     public function _operations()
     {
+        $this->page = 'operations';
+
         $this->aClientsProjects      = $this->getProjectsPostFunding();
 
         $oDateTimeStart              = new \datetime('NOW - 1 month');
@@ -251,6 +256,8 @@ class espace_emprunteurController extends Bootstrap
 
     public function _projets()
     {
+        $this->page = 'projets';
+
         $this->aProjectsPreFunding  = $this->getProjectsPreFunding();
         $this->aProjectsFunding     = $this->getProjectsFunding();
         $this->aProjectsPostFunding = $this->getProjectsPostFunding();

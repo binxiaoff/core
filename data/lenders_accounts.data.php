@@ -31,6 +31,8 @@ use Unilend\librairies\Cache;
 
 class lenders_accounts extends lenders_accounts_crud
 {
+    const LENDER_STATUS_ONLINE  = 1;
+    const LENDER_STATUS_OFFLINE = 0;
 
     public function __construct($bdd, $params = '')
     {
