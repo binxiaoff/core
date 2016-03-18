@@ -446,7 +446,7 @@ class ficelle
      * @param string $sIdProject
      * @return string
      */
-    public function motif_mandat($sSiren, $sIdProject)
+    public function getBorrowerBankTransferLabel($sSiren, $sIdProject)
     {
         $sIdProject = str_pad($sIdProject, 6, 0, STR_PAD_LEFT);
         return $sBankTransferLabel = mb_strtoupper('UNILEND' . $sIdProject . 'E' . trim($sSiren), 'UTF-8');

@@ -2431,7 +2431,6 @@ class cronController extends bootstrap
             } else {
                 // lecture du fichier
                 $lrecus = $this->recus2array($lien);
-
                 /* EX :
 
                   0430004056802118EUR2 0004063100718230615  230615DELERY HELENE                    0000000  0000000000400{ZZ0X4VY7PFE69K8V
@@ -2553,7 +2552,7 @@ class cronController extends bootstrap
                                     && false !== strpos($motif, $sMotifPrelevement)
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
                                 ) {
-                                    $projects->get($nombre, 'id_project');
+                                    $projects->get(ltrim($extract[0], '0'), 'id_project');
                                     $companies->get($projects->id_company, 'id_company');
                                     $clients->get($companies->id_client_owner, 'id_client');
 

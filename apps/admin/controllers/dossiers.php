@@ -983,8 +983,10 @@ class dossiersController extends bootstrap
                                 // montant - la part unilend
                                 $montant -= $partUnliend;
 
+
                                 // si existe pas
                                 if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false) {
+                                    $companies->get($this->projects->id_company, 'id_company');
 
                                     // transaction
                                     $this->transactions->id_client        = $this->clients->id_client;
@@ -1026,7 +1028,7 @@ class dossiersController extends bootstrap
                                     $virements->id_project     = $this->projects->id_project;
                                     $virements->id_transaction = $this->transactions->id_transaction;
                                     $virements->montant        = $montant * 100;
-                                    $virements->motif          = $this->ficelle->motif_mandat($companies->siren, $this->projects->id_project);
+                                    $virements->motif          = $this->ficelle->getBorrowerBankTransferLabel($companies->siren, $this->projects->id_project);
                                     $virements->type           = 2;
                                     $virements->create();
                                     // mail emprunteur facture a la fin
