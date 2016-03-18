@@ -133,7 +133,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
             <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth?>"/>
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
 
-            <select name="pays3" id="pays3" class="custom-select <?=$required?> field-small">
+            <select name="pays3" id="pays3" class="country custom-select <?=$required?> field-small">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <?
@@ -236,7 +236,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville_fiscal?>"/>
 
                 <?php //Ajout CM 06/08/14 ?>
-                <select name="pays1" id="pays1" class="custom-select <?=$required?> field-small">
+                <select name="pays1" id="pays1" class="country custom-select <?=$required?> field-small">
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <?
@@ -364,7 +364,7 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                 <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville?>" />
                 <?php //Ajout CM 06/08/14 ?>
-                <select name="pays2" id="pays2" class="custom-select <?=$required?> field-small">
+                <select name="pays2" id="pays2" class="country custom-select <?=$required?> field-small">
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <?
