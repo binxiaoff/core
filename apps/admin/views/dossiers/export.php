@@ -1,4 +1,10 @@
 <?php $iOldestAnnualAccountsId = end(array_keys($this->aBalanceSheets)); ?>
+"Projet"
+"SIREN";"<?= $this->oCompany->siren ?>"
+"Entreprise";"<?= $this->oCompany->name ?>"
+"Montant";"<?= $this->oProject->amount ?>"
+"Durée";"<?= $this->oProject->period ?>"
+""
 "Notation externe"
 <?php if ($this->bIsProblematicCompany) : ?>"Cette société a déjà eu des problèmes"<?php endif; ?>
 "Notes externes";"";"Déclaration client"

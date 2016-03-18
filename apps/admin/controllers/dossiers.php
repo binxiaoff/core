@@ -1504,15 +1504,15 @@ class dossiersController extends bootstrap
         $this->hideDecoration();
 
         /** @var \projects $oProject */
-        $oProject = $this->loadData('projects');
+        $this->oProject = $this->loadData('projects');
 
-        if (empty($this->params[0]) || false === $oProject->get($this->params[0])) {
+        if (empty($this->params[0]) || false === $this->oProject->get($this->params[0])) {
             return;
         }
 
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
-        $oCompany->get($oProject->id_company);
+        $this->oCompany = $this->loadData('companies');
+        $this->oCompany->get($this->oProject->id_company);
 
         /** @var \companies_bilans $oAnnualAccounts */
         $oAnnualAccounts = $this->loadData('companies_bilans');
@@ -1523,18 +1523,18 @@ class dossiersController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->fVATRate = $this->settings->value;
 
-        $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+        $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $this->oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
         $aAnnualAccountsIds             = array_column($this->aAnnualAccounts, 'id_bilan');
         $this->aBalanceSheets           = $oCompanyBalance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
-        $this->bIsProblematicCompany    = $oCompany->countProblemsBySIREN() > 0;
-        $this->iDeclaredRevenue         = $oProject->ca_declara_client;
-        $this->iDeclaredOperatingIncome = $oProject->resultat_exploitation_declara_client;
-        $this->iDeclaredCapitalStock    = $oProject->fonds_propres_declara_client;
-        $this->aCompanyProjects         = $oCompany->getProjectsBySIREN();
-        $this->fCompanyOwedCapital      = $oCompany->getOwedCapitalBySIREN();
+        $this->bIsProblematicCompany    = $this->oCompany->countProblemsBySIREN() > 0;
+        $this->iDeclaredRevenue         = $this->oProject->ca_declara_client;
+        $this->iDeclaredOperatingIncome = $this->oProject->resultat_exploitation_declara_client;
+        $this->iDeclaredCapitalStock    = $this->oProject->fonds_propres_declara_client;
+        $this->aCompanyProjects         = $this->oCompany->getProjectsBySIREN();
+        $this->fCompanyOwedCapital      = $this->oCompany->getOwedCapitalBySIREN();
 
         header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment;filename=risque-' . $oProject->id_project . '.csv');
+        header('Content-Disposition: attachment;filename=risque-' . $this->oProject->id_project . '.csv');
 
         ob_start();
         $this->fireView();
