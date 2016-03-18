@@ -919,10 +919,7 @@ class ajaxController extends bootstrap
             }
 
             if ($verif == 'ok') {
-                $p           = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                $nom         = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                $this->motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
                 // on effectue une demande de virement
                 // on retire la somme dur les transactions, bank_line et wallet
@@ -945,7 +942,7 @@ class ajaxController extends bootstrap
                 $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
                 $this->transactions->type_transaction = 8; // on signal que c'est un retrait
                 $this->transactions->transaction      = 1; // transaction physique
-                $this->transactions->id_transaction   = $this->transactions->create();
+                $this->transactions->create();
 
                 $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
                 $this->wallets_lines->type_financial_operation = 30; // Inscription preteur
@@ -953,7 +950,7 @@ class ajaxController extends bootstrap
                 $this->wallets_lines->status                   = 1;
                 $this->wallets_lines->type                     = 1;
                 $this->wallets_lines->amount                   = '-' . ($montant * 100);
-                $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
+                $this->wallets_lines->create();
 
                 // Transaction physique donc on enregistre aussi dans la bank lines
                 $this->bank_lines->id_wallet_line    = $this->wallets_lines->id_wallet_line;
@@ -962,7 +959,6 @@ class ajaxController extends bootstrap
                 $this->bank_lines->amount            = '-' . ($montant * 100);
                 $this->bank_lines->create();
 
-                // on enregistre a la demande de virement
                 $this->virements->id_client      = $this->clients->id_client;
                 $this->virements->id_transaction = $this->transactions->id_transaction;
                 $this->virements->montant        = $montant * 100;
@@ -971,22 +967,21 @@ class ajaxController extends bootstrap
                 $this->virements->status         = 0;
                 $this->virements->create();
 
-                $this->notifications->type            = 7; // retrait
-                $this->notifications->id_lender       = $this->lenders_accounts->id_lender_account;
-                $this->notifications->amount          = $montant * 100;
-                $this->notifications->id_notification = $this->notifications->create();
+                $this->notifications->type      = \notifications::TYPE_DEBIT;
+                $this->notifications->id_lender = $this->lenders_accounts->id_lender_account;
+                $this->notifications->amount    = $montant * 100;
+                $this->notifications->create();
 
-                $this->clients_gestion_mails_notif->id_client                      = $this->clients->id_client;
-                $this->clients_gestion_mails_notif->id_notif                       = 8; // retrait
-                $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
-                $this->clients_gestion_mails_notif->id_notification                = $this->notifications->id_notification;
-                $this->clients_gestion_mails_notif->id_transaction                 = $this->transactions->id_transaction;
-                $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
+                $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
+                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_DEBIT;
+                $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
+                $this->clients_gestion_mails_notif->create();
 
-                // envoi email retrait maintenant ou non
                 if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 8, 'immediatement') == true) {
                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                    $this->clients_gestion_mails_notif->immediatement = 1;
                     $this->clients_gestion_mails_notif->update();
 
                     $this->mails_text->get('preteur-retrait', 'lang = "' . $this->language . '" AND type');
@@ -997,12 +992,6 @@ class ajaxController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    $p           = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                    $nom         = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                    $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                    $motif       = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-                    $pageProjets = $this->tree->getSlug(4, $this->language);
-
                     $varMail = array(
                         'surl'            => $this->surl,
                         'url'             => $this->lurl,
@@ -1010,8 +999,8 @@ class ajaxController extends bootstrap
                         'fonds_retrait'   => $this->ficelle->formatNumber($montant),
                         'solde_p'         => $this->ficelle->formatNumber($this->solde - $montant),
                         'link_mandat'     => $this->surl . '/images/default/mandat.jpg',
-                        'motif_virement'  => $motif,
-                        'projets'         => $this->lurl . '/' . $pageProjets,
+                        'motif_virement'  => $this->clients->getLenderPattern($this->clients->id_client),
+                        'projets'         => $this->lurl . '/' . $this->tree->getSlug(4, $this->language),
                         'gestion_alertes' => $this->lurl . '/profile',
                         'lien_fb'         => $lien_fb,
                         'lien_tw'         => $lien_tw
@@ -1220,8 +1209,6 @@ class ajaxController extends bootstrap
                 $this->settings->get('Twitter', 'type');
                 $lien_tw = $this->settings->value;
 
-                $pageProjets = $this->tree->getSlug(4, $this->language);
-
                 $varMail = array(
                     'surl'     => $this->surl,
                     'url'      => $this->lurl,
@@ -1229,7 +1216,7 @@ class ajaxController extends bootstrap
                     'prenom_c' => $this->demande_contact->prenom,
                     'nom_c'    => $this->demande_contact->nom,
                     'objet'    => 'Demande preteur',
-                    'projets'  => $this->lurl . '/' . $pageProjets,
+                    'projets'  => $this->lurl . '/' . $this->tree->getSlug(4, $this->language),
                     'lien_fb'  => $lien_fb,
                     'lien_tw'  => $lien_tw
                 );
