@@ -623,9 +623,7 @@ class statsController extends bootstrap
 
             (SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status = 0) as Nombre_encheres_en_cours,
 
-            ((SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status = 2) +
-
-            (SELECT COUNT(lo.id_loan) FROM loans lo WHERE lo.id_lender = la.id_lender_account AND lo.status = 1))  as Nombre_encheres_rejetees,
+            (SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status IN (1, 2)) as Nombre_encheres_rejetees,
 
             (SELECT COUNT(lo.id_loan) FROM loans lo WHERE lo.id_lender = la.id_lender_account AND lo.status = 0)  as Nombre_encheres_acceptees,
 
@@ -643,9 +641,8 @@ class statsController extends bootstrap
             (SELECT CONCAT(u.firstname,' ',u.name) FROM users u WHERE u.id_user = " . $_SESSION['user']['id_user'] . ") as Personne_qui_a_fait_la_requete
 
             FROM lenders_accounts la
-            LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
-            WHERE c.id_client <> 'NULL'";
+            INNER JOIN clients c ON la.id_client_owner = c.id_client
+            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client";
 
         if (isset($this->params[0]) && $this->params[0] === 'csv') {
             $this->exportQueryCSV($sql, 'requete_etude_base_preteur_' . date('Ymd'));
