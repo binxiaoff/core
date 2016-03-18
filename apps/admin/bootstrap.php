@@ -143,7 +143,7 @@ class bootstrap extends Controller
             }
         }
 
-        $this->loadJs('admin/jquery/jquery-1.5.2.min');
+        $this->loadJs('admin/external/jquery/jquery');
         $this->loadJs('admin/freeow/jquery.freeow.min');
         $this->loadJs('admin/colorbox/jquery.colorbox-min');
         $this->loadJs('admin/treeview/jquery.treeview');
@@ -159,7 +159,7 @@ class bootstrap extends Controller
         $this->loadCss('../scripts/admin/colorbox/colorbox');
         $this->loadCss('../scripts/admin/treeview/jquery.treeview');
         $this->loadCss('../scripts/admin/tablesorter/style');
-        $this->loadCss('../scripts/admin/jquery-ui-min');
+        $this->loadCss('../scripts/admin/jquery-ui.min');
         $this->loadCss('admin/main');
 
         // Recuperation du code Google Analytics
