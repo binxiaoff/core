@@ -104,9 +104,10 @@ class autobid extends autobid_crud
         $sWherePeriod     = null === $iAutoBidPeriodId ? '' : ' AND a.id_autobid_period = ' . $iAutoBidPeriodId;
         $sOrderBy         = null === $sOrder ? '' : ' ORDER BY ' . $sOrder;
 
-        $sQuery = 'SELECT a.*
+        $sQuery = 'SELECT a.*, la.id_client_owner as id_client
                    FROM autobid a
                    INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period
+                   INNER JOIN lenders_accounts la ON la.id_lender_account = a.id_lender
                    WHERE ap.status = ' . \autobid_periods::STATUS_ACTIVE . '
                    AND a.status in (' . implode($aStatus, ',') . ')' . $sWhereLender . $sWhereEvaluation . $sWherePeriod . $sOrderBy;
 

@@ -86,8 +86,6 @@ class BidManager
         $oWalletsLine = Loader::loadData('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = Loader::loadData('offres_bienvenues_details');
-        /** @var \autobid_queue $oAutoBidQueue */
-        $oAutoBidQueue = Loader::loadData('autobid_queue');
 
         Loader::loadData('transactions_types'); //load for constant use
 
@@ -148,10 +146,6 @@ class BidManager
         $oBid->id_lender_wallet_line = $oWalletsLine->id_wallet_line;
         $oBid->ordre                 = $iBidNb;
         $oBid->create();
-
-        if (false === empty($oBid->id_autobid)) {
-            $oAutoBidQueue->addToQueue($oBid->id_lender_account, \autobid_queue::TYPE_QUEUE_BID);
-        }
 
         // Liste des offres non utilisées
         $aAllOffers = $oWelcomeOfferDetails->select('id_client = ' . $iClientId . ' AND status = 0');
@@ -236,12 +230,6 @@ class BidManager
             //todo : do a hotfix to remove status_email_bid_ko when all the old ko mail are sent.
             $oBid->status_email_bid_ko = 1;
             $oBid->update();
-
-            if (false === empty($oBid->id_autobid)) {
-                /** @var \autobid_queue $oAutoBidQueue */
-                $oAutoBidQueue = Loader::loadData('autobid_queue');
-                $oAutoBidQueue->addToQueue($oBid->id_lender_account, \autobid_queue::TYPE_QUEUE_REJECTED);
-            }
         }
     }
 
@@ -258,7 +246,6 @@ class BidManager
             $oBid->amount -= $fRepaymentAmount * 100;
             $oBid->status = \bids::STATUS_BID_ACCEPTED;
             $oBid->update();
-            // We don't update the auto-bid queue, because the bid is accepted partially.
         }
     }
 

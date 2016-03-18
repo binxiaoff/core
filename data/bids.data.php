@@ -351,4 +351,15 @@ class bids extends bids_crud
 
         return $mPercentage;
     }
+
+    public function shuffleAutoBidOrder($iProjectId)
+    {
+        $sShuffle = 'UPDATE  bids
+                     SET ordre = (@current_order := @current_order + 1)
+                     WHERE id_project = ' . $iProjectId . '
+                     AND id_autobid != 0
+                     ORDER BY RAND()';
+        $this->bdd->query('SET @current_order := 0');
+        $this->bdd->query($sShuffle);
+    }
 }

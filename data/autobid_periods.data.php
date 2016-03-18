@@ -98,4 +98,10 @@ class autobid_periods extends autobid_periods_crud
 
         return $mDurations;
     }
+
+    public function getPeriod($iDuration, $iStatus = self::STATUS_ACTIVE)
+    {
+        $rQuery = $this->bdd->query('SELECT * FROM `autobid_periods` WHERE ' . $iDuration . ' BETWEEN `min` AND `max` AND `status` = ' . $iStatus);
+        return $this->bdd->fetch_assoc($rQuery);
+    }
 }

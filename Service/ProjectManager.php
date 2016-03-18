@@ -173,26 +173,29 @@ class ProjectManager
         }
     }
 
-    private function bidAllAutoBid($oProject)
+    private function bidAllAutoBid(\projects $oProject)
     {
-        /** @var \autobid_queue $oAutoBidQueue */
-        $oAutoBidQueue = Loader::loadData('autobid_queue');
         /** @var \autobid $oAutoBid */
         $oAutoBid     = Loader::loadData('autobid');
-        $iCurrentRate = \bids::BID_RATE_MAX;
 
-        $aAutoBidList = $oAutoBidQueue->getAutoBids($oProject->period, $oProject->risk, $iCurrentRate);
-        foreach ($aAutoBidList as $aAutoBidSetting) {
-            if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, $iCurrentRate);
+        $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
+        if (false === empty($aPeriod)) {
+            $aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period']);
+
+            foreach ($aAutoBidList as $aAutoBidSetting) {
+                if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
+                    $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, \bids::BID_RATE_MAX);
+                }
             }
+
+            /** @var \bids $oBid */
+            $oBid = Loader::loadData('bids');
+            $oBid->shuffleAutoBidOrder($oProject->id_project);
         }
     }
 
     public function checkAutoBidBalance(\projects $oProject)
     {
-        /** @var \autobid_queue $oAutoBidQueue */
-        $oAutoBidQueue = Loader::loadData('autobid_queue');
         /** @var \transactions $oTransaction */
         $oTransaction = Loader::loadData('transactions');
         /** @var \clients $oClient */
@@ -200,30 +203,33 @@ class ProjectManager
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
 
-        $aAutoBidList = $oAutoBidQueue->getAutoBids($oProject->period, $oProject->risk, \bids::BID_RATE_MAX);
-        foreach ($aAutoBidList as $aAutoBidSetting) {
-            if ($oClient->get($aAutoBidSetting['id_client'])
-                && $oLenderAccount->get($aAutoBidSetting['id_lender'])
-                && $this->oAutoBidSettingsManager->isOn($oLenderAccount)
-            ) {
-                $iBalance = $oTransaction->getSolde($oClient->id_client);
+        $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
+        if (false === empty($aPeriod)) {
+            $aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period']);
+            foreach ($aAutoBidList as $aAutoBidSetting) {
+                if ($oClient->get($aAutoBidSetting['id_client'])
+                    && $oLenderAccount->get($aAutoBidSetting['id_lender'])
+                    && $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+                ) {
+                    $iBalance = $oTransaction->getSolde($oClient->id_client);
 
-                if ($iBalance < $aAutoBidSetting['amount']) {
-                    $this->oNotificationManager->create(
-                        \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
-                        \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
-                        $oClient->id_client,
-                        'sendAutoBidBalanceInsufficient',
-                        $oProject->id_project
-                    );
-                } elseif ($iBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
-                    $this->oNotificationManager->create(
-                        \notifications::TYPE_AUTOBID_BALANCE_LOW,
-                        \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,
-                        $oClient->id_client,
-                        'sendAutoBidBalanceLow',
-                        $oProject->id_project
-                    );
+                    if ($iBalance < $aAutoBidSetting['amount']) {
+                        $this->oNotificationManager->create(
+                            \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
+                            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
+                            $oClient->id_client,
+                            'sendAutoBidBalanceInsufficient',
+                            $oProject->id_project
+                        );
+                    } elseif ($iBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
+                        $this->oNotificationManager->create(
+                            \notifications::TYPE_AUTOBID_BALANCE_LOW,
+                            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,
+                            $oClient->id_client,
+                            'sendAutoBidBalanceLow',
+                            $oProject->id_project
+                        );
+                    }
                 }
             }
         }
