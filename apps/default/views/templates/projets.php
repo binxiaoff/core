@@ -243,76 +243,19 @@
     $(function () {
         $(window).scroll(appendProjects);
 
-        function appendProjects() {
-            var load = false;
-            var offset = $('.unProjet:last').offset();
+        $("select").change(function () {
+            var val = $(this).val();
+            var id = $(this).attr('id');
 
-            /* Si l'élément offset est en bas de scroll, si aucun chargement
-             n'est en cours, si le nombre de projet affiché est supérieur
-             à 5 et si tout les projets ne sont pas affichés, alors on
-             lance la fonction. */
-            if ((offset.top - $(window).height() <= $(window).scrollTop())
-                && load == false && ($('.unProjet').size() >= 10) &&
-                ($('.unProjet').size() != $('.nbProjet').text())) {
+            $.post(add_url + '/ajax/triProject', {val: val, id: id}).done(function (data) {
+                $('#table_tri').html(data)
+            });
+        });
 
-                // la valeur passe à vrai, on va charger
-                load = true;
-                $(window).off('scroll');
-
-                //On récupère l'id du dernier projet affiché
-                var last_id = $('.unProjet:last').attr('id');
-
-                //On affiche un loader
-                $('.loadmore').show();
-
-                //On lance la fonction ajax
-                var val = {
-                    last: last_id,
-                    positionStart: $('#positionStart').html(),
-                    ordreProject: $('#ordreProject').html(),
-                    where: $('#where').html(),
-                    type: $('#valType').html()
-                };
-                $.ajax({
-                    url: add_url + '/ajax/load_project/',
-                    type: 'GET',
-                    data: val,
-                    dataType: 'json',
-                    success: function(obj) {
-                        var positionStart = obj.positionStart;
-                        var affichage = obj.affichage;
-
-                        //On masque le loader
-                        $('.loadmore').fadeOut(500);
-                        /* On affiche le résultat après
-                         le dernier projet */
-                        $('.unProjet:last').after(affichage);
-                        /* On actualise la valeur offset
-                         du dernier projet */
-                        offset = $('.unProjet:last').offset();
-                        //On remet la valeur à faux car c'est fini
-                        load = false;
-                        $(window).scroll(appendProjects);
-
-                        $('#positionStart').html(positionStart);
-                    }
-                });
-            }
-        }
-    });
-
-    $("select").change(function () {
-        var val = $(this).val();
-        var id = $(this).attr('id');
-
-        $.post(add_url + '/ajax/triProject', {val: val, id: id}).done(function (data) {
-            $('#table_tri').html(data)
+        $("#rest").click(function () {
+            $.post(add_url + '/ajax/triProject', {rest_val: 1}).done(function (data) {
+                $('#table_tri').html(data);
+            });
         });
     });
-
-    $("#rest").click(function () {
-        $.post(add_url + '/ajax/triProject', {rest_val: 1}).done(function (data) {
-            $('#table_tri').html(data);
-        });
-    })
 </script>
