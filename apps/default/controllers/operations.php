@@ -113,27 +113,29 @@ class operationsController extends bootstrap
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
         // @todo Intl
         $oActiveSheet->setCellValue('A1', 'Projet');
-        $oActiveSheet->setCellValue('B1', 'Montant');
-        $oActiveSheet->setCellValue('C1', 'Statut');
-        $oActiveSheet->setCellValue('D1', 'Taux d\'intérêts');
-        $oActiveSheet->setCellValue('E1', 'Premier remboursement');
-        $oActiveSheet->setCellValue('F1', 'Prochain remboursement prévu');
-        $oActiveSheet->setCellValue('G1', 'Date dernier remboursement');
-        $oActiveSheet->setCellValue('H1', 'Capital perçu');
-        $oActiveSheet->setCellValue('I1', 'Intérêts perçus');
-        $oActiveSheet->setCellValue('J1', 'Capital restant dû');
+        $oActiveSheet->setCellValue('B1', 'Numéro de projet');
+        $oActiveSheet->setCellValue('C1', 'Montant');
+        $oActiveSheet->setCellValue('D1', 'Statut');
+        $oActiveSheet->setCellValue('E1', 'Taux d\'intérêts');
+        $oActiveSheet->setCellValue('F1', 'Premier remboursement');
+        $oActiveSheet->setCellValue('G1', 'Prochain remboursement prévu');
+        $oActiveSheet->setCellValue('H1', 'Date dernier remboursement');
+        $oActiveSheet->setCellValue('I1', 'Capital perçu');
+        $oActiveSheet->setCellValue('J1', 'Intérêts perçus');
+        $oActiveSheet->setCellValue('K1', 'Capital restant dû');
 
         foreach ($this->lSumLoans as $iRowIndex => $aProjectLoans) {
             $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);
-            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['amount']);
-            $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']]);
-            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
-            $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), (string) round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['id_project']);
+            $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $aProjectLoans['amount']);
+            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']]);
+            $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
+            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y'));
+            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y'));
+            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y'));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), (string) round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
         }
 
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
@@ -440,6 +442,7 @@ class operationsController extends bootstrap
             <tr>
                 <th><?= $this->lng['preteur-operations-pdf']['operations'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?></th>
+                <th><?= $this->lng['preteur-operations-pdf']['info-titre-project-id'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['projets'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
@@ -510,6 +513,7 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $t['libelle_operation'] ?></td>
                         <td><?= $t['bdc'] ?></td>
+                        <td><?= $t['id_projet'] ?></td>
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
