@@ -573,6 +573,7 @@ class operationsController extends bootstrap
                         <td><?= $type ?></td>
                         <td></td>
                         <td>&nbsp;</td>
+                        <td></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
                         <td></td>
@@ -610,6 +611,7 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $t['libelle_operation'] ?></td>
                         <td><?= $bdc ?></td>
+                        <td></td>
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
