@@ -1613,6 +1613,7 @@ class ajaxController extends bootstrap
         $this->echeanciers   = $this->loadData('echeanciers');
         $this->projects      = $this->loadData('projects');
         $this->companies     = $this->loadData('companies');
+        $this->loadData('transactions_types'); // Loaded for class constants
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
