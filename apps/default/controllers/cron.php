@@ -6898,6 +6898,8 @@ class cronController extends bootstrap
 
     public function _indexation()
     {
+        return; // @todo Waiting for confirmation that cron is useless following TMA-38 changes
+
         if (true === $this->startCron('indexation', 60)) {
             ini_set('max_execution_time', 3600);
             ini_set('memory_limit', '4096M');

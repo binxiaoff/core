@@ -52,7 +52,7 @@ class operationsController extends bootstrap
         $this->date_debut_display = date('d/m/Y', $date_debut_time);
         $this->date_fin_display   = date('d/m/Y', $date_fin_time);
 
-        $this->indexation_client($this->clients->id_client);
+        $this->indexation_client($this->clients);
 
         $this->lTrans         = $this->indexage_vos_operations->select('id_client= ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"', 'date_operation DESC, id_projet DESC');
         $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"');
@@ -710,18 +710,12 @@ class operationsController extends bootstrap
         }
     }
 
-    private function indexation_client($id_client)
+    private function indexation_client(\clients $clients)
     {
-        $liste_id_a_forcer             = $id_client;
-        $limit_client                  = 50;
-        $uniquement_ceux_jamais_indexe = false; // on veut aussi ceux deja indexé
-
+        $this->echeanciers                       = $this->loadData('echeanciers');
+        $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
         $this->indexage_vos_operations           = $this->loadData('indexage_vos_operations');
         $this->transactions                      = $this->loadData('transactions');
-        $this->clients_indexation                = $this->loadData('clients');
-        $this->echeanciers                       = $this->loadData('echeanciers');
-        $this->indexage_suivi                    = $this->loadData('indexage_suivi');
-        $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -754,133 +748,98 @@ class operationsController extends bootstrap
             20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
             22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
             23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']);
+            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
+        );
 
-        $sql_forcage_id_client = "";
-        if ($liste_id_a_forcer != 0) {
-            $sql_forcage_id_client = " AND id_client IN(" . $liste_id_a_forcer . ")";
-        }
-        if ($uniquement_ceux_jamais_indexe) {
-            $this->L_clients = $this->clients_indexation->select(' etape_inscription_preteur = 3 ' . $sql_forcage_id_client . ' AND id_client NOT IN (SELECT id_client FROM indexage_suivi WHERE deja_indexe = 1)', '', '', $limit_client);
+        $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
+        $aLastOperation = $this->indexage_vos_operations->select('id_client = ' . $clients->id_client, 'date_operation DESC', 0, 1);
+
+        if (empty($aLastOperation)) {
+            $date_debut_a_indexer = '2013-01-01';
         } else {
-            $this->L_clients = $this->clients_indexation->select(' etape_inscription_preteur = 3 ' . $sql_forcage_id_client, '', '', $limit_client);
+            $date_debut_a_indexer = substr($aLastOperation[0]['date_operation'], 0, 10);
         }
 
-        $nb_maj      = 0;
-        $nb_creation = 0;
-        foreach ($this->L_clients as $clt) {
-            if ($this->clients_indexation->get($clt['id_client'], 'id_client')) {
-                // Récupération de la date de la derniere indexation
-                if ($this->indexage_suivi->get($clt['id_client'], 'id_client')) {
-                    $date_debut_a_indexer = $this->indexage_suivi->date_derniere_indexation;
-                    $tab_date             = explode(' ', $date_debut_a_indexer);
-                    $date_debut_a_indexer = $tab_date[0];
-                } else {
-                    $time_ya_xh_stamp     = mktime(date('H'), date('i'), date('s'), date("m"), date('d') - 2, date("Y"));
-                    $time_ya_xh           = date('Y-m-d', $time_ya_xh_stamp);
-                    $date_debut_a_indexer = "2013-01-01";
+        $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23,26)
+            AND t.status = 1
+            AND t.etat = 1
+            AND t.display = 0
+            AND t.id_client = ' . $clients->id_client . '
+            AND DATE(t.date_transaction) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
+
+        $nb_entrees                    = count($this->lTrans);
+        foreach ($this->lTrans as $t) {
+            if (0 == $this->indexage_vos_operations->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {
+                $retenuesfiscals = 0.0;
+                $capital         = 0.0;
+                $interets        = 0.0;
+
+                if ($this->echeanciers->get($t['id_echeancier'], 'id_echeancier')) {
+                    $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
+                    $capital         = $this->echeanciers->capital;
+                    $interets        = $this->echeanciers->interets;
                 }
-                $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23,26)
-                        AND t.status = 1
-                        AND t.etat = 1
-                        AND t.display = 0
-                        AND t.id_client = ' . $this->clients_indexation->id_client . '
-                        AND DATE(t.date_transaction) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
 
-                $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-                $nb_entrees                    = count($this->lTrans);
-                foreach ($this->lTrans as $t) {
-                    $indexage_client_existe = false;
+                // si c'est un recouvrement on remplace les données
+                if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
+                    $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
+                    $capital         = $this->echeanciers_recouvrements_prorata->capital;
+                    $interets        = $this->echeanciers_recouvrements_prorata->interets;
+                }
 
-                    if ($this->indexage_vos_operations->counter(' id_client = ' . $t['id_client'] . ' AND type_transaction = "' . $t['type_transaction'] . '" AND libelle_operation ="' . $t['type_transaction_alpha'] . '" AND id_transaction = ' . $t['id_transaction']) < 1) {
-                        $indexage_client_existe = true;
-                        $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-
-                        $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-                        $capital         = $this->echeanciers->capital;
-                        $interets        = $this->echeanciers->interets;
-
-                        // si c'est un recouvrement on remplace les données
-                        if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1 && $this->echeanciers_recouvrements_prorata->get($t['id_transaction'], 'id_transaction')) {
-                            $retenuesfiscals = $this->echeanciers_recouvrements_prorata->prelevements_obligatoires + $this->echeanciers_recouvrements_prorata->retenues_source + $this->echeanciers_recouvrements_prorata->csg + $this->echeanciers_recouvrements_prorata->prelevements_sociaux + $this->echeanciers_recouvrements_prorata->contributions_additionnelles + $this->echeanciers_recouvrements_prorata->prelevements_solidarite + $this->echeanciers_recouvrements_prorata->crds;
-                            $capital         = $this->echeanciers_recouvrements_prorata->capital;
-                            $interets        = $this->echeanciers_recouvrements_prorata->interets;
-                        }
-
-                        // si exoneré à la date de la transact on change le libelle
-                        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
-                        // on check si il s'agit d'une PM ou PP
-                        if ($this->clients_indexation->type == 1 or $this->clients_indexation->type == 3) {
-                            // Si le client est exoneré on doit modifier le libelle de prelevement
-                            // on doit checker si le client est exonéré
-                            $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-                            $exoneration                      = $this->lenders_imposition_history->is_exonere_at_date($this->lenders_accounts->id_lender_account, $t['date_transaction']);
-                            if ($exoneration) {
-                                $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
-                            }
-                        } else {// PM
-                            $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
-                        }
-
-                        $this->indexage_vos_operations->id_client         = $t['id_client'];
-                        $this->indexage_vos_operations->id_transaction    = $t['id_transaction'];
-                        $this->indexage_vos_operations->id_echeancier     = $t['id_echeancier'];
-                        $this->indexage_vos_operations->id_projet         = $t['le_id_project'];
-                        $this->indexage_vos_operations->type_transaction  = $t['type_transaction'];
-                        $this->indexage_vos_operations->recouvrement      = $t['recouvrement'];
-                        $this->indexage_vos_operations->libelle_operation = $t['type_transaction_alpha'];
-                        $this->indexage_vos_operations->bdc               = $t['bdc'];
-                        $this->indexage_vos_operations->libelle_projet    = $t['title'];
-                        $this->indexage_vos_operations->date_operation    = $t['date_tri'];
-                        $this->indexage_vos_operations->solde             = $t['solde'] * 100;
-                        $this->indexage_vos_operations->montant_operation = $t['amount_operation'];
-
-                        if ($t['type_transaction'] == 23) {
-                            $this->indexage_vos_operations->montant_capital = $t['montant'];
-                            $this->indexage_vos_operations->montant_interet = 0;
-                        } else {
-                            $this->indexage_vos_operations->montant_capital = $capital;
-                            $this->indexage_vos_operations->montant_interet = $interets;
-                        }
-
-                        $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
-                        $this->indexage_vos_operations->montant_prelevement = $retenuesfiscals * 100;
-
-                        if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1) {
-                            $taux_com         = $commission_ht;
-                            $taux_tva         = $tva;
-                            $montant          = $capital / 100 + $interets / 100;
-                            $montant_avec_com = round($montant / (1 - $taux_com * (1 + $taux_tva)), 2);
-                            $com_ht           = round($montant_avec_com * $taux_com, 2);
-                            $com_tva          = round($com_ht * $taux_tva, 2);
-                            $com_ttc          = round($com_ht + $com_tva, 2);
-
-                            $this->indexage_vos_operations->commission_ht  = $com_ht * 100;
-                            $this->indexage_vos_operations->commission_tva = $com_tva * 100;
-                            $this->indexage_vos_operations->commission_ttc = $com_ttc * 100;
-                        }
-                        $this->indexage_vos_operations->create();
+                // si exoneré à la date de la transact on change le libelle
+                $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
+                // on check si il s'agit d'une PM ou PP
+                if ($clients->type == 1 or $clients->type == 3) {
+                    // Si le client est exoneré on doit modifier le libelle de prelevement
+                    // on doit checker si le client est exonéré
+                    $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
+                    $exoneration                      = $this->lenders_imposition_history->is_exonere_at_date($this->lenders_accounts->id_lender_account, $t['date_transaction']);
+                    if ($exoneration) {
+                        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
                     }
+                } else {// PM
+                    $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
                 }
 
-                $this->indexage_suivi = $this->loadData('indexage_suivi');
-                if ($this->indexage_suivi->get($clt['id_client'], 'id_client')) {
-                    $this->indexage_suivi->date_derniere_indexation = date("Y-m-d H:i:s");
-                    $this->indexage_suivi->deja_indexe              = 1;
-                    $this->indexage_suivi->nb_entrees               = $nb_entrees;
-                    $this->indexage_suivi->update();
-                    $nb_maj++;
+                $this->indexage_vos_operations->id_client           = $t['id_client'];
+                $this->indexage_vos_operations->id_transaction      = $t['id_transaction'];
+                $this->indexage_vos_operations->id_echeancier       = $t['id_echeancier'];
+                $this->indexage_vos_operations->id_projet           = $t['le_id_project'];
+                $this->indexage_vos_operations->type_transaction    = $t['type_transaction'];
+                $this->indexage_vos_operations->recouvrement        = $t['recouvrement'];
+                $this->indexage_vos_operations->libelle_operation   = $t['type_transaction_alpha'];
+                $this->indexage_vos_operations->bdc                 = $t['bdc'];
+                $this->indexage_vos_operations->libelle_projet      = $t['title'];
+                $this->indexage_vos_operations->date_operation      = $t['date_tri'];
+                $this->indexage_vos_operations->solde               = $t['solde'] * 100;
+                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
+                $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
+                $this->indexage_vos_operations->montant_prelevement = $retenuesfiscals * 100;
+
+                if ($t['type_transaction'] == 23) {
+                    $this->indexage_vos_operations->montant_capital = $t['montant'];
+                    $this->indexage_vos_operations->montant_interet = 0;
                 } else {
-                    $this->indexage_suivi->id_client                = $clt['id_client'];
-                    $this->indexage_suivi->date_derniere_indexation = date("Y-m-d H:i:s");
-                    $this->indexage_suivi->deja_indexe              = 1;
-                    $this->indexage_suivi->nb_entrees               = $nb_entrees;
-                    $this->indexage_suivi->create();
-                    $nb_creation++;
+                    $this->indexage_vos_operations->montant_capital = $capital;
+                    $this->indexage_vos_operations->montant_interet = $interets;
                 }
-            } else {
-                $oLogger = new ULogger('operations', $this->logPath, 'operations.log');
-                $oLogger->addRecord(ULogger::ERROR, 'Impossible de récupérer le client : ' . $clt['id_client'], array(__FILE__ . ' at line ' . __LINE__));
+
+
+                if ($t['type_transaction'] == 5 && $t['recouvrement'] == 1) {
+                    $taux_com         = $commission_ht;
+                    $taux_tva         = $tva;
+                    $montant          = $capital / 100 + $interets / 100;
+                    $montant_avec_com = round($montant / (1 - $taux_com * (1 + $taux_tva)), 2);
+                    $com_ht           = round($montant_avec_com * $taux_com, 2);
+                    $com_tva          = round($com_ht * $taux_tva, 2);
+                    $com_ttc          = round($com_ht + $com_tva, 2);
+
+                    $this->indexage_vos_operations->commission_ht  = $com_ht * 100;
+                    $this->indexage_vos_operations->commission_tva = $com_tva * 100;
+                    $this->indexage_vos_operations->commission_ttc = $com_ttc * 100;
+                }
+                $this->indexage_vos_operations->create();
             }
         }
     }
