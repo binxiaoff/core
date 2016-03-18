@@ -477,6 +477,8 @@ class operationsController extends bootstrap
                     $couleur = ' style="color:red;"';
                 }
 
+                $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
+
                 $solde = $t['solde'];
                 // remb
                 if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
@@ -513,7 +515,7 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $t['libelle_operation'] ?></td>
                         <td><?= $t['bdc'] ?></td>
-                        <td><?= $t['id_projet'] ?></td>
+                        <td><?= $sProjectId ?></td>
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
@@ -572,7 +574,7 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $type ?></td>
                         <td></td>
-                        <td>&nbsp;</td>
+                        <td><?= $sProjectId ?></td>
                         <td></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
@@ -611,7 +613,7 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $t['libelle_operation'] ?></td>
                         <td><?= $bdc ?></td>
-                        <td></td>
+                        <td><?= $sProjectId ?></td>
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
