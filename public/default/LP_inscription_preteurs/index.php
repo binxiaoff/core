@@ -1119,9 +1119,9 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         url: "<?= $url_site ?>/collect/prospect",
                         data: DATA,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
+                            var parsedData = jQuery.parseJSON(data);
 
-                            if (parsedDate.reponse == 'OK') {
+                            if (parsedData.reponse == 'OK') {
                                 $('#form_inscription').removeClass('etape1');
                                 $('#form_inscription').addClass('etape2');
 
@@ -1152,7 +1152,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                 });
                             }
                             else {
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     if (intituleErreur == "Nom") {
@@ -1164,7 +1164,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                     if (intituleErreur == "Email" || intituleErreur == "Format email") {
                                         $('#inscription_email').addClass('error');
                                     }
-                                    if (intituleErreur == "Email existant" && parsedDate.reponse.length > 1) {
+                                    if (intituleErreur == "Email existant" && parsedData.reponse.length > 1) {
                                         $('#inscription_email').addClass('error');
                                     }
                                     else {
@@ -1426,16 +1426,16 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         + '&signature_cgv=' + 1
                         + '&forme_preteur=' + 1,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
+                            var parsedData = jQuery.parseJSON(data);
 
-                            console.log(parsedDate);
+                            console.log(parsedData);
 
-                            if (parsedDate.reponse == 'OK') {
-                                var url = parsedDate.URL;
+                            if (parsedData.reponse == 'OK') {
+                                var url = parsedData.URL;
 
                                 dataLayer.push ({
                                     'email_lead': email,
-                                    'UNIQUE_ID': parsedDate.emailhash,
+                                    'unique_id': parsedData.uniqueid,
                                     'source1_lead': utm_source,
                                     'source2_lead': utm_source2,
                                     'event': 'signupPreteurStep2OK'
@@ -1449,7 +1449,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                 }
                             }
                             else {
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     console.log(intituleErreur);

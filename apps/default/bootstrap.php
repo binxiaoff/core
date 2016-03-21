@@ -360,10 +360,7 @@ class bootstrap extends Controller
         }
         $this->setSessionMail();
 
-        /**
-         * Checks email in session then push md5 hash of this email in GTM's dataLayer
-         */
-        empty($_SESSION['email']) ? $this->addDataLayer('UNIQUE_ID', '') : $this->addDataLayer('UNIQUE_ID', md5($_SESSION['email']));
+        false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
 
         // page projet tri
         // 1 : terminé bientôt
@@ -853,18 +850,12 @@ class bootstrap extends Controller
      */
     private function setSessionMail()
     {
-        $sData = '';
-        if (false === empty($_SESSION['email'])) {
-            $sData = $_SESSION['email'];
-        }
         if (isset($this->clients->email) && false === empty($this->clients->email)) {
-            $sData = $this->clients->email;
+            $_SESSION['email'] = $this->clients->email;
         } elseif (false === empty($_POST['email']) && $this->ficelle->isEmail($_POST['email'])) {
-            $sData = $_POST['email'];
+            $_SESSION['email'] = $_POST['email'];
         } elseif (false === empty($_GET['email']) && $this->ficelle->isEmail($_GET['email'])) {
-            $sData = $_GET['email'];
+            $_SESSION['email'] = $_GET['email'];
         }
-
-        $_SESSION['email'] = $sData;
     }
 }

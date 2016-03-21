@@ -452,8 +452,7 @@ class collectController extends bootstrap
                 echo json_encode(array(
                         'reponse'   => 'OK',
                         'URL'       => $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash,
-                        'uniqueid'  => $this->clients->id_client,
-                        'emailhash' => md5($email)
+                        'uniqueid'  => md5($email)
                     )
                 );
                 die;
