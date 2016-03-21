@@ -1428,8 +1428,6 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         success: function (data) {
                             var parsedData = jQuery.parseJSON(data);
 
-                            console.log(parsedData);
-
                             if (parsedData.reponse == 'OK') {
                                 var url = parsedData.URL;
 
