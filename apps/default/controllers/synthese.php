@@ -14,9 +14,8 @@ class syntheseController extends bootstrap
         if (!$this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
-        } else {
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
         }
+        $this->clients->checkAccessLender();
 
         $this->lng['preteur-projets']  = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
         $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
@@ -246,7 +245,7 @@ class syntheseController extends bootstrap
         $this->clients_status->getLastStatut($this->clients->id_client);
 
         $this->settings->get('TRI Unilend', 'type');
-        $this->sIRRUnilend           = $this->ficelle->formatNumber($this->settings->value);
+        $this->sIRRUnilend           = $this->ficelle->formatNumber((float)$this->settings->value);
         $this->iDiversificationLevel = '';
         $this->sDisplayedValue       = '';
         $this->sTypeMessageTooltip   = '';

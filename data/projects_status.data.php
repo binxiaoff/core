@@ -122,13 +122,14 @@ class projects_status extends projects_status_crud
 
     public function getLastStatutByMonth($id_project, $month, $year)
     {
-        $sql = 'SELECT id_project_status
-				FROM `projects_status_history`
-				WHERE id_project = ' . $id_project . '
-				AND MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . '
-				ORDER BY added DESC
-				LIMIT 1
-				';
+        $sql = '
+            SELECT id_project_status
+            FROM `projects_status_history`
+            WHERE id_project = ' . $id_project . '
+                AND MONTH(added) = ' . $month . '
+                AND YEAR(added) = ' . $year . '
+            ORDER BY id_project_status_history DESC
+            LIMIT 1';
 
         $result            = $this->bdd->query($sql);
         $id_project_statut = (int)($this->bdd->result($result, 0, 0));

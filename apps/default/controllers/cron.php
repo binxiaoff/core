@@ -237,20 +237,17 @@ class cronController extends bootstrap
 
             $bHasProjectPublished = false;
 
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED);
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()");
 
             foreach ($aProjectToFund as $aProject) {
-                $oPublicationDate = new \DateTime($aProject['date_publication_full']);
-                if ($oPublicationDate <= new \DateTime() && $oProject->get($aProject['id_project'])) {
-                    $bHasProjectPublished = true;
+                $bHasProjectPublished = true;
 
-                    $oProjectManager->publish($oProject);
+                $oProjectManager->publish($oProject);
 
-                    // Zippage pour groupama
-                    $this->zippage($aProject['id_project']);
+                // Zippage pour groupama
+                $this->zippage($aProject['id_project']);
 
-                    $this->sendNewProjectEmail($oProject->id_project);
-                }
+                $this->sendNewProjectEmail($oProject->id_project);
             }
             if ($bHasProjectPublished) {
                 $oCache = \Unilend\librairies\Cache::getInstance();
@@ -400,7 +397,7 @@ class cronController extends bootstrap
                         $projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::RECOUVREMENT, $p['id_project']);
 
                         // date du probleme
-                        $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROBLEME . ')', 'added DESC');
+                        $statusProbleme = $projects_status_history->select('id_project = ' . $p['id_project'] . ' AND  	id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROBLEME . ')', 'id_project_status_history DESC');
 
                         $timeAdd = strtotime($statusProbleme[0]['added']);
                         $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
@@ -606,7 +603,7 @@ class cronController extends bootstrap
                     $bicDestinataire  = $retraitBic;
                     //$retraitDom;
                 } // emprunteur
-                elseif ($this->clients->status_pre_emp > 1) {
+                elseif ($this->clients->isBorrower()) {
                     $this->companies->get($v['id_client'], 'id_client_owner');
                     $ibanDestinataire = $this->companies->iban;
                     $bicDestinataire  = $this->companies->bic;
@@ -1790,7 +1787,7 @@ class cronController extends bootstrap
                                             $sLenderPattern = str_replace(' ', '', $clients->getLenderPattern($clients->id_client));
 
                                             if (
-                                                false !== strpos(str_replace(' ', '', $motif), $sLenderPattern)
+                                                (false !== strpos(str_replace(' ', '', $motif), $sLenderPattern) || true === $clients->isLenderPattern($clients->id_client, str_replace(' ', '', $motif)))
                                                 && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                             ) {
                                                 $receptions->get($receptions->id_reception, 'id_reception');
@@ -1898,7 +1895,6 @@ class cronController extends bootstrap
                                 $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
                                 $oPrelevements          = $this->loadData('prelevements');
                                 $oProjectsRemb          = $this->loadData('projects_remb');
-                                $oProjectsStatusHistory = $this->loadData('projects_status_history');
                                 $oTransactions          = $this->loadData('transactions');
 
                                 if (
@@ -4375,7 +4371,58 @@ class cronController extends bootstrap
         }
     }
 
-    /**
+    // Fonction qui crée le mail nouveau projet pour l'emprunteur (immediatement)
+    private function sendProjectOnlineEmailBorrower($iIdProject)
+    {
+        $oProject   = $this->loadData('projects');
+        $oCompanies = $this->loadData('companies');
+
+        $oProject->get($iIdProject);
+        $oCompanies->get($oProject->id_company);
+        $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
+
+        if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
+            $sFirstName  = $oCompanies->prenom_dirigeant;
+            $sMailClient = $oCompanies->email_dirigeant;
+        } else {
+            $this->clients->get($oCompanies->id_client_owner);
+            $sFirstName  = $this->clients->prenom;
+            $sMailClient = $this->clients->email;
+        }
+
+        $aMail = array(
+            'surl'           => $this->surl,
+            'url'            => $this->furl,
+            'nom_entreprise' => $oCompanies->name,
+            'projet_p'       => $this->furl . '/projects/detail/' . $oProject->slug,
+            'montant'        => $this->ficelle->formatNumber((float) $oProject->amount, 0),
+            'duree'          => $oProject->period,
+            'prenom_e'       => $sFirstName,
+            'lien_fb'        => $this->like_fb,
+            'lien_tw'        => $this->twitter,
+            'annee'          => date('Y')
+        );
+
+        $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
+        $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
+        $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
+        $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
+
+        $oEmail = $this->loadLib('email');
+        $oEmail->setFrom($this->mails_text->exp_email, $sSender);
+        $oEmail->setSubject(stripslashes($sMailSubject));
+        $oEmail->setHTMLBody(stripslashes($sMailBody));
+
+        if ($this->Config['env'] == 'prod') {
+            Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
+            $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+        } else {
+            $oEmail->addRecipient(trim($sMailClient));
+            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+        }
+    }
+
+        /**
      * Send new projects summary email
      * @param array $aCustomerId
      * @param string $sFrequency (quotidienne/hebdomadaire)
@@ -5354,15 +5401,25 @@ class cronController extends bootstrap
         if (true === $this->startCron('send_email_remb_auto', 5)) {
             $this->email = $this->loadLib('email');
 
+            /** @var \echeanciers $echeanciers */
             $echeanciers                         = $this->loadData('echeanciers');
+            /** @var \transactions $transactions */
             $transactions                        = $this->loadData('transactions');
+            /** @var \lenders_accounts $lenders */
             $lenders                             = $this->loadData('lenders_accounts');
+            /** @var \clients $clients */
             $clients                             = $this->loadData('clients');
+            /** @var \clients $companies */
             $companies                           = $this->loadData('companies');
+            /** @var \notifications $notifications */
             $notifications                       = $this->loadData('notifications');
+            /** @var \loans $loans */
             $loans                               = $this->loadData('loans');
+            /** @var \projects_status_history $projects_status_history */
             $projects_status_history             = $this->loadData('projects_status_history');
+            /** @var \projects $projects */
             $projects                            = $this->loadData('projects');
+            /** @var clients_gestion_notifications clients_gestion_notifications */
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 
             $settingsControleRemb = $this->loadData('settings');
@@ -5379,7 +5436,7 @@ class cronController extends bootstrap
                         && $clients->get($lenders->id_client_owner, 'id_client')
                     ) {
                         if (1 == $clients->status) {
-                            $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'added DESC', 0, 1);
+                            $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'id_project_status_history DESC', 0, 1);
                             $dateDernierStatut = $dernierStatut[0]['added'];
                             $timeAdd           = strtotime($dateDernierStatut);
                             $day               = date('d', $timeAdd);
@@ -5443,7 +5500,7 @@ class cronController extends bootstrap
                             $this->clients_gestion_mails_notif                  = $this->loadData('clients_gestion_mails_notif');
                             $this->clients_gestion_mails_notif->id_client       = $lenders->id_client_owner;
                             $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
-                            $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
+                            $this->clients_gestion_mails_notif->date_notif      = $echeanciers->date_echeance_reel;
                             $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
                             $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
                             $this->clients_gestion_mails_notif->create();
@@ -5515,7 +5572,7 @@ class cronController extends bootstrap
 
                         $projects_remb_log->get($projects_remb_log->id_project_remb_log, 'id_project_remb_log');
 
-                        $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'added DESC', 0, 1);
+                        $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
                         $dateDernierStatut = $dernierStatut[0]['added'];
                         $timeAdd           = strtotime($dateDernierStatut);
                         $day               = date('d', $timeAdd);
@@ -6020,27 +6077,27 @@ class cronController extends bootstrap
 
                     if ($this->clients->status == 1) {
                         $notifications                  = $this->loadData('notifications');
-                        $notifications->type            = 2; // remb
+                        $notifications->type            = \notifications::TYPE_REPAYMENT;
                         $notifications->id_lender       = $preteur['id_lender'];
                         $notifications->id_project      = $this->projects->id_project;
-                        $notifications->amount          = ($reste_a_payer_pour_preteur * 100);
-                        $notifications->id_notification = $notifications->create();
+                        $notifications->amount          = $reste_a_payer_pour_preteur * 100;
+                        $notifications->create();
 
                         $this->transactions->get($preteur['id_loan'], 'id_loan_remb');
 
-                        $this->clients_gestion_mails_notif                                 = $this->loadData('clients_gestion_mails_notif');
-                        $this->clients_gestion_mails_notif->id_client                      = $this->clients->id_client;
-                        $this->clients_gestion_mails_notif->id_notif                       = 5; // remb preteur
-                        $this->clients_gestion_mails_notif->date_notif                     = date('Y-m-d H:i:s');
-                        $this->clients_gestion_mails_notif->id_notification                = $notifications->id_notification;
-                        $this->clients_gestion_mails_notif->id_transaction                 = $this->transactions->id_transaction;
-                        $this->clients_gestion_mails_notif->id_clients_gestion_mails_notif = $this->clients_gestion_mails_notif->create();
+                        $this->clients_gestion_mails_notif                  = $this->loadData('clients_gestion_mails_notif');
+                        $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
+                        $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                        $this->clients_gestion_mails_notif->date_notif      = $this->transactions->added;
+                        $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
+                        $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
+                        $this->clients_gestion_mails_notif->create();
 
                         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 
                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
                             $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                            $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                            $this->clients_gestion_mails_notif->immediatement = 1;
                             $this->clients_gestion_mails_notif->update();
 
                             $loans->get($preteur['id_loan'], 'id_loan');
@@ -6165,6 +6222,11 @@ class cronController extends bootstrap
                                         }
                                     }
 
+                                    if (in_array($iStatus, array(7, 8))) {
+                                        $oCompletenessDate = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
+                                        $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
+                                    }
+
                                     $aReplacements['liste_pieces']            = $this->projects_status_history->content;
                                     $aReplacements['raison_sociale']          = $this->companies->name;
                                     $aReplacements['prenom']                  = $this->clients->prenom;
@@ -6175,6 +6237,7 @@ class cronController extends bootstrap
                                     $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
                                     $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
                                     $aReplacements['sujet']                   = htmlentities($this->mails_text->subject, null, 'UTF-8');
+                                    $aReplacements['annee']                   = date('Y');
 
                                     $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
                                     $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
@@ -6317,7 +6380,7 @@ class cronController extends bootstrap
         exec('java -cp ' . $this->Config['dataloader_path'][$this->Config['env']] . 'dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
 
         $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
-        $oLogger            = new ULogger('SendDataloader', $this->logPath, 'cron.log');
+        $oLogger            = new ULogger('SendDataloader', $this->logPath, 'cron.' . date('Ymd') . '.log');
         $oLogger->addRecord(ULogger::INFO, 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
             array(__FILE__ . ' on line ' . __LINE__));
     }

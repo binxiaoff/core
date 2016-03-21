@@ -343,7 +343,7 @@ class dossiersController extends bootstrap
             }
             $this->completude_wording[] = $aTranslations['completude-charge-affaires'];
 
-            $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'added DESC');
+            $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
 
             if (isset($_POST['problematic_status']) && $this->current_projects_status->status != $_POST['problematic_status']) {
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects->id_project);
@@ -990,8 +990,6 @@ class dossiersController extends bootstrap
 
                                 // si existe pas
                                 if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false) {
-
-                                    // transaction
                                     $this->transactions->id_client        = $this->clients->id_client;
                                     $this->transactions->montant          = '-' . ($montant * 100); // moins car c'est largent qui part d'unilend
                                     $this->transactions->montant_unilend  = ($partUnliend * 100);
@@ -1080,7 +1078,7 @@ class dossiersController extends bootstrap
                                     $aLastLoans    = array();
 
                                     foreach ($aAcceptedBids as $aBid) {
-                                        $this->notifications->type            = 4; // accepté
+                                        $this->notifications->type            = \notifications::TYPE_LOAN_ACCEPTED;
                                         $this->notifications->id_lender       = $aBid['id_lender'];
                                         $this->notifications->id_project      = $this->projects->id_project;
                                         $this->notifications->amount          = $aBid['amount'];
@@ -1095,7 +1093,7 @@ class dossiersController extends bootstrap
                                         foreach ($aLoansForBid as $aLoan) {
                                             if (in_array($aLoan['id_loan'], $aLastLoans) === false ) {
                                                 $this->clients_gestion_mails_notif->id_client       = $oLender->id_client_owner;
-                                                $this->clients_gestion_mails_notif->id_notif        = 4; // offre acceptée
+                                                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
                                                 $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                                 $this->clients_gestion_mails_notif->id_transaction  = 0;
                                                 $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
@@ -1296,7 +1294,7 @@ class dossiersController extends bootstrap
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 }
 
-                                $aRepaymentHistory = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
+                                $aRepaymentHistory = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
 
                                 if (false === empty($aRepaymentHistory)) {
                                     $oInvoiceCounter = $this->loadData('compteur_factures');
@@ -1493,7 +1491,7 @@ class dossiersController extends bootstrap
             }
         }
 
-        $aFundingDate = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC', 0, 1);
+        $aFundingDate = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history ASC', 0, 1);
         $iFundingTime = strtotime($aFundingDate[0]['added']);
 
         $aReplacements = $aReplacements + array(
@@ -1583,7 +1581,7 @@ class dossiersController extends bootstrap
                 break;
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
                 $iNotificationType  = \notifications::TYPE_PROJECT_RECEIVERSHIP;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROCEDURE_SAUVEGARDE . ')', 'added ASC', 0, 1);
+                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::PROCEDURE_SAUVEGARDE . ')', 'id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
                     $sEmailTypePerson  = 'preteur-projet-statut-redressement-judiciaire';
@@ -1595,7 +1593,7 @@ class dossiersController extends bootstrap
                 break;
             case \projects_status::LIQUIDATION_JUDICIAIRE:
                 $iNotificationType  = \notifications::TYPE_PROJECT_COMPULSORY_LIQUIDATION;
-                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . \projects_status::PROCEDURE_SAUVEGARDE . ', ' . \projects_status::REDRESSEMENT_JUDICIAIRE . '))', 'added ASC', 0, 1);
+                $aCollectiveProcess = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status IN (SELECT id_project_status FROM projects_status WHERE status IN (' . \projects_status::PROCEDURE_SAUVEGARDE . ', ' . \projects_status::REDRESSEMENT_JUDICIAIRE . '))', 'id_project_status_history ASC', 0, 1);
 
                 if (empty($aCollectiveProcess)) {
                     $sEmailTypePerson  = 'preteur-projet-statut-liquidation-judiciaire';
@@ -1610,12 +1608,12 @@ class dossiersController extends bootstrap
                 $sEmailTypePerson  = 'preteur-projet-statut-defaut-personne-physique';
                 $sEmailTypeSociety = 'preteur-projet-statut-defaut-personne-morale';
 
-                $aCompulsoryLiquidation = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::LIQUIDATION_JUDICIAIRE . ')', 'added ASC', 0, 1);
+                $aCompulsoryLiquidation = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::LIQUIDATION_JUDICIAIRE . ')', 'id_project_status_history ASC', 0, 1);
                 $aCommonReplacements['date_annonce_liquidation_judiciaire'] = date('d/m/Y', strtotime($aCompulsoryLiquidation[0]['added']));
                 break;
         }
 
-        $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC', 0, 1);
+        $aRepaymentStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history ASC', 0, 1);
         $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
 
         if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
@@ -2573,7 +2571,7 @@ class dossiersController extends bootstrap
             // liste des echeances emprunteur par mois
             $lRembs = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project);
             // ON recup la date de statut remb
-            $dernierStatut     = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC', 0, 1);
+            $dernierStatut     = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
             $dateDernierStatut = $dernierStatut[0]['added'];
 
             $this->nbRembEffet  = 0;
@@ -2719,22 +2717,16 @@ class dossiersController extends bootstrap
                                         // Partie pour l'etat sur un remb preteur
                                         $etat = $e['prelevements_obligatoires'] + $e['retenues_source'] + $e['csg'] + $e['prelevements_sociaux'] + $e['contributions_additionnelles'] + $e['prelevements_solidarite'] + $e['crds'];
 
-                                        // Partie on enregistre les mouvements
-                                        // On regarde si on a pas deja
                                         if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
-                                            // On recup lenders_accounts
                                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
-                                            // On recup le client
                                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                                            // echeance preteur
                                             $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
                                             $this->echeanciers->status             = 1; // remboursé
                                             $this->echeanciers->status_email_remb  = 1; // remboursé
                                             $this->echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
                                             $this->echeanciers->update();
 
-                                            // On enregistre la transaction
                                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
                                             $this->transactions->montant          = ($rembNet * 100);
                                             $this->transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
@@ -2747,7 +2739,6 @@ class dossiersController extends bootstrap
                                             $this->transactions->transaction      = 2; // transaction virtuelle
                                             $this->transactions->create();
 
-                                            // on enregistre la transaction dans son wallet
                                             $this->wallets_lines->id_lender                = $e['id_lender'];
                                             $this->wallets_lines->type_financial_operation = 40;
                                             $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
@@ -2756,14 +2747,14 @@ class dossiersController extends bootstrap
                                             $this->wallets_lines->amount                   = $rembNet * 100;
                                             $this->wallets_lines->create();
 
-                                            $this->notifications->type       = 2; // remb
+                                            $this->notifications->type       = \notifications::TYPE_REPAYMENT;
                                             $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
                                             $this->notifications->id_project = $this->projects->id_project;
                                             $this->notifications->amount     = $rembNet * 100;
                                             $this->notifications->create();
 
                                             $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
-                                            $this->clients_gestion_mails_notif->id_notif        = 5; // remb preteur
+                                            $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
                                             $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                                             $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                             $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
@@ -3459,7 +3450,7 @@ class dossiersController extends bootstrap
 
         // on check si on est en remb anticipé
         // ON recup la date de statut remb
-        $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->params[0], 'added DESC', 0, 1);
+        $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->params[0], 'id_project_status_history DESC', 0, 1);
 
         $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
 
@@ -3507,7 +3498,7 @@ class dossiersController extends bootstrap
             }
             // on check si on est en remb anticipé
             // ON recup la date de statut remb
-            $dernierStatut    = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'added DESC', 0, 1);
+            $dernierStatut    = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
             $this->montant_ra = 0;
 
             $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
@@ -3592,7 +3583,7 @@ class dossiersController extends bootstrap
         $this->ordre_echeance_ra = $ordre_echeance_ra;
 
         $this->projects_status_history = $this->loadData('projects_status_history');
-        $statut_projet                 = $this->projects_status_history->select('id_project = ' . $id_project, 'added DESC', 0, 1);
+        $statut_projet                 = $this->projects_status_history->select('id_project = ' . $id_project, 'id_project_status_history DESC', 0, 1);
 
         $oEarlyRefundStatus = $this->loadData('projects_status');
         $oEarlyRefundStatus->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');

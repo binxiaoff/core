@@ -13,13 +13,11 @@ class operationsController extends bootstrap
         $this->setHeader('header_account');
 
         // On check si y a un compte
-        if (!$this->clients->checkAccess()) {
+        if (false === $this->clients->checkAccess()) {
             header('Location:' . $this->lurl);
             die;
-        } else {
-            // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
         }
+        $this->clients->checkAccessLender();
         // page
         $this->page                      = 'operations';
         $this->lng['preteur-operations'] = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
@@ -113,31 +111,76 @@ class operationsController extends bootstrap
         $oActiveSheet = $oDocument->setActiveSheetIndex(0);
         // @todo Intl
         $oActiveSheet->setCellValue('A1', 'Projet');
-        $oActiveSheet->setCellValue('B1', 'Montant');
-        $oActiveSheet->setCellValue('C1', 'Statut');
-        $oActiveSheet->setCellValue('D1', 'Taux d\'intérêts');
-        $oActiveSheet->setCellValue('E1', 'Premier remboursement');
-        $oActiveSheet->setCellValue('F1', 'Prochain remboursement prévu');
-        $oActiveSheet->setCellValue('G1', 'Date dernier remboursement');
-        $oActiveSheet->setCellValue('H1', 'Capital perçu');
-        $oActiveSheet->setCellValue('I1', 'Intérêts perçus');
-        $oActiveSheet->setCellValue('J1', 'Capital restant dû');
+        $oActiveSheet->setCellValue('B1', 'Numéro de projet');
+        $oActiveSheet->setCellValue('C1', 'Montant');
+        $oActiveSheet->setCellValue('D1', 'Statut');
+        $oActiveSheet->setCellValue('E1', 'Taux d\'intérêts');
+        $oActiveSheet->setCellValue('F1', 'Premier remboursement');
+        $oActiveSheet->setCellValue('G1', 'Prochain remboursement prévu');
+        $oActiveSheet->setCellValue('H1', 'Date dernier remboursement');
+        $oActiveSheet->setCellValue('I1', 'Capital perçu');
+        $oActiveSheet->setCellValue('J1', 'Intérêts perçus');
+        $oActiveSheet->setCellValue('K1', 'Capital restant dû');
+        $oActiveSheet->setCellValue('L1', $this->lng['preteur-operations-detail']['titre-note']);
 
         foreach ($this->lSumLoans as $iRowIndex => $aProjectLoans) {
             $oActiveSheet->setCellValue('A' . ($iRowIndex + 2), $aProjectLoans['title']);
-            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['amount']);
-            $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']]);
-            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
-            $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), (string) round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+            $oActiveSheet->setCellValue('B' . ($iRowIndex + 2), $aProjectLoans['id_project']);
+            $oActiveSheet->setCellValue('C' . ($iRowIndex + 2), $aProjectLoans['amount']);
+            $oActiveSheet->setCellValue('D' . ($iRowIndex + 2), $this->lng['preteur-operations-detail']['info-status-' . $aProjectLoans['project_status']]);
+            $oActiveSheet->setCellValue('E' . ($iRowIndex + 2), round($aProjectLoans['rate'], 1));
+            $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y'));
+            $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y'));
+            $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y'));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), (string) round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+
+            $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
+            $sNote = $this->getProjectNote($sRisk);
+            $oActiveSheet->setCellValue('L' . ($iRowIndex + 2), $sNote);
         }
 
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
         $oWriter->save('php://output');
+    }
+
+    /**
+     * @param string $sRisk a letter that gives the risk value [A-H]
+     * @return string
+     */
+    private function getProjectNote($sRisk)
+    {
+        $sNote = '';
+        switch ($sRisk) {
+            case 'A':
+                $sNote = '5';
+                break;
+            case 'B':
+                $sNote = '4,5';
+                break;
+            case 'C':
+                $sNote = '4';
+                break;
+            case 'D':
+                $sNote = '3,5';
+                break;
+            case 'E':
+                $sNote = '3';
+                break;
+            case 'F':
+                $sNote = '2,5';
+                break;
+            case 'G':
+                $sNote = '2';
+                break;
+            case 'H':
+                $sNote = '1,5';
+                break;
+            default:
+                $sNote = '';
+        }
+        return $sNote;
     }
 
     private function commonLoans()
@@ -150,50 +193,45 @@ class operationsController extends bootstrap
         switch ($this->sOrderField) {
             case 'status':
                 $this->sOrderField = 'status';
-                $sOrderBy = 'project_status ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'project_status ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'title':
                 $this->sOrderField = 'title';
-                $sOrderBy = 'p.title ' . $this->sOrderDirection . ', debut DESC';
+                $sOrderBy          = 'p.title ' . $this->sOrderDirection . ', debut DESC';
                 break;
             case 'note':
                 $this->sOrderField = 'note';
-                $sOrderBy = 'p.risk ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'p.risk ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'amount':
                 $this->sOrderField = 'amount';
-                $sOrderBy = 'amount ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'amount ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'interest':
                 $this->sOrderField = 'interest';
-                $sOrderBy = 'rate ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'rate ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'next':
                 $this->sOrderField = 'next';
-                $sOrderBy = 'next_echeance ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'next_echeance ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'end':
                 $this->sOrderField = 'end';
-                $sOrderBy = 'fin ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'fin ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'repayment':
                 $this->sOrderField = 'repayment';
-                $sOrderBy = 'mensuel ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'mensuel ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'start':
             default:
                 $this->sOrderField = 'start';
-                $sOrderBy = 'debut ' . $this->sOrderDirection . ', p.title ASC';
+                $sOrderBy          = 'debut ' . $this->sOrderDirection . ', p.title ASC';
                 break;
         }
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
-        $this->lSumLoans       = $this->loans->getSumLoansByProject(
-            $this->lenders_accounts->id_lender_account,
-            $sOrderBy,
-            isset($_POST['year']) && is_numeric($_POST['year']) ? (int) $_POST['year'] : null,
-            isset($_POST['status']) && is_numeric($_POST['status']) ? (int) $_POST['status'] : null
-        );
+        $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, $sOrderBy, isset($_POST['year']) && is_numeric($_POST['year']) ? (int) $_POST['year'] : null, isset($_POST['status']) && is_numeric($_POST['status']) ? (int) $_POST['status'] : null);
 
         $this->aLoansStatuses = array(
             'no-problem'            => 0,
@@ -344,10 +382,17 @@ class operationsController extends bootstrap
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
+            2  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
+                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
+                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
+            ),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
+            5  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['remboursement'],
+                2 => $this->lng['preteur-operations-vos-operations']['recouvrement']
+            ),
             7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -440,6 +485,7 @@ class operationsController extends bootstrap
             <tr>
                 <th><?= $this->lng['preteur-operations-pdf']['operations'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?></th>
+                <th><?= $this->lng['preteur-operations-pdf']['info-titre-project-id'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['projets'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
                 <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
@@ -473,6 +519,8 @@ class operationsController extends bootstrap
                     $moins   = '-';
                     $couleur = ' style="color:red;"';
                 }
+
+                $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
 
                 $solde = $t['solde'];
                 // remb
@@ -510,6 +558,7 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $t['libelle_operation'] ?></td>
                         <td><?= $t['bdc'] ?></td>
+                        <td><?= $sProjectId ?></td>
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
@@ -568,7 +617,8 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $type ?></td>
                         <td></td>
-                        <td>&nbsp;</td>
+                        <td><?= $sProjectId ?></td>
+                        <td></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
                         <td></td>
@@ -606,9 +656,10 @@ class operationsController extends bootstrap
                     <tr>
                         <td><?= $t['libelle_operation'] ?></td>
                         <td><?= $bdc ?></td>
+                        <td><?= $sProjectId ?></td>
                         <td><?= $t['libelle_projet'] ?></td>
                         <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
-                        <td<?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
+                        <td<?= (! $offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
                         <td></td>
                         <td></td>
                         <td></td>
@@ -684,10 +735,17 @@ class operationsController extends bootstrap
 
         $array_type_transactions = array(
             1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'], 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'], 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']),
+            2  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
+                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
+                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
+            ),
             3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
+            5  => array(
+                1 => $this->lng['preteur-operations-vos-operations']['remboursement'],
+                2 => $this->lng['preteur-operations-vos-operations']['recouvrement']
+            ),
             7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -730,11 +788,11 @@ class operationsController extends bootstrap
                         AND DATE(t.date_transaction) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
 
                 $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-                $nb_entrees = count($this->lTrans);
+                $nb_entrees                    = count($this->lTrans);
                 foreach ($this->lTrans as $t) {
                     $indexage_client_existe = false;
 
-                    if ($this->indexage_vos_operations->counter(' id_client = ' . $t['id_client'] . ' AND type_transaction = "' . $t['type_transaction'] . '" AND libelle_operation ="' . $t['type_transaction_alpha'] . '" AND id_transaction = '.$t['id_transaction']) < 1) {
+                    if ($this->indexage_vos_operations->counter(' id_client = ' . $t['id_client'] . ' AND type_transaction = "' . $t['type_transaction'] . '" AND libelle_operation ="' . $t['type_transaction_alpha'] . '" AND id_transaction = ' . $t['id_transaction']) < 1) {
                         $indexage_client_existe = true;
                         $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
@@ -822,10 +880,7 @@ class operationsController extends bootstrap
                 }
             } else {
                 $oLogger = new ULogger('operations', $this->logPath, 'operations.log');
-                $oLogger->addRecord(ULogger::ERROR,
-                    'Impossible de récupérer le client : ' . $clt['id_client'],
-                    array(__FILE__ . ' at line ' . __LINE__)
-                );
+                $oLogger->addRecord(ULogger::ERROR, 'Impossible de récupérer le client : ' . $clt['id_client'], array(__FILE__ . ' at line ' . __LINE__));
             }
         }
     }

@@ -92,7 +92,7 @@ class depot_de_dossierController extends bootstrap
         $this->clients->slug_origine   = $this->tree->slug;
         $this->clients->source         = $_SESSION['utm_source'];
         $this->clients->source2        = $_SESSION['utm_source2'];
-        $this->clients->status_pre_emp = 2;
+
         if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
         } else {
