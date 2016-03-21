@@ -94,7 +94,7 @@ class depot_de_dossierController extends bootstrap
         /**
          * Set the UTMs and slug_origine
          */
-        $this->ficelle->setSource($this->clients);
+        $this->setSource($this->clients);
 
         if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];

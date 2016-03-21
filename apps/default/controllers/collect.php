@@ -72,7 +72,7 @@ class collectController extends bootstrap
                 /**
                  * Set the UTMs and slug_origine
                  */
-                $this->ficelle->setSource($this->prospects);
+                $this->setSource($this->prospects);
 
                 if (isset($form_update) && $form_update == true && $this->prospects->get($email, 'email')) {
                     $this->prospects->update();
@@ -325,14 +325,14 @@ class collectController extends bootstrap
                 /**
                  * Set the UTMs and slug_origine
                  */
-                $this->ficelle->setSource($this->clients);
+                $this->setSource($this->clients);
 
                 $this->settings->get('Offre de bienvenue slug', 'type');
                 $ArraySlugOffre = explode(';', $this->settings->value);
 
                 $slug_origine = isset($_SESSION['source']['slug_origine']) ? $_SESSION['source']['slug_origine'] : '';
 
-                if (in_array(trim($slug_origine), $ArraySlugOffre)) {
+                if (in_array($slug_origine, $ArraySlugOffre)) {
                     $this->clients->origine = 1;
                 } // offre ok
                 else {
@@ -478,19 +478,5 @@ class collectController extends bootstrap
         }
 
         echo json_encode(array('reponse' => $reponse, 'URL' => ''));
-    }
-
-    /**
-     * Filter and sanitize POST field
-     * @param string $sFieldName
-     * @param int $iFilter
-     * @return string
-     */
-    private function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
-    {
-        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
-            return trim($mValue);
-        }
-        return '';
     }
 }

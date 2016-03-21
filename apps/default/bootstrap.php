@@ -67,6 +67,17 @@ class bootstrap extends Controller
         // Recuperation de la liste des langue disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
 
+        if ( ! empty($_POST)) {
+            foreach ($_POST as $postKey => $postItem) {
+                $_POST[$postKey] = $this->filterPost((string) $postKey);
+            }
+        }
+        if ( ! empty($_GET)) {
+            foreach ($_GET as $getKey => $getItem) {
+                $_GET[$getKey] = $this->filterGet((string)$getKey);
+            }
+        }
+
         // Formulaire de modification d'un texte de traduction
         if (isset($_POST['form_mod_traduction'])) {
             foreach ($this->lLangues as $key => $lng) {
@@ -103,18 +114,6 @@ class bootstrap extends Controller
         $this->meta_description = '';
         $this->meta_keywords    = '';
 
-        // XSS protection
-        if (false === empty($_POST)) {
-            foreach ($_POST as $key => $value) {
-                $_POST[$key] = htmlspecialchars(strip_tags($value));
-            }
-        }
-
-        if (false === empty($_GET)) {
-            foreach ($_GET as $key => $value) {
-                $_GET[$key] = htmlspecialchars(strip_tags($value));
-            }
-        }
         $this->setSessionSource();
 
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
@@ -451,6 +450,34 @@ class bootstrap extends Controller
         }
     }
 
+    /**
+     * Filter and sanitize POST field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    public function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
+    /**
+     * Filter and sanitize GET field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    public function filterGet($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_GET, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
     public function handlePartenaire($params)
     {
         // Chargement des datas
@@ -734,6 +761,24 @@ class bootstrap extends Controller
     }
 
     /**
+     * Set the source details in session
+     */
+    private function setSessionSource()
+    {
+        $aAvailableUtm = $this->getUTM();
+
+        if (false === empty($aAvailableUtm)) {
+            $_SESSION['source'] = $aAvailableUtm;
+            $_SESSION['source']['slug_origine'] = $this->getSlug();
+        } elseif (true === empty($_SESSION['source'])) {
+            $_SESSION['source'] = array(
+                'utm_source' => 'Directe',
+                'slug_origine' => $this->getSlug()
+            );
+        }
+    }
+
+    /**
      * This looks for UTMs in GET and POST parameters and returns them
      * @return array
      */
@@ -773,25 +818,27 @@ class bootstrap extends Controller
                 $sSlugOrigine = '';
             }
         }
-        return $sSlugOrigine;
+        return trim($sSlugOrigine);
     }
 
     /**
-     * Set the source details in session
+     * Set the source keys of the given object : UTMs + slug_origine
+     * @param $oClient object (either clients or prospects)
      */
-    private function setSessionSource()
+    public function setSource(&$oClient)
     {
-        $aAvailableUtm = $this->getUTM();
-        $sSlugOrigine  = $this->getSlug();
+        $aSourceColumn = array(
+            'source'       => 'utm_source',
+            'source2'      => 'utm_source2',
+            'source3'      => 'utm_campaign',
+            'slug_origine' => 'slug_origine'
+        );
 
-        if (false === empty($aAvailableUtm)) {
-            $_SESSION['source'] = $aAvailableUtm;
-            $_SESSION['source']['slug_origine'] = $sSlugOrigine;
-        } elseif (true === empty($_SESSION['source'])) {
-            $_SESSION['source'] = array(
-                'utm_source' => 'Directe',
-                'slug_origine' => $sSlugOrigine
-            );
+        foreach ($aSourceColumn as $sObjectField => $sUtmKey) {
+            if (true === isset($_SESSION['source'][$sUtmKey])) {
+                $oClient->$sObjectField = $_SESSION['source'][$sUtmKey];
+            }
         }
     }
+
 }

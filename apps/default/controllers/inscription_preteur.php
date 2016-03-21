@@ -472,7 +472,7 @@ class inscription_preteurController extends bootstrap
                     /**
                      * Set the UTMs and slug_origine
                      */
-                    $this->ficelle->setSource($this->clients);
+                    $this->setSource($this->clients);
 
                     // type de preteur
                     if ($this->clients->id_nationalite != 1) {
@@ -928,7 +928,7 @@ class inscription_preteurController extends bootstrap
                     /**
                      * Set the UTMs and slug_origine
                      */
-                    $this->ficelle->setSource($this->clients);
+                    $this->setSource($this->clients);
 
                     $this->clients->id_client = $this->clients->create();
 

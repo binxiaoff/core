@@ -359,26 +359,6 @@ class ficelle
 
     }
 
-    /**
-     * Set the source keys of the given object : UTMs + slug_origine
-     * @param $oClient object (either clients or prospects)
-     */
-    public function setSource(&$oClient)
-    {
-        $aSourceColumn = array(
-            'source'       => 'utm_source',
-            'source2'      => 'utm_source2',
-            'source3'      => 'utm_campaign',
-            'slug_origine' => 'slug_origine'
-        );
-
-        foreach ($aSourceColumn as $sTableColumn => $sUtmKey) {
-            if (true === isset($_SESSION['source'][$sUtmKey])) {
-                $oClient->$sTableColumn = $_SESSION['source'][$sUtmKey];
-            }
-        }
-    }
-
     // Générateur de token avec une clé unique
     public function genere_token($key)
     {
