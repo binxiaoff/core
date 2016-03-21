@@ -752,12 +752,12 @@ class operationsController extends bootstrap
             23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
             26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
         );
-        $aLastOperation = $this->indexage_vos_operations->select('id_client = ' . $clients->id_client, 'MAX(date_operation)', 0, 1);
+        $sLastOperation = $this->indexage_vos_operations->getLastOperationDate($clients->id_client);
 
-        if (empty($aLastOperation)) {
+        if (empty($sLastOperation)) {
             $date_debut_a_indexer = self::LAST_OPERATION_DATE;
         } else {
-            $date_debut_a_indexer = substr($aLastOperation[0]['date_operation'], 0, 10);
+            $date_debut_a_indexer = substr($sLastOperation, 0, 10);
         }
 
         $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23,26)
