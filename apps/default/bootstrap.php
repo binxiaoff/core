@@ -762,9 +762,9 @@ class bootstrap extends Controller
         }
         if (isset($this->clients->email) && false === empty($this->clients->email)) {
             $sData = $this->clients->email;
-        } else if (false === empty($_POST['email'])) {
+        } elseif (false === empty($_POST['email']) && $this->ficelle->isEmail($_POST['email'])) {
             $sData = $_POST['email'];
-        } else if (false === empty($_GET['email'])) {
+        } elseif (false === empty($_GET['email']) && $this->ficelle->isEmail($_GET['email'])) {
             $sData = $_GET['email'];
         }
 
