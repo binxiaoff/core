@@ -200,11 +200,11 @@ class AutoBidSettingsManager
      *
      * @return bool
      */
-    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null)
+    public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null, $iLimit = null, $iOffset = null)
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
-        return $oAutoBid->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus, $sOrder);
+        return $oAutoBid->getSettings($iLenderId, $sEvaluation, $iAutoBidPeriodId, $aStatus, $sOrder, $iLimit, $iOffset);
     }
 
     /**
@@ -352,6 +352,8 @@ class AutoBidSettingsManager
         if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner)) {
             return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
         }
+        
+        return false;
     }
 
     /**

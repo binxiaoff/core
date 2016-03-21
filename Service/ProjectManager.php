@@ -180,11 +180,14 @@ class ProjectManager
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
-            $aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period']);
-
-            foreach ($aAutoBidList as $aAutoBidSetting) {
-                if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                    $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, \bids::BID_RATE_MAX);
+            $iOffset = 0;
+            $iLimit  = 100;
+            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE), null, $iLimit, $iOffset)) {
+                $iOffset += $iLimit;
+                foreach ($aAutoBidList as $aAutoBidSetting) {
+                    if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
+                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, \bids::BID_RATE_MAX);
+                    }
                 }
             }
 
@@ -205,12 +208,16 @@ class ProjectManager
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
-            $aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period']);
-            foreach ($aAutoBidList as $aAutoBidSetting) {
-                if ($oClient->get($aAutoBidSetting['id_client'])
-                    && $oLenderAccount->get($aAutoBidSetting['id_lender'])
-                    && $this->oAutoBidSettingsManager->isOn($oLenderAccount)
-                ) {
+            $iLimit = 100;
+            $iOffset = 0;
+            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE), null, $iLimit, $iOffset)) {
+                $iOffset += $iLimit;
+                foreach ($aAutoBidList as $aAutoBidSetting) {
+                    if (false === $oClient->get($aAutoBidSetting['id_client'])
+                        && false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
+                        && false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
+                        continue;
+                    }
                     $iBalance = $oTransaction->getSolde($oClient->id_client);
 
                     if ($iBalance < $aAutoBidSetting['amount']) {
