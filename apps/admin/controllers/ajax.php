@@ -391,13 +391,11 @@ class ajaxController extends bootstrap
                     // si inscription
                     if ($this->clients->status_transition == 1) {
                         $this->clients_history->id_client = $this->clients->id_client;
-                        $this->clients_history->type      = $this->clients->status_pre_emp;
                         $this->clients_history->status    = 2; // statut inscription
                         $this->clients_history->create();
                     }
 
                     $this->clients_history->id_client = $this->clients->id_client;
-                    $this->clients_history->type      = $this->clients->status_pre_emp;
                     $this->clients_history->status    = 3; // statut depot de dossier validé
                     $this->clients_history->create();
 
@@ -822,9 +820,6 @@ class ajaxController extends bootstrap
                     } else {
                         $this->clients->email = $_POST['email'];
                     }
-                    // On precise que c'est un emprunteur
-                    $this->clients->status_pre_emp = 2;
-
                     $this->clients->id_client = $this->clients->create();
 
                     $this->clients_adresses->id_client = $this->clients->id_client;
@@ -1070,144 +1065,6 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _recapdashboard()
-    {
-        $this->autoFireView = true;
-
-        $this->transactions      = $this->loadData('transactions');
-        $this->partenaires_types = $this->loadData('partenaires_types');
-        $this->clients_history   = $this->loadData('clients_history');
-        $this->bids              = $this->loadData('bids');
-        $this->echeanciers       = $this->loadData('echeanciers');
-
-        if (isset($_POST['month'])) {
-            if (strlen($_POST['month']) < 2) {
-                $month = '0' . $_POST['month'];
-            } else {
-                $month = $_POST['month'];
-            }
-            $this->month = $_POST['month'];
-            $year        = $_POST['annee'];
-            $this->year  = $year;
-
-            // Recuperation du chiffre d'affaire sur les mois de l'année
-            $lCaParMois = $this->transactions->recupCAByMonthForAYear($this->year);
-            for ($i = 1; $i <= 12; $i++) {
-                $i                   = ($i < 10 ? '0' . $i : $i);
-                $this->caParmois[$i] = number_format(($lCaParMois[$i] != '' ? $lCaParMois[$i] : 0), 2, '.', '');
-            }
-
-            // nb preteurs connect
-            $this->nbPreteurLogin = $this->clients_history->getNb($month, $year, 'type = 1 AND status = 1', 1);
-
-            // nb emprunteur connect
-            $this->nbEmprunteurLogin = $this->clients_history->getNb($month, $year, 'type > 1 AND status = 1', 1);
-
-            // nb depot dossier
-            $this->nbDepotDossier = $this->clients_history->getNb($month, $year, 'type > 1 AND status = 3');
-
-            // nb inscription preteur
-            $this->nbInscriptionPreteur = $this->clients_history->getNb($month, $year, 'type = 1 AND status = 2', 1);
-
-            // nb inscription emprunteur
-            $this->nbInscriptionEmprunteur = $this->clients_history->getNb($month, $year, 'type > 1 AND status = 2', 1);
-
-            // fonds deposés
-            $this->nbFondsDeposes = $this->caParmois[$month];
-
-            // Fonds pretes
-            $this->nbFondsPretes = $this->bids->sumBidsMonth($month, $year);
-
-            // Total capital restant du mois
-            $this->TotalCapitalRestant = $this->echeanciers->getTotalSumRembByMonth($month, $year);
-        }
-    }
-
-
-    public function _ratioDashboard()
-    {
-        $this->autoFireView = true;
-
-        $this->transactions      = $this->loadData('transactions');
-        $this->partenaires_types = $this->loadData('partenaires_types');
-        $this->clients_history   = $this->loadData('clients_history');
-        $this->bids              = $this->loadData('bids');
-        $this->echeanciers       = $this->loadData('echeanciers');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->projects          = $this->loadData('projects');
-
-        if (isset($_POST['month'])) {
-            if (strlen($_POST['month']) < 2) {
-                $month = '0' . $_POST['month'];
-            } else {
-                $month = $_POST['month'];
-            }
-            $this->month = $_POST['month'];
-            $year        = $_POST['annee'];
-            $this->year  = $year;
-
-
-            // Tous les projets du mois
-            $nbProjects = $this->projects->counter('MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year);
-
-            $lProjects = $this->projects->select('MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year);
-
-            // On recupere les projets valides
-            $nbProjetValid = 0;
-            foreach ($lProjects as $p) {
-                $this->projects_status->getLastStatutByMonth($p['id_project'], $month, $year);
-                if ($this->projects_status->status > \projects_status::A_FUNDER) {
-                    $nbProjetValid += 1;
-                }
-            }
-
-            // ratio Projets
-            if ($nbProjetValid > 0 && $nbProjects > 0) {
-                $this->ratioProjects = ($nbProjetValid / $nbProjects) * 100;
-            } else {
-                $this->ratioProjects = 0;
-            }
-
-            // moyenne des depots de fonds preteur
-            $this->moyenneDepotsFonds = $this->transactions->avgDepotPreteurByMonth($month, $year);
-
-            // total retrait argent
-            $TotalRetrait = $this->transactions->sumByMonth(8, $month, $year);
-            $TotalRetrait = str_replace('-', '', $TotalRetrait);
-
-            // total remboursement preteur
-            $TotalrembPreteur = $this->transactions->sumByMonth(5, $month, $year);
-
-            // tauxRepret
-            if ($TotalRetrait > 0 && $TotalrembPreteur > 0) {
-                $this->tauxRepret = ($TotalRetrait / $TotalrembPreteur) * 100;
-            } else {
-                $this->tauxRepret = 0;
-            }
-
-            // sum Remb par emprunteur
-            $lSumRemb = $this->echeanciers->getSumRembEmpruntByMonths('', '', '0', $month, $year);
-
-            // Capital
-            $capital = 0;
-            foreach ($lSumRemb as $r) {
-                $capital += ($r['montant'] - $r['interets']);
-            }
-
-            // fonds gelés
-            $sumGel = $this->bids->sumBidsMonthEncours($month, $year);
-
-            // fonds dispo
-            $dispo = $this->transactions->getDispo($month, $year);
-
-            if ($TotalRetrait > 0) {
-                $this->tauxAttrition = ($TotalRetrait / ($capital + $dispo + $sumGel)) * 100;
-            } else {
-                $this->tauxAttrition = 0;
-            }
-
-        }
-    }
 
     // supprime le bid dans la gestion du preteur et raffiche sa liste de bid mis a jour
     public function _deleteBidPreteur()
@@ -1266,100 +1123,6 @@ class ajaxController extends bootstrap
                 16 => 'Offre de bienvenue',
                 17 => 'Retrait offre de bienvenue'
             );
-        }
-    }
-
-    public function _loadDashYear()
-    {
-        $this->autoFireView = true;
-
-        // Chargement des fichiers JS
-        $this->loadJs('admin/chart/highcharts');
-
-        $this->transactions      = $this->loadData('transactions');
-        $this->partenaires_types = $this->loadData('partenaires_types');
-        $this->clients_history   = $this->loadData('clients_history');
-        $this->bids              = $this->loadData('bids');
-        $this->echeanciers       = $this->loadData('echeanciers');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->projects          = $this->loadData('projects');
-
-        // Recuperation de la liste des type de partenaires
-        $this->lTypes = $this->partenaires_types->select('status = 1');
-
-
-        if (isset($_POST['annee'])) {
-            $this->year = $_POST['annee'];
-        } else {
-            $this->year = date('Y');
-        }
-
-        $lCaParMois          = $this->transactions->recupCAByMonthForAYear($this->year);
-        $lVirementsParMois   = $this->transactions->recupVirmentEmprByMonthForAYear($this->year);
-        $lRembParMois        = $this->transactions->recupRembEmprByMonthForAYear($this->year);
-        $this->caParmoisPart = $this->transactions->recupMonthlyPartnershipTurnoverByYear($this->year);
-
-        for ($i = 1; $i <= 12; $i++) {
-            $i                          = ($i < 10 ? '0' . $i : $i);
-            $this->caParmois[$i]        = number_format(($lCaParMois[$i] != '' ? $lCaParMois[$i] : 0), 2, '.', '');
-            $this->VirementsParmois[$i] = number_format(str_replace('-', '', ($lVirementsParMois[$i] != '' ? $lVirementsParMois[$i] : 0)), 2, '.', '');
-            $this->RembEmprParMois[$i]  = number_format(($lRembParMois[$i] != '' ? $lRembParMois[$i] : 0), 2, '.', '');
-        }
-
-        $this->month                = date('m');
-        $this->nbPreteurLogin       = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 1', 1);
-        $this->nbInscriptionPreteur = $this->clients_history->getNb($this->month, $this->year, 'type = 1 AND status = 2', 1);
-        $this->nbFondsDeposes       = $this->caParmois[$this->month];
-        $this->nbFondsPretes        = $this->bids->sumBidsMonth($this->month, $this->year);
-        $this->TotalCapitalRestant  = $this->echeanciers->getTotalSumRembByMonth($this->month, $this->year);
-
-        $nbProjects = $this->projects->counter('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
-        $lProjects  = $this->projects->select('MONTH(added) = ' . $this->month . ' AND YEAR(added) = ' . $this->year);
-
-        // On recupere les projets valides
-        $nbProjetValid = 0;
-        foreach ($lProjects as $p) {
-            $this->projects_status->getLastStatutByMonth($p['id_project'], $this->month, $this->year);
-            if ($this->projects_status->status >= \projects_status::A_FUNDER) {
-                $nbProjetValid += 1;
-            }
-        }
-
-        $this->ratioProjects      = @($nbProjetValid / $nbProjects) * 100;
-        $this->moyenneDepotsFonds = $this->transactions->avgDepotPreteurByMonth($this->month, $this->year);
-
-        $TotalRetrait = $this->transactions->sumByMonth(8, $this->month, $this->year);
-        $TotalRetrait = str_replace('-', '', $TotalRetrait);
-
-        // total remboursement preteur
-        $TotalrembPreteur = $this->transactions->sumByMonth(5, $this->month, $this->year);
-
-        // tauxRepret
-        if ($TotalRetrait > 0 && $TotalrembPreteur > 0) {
-            $this->tauxRepret = ($TotalRetrait / $TotalrembPreteur) * 100;
-        } else {
-            $this->tauxRepret = 0;
-        }
-
-        // sum Remb par emprunteur
-        $lSumRemb = $this->echeanciers->getSumRembEmpruntByMonths('', '', '0', $this->month, $this->year);
-
-        // Capital
-        $capital = 0;
-        foreach ($lSumRemb as $r) {
-            $capital += ($r['montant'] - $r['interets']);
-        }
-
-        // fonds gelés
-        $sumGel = $this->bids->sumBidsMonthEncours($this->month, $this->year);
-
-        // fonds dispo
-        $dispo = $this->transactions->getDispo($this->month, $this->year);
-
-        if ($TotalRetrait > 0) {
-            $this->tauxAttrition = ($TotalRetrait / ($capital + $dispo + $sumGel)) * 100;
-        } else {
-            $this->tauxAttrition = 0;
         }
     }
 

@@ -20,10 +20,8 @@ class profileController extends bootstrap
         if (! $this->clients->checkAccess()) {
             header('Location: ' . $this->lurl);
             die;
-        } else {
-            // check preteur ou emprunteur (ou les deux)
-            $this->clients->checkStatusPreEmp($this->clients->status_pre_emp, 'preteur', $this->clients->id_client);
         }
+        $this->clients->checkAccessLender();
 
         //Recuperation des element de traductions
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
@@ -729,7 +727,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
@@ -1623,7 +1621,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
@@ -2067,7 +2065,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
@@ -2312,7 +2310,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 

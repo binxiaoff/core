@@ -75,9 +75,9 @@
                 ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $r['id_loan'] ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['amount'] / 100) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['rate']) ?></td>
-                    <td><?= $lesEcheances[0]['montant'] ?></td>
+                    <td class="right"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?></td>
+                    <td class="right"><?= $this->ficelle->formatNumber($r['rate'], 1) ?></td>
+                    <td class="right"><?= $this->ficelle->formatNumber($lesEcheances[0]['montant'] / 100) ?></td>
                     <td><?= $this->clients->nom ?></td>
                     <td><?= $this->clients->prenom ?></td>
                     <td><?= $this->clients->id_client ?></td>

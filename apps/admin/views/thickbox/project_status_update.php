@@ -27,7 +27,8 @@
         <?php endif; ?>
         <?php if ($this->bCustomSite): ?>
             <label for="site_content"><em>Message d'information aux prêteurs (site)</em></label><br/><br/>
-            <textarea id="site_content" name="site_content" class="textarea_lng" style="height:100px; width:420px;"></textarea><br/><br/>
+            <textarea id="site_content" name="site_content" class="textarea_lng" style="height:100px; width:420px;"><?= isset($this->sInfoStatusChange) ? $this->sInfoStatusChange : '' ;?></textarea>
+            <br/><br/>
         <?php endif; ?>
         <div id="problematic_status_error">Vous devez saisir tous les champs<br/><br/></div>
         <div style="text-align:right">

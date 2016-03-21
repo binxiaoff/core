@@ -28,32 +28,12 @@
 
 class pays_v2 extends pays_v2_crud
 {
-    const ZONE_B040 = "'DE','AW','AT','BE','BQ','BG','CY','HR','CW','DK','ES','EE','FI','GR','HU','GG','JE','IM','VG','IE','IT','LV','LT','LU','MT','MS','NL','PL','PT','CZ','RO','GB','BL','SX','SE','SK','SI'";
+    const ZONE_B040      = "'DE','AW','AT','BE','BQ','BG','CY','HR','CW','DK','ES','EE','FI','GR','HU','GG','JE','IM','VG','IE','IT','LV','LT','LU','MT','MS','NL','PL','PT','CZ','RO','GB','BL','SX','SE','SK','SI'";
+    const COUNTRY_FRANCE = 1;
 
-    public function pays_v2($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::pays_v2($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_pays')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    public function delete($id, $field = 'id_pays')
-    {
-        parent::delete($id, $field);
-    }
-
-    public function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
