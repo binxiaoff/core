@@ -122,9 +122,6 @@ class projectsController extends bootstrap
             //title de la page
             $this->meta_title = $this->projects->title . ' - Unilend';
 
-            // source
-            $this->ficelle->source(empty($_GET['utm_source']) ? '' : $_GET['utm_source'], $this->lurl . '/' . $this->params[0], empty($_GET['utm_source2']) ? '' : $_GET['utm_source2']);
-
             // Pret min
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;

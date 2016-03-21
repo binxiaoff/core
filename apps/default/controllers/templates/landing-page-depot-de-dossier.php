@@ -30,12 +30,6 @@ if ($this->bShortTunnel) {
     $_SESSION['utm_source2'] = '';
 }
 
-$this->ficelle->source(
-    isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
-    $this->lurl . (isset($this->params[0]) ? '/' . $this->params[0] : ''),
-    isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
-);
-
 $bProcessForm = false;
 
 if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {

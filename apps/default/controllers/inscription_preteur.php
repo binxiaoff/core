@@ -28,9 +28,6 @@ class inscription_preteurController extends bootstrap
 
     public function _etape1()
     {
-        // source
-        $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/inscription_preteur/etape1', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
-
         // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
@@ -472,8 +469,7 @@ class inscription_preteurController extends bootstrap
                         $this->clients->email = '';
                     }
 
-                    $this->clients->source  = $_SESSION['utm_source'];
-                    $this->clients->source2 = $_SESSION['utm_source2'];
+                    $this->setSource($this->clients);
 
                     // type de preteur
                     if ($this->clients->id_nationalite != 1) {
@@ -483,7 +479,6 @@ class inscription_preteurController extends bootstrap
                         $this->clients->type = \clients::TYPE_PERSON;
                     } // physique
 
-                    // On créer le client
                     $this->clients->id_client = $this->clients->create();
 
                     // Histo client //
@@ -923,12 +918,9 @@ class inscription_preteurController extends bootstrap
                     $_POST['passE']            = $pass;
                     $_POST['passE2']           = $pass2;
                     $_POST['secret-responseE'] = $secret_response;
-                } // create
-                else {
-                    $this->clients->source  = $_SESSION['utm_source'];
-                    $this->clients->source2 = $_SESSION['utm_source2'];
+                } else {
+                    $this->setSource($this->clients);
 
-                    // On créer le client
                     $this->clients->id_client = $this->clients->create();
 
                     // Histo client //

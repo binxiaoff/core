@@ -141,7 +141,6 @@ class devboxController extends bootstrap
         $this->Preteurs2      = $this->clients->get_preteurs_restriction($sql);
         $this->countPreteurs2 = count($this->Preteurs2);
 
-
         echo '<br>';
         echo '<br>';
 
