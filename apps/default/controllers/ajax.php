@@ -160,54 +160,58 @@ class ajaxController extends bootstrap
         $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, $where . ' AND p.status = 0 AND p.display = 0', $ordre, $aRateRange, $sPositionStart, 10);
         $affichage             = '';
 
-        foreach ($this->lProjetsFunding as $project) {
-            $this->projects_status->getLastStatut($project['id_project']);
-            $this->companies->get($project['id_company'], 'id_company');
+        if (empty($this->lProjetsFunding)) {
+            $bHasMore = false;
+        } else {
+            $bHasMore = true;
+            foreach ($this->lProjetsFunding as $project) {
+                $this->projects_status->getLastStatut($project['id_project']);
+                $this->companies->get($project['id_company'], 'id_company');
 
-            $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']); // date fin 21h a chaque fois
-            if ($inter['mois'] > 0) {
-                $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
-            } else {
-                $dateRest = '';
-            }
+                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']); // date fin 21h a chaque fois
+                if ($inter['mois'] > 0) {
+                    $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
+                } else {
+                    $dateRest = '';
+                }
 
-            // dates pour le js
-            $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
-            $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
+                // dates pour le js
+                $mois_jour = $this->dates->formatDate($project['date_retrait'], 'F d');
+                $annee     = $this->dates->formatDate($project['date_retrait'], 'Y');
 
-            $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
-            $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
-
-            $affichage .= "
-            <tr class='unProjet' id='project" . $project['id_project'] . "'>
-                <td>";
-            if ($this->projects_status->status < \projects_status::FUNDE) {
-                $tab_date_retrait = explode(' ', $project['date_retrait_full']);
-                $tab_date_retrait = explode(':', $tab_date_retrait[1]);
-                $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
+                $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
+                $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                 $affichage .= "
+            <tr class='unProjet' id='project" . $project['id_project'] . "'>
+                <td>";
+                if ($this->projects_status->status < \projects_status::FUNDE) {
+                    $tab_date_retrait = explode(' ', $project['date_retrait_full']);
+                    $tab_date_retrait = explode(':', $tab_date_retrait[1]);
+                    $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
+
+                    $affichage .= "
                         <script>
                             var cible" . $project['id_project'] . " = new Date('" . $mois_jour . ", " . $annee . " " . $heure_retrait . ":00');
                             var letime" . $project['id_project'] . " = parseInt(cible" . $project['id_project'] . ".getTime() / 1000, 10);
                             setTimeout('decompte(letime" . $project['id_project'] . ",\"val" . $project['id_project'] . "\")', 500);
                         </script>";
-            } else {
-                $dateRest = 'Terminé';
-            }
+                } else {
+                    $dateRest = 'Terminé';
+                }
 
-            if ($project['photo_projet'] != '') {
-                $affichage .= "<a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><img src='" . $this->surl . '/images/dyn/projets/72/' . $project['photo_projet'] . "' alt='" . $project['photo_projet'] . "' class='thumb'></a>";
-            }
+                if ($project['photo_projet'] != '') {
+                    $affichage .= "<a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><img src='" . $this->surl . '/images/dyn/projets/72/' . $project['photo_projet'] . "' alt='" . $project['photo_projet'] . "' class='thumb'></a>";
+                }
 
-            $affichage .= "
+                $affichage .= "
                     <div class='description'>";
-            if ($_SESSION['page_projet'] == 'projets_fo') {
-                $affichage .= "<h5><a href='" . $this->lurl . '/projects/detail/' . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
-            } else {
-                $affichage .= "<h5><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
-            }
-            $affichage .= "<h6>" . $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip . "</h6>
+                if ($_SESSION['page_projet'] == 'projets_fo') {
+                    $affichage .= "<h5><a href='" . $this->lurl . '/projects/detail/' . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
+                } else {
+                    $affichage .= "<h5><a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>" . $project['title'] . "</a></h5>";
+                }
+                $affichage .= "<h6>" . $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip . "</h6>
                         <p>" . $project['nature_project'] . "</p>
                     </div><!-- /.description -->
                 </td>
@@ -227,28 +231,29 @@ class ajaxController extends bootstrap
                     </a>
                 </td>";
 
-            $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
-            if ($iSumbids > 0) {
-                $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
-            } else {
-                $affichage .= ($project['target_rate'] == '-' ? $project['target_rate'] : $this->ficelle->formatNumber($project['target_rate'], 1)) . "%";
-            }
-            $affichage .= "</a></td>";
+                $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'>";
+                if ($iSumbids > 0) {
+                    $affichage .= $this->ficelle->formatNumber($avgRate, 1) . "%";
+                } else {
+                    $affichage .= ($project['target_rate'] == '-' ? $project['target_rate'] : $this->ficelle->formatNumber($project['target_rate'], 1)) . "%";
+                }
+                $affichage .= "</a></td>";
 
 
-            $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><strong id='val" . $project['id_project'] . "'>" . $dateRest . "</strong></a></td>
+                $affichage .= "<td><a class='lien' href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "'><strong id='val" . $project['id_project'] . "'>" . $dateRest . "</strong></a></td>
                 <td>";
 
-            if ($this->projects_status->status >= \projects_status::FUNDE) {
-                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
-            } else {
-                $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
-            }
-            $affichage .= "</td>
+                if ($this->projects_status->status >= \projects_status::FUNDE) {
+                    $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small multi grise1 btn-grise'>" . $this->lng['preteur-projets']['voir-le-projet'] . "</a>";
+                } else {
+                    $affichage .= "<a href='" . $this->lurl . "/projects/detail/" . $project['slug'] . "' class='btn btn-info btn-small'>" . $this->lng['preteur-projets']['pretez'] . "</a>";
+                }
+                $affichage .= "</td>
             </tr>
             ";
+            }
         }
-        $table = array('affichage' => $affichage, 'positionStart' => $sPositionStart);
+        $table = array('affichage' => $affichage, 'positionStart' => $sPositionStart, 'hasMore' => $bHasMore);
         echo json_encode($table);
     }
 

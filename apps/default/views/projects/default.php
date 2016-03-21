@@ -246,12 +246,14 @@
 
             $.post(add_url + '/ajax/triProject', {val: val, id: id}).done(function (data) {
                 $('#table_tri').html(data)
+                $(window).off().scroll(appendProjects);
             });
         });
 
         $("#rest").click(function () {
             $.post(add_url + '/ajax/triProject', {rest_val: 1}).done(function (data) {
                 $('#table_tri').html(data);
+                $(window).off().scroll(appendProjects);
             });
         });
     });
