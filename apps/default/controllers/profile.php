@@ -727,7 +727,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
@@ -1621,7 +1621,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
@@ -2065,7 +2065,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 
@@ -2310,7 +2310,7 @@ class profileController extends bootstrap
                     $prenom       = utf8_decode($this->clients->prenom);
                     $montant      = $this->solde . ' euros';
                     $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:m');
+                    $heure_minute = date('H:i');
                     $email        = $this->clients->email;
                     $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
 

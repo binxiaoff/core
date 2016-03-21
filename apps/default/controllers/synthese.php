@@ -254,7 +254,7 @@ class syntheseController extends bootstrap
         $this->clients_status->getLastStatut($this->clients->id_client);
 
         $this->settings->get('TRI Unilend', 'type');
-        $this->sIRRUnilend           = $this->ficelle->formatNumber($this->settings->value);
+        $this->sIRRUnilend           = $this->ficelle->formatNumber((float)$this->settings->value);
         $this->iDiversificationLevel = '';
         $this->sDisplayedValue       = '';
         $this->sTypeMessageTooltip   = '';

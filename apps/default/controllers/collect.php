@@ -30,16 +30,6 @@ class collectController extends bootstrap
             $prenom       = $this->filterPost('prenom');
             $email        = $this->filterPost('email', FILTER_SANITIZE_EMAIL);
             $date         = $this->filterPost('date');
-            $slug_origine = $this->filterPost('slug_origine');
-            $utm_source   = $this->filterPost('utm_source');
-            $utm_source2  = $this->filterPost('utm_source2');
-            $utm_source3  = $this->filterPost('utm_source3');
-
-            if (empty($utm_source) && empty($slug_origine)) {
-                $utm_source = $this->lurl . '/prospect';
-            } elseif (empty($utm_source)) {
-                $utm_source = $slug_origine;
-            }
 
             if (! isset($nom) || strlen($nom) > 255 || strlen($nom) <= 0) {
                 $form_ok = false;
@@ -78,10 +68,8 @@ class collectController extends bootstrap
                 $this->prospects->prenom       = $prenom;
                 $this->prospects->email        = $email;
                 $this->prospects->id_langue    = $this->language;
-                $this->prospects->source       = $utm_source;
-                $this->prospects->source2      = $utm_source2;
-                $this->prospects->source3      = $utm_source3;
-                $this->prospects->slug_origine = $slug_origine;
+
+                $this->setSource($this->prospects);
 
                 if (isset($form_update) && $form_update == true && $this->prospects->get($email, 'email')) {
                     $this->prospects->update();
@@ -129,10 +117,6 @@ class collectController extends bootstrap
             $this->clients_adresses        = $this->loadData('clients_adresses');
             $this->lenders_accounts        = $this->loadData('lenders_accounts');
 
-            $utm_source    = $this->filterPost('utm_source');
-            $utm_source2   = $this->filterPost('utm_source2');
-            $utm_source3   = $this->filterPost('utm_source3');
-            $slug_origine  = $this->filterPost('slug_origine');
             $forme_preteur = $this->filterPost('forme_preteur');
             $civilite      = $this->filterPost('civilite');
             $nom           = $this->filterPost('nom');
@@ -161,12 +145,6 @@ class collectController extends bootstrap
             $signature_cgv     = $this->filterPost('signature_cgv');
             $date              = $this->filterPost('date');
             $insee_birth       = $this->filterPost('insee_birth');
-
-            if (empty($utm_source) && empty($slug_origine)) {
-                $utm_source = $this->lurl . '/inscription';
-            } elseif (empty($utm_source)) {
-                $utm_source = $slug_origine;
-            }
 
             $form_ok     = true;
             $form_update = false;
@@ -340,15 +318,15 @@ class collectController extends bootstrap
                 $this->clients->status = 1; // online
                 $this->clients->status_inscription_preteur = 1; // inscription terminé
                 $this->clients->etape_inscription_preteur  = 1; // etape 1 ok
-                $this->clients->source                     = $utm_source;
-                $this->clients->source2                    = $utm_source2;
-                $this->clients->source3                    = $utm_source3;
-                $this->clients->slug_origine               = $slug_origine;
+
+                $this->setSource($this->clients);
 
                 $this->settings->get('Offre de bienvenue slug', 'type');
                 $ArraySlugOffre = explode(';', $this->settings->value);
 
-                if (in_array(trim($slug_origine), $ArraySlugOffre)) {
+                $slug_origine = isset($_SESSION['source']['slug_origine']) ? $_SESSION['source']['slug_origine'] : '';
+
+                if (in_array($slug_origine, $ArraySlugOffre)) {
                     $this->clients->origine = 1;
                 } // offre ok
                 else {
@@ -494,19 +472,5 @@ class collectController extends bootstrap
         }
 
         echo json_encode(array('reponse' => $reponse, 'URL' => ''));
-    }
-
-    /**
-     * Filter and sanitize POST field
-     * @param string $sFieldName
-     * @param int $iFilter
-     * @return string
-     */
-    private function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
-    {
-        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
-            return trim($mValue);
-        }
-        return '';
     }
 }
