@@ -122,9 +122,6 @@ class projectsController extends bootstrap
             //title de la page
             $this->meta_title = $this->projects->title . ' - Unilend';
 
-            // source
-            $this->ficelle->source(empty($_GET['utm_source']) ? '' : $_GET['utm_source'], $this->lurl . '/' . $this->params[0], empty($_GET['utm_source2']) ? '' : $_GET['utm_source2']);
-
             // Pret min
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
@@ -138,16 +135,11 @@ class projectsController extends bootstrap
                 $i++;
             }
 
-            // On recup la companie
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->companies_details->get($this->companies->id_company, 'id_company');
-            // l'emprunteur
             $this->emprunteur->get($this->companies->id_client_owner, 'id_client');
-            // On recupere le lender
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-            // Statut du projet
             $this->projects_status->getLastStatut($this->projects->id_project);
-            // statut client
             $this->clients_status->getLastStatut($this->clients->id_client);
 
             // On recupere le dernier statut histo du projet pour la date de remb anticipé(DC)
@@ -275,7 +267,6 @@ class projectsController extends bootstrap
 
                     $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
 
-                    // Liste des offres non utilisées
                     $lOffres = $offres_bienvenues_details->select('id_client = ' . $this->clients->id_client . ' AND status = 0');
                     if ($lOffres != false) {
                         $totaux_restant = $montant_p;
@@ -284,7 +275,6 @@ class projectsController extends bootstrap
 
                             // Tant que le total des offres est infèrieur
                             if ($totaux_offres <= $montant_p) {
-
                                 $totaux_offres += ($o['montant'] / 100); // total des offres
                                 $totaux_restant -= $montant_p;        // total du bid
 
@@ -312,27 +302,14 @@ class projectsController extends bootstrap
                         }
                     }
 
-                    ///// NOTIFICATION OFFRE PLACEE ///////
-
-                    $this->notifications->type = 3; // offre placée
-                    $this->notifications->id_lender = $this->lenders_accounts->id_lender_account;
+                    $this->notifications->type       = \notifications::TYPE_BID_PLACED;
+                    $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
                     $this->notifications->id_project = $this->projects->id_project;
-                    $this->notifications->amount = $montant_p * 100;
-                    $this->notifications->id_bid = $this->bids->id_bid;
-                    $this->notifications->id_notification = $this->notifications->create();
-
-                    ///// FIN NOTIFICATION OFFRE PLACEE ///////
+                    $this->notifications->amount     = $montant_p * 100;
+                    $this->notifications->id_bid     = $this->bids->id_bid;
+                    $this->notifications->create();
 
                     if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 2, 'immediatement') == true) {
-                        $p         = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                        $nom       = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                        $id_client = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                        $motif     = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
-
-                        //*********************************//
-                        //*** ENVOI DU MAIL CONFIRM BID ***//
-                        //*********************************//
-
                         $this->mails_text->get('confirmation-bid', 'lang = "' . $this->language . '" AND type');
 
                         $this->settings->get('Facebook', 'type');
@@ -354,7 +331,7 @@ class projectsController extends bootstrap
                             'date_bid'       => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                             'heure_bid'      => date('H:i:s', strtotime($this->bids->added)),
                             'projet-p'       => $this->lurl . '/' . $pageProjets,
-                            'motif_virement' => $motif,
+                            'motif_virement' => $this->clients->getLenderPattern($this->clients->id_client),
                             'lien_fb'        => $lien_fb,
                             'lien_tw'        => $lien_tw
                         );
@@ -377,18 +354,17 @@ class projectsController extends bootstrap
                             $this->email->addRecipient(trim($this->clients->email));
                             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
-                        // fin mail confirmation bid //
 
                         $this->clients_gestion_mails_notif->immediatement = 1;
                     } else {
                         $this->clients_gestion_mails_notif->immediatement = 0;
                     }
 
-                    $this->clients_gestion_mails_notif->id_client = $this->clients->id_client;
-                    $this->clients_gestion_mails_notif->id_notif = 2; // offre placée
-                    $this->clients_gestion_mails_notif->date_notif = date('Y-m-d H:i:s');
+                    $this->clients_gestion_mails_notif->id_client       = $this->clients->id_client;
+                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_BID_PLACED;
+                    $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_transaction = $this->transactions->id_transaction;
+                    $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                     $this->clients_gestion_mails_notif->create();
 
                     $_SESSION['messPretOK'] = $this->lng['preteur-projets']['mess-pret-conf'];
@@ -397,7 +373,6 @@ class projectsController extends bootstrap
                     header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
                 }
-                ////// FIN ENREGISTREMENT BID /////
             } elseif (isset($_POST['send_inscription_project_detail'])) {
                 // INSCRIPTION PRETEUR //
                 $nom = $_POST['nom'];
