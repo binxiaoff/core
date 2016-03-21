@@ -972,21 +972,21 @@ class echeanciers extends echeanciers_crud
     {
         $sDate = $oDate->format('Y-m-d');
 
-        $sql = '
+        $sQuery = '
            SELECT id_project,
               ordre,
-              count(*) as nb_repayment,
-              count(case status when 1 then 1 else null end) as nb_repayment_paid
+              COUNT(*) AS nb_repayment,
+              COUNT(CASE status WHEN 1 THEN 1 ELSE NULL END) AS nb_repayment_paid
             FROM echeanciers
             WHERE DATE(date_echeance) =  "' . $sDate . '"
             GROUP BY id_project, ordre';
 
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+        $rQuery = $this->bdd->query($sQuery);
+        $aResult   = array();
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
+            $aResult[] = $aRow;
         }
-        return $result;
+        return $aResult;
     }
 
     // retourne la somme total a rembourser pour un projet

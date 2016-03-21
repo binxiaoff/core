@@ -5323,14 +5323,12 @@ class cronController extends bootstrap
         }
     }
 
-    // Une fois par jour (crée le 27/04/2015)
     public function _check_remboursement_preteurs()
     {
         $oRepayment = $this->loadData('echeanciers');
         $oProject    = $this->loadData('projects');
-        $surl        = $this->surl; //Variable for eval($texteMail); Do not delete.
         $oDate       = new \DateTime();
-        $aRepayments = $oRepayment->getRepaymentOfTheDay($oDate); // <--- a rajouter en prod
+        $aRepayments = $oRepayment->getRepaymentOfTheDay($oDate);
         $sRepayments  = '';
         foreach ($aRepayments as $aRepayment) {
             $oProject->get($aRepayment['id_project'], 'id_project');
@@ -5345,29 +5343,25 @@ class cronController extends bootstrap
                 </tr>';
         }
 
+        $aReplacements = array(
+            '[#SURL#]'         => $this->surl,
+            '[#REPAYMENTS#]'   => $sRepayments
+        );
+
         $this->settings->get('Adresse notification check remb preteurs', 'type');
-        $destinataire = $this->settings->value;
+        $sRecipient = $this->settings->value;
 
         $this->mails_text->get('notification-check-remboursements-preteurs', 'lang = "' . $this->language . '" AND type');
 
-        $sujetMail = $this->mails_text->subject;
-        eval("\$sujetMail = \"$sujetMail\";");
-        $texteMail = $this->mails_text->content;
-        eval("\$texteMail = \"$texteMail\";");
-        $exp_name = $this->mails_text->exp_name;
-        eval("\$exp_name = \"$exp_name\";");
-
-        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
         $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-        $this->email->addRecipient(trim($destinataire));
-        $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-        $this->email->setHTMLBody($texteMail);
-        //if ('prod' === $this->Config['env']) {
+        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($this->mails_text->subject)) . '?=');
+        $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), utf8_decode($this->mails_text->content)));
+        $this->email->addRecipient(trim($sRecipient));
+
+        if ('prod' === $this->Config['env']) {
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        //}
+        }
     }
 
 
