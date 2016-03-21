@@ -5276,7 +5276,7 @@ class cronController extends bootstrap
     }
 
     // Une fois par jour (crée le 27/04/2015)
-    private function check_remboursement_preteurs()
+    private function check_prelevements_emprunteurs()
     {
         $echeanciers = $this->loadData('echeanciers');
         $projects    = $this->loadData('projects');
@@ -5301,7 +5301,7 @@ class cronController extends bootstrap
         $this->settings->get('Adresse notification check remb preteurs', 'type');
         $destinataire = $this->settings->value;
 
-        $this->mails_text->get('notification-check-remboursements-preteurs', 'lang = "' . $this->language . '" AND type');
+        $this->mails_text->get('notification-prelevement-emprunteur', 'lang = "' . $this->language . '" AND type');
 
         $sujetMail = $this->mails_text->subject;
         eval("\$sujetMail = \"$sujetMail\";");
@@ -5322,6 +5322,48 @@ class cronController extends bootstrap
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
+
+    public function _check_remboursement_preteurs()
+    {
+        $oRepayment = $this->loadData('echeanciers');
+        $oProject    = $this->loadData('projects');
+        $oDate       = new \DateTime();
+        $aRepayments = $oRepayment->getRepaymentOfTheDay($oDate);
+        $sRepayments  = '';
+        foreach ($aRepayments as $aRepayment) {
+            $oProject->get($aRepayment['id_project'], 'id_project');
+            $sRepayments .= '
+                <tr>
+                    <td>' . $aRepayment['id_project'] . '</td>
+                    <td>' . $oProject->title_bo . '</td>
+                    <td>' . $aRepayment['ordre'] . '</td>
+                    <td>' . $aRepayment['nb_repayment'] . '</td>
+                    <td>' . $aRepayment['nb_repayment_paid'] . '</td>
+                    <td>' . ($aRepayment['nb_repayment'] === $aRepayment['nb_repayment_paid'] ? 'Oui' : 'Non') . '</td>
+                </tr>';
+        }
+
+        $aReplacements = array(
+            '[#SURL#]'         => $this->surl,
+            '[#REPAYMENTS#]'   => $sRepayments
+        );
+
+        $this->settings->get('Adresse notification check remb preteurs', 'type');
+        $sRecipient = $this->settings->value;
+
+        $this->mails_text->get('notification-check-remboursements-preteurs', 'lang = "' . $this->language . '" AND type');
+
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($this->mails_text->subject)) . '?=');
+        $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), utf8_decode($this->mails_text->content)));
+        $this->email->addRecipient(trim($sRecipient));
+
+        if ('prod' === $this->Config['env']) {
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
+    }
+
 
     // Cron une fois par jour a 19h30 (* 18-20 * * *)
     public function _alertes_quotidienne()
@@ -6703,7 +6745,7 @@ class cronController extends bootstrap
             $timeFin   = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
 
             if (date('H:i') == $paramDebut) {
-                $this->check_remboursement_preteurs();
+                $this->check_prelevements_emprunteurs();
             } elseif ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
                 $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
                 if ($lProjetsAremb != false) {
