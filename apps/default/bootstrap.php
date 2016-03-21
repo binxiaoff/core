@@ -762,13 +762,13 @@ class bootstrap extends Controller
         if (false === empty($_POST)) {
             foreach ($_POST as $mKey => $mValue) {
                 if ('utm_' === strtolower(substr($mKey, 0, 4))) {
-                    $aUTM[$mKey] = $this->filterPost((string) $mKey);
+                    $aUTM[$mKey] = $this->filterPost($mKey);
                 }
             }
         } elseif (false === empty($_GET)) {
             foreach ($_GET as $mKey => $mValue) {
                 if ('utm_' === strtolower(substr($mKey, 0, 4))) {
-                    $aUTM[$mKey] = $this->filterGet((string) $mKey);
+                    $aUTM[$mKey] = $this->filterGet($mKey);
                 }
             }
         }
@@ -785,14 +785,14 @@ class bootstrap extends Controller
         } elseif (false === empty($_GET['slug_origine'])) {
             $sSlugOrigine = $this->filterGet('slug_origine');
         } elseif (false === empty($this->tree->slug)) {
-            $sSlugOrigine = $this->tree->slug;
+            $sSlugOrigine = trim($this->tree->slug);
         } else {
             $sSlugOrigine = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-            if ('/' == $sSlugOrigine) {
+            if ('/' === $sSlugOrigine) {
                 $sSlugOrigine = '';
             }
         }
-        return trim($sSlugOrigine);
+        return $sSlugOrigine;
     }
 
     /**
