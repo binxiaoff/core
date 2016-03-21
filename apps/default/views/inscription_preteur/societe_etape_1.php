@@ -1,7 +1,7 @@
 <form action="" method="post" id="form_inscription_preteur_societe_etape_1" name="form_inscription_preteur_societe_etape_1">
     <div class="part_societe1">
         <div class="group"> <!-- start GROUP add class "group" -->
-            <span class="group-ttl">Identité de la société</span> <!-- title of the group optional -->
+            <span class="group-ttl"><?= $this->lng['etape1']['group-name-company-identity'] ?></span> <!-- title of the group optional -->
             <div class="row">
                 <input type="text" name="raison_sociale_inscription" id="raison_sociale_inscription"
                        value="<?= ($this->companies->name != '' ? $this->companies->name : $this->lng['etape1']['raison-sociale']) ?>"
@@ -28,7 +28,7 @@
 
         <div class="part_societe2">
             <div class="group" id="group_identiy"> <!-- start GROUP add class "group" -->
-                <span class="group-ttl">Identité du demandeur</span> <!-- title of the group optional -->
+                <span class="group-ttl"><?= $this->lng['etape1']['group-name-applicant-identity'] ?></span> <!-- title of the group optional -->
                 <div class="row">
                     <div class="form-choose list-view">
                         <span class="title"><?= $this->lng['etape1']['vous-etes'] ?> :</span>
@@ -116,7 +116,7 @@
 
     <div class="les_deux">
         <div class="group" id="group_identiy"> <!-- start GROUP add class "group" -->
-            <span class="group-ttl">Adresse</span> <!-- title of the group optional -->
+            <span class="group-ttl"><?= $this->lng['etape1']['group-name-addresses'] ?></span> <!-- title of the group optional -->
             <p><?= $this->lng['etape1']['adresse-fiscale'] ?></p>
             <em class="exInfoBulle"><?= $this->lng['etape1']['info-adresse-fiscale'] ?></em>
             <div class="row">
@@ -167,7 +167,7 @@
         </div>
     </div>
     <div class="group" > <!-- start GROUP add class "group" -->
-        <span class="group-ttl">Modes de contact</span> <!-- title of the group optional -->
+        <span class="group-ttl"><?= $this->lng['etape1']['group-name-contact-details'] ?></span> <!-- title of the group optional -->
         <div class="row">
             <span class="pass-field-holder">
                 <input type="text" name="email_inscription" title="<?= $this->lng['etape1']['email'] ?>" value="<?= ($this->clients->email ? $this->clients->email : $this->lng['etape1']['email']) ?>" id="email_inscription" class="field field-large required" data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this.value,'conf_email_inscription')">
@@ -184,7 +184,7 @@
     </div>
     <?php if ($this->emprunteurCreatePreteur == false) : ?>
     <div class="group" id="group_identiy"> <!-- start GROUP add class "group" -->
-    <span class="group-ttl">Sécurité</span> <!-- title of the group optional -->
+    <span class="group-ttl"><?= $this->lng['etape1']['group-name-security'] ?></span> <!-- title of the group optional -->
         <!-- partie mot de passe societe -->
         <div class="row">
             <span class="pass-field-holder">

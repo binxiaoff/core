@@ -6,8 +6,8 @@
 
 <form action="" method="post" id="form_inscription_preteur_particulier_etape_2" enctype="multipart/form-data">
 
-    <div class="group" > <!-- start GROUP add class "group" -->
-        <span class="group-ttl">Vos coordonnées bancaires </span> <!-- title of the group optional -->
+    <div class="group">
+        <span class="group-ttl"><?= $this->lng['etape2']['group-name-bank-information'] ?></span>
         <div class="form-header">
             <span><?= $this->lng['etape2']['compte-beneficiaire-des-virements'] ?></span>
             <span><?= $this->lng['etape2']['texte-bic-iban'] ?></span>
@@ -80,7 +80,7 @@
     </div>
 
     <div class="group" > <!-- start GROUP add class "group" -->
-        <span class="group-ttl">Vos justificatifs</span> <!-- title of the group optional -->
+        <span class="group-ttl"><?= $this->lng['etape2']['group-name-id-documents'] ?></span> <!-- title of the group optional -->
         <p><?= $this->lng['etape2']['documents-a-fournir'] ?></p>
         <em class="error_fichier" <?= (isset($this->error_fichier) && $this->error_fichier == true ? 'style="display:block;"' : '') ?>><?= $this->lng['etape2']['erreur-fichier'] ?></em>
 
@@ -101,17 +101,8 @@
         </div><!-- /.row -->
 
         <div class="row row-upload">
-            <label class="inline-text">
-                <div class="row-upload file-uploaded">
-                    <div class="uploader">
-                        <div class="file-holder">
-                            <span><?= $this->lng['etape2']['parcourir'] ?></span>
-                        </div>
-                    </div><!-- /.uploader -->
-                </div><!-- /.row -->
-            </label>
-
-            <div class="uploader">
+            <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-id-verso'] ?></label>
+                <div class="uploader">
                 <input id="txt_cni_passeport_verso"
                        type="text" class="field required <?= (isset($this->error_autre) && $this->error_autre == true ? 'LV_invalid_field' : '') ?>"
                        readonly="readonly"
@@ -142,66 +133,64 @@
                 </div>
             </div><!-- /.uploader -->
         </div><!-- /.row -->
-        <span class="btn btn-small btn-add-new-row">+<small> si vous êtes hébérgés par un tiers</small></span>
+        <span class="btn btn-small btn-add-new-row">+<small><?= $this->lng['etape2']['label-button-more-documents'] ?></small></span>
         <div id="tiers_hebergeant" style="display: none;">
-        <div class="row row-upload">
-            <label class="inline-text">Attestation d’hébergement</label>
+            <div class="row row-upload">
+                <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-housed-by-third-person-declaration'] ?></label>
 
-            <div class="uploader">
-                <input id="txt_attestation_hebergement" type="text"
-                       class="field required <?= (isset($this->error_attestation_hebergement) && $this->error_attestion_hebergement == true ? 'LV_invalid_field' : '') ?>"
-                       readonly="readonly"
-                       value="<?= (empty($this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ?>"/>
-                <div class="file-holder">
-                    <span class="btn btn-small">
-                        <?= $this->lng['etape2']['parcourir'] ?>
-                        <span class="file-upload">
-                            <input type="file" class="file-field" name="attestation_hebergement_tiers">
+                <div class="uploader">
+                    <input id="txt_attestation_hebergement" type="text"
+                           class="field required <?= (isset($this->error_attestation_hebergement) && $this->error_attestion_hebergement == true ? 'LV_invalid_field' : '') ?>"
+                           readonly="readonly"
+                           value="<?= (empty($this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ?>"/>
+                    <div class="file-holder">
+                        <span class="btn btn-small">
+                            <?= $this->lng['etape2']['parcourir'] ?>
+                            <span class="file-upload">
+                                <input type="file" class="file-field" name="attestation_hebergement_tiers">
+                            </span>
                         </span>
-                    </span>
-                </div>
-            </div><!-- /.uploader -->
-        </div><!-- /.row -->
-        <div class="row row-upload">
-            <label class="inline-text">Document d’identité du tiers hébergeant</label>
-            <div class="uploader">
-                <input id="txt_cni_passport_tiers_hebergeant" type="text"
-                       class="field required <?= (isset($this->txt_identite_tiers_hebergeant) && $this->txt_identite_tiers_hebergeant == true ? 'LV_invalid_field' : '') ?>"
-                       readonly="readonly" value="<?= (empty($this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ?>"/>
-                <div class="file-holder">
-                    <span class="btn btn-small">
-                        <?= $this->lng['etape2']['parcourir'] ?>
-                        <span class="file-upload">
-                            <input type="file" class="file-field" name="cni_passport_tiers_hebergeant">
+                    </div>
+                </div><!-- /.uploader -->
+            </div><!-- /.row -->
+            <div class="row row-upload">
+                <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-id-thirs-person-housing'] ?></label>
+                <div class="uploader">
+                    <input id="txt_cni_passport_tiers_hebergeant" type="text"
+                           class="field required <?= (isset($this->txt_identite_tiers_hebergeant) && $this->txt_identite_tiers_hebergeant == true ? 'LV_invalid_field' : '') ?>"
+                           readonly="readonly" value="<?= (empty($this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ?>"/>
+                    <div class="file-holder">
+                        <span class="btn btn-small">
+                            <?= $this->lng['etape2']['parcourir'] ?>
+                            <span class="file-upload">
+                                <input type="file" class="file-field" name="cni_passport_tiers_hebergeant">
+                            </span>
                         </span>
-                    </span>
-                </div>
-            </div><!-- /.uploader -->
-        </div><!-- /.row -->
-    </div>
-
+                    </div>
+                </div><!-- /.uploader -->
+            </div><!-- /.row -->
+        </div>
     </div>
 
 
 
     <?php if ($this->etranger > 0): ?>
         <div class="group"> <!-- start GROUP -->
-            <span class="group-ttl">Fiscalité</span> <!-- title of the group -->
+            <span class="group-ttl"><?= $this->lng['etape2']['group-name-fiscality'] ?></span> <!-- title of the group -->
         <div class="row row-upload">
+            <p class="exInfoBulle"><?= $this->lng['etape2']['info-document-fiscal-' . $this->etranger] ?></p>
             <label class="inline-text">
-                <i class="icon-help tooltip-anchor" data-placement="right" title="" data-original-title="<?= $this->lng['etape2']['info-document-fiscal-' . $this->etranger] ?>"></i>
                 <?= $this->lng['etape2']['document-fiscal-' . $this->etranger] ?>
             </label>
-
             <div class="uploader">
                 <input id="document_fiscal" type="text" class="field required <?= (isset($this->error_document_fiscal) && $this->error_document_fiscal == true ? 'LV_invalid_field' : '') ?>" readonly="readonly" value="<?= (empty($this->lenders_accounts->fichier_document_fiscal) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->lenders_accounts->fichier_document_fiscal) ?>"/>
                 <div class="file-holder">
-                        <span class="btn btn-small">
-                           <?= $this->lng['etape2']['parcourir'] ?>
-                            <span class="file-upload">
-                                <input type="file" class="file-field" name="document_fiscal">
-                            </span>
+                    <span class="btn btn-small">
+                       <?= $this->lng['etape2']['parcourir'] ?>
+                        <span class="file-upload">
+                            <input type="file" class="file-field" name="document_fiscal">
                         </span>
+                    </span>
                 </div>
             </div><!-- /.uploader -->
         </div><!-- /.row -->

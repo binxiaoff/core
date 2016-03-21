@@ -7,7 +7,7 @@
 <form action="" method="post" id="form_inscription_preteur_societe_etape_2" enctype="multipart/form-data">
 
     <div class="group" > <!-- start GROUP add class "group" -->
-        <span class="group-ttl">Vos coordonnées bancaires </span> <!-- title of the group optional -->
+        <span class="group-ttl"><?= $this->lng['etape2']['group-name-bank-information'] ?></span> <!-- title of the group optional -->
         <div class="form-header">
             <span><?= $this->lng['etape2']['compte-beneficiaire-des-virements'] ?></span>
             <span><?= $this->lng['etape2']['texte-bic-iban'] ?></span>
@@ -76,7 +76,7 @@
     </div>
 
     <div class="group" > <!-- start GROUP add class "group" -->
-        <span class="group-ttl">Vos justificatifs</span> <!-- title of the group optional -->
+        <span class="group-ttl"><?= $this->lng['etape2']['group-name-id-documents'] ?></span> <!-- title of the group optional -->
         <p><?= $this->lng['etape2']['documents-a-fournir'] ?></p>
         <em class="error_fichier"<?=(isset($this->error_fichier) && $this->error_fichier == true ? ' style="display:block;"' : '') ?>><?= $this->lng['etape2']['erreur-fichier'] ?></em>
         <div class="row row-upload">
@@ -131,7 +131,7 @@
             </div><!-- /.uploader -->
         </div><!-- /.row -->
         <div class="row row-upload">
-            <label class="inline-text"><?= $this->lng['etape2']['cni-passeport-dirigeants'] ?></label>
+            <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-id-company-owner-verso'] ?></label>
             <div class="uploader">
                 <input id="txt_ci_dirigeant" type="text"
                        class="field required <?= (isset($this->error_cni_dirigent) && $this->error_cni_dirigent == true ? 'LV_invalid_field' : '') ?>" readonly="readonly"

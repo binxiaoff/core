@@ -1,17 +1,17 @@
 <form action="" method="post" id="form_inscription_preteur_particulier_etape_1" name="form_inscription_preteur_particulier_etape_1">
     <div class="part_particulier1">
         <div class="group" id="group_identiy"> <!-- start GROUP add class "group" -->
-            <span class="group-ttl">Identité</span> <!-- title of the group optional -->
+            <span class="group-ttl"><?= $this->lng['etape1']['group-name-identity'] ?></span> <!-- title of the group optional -->
             <div class="row" id="radio_sex">
                 <div class="form-choose fixed">
                     <span class="title"><?= $this->lng['etape1']['civilite'] ?></span>
                     <div class="radio-holder validationRadio1">
                         <label for="female"><?= $this->lng['etape1']['madame'] ?></label>
-                        <input <?= ($this->modif == true && $this->clients->civilite == 'Mme' ? 'checked="checked"' : '') ?> type="radio" class="custom-input" name="sex" id="female" value="Mme">
+                        <input <?= ($this->modif && $this->clients->civilite == 'Mme' ? 'checked="checked"' : '') ?> type="radio" class="custom-input" name="sex" id="female" value="Mme">
                     </div>
                     <div class="radio-holder validationRadio2">
                         <label for="male"><?= $this->lng['etape1']['monsieur'] ?></label>
-                        <input <?= ($this->modif == true && $this->clients->civilite == 'M.' ? 'checked="checked"' : '') ?> type="radio" class="custom-input" name="sex" id="male" value="M.">
+                        <input <?= ($this->modif && $this->clients->civilite == 'M.' ? 'checked="checked"' : '') ?> type="radio" class="custom-input" name="sex" id="male" value="M.">
                     </div>
                 </div>
             </div>
@@ -98,7 +98,7 @@
 
 
         <div class="group"> <!-- start GROUP -->
-            <span class="group-ttl">Modes de contact</span> <!-- title of the group -->
+            <span class="group-ttl"><?= $this->lng['etape1']['group-name-contact-details'] ?></span> <!-- title of the group -->
             <div class="row">
                 <span class="pass-field-holder">
                     <input type="text" name="email" id="email" title="<?= $this->lng['etape1']['email'] ?>"
@@ -106,13 +106,13 @@
                            class="field field-large required <?= ($this->clients->email != '' ? "LV_valid_field" : "") ?>"
                            data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this.value,'conf_email')">
                     <em><?= $this->lng['etape1']['info-email'] ?></em>
-                <span class="fake-field" style="display: none;">Email personnel*</span></span>
+                </span>
                 <span class="pass-field-holder">
                     <input type="text" name="conf_email" id="conf_email" title="<?= $this->lng['etape1']['confirmation-email'] ?>"
                            value="<?= (($this->modif || isset($_SESSION['landing_client']['email']) && $_SESSION['landing_client']['email'] != '') && $this->clients->email != '' ? $this->clients->email : $this->lng['etape1']['confirmation-email']) ?>"
                            class="field field-large required <?= ($this->clients->email != '' ? "LV_valid_field" : "") ?>"
                            data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }">
-                <span class="fake-field" style="display: none;">Confirmez votre email personnel*</span></span>
+                </span>
             </div>
             <div class="row">
                 <span class="inline-text inline-text-alt"><?= $this->lng['etape1']['telephone'] ?> :</span>
@@ -122,7 +122,7 @@
     </div>
     <div class="les_deux">
         <div class="group"> <!-- start GROUP -->
-            <span class="group-ttl">Adresses</span> <!-- title of the group -->
+            <span class="group-ttl"><?= $this->lng['etape1']['group-name-addresses'] ?></span> <!-- title of the group -->
             <p><?= $this->lng['etape1']['adresse-fiscale'] ?>
             </p>
             <em class="exInfoBulle"><?= $this->lng['etape1']['info-adresse-fiscale'] ?></em>
@@ -177,7 +177,7 @@
             </div>
         </div>
         <div class="group"> <!-- start GROUP -->
-            <span class="group-ttl">Sécurité</span> <!-- title of the group -->
+            <span class="group-ttl"><?= $this->lng['etape1']['group-name-security'] ?></span> <!-- title of the group -->
             <div class="row">
                 <span class="pass-field-holder">
                     <input type="password" name="pass" id="pass" title="<?= $this->lng['etape1']['mot-de-passe'] ?>"

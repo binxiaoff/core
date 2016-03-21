@@ -68,7 +68,7 @@ class inscription_preteurController extends bootstrap
         }
 
         $this->checkSession();
-        //while there is no system to create a lender from an existing borrower account, if it is a borrower (tested in checkSession() ), we redirect to the project page.
+        //while there is no system to create a lender from an existing borrower account, if it is a borrower (tested in checkSession()), we redirect to the project page.
         if ($this->emprunteurCreatePreteur) {
             $this->clients->type           = \clients::TYPE_LEGAL_ENTITY;
             header('Location:' . $this->lurl . '/projects');
@@ -881,7 +881,7 @@ class inscription_preteurController extends bootstrap
     /**
      * @param integer $lenderAccountId
      * @param integer $attachmentType
-     * @return bool
+     * @return bool|string
      */
     private function uploadAttachment($lenderAccountId, $attachmentType)
     {
@@ -1451,7 +1451,7 @@ class inscription_preteurController extends bootstrap
             }
         }
 
-        if ($bFormOk == true) {
+        if ($bFormOk) {
             $this->clients->password = md5($_POST['passE']);
 
             $this->clients->id_langue       = 'fr';
@@ -1470,7 +1470,7 @@ class inscription_preteurController extends bootstrap
             $aPost['passE2']           = md5($_POST['passE2']);
             $aPost['secret-responseE'] = md5($_POST['secret-responseE']);
 
-            if ($this->modif == true) {
+            if ($this->modif) {
                 if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
                     $this->companies->update();
                 } else {
@@ -1590,18 +1590,18 @@ class inscription_preteurController extends bootstrap
         ) {
             $bFormOk = false;
         }
-        if (false === isset($_FILES['rib']) || false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB)) {
+        if (false === isset($_FILES['rib']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB))) {
             $bFormOk = false;
         }
-        if (false === isset($_FILES['cni_passeport']) || false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE)) {
+        if (false === isset($_FILES['cni_passeport']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE))) {
             $bFormOk = false;
         }
-        if (false === isset($_FILES['cni_passeport_verso']) || false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO)) {
+        if (false === isset($_FILES['cni_passeport_verso']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO))) {
             $bFormOk = false;
         }
         $this->lenders_accounts->cni_passeport = 1;
 
-        if (false === isset($_FILES['justificatif_domicile']) || false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE)) {
+        if (false === isset($_FILES['justificatif_domicile']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE))) {
             $bFormOk = false;
         }
 
@@ -1681,32 +1681,32 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if (false === isset($_FILES['rib']) && false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB)) {
+        if (false === isset($_FILES['rib']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB))) {
             $this->error_rib = true;
             $bFormOk         = false;
         }
 
-        if (false === isset($_FILES['extrait_kbis']) && false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS)) {
+        if (false === isset($_FILES['extrait_kbis']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::KBIS))) {
             $this->error_extrait_kbis = true;
             $bFormOk                  = false;
         }
 
-        if (false === isset($_FILES['delegation_pouvoir']) && false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR)) {
+        if (false === isset($_FILES['delegation_pouvoir']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::DELEGATION_POUVOIR))) {
             $this->error_delegation_pouvoir = true;
             $bFormOk                        = false;
         }
 
-        if (false === isset($_FILES['cni_passeport_dirigeant']) && false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT)) {
+        if (false === isset($_FILES['cni_passeport_dirigeant']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_DIRIGEANT))) {
             $this->error_cni_passeport_dirigeant = true;
             $bFormOk                             = false;
         }
 
-        if (false === isset($_FILES['cni_passeport_verso']) && false === $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO)) {
+        if (false === isset($_FILES['cni_passeport_verso']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO))) {
             $this->error_cni_passeport_verso = true;
             $bFormOk                         = false;
         }
 
-        if ($bFormOk == true) {
+        if ($bFormOk) {
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
             $this->clients_history_actions->histo(19, 'inscription etape 2 entreprise', $this->clients->id_client, $serialize);
 
