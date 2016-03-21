@@ -378,7 +378,6 @@ class bootstrap extends Controller
         // page projet tri
         // 1 : terminé bientôt
         // 2 : nouveauté
-
         $this->tabOrdreProject = array(
             '',
             'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC',

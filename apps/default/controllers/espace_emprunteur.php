@@ -368,16 +368,13 @@ class espace_emprunteurController extends Bootstrap
     {
         $aProjectsFunding   = $this->companies->getProjectsForCompany($this->companies->id_company, \projects_status::EN_FUNDING);
         $oBids              = $this->loadData('bids');
-        $oLoans             = $this->loadData('loans');
         $this->oDateTimeNow = new \DateTime('NOW');
 
         foreach ($aProjectsFunding as $iKey => $aProject) {
-            $aProjectsFunding[$iKey]['AverageIR']        = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $aProject['id_project'], $aProject['project_status']);
-            $iSumBids                                      = $oBids->getSoldeBid($aProject['id_project']);
-
+            $aProjectsFunding[$iKey]['AverageIR']        = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
+            $iSumBids                                    = $oBids->getSoldeBid($aProject['id_project']);
             $aProjectsFunding[$iKey]['funding-progress'] = ((1 - ($aProject['amount'] - $iSumBids) / $aProject['amount']) * 100);
-
-            $oDateTimeEnd                                  = DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
+            $oDateTimeEnd                                = DateTime::createFromFormat('Y-m-d H:i:s', $aProject['date_retrait_full']);
             $aProjectsFunding[$iKey]['oInterval']        = $oDateTimeEnd->diff($this->oDateTimeNow);
         }
         return $aProjectsFunding;
@@ -397,11 +394,9 @@ class espace_emprunteurController extends Bootstrap
 
         $aProjectsPostFunding   = $this->companies->getProjectsForCompany($this->companies->id_company, $aStatusPostFunding);
         $oRepaymentSchedule     = $this->loadData('echeanciers_emprunteur');
-        $oBids                  = $this->loadData('bids');
-        $oLoans                 = $this->loadData('loans');
 
         foreach ($aProjectsPostFunding as $iKey => $aProject) {
-            $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $aProject['id_project'], $aProject['project_status']);
+            $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
             $aProjectsPostFunding[$iKey]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
 
             $aNextRepayment                                          = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
