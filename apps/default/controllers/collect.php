@@ -69,9 +69,6 @@ class collectController extends bootstrap
                 $this->prospects->email        = $email;
                 $this->prospects->id_langue    = $this->language;
 
-                /**
-                 * Set the UTMs and slug_origine
-                 */
                 $this->setSource($this->prospects);
 
                 if (isset($form_update) && $form_update == true && $this->prospects->get($email, 'email')) {
@@ -322,9 +319,6 @@ class collectController extends bootstrap
                 $this->clients->status_inscription_preteur = 1; // inscription terminé
                 $this->clients->etape_inscription_preteur  = 1; // etape 1 ok
 
-                /**
-                 * Set the UTMs and slug_origine
-                 */
                 $this->setSource($this->clients);
 
                 $this->settings->get('Offre de bienvenue slug', 'type');

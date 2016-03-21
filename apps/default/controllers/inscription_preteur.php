@@ -469,9 +469,6 @@ class inscription_preteurController extends bootstrap
                         $this->clients->email = '';
                     }
 
-                    /**
-                     * Set the UTMs and slug_origine
-                     */
                     $this->setSource($this->clients);
 
                     // type de preteur
@@ -921,13 +918,7 @@ class inscription_preteurController extends bootstrap
                     $_POST['passE']            = $pass;
                     $_POST['passE2']           = $pass2;
                     $_POST['secret-responseE'] = $secret_response;
-                }
-                // create
-                else
-                {
-                    /**
-                     * Set the UTMs and slug_origine
-                     */
+                } else {
                     $this->setSource($this->clients);
 
                     $this->clients->id_client = $this->clients->create();

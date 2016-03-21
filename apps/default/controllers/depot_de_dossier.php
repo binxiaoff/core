@@ -89,11 +89,7 @@ class depot_de_dossierController extends bootstrap
         }
 
         $this->clients->id_langue      = $this->language;
-        $this->clients->status_pre_emp = 2;
 
-        /**
-         * Set the UTMs and slug_origine
-         */
         $this->setSource($this->clients);
 
         if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB

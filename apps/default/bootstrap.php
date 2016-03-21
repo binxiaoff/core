@@ -67,17 +67,6 @@ class bootstrap extends Controller
         // Recuperation de la liste des langue disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
 
-        if ( ! empty($_POST)) {
-            foreach ($_POST as $postKey => $postItem) {
-                $_POST[$postKey] = $this->filterPost((string) $postKey);
-            }
-        }
-        if ( ! empty($_GET)) {
-            foreach ($_GET as $getKey => $getItem) {
-                $_GET[$getKey] = $this->filterGet((string)$getKey);
-            }
-        }
-
         // Formulaire de modification d'un texte de traduction
         if (isset($_POST['form_mod_traduction'])) {
             foreach ($this->lLangues as $key => $lng) {
@@ -113,6 +102,19 @@ class bootstrap extends Controller
         $this->meta_title       = '';
         $this->meta_description = '';
         $this->meta_keywords    = '';
+
+        // XSS protection
+        if (false === empty($_POST)) {
+            foreach ($_POST as $key => $value) {
+                $_POST[$key] = htmlspecialchars(strip_tags($value));
+            }
+        }
+
+        if (false === empty($_GET)) {
+            foreach ($_GET as $key => $value) {
+                $_GET[$key] = htmlspecialchars(strip_tags($value));
+            }
+        }
 
         $this->setSessionSource();
 
@@ -450,34 +452,6 @@ class bootstrap extends Controller
         }
     }
 
-    /**
-     * Filter and sanitize POST field
-     * @param string $sFieldName
-     * @param int $iFilter
-     * @return string
-     */
-    public function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
-    {
-        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
-            return trim($mValue);
-        }
-        return '';
-    }
-
-    /**
-     * Filter and sanitize GET field
-     * @param string $sFieldName
-     * @param int $iFilter
-     * @return string
-     */
-    public function filterGet($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
-    {
-        if (false !== ($mValue = filter_input(INPUT_GET, $sFieldName, $iFilter))) {
-            return trim($mValue);
-        }
-        return '';
-    }
-
     public function handlePartenaire($params)
     {
         // Chargement des datas
@@ -768,11 +742,11 @@ class bootstrap extends Controller
         $aAvailableUtm = $this->getUTM();
 
         if (false === empty($aAvailableUtm)) {
-            $_SESSION['source'] = $aAvailableUtm;
+            $_SESSION['source']                 = $aAvailableUtm;
             $_SESSION['source']['slug_origine'] = $this->getSlug();
         } elseif (true === empty($_SESSION['source'])) {
             $_SESSION['source'] = array(
-                'utm_source' => 'Directe',
+                'utm_source'   => 'Directe',
                 'slug_origine' => $this->getSlug()
             );
         }
@@ -786,16 +760,16 @@ class bootstrap extends Controller
     {
         $aUTM = array();
         if (false === empty($_POST)) {
-            $aData = $_POST;
+            foreach ($_POST as $mKey => $mValue) {
+                if ('utm_' === strtolower(substr($mKey, 0, 4))) {
+                    $aUTM[$mKey] = $this->filterPost((string) $mKey);
+                }
+            }
         } elseif (false === empty($_GET)) {
-            $aData = $_GET;
-        } else {
-            $aData = array();
-        }
-
-        foreach ($aData as $sKey => $mValue) {
-            if ('utm_' === strtolower(substr($sKey, 0, 4))) {
-                $aUTM[$sKey] = $mValue;
+            foreach ($_GET as $mKey => $mValue) {
+                if ('utm_' === strtolower(substr($mKey, 0, 4))) {
+                    $aUTM[$mKey] = $this->filterGet((string) $mKey);
+                }
             }
         }
         return $aUTM;
@@ -806,15 +780,15 @@ class bootstrap extends Controller
      */
     private function getSlug()
     {
-        if (false === empty($_GET['slug_origine'])) {
-            $sSlugOrigine = $_GET['slug_origine'];
-        } elseif (false === empty($_POST['slug_origine'])) {
-            $sSlugOrigine = $_POST['slug_origine'];
+        if (false === empty($_POST['slug_origine'])) {
+            $sSlugOrigine = $this->filterPost('slug_origine');
+        } elseif (false === empty($_GET['slug_origine'])) {
+            $sSlugOrigine = $this->filterGet('slug_origine');
         } elseif (false === empty($this->tree->slug)) {
             $sSlugOrigine = $this->tree->slug;
         } else {
             $sSlugOrigine = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-            if ( '/' == $sSlugOrigine) {
+            if ('/' == $sSlugOrigine) {
                 $sSlugOrigine = '';
             }
         }
@@ -822,10 +796,39 @@ class bootstrap extends Controller
     }
 
     /**
-     * Set the source keys of the given object : UTMs + slug_origine
-     * @param $oClient object (either clients or prospects)
+     * Filter and sanitize POST field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
      */
-    public function setSource(&$oClient)
+    protected function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
+    /**
+     * Filter and sanitize GET field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    protected function filterGet($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_GET, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
+
+    /**
+     * Set the source keys of the given object : UTMs + slug_origine
+     * @param \clients|\prospects $oClient object
+     */
+    protected function setSource(&$oClient)
     {
         $aSourceColumn = array(
             'source'       => 'utm_source',
