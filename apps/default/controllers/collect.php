@@ -450,9 +450,9 @@ class collectController extends bootstrap
                 $_SESSION['LP_id_unique'] = $this->clients->id_client;
 
                 echo json_encode(array(
-                        'reponse'  => 'OK',
-                        'URL'      => $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash,
-                        'uniqueid' => $this->clients->id_client
+                        'reponse'   => 'OK',
+                        'URL'       => $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash,
+                        'uniqueid'  => md5($email)
                     )
                 );
                 die;
