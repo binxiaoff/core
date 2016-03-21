@@ -213,11 +213,10 @@ class cronController extends bootstrap
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER);
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= NOW()");
 
             foreach ($aProjectToFund as $aProject) {
-                $oPublicationDate = new \DateTime($aProject['date_publication_full']);
-                if ($oPublicationDate <= new \DateTime() && $oProject->get($aProject['id_project'])) {
+                if ($oProject->get($aProject['id_project'])) {
                     $oProjectManager->prePublish($oProject);
                 }
             }
@@ -240,14 +239,16 @@ class cronController extends bootstrap
             $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()");
 
             foreach ($aProjectToFund as $aProject) {
-                $bHasProjectPublished = true;
+                if ($oProject->get($aProject['id_project'])) {
+                    $bHasProjectPublished = true;
 
-                $oProjectManager->publish($oProject);
+                    $oProjectManager->publish($oProject);
 
-                // Zippage pour groupama
-                $this->zippage($aProject['id_project']);
+                    // Zippage pour groupama
+                    $this->zippage($oProject->id_project);
 
-                $this->sendNewProjectEmail($oProject->id_project);
+                    $this->sendNewProjectEmail($oProject->id_project);
+                }
             }
             if ($bHasProjectPublished) {
                 $oCache = \Unilend\librairies\Cache::getInstance();
