@@ -4,6 +4,8 @@ use Unilend\librairies\ULogger;
 
 class operationsController extends bootstrap
 {
+    const LAST_OPERATION_DATE = '2013-01-01';
+
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -750,12 +752,10 @@ class operationsController extends bootstrap
             23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
             26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
         );
-
-        $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-        $aLastOperation = $this->indexage_vos_operations->select('id_client = ' . $clients->id_client, 'date_operation DESC', 0, 1);
+        $aLastOperation = $this->indexage_vos_operations->select('id_client = ' . $clients->id_client, 'MAX(date_operation)', 0, 1);
 
         if (empty($aLastOperation)) {
-            $date_debut_a_indexer = '2013-01-01';
+            $date_debut_a_indexer = self::LAST_OPERATION_DATE;
         } else {
             $date_debut_a_indexer = substr($aLastOperation[0]['date_operation'], 0, 10);
         }
@@ -767,7 +767,6 @@ class operationsController extends bootstrap
             AND t.id_client = ' . $clients->id_client . '
             AND DATE(t.date_transaction) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
 
-        $nb_entrees                    = count($this->lTrans);
         foreach ($this->lTrans as $t) {
             if (0 == $this->indexage_vos_operations->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {
                 $retenuesfiscals = 0.0;
