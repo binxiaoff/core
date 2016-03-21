@@ -332,9 +332,6 @@ class bootstrap extends Controller
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            $this->addDataLayer('id_client', $this->clients->id_client);
-            $this->addDataLayer('email_client', $this->clients->email);
-
             $this->bIsLender                   = $this->clients->isLender();
             $this->bIsBorrower                 = $this->clients->isBorrower();
             $this->bIsBorrowerAndLender        = ($this->bIsBorrower && $this->bIsLender);
@@ -361,6 +358,9 @@ class bootstrap extends Controller
                 }
             }
         }
+        $this->setSessionMail();
+
+        false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
 
         // page projet tri
         // 1 : terminé bientôt
@@ -844,4 +844,18 @@ class bootstrap extends Controller
         }
     }
 
+
+    /**
+     * This looks for email address in SESSION, GET and POST parameters then add it to SESSION
+     */
+    private function setSessionMail()
+    {
+        if (isset($this->clients->email) && false === empty($this->clients->email)) {
+            $_SESSION['email'] = $this->clients->email;
+        } elseif (false === empty($_POST['email']) && $this->ficelle->isEmail($_POST['email'])) {
+            $_SESSION['email'] = $_POST['email'];
+        } elseif (false === empty($_GET['email']) && $this->ficelle->isEmail($_GET['email'])) {
+            $_SESSION['email'] = $_GET['email'];
+        }
+    }
 }
