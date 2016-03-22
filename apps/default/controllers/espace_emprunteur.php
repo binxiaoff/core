@@ -289,7 +289,7 @@ class espace_emprunteurController extends Bootstrap
         if (isset($_POST['valider_demande_projet'])) {
             unset($_SESSION['forms']['nouvelle-demande']);
 
-            if (empty($_POST['montant'])) {
+            if (empty($_POST['montant']) || 10000 > $_POST['montant'] || 500000 < $_POST['montant']) {
                 $_SESSION['forms']['nouvelle-demande']['errors']['montant'] = true;
             }
             if (empty($_POST['duree'])) {
