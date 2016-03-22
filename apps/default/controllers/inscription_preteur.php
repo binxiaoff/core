@@ -24,7 +24,7 @@ class inscription_preteurController extends bootstrap
 
     public function _etape1()
     {
-        $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/inscription_preteur/etape1', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
+        // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
 
@@ -302,10 +302,7 @@ class inscription_preteurController extends bootstrap
             $this->hash_client = $this->clients->hash;
 
             // Motif virement
-            $p           = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-            $nom         = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-            $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-            $this->motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+            $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
             $_SESSION['motif'] = $this->motif;
 
@@ -626,12 +623,8 @@ class inscription_preteurController extends bootstrap
                         // Recuperation du modele de mail
                         $this->mails_text->get('confirmation-inscription-preteur-etape-3', 'lang = "' . $this->language . '" AND type');
 
-
                         // Motif virement
-                        $p           = substr($this->ficelle->stripAccents(utf8_decode(trim($this->clients->prenom))), 0, 1);
-                        $nom         = $this->ficelle->stripAccents(utf8_decode(trim($this->clients->nom)));
-                        $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-                        $this->motif = mb_strtoupper($id_client . $p . $nom, 'UTF-8');
+                        $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
                         // Variables du mailing
                         $surl = $this->surl;

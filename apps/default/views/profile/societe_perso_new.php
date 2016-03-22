@@ -65,7 +65,7 @@
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>" />
 
                 <?php //Ajout CM 06/08/14 ?>
-                <select name="pays1E" id="pays1E" class="custom-select <?=$required?> field-small">
+                <select name="pays1E" id="pays1E" class="country custom-select <?=$required?> field-small">
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <?
@@ -99,7 +99,7 @@
                     <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-autocomplete="city"
                            placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>" />
                     <?php //Ajout CM 06/08/14 ?>
-                    <select name="pays2E" id="pays2E" class="custom-select <?=$required?> field-small">
+                    <select name="pays2E" id="pays2E" class="country custom-select <?=$required?> field-small">
                         <option><?=$this->lng['etape1']['pays']?></option>
                         <option><?=$this->lng['etape1']['pays']?></option>
                         <?
