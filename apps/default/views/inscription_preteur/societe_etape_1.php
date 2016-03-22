@@ -25,7 +25,7 @@
                    placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= ($this->companies->zip != 0 ? $this->companies->zip : '') ?>" />
             <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-autocomplete="city"
                    placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>" />
-            <select name="pays1E" id="pays1E" class="custom-select required field-small">
+            <select name="pays1E" id="pays1E" class="country custom-select required field-small">
                 <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                 <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                 <?php foreach ($this->lPays as $p) { ?>
@@ -50,7 +50,7 @@
                        placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?= ($this->clients_adresses->cp != 0 ? $this->clients_adresses->cp : '') ?>" title="<?= $this->lng['etape1']['code-postal'] ?>" />
                 <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-autocomplete="city"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>" />
-                <select name="pays2E" id="pays2E" class="custom-select required field-small">
+                <select name="pays2E" id="pays2E" class="country custom-select required field-small">
                     <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                     <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                     <?php foreach ($this->lPays as $p) { ?>

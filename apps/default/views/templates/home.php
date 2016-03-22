@@ -35,7 +35,7 @@
             });
         </script>
 
-        <?php if ($this->clients->checkAccess() && $this->clients->status_pre_emp == 1 || $this->clients->checkAccess() && $this->clients->status_pre_emp == 3) { ?>
+        <?php if ($this->clients->checkAccess() && $this->bIsLender) { ?>
             <a href="<?= $this->lurl ?>/projects" class="btn btn-mega btn-info">
                 <i class="icon-arrow-medium-next right"></i>
                 <?= $this->lng['home']['pretez'] ?>

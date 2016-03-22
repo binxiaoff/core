@@ -11,6 +11,7 @@ class depot_de_dossierController extends bootstrap
     const PAGE_NAME_PROSPECT = 'prospect';
     const PAGE_NAME_END      = 'fin';
     const PAGE_NAME_EMAILS   = 'emails';
+    const PAGE_NAME_PARTNER  = 'partenaire';
 
     /**
      * @var attachment_helper
@@ -67,7 +68,7 @@ class depot_de_dossierController extends bootstrap
      */
     public function _etape1()
     {
-        $this->page = 1;
+        $this->page = 'depot_dossier_1';
 
         if (false === isset($_SESSION['forms']['depot-de-dossier']['values'])) {
             header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
@@ -88,15 +89,15 @@ class depot_de_dossierController extends bootstrap
         }
 
         $this->clients->id_langue      = $this->language;
-        $this->clients->slug_origine   = $this->tree->slug;
-        $this->clients->source         = $_SESSION['utm_source'];
-        $this->clients->source2        = $_SESSION['utm_source2'];
-        $this->clients->status_pre_emp = 2;
+
+        $this->setSource($this->clients);
+
         if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
         } else {
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
         }
+
         $this->clients->create();
 
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {
@@ -278,9 +279,9 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape2()
     {
-        $this->page = 2;
+        $this->page = 'depot_dossier_2';
 
-        $this->bDisplayTouchvives = true;
+        $this->bDisplayTouchvibes = true;
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_2);
 
@@ -372,6 +373,9 @@ class depot_de_dossierController extends bootstrap
         }
         if (empty($_POST['duree']) || false === in_array($_POST['duree'], $this->dureePossible)) {
             $_SESSION['forms']['depot-de-dossier-2']['errors']['duree'] = true;
+        }
+        if (empty($_POST['commentaires'])) {
+            $_SESSION['forms']['depot-de-dossier-2']['errors']['commentaires'] = true;
         }
         if ('non' === $_POST['gerant']) {
             if (empty($_POST['civilite_prescripteur'])) {
@@ -483,7 +487,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _etape3()
     {
-        $this->page = 3;
+        $this->page = 'depot_dossier_3';
 
         $this->checkProjectHash(self::PAGE_NAME_STEP_3);
 
@@ -599,40 +603,7 @@ class depot_de_dossierController extends bootstrap
 
                 $this->redirect(self::PAGE_NAME_FILES);
             } else {
-                $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
-
-                $this->settings->get('Facebook', 'type');
-                $sFacebookURL = $this->settings->value;
-
-                $this->settings->get('Twitter', 'type');
-                $sTwitterURL = $this->settings->value;
-
-                $aVariables = array(
-                    'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
-                    'raison_sociale'       => $this->companies->name,
-                    'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
-                    'lien_fb'              => $sFacebookURL,
-                    'lien_tw'              => $sTwitterURL,
-                    'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
-                    'surl'                 => $this->surl,
-                    'url'                  => $this->url,
-                );
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-                $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-                $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
-                $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
-                    $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient($sRecipient);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                $this->sendSubscriptionConfirmationEmail();
 
                 $this->clients->status = 1;
                 $this->clients->update();
@@ -642,9 +613,162 @@ class depot_de_dossierController extends bootstrap
         }
     }
 
+    public function _partenaire()
+    {
+        $this->page = 'depot_dossier_partenaire';
+
+        $this->checkProjectHash(self::PAGE_NAME_PARTNER);
+
+        $this->meta_title       = $this->lng['depot-de-dossier-header']['meta-title-etape-2'];
+        $this->meta_description = $this->lng['depot-de-dossier-header']['meta-description-etape-2'];
+        $this->meta_keywords    = $this->lng['depot-de-dossier-header']['meta-keywords-etape-2'];
+
+        $this->lng['partenaire'] = $this->ln->selectFront('depot-de-dossier-partenaire-' . $_SESSION['depot-de-dossier']['partner'], $this->language, $this->App);
+
+        $this->settings->get('Lien conditions generales depot dossier', 'type');
+        $this->lienConditionsGenerales = $this->settings->value;
+
+        $this->settings->get('Durée des prêts autorisées', 'type');
+        $this->dureePossible = empty($this->settings->value) ? array(24, 36, 48, 60) : explode(',', $this->settings->value);
+
+        $aForm = isset($_SESSION['forms']['depot-de-dossier-partenaire']['values']) ? $_SESSION['forms']['depot-de-dossier-partenaire']['values'] : array();
+
+        $this->aErrors = isset($_SESSION['forms']['depot-de-dossier-partenaire']['errors']) ? $_SESSION['forms']['depot-de-dossier-partenaire']['errors'] : array();
+        $this->aForm   = array(
+            'raison_sociale'         => isset($aForm['raison_sociale']) ? $aForm['raison_sociale'] : $this->companies->name,
+            'civilite'               => isset($aForm['civilite']) ? $aForm['civilite'] : $this->clients->civilite,
+            'prenom'                 => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
+            'nom'                    => isset($aForm['nom']) ? $aForm['nom'] : $this->clients->nom,
+            'fonction'               => isset($aForm['fonction']) ? $aForm['fonction'] : $this->clients->fonction,
+            'email'                  => isset($aForm['email']) ? $aForm['email'] : $this->removeEmailSuffix($this->clients->email),
+            'telephone'              => isset($aForm['telephone']) ? $aForm['telephone'] : $this->clients->telephone,
+            'duree'                  => isset($aForm['duree']) ? $aForm['duree'] : $this->projects->period
+        );
+
+        $aAttachmentTypes = $this->attachment_type->getAllTypesForProjects($this->language, true, array(
+            \attachment_type::PRESENTATION_ENTRERPISE,
+            \attachment_type::RIB,
+            \attachment_type::CNI_PASSPORTE_DIRIGEANT,
+            \attachment_type::CNI_PASSPORTE_VERSO,
+            \attachment_type::DERNIERE_LIASSE_FISCAL,
+            \attachment_type::LIASSE_FISCAL_N_1,
+            \attachment_type::LIASSE_FISCAL_N_2,
+            \attachment_type::RAPPORT_CAC,
+            \attachment_type::PREVISIONNEL,
+            \attachment_type::BALANCE_CLIENT,
+            \attachment_type::BALANCE_FOURNISSEUR,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3,
+            \attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3,
+            \attachment_type::SITUATION_COMPTABLE_INTERMEDIAIRE,
+            \attachment_type::DERNIERS_COMPTES_CONSOLIDES,
+            \attachment_type::STATUTS,
+            \attachment_type::PRESENTATION_PROJET,
+            \attachment_type::DERNIERE_LIASSE_FISCAL_HOLDING,
+            \attachment_type::KBIS_HOLDING,
+            \attachment_type::AUTRE1,
+            \attachment_type::AUTRE2
+        ));
+        $this->aAttachmentTypes = $this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes);
+
+        unset($_SESSION['forms']['depot-de-dossier-partenaire']);
+
+        if (isset($_POST['send_form_depot_dossier'])) {
+            $this->partnerForm();
+        }
+    }
+
+    private function partnerForm()
+    {
+        if (empty($_POST['raison_sociale'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['raison_sociale'] = true;
+        }
+        if (empty($_POST['civilite'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['civilite'] = true;
+        }
+        if (empty($_POST['prenom'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['prenom'] = true;
+        }
+        if (empty($_POST['nom'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['nom'] = true;
+        }
+        if (empty($_POST['fonction'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['fonction'] = true;
+        }
+        if (empty($_POST['email']) || false === $this->ficelle->isEmail($_POST['email'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['email'] = true;
+        }
+        if (empty($_POST['telephone'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['telephone'] = true;
+        }
+        if (empty($_POST['duree']) || false === in_array($_POST['duree'], $this->dureePossible)) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['duree'] = true;
+        }
+        if (empty($_POST['cgv'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['cgv'] = true;
+        }
+        foreach (array_keys($_FILES) as $iAttachmentType) {
+            $this->uploadAttachment($iAttachmentType, $iAttachmentType);
+        }
+        if (true === $this->error_fichier) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['errors']['files'] = $this->upload->getErrorType();
+        }
+        if (false === empty($_SESSION['forms']['depot-de-dossier-partenaire']['errors'])) {
+            $_SESSION['forms']['depot-de-dossier-partenaire']['values'] = $_POST;
+            $this->redirect(self::PAGE_NAME_PARTNER);
+        }
+
+        if (true === $this->clients->existEmail($_POST['email'])) { // Email does not exist in DB
+            $this->clients->email = $_POST['email'];
+        } elseif ($this->removeEmailSuffix($this->clients->email) !== $_POST['email']) { // Email exists but is different from previous one
+            $this->clients->email = $_POST['email'] . '-' . time();
+        }
+
+        $this->clients->civilite          = $_POST['civilite'];
+        $this->clients->prenom            = $_POST['prenom'];
+        $this->clients->nom               = $_POST['nom'];
+        $this->clients->fonction          = $_POST['fonction'];
+        $this->clients->telephone         = $_POST['telephone'];
+        $this->clients->id_langue         = 'fr';
+        $this->clients->slug              = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
+        $this->clients->status_transition = 1; // Used in bootstrap and ajax depot de dossier
+        $this->clients->update();
+
+        $this->companies->name          = $_POST['raison_sociale'];
+        $this->companies->email_facture = $_POST['email'];
+        $this->companies->update();
+
+        $this->companies_details->update();
+
+        $this->projects->id_prescripteur = 0;
+
+        $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
+        if ($this->acceptations_legal_docs->get($this->lienConditionsGenerales, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc')) {
+            $this->acceptations_legal_docs->update();
+        } else {
+            $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGenerales;
+            $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
+            $this->acceptations_legal_docs->create();
+        }
+
+        $this->projects->comments = '';
+        $this->projects->period   = $_POST['duree'];
+        $this->projects->update();
+
+        $this->sendSubscriptionConfirmationEmail();
+
+        $this->clients->status = 1;
+        $this->clients->update();
+
+        $this->redirect(self::PAGE_NAME_END, \projects_status::A_TRAITER);
+    }
+
     public function _prospect()
     {
-        $this->page = 'prospect';
+        $this->page = 'depot_dossier_prospect';
 
         $this->checkProjectHash(self::PAGE_NAME_PROSPECT);
 
@@ -727,7 +851,7 @@ class depot_de_dossierController extends bootstrap
 
     public function _fichiers()
     {
-        $this->page = 'fichiers';
+        $this->page = 'depot_dossier_fichiers';
 
         $this->checkProjectHash(self::PAGE_NAME_FILES);
 
@@ -781,6 +905,8 @@ class depot_de_dossierController extends bootstrap
 
     public function _fin()
     {
+        $this->page = 'depot_dossier_fin';
+
         $this->checkProjectHash(self::PAGE_NAME_END);
 
         $this->lng['depot-de-dossier-fin'] = $this->ln->selectFront('depot-de-dossier-fin', $this->language, $this->App);
@@ -791,7 +917,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->bDisplayContact = false;
         $this->sMessage        = $this->lng['depot-de-dossier-fin']['contenu-non-eligible'];
-        $this->bDisplayTouchvives = false;
+        $this->bDisplayTouchvibes = false;
 
         switch ($this->projects_status->status) {
             case \projects_status::ABANDON:
@@ -841,7 +967,7 @@ class depot_de_dossierController extends bootstrap
                         }
                         break;
                 }
-                $this->bDisplayTouchvives = true;
+                $this->bDisplayTouchvibes = true;
                 break;
         }
 
@@ -879,12 +1005,46 @@ class depot_de_dossierController extends bootstrap
 
     public function _emails()
     {
+        $this->page = 'depot_dossier_emails';
+
         $this->checkProjectHash(self::PAGE_NAME_EMAILS);
 
         $this->projects->stop_relances = 1;
         $this->projects->update();
 
         $this->sendCommercialEmail('notification-stop-relance-dossier');
+    }
+
+    private function sendSubscriptionConfirmationEmail()
+    {
+        $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+
+        $aVariables = array(
+            'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
+            'raison_sociale'       => $this->companies->name,
+            'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
+            'lien_fb'              => $this->like_fb,
+            'lien_tw'              => $this->twitter,
+            'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
+            'surl'                 => $this->surl,
+            'url'                  => $this->url,
+        );
+
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
+
+        $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
+        $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
+
+        if ($this->Config['env'] === 'prod') {
+            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
+            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+        } else {
+            $this->email->addRecipient($sRecipient);
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
     }
 
     private function sendCommercialEmail($sEmailType)
@@ -985,8 +1145,10 @@ class depot_de_dossierController extends bootstrap
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_2:
-                if ($sPage !== self::PAGE_NAME_STEP_2) {
+                if ($sPage !== self::PAGE_NAME_STEP_2 && empty($_SESSION['depot-de-dossier']['partner'])) {
                     $this->redirect(self::PAGE_NAME_STEP_2);
+                } elseif ($sPage !== self::PAGE_NAME_PARTNER && false === empty($_SESSION['depot-de-dossier']['partner'])) {
+                    $this->redirect(self::PAGE_NAME_PARTNER);
                 }
                 break;
             case \projects_status::COMPLETUDE_ETAPE_3:
@@ -1000,7 +1162,11 @@ class depot_de_dossierController extends bootstrap
             case \projects_status::EN_ATTENTE_PIECES:
             case \projects_status::ATTENTE_ANALYSTE:
                 if (false === in_array($sPage, array(self::PAGE_NAME_END, self::PAGE_NAME_FILES))) {
-                    $this->redirect(self::PAGE_NAME_FILES);
+                    if (empty($_SESSION['depot-de-dossier']['partner'])) {
+                        $this->redirect(self::PAGE_NAME_FILES);
+                    } else {
+                        $this->redirect(self::PAGE_NAME_END);
+                    }
                 }
                 break;
             case \projects_status::ABANDON:

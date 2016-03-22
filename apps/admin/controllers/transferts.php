@@ -123,6 +123,7 @@ class transfertsController extends bootstrap
                 }
 
                 $this->receptions->id_project      = $this->projects->id_project;
+                $this->receptions->id_client       = $companies->id_client_owner;
                 $this->receptions->status_bo       = 1;
                 $this->receptions->type_remb       = $type_remb;
                 $this->receptions->remb            = 1;
@@ -527,7 +528,7 @@ class transfertsController extends bootstrap
             } else {
                 $_SESSION['DER'] = ''; // DER : date d'entree en recouvrement
 
-                $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::RECOUVREMENT . ')', 'added DESC', 0, 1);
+                $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::RECOUVREMENT . ')', 'id_project_status_history DESC', 0, 1);
 
                 if ($retour != false) {
                     $this->lastDateRecouvrement = date('d/m/Y', strtotime($retour[0]['added']));
@@ -641,7 +642,7 @@ class transfertsController extends bootstrap
                 $this->lastDateRecouvrement = date('d/m/Y', strtotime($_SESSION['DER']));
                 $this->lastFormatSql        = date('Y-m-d', strtotime($_SESSION['DER']));
             } else {
-                $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::RECOUVREMENT . ')', 'added DESC', 0, 1);
+                $retour = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::RECOUVREMENT . ')', 'id_project_status_history DESC', 0, 1);
                 if ($retour != false) {
                     $this->lastDateRecouvrement = date('d/m/Y', strtotime($retour[0]['added']));
                     $this->lastFormatSql        = date('Y-m-d', strtotime($retour[0]['added']));

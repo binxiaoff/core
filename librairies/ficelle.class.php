@@ -359,32 +359,6 @@ class ficelle
 
     }
 
-    // Source
-    public function source($utm_source = '', $url = '', $utm_source2 = '')
-    {
-        // source1
-        if ($utm_source != '') {
-            $_SESSION['utm_source'] = $utm_source;
-        } elseif (! isset($_SESSION['utm_source']) || $_SESSION['utm_source'] == '') {
-            if ($utm_source != '') {
-                $source = $utm_source;
-            } elseif ($url != '') {
-                $source = $url;
-            } else {
-                $source = '';
-            }
-
-            $_SESSION['utm_source'] = $source;
-        }
-
-        // source2
-        if ($utm_source2 != '') {
-            $_SESSION['utm_source2'] = $utm_source2;
-        } elseif (! isset($_SESSION['utm_source2'])) {
-            $_SESSION['utm_source2'] = $utm_source2;
-        }
-    }
-
     // Générateur de token avec une clé unique
     public function genere_token($key)
     {

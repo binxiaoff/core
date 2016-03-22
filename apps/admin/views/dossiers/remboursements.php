@@ -115,10 +115,10 @@
                     <td><?= $aProject['company'] ?></td>
                     <td><?= $aProject['title_bo'] ?></td>
                     <td><?= $aProject['status_label'] ?></td>
-                    <td style="text-align:right; white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>
+                    <td class="right" style="white-space:nowrap;"><?= $this->ficelle->formatNumber(($prochainRemb[0]['montant'] + $prochainRemb[0]['commission'] + $prochainRemb[0]['tva']) / 100) ?> €</td>
                     <td><?= $this->dates->formatDate($prochainRemb[0]['date_echeance_emprunteur'], 'd/m/Y') ?></td>
                     <td><?= ($aProject['remb_auto'] == 1 ? 'Non' : 'Oui') ?></td>
-                    <td align="center">
+                    <td class="center">
                         <a href="<?= $this->lurl ?>/dossiers/detail_remb/<?= $aProject['id_project'] ?>">
                             <img src="<?= $this->surl ?>/images/admin/modif.png" alt="detail"/>
                         </a>

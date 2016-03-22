@@ -285,10 +285,7 @@ class pdfController extends bootstrap
             $id_project  = str_pad($this->projects->id_project, 6, 0, STR_PAD_LEFT);
             $this->motif = 'UNILEND' . $id_project . 'E' . $this->companies->siren;
         } else {
-            $p           = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
-            $nom         = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
-            $id_client   = str_pad($this->clients->id_client, 6, 0, STR_PAD_LEFT);
-            $this->motif = mb_strtoupper($id_client . 'P' . $p . $nom, 'UTF-8');
+            $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
         }
 
@@ -627,7 +624,7 @@ class pdfController extends bootstrap
             $this->dateRemb    = date('d/m/Y');
         }
 
-        $remb = $this->projects_status_history->select('id_project = ' . $oProjects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added ASC', 0, 1);
+        $remb = $this->projects_status_history->select('id_project = ' . $oProjects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history ASC', 0, 1);
 
         if ($remb[0]['added'] != "") {
             $this->dateRemb = date('d/m/Y', strtotime($remb[0]['added']));
@@ -789,7 +786,7 @@ class pdfController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
-        $aRepaymentDate           = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'added DESC', 0, 1);
+        $aRepaymentDate           = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
         $this->dateRemb           = $aRepaymentDate[0]['added'];
         $this->num_facture        = $aInvoices[0]['num_facture'];
         $this->ht                 = $aInvoices[0]['montant_ht'] / 100;
@@ -869,7 +866,6 @@ class pdfController extends bootstrap
 
         $projects                = $this->loadData('projects');
         $projects_status         = $this->loadData('projects_status');
-        $projects_status_history = $this->loadData('projects_status_history');
         $echeanciers             = $this->loadData('echeanciers');
         $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
 
