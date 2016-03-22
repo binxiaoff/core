@@ -158,7 +158,7 @@ class bootstrap extends Controller
         $this->loadCss('../scripts/admin/external/jquery/plugin/colorbox/colorbox');
         $this->loadCss('../scripts/admin/treeview/jquery.treeview');
         $this->loadCss('../scripts/admin/tablesorter/style');
-        $this->loadCss('../scripts/admin/jquery-ui.min');
+        $this->loadCss('../scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
         $this->loadCss('admin/main');
 
         // Recuperation du code Google Analytics
