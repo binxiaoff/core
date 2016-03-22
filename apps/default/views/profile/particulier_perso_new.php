@@ -1,3 +1,15 @@
+
+<?php
+//Ajout CM 06/08/14
+$dateDepartControlPays = strtotime('2014-07-31 18:00:00');
+
+// on ajoute une petite restriction de date pour rendre certains champs obligatoires
+if(strtotime($this->clients->added) >= $dateDepartControlPays)
+{
+    $required = 'required';
+}
+
+?>
 <div class="account-data">
     <h2><?= $this->lng['profile']['titre-1'] ?></h2>
 
@@ -52,7 +64,7 @@
             <input type="text" name="phone" id="phone" value="<?= ($this->clients->telephone != '' ? $this->clients->telephone : $this->lng['etape1']['telephone']) ?>" title="<?= $this->lng['etape1']['telephone'] ?>" class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
             <span class="inline-text inline-text-alt" style="width:121px;"><?= $this->lng['etape1']['nationalite'] ?>
                 :</span>
-            <select name="nationalite" id="nationalite" class="custom-select field-small required">
+            <select name="nationalite" id="nationalite" class="custom-select <?=$required?> field-small">
                 <option><?= $this->lng['etape1']['nationalite'] ?></option>
                 <option><?= $this->lng['etape1']['nationalite'] ?></option>
                 <?php foreach ($this->lNatio as $p) : ?>
@@ -103,7 +115,7 @@
             <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth?>"/>
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
 
-            <select name="pays3" id="pays3" class="country custom-select field-small required">
+            <select name="pays3" id="pays3" class="country custom-select <?=$required?> field-small">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <?
@@ -206,7 +218,7 @@
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville_fiscal?>"/>
 
                 <?php //Ajout CM 06/08/14 ?>
-                <select name="pays1" id="pays1" class="country custom-select field-small required">
+                <select name="pays1" id="pays1" class="country custom-select <?=$required?> field-small">
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <?
@@ -307,7 +319,7 @@
                 <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville?>" />
                 <?php //Ajout CM 06/08/14 ?>
-                <select name="pays2" id="pays2" class="country custom-select field-small required">
+                <select name="pays2" id="pays2" class="country custom-select <?=$required?> field-small">
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <?
