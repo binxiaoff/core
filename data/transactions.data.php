@@ -719,43 +719,33 @@ class transactions extends transactions_crud
         UNION ALL
 
         (
-            SELECT t.*,  "' . $array_type_transactions[2][3] . '" as type_transaction_alpha,
-                CASE
-                    WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
-                    WHEN b.id_project IS NULL THEN b2.id_project
-                    ELSE b.id_project
-                END as le_id_project,
-
-                lo.updated as date_tri,
-
-                (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
-
-                CASE t.type_transaction
-                    WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-                    WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                    WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                    WHEN 26 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                    ELSE ""
-                END as title,
-
-                lo.id_loan as bdc,
-
-                ab.amount as amount_operation
-
+            SELECT
+              t.*,
+              "' . $array_type_transactions[2][3] . '" as type_transaction_alpha,
+              lo.id_project as le_id_project,
+              psh.added as date_tri,
+              (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
+              p.title as title,
+              lo.id_loan as bdc,
+              ab.amount as amount_operation
             FROM loans lo
-            INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
-            LEFT JOIN bids b ON ab.id_bid = b.id_bid
-            LEFT JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
-            LEFT JOIN transactions t ON t.id_transaction = w.id_transaction
-            LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-            WHERE 1=1
-            AND lo.status = 0
+              INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
+              INNER JOIN bids b ON ab.id_bid = b.id_bid
+              INNER JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
+              INNER JOIN transactions t ON t.id_transaction = w.id_transaction
+              INNER JOIN projects p ON p.id_project = lo.id_project
+              INNER JOIN projects_status_history psh ON psh.id_project = lo.id_project
+            WHERE lo.status = 0
+            AND psh.id_project_status_history = (
+              SELECT MIN(id_project_status_history) FROM projects_status_history psh1 WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8
+            )
             ' . $where . '
             ' . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')) . '
         )
         ' . $order . '
         ';
         $this->bdd->query("SET SQL_BIG_SELECTS=1");  //Set it before your main query
+
         $resultat = $this->bdd->query($sql);
         $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
