@@ -145,18 +145,17 @@ class bootstrap extends Controller
 
         $this->loadJs('admin/external/jquery/jquery');
         $this->loadJs('admin/freeow/jquery.freeow.min');
-        $this->loadJs('admin/colorbox/jquery.colorbox-min');
+        $this->loadJs('admin/external/jquery/plugin/colorbox/jquery.colorbox-min');
         $this->loadJs('admin/treeview/jquery.treeview');
         $this->loadJs('admin/treeview/jquery.cookie');
         $this->loadJs('admin/treeview/tree');
         $this->loadJs('admin/tablesorter/jquery.tablesorter.min');
         $this->loadJs('admin/tablesorter/jquery.tablesorter.pager');
-        $this->loadJs('admin/jquery-ui.min');
         $this->loadJs('admin/ajax');
         $this->loadJs('admin/main');
 
         $this->loadCss('../scripts/admin/freeow/freeow');
-        $this->loadCss('../scripts/admin/colorbox/colorbox');
+        $this->loadCss('../scripts/admin/external/jquery/plugin/colorbox/colorbox');
         $this->loadCss('../scripts/admin/treeview/jquery.treeview');
         $this->loadCss('../scripts/admin/tablesorter/style');
         $this->loadCss('../scripts/admin/jquery-ui.min');
