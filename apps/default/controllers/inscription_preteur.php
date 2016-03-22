@@ -295,7 +295,7 @@ class inscription_preteurController extends bootstrap
         }
 
         // On recupere le client
-        if ($conditionOk == true) {
+        if ($conditionOk) {
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -1167,7 +1167,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if ($bFormOk == true) {
+        if ($bFormOk) {
             if ($this->emprunteurCreatePreteur == false) {
                 $this->clients->password = md5($_POST['pass']);
             }
@@ -1185,7 +1185,7 @@ class inscription_preteurController extends bootstrap
             $aPost['secret-response'] = md5($_POST['secret-response']);
 
 
-            if ($this->modif == true) {
+            if ($this->modif) {
                 if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
                     $this->clients->email = $this->email;
                 }
@@ -1204,9 +1204,7 @@ class inscription_preteurController extends bootstrap
                 if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
                     $this->clients->email = '';
                 }
-
-                $this->clients->source  = $_SESSION['utm_source'];
-                $this->clients->source2 = $_SESSION['utm_source2'];
+                $this->setSource($this->clients);
 
                 $this->clients->create();
                 $this->clients_adresses->id_client = $this->clients->id_client;
@@ -1486,8 +1484,8 @@ class inscription_preteurController extends bootstrap
                 $this->clients_history_actions->histo(14, 'inscription etape 1 entreprise', $this->clients->id_client, $serialize);
 
             } else {
-                $this->clients->source             = $_SESSION['utm_source'];
-                $this->clients->source2            = $_SESSION['utm_source2'];
+                $this->setSource($this->clients);
+
                 $this->clients->id_client          = $this->clients->create();
                 $this->clients_adresses->id_client = $this->clients->id_client;
                 $this->clients_adresses->create();
