@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -131,9 +132,7 @@
                            data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9, maximum: 9}">
                     <em class="caractmax<?= isset($this->aForm['errors']['siren']) ? ' error' : '' ?>"><?= $this->lng['landing-page']['9-caracteres-numeriques'] ?></em>
                 </div>
-                <?php if (true === $this->bShortTunnel) : ?>
-                    <input type="hidden" name="shortunnel" value="1">
-                <?php else : ?>
+                <?php if (false === $this->bShortTunnel) : ?>
                 <div class="form-row">
                     <input type="email" name="email" id="email"
                            placeholder="<?= $this->lng['landing-page']['email'] ?>"

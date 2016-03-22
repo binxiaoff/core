@@ -136,7 +136,7 @@ class echeanciers extends echeanciers_crud
                 AND e.status = 0
                 AND l.status = 0
                 AND (
-                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.added DESC, psh.id_project_status_history LIMIT 1) IN (' . implode(', ', array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
+                    (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON ps.id_project_status = psh.id_project_status WHERE psh.id_project = e.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) >= ' . \projects_status::PROCEDURE_SAUVEGARDE . '
                     OR unpaid.date_echeance IS NOT NULL
                 )'
         );
@@ -966,6 +966,27 @@ class echeanciers extends echeanciers_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    public function getRepaymentOfTheDay(\DateTime $oDate)
+    {
+        $sDate = $oDate->format('Y-m-d');
+
+        $sQuery = '
+           SELECT id_project,
+              ordre,
+              COUNT(*) AS nb_repayment,
+              COUNT(CASE status WHEN 1 THEN 1 ELSE NULL END) AS nb_repayment_paid
+            FROM echeanciers
+            WHERE DATE(date_echeance) =  "' . $sDate . '"
+            GROUP BY id_project, ordre';
+
+        $rQuery = $this->bdd->query($sQuery);
+        $aResult   = array();
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
+            $aResult[] = $aRow;
+        }
+        return $aResult;
     }
 
     // retourne la somme total a rembourser pour un projet
