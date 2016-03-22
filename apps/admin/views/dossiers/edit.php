@@ -766,40 +766,18 @@
         .table_bilan {
             display: inline;
         }
+
+        div.div-2-columns {
+            -webkit-column-count: 2; /* Chrome, Safari, Opera */
+            -moz-column-count: 2; /* Firefox */
+            column-count: 2;
+        }
     </style>
 
     <div id="lesEtapes">
         <div id="title_tab_email">Email</div>
-        <div id="tab_email">
-            <div style="float: right; min-width: 550px;">
-                <h2>Historique</h2>
-                <?php if (false === empty($this->aEmails) || false === empty($this->project_cgv->id)) : ?>
-                    <table class="tablesorter">
-                        <tbody>
-                        <?php if (false === empty($this->project_cgv->id)) : ?>
-                            <tr>
-                                <td>
-                                    CGV envoyées le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->added)) ?>
-                                    (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
-                                    <?php if (in_array($this->project_cgv->status, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
-                                        <br/><strong>signées</strong> le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->updated))  ?>
-                                    <?php endif; ?>
-                                </td>
-                            </tr>
-                        <?php endif; ?>
-                        <?php foreach ($this->aEmails as $aEmail) : ?>
-                            <tr>
-                                <td>
-                                    <?php $this->users->get($aEmail['id_user'], 'id_user'); ?>
-                                    Envoyé le <?= date('d/m/Y à H:i:s', strtotime($aEmail['added'])) ?> par <?= $this->users->name ?><br>
-                                    <?= $aEmail['content'] ?>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                <?php endif; ?>
-            </div>
+        <div id="tab_email" class="div-2-columns">
+
             <div id="edit_projects_tab_email">
                 <h2>Configuration d'envoi d'Email</h2>
                 <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
@@ -818,7 +796,7 @@
             <?php if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
             <br />
             <br />
-            <div id="send_completeness">
+            <div id="send_completeness" style="height: 50%;">
                 <h2>Complétude - Personnalisation du message</h2>
                 <div class="liwording">
                     <table>
@@ -853,6 +831,39 @@
                 </fieldset>
             </div>
             <?php } ?>
+            <br/>
+            <br/>
+            <div style="height: 50%; overflow-y:auto;">
+                <h2>Historique</h2>
+                <?php if (false === empty($this->aEmails) || false === empty($this->project_cgv->id)) : ?>
+                    <table class="tablesorter">
+                        <tbody>
+                        <?php if (false === empty($this->project_cgv->id)) : ?>
+                            <tr>
+                                <td>
+                                    CGV envoyées le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->added)) ?>
+                                    (<a href="<?= $this->furl . $this->project_cgv->getUrlPath() ?>" target="_blank">PDF</a>)
+                                    <?php if (in_array($this->project_cgv->status, array(project_cgv::STATUS_SIGN_UNIVERSIGN, project_cgv::STATUS_SIGN_FO))) : ?>
+                                        <br/>
+                                        <strong>signées</strong> le <?= date('d/m/Y à H:i:s', strtotime($this->project_cgv->updated)) ?>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+                        <?php foreach ($this->aEmails as $aEmail) : ?>
+                            <tr>
+                                <td>
+                                    <?php $this->users->get($aEmail['id_user'], 'id_user'); ?>
+                                    Envoyé le <?= date('d/m/Y à H:i:s', strtotime($aEmail['added'])) ?> par <?= $this->users->name ?>
+                                    <br>
+                                    <?= $aEmail['content'] ?>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
         </div>
         <br/>
 
