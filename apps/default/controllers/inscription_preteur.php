@@ -7,7 +7,7 @@ class inscription_preteurController extends bootstrap
      */
     private $attachmentHelper;
 
-    public function inscription_preteurController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -24,7 +24,6 @@ class inscription_preteurController extends bootstrap
 
     public function _etape1()
     {
-        // CSS
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->loadCss('default/preteurs/new-style');
 
@@ -41,7 +40,6 @@ class inscription_preteurController extends bootstrap
         $this->companies               = $this->loadData('companies');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
-        $this->clients_history_actions = $this->loadData('clients_history_actions');
 
         $this->page_preteur = 1;
 
@@ -994,7 +992,7 @@ class inscription_preteurController extends bootstrap
             if ($this->bIsLender && $this->clients->etape_inscription_preteur == 3) {
                 header('Location:' . $this->lurl . '/projects');
                 die;
-            } elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) { // preteur n'ayant pas terminé la création de son compte
+            } elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
                 $this->preteurOnline = true;
             } elseif ($this->bIsBorrower) {
                 $this->emprunteurCreatePreteur = true;
@@ -1296,7 +1294,7 @@ class inscription_preteurController extends bootstrap
         $this->clients->email     = $_POST['email_inscription'];
         $this->clients->telephone = str_replace(' ', '', $_POST['phone_new_inscription']);
 
-        if ( \companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companies->status_client|| \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companies->status_client) {
+        if (\companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companies->status_client|| \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companies->status_client) {
             $this->companies->civilite_dirigeant = $_POST['genre2'];
             $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_inscription']);
             $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_inscription']);
@@ -1486,12 +1484,12 @@ class inscription_preteurController extends bootstrap
             } else {
                 $this->setSource($this->clients);
 
-                $this->clients->id_client          = $this->clients->create();
+                $this->clients->create();
                 $this->clients_adresses->id_client = $this->clients->id_client;
                 $this->clients_adresses->create();
 
                 $this->companies->id_client_owner = $this->clients->id_client;
-                $this->companies->id_company      = $this->companies->create();
+                $this->companies->create();
 
                 $this->lenders_accounts->id_client_owner  = $this->clients->id_client;
                 $this->lenders_accounts->id_company_owner = $this->companies->id_company;
@@ -1545,7 +1543,7 @@ class inscription_preteurController extends bootstrap
     {
         $bFormOk = true;
 
-        $this->lenders_accounts->bic  = trim(strtoupper($_POST['bic']));// Bic
+        $this->lenders_accounts->bic  = trim(strtoupper($_POST['bic']));
         $this->lenders_accounts->iban = '';
         for ($i = 1; $i <= 7; $i++) {
             $this->lenders_accounts->iban .= trim(strtoupper($_POST['iban-' . $i]));
@@ -1582,31 +1580,38 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
         if (false === isset($_FILES['rib']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::RIB))) {
-            $bFormOk = false;
+            $bFormOk         = false;
+            $this->error_rib = true;
         }
         if (false === isset($_FILES['cni_passeport']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE))) {
-            $bFormOk = false;
+            $bFormOk         = false;
+            $this->error_cni = true;
         }
         if (false === isset($_FILES['cni_passeport_verso']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORTE_VERSO))) {
-            $bFormOk = false;
+            $bFormOk               = false;
+            $this->error_cni_verso = true;
         }
         $this->lenders_accounts->cni_passeport = 1;
 
         if (false === isset($_FILES['justificatif_domicile']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_DOMICILE))) {
-            $bFormOk = false;
+            $bFormOk                           = false;
+            $this->error_justificatif_domicile = true;
         }
 
-        if (isset($_FILES['attestation_hebergement_tiers'])) {
-            if (isset($_FILES['cni_passport_tiers_hebergeant'])) {
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS);
-                $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT);
-            } else {
-                $bFormOk = false;
+        if (isset($_FILES['attestation_hebergement_tiers']) && isset($_FILES['cni_passport_tiers_hebergeant'])) {
+            if (false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS))
+                || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT))
+            ){
+                $bFormOk                             = false;
+                $this->error_attestation_hebergement = true;
             }
         }
 
         if ($this->etranger > 0) {
-            $this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL);
+            if (false === isset($_FILES['document_fiscal']) || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::JUSTIFICATIF_FISCAL))) {
+                $bFormOk                     = false;
+                $this->error_document_fiscal = true;
+            }
         }
 
         if ($bFormOk) {
@@ -1616,7 +1621,6 @@ class inscription_preteurController extends bootstrap
 
             if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 1') <= 0) {
                 $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $this->clients->id_client);
-
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
                 $this->clients_history_actions->histo(17, 'inscription etape 2 particulier', $this->clients->id_client, $serialize);
 

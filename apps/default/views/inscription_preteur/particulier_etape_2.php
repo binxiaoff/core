@@ -104,7 +104,7 @@
             <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-id-verso'] ?></label>
                 <div class="uploader">
                 <input id="txt_cni_passeport_verso"
-                       type="text" class="field required <?= (isset($this->error_autre) && $this->error_autre == true ? 'LV_invalid_field' : '') ?>"
+                       type="text" class="field required <?= (isset($this->error_cni_verso) && $this->error_cni_verso == true ? 'LV_invalid_field' : '') ?>"
                        readonly="readonly"
                        value="<?= (empty($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['path']) ?>"/>
                 <div class="file-holder">
