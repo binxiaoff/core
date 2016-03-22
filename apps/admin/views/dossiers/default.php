@@ -1,5 +1,5 @@
-<link rel="stylesheet" href="<?= $this->surl ?>/scripts/admin/jquery-ui.min.css">
-<script src="<?= $this->surl ?>/scripts/admin/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="<?= $this->surl ?>/scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.theme.min.css">
+<script src="<?= $this->surl ?>/scripts/admin/external/jquery/plugin/jquery-ui/jquery-ui.min.js"></script>
 <script>
     var nbPages = <?= ceil($this->iCountProjects / $this->nb_lignes) ?>;
     $(function () {
