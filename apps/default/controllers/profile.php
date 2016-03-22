@@ -102,9 +102,9 @@ class profileController extends bootstrap
 
         $this->etranger = 0;
 
-        if ($this->clients->id_nationalite == 1 && $this->clients_adresses->id_pays_fiscal > 1) {
+        if ($this->clients->id_nationalite == \nationalites_v2::NATIONALITY_FRENCH && $this->clients_adresses->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
             $this->etranger = 1;
-        } elseif ($this->clients->id_nationalite != 1 && $this->clients_adresses->id_pays_fiscal > 1) {
+        } elseif ($this->clients->id_nationalite != \nationalites_v2::NATIONALITY_FRENCH && $this->clients_adresses->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
             $this->etranger = 2;
         }
 
@@ -182,7 +182,7 @@ class profileController extends bootstrap
         if (isset($_POST['send_form_particulier_perso'])) {
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
             $this->clients_history_actions->histo(4, 'info perso profile', $this->clients->id_client, $serialize);
-            if ($_POST['nationalite'] == 1 && $_POST['pays1'] > 1) {
+            if ($_POST['nationalite'] == \nationalites_v2::NATIONALITY_FRENCH && $_POST['pays1'] > \pays_v2::COUNTRY_FRANCE) {
                 $this->etranger = 1;
             } elseif ($_POST['nationalite'] != 1 && $_POST['pays1'] > 1) {
                 $this->etranger = 2;
@@ -209,7 +209,7 @@ class profileController extends bootstrap
 
             $this->form_ok = true;
 
-            $_POST['mon-addresse'] != false ? $this->clients_adresses->meme_adresse_fiscal = 1:  $this->clients_adresses->meme_adresse_fiscal = 0;
+            $this->clients_adresses->meme_adresse_fiscal = ($_POST['mon-addresse'] != false ) ? 1 : 0;
 
             $this->clients_adresses->adresse_fiscal = $_POST['adresse_inscription'];
             $this->clients_adresses->ville_fiscal   = $_POST['ville_inscription'];
@@ -237,7 +237,7 @@ class profileController extends bootstrap
 
             //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
             $sCodeInsee = '';
-            if (1 == $_POST['pays3']) { // if France
+            if (\pays_v2::COUNTRY_FRANCE == $_POST['pays3']) { // if France
                 //Check birth city
                 if (!isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
                     /** @var villes $oVilles */
@@ -308,7 +308,7 @@ class profileController extends bootstrap
                 /** @var villes $oVilles */
                 $oVilles = $this->loadData('villes');
                 //Check cp
-                if (isset($_POST['pays1']) && 1 == $_POST['pays1']) {
+                if (isset($_POST['pays1']) && \pays_v2::COUNTRY_FRANCE == $_POST['pays1']) {
                     //for France, check post code here.
                     if (false === $oVilles->exist($_POST['postal'], 'cp')) {
                         $this->form_ok = false;
@@ -554,9 +554,9 @@ class profileController extends bootstrap
                     $contenu .= '</ul>';
 
                     if (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) {
-                        $this->clients_status_history->addStatus('-2', \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
                     } else {
-                        $this->clients_status_history->addStatus('-2', \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
                     }
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
@@ -955,7 +955,7 @@ class profileController extends bootstrap
             $status_conseil_externe_entreprise   = $this->companies->status_conseil_externe_entreprise;
             $preciser_conseil_externe_entreprise = $this->companies->preciser_conseil_externe_entreprise;
 
-            if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
+            if ($this->companies->status_client == \companies::CLIENT_STATUS_DELEGATION_OF_POWER || $this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                 $this->companies->civilite_dirigeant = $_POST['genre2'];
                 $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_inscription']);
                 $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_inscription']);
@@ -963,7 +963,7 @@ class profileController extends bootstrap
                 $this->companies->email_dirigeant    = $_POST['email2_inscription'];
                 $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone_new2_inscription']);
 
-                if ($this->companies->status_client == 3) {
+                if ($this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                     $this->companies->status_conseil_externe_entreprise   = $_POST['external-consultant'];
                     $this->companies->preciser_conseil_externe_entreprise = $_POST['autre_inscription'];
                 }
@@ -998,7 +998,7 @@ class profileController extends bootstrap
                 /** @var villes $oVilles */
                 $oVilles = $this->loadData('villes');
                 //Check cp
-                if (isset($_POST['pays1E']) && 1 == $_POST['pays1E']) {
+                if (isset($_POST['pays1E']) && \pays_v2::COUNTRY_FRANCE == $_POST['pays1E']) {
                     //for France, check post code here.
                     if (false === $oVilles->exist($_POST['postalE'], 'cp')) {
                         $this->form_ok = false;
@@ -1052,7 +1052,7 @@ class profileController extends bootstrap
             } elseif (strlen($_POST['phone_new_inscription']) < 9 || strlen($_POST['phone_new_inscription']) > 14) {
                 $this->form_ok = false;
             }
-            if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
+            if ($this->companies->status_client == \companies::CLIENT_STATUS_DELEGATION_OF_POWER || $this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                 if (! isset($_POST['nom2_inscription']) || $_POST['nom2_inscription'] == $this->lng['etape1']['nom']) {
                     $this->form_ok = false;
                 }
@@ -1072,7 +1072,7 @@ class profileController extends bootstrap
                 } elseif (strlen($_POST['phone_new2_inscription']) < 9 || strlen($_POST['phone_new2_inscription']) > 14) {
                     $this->form_ok = false;
                 }
-                if ($this->companies->status_client == 3) {
+                if ($this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                     if (! isset($_POST['external-consultant']) || $_POST['external-consultant'] == '') {
                         $this->form_ok = false;
                     }
@@ -1298,9 +1298,9 @@ class profileController extends bootstrap
                     $contenu .= '</ul>';
 
                     if (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REPLY, \clients_status::COMPLETENESS_REMINDER))) {
-                        $this->clients_status_history->addStatus('-2', \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
                     } else {
-                        $this->clients_status_history->addStatus('-2', \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
                     }
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
@@ -1744,9 +1744,9 @@ class profileController extends bootstrap
             if ($this->error_fichiers === false) {
                 if ($bCniPasseportDirigeantUpdated === true || $bKbisUpdated === true || $bRibUpdated === true || $bCniPasseportVersoUpdated === true || $bDelegationPouvoirUpdated === true) {
                     if (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) {
-                        $this->clients_status_history->addStatus('-2', \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
                     } else {
-                        $this->clients_status_history->addStatus('-2', \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
+                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
                     }
 
                     $contenu = '<ul>';
