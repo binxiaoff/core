@@ -225,6 +225,19 @@ class thickboxController extends bootstrap
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
         }
+
+        $listeAccept_header = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
+        $this->update_accept_header = false;
+
+        if (in_array($this->lienConditionsGenerales, $listeAccept_header)) {
+            $this->accept_ok_header = true;
+        } else {
+            $this->accept_ok_header = false;
+            // Si on a deja des cgv d'accepté
+            if ($listeAccept_header != false) {
+                $this->update_accept_header = true;
+            }
+        }
     }
 
     public function _pop_up_offer_mobile()
@@ -296,8 +309,6 @@ class thickboxController extends bootstrap
     {
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
         $this->projects                 = $this->loadData('projects');
-        $oLoans                         = $this->loadData('loans');
-        $oBids                          = $this->loadData('bids');
 
         if (is_numeric($this->params[0])) {
             $this->projects->get($this->params[0], 'id_project');
@@ -305,8 +316,7 @@ class thickboxController extends bootstrap
             $this->projects->get($this->params[0], 'hash');
         }
 
-        $fIR       = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $this->projects->id_project);
-        $this->fIR = (is_null($fIR) === false) ? $fIR : 0;
+        $this->fIR = $this->projects->getAverageInterestRate($this->projects->id_project);
     }
 
     public function _pop_up_nouveau_projet()

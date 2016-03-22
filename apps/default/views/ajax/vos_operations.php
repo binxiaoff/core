@@ -120,13 +120,22 @@ foreach ($this->lTrans as $t) {
         $solde = $t['solde'];
     }
 
+    if (0 == $t['bdc']) {
+        $t['bdc'] = '';
+    }
+
     // Remb preteur
-    if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
+    if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
         // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
         $html .= '
             <!-- debut transasction remb -->
             <tr class="transact remb_' . $t['id_transaction'] . ' ' . ($i % 2 == 1 ? '' : 'odd') . '">
-                <td>' . $t['libelle_operation'] . '<span class="plusmoinsOperations"></span></td>
+                <td>' . $t['libelle_operation'];
+        if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']) {
+            $html .= '<span class="plusmoinsOperations"></span>';
+        }
+
+        $html .= '</td>
                 <td>' . $t['bdc'] . '</td>
                 <td class="companieleft">' . $t['libelle_projet'] . '</td>
                 <td>' . $this->dates->formatDate($t['date_operation'], 'd-m-Y') . '</td>
@@ -135,8 +144,9 @@ foreach ($this->lTrans as $t) {
                 <td>' . $this->ficelle->formatNumber($t['solde']) . ' €</td>
             </tr>
             <tr class="content_transact ' . ($i % 2 == 1 ? '' : 'odd') . '" height="0">
-                <td colspan="7">
-                    <div class="div_content_transact content_remb_' . $t['id_transaction'] . '" style="display:none;">
+                <td colspan="7">';
+        if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']) {
+            $html .= '<div class="div_content_transact content_remb_' . $t['id_transaction'] . '" style="display:none;">
                     <table class="soustable" width="100%">
                         <tbody>
                             <tr>
@@ -161,8 +171,8 @@ foreach ($this->lTrans as $t) {
                                 <td colspan="4" style=" height:4px;"></td>
                             </tr>';
 
-        if ($t['recouvrement'] == 1) {
-            $html .= '
+            if ($t['recouvrement'] == 1) {
+                $html .= '
                             <tr>
                                 <td></td>
                                 <td class="detail_left">' . $this->lng['preteur-operations-vos-operations']['com-ht'] . '</td>
@@ -181,12 +191,13 @@ foreach ($this->lTrans as $t) {
                                 <td class="chiffres" style="color:red;">-' . $this->ficelle->formatNumber($t['commission_ttc']) . ' €</td>
                                 <td>&nbsp;</td>
                             </tr>';
+            }
+            $html .= '</tbody>
+                    </table>
+                </div>';
         }
 
         $html .= '
-                        </tbody>
-                    </table>
-                    </div>
                 </td>
             </tr>
             <script type="text/javascript">

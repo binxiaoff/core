@@ -293,3 +293,45 @@ function controlePostCodeCity(elmCp, elmCity, elmCountry, async)
 
     return result;
 }
+
+function appendProjects() {
+    var offset = $('.unProjet:last').offset();
+
+    if ((offset.top - $(window).height() <= $(window).scrollTop())
+        && ($('.unProjet').size() >= 10) &&
+        ($('.unProjet').size() != $('.nbProjet').text())) {
+
+        $(window).off("scroll");
+
+        var last_id = $('.unProjet:last').attr('id');
+
+        $('.loadmore').show();
+
+        var val = {
+            last: last_id,
+            positionStart: $('#positionStart').html(),
+            ordreProject: $('#ordreProject').html(),
+            where: $('#where').html(),
+            type: $('#valType').html()
+        };
+        $.ajax({
+            url: add_url + '/ajax/load_project/',
+            type: 'GET',
+            data: val,
+            dataType: 'json',
+            success: function(obj) {
+                if (obj.hasMore == true) {
+                    var positionStart = obj.positionStart;
+                    var affichage = obj.affichage;
+
+                    $('.unProjet:last').after(affichage);
+                    offset = $('.unProjet:last').offset();
+                    $(window).scroll(appendProjects);
+
+                    $('#positionStart').html(positionStart);
+                }
+                $('.loadmore').fadeOut(500);
+            }
+        });
+    }
+}

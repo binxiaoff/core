@@ -116,10 +116,9 @@ class bootstrap extends Controller
             }
         }
 
-        // Mise en tableau de l'url
-        $urlParams = explode('/', $_SERVER['REQUEST_URI']);
+        $this->setSessionSource();
 
-        // On sniff le partenaire
+        $urlParams = explode('/', $_SERVER['REQUEST_URI']);
         $this->handlePartenaire($urlParams);
 
         $sKey      = $this->oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
@@ -128,24 +127,18 @@ class bootstrap extends Controller
             $this->settings->get('Google Webmaster Tools', 'type');
             $this->google_webmaster_tools = $this->settings->value;
 
-            // Recuperation du code Google Analytics
             $this->settings->get('Google Analytics', 'type');
             $this->google_analytics = $this->settings->value;
 
-            // Recuperation de la Baseline Title
             $this->settings->get('Baseline Title', 'type');
             $this->baseline_title = $this->settings->value;
 
-
-            // Récup du lien fb
             $this->settings->get('Facebook', 'type');
             $this->like_fb = $this->settings->value;
 
-            // Récup du lien Twitter
             $this->settings->get('Twitter', 'type');
             $this->twitter = $this->settings->value;
 
-            // lien page cookies (id_tree)
             $this->settings->get('id page cookies', 'type');
             $this->id_tree_cookies = $this->settings->value;
 
@@ -167,19 +160,13 @@ class bootstrap extends Controller
             $this->twitter                = $aElements['Twitter'];
             $this->id_tree_cookies        = $aElements['TreeCookies'];
         }
-        // super login //
 
-        /////////////////
-
-        // Récuperation du menu footer
         $this->menuFooter = $this->tree->getMenu('footer', $this->language, $this->lurl);
-
         $this->navFooter1 = $this->tree->getMenu('footer-nav-1', $this->language, $this->lurl);
         $this->navFooter2 = $this->tree->getMenu('footer-nav-2', $this->language, $this->lurl);
         $this->navFooter3 = $this->tree->getMenu('footer-nav-3', $this->language, $this->lurl);
         $this->navFooter4 = $this->tree->getMenu('footer-nav-4', $this->language, $this->lurl);
 
-        // Notes
         $this->lNotes = array(
             'A' => 'etoile1',
             'B' => 'etoile2',
@@ -244,11 +231,13 @@ class bootstrap extends Controller
             }
         }
 
-        // Connexion
+        $this->bAccountClosed      = false;
+        $bErrorLogin               = false;
+        $this->displayCaptchaError = null;
+
         if (isset($_POST['login']) && isset($_POST['password'])) {
             $this->login     = $_POST['login'];
             $this->passsword = $_POST['password'];
-
 
             // SI on a le captcha d'actif, et qu'il est faux, on bloque avant tout pour ne pas laisser de piste sur le couple login/mdp
             if (isset($bCaptchaOk) && $bCaptchaOk === false) {
@@ -263,8 +252,6 @@ class bootstrap extends Controller
 
                 $_SESSION['login']['displayCaptchaError'] = $this->displayCaptchaError;
             } else {
-                $bErrorLogin = false;
-
                 if ($_POST['login'] == '' || $_POST['password'] == '') {
                     $bErrorLogin = true;
                 } elseif ($this->clients->exist($_POST['login'], 'email') == false) {
@@ -276,6 +263,7 @@ class bootstrap extends Controller
                 if ($bErrorLogin === false) {
                     if ($this->clients->handleLogin('connect', 'login', 'password')) {
                         unset($_SESSION['login']);
+                        $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
                         if (isset($_COOKIE['acceptCookies'])) {
                             $this->create_cookies = false;
@@ -285,24 +273,28 @@ class bootstrap extends Controller
                                 $this->accept_cookies->update();
                             }
                         }
-
-                        $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-                        $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
-                        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
-
                         $this->clients_history->id_client = $_SESSION['client']['id_client'];
-                        $this->clients_history->type      = ($this->bIsBorrowerAndLender) ? 3 : ($this->bIsLender) ? 1 : ($this->bIsBorrower) ? 2 : 0;
                         $this->clients_history->status    = 1; // statut login
                         $this->clients_history->create();
 
-                        if ($this->bIsLender) {
+                        $this->bIsLender            = $this->clients->isLender();
+                        $this->bIsBorrower          = $this->clients->isBorrower();
+                        $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender);
+
+                        if ($this->bIsLender && false === $this->bIsBorrowerAndLender) {
                             $this->loginLender();
-                        } elseif ($this->bIsBorrower) {
+                        } elseif ($this->bIsBorrower && false === $this->bIsBorrowerAndLender) {
                             $this->loginBorrower();
+                        } else {
+                            header('location: ' . $this->surl);
+                            die;
                         }
                     } else {
-                        $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
+                       $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
+                } elseif ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0')) {
+                    $this->error_login = $this->lng['header']['message-login-compte-ferme'];
+                    $this->bAccountClosed = true;
                 } else {
                     $oDateTime           = new \datetime('NOW - 10 minutes');
                     $sNowMinusTenMinutes = $oDateTime->format('Y-m-d H:i:s');
@@ -340,26 +332,39 @@ class bootstrap extends Controller
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            $this->addDataLayer('id_client', $this->clients->id_client);
-            $this->addDataLayer('email_client', $this->clients->email);
+            $this->bIsLender                   = $this->clients->isLender();
+            $this->bIsBorrower                 = $this->clients->isBorrower();
+            $this->bIsBorrowerAndLender        = ($this->bIsBorrower && $this->bIsLender);
+            $this->bDisplayHeaderLender        = false;
+            $this->bDisplayHeaderBorrower      = false;
+            $this->bShowChoiceBorrowerOrLender = $this->bIsBorrowerAndLender;
 
-            $this->bIsLender            = $this->clients->isLender($this->lenders_accounts, $_SESSION['client']['id_client']);
-            $this->bIsBorrower          = $this->clients->isBorrower($this->projects, $this->companies, $_SESSION['client']['id_client']);
-            $this->bIsBorrowerAndLender = ($this->bIsBorrower && $this->bIsLender) ? true : false;
 
             if ($this->bIsBorrower) {
                 $this->getDataBorrower();
+                if ('espace_emprunteur' === $command->Name) {
+                    $this->bDisplayHeaderBorrower      = true;
+                    $this->bShowChoiceBorrowerOrLender = false;
+                    $this->bDisplayHeaderLender        = false;
+                }
             }
 
             if ($this->bIsLender) {
                 $this->getDataLender();
+                if ($command->Name != 'espace_emprunteur') {
+                    $this->bDisplayHeaderLender        = true;
+                    $this->bShowChoiceBorrowerOrLender = false;
+                    $this->bDisplayHeaderBorrower      = false;
+                }
             }
         }
+        $this->setSessionMail();
+
+        false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
 
         // page projet tri
         // 1 : terminé bientôt
         // 2 : nouveauté
-
         $this->tabOrdreProject = array(
             '',
             'lestatut ASC, IF(lestatut = 2, p.date_retrait_full ,"") DESC, IF(lestatut = 1, p.date_retrait_full ,"") ASC, projects_status.status DESC',
@@ -539,7 +544,7 @@ class bootstrap extends Controller
 
     private function loginLender()
     {
-        $this->bDisplayLender = true;
+        $this->bDisplayHeaderLender = true;
 
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
@@ -662,7 +667,7 @@ class bootstrap extends Controller
 
     private function loginBorrower()
     {
-        $this->bDisplayBorrower = true;
+        $this->bDisplayHeaderBorrower = true;
         $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
 
         $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
@@ -678,20 +683,14 @@ class bootstrap extends Controller
 
     private function getDataLender()
     {
-        $this->bDisplayLender = true;
-        // particulier
         if ($this->clients->type == clients::TYPE_PERSON) {
-            // cgu particulier
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
-        } // morale
-        else {
-            // cgu societe
+        } else {
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
         }
 
-        // Recuperation du contenu de la page
         $contenu = $this->tree_elements->select('id_tree = "' . $this->lienConditionsGenerales . '" AND id_langue = "' . $this->language . '"');
         foreach ($contenu as $elt) {
             $this->elements->get($elt['id_element']);
@@ -709,7 +708,6 @@ class bootstrap extends Controller
         $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
         $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', $this->language, $this->App);
 
-
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         $this->nbNotifdisplay      = 10;
@@ -717,15 +715,11 @@ class bootstrap extends Controller
         $this->NbNotifHeader       = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND status = 0');
         $this->NbNotifHeaderEnTout = $this->notifications->counter('id_lender = ' . $this->lenders_accounts->id_lender_account);
 
-
-        // Solde du compte preteur
         $this->solde = $this->transactions->getSolde($this->clients->id_client);
-
     }
 
     private function getDataBorrower()
     {
-        $this->bDisplayBorrower = true;
         $this->oCompanyDisplay = $this->loadData('companies');
         $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
 
@@ -738,5 +732,130 @@ class bootstrap extends Controller
     protected function addDataLayer($sKey, $mValue)
     {
         $this->aDataLayer[$sKey] = $mValue;
+    }
+
+    /**
+     * Set the source details in session
+     */
+    private function setSessionSource()
+    {
+        $aAvailableUtm = $this->getUTM();
+
+        if (false === empty($aAvailableUtm)) {
+            $_SESSION['source']                 = $aAvailableUtm;
+            $_SESSION['source']['slug_origine'] = $this->getSlug();
+        } elseif (true === empty($_SESSION['source'])) {
+            $_SESSION['source'] = array(
+                'utm_source'   => 'Directe',
+                'slug_origine' => $this->getSlug()
+            );
+        }
+    }
+
+    /**
+     * This looks for UTMs in GET and POST parameters and returns them
+     * @return array
+     */
+    private function getUTM()
+    {
+        $aUTM = array();
+        if (false === empty($_POST)) {
+            foreach ($_POST as $mKey => $mValue) {
+                if ('utm_' === strtolower(substr($mKey, 0, 4))) {
+                    $aUTM[$mKey] = $this->filterPost($mKey);
+                }
+            }
+        } elseif (false === empty($_GET)) {
+            foreach ($_GET as $mKey => $mValue) {
+                if ('utm_' === strtolower(substr($mKey, 0, 4))) {
+                    $aUTM[$mKey] = $this->filterGet($mKey);
+                }
+            }
+        }
+        return $aUTM;
+    }
+
+    /**
+     * @return string
+     */
+    private function getSlug()
+    {
+        if (false === empty($_POST['slug_origine'])) {
+            $sSlugOrigine = $this->filterPost('slug_origine');
+        } elseif (false === empty($_GET['slug_origine'])) {
+            $sSlugOrigine = $this->filterGet('slug_origine');
+        } elseif (false === empty($this->tree->slug)) {
+            $sSlugOrigine = trim($this->tree->slug);
+        } else {
+            $sSlugOrigine = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            if ('/' === $sSlugOrigine) {
+                $sSlugOrigine = '';
+            }
+        }
+        return $sSlugOrigine;
+    }
+
+    /**
+     * Filter and sanitize POST field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    protected function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
+    /**
+     * Filter and sanitize GET field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    protected function filterGet($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_GET, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
+
+    /**
+     * Set the source keys of the given object : UTMs + slug_origine
+     * @param \clients|\prospects $oClient object
+     */
+    protected function setSource(&$oClient)
+    {
+        $aSourceColumn = array(
+            'source'       => 'utm_source',
+            'source2'      => 'utm_source2',
+            'source3'      => 'utm_campaign',
+            'slug_origine' => 'slug_origine'
+        );
+
+        foreach ($aSourceColumn as $sObjectField => $sUtmKey) {
+            if (true === isset($_SESSION['source'][$sUtmKey])) {
+                $oClient->$sObjectField = $_SESSION['source'][$sUtmKey];
+            }
+        }
+    }
+
+
+    /**
+     * This looks for email address in SESSION, GET and POST parameters then add it to SESSION
+     */
+    private function setSessionMail()
+    {
+        if (isset($this->clients->email) && false === empty($this->clients->email)) {
+            $_SESSION['email'] = $this->clients->email;
+        } elseif (false === empty($_POST['email']) && $this->ficelle->isEmail($_POST['email'])) {
+            $_SESSION['email'] = $_POST['email'];
+        } elseif (false === empty($_GET['email']) && $this->ficelle->isEmail($_GET['email'])) {
+            $_SESSION['email'] = $_GET['email'];
+        }
     }
 }

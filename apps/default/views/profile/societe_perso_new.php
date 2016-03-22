@@ -53,12 +53,16 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
                 <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-autocomplete="city"
                        placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>"/>
 
-                <select name="pays1E" id="pays1E" class="custom-select <?= $required ?> field-small">
-                    <option><?= $this->lng['etape1']['pays'] ?></option>
-                    <option><?= $this->lng['etape1']['pays'] ?></option>
-                    <?php foreach ($this->lPays as $p) : ?>
-                        <option <?= ($this->companies->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                    <?php endforeach; ?>
+                <?php //Ajout CM 06/08/14 ?>
+                <select name="pays1E" id="pays1E" class="country custom-select <?=$required?> field-small">
+                    <option><?=$this->lng['etape1']['pays']?></option>
+                    <option><?=$this->lng['etape1']['pays']?></option>
+                    <?
+                    foreach($this->lPays as $p)
+                    {
+                        ?><option <?=($this->companies->id_pays == $p['id_pays']?'selected':'')?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option><?
+                    }
+                    ?>
                 </select>
             </div><!-- /.row -->
 
@@ -81,13 +85,17 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
                     <input type="text" id="postal2E" name="postal2E" class="field field-small required" data-autocomplete="post_code"
                            placeholder="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= ($this->clients_adresses->cp != 0 ? $this->clients_adresses->cp : '') ?>" title="<?= $this->lng['etape1']['code-postal'] ?>"/>
                     <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-autocomplete="city"
-                           placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>"/>
-                    <select name="pays2E" id="pays2E" class="custom-select <?= $required ?> field-small">
-                        <option><?= $this->lng['etape1']['pays'] ?></option>
-                        <option><?= $this->lng['etape1']['pays'] ?></option>
-                        <?php foreach ($this->lPays as $p) : ?>
-                            <option <?= ($this->clients_adresses->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                        <?php endforeach; ?>
+                           placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>" />
+                    <?php //Ajout CM 06/08/14 ?>
+                    <select name="pays2E" id="pays2E" class="country custom-select <?=$required?> field-small">
+                        <option><?=$this->lng['etape1']['pays']?></option>
+                        <option><?=$this->lng['etape1']['pays']?></option>
+                        <?
+                        foreach($this->lPays as $p)
+                        {
+                            ?><option <?=($this->clients_adresses->id_pays == $p['id_pays']?'selected':'')?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option><?
+                        }
+                        ?>
                     </select>
                 </div><!-- /.row -->
             </div>

@@ -42,20 +42,12 @@ class clients extends clients_crud
     const TYPE_PERSON_FOREIGNER       = 3;
     const TYPE_LEGAL_ENTITY_FOREIGNER = 4;
 
+    const STATUS_OFFLINE = 0;
+    const STATUS_ONLINE  = 1;
 
     public function __construct($bdd, $params = '')
     {
         parent::clients($bdd, $params);
-    }
-
-    public function get($id, $field = 'id_client')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function delete($id, $field = 'id_client')
-    {
-        parent::delete($id, $field);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -242,7 +234,6 @@ class clients extends clients_crud
         $result = $this->bdd->query($sql);
         $nb     = (int) ($this->bdd->result($result, 0, 0));
 
-        //die;
         if ($nb > 0) {
             return true;
         } else {
@@ -250,48 +241,25 @@ class clients extends clients_crud
         }
     }
 
-    // permet de respecter les droits emprunteur et preteur
-    // $statut = 1 : preteur | 2 : emprunteur 3 | : les deux
-    // $restriction = preteur | empreunteur
-    // $option = permet de restreindre le contenu emprunteur
-    // $slug = chemin pour rediriger l'emprunteur sur une page
-    public function checkStatusPreEmp($statut = '1', $restriction = 'preteur', $id_client = '', $option = '', $slug = '')
+    public function checkAccessLender()
     {
-        $reponse = false;
-
-        if ($restriction == 'preteur') {
-            if ($statut == 1 || $statut == 3) {
-                $reponse = true;
-                // on check si statut preteur valide
-                if ($id_client != '' && ! $this->checkCompteCreate($id_client)) {
-                    header('location:' . $this->lurl . '/inscription-preteurs');
-                    die;
-                }
-            } else {
-                $reponse = false;
-            }
-        }
-
-        if ($restriction == 'emprunteur') {
-            if ($statut == 2 || $statut == 3) {
-                $reponse = true;
-            } else {
-                $reponse = false;
-            }
-
-            if ($option == 1) {
-                $reponse = true;
-                header('location:' . $this->lurl . '/' . $slug);
+        if ($this->isLender()) {
+            if (false === $this->checkCompteCreate($this->id_client)) {
+                header('location:' . $this->lurl . '/inscription-preteurs');
                 die;
             }
-        }
-
-        if ($reponse == false) {
-            $this->handleLogout();
         } else {
-            return true;
+            $this->handleLogout();
         }
     }
+
+    public function checkAccessBorrower()
+    {
+        if (false === $this->isBorrower()) {
+            $this->handleLogout();
+        }
+    }
+
 
     public function searchClients($ref = '', $nom = '', $email = '', $prenom = '')
     {
@@ -372,7 +340,7 @@ class clients extends clients_crud
         return $this->bdd->result($result, 0, 0);
     }
 
-    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $emprunteur = '', $start = '', $nb = '')
+    public function searchPreteurs($ref = '', $nom = '', $email = '', $prenom = '', $name = '', $noValide = '', $start = '', $nb = '')
     {
         $where = 'WHERE 1 = 1 ';
         $and   = '';
@@ -389,18 +357,13 @@ class clients extends clients_crud
             $and .= ' AND co.name LIKE "' . $name . '%"';
         }
 
-        if ($emprunteur != '') {
-            $and .= ' AND c.status_pre_emp IN (2,3)';
+        if ($noValide == '1') {
+            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 1';
+        } // inscription non terminée
+        elseif ($noValide == '2') {
+            $and .= ' AND c.status = 0 AND c.status_inscription_preteur = 0';
         } else {
-            // inscription terminée
-            if ($noValide == '1') {
-                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 1';
-            } // inscription non terminée
-            elseif ($noValide == '2') {
-                $and .= ' AND c.status_pre_emp NOT IN (2,3) AND c.status = 0 AND c.status_inscription_preteur = 0';
-            } else {
-                $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_pre_emp IN (1,3) AND c.status_inscription_preteur = 1';
-            }
+            $and .= ' AND YEAR(NOW()) - YEAR(c.naissance) >= 18 AND c.status_inscription_preteur = 1';
         }
 
         // pour le OR on rajoute la condition derriere
@@ -679,33 +642,28 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function isPrescripteur(prescripteurs $oPrescripteurs, $iClientId = null)
+    public function isAdvisor()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        return $oPrescripteurs->exist($iClientId, 'id_client');
+        $oAdvisors = new \prescripteurs($this->bdd);
+        return $oAdvisors->exist($this->id_client, 'id_client');
     }
 
-    public function isLender(lenders_accounts $oLendersAccounts, $iClientId = null)
+    public function isLender()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
-        }
-
-        return $oLendersAccounts->exist($iClientId, 'id_client_owner');
+        $oLendersAccounts = new \lenders_accounts($this->bdd);
+        return $oLendersAccounts->exist($this->id_client, 'id_client_owner');
     }
 
-    public function isBorrower(projects $oProjects, companies $oCompanies, $iClientId = null)
+    public function isBorrower()
     {
-        if (null === $iClientId) {
-            $iClientId = $this->id_client;
+        $oCompanies = new \companies($this->bdd);
+        $oProjects  = new \projects($this->bdd);
+
+        if ($oCompanies->get($this->id_client, 'id_client_owner')){
+            return $oProjects->exist($oCompanies->id_company, 'id_company');
+        } else {
+            return false;
         }
-
-        $oCompanies->get($iClientId, 'id_client_owner');
-
-        return $oProjects->exist($oCompanies->id_company, 'id_company');
     }
 
 
@@ -1008,8 +966,177 @@ class clients extends clients_crud
 
         return mb_strtoupper(
             str_pad($this->id_client, 6, 0, STR_PAD_LEFT) .
-            substr($oToolkit->stripAccents(utf8_decode($this->prenom)), 0, 1) .
-            $oToolkit->stripAccents(utf8_decode($this->nom))
+            substr($oToolkit->stripAccents($this->prenom), 0, 1) .
+            $oToolkit->stripAccents($this->nom)
         );
     }
+
+    /**
+     * Retrieve old pattern that lender must use in bank transfer label (with '?' or '' instead of accented characters)
+     * @param $sClientId
+     * @param $sMatchPattern
+     * @return bool
+     */
+    public function isLenderPattern($sClientId, $sMatchPattern)
+    {
+        $this->get($sClientId);
+
+        $aStrTrans = array(
+            'À' => '?', 'à' => '?', 'Á' => '?', 'á' => '?', 'Â' => '?', 'â' => '?', 'Ã' => '?', 'ã' => '?', 'Ä' => '?',
+            'ä' => '?', 'Å' => '?', 'å' => '?', 'Æ' => '?', 'æ' => '?', 'Ç' => '?', 'ç' => '?', 'È' => '?', 'è' => '?',
+            'É' => '?', 'é' => '?', 'Ê' => '?', 'ê' => '?', 'Ë' => '?', 'ë' => '?', 'Ì' => '?', 'ì' => '?', 'Í' => '?',
+            'í' => '?', 'Î' => '?', 'î' => '?', 'Ï' => '?', 'ï' => '?', 'Ñ' => '?', 'ñ' => '?', 'Ò' => '?', 'ò' => '?',
+            'Ó' => '?', 'ó' => '?', 'Ô' => '?', 'ô' => '?', 'Õ' => '?', 'õ' => '?', 'Ö' => '?', 'ö' => '?', 'Ø' => '?',
+            'ø' => '?', 'Œ' => '?', 'œ' => '?', 'ß' => '?', 'Ù' => '?', 'ù' => '?', 'Ú' => '?', 'ú' => '?',
+            'Û' => '?', 'û' => 'u', 'Ü' => '?', 'ü' => '?', 'Ý' => '?', 'ý' => '?', 'Ÿ' => '?', 'ÿ' => '?'
+        );
+
+        $sPattern = str_replace(' ', '',
+            str_pad($this->id_client, 6, 0, STR_PAD_LEFT)
+            . mb_strtoupper(
+                strtr(substr($this->prenom, 0, 1), $aStrTrans)
+                . strtr($this->nom, $aStrTrans)
+            ));
+
+        if (false !== strpos($sMatchPattern, $sPattern) || false !== strpos($sMatchPattern, str_replace('?', '', $sPattern))) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public function getDuplicates($sLastName, $sFirstName, $sBirthdate)
+    {
+        $aCharactersToReplace = array(' ', '-', '_', '*', ',', '^', '`', ':', ';', ',', '.', '!', '&', '"', '\'', '<', '>', '(', ')', '@');
+
+        $sFirstName     = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sFirstName));
+        $sLastName      = str_replace($aCharactersToReplace, '', htmlspecialchars_decode($sLastName));
+
+        $sReplaceCharacters = '';
+        foreach ($aCharactersToReplace as $sCharacter) {
+            $sReplaceCharacters .= ',\'' . addslashes($sCharacter) . '\', \'\')';
+        }
+
+        $sql = 'SELECT *
+                FROM clients c
+                WHERE ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`nom`' . $sReplaceCharacters . ' LIKE "%' . $sLastName. '%"
+                            AND ' . str_repeat('REPLACE(', count($aCharactersToReplace)) . '`prenom`' . $sReplaceCharacters . ' LIKE "%' . $sFirstName . '%"
+                            AND naissance = "' . $sBirthdate . '"
+                            AND status = 1
+                            AND
+                                (SELECT cs.status
+                                FROM clients_status cs
+                                    LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status)
+                                WHERE csh.id_client = c.id_client
+                                    ORDER BY csh.added DESC LIMIT 1) IN (' . \clients_status::VALIDATED . ')';
+
+        $rQuery = $this->bdd->query($sql);
+        $result = array();
+
+        while ($record = $this->bdd->fetch_array($rQuery)) {
+            $result[] = $record;
+        }
+
+        return $result;
+    }
+
+    public function getClientsWithNoWelcomeOffer($iClientId = null, $sStartDate = null, $sEndDate = null)
+    {
+        if (null === $sStartDate) {
+            $sStartDate = '2013-01-01';
+        }
+
+        if (null === $sEndDate) {
+            $sEndDate = 'NOW()';
+        } else {
+            $sEndDate = str_pad($sEndDate,12,'"', STR_PAD_BOTH);
+        }
+
+        if (false === is_null($iClientId)) {
+            $sWhereID = 'AND c.id_client IN (' . $iClientId . ')';
+        } else {
+            $sWhereID = '';
+        }
+
+        $sql = 'SELECT
+                    c.id_client,
+                    c.nom,
+                    c.prenom,
+                    c.email,
+                    companies.name,
+                    DATE(c.added) AS date_creation,
+                    (
+                    SELECT
+                            DATE(csh.added)
+                        FROM
+                            clients_status_history csh
+                            LEFT JOIN clients ON clients.id_client = csh.id_client
+                            INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
+                        WHERE
+                            cs.status = ' . \clients_status::VALIDATED . '
+                            AND c.id_client = csh.id_client
+                        ORDER BY
+                            csh.added DESC
+                        LIMIT
+                            1
+                    ) AS date_validation
+                FROM
+                    clients c
+                    LEFT JOIN companies ON c.id_client = companies.id_client_owner
+                WHERE
+                    NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
+                    AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
+
+        $resultat = $this->bdd->query($sql);
+
+        $aClientsWithoutWelcomeOffer = array();
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
+            $aClientsWithoutWelcomeOffer[] = $record;
+        }
+
+        return $aClientsWithoutWelcomeOffer;
+    }
+
+    public function getLenders($sWhere = null)
+    {
+        if (false === is_null($sWhere)) {
+            $sWhere = ' WHERE ' . $sWhere;
+        }
+
+        $sql = 'SELECT *
+                FROM `clients`
+                INNER JOIN lenders_accounts la ON clients.id_client = la.id_client_owner'. $sWhere;
+
+        $aClientsLender = array();
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aClientsLender[] = $record;
+        }
+
+        return $aClientsLender;
+    }
+
+    public function getBorrowers($sWhere = null)
+    {
+        if (false === is_null($sWhere)) {
+            $sWhere = ' WHERE ' . $sWhere;
+        }
+
+        $sql = 'SELECT *
+                FROM `clients`
+                INNER JOIN companies ON companies.id_client_owner = clients.id_client
+                INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
+
+        $aClientsBorrower = array();
+
+        $result = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($result)) {
+            $aClientsBorrower[] = $record;
+        }
+
+        return $aClientsBorrower;
+    }
+
 }

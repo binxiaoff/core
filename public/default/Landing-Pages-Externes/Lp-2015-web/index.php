@@ -801,7 +801,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         </ul>
         <div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
         <div class="mentions">
-            Offre valable jusqu’au 31/01/2016 réservée aux personnes physiques, capables, majeures.
+            Offre valable jusqu’au <?= date("t/m/Y") ?> réservée aux personnes physiques, capables, majeures.
             L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
             Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
             Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
@@ -1144,9 +1144,9 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         url: "<?= $url_site ?>/collect/prospect",
                         data: DATA,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
+                            var parsedData = jQuery.parseJSON(data);
 
-                            if (parsedDate.reponse == 'OK') {
+                            if (parsedData.reponse == 'OK') {
                                 $('#form_inscription').removeClass('etape1');
                                 $('#form_inscription').addClass('etape2');
 
@@ -1177,7 +1177,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                 });
                             }
                             else {
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     if (intituleErreur == "Nom") {
@@ -1189,7 +1189,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                     if (intituleErreur == "Email" || intituleErreur == "Format email") {
                                         $('#inscription_email').addClass('error');
                                     }
-                                    if (intituleErreur == "Email existant" && parsedDate.reponse.length > 1) {
+                                    if (intituleErreur == "Email existant" && parsedData.reponse.length > 1) {
                                         $('#inscription_email').addClass('error');
                                     }
                                     else {
@@ -1469,13 +1469,14 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         + '&signature_cgv=' + 1
                         + '&forme_preteur=' + 1,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
+                            var parsedData = jQuery.parseJSON(data);
 
-                            if (parsedDate.reponse == 'OK') {
-                                var url = parsedDate.URL;
+                            if (parsedData.reponse == 'OK') {
+                                var url = parsedData.URL;
 
                                 dataLayer.push({
                                     'email_lead': email,
+                                    'unique_id': parsedData.uniqueid,
                                     'source1_lead': utm_source,
                                     'source2_lead': utm_source2,
                                     'event': 'signupPreteurStep2OK'
@@ -1492,7 +1493,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                 return false;
                             }
                             else {
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     if (intituleErreur == "Mot de passe") {

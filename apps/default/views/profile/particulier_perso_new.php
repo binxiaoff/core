@@ -107,15 +107,18 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
         <div class="row row-triple-fields row-triple-fields-alt">
             <span class="inline-text inline-text-alt inline-text-alt-small"><?= $this->lng['etape1']['commune-de-naissance'] ?>:</span>
             <input type="text" name="naissance" id="naissance" class="field field-small required" data-autocomplete="birth_city"
-                   placeholder="<?= $this->lng['etape1']['commune-de-naissance'] ?>" value="<?= $this->clients->ville_naissance ?>">
-            <input type="hidden" id="insee_birth" name="insee_birth" value="<?= $this->clients->insee_birth ?>"/>
-            <span class="inline-text inline-text-alt inline-text-alt-small"><?= $this->lng['etape1']['pays-de-naissance'] ?>:</span>
-            <select name="pays3" id="pays3" class="custom-select <?= $required ?> field-small">
-                <option value=""><?= $this->lng['etape1']['pays-de-naissance'] ?></option>
-                <option value=""><?= $this->lng['etape1']['pays-de-naissance'] ?></option>
-                <?php foreach ($this->lPays as $p) : ?>
-                    <option <?= ($this->clients->id_pays_naissance == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                <?php endforeach; ?>
+                   placeholder="<?=$this->lng['etape1']['commune-de-naissance']?>" value="<?=$this->clients->ville_naissance?>">
+            <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth?>"/>
+            <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
+
+            <select name="pays3" id="pays3" class="country custom-select <?=$required?> field-small">
+                <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
+                <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
+                <?
+                foreach($this->lPays as $p){
+                    ?><option <?=($this->clients->id_pays_naissance == $p['id_pays']?'selected':'')?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option><?
+                }
+                ?>
             </select>
         </div>
         <div class="row row-upload etranger1" <?= ($this->etranger == 1 ? '' : 'style="display:none;"') ?>>
@@ -129,7 +132,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                     <span class="btn btn-small">
                         +
                         <span class="file-upload">
-                            <input type="file" class="file-field" name="document_fiscal">
+                            <input type="file" class="file-field" name="document_fiscal" >
                         </span>
                         <small><?= $this->lng['profile']['telecharger-un-autre-document-fiscal'] ?></small>
                     </span>
@@ -208,13 +211,18 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                 <input type="text" id="postal" name="postal" class="field field-small required" data-autocomplete="post_code"
                        placeholder="<?= $this->lng['etape1']['code-postal'] ?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= $this->clients_adresses->cp_fiscal ?>"/>
                 <input type="text" id="ville_inscription" name="ville_inscription" class="field field-small required" data-autocomplete="city"
-                       placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= $this->clients_adresses->ville_fiscal ?>"/>
-                <select name="pays1" id="pays1" class="custom-select <?= $required ?> field-small">
-                    <option><?= $this->lng['etape1']['pays'] ?></option>
-                    <option><?= $this->lng['etape1']['pays'] ?></option>
-                    <?php foreach ($this->lPays as $p) : ?>
-                        <option <?= ($this->clients_adresses->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                    <?php endforeach; ?>
+                       placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville_fiscal?>"/>
+
+                <?php //Ajout CM 06/08/14 ?>
+                <select name="pays1" id="pays1" class="country custom-select <?=$required?> field-small">
+                    <option><?=$this->lng['etape1']['pays']?></option>
+                    <option><?=$this->lng['etape1']['pays']?></option>
+                    <?
+                    foreach($this->lPays as $p)
+                    {
+                        ?><option <?=($this->clients_adresses->id_pays == $p['id_pays']?'selected':'')?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option><?
+                    }
+                    ?>
                 </select>
                 <em class="change_addr_fiscale"><?= $this->lng['profile']['les-informations-relatives-a-votre-adresse-fiscale-ont-ete-modifiees'] ?></em>
             </div><!-- /.row -->
@@ -305,13 +313,17 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                 <input type="text" id="postal2" name="postal2" class="field field-small required" data-autocomplete="post_code"
                        placeholder="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= $this->clients_adresses->cp ?>" title="<?= $this->lng['etape1']['code-postal'] ?>"/>
                 <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
-                       placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= $this->clients_adresses->ville ?>"/>
-                <select name="pays2" id="pays2" class="custom-select <?= $required ?> field-small">
-                    <option><?= $this->lng['etape1']['pays'] ?></option>
-                    <option><?= $this->lng['etape1']['pays'] ?></option>
-                    <?php foreach ($this->lPays as $p) : ?>
-                        <option <?= ($this->clients_adresses->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
-                    <?php endforeach; ?>
+                       placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville?>" />
+                <?php //Ajout CM 06/08/14 ?>
+                <select name="pays2" id="pays2" class="country custom-select <?=$required?> field-small">
+                    <option><?=$this->lng['etape1']['pays']?></option>
+                    <option><?=$this->lng['etape1']['pays']?></option>
+                    <?
+                    foreach($this->lPays as $p)
+                    {
+                        ?><option <?=($this->clients_adresses->id_pays == $p['id_pays']?'selected':'')?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option><?
+                    }
+                    ?>
                 </select>
             </div><!-- /.row -->
         </div><!-- /.add-address -->
@@ -467,43 +479,26 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                     });
                 });
 
-                // particulier etranger
-                $("#pays1,#nationalite").change(function () {
-                    var pays1 = $('#pays1').val();
-                    var nationalite = $('#nationalite').val();
+        // particulier etranger
+        $("#pays1,#nationalite").change(function() {
+            var pays1 = $('#pays1').val();
 
-                    //resident etranger
-                    if (nationalite > 0 && pays1 > 1) {
-                        $(".etranger").slideDown();
-                        if (nationalite == 1 && pays1 > 1) {
-                            $(".etranger1").slideDown();
-                            $(".etranger2").slideUp();
-                        }
-                        else if (nationalite != 1 && pays1 > 1) {
-                            $(".etranger2").slideDown();
-                            $(".etranger1").slideUp();
-                        }
-                    }
-                    else {
-                        $(".etranger").slideUp();
-                        $(".etranger1").slideUp();
-                        $(".etranger2").slideUp();
-                    }
-                });
+            //resident etranger
+            if(pays1 > 1){
+                $(".etranger").slideDown();
+            } else {
+                $(".etranger").slideUp();
+            }
+        });
 
-                // particulier messagge check_etranger
-                $("#check_etranger").change(function () {
-                    if ($(this).is(':checked') == true) {
-                        $(".message_check_etranger").slideUp();
-                        $("#text_document_fiscal_1").val('');
-                        $("#text_document_fiscal_2").val('');
-                        //$(".cb_check_etranger").addClass('checked');
-                    }
-                    else {
-                        $(".message_check_etranger").slideDown();
-                        /*$( ".cb_check_etranger" ).removeClass("checked");*/
-                    }
-                });
+        // particulier messagge check_etranger
+        $("#check_etranger").change(function() {
+            if($(this).is(':checked') == true){
+                $(".message_check_etranger").slideUp();
+                $("#text_document_fiscal").val('');
+            }
+            else{$(".message_check_etranger").slideDown();}
+        });
 
                 //CInput2.init();
                 initAutocompleteCity();
@@ -538,32 +533,14 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                     form_ok = false;
                 }
 
-                //resident etranger
-                var pays1 = $('#pays1').val();
-                var nationalite = $('#nationalite').val();
-                if (nationalite > 0 && pays1 > 1) {
-                    // check_etranger
-                    if ($('#check_etranger').is(':checked') == false) {
-                        $('.check_etranger').css('color', '#C84747');
-                        $('#check_etranger').addClass('LV_invalid_field');
-                        $('#check_etranger').removeClass('LV_valid_field');
-                        form_ok = false;
-                    }
-                    else {
-                        $('#check_etranger').addClass('LV_valid_field');
-                        $('#check_etranger').removeClass('LV_invalid_field');
-                        $('.check_etranger').css('color', '#727272');
-                    }
+        //resident etranger
+        var pays1 = $('#pays1').val();
+        if(pays1 > 1){
+            // check_etranger
+            if($('#check_etranger').is(':checked') == false){$('.check_etranger').css('color','#C84747'); $('#check_etranger').addClass('LV_invalid_field');$('#check_etranger').removeClass('LV_valid_field');  form_ok = false; }
+            else{ $('#check_etranger').addClass('LV_valid_field');$('#check_etranger').removeClass('LV_invalid_field'); $('.check_etranger').css('color','#727272');}
 
-                    var text_document_fiscal = $("#text_document_fiscal_1");
-
-                    // document fiscal
-                    if (nationalite == 1 && pays1 > 1) {
-                        var text_document_fiscal = $("#text_document_fiscal_1");
-                    }
-                    else if (nationalite != 1 && pays1 > 1) {
-                        var text_document_fiscal = $("#text_document_fiscal_2");
-                    }
+            var text_document_fiscal = $("#text_document_fiscal");
 
                     if (text_document_fiscal.val() == '' || text_document_fiscal.val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
                         form_ok = false;
