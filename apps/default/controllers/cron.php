@@ -104,36 +104,6 @@ class cronController extends bootstrap
         }
     }
 
-    // Les taches executées toutes les minutes
-    // Lors que les offres acceptées évoluent après l'indexation, on à un soucis avec les offres acceptées qui n'ont pas de date d'opération. Cette fonction va donc chercher une date dans la table loan pour mettre à jour celle de l'indexation
-    public function _minute()
-    {
-        if (true === $this->startCron('correctionOffreAccepteAucuneDate', 5)) {
-            $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-            $this->loans                   = $this->loadData('loans');
-            $this->transactions            = $this->loadData('transactions');
-
-            $this->L_offres_acceptees_no_dated = $this->indexage_vos_operations->select('libelle_operation = "Offre acceptée" AND date_operation = "0000-00-00 00:00:00"', '', 0, 500);
-
-            $this->oLogger->addRecord(ULogger::INFO, 'Affected rows count: ' . count($this->L_offres_acceptees_no_dated), array('ID' => $this->iStartTime));
-
-            if (count($this->L_offres_acceptees_no_dated) > 0) {
-                foreach ($this->L_offres_acceptees_no_dated as $offre) {
-                    $this->loans->get($offre['bdc'], 'id_loan');
-
-                    $this->indexage_vos_operations_boucle = $this->loadData('indexage_vos_operations');
-
-                    $this->indexage_vos_operations_boucle->get($offre['id'], 'id');
-                    $this->indexage_vos_operations_boucle->date_operation = $this->loans->updated;
-                    $this->indexage_vos_operations_boucle->solde          = $this->transactions->getSoldeDateLimite_fulldate($offre['id_client'], $this->loans->updated) * 100;
-                    $this->indexage_vos_operations_boucle->update();
-                }
-            }
-
-            $this->stopCron();
-        }
-    }
-
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
