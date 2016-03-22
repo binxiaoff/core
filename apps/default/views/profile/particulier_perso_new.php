@@ -1,11 +1,3 @@
-<?php
-//Ajout CM 06/08/14
-$dateDepartControlPays = strtotime('2014-07-31 18:00:00');
-
-// on ajoute une petite restriction de date pour rendre certains champs obligatoires
-if (strtotime($this->clients->added) >= $dateDepartControlPays) {
-    $required = 'required';
-} ?>
 <div class="account-data">
     <h2><?= $this->lng['profile']['titre-1'] ?></h2>
 
@@ -60,7 +52,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
             <input type="text" name="phone" id="phone" value="<?= ($this->clients->telephone != '' ? $this->clients->telephone : $this->lng['etape1']['telephone']) ?>" title="<?= $this->lng['etape1']['telephone'] ?>" class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
             <span class="inline-text inline-text-alt" style="width:121px;"><?= $this->lng['etape1']['nationalite'] ?>
                 :</span>
-            <select name="nationalite" id="nationalite" class="custom-select <?= $required ?> field-small">
+            <select name="nationalite" id="nationalite" class="custom-select field-small required">
                 <option><?= $this->lng['etape1']['nationalite'] ?></option>
                 <option><?= $this->lng['etape1']['nationalite'] ?></option>
                 <?php foreach ($this->lNatio as $p) : ?>
@@ -111,7 +103,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
             <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth?>"/>
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
 
-            <select name="pays3" id="pays3" class="country custom-select <?=$required?> field-small">
+            <select name="pays3" id="pays3" class="country custom-select field-small required">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <?
@@ -127,7 +119,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                 <?= $this->lng['etape2']['document-fiscal-1'] ?>
             </label>
             <div class="uploader">
-                <input id="text_document_fiscal_1" type="text" class="field" readonly value="<?= ($this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]["path"] != '' ? $this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                <input id="text_document_fiscal_1" type="text" class="field" readonly value="<?= empty($this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]['path'] ?>">
                 <div class="file-holder">
                     <span class="btn btn-small">
                         +
@@ -145,7 +137,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                 <?= $this->lng['etape2']['document-fiscal-2'] ?>
             </label>
             <div class="uploader">
-                <input id="text_document_fiscal_2" type="text" class="field" readonly value="<?= ($this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]["path"] != '' ? $this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                <input id="text_document_fiscal_2" type="text" class="field" readonly value="<?= empty($this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::JUSTIFICATIF_FISCAL]['path'] ?>">
                 <div class="file-holder">
                     <span class="btn btn-small">
                         +
@@ -165,13 +157,13 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                 </label>
                 <div class="uploader">
                     <input id="text_ci" type="text" class="field"
-                           readonly value="<?= ($this->attachments[\attachment_type::CNI_PASSPORTE]["path"] != '' ? $this->attachments[\attachment_type::CNI_PASSPORTE]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                           readonly value="<?= empty($this->attachments[\attachment_type::CNI_PASSPORTE]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::CNI_PASSPORTE]['path'] ?>">
                     <div class="file-holder">
                     <span class="btn btn-small">
-                        <?php if ($this->attachments[\attachment_type::CNI_PASSPORTE]["path"] != '') : ?>
-                            &hArr;
-                        <?php else : ?>
+                        <?php if (empty($this->attachments[\attachment_type::CNI_PASSPORTE]['path'])) : ?>
                             +
+                        <?php else : ?>
+                            &hArr;
                         <?php endif; ?>
                         <span class="file-upload">
                             <input type="file" class="file-field" name="cni_passeport" id="file-ci">
@@ -187,7 +179,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                 </label>
                 <div class="uploader">
                     <input id="text_ci_verso" type="text" class="field"
-                           readonly value="<?= ($this->attachments[\attachment_type::CNI_PASSPORTE_VERSO]["path"] != '' ? $this->attachments[\attachment_type::CNI_PASSPORTE_VERSO]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                           readonly value="<?= empty($this->attachments[\attachment_type::CNI_PASSPORTE_VERSO]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::CNI_PASSPORTE_VERSO]['path'] ?>">
                     <div class="file-holder">
                     <span class="btn btn-small">
                         +
@@ -214,7 +206,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville_fiscal?>"/>
 
                 <?php //Ajout CM 06/08/14 ?>
-                <select name="pays1" id="pays1" class="country custom-select <?=$required?> field-small">
+                <select name="pays1" id="pays1" class="country custom-select field-small required">
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <?
@@ -250,14 +242,14 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                         <?= $this->lng['etape2']['attestation-hebergement'] ?>
                     </label>
                     <div class="uploader"><!-- début uploader -->
-                        <input id="text_att_herb_tiers" type="text" class="field" readonly value="<?= ($this->attachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"] != '' ? $this->attachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                        <input id="text_att_herb_tiers" type="text" class="field" readonly value="<?= empty($this->attachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path'] ?>">
                         <div class="file-holder">
                         <span class="btn btn-small">
-                        <?= ($this->attachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]["path"] != '') ? "&hArr;" : "+" ?>
+                        <?= empty($this->attachments[\attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ? '+' : '&hArr;' ?>
                             <span class="file-upload">
                                 <input type="file" class="file-field" name="attestation_hebergement_tiers" id="file_att_herb_tiers">
                             </span>
-                            <small><?= $this->lng['profile']['telecharger-une-attestation-dhebergement-tiers'] ?></small>
+                            <small><?= $this->lng['profile']['ajouter'] ?></small>
                         </span>
                         </div><!-- end file holder -->
                     </div><!-- end row uploader -->
@@ -267,7 +259,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                         <?= $this->lng['profile']['cni-tiers-hebergeant'] ?>
                     </label>
                     <div class="uploader"><!-- début uploader-->
-                        <input id="text_cni_tiers_herb" type="text" class="field" readonly value="<?= ($this->attachments[\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"] != '' ? $this->attachments[\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                        <input id="text_cni_tiers_herb" type="text" class="field" readonly value="<?= empty($this->attachments[\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path'] ?>">
                         <div class="file-holder">
                         <span class="btn btn-small">
                             +
@@ -284,7 +276,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                         <?= $this->lng['profile']['autre-fichier'] ?>
                     </label>
                     <div class="uploader">
-                        <input id="text_autre1" type="text" class="field" readonly value="<?= ($this->attachments[\attachment_type::AUTRE1]["path"] != '' ? $this->attachments[\attachment_type::AUTRE1]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                        <input id="text_autre1" type="text" class="field" readonly value="<?= empty($this->attachments[\attachment_type::AUTRE1]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::AUTRE1]['path'] ?>">
                         <div class="file-holder">
                         <span class="btn btn-small">
                             +
@@ -315,7 +307,7 @@ if (strtotime($this->clients->added) >= $dateDepartControlPays) {
                 <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville?>" />
                 <?php //Ajout CM 06/08/14 ?>
-                <select name="pays2" id="pays2" class="country custom-select <?=$required?> field-small">
+                <select name="pays2" id="pays2" class="country custom-select field-small required">
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <option><?=$this->lng['etape1']['pays']?></option>
                     <?

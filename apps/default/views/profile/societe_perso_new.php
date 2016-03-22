@@ -14,11 +14,11 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
 
     <?php if (isset($_SESSION['reponse_profile_perso']) && $_SESSION['reponse_profile_perso'] != '') : ?>
         <div class="reponseProfile"><?= $_SESSION['reponse_profile_perso'] ?></div>
-    <?php unset($_SESSION['reponse_profile_perso']); ?>
+        <?php unset($_SESSION['reponse_profile_perso']); ?>
     <?php endif; ?>
     <?php if (isset($_SESSION['reponse_email']) && $_SESSION['reponse_email'] != '') : ?>
         <div class="reponseProfile" style="color:#c84747;"><?= $_SESSION['reponse_email'] ?></div>
-    <?php unset($_SESSION['reponse_email']); ?>
+        <?php unset($_SESSION['reponse_email']); ?>
     <?php endif; ?>
 
     <form action="<?= $this->lurl ?>/profile/societe/3" method="post" id="form_societe_perso" name="form_societe_perso" enctype="multipart/form-data">
@@ -29,7 +29,7 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
             </div><!-- /.row -->
             <div class="row rel">
                 <input type="text" name="capital_social_inscription" id="capital_social_inscription" title="<?= $this->lng['etape1']['capital-sociale'] ?>" value="<?= ($this->companies->capital != 0 ? number_format($this->companies->capital, 2, '.', ' ') : $this->lng['etape1']['capital-sociale']) ?>" class="field field-large euro-field required" onkeyup="lisibilite_nombre(this.value,this.id);" data-validators="Presence&amp;Numericality">
-                <input type="text" name="siren_inscription" id="siren_inscription" title="<?= $this->lng['etape1']['siren'] ?>" value="<?= ($this->companies->siren != '' ? $this->companies->siren : $this->lng['etape1']['siren']) ?>" class="field field-large required" disabled="disabled" />
+                <input type="text" name="siren_inscription" id="siren_inscription" title="<?= $this->lng['etape1']['siren'] ?>" value="<?= ($this->companies->siren != '' ? $this->companies->siren : $this->lng['etape1']['siren']) ?>" class="field field-large required" disabled="disabled"/>
             </div><!-- /.row -->
             <div class="row">
                 <input type="text" name="phone_inscription" id="phone_inscription" value="<?= ($this->companies->phone != '' ? str_replace(' ', '', $this->companies->phone) : $this->lng['etape1']['telephone']) ?>" title="<?= $this->lng['etape1']['telephone'] ?>" class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
@@ -53,16 +53,12 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
                 <input type="text" id="ville_inscriptionE" name="ville_inscriptionE" class="field field-small required" data-autocomplete="city"
                        placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->companies->city != '' ? $this->companies->city : '') ?>"/>
 
-                <?php //Ajout CM 06/08/14 ?>
-                <select name="pays1E" id="pays1E" class="country custom-select <?=$required?> field-small">
-                    <option><?=$this->lng['etape1']['pays']?></option>
-                    <option><?=$this->lng['etape1']['pays']?></option>
-                    <?
-                    foreach($this->lPays as $p)
-                    {
-                        ?><option <?=($this->companies->id_pays == $p['id_pays']?'selected':'')?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option><?
-                    }
-                    ?>
+                <select name="pays1E" id="pays1E" class="country custom-select <?= $required ?> field-small">
+                    <option><?= $this->lng['etape1']['pays'] ?></option>
+                    <option><?= $this->lng['etape1']['pays'] ?></option>
+                    <?php foreach ($this->lPays as $p) : ?>
+                    <option <?= ($this->companies->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                    <?php endforeach; ?>
                 </select>
             </div><!-- /.row -->
 
@@ -85,17 +81,13 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
                     <input type="text" id="postal2E" name="postal2E" class="field field-small required" data-autocomplete="post_code"
                            placeholder="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= ($this->clients_adresses->cp != 0 ? $this->clients_adresses->cp : '') ?>" title="<?= $this->lng['etape1']['code-postal'] ?>"/>
                     <input type="text" id="ville2E" name="ville2E" class="field field-small required" data-autocomplete="city"
-                           placeholder="<?=$this->lng['etape1']['ville']?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>" />
-                    <?php //Ajout CM 06/08/14 ?>
-                    <select name="pays2E" id="pays2E" class="country custom-select <?=$required?> field-small">
-                        <option><?=$this->lng['etape1']['pays']?></option>
-                        <option><?=$this->lng['etape1']['pays']?></option>
-                        <?
-                        foreach($this->lPays as $p)
-                        {
-                            ?><option <?=($this->clients_adresses->id_pays == $p['id_pays']?'selected':'')?> value="<?=$p['id_pays']?>"><?=$p['fr']?></option><?
-                        }
-                        ?>
+                           placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= ($this->clients_adresses->ville != '' ? $this->clients_adresses->ville : '') ?>"/>
+                    <select name="pays2E" id="pays2E" class="country custom-select <?= $required ?> field-small">
+                        <option><?= $this->lng['etape1']['pays'] ?></option>
+                        <option><?= $this->lng['etape1']['pays'] ?></option>
+                        <?php foreach ($this->lPays as $p) : ?>
+                            <option <?= ($this->clients_adresses->id_pays == $p['id_pays'] ? 'selected' : '') ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                        <?php endforeach; ?>
                     </select>
                 </div><!-- /.row -->
             </div>
@@ -124,8 +116,8 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
                         <select name="external-consultant" style="width:458px;" id="external-consultant" class="field field-large custom-select required">
                             <option><?= $this->lng['etape1']['choisir'] ?></option>
                             <option><?= $this->lng['etape1']['choisir'] ?></option>
-                            <?php foreach ($this->conseil_externe as $k => $conseil_externe) :?>
-                                <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>" ><?= $conseil_externe ?></option>
+                            <?php foreach ($this->conseil_externe as $k => $conseil_externe) : ?>
+                                <option <?= ($this->companies->status_conseil_externe_entreprise == $k ? 'selected' : '') ?> value="<?= $k ?>"><?= $conseil_externe ?></option>
                             <?php endforeach; ?>
                         </select>
                         <input <?= ($this->modif == false ? 'style="display:none;"' : ($this->companies->status_conseil_externe_entreprise == 3 ? 'style="display:block;"' : '')) ?> type="text" name="autre_inscription" title="<?= $this->lng['etape1']['autre'] ?>" value="<?= ($this->companies->preciser_conseil_externe_entreprise != '' ? $this->companies->preciser_conseil_externe_entreprise : $this->lng['etape1']['autre']) ?>" id="autre_inscription" class="field field-large">
