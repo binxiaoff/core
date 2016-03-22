@@ -180,19 +180,18 @@
                                                 <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                                                 <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                                             </tr>
-                                        <?php endif; ?>
-                                        <?php if ($e['ordre'] == 6) : ?>
+                                        <?php elseif ($e['ordre'] == 6) : ?>
                                         <tr>
                                             <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
                                         </tr>
-                                        <?php else : ?>
+                                    <?php endif; ?>
+                                    <?php else : ?>
                                         <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
                                             <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
                                             <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
                                             <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                                             <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                                         </tr>
-                                        <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             </table>
