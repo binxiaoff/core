@@ -10,6 +10,7 @@ class espace_emprunteurController extends Bootstrap
 
         if ($command->Function !== 'securite') {
             $this->setHeader('header_account');
+            $this->page = 'faq';
 
             if ( ! $this->clients->checkAccess()) {
                 header('Location:' . $this->lurl);
