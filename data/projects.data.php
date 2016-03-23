@@ -218,82 +218,61 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function selectProjectsByStatus($status, $where = '', $order = '', $aRateRange = array(), $start = '', $nb = '')
+    public function selectProjectsByStatus($status, $where = '', $order = '', $aRateRange = array(), $start = '', $nb = '', $bUseCache = true)
     {
-        $sWhereClause = 'projects_status.status IN (' . $status . ')';
+        $oCache    = Cache::getInstance();
+        $sCacheKey = $oCache->makeKey(__METHOD__, $status, $where, $order, $aRateRange, $start, $nb);
 
-        if ('' !== trim($where)) {
-            $sWhereClause .= ' ' . $where . ' ';
-        }
+        if (false === $bUseCache || false === ($aResult = $oCache->get($sCacheKey))) {
+            $sWhereClause = 'projects_status.status IN (' . $status . ')';
 
-        if ($order == '') {
-            $order = 'lestatut ASC, p.date_retrait DESC';
-        }
+            if ('' !== trim($where)) {
+                $sWhereClause .= ' ' . $where . ' ';
+            }
 
-        $sql = 'SELECT p.*,
+            if ($order == '') {
+                $order = 'lestatut ASC, p.date_retrait DESC';
+            }
+
+            $sql = 'SELECT p.*,
               projects_status.status,
               CASE WHEN projects_status.status = ' . \projects_status::EN_FUNDING . '
                 THEN "1"
                 ELSE "2"
               END AS lestatut ';
 
-        if (2 === count($aRateRange)) {
-            $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
-        }
+            if (2 === count($aRateRange)) {
+                $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
+            }
 
-        $sql .= " FROM projects p
+            $sql .= " FROM projects p
             INNER JOIN projects_last_status_history USING (id_project)
             INNER JOIN projects_status_history USING (id_project_status_history)
             INNER JOIN projects_status USING (id_project_status) ";
 
-        if (2 === count($aRateRange)) {
-            $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
+            if (2 === count($aRateRange)) {
+                $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
+            }
+
+            $sql .= 'WHERE ' . $sWhereClause;
+
+            if (2 === count($aRateRange)) {
+                $sql .= ' GROUP BY p.id_project';
+                $sql .= ' HAVING avg_rate >= "' . $aRateRange[0] . '" AND avg_rate <' . ($aRateRange[1] == 10 ? '= "10' : ' "' . $aRateRange[1]) . '"';
+            }
+
+            $sql .= " ORDER BY " . $order .
+                ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
+            $aResult = array();
+            $rResult = $this->bdd->query($sql);
+            while ($record = $this->bdd->fetch_array($rResult)) {
+                $aResult[] = $record;
+            }
+
+            $oCache->set($sCacheKey, $aResult, 60);
         }
-
-        $sql .= 'WHERE '. $sWhereClause;
-
-        if (2 === count($aRateRange)) {
-            $sql .= ' GROUP BY p.id_project';
-            $sql .= ' HAVING avg_rate >= "'. $aRateRange[0] .'" AND avg_rate <'. ($aRateRange[1] == 10 ? '= "10' : ' "' . $aRateRange[1]) .'"';
-        }
-
-        $sql .= " ORDER BY " . $order .
-            ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $result        = array();
-        $resultat      = $this->bdd->query($sql);
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // version slim
-    public function selectProjectsByStatusSlim($status, $where = '', $order = '', $start = '', $nb = '')
-    {
-        if ($where != '') {
-            $where = ' ' . $where . ' ';
-        }
-
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = '
-            SELECT
-            p.id_project,
-            p.date_publication_full
-            FROM projects p
-            WHERE (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1)  IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
+        return $aResult;
     }
 
     public function countSelectProjectsByStatus($status, $where = '')

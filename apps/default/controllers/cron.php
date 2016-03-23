@@ -182,7 +182,7 @@ class cronController extends bootstrap
         if (true === $this->startCron('check_projet_a_funder', 5)) {
             $oProjects              = $this->loadData('projects');
             $oProjectsStatusHistory = $this->loadData('projects_status_history');
-            $aProjects              = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, "AND p.date_publication_full <= NOW()");
+            $aProjects              = $oProjects->selectProjectsByStatus(\projects_status::A_FUNDER, 'AND p.date_publication_full <= NOW()', '', array(), '', '', false);
 
             foreach ($aProjects as $aProject) {
                 $aPublicationDate = explode(':', $aProject['date_publication_full']);
@@ -227,7 +227,8 @@ class cronController extends bootstrap
             $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
             $oAcceptedBids                       = $this->loadData('accepted_bids');
 
-            $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING);
+            $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, '', '', array(), '', '', false);
+
             foreach ($this->lProjects as $projects) {
                 $tabdateretrait = explode(':', $projects['date_retrait_full']);
                 $dateretrait    = $tabdateretrait[0] . ':' . $tabdateretrait[1];
@@ -1235,7 +1236,7 @@ class cronController extends bootstrap
         $today = date('Y-m-d');
         $time = strtotime($today . ' 00:00:00');
 
-        $lProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT . ', ' . \projects_status::PROBLEME);
+        $lProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT . ', ' . \projects_status::PROBLEME, '', '', array(), '', '', false);
 
         foreach ($lProjects as $p) {
             $projects_status->getLastStatut($p['id_project']);
@@ -2143,7 +2144,7 @@ class cronController extends bootstrap
 
         $today = date('Y-m-d');
 
-        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
+        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT, '', '', array(), '', '', false);
 
         foreach ($this->lProjects as $k => $p) {
             // on recup la companie
@@ -4354,7 +4355,7 @@ class cronController extends bootstrap
             $loans    = $this->loadData('loans');
             $projects = $this->loadData('projects');
 
-            $lProjects = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)));
+            $lProjects = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)), '', '', array(), '', '', false);
 
             if (count($lProjects) > 0) {
                 $a          = 0;
@@ -4412,7 +4413,7 @@ class cronController extends bootstrap
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
             $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-            foreach ($this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0') as $p) {
+            foreach ($this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0', '', array(), '', '', false) as $p) {
                 $aLogContext     = array();
                 $bids_logs       = false;
                 $nb_bids_ko      = 0;
@@ -4810,7 +4811,7 @@ class cronController extends bootstrap
             $transactions   = $this->loadData('transactions');
             $projects_check = $this->loadData('projects_check');
 
-            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND DATE(p.date_fin) = "' . date('Y-m-d') . '"');
+            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND DATE(p.date_fin) = "' . date('Y-m-d') . '"', '', array(), '', '', false);
 
             foreach ($lProjets as $p) {
                 if ($projects_check->get($p['id_project'], 'id_project') === false ) {
@@ -5041,7 +5042,7 @@ class cronController extends bootstrap
                 \projects_status::LIQUIDATION_JUDICIAIRE,
                 \projects_status::DEFAUT
             );
-            $aProjects = $oProjects->selectProjectsByStatus(implode(',', $aProjectStatuses));
+            $aProjects = $oProjects->selectProjectsByStatus(implode(',', $aProjectStatuses), '', '', array(), '', '', false);
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
