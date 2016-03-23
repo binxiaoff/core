@@ -641,8 +641,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies->email_facture = $_POST['email'];
         $this->companies->update();
 
-        $this->companies_details->update();
-
         $this->projects->id_prescripteur = 0;
 
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
