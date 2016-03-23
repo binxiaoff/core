@@ -35,7 +35,7 @@
 <?php endif; ?>
 ""
 "Bilans"
-"Actif";<?php foreach ($this->aAnnualAccounts as $aAnnualAccounts): ?>"<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)";<?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?>"";<?php } ?><?php endforeach; ?>
+"Actif";<?php foreach ($this->aAnnualAccounts as $aAnnualAccounts): ?>"<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>";"<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>";<?php endforeach; ?>
 
 "Capital souscrit non appelé";"AA";<?php
     $iColumn = 0;
@@ -1789,7 +1789,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     $iPreviousNumber = null;
 
     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-        $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aGrossOperatingSurplus[$iBalanceSheetId] / $aBalanceSheet['FL'];
+        $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aGrossOperatingSurplus[$iBalanceSheetId] / $aBalanceSheet['FL'] * 100;
 
         if (false === is_null($iPreviousNumber)) {
             ?>"<?= empty($iCurrentNumber) ? 0 : round(($iPreviousNumber - $iCurrentNumber) / $iCurrentNumber * 100) . ' %' ?>";<?php } ?>"<?= $iCurrentNumber === '' ? 0 : round($iCurrentNumber, 2) ?>";<?php
@@ -1801,7 +1801,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     $iPreviousNumber = null;
 
     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-        $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aBalanceSheet['HN'] / $aBalanceSheet['FL'];
+        $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aBalanceSheet['HN'] / $aBalanceSheet['FL'] * 100;
 
         if (false === is_null($iPreviousNumber)) {
             ?>"<?= empty($iCurrentNumber) ? 0 : round(($iPreviousNumber - $iCurrentNumber) / $iCurrentNumber * 100) . ' %' ?>";<?php } ?>"<?= $iCurrentNumber === '' ? 0 : round($iCurrentNumber, 2) ?>";<?php
@@ -1813,7 +1813,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     $iPreviousNumber = null;
 
     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-        $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? 0 : $aBalanceSheet['CF'] / $aBalanceTotal[$iBalanceSheetId];
+        $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? 0 : $aBalanceSheet['CF'] / $aBalanceTotal[$iBalanceSheetId] * 100;
 
         if (false === is_null($iPreviousNumber)) {
             ?>"<?= empty($iCurrentNumber) ? 0 : round(($iPreviousNumber - $iCurrentNumber) / $iCurrentNumber * 100) . ' %' ?>";<?php } ?>"<?= $iCurrentNumber === '' ? 0 : round($iCurrentNumber, 2) ?>";<?php
@@ -1825,7 +1825,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     $iPreviousNumber = null;
 
     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-        $iCurrentNumber = empty($aBalanceSheet['DA']) ? 0 : $aBalanceSheet['DL'] / $aBalanceSheet['DA'];
+        $iCurrentNumber = empty($aBalanceSheet['DA']) ? 0 : $aBalanceSheet['DL'] / $aBalanceSheet['DA'] * 100;
 
         if (false === is_null($iPreviousNumber)) {
             ?>"<?= empty($iCurrentNumber) ? 0 : round(($iPreviousNumber - $iCurrentNumber) / $iCurrentNumber * 100) . ' %' ?>";<?php } ?>"<?= $iCurrentNumber === '' ? 0 : round($iCurrentNumber, 2) ?>";<?php

@@ -869,7 +869,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aGrossOperatingSurplus[$iBalanceSheetId] / $aBalanceSheet['FL'];
+                    $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aGrossOperatingSurplus[$iBalanceSheetId] / $aBalanceSheet['FL'] * 100;
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -877,7 +877,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         <?php
                     }
                     ?>
-                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 1) ?></td>
+                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 2) ?></td>
                     <?php
                     $iPreviousNumber = $iCurrentNumber;
                 }
@@ -889,7 +889,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aBalanceSheet['HN'] / $aBalanceSheet['FL'];
+                    $iCurrentNumber = empty($aBalanceSheet['FL']) ? 0 : $aBalanceSheet['HN'] / $aBalanceSheet['FL'] * 100;
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -897,7 +897,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         <?php
                     }
                     ?>
-                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 1) ?></td>
+                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 2) ?></td>
                     <?php
                     $iPreviousNumber = $iCurrentNumber;
                 }
@@ -909,7 +909,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? 0 : $aBalanceSheet['CF'] / $aBalanceTotal[$iBalanceSheetId];
+                    $iCurrentNumber = empty($aBalanceTotal[$iBalanceSheetId]) ? 0 : $aBalanceSheet['CF'] / $aBalanceTotal[$iBalanceSheetId] * 100;
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -917,7 +917,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         <?php
                     }
                     ?>
-                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 1) ?></td>
+                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 2) ?></td>
                     <?php
                     $iPreviousNumber = $iCurrentNumber;
                 }
@@ -929,7 +929,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                 $iPreviousNumber = null;
 
                 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
-                    $iCurrentNumber = empty($aBalanceSheet['DA']) ? 0 : $aBalanceSheet['DL'] / $aBalanceSheet['DA'];
+                    $iCurrentNumber = empty($aBalanceSheet['DA']) ? 0 : $aBalanceSheet['DL'] / $aBalanceSheet['DA'] * 100;
 
                     if (false === is_null($iPreviousNumber)) {
                         ?>
@@ -937,7 +937,7 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         <?php
                     }
                     ?>
-                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 1) ?></td>
+                    <td><?= $iCurrentNumber === '-' ? 0 : $this->ficelle->formatNumber($iCurrentNumber, 2) ?></td>
                     <?php
                     $iPreviousNumber = $iCurrentNumber;
                 }
