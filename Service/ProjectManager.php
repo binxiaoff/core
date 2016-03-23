@@ -113,7 +113,7 @@ class ProjectManager
         $oBidLog->id_project = $oProject->id_project;
 
         if ($iBidTotal >= $iBorrowAmount) {
-            foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0', 'rate ASC, added ASC') as $aBid) {
+            foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0', 'rate ASC, ordre ASC') as $aBid) {
                 if ($iBidsAccumulated < $iBorrowAmount) {
                     $iBidsAccumulated += ($aBid['amount'] / 100);
                 } else {
@@ -293,7 +293,7 @@ class ProjectManager
             $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' is now changed to status funded.');
         }
 
-        $aBidList    = $oBid->select('id_project = ' . $oProject->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'rate ASC, added ASC');
+        $aBidList    = $oBid->select('id_project = ' . $oProject->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'rate ASC, ordre ASC');
         $iBidBalance = 0;
 
         $iBidNbTotal   = count($aBidList);
@@ -412,7 +412,7 @@ class ProjectManager
         // On passe le projet en funding ko
         $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject->id_project);
 
-        $aBidList      = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC,added ASC');
+        $aBidList      = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC, ordre ASC');
         $iBidNbTotal   = count($aBidList);
         $iTreatedBitNb = 0;
 
