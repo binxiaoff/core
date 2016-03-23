@@ -417,6 +417,7 @@ class inscription_preteurController extends bootstrap
                 //******************************************************//
 
                 // Recuperation du modele de mail
+                $this->mails_text = $this->loadData('mails_text');
                 $this->mails_text->get('confirmation-inscription-preteur-etape-3', 'lang = "' . $this->language . '" AND type');
 
                 // Variables du mailing
@@ -707,7 +708,6 @@ class inscription_preteurController extends bootstrap
                     die;
                 } // Si erreur
                 else {
-                    header('location:'.$this->lurl.'/inscription_preteur/erreur/'.$this->clients->hash);
                     header('location:' . $this->lurl . '/inscription_preteur/erreur/' . $this->clients->hash);
                     die;
                 }
@@ -822,11 +822,6 @@ class inscription_preteurController extends bootstrap
         $this->unLoadCss('default/custom-theme/jquery-ui-1.10.3.custom');
         $this->unLoadCss('default/colorbox');
         $this->unLoadCss('default/jquery.c2selectbox');
-        //$this->unLoadCss('default/style');
-        //$this->unLoadCss('default/style-edit');
-
-
-
         $this->loadCss('default/preteurs/new-style');
         $this->loadCss('default/preteurs/print');
 
@@ -841,14 +836,12 @@ class inscription_preteurController extends bootstrap
         $this->unLoadJs('default/jquery-ui-1.10.3.custom2');
         $this->unLoadJs('default/ui.datepicker-fr');
         $this->unLoadJs('default/highcharts.src');
-
         $this->unLoadJs('default/main');
         $this->unLoadJs('default/ajax');
 
 
         $this->page_preteur = 3;
 
-        //Recuperation des element de traductions
         $this->lng['etape3'] = $this->ln->selectFront('inscription-preteur-etape-3', $this->language, $this->App);
 
         $this->settings->get('Virement - aide par banque', 'type');
@@ -970,7 +963,9 @@ class inscription_preteurController extends bootstrap
         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
         $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-        $this->email = $this->loadLib('email', array());
+        if (false === isset($this->email) || false === $this->email instanceof email) {
+            $this->email = $this->loadLib('email', array());
+        }
         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
         $this->email->setSubject(stripslashes($sujetMail));
         $this->email->setHTMLBody(stripslashes($texteMail));
@@ -1029,7 +1024,6 @@ class inscription_preteurController extends bootstrap
         $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
         $this->clients->email     = $_POST['email'];
 
-        // Emprunteur crée compte preteur ( pas en place)
         if ($this->emprunteurCreatePreteur == false) {
             $this->clients->secrete_question = $_POST['secret-question'];
             $this->clients->secrete_reponse  = md5($_POST['secret-response']);
@@ -1038,11 +1032,9 @@ class inscription_preteurController extends bootstrap
         //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
         $sCodeInsee = '';
         if (\pays_v2::COUNTRY_FRANCE == $_POST['pays3']) {
-            //Check birth city
-            if ( ! isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
+            if (! isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
                 /** @var villes $oVilles */
                 $oVilles = $this->loadData('villes');
-                //for France, the code insee is empty means that the city is not verified with table "villes", check again here.
                 if (false === $oVilles->get($_POST['naissance'], 'ville')) {
                     $bFormOk = false;
                 } else {
@@ -1109,31 +1101,31 @@ class inscription_preteurController extends bootstrap
 
         // Emprunteur crée un compte preteur (pas en place donc on passe tout le temps de dans)
         if ($this->emprunteurCreatePreteur == false) {
-            if ( ! isset($_POST['pass']) || $_POST['pass'] == '') {
+            if (! isset($_POST['pass']) || $_POST['pass'] == '') {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['pass2']) || $_POST['pass2'] == '') {
+            if (! isset($_POST['pass2']) || $_POST['pass2'] == '') {
                 $bFormOk = false;
             }
             if (isset($_POST['pass']) && isset($_POST['pass2']) && $_POST['pass'] != $_POST['pass2']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['secret-question']) || $_POST['secret-question'] == $this->lng['etape1']['question-secrete']) {
+            if (! isset($_POST['secret-question']) || $_POST['secret-question'] == $this->lng['etape1']['question-secrete']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['secret-response']) || $_POST['secret-response'] == $this->lng['etape1']['response']) {
+            if (! isset($_POST['secret-response']) || $_POST['secret-response'] == $this->lng['etape1']['response']) {
                 $bFormOk = false;
             }
         }
 
-        if ( ! isset($_POST['adresse_inscription']) || $_POST['adresse_inscription'] == $this->lng['etape1']['adresse']) {
+        if (! isset($_POST['adresse_inscription']) || $_POST['adresse_inscription'] == $this->lng['etape1']['adresse']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['ville_inscription']) || $_POST['ville_inscription'] == $this->lng['etape1']['ville']) {
+        if (! isset($_POST['ville_inscription']) || $_POST['ville_inscription'] == $this->lng['etape1']['ville']) {
             $bFormOk = false;
         }
 
-        if ( ! isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']) {
+        if (! isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']) {
             $bFormOk = false;
         } else {
             /** @var villes $oVilles */
@@ -1149,13 +1141,13 @@ class inscription_preteurController extends bootstrap
         }
 
         if ($this->clients_adresses->meme_adresse_fiscal == 0) {
-            if ( ! isset($_POST['adress2']) || $_POST['adress2'] == $this->lng['etape1']['adresse']) {
+            if (! isset($_POST['adress2']) || $_POST['adress2'] == $this->lng['etape1']['adresse']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['ville2']) || $_POST['ville2'] == $this->lng['etape1']['ville']) {
+            if (! isset($_POST['ville2']) || $_POST['ville2'] == $this->lng['etape1']['ville']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['postal2']) || $_POST['postal2'] == $this->lng['etape1']['postal']) {
+            if (! isset($_POST['postal2']) || $_POST['postal2'] == $this->lng['etape1']['postal']) {
                 $bFormOk = false;
             }
         }
@@ -1309,47 +1301,47 @@ class inscription_preteurController extends bootstrap
         }
 
         if ($this->emprunteurCreatePreteur == false) {
-            if ( ! isset($_POST['passE']) || $_POST['passE'] == '') {
+            if (! isset($_POST['passE']) || $_POST['passE'] == '') {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['passE2']) || $_POST['passE2'] == '') {
+            if (! isset($_POST['passE2']) || $_POST['passE2'] == '') {
                 $bFormOk = false;
             }
             if (isset($_POST['passE']) && isset($_POST['passE2']) && $_POST['passE'] != $_POST['passE2']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['secret-questionE']) || $_POST['secret-questionE'] == $this->lng['etape1']['question-secrete']) {
+            if (! isset($_POST['secret-questionE']) || $_POST['secret-questionE'] == $this->lng['etape1']['question-secrete']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['secret-responseE']) || $_POST['secret-responseE'] == $this->lng['etape1']['response']) {
+            if (! isset($_POST['secret-responseE']) || $_POST['secret-responseE'] == $this->lng['etape1']['response']) {
                 $bFormOk = false;
             }
         }
 
-        if ( ! isset($_POST['raison_sociale_inscription']) || $_POST['raison_sociale_inscription'] == $this->lng['etape1']['raison-sociale']) {
+        if (! isset($_POST['raison_sociale_inscription']) || $_POST['raison_sociale_inscription'] == $this->lng['etape1']['raison-sociale']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['forme_juridique_inscription']) || $_POST['forme_juridique_inscription'] == $this->lng['etape1']['forme-juridique']) {
+        if (! isset($_POST['forme_juridique_inscription']) || $_POST['forme_juridique_inscription'] == $this->lng['etape1']['forme-juridique']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['capital_social_inscription']) || $_POST['capital_social_inscription'] == $this->lng['etape1']['capital-sociale']) {
+        if (! isset($_POST['capital_social_inscription']) || $_POST['capital_social_inscription'] == $this->lng['etape1']['capital-sociale']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['siren_inscription']) || $_POST['siren_inscription'] == $this->lng['etape1']['placeholder-field-siren']) {
+        if (! isset($_POST['siren_inscription']) || $_POST['siren_inscription'] == $this->lng['etape1']['placeholder-field-siren']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['phone_inscription']) || $_POST['phone_inscription'] == $this->lng['etape1']['telephone']) {
+        if (! isset($_POST['phone_inscription']) || $_POST['phone_inscription'] == $this->lng['etape1']['telephone']) {
             $bFormOk = false;
         } elseif (strlen($_POST['phone_inscription']) < 9 || strlen($_POST['phone_inscription']) > 14) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['adresse_inscriptionE']) || $_POST['adresse_inscriptionE'] == $this->lng['etape1']['adresse']) {
+        if (! isset($_POST['adresse_inscriptionE']) || $_POST['adresse_inscriptionE'] == $this->lng['etape1']['adresse']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['ville_inscriptionE']) || $_POST['ville_inscriptionE'] == $this->lng['etape1']['ville']) {
+        if (! isset($_POST['ville_inscriptionE']) || $_POST['ville_inscriptionE'] == $this->lng['etape1']['ville']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['postalE']) || $_POST['postalE'] == $this->lng['etape1']['code-postal']) {
+        if (! isset($_POST['postalE']) || $_POST['postalE'] == $this->lng['etape1']['code-postal']) {
             $bFormOk = false;
         } else {
             /** @var villes $oVilles */
@@ -1365,27 +1357,27 @@ class inscription_preteurController extends bootstrap
         }
 
         if ($this->companies->status_adresse_correspondance == 0) {
-            if ( ! isset($_POST['adress2E']) || $_POST['adress2E'] == $this->lng['etape1']['adresse']) {
+            if (! isset($_POST['adress2E']) || $_POST['adress2E'] == $this->lng['etape1']['adresse']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['ville2E']) || $_POST['ville2E'] == $this->lng['etape1']['ville']) {
+            if (! isset($_POST['ville2E']) || $_POST['ville2E'] == $this->lng['etape1']['ville']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['postal2E']) || $_POST['postal2E'] == $this->lng['etape1']['code-postal']) {
+            if (! isset($_POST['postal2E']) || $_POST['postal2E'] == $this->lng['etape1']['code-postal']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['pays2E']) || $_POST['pays2E'] == $this->lng['etape1']['pays']) {
+            if (! isset($_POST['pays2E']) || $_POST['pays2E'] == $this->lng['etape1']['pays']) {
                 $bFormOk = false;
             }
         }
 
-        if ( ! isset($_POST['nom_inscription']) || $_POST['nom_inscription'] == $this->lng['etape1']['nom']) {
+        if (! isset($_POST['nom_inscription']) || $_POST['nom_inscription'] == $this->lng['etape1']['nom']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['prenom_inscription']) || $_POST['prenom_inscription'] == $this->lng['etape1']['prenom']) {
+        if (! isset($_POST['prenom_inscription']) || $_POST['prenom_inscription'] == $this->lng['etape1']['prenom']) {
             $bFormOk = false;
         }
-        if ( ! isset($_POST['fonction_inscription']) || $_POST['fonction_inscription'] == $this->lng['etape1']['fonction']) {
+        if (! isset($_POST['fonction_inscription']) || $_POST['fonction_inscription'] == $this->lng['etape1']['fonction']) {
             $bFormOk = false;
         }
 
@@ -1395,18 +1387,18 @@ class inscription_preteurController extends bootstrap
         ) {
             $bFormOk = false;
         } elseif (false === $this->clients->existEmail($_POST['email_inscription'])) {
-            if($this->modif == true){
-                if($_POST['email_inscription'] != $this->email){
-                    $this->reponse_email = $this->lng['etape1']['erreur-email'];
+            if ($this->modif == true) {
+                if ($_POST['email_inscription'] != $this->email) {
+                    $this->reponse_email     = $this->lng['etape1']['erreur-email'];
                     $this->error_email_exist = true;
                 }
-            } else{
-                $this->reponse_email = $this->lng['etape1']['erreur-email'];
+            } else {
+                $this->reponse_email     = $this->lng['etape1']['erreur-email'];
                 $this->error_email_exist = true;
             }
         }
 
-        if ( ! isset($_POST['phone_new_inscription']) || $_POST['phone_new_inscription'] == $this->lng['etape1']['telephone']) {
+        if (! isset($_POST['phone_new_inscription']) || $_POST['phone_new_inscription'] == $this->lng['etape1']['telephone']) {
             $bFormOk = false;
 
         } elseif (strlen($_POST['phone_new_inscription']) < 9 || strlen($_POST['phone_new_inscription']) > 14) {
@@ -1414,27 +1406,27 @@ class inscription_preteurController extends bootstrap
         }
 
         if ($this->companies->status_client == \companies::CLIENT_STATUS_DELEGATION_OF_POWER || $this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
-            if ( ! isset($_POST['nom2_inscription']) || $_POST['nom2_inscription'] == $this->lng['etape1']['nom']) {
+            if (! isset($_POST['nom2_inscription']) || $_POST['nom2_inscription'] == $this->lng['etape1']['nom']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['prenom2_inscription']) || $_POST['prenom2_inscription'] == $this->lng['etape1']['prenom']) {
+            if (! isset($_POST['prenom2_inscription']) || $_POST['prenom2_inscription'] == $this->lng['etape1']['prenom']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['fonction2_inscription']) || $_POST['fonction2_inscription'] == $this->lng['etape1']['fonction']) {
+            if (! isset($_POST['fonction2_inscription']) || $_POST['fonction2_inscription'] == $this->lng['etape1']['fonction']) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['email2_inscription']) || $_POST['email2_inscription'] == $this->lng['etape1']['email']) {
+            if (! isset($_POST['email2_inscription']) || $_POST['email2_inscription'] == $this->lng['etape1']['email']) {
                 $bFormOk = false;
             } elseif (isset($_POST['email2_inscription']) && $this->ficelle->isEmail($_POST['email2_inscription']) == false) {
                 $bFormOk = false;
             }
-            if ( ! isset($_POST['phone_new2_inscription']) || $_POST['phone_new2_inscription'] == $this->lng['etape1']['telephone']) {
+            if (! isset($_POST['phone_new2_inscription']) || $_POST['phone_new2_inscription'] == $this->lng['etape1']['telephone']) {
                 $bFormOk = false;
             } elseif (strlen($_POST['phone_new2_inscription']) < 9 || strlen($_POST['phone_new2_inscription']) > 14) {
                 $bFormOk = false;
             }
             if ($this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
-                if ( ! isset($_POST['external-consultant']) || $_POST['external-consultant'] == '') {
+                if (! isset($_POST['external-consultant']) || $_POST['external-consultant'] == '') {
                     $bFormOk = false;
                 }
             }
