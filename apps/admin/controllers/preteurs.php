@@ -87,25 +87,6 @@ class preteursController extends bootstrap
             $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
         }
 
-        $iOriginForUserHistory = 1;
-
-        if (isset($this->params[0]) && $this->params[0] == 'status') {
-            $this->changeClientStatus($this->params[1], $this->params[2], $iOriginForUserHistory);
-            $oClientsStatusHistory = $this->loadData('clients_status_history');
-            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], ($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::VALIDATED, $this->clients->id_client);
-            header('Location: ' . $this->lurl . '/preteurs/gestion');
-            die;
-        }
-
-        if (isset($this->params[0]) && $this->params[0] == 'deactivate') {
-            $this->changeClientStatus($this->params[1], $this->params[2], $iOriginForUserHistory);
-            $this->sendEmailClosedAccount();
-            $oClientsStatusHistory = $this->loadData('clients_status_history');
-            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST, $this->clients->id_client);
-            header('Location: ' . $this->lurl . '/preteurs/gestion');
-            die;
-        }
-
         //preteur sans mouvement
         $aTransactionTypes = array(
             \transactions_types::TYPE_LENDER_SUBSCRIPTION,
@@ -233,10 +214,6 @@ class preteursController extends bootstrap
         $this->loadJs('default/jquery-ui-1.10.3.custom.min');
 
         $this->clients_mandats         = $this->loadData('clients_mandats');
-        $this->nationalites            = $this->loadData('nationalites_v2');
-        $this->lNatio                  = $this->nationalites->select();
-        $this->pays                    = $this->loadData('pays_v2');
-        $this->lPays                   = $this->pays->select('', 'ordre ASC');
         $this->nationalites            = $this->loadData('nationalites_v2');
         $this->pays                    = $this->loadData('pays_v2');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -1627,13 +1604,14 @@ class preteursController extends bootstrap
 
     private function changeClientStatus($iClientId, $iStatus, $iOrigin)
     {
-        $this->clients->get($iClientId, 'id_client');
+        $oClient = $this->loadData('clients');
+        $oClient->get($iClientId, 'id_client');
 
-        if (false === $this->clients->isBorrower()) {
-            $this->clients->status = $iStatus;
-            $this->clients->update();
+        if (false === $oClient->isBorrower()) {
+            $oClient->status = $iStatus;
+            $oClient->update();
 
-            $serialize = serialize(array('id_client' => $iClientId, 'status' => $this->clients->status));
+            $serialize = serialize(array('id_client' => $iClientId, 'status' => $oClient->status));
             switch ($iOrigin) {
                 case 1:
                     $this->users_history->histo($iOrigin, 'status preteur', $_SESSION['user']['id_user'], $serialize);
@@ -1656,14 +1634,14 @@ class preteursController extends bootstrap
             $_SESSION['freeow']['message'] = 'Le client est &eacute;galement un emprunteur et ne peux &ecirc;tre mis hors ligne !';
 
             $oLendersAccounts = $this->loadData('lenders_accounts');
-            $oLendersAccounts->get($iClientId, 'id_client_owner');
+            $oLendersAccounts->get($oClient->id_client, 'id_client_owner');
 
             header('Location: ' . $this->lurl . '/preteurs/edit/' . $oLendersAccounts->id_lender_account);
             die;
         }
     }
 
-    private function sendEmailClosedAccount()
+    private function sendEmailClosedAccount(\clients $oClient)
     {
         $this->mails_text->get('confirmation-fermeture-compte-preteur', 'lang = "' . $this->language . '" AND type');
 
@@ -1676,7 +1654,7 @@ class preteursController extends bootstrap
         $aVariablesMail = array(
             'surl'    => $this->surl,
             'url'     => $this->furl,
-            'prenom'  => $this->clients->prenom,
+            'prenom'  => $oClient->prenom,
             'lien_fb' => $sFB,
             'lien_tw' => $sTW
         );
@@ -1690,10 +1668,10 @@ class preteursController extends bootstrap
         $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
         if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
             $this->tnmp->sendMailNMP($tabFiler, $aVariablesMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
         } else {
-            $this->email->addRecipient(trim($this->clients->email));
+            $this->email->addRecipient(trim($oClient->email));
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
@@ -1820,6 +1798,46 @@ class preteursController extends bootstrap
 
         $oLendersAccounts->update();
         echo $sRibChangeStatus;
+    }
+
+    public function _LenderOnlineOffline()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $iOriginForUserHistory = 1;
+        /** @var \clients_status_history $oClientsStatusHistory */
+        $oClientsStatusHistory = $this->loadData('clients_status_history');
+        /** @var \lenders_accounts $oLendersAccount */
+        $oLendersAccount = $this->loadData('lenders_accounts');
+        /** @var \clients $oClient */
+        $oClient = $this->loadData('clients');
+
+        $oLendersAccount->get($this->params[1],'id_lender_account');
+        $oClient->get($oLendersAccount->id_client_owner, 'id_client');
+
+        if (isset($this->params[0]) && $this->params[0] == 'status') {
+            $this->changeClientStatus($oClient->id_client, $this->params[2], $iOriginForUserHistory);
+            if ($this->params[2] == \clients::STATUS_OFFLINE) {
+                $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $oClient->id_client);
+            } else {
+                $aLastTwoStatus = $oClientsStatusHistory->select('id_client =  ' . $oClient->id_client, 'id_client_status_history DESC', null, 2);
+                $oClientStatus = $this->loadData('clients_status');
+                $oClientStatus->get($aLastTwoStatus[1]['id_client_status']);
+                $sContent = 'Compte remis en ligne par Unilend';
+                $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], $oClientStatus->status, $oClient->id_client, $sContent);
+            }
+            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oLendersAccount->id_lender_account);
+            die;
+        }
+
+        if (isset($this->params[0]) && $this->params[0] == 'deactivate') {
+            $this->changeClientStatus($oClient->id_client, $this->params[2], $iOriginForUserHistory);
+            $this->sendEmailClosedAccount($oClient);
+            $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST, $oClient->id_client);
+            header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oLendersAccount->id_lender_account);
+            die;
+        }
     }
 
 }
