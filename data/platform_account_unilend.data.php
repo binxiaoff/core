@@ -72,7 +72,7 @@ class platform_account_unilend extends platform_account_unilend_crud
     {
         $result = $this->bdd->query('SELECT * FROM `platform_account_unilend` WHERE ' . $field . '="' . $id . '"');
 
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function addDueDateCommssion($iBorrowerDueDateId)

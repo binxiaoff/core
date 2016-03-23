@@ -77,7 +77,7 @@ class queries extends queries_crud
     {
         $sql    = 'SELECT * FROM `queries` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     //******************************************************************************************//

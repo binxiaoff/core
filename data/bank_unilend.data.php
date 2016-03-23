@@ -76,7 +76,7 @@ class bank_unilend extends bank_unilend_crud
         $sql    = 'SELECT * FROM `bank_unilend` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
 
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function sum($date, $where = '', $sum = 'montant')

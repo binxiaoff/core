@@ -67,6 +67,6 @@ class --classe-- extends --classe--_crud
         }
 
         $result = $this->bdd->query('SELECT * FROM --table-- WHERE 1 = 1 ' . $list);
-        return ($this->bdd->fetch_assoc($result, 0, 0) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 }

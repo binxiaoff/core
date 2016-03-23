@@ -74,7 +74,7 @@ class bids extends bids_crud
     {
         $sql    = 'SELECT * FROM `bids` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getSoldeBid($id_project)

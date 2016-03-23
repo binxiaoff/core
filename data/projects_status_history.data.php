@@ -78,7 +78,7 @@ class projects_status_history extends projects_status_history_crud
     {
         $sql    = 'SELECT * FROM `projects_status_history` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function addStatus($id_user, $status, $id_project, $numero_relance = 0, $content = '')

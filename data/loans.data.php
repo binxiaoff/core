@@ -72,7 +72,7 @@ class loans extends loans_crud
     {
         $sql    = 'SELECT * FROM `loans` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getBidsValid($id_project, $id_lender)

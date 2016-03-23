@@ -74,7 +74,7 @@ class clients_status extends clients_status_crud
     public function exist($id, $field = 'id_client_status')
     {
         $result = $this->bdd->query('SELECT * FROM `clients_status` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getLastStatut($id_client)

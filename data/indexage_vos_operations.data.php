@@ -29,96 +29,95 @@
 class indexage_vos_operations extends indexage_vos_operations_crud
 {
 
-	function indexage_vos_operations($bdd,$params='')
+    function indexage_vos_operations($bdd, $params = '')
     {
-        parent::indexage_vos_operations($bdd,$params);
+        parent::indexage_vos_operations($bdd, $params);
     }
 
-    function get($id,$field='id')
+    function get($id, $field = 'id')
     {
-        return parent::get($id,$field);
+        return parent::get($id, $field);
     }
 
-    function update($cs='')
+    function update($cs = '')
     {
         parent::update($cs);
     }
 
-    function delete($id,$field='id')
+    function delete($id, $field = 'id')
     {
-    	parent::delete($id,$field);
+        parent::delete($id, $field);
     }
 
-    function create($cs='')
+    function create($cs = '')
     {
         $id = parent::create($cs);
         return $id;
     }
 
-	function select($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `indexage_vos_operations`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+    function select($where = '', $order = '', $start = '', $nb = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql = 'SELECT * FROM `indexage_vos_operations`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 
-	function getLastOperationDate($iIdClient)
-	{
-		$sSql = 'SELECT MAX(date_operation) as last_operation_date FROM `indexage_vos_operations` WHERE id_client = ' . $iIdClient;
+    function getLastOperationDate($iIdClient)
+    {
+        $sSql = 'SELECT MAX(date_operation) as last_operation_date FROM `indexage_vos_operations` WHERE id_client = ' . $iIdClient;
 
-		$rResult = $this->bdd->query($sSql);
-		return ($this->bdd->result($rResult,0,0));
-	}
+        $rResult = $this->bdd->query($sSql);
+        return ($this->bdd->result($rResult, 0, 0));
+    }
 
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
+    function counter($where = '')
+    {
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
 
-		$sql='SELECT count(*) FROM `indexage_vos_operations` '.$where;
+        $sql = 'SELECT count(*) FROM `indexage_vos_operations` ' . $where;
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
+        $result = $this->bdd->query($sql);
+        return (int) ($this->bdd->result($result, 0, 0));
+    }
 
-	function exist($id,$field='id')
-	{
-		$sql = 'SELECT * FROM `indexage_vos_operations` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
-	}
+    function exist($id, $field = 'id')
+    {
+        $sql    = 'SELECT * FROM `indexage_vos_operations` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
+        return ($this->bdd->fetch_array($result) > 0);
+    }
 
+    function get_liste_libelle_projet($where)
+    {
+        if ($where != '') {
+            $where = ' AND ' . $where;
+        }
 
-	function get_liste_libelle_projet($where)
-	{
-		if($where != '')
-			$where = ' AND '.$where;
-
-		$sql = 'SELECT DISTINCT(libelle_projet) as title, id_projet as id_project
+        $sql = 'SELECT DISTINCT(libelle_projet) as title, id_projet as id_project
 				FROM `indexage_vos_operations`
 				WHERE 1 = 1
-				'.$where.'
+				' . $where . '
 				GROUP BY id_projet
 		';
 
-		//mail('k1@david.equinoa.net','DEBUG TRACKe',$sql );
-
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
+    }
 }

@@ -83,7 +83,7 @@ class transactions extends transactions_crud
     public function exist($id, $field = 'id_transaction')
     {
         $result = $this->bdd->query('SELECT * FROM `transactions` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     /* Nouvelle fonction utilisée désormais par les fonctions de stats par statuts de transaction ci dessous (factorisation)*/
