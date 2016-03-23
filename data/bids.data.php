@@ -35,6 +35,8 @@ class bids extends bids_crud
     const BID_RATE_MIN = 4;
     const BID_RATE_MAX = 9.9;
 
+    const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
+
     public function __construct($bdd, $params = '')
     {
         parent::bids($bdd, $params);
@@ -125,22 +127,6 @@ class bids extends bids_crud
         return $avg;
     }
 
-    // tri les bids d'un projet par ordre de rate
-    public function triBid($id_project)
-    {
-        // Liste des encheres
-        $lEnchere = $this->select('id_project = ' . $id_project, 'added ASC');
-
-        $i = 1;
-        foreach ($lEnchere as $e) {
-            $this->get($e['id_bid'], 'id_bid');
-            $this->ordre = $i;
-            $this->update();
-
-            $i++;
-        }
-    }
-
     // solde des bids d'un preteur
     public function getBidsEncours($id_project, $id_lender)
     {
@@ -159,24 +145,6 @@ class bids extends bids_crud
         return array('solde' => $solde, 'nbEncours' => $nbEncours);
     }
 
-    // retournes les projets avec au moins une enchere en cours
-    public function getProjetAvecBid($id_lender = '')
-    {
-        if ($id_lender != '') {
-            $where = ' AND id_lender_account = ' . $id_lender;
-        } else {
-            $where = '';
-        }
-        $sql = 'SELECT DISTINCT id_project FROM `bids` WHERE status = 0 ' . $where;
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     public function projetsBidsEnCoursPreteur($id_lender)
     {
         $lBisd   = $this->select('id_lender_account = ' . $id_lender . ' AND status = 0');
@@ -191,7 +159,6 @@ class bids extends bids_crud
 
     public function sumBidsEncours($id_lender)
     {
-
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = 0';
 
         $result  = $this->bdd->query($sql);
@@ -201,7 +168,6 @@ class bids extends bids_crud
 
     public function sumBidsMonth($month, $year)
     {
-
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year;
 
         $result  = $this->bdd->query($sql);
@@ -211,7 +177,6 @@ class bids extends bids_crud
 
     public function sumBidsMonthEncours($month, $year)
     {
-
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' AND status = 0';
 
         $result  = $this->bdd->query($sql);
@@ -222,7 +187,6 @@ class bids extends bids_crud
     // sum prêtée d'un lender sur un mois
     public function sumPretsByMonths($id_lender, $month, $year)
     {
-
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = "1" AND LEFT(added,7) = "' . $year . '-' . $month . '"';
 
         $result  = $this->bdd->query($sql);

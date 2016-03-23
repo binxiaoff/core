@@ -214,8 +214,7 @@ class clients extends clients_crud
                 FROM `clients_status_history`
                 WHERE id_client = ' . $id_client . '
                 ORDER BY added DESC
-                LIMIT 1
-                ';
+                LIMIT 1';
         $result           = $this->bdd->query($sql);
         $id_client_status = (int) ($this->bdd->result($result, 0, 0));
 

@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\librairies\Cache;
 use Unilend\librairies\ULogger;
 
 class cronController extends bootstrap
@@ -196,9 +197,9 @@ class cronController extends bootstrap
                 $this->sendNewProjectEmail($aProject['id_project']);
                 $this->sendProjectOnlineEmailBorrower($aProject['id_project']);
             }
-            $oCache = \Unilend\librairies\Cache::getInstance();
-            $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
-            $oCache->delete($sKey);
+
+            $sKey = $this->oCache->makeKey(Cache::LIST_PROJECTS, $this->tabProjectDisplay);
+            $this->oCache->delete($sKey);
 
             $this->stopCron();
         }
@@ -916,6 +917,8 @@ class cronController extends bootstrap
                             $oLogger->addRecord(ULogger::INFO, 'project : ' . $projects['id_project'] . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated.');
                         }
                     } // fin funding ko
+
+                    $this->oCache->delete($this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projects['id_project']));
 
                     $this->projects->get($projects['id_project'], 'id_project');
                     $this->companies->get($this->projects->id_company, 'id_company');
@@ -4504,6 +4507,10 @@ class cronController extends bootstrap
                     $aLogContext['Project ID']    = $p['id_project'];
                     $aLogContext['Balance']       = $soldeBid;
                     $aLogContext['Rejected bids'] = $nb_bids_ko;
+
+                    if (0 < $nb_bids_ko) {
+                        $this->oCache->delete($this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $p['id_project']));
+                    }
 
                     // EMAIL EMPRUNTEUR FUNDE //
                     if ($p['status_solde'] == 0) {
