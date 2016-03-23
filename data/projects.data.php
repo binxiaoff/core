@@ -359,24 +359,27 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function positionProject($id_project, $status = '', $order = '')
+    public function positionProject($id_project, $status, $order)
     {
-        if ($status == '') {
-            $status = implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT));
-        }
+        $oCache    = Cache::getInstance();
+        $sKey      = $oCache->makeKey(__METHOD__, $id_project, $status, $order);
 
-        // On recupere les en funding et les fundé
-        $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', ($order != '' ? $order : 'p.date_publication DESC'));
+        if (false === ($aSiblings = $oCache->get($sKey))) {
+            $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', $order);
 
-        foreach ($lProjets as $k => $p) {
-            if ($p['id_project'] == $id_project) {
-                $previous = isset($lProjets[$k - 1]) ? $lProjets[$k - 1]['slug'] : null;
-                $next     = isset($lProjets[$k + 1]) ? $lProjets[$k + 1]['slug'] : null;
-                break;
+            foreach ($lProjets as $k => $p) {
+                if ($p['id_project'] == $id_project) {
+                    $previous = isset($lProjets[$k - 1]) ? $lProjets[$k - 1]['slug'] : null;
+                    $next     = isset($lProjets[$k + 1]) ? $lProjets[$k + 1]['slug'] : null;
+                    break;
+                }
             }
+
+            $aSiblings = array('previous' => $previous, 'next' => $next);
+            $oCache->set($sKey, $aSiblings, Cache::SHORT_TIME);
         }
 
-        return array('previous' => $previous, 'next' => $next);
+        return $aSiblings;
     }
 
     // liste les projets favoris dont la date de retrait est dans j-2
