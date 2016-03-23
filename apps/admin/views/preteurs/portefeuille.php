@@ -58,6 +58,13 @@
                 <?= ($this->bIsBetaTester) ? 'Desactiver BetaTester' : 'Activer BetaTester'?>
             </a>
         </div>
+        <?php if (empty($this->aAutoBidSettings)) : ?>
+            <div style="margin: 25px 25px;">
+            <span style="font-weight: bold; background-color:#F2F258; padding: 10px 10px;">
+            Le preteur n'a pas encore défini ses paramètres.
+            </span>
+            </div>
+        <?php else: ?>
         <div>
             <span>Activation le : <?= isset($this->aSettingsDates['on']) ? $this->aSettingsDates['on']->format('d/m/Y') : '' ?></span>
             <span style="padding-left: 400px;">Désactivation le : <?= isset($this->aSettingsDates['off']) ? $this->aSettingsDates['off']->format('d/m/Y') : '' ?></span>
@@ -67,7 +74,7 @@
         <div style="margin-bottom: 15px;">
             <span>Montant: </span>
             <input type="text" name="autobid-amount" id="autobid-amount"
-                   value="<?= (isset($this->aAutoBidSettings)) ? $this->aAutoBidSettings[1][0]['amount'] : '' ?>"
+                   value="<?= (isset($this->aAutoBidSettings[1][0]['amount'])) ? $this->aAutoBidSettings[1][0]['amount'] : '' ?>"
                    disabled="disabled"/>
         </div>
         <div class="autobid-param-advanced autobid-param-advanced-locked autobid-block" id="autobid-block">
@@ -91,7 +98,7 @@
                         <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
                         <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                             <div class="cell-inner">
-                                <label class="param-advanced-label"><?= $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
+                                <label class="param-advanced-label"><?= empty($aSetting['rate_min']) ? 'off' : $this->ficelle->formatNumber($aSetting['rate_min'], 1) ?>%</label>
                             </div>
                         </td>
                     <?php endforeach; ?>
@@ -110,6 +117,7 @@
             </table>
         </div>
     </div>
+    <?php endif; ?>
 
     <h2>Prêts</h2>
     <div class="table-filter clearfix">
