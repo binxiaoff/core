@@ -57,8 +57,10 @@
                                 <span class="<?= (false === empty($aBid['id_autobid']) && $this->bIsAllowedToSeeAutobid) ? 'autobid' : 'no_autobid' ?>">A</span>
                                 <span class="amount"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</span>
                                 <span class="rate"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</span>
-                                <span class="circle_pending"></span>
-                                <span class="pending"><?= $this->lng['preteur-synthese']['label-pending-bid'] ?></span>
+                                <span class="circle_label">
+                                    <span class="circle_pending"></span>
+                                    <span class="pending"><?= $this->lng['preteur-synthese']['label-pending-bid'] ?></span>
+                                </span>
                             </div>
                         <?php endforeach; ?>
                             <?php if (false === empty($aProject['aRejectedBid'])) : ?>
@@ -67,10 +69,13 @@
                                     <span class="<?= (false === empty($aBid['id_autobid']) && $this->bIsAllowedToSeeAutobid) ? 'autobid' : 'no_autobid' ?>">A</span>
                                     <span class="amount"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['amount'] / 100, 0) ?> €</span>
                                     <span class="rate"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['rate'], 1) ?> %</span>
-                                    <span class="circle_rejected"></span>
-                                    <span class="rejected"><?= $this->lng['preteur-synthese']['label-rejected-bid'] ?>
-                                        <a href="<?= $this->lurl . '/projects/detail/' . $aProject['slug'] ?>"><?= $this->lng['preteur-synthese']['label-new-offer'] ?></a>
+                                    <span class="circle_label">
+                                        <span class="circle_rejected"></span>
+                                        <span class="rejected"><?= $this->lng['preteur-synthese']['label-rejected-bid'] ?>
+                                            <a href="<?= $this->lurl . '/projects/detail/' . $aProject['slug'] ?>"><?= $this->lng['preteur-synthese']['label-new-offer'] ?></a>
+                                        </span>
                                     </span>
+
                                 </div>
                                 <?php if ($aProject['iNumberOfRejectedBids'] > 1) : ?>
                                 <div class="row bid">

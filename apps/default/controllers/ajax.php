@@ -1768,6 +1768,9 @@ class ajaxController extends bootstrap
         $oClient        = $this->loadData('clients');
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oBids          = $this->loadData('bids');
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         if (isset($this->params[0]) && isset($this->params[1]) && $this->oProject->get($this->params[0]) && $oClient->get($this->params[1], 'hash')) {
             $oLenderAccount->get($this->clients->id_client, 'id_client_owner');

@@ -268,6 +268,23 @@
     .rd-desc span{ display: inline-block; }
 }
 
+div#ongoing_bids div.row.bid span.autobid {
+    width: auto;
+    display: inline-block;
+}
+div#ongoing_bids div.row.bid span.amount {
+    width: 65px;
+    display: inline-block;
+}
+div#ongoing_bids div.row.bid span.rate {
+    width: 50px;
+    display: inline-block;
+}
+div#ongoing_bids div.row.bid span.circle_label {
+    width: auto;
+    display: inline-block;
+}
+
 #ongoing_bids .bid{
     padding: 5px 10px 5px 10px;
 }
@@ -298,22 +315,22 @@
 }
 
 #ongoing_bids .circle_pending {
-    width: 20px;
-    height: 20px;
-    -webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
-    border-radius: 20px;
+    width: 14px;
+    height: 14px;
+    -webkit-border-radius: 14px;
+    -moz-border-radius: 14px;
+    border-radius: 14px;
     background: #289922;
     text-decoration: none;
     display: inline-block;
 }
 
 #ongoing_bids .circle_rejected {
-    width: 20px;
-    height: 20px;
-    -webkit-border-radius: 20px;
-    -moz-border-radius: 20px;
-    border-radius: 20px;
+    width: 14px;
+    height: 14px;
+    -webkit-border-radius: 14px;
+    -moz-border-radius: 14px;
+    border-radius: 14px;
     background: #eb3023;
     text-decoration: none;
     display: inline-block;
