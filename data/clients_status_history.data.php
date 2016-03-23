@@ -29,98 +29,79 @@
 class clients_status_history extends clients_status_history_crud
 {
 
-	function clients_status_history($bdd,$params='')
+    public function __construct($bdd, $params = '')
     {
-        parent::clients_status_history($bdd,$params);
+        parent::clients_status_history($bdd, $params);
     }
 
-    function get($id,$field='id_client_status_history')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
-        return parent::get($id,$field);
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+        if ($order != '') {
+            $order = ' ORDER BY ' . $order;
+        }
+        $sql      = 'SELECT * FROM `clients_status_history`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
+        return $result;
     }
 
-    function update($cs='')
+    public function counter($where = '')
     {
-        parent::update($cs);
+        if ($where != '') {
+            $where = ' WHERE ' . $where;
+        }
+
+        $sql = 'SELECT count(*) FROM `clients_status_history` ' . $where;
+
+        $result = $this->bdd->query($sql);
+
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function delete($id,$field='id_client_status_history')
+    public function exist($id, $field = 'id_client_status_history')
     {
-    	parent::delete($id,$field);
+        $sql    = 'SELECT * FROM `clients_status_history` WHERE ' . $field . '="' . $id . '"';
+        $result = $this->bdd->query($sql);
+
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    function create($cs='')
+    public function addStatus($id_user, $status, $id_client, $content = '', $numerorelance = false)
     {
-        $id = parent::create($cs);
-        return $id;
+        $sql = 'SELECT id_client_status FROM `clients_status` WHERE status = ' . $status . ' ';
+
+        $result           = $this->bdd->query($sql);
+        $id_client_status = (int) ($this->bdd->result($result, 0, 0));
+
+        $this->id_client        = $id_client;
+        $this->id_client_status = $id_client_status;
+        $this->id_user          = $id_user;
+        $this->content          = $content;
+        if (is_integer($numerorelance)) {
+            $this->numero_relance = $numerorelance;
+        }
+        $this->id_client_status_history = $this->create();
+
+        return $this->id_client_status_history;
     }
 
-	function select($where='',$order='',$start='',$nb='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
-		if($order != '')
-			$order = ' ORDER BY '.$order;
-		$sql = 'SELECT * FROM `clients_status_history`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result;
-	}
+    public function get_last_statut($id_client)
+    {
+        $sql = 'SELECT * FROM `clients_status_history` WHERE id_client = ' . $id_client . ' ORDER BY id_client_status_history DESC LIMIT 1';
 
-	function counter($where='')
-	{
-		if($where != '')
-			$where = ' WHERE '.$where;
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $result[] = $record;
+        }
 
-		$sql='SELECT count(*) FROM `clients_status_history` '.$where;
+        return $result[0];
+    }
 
-		$result = $this->bdd->query($sql);
-		return (int)($this->bdd->result($result,0,0));
-	}
-
-	function exist($id,$field='id_client_status_history')
-	{
-		$sql = 'SELECT * FROM `clients_status_history` WHERE '.$field.'="'.$id.'"';
-		$result = $this->bdd->query($sql);
-		return ($this->bdd->fetch_array($result,0,0)>0);
-	}
-
-	/*
-		2015-08-24 : Ajout du paramètre manquant pour la relance complétude client (numerorelance). Autres modifications sur cron.php
-
-	*/
-
-	function addStatus($id_user,$status,$id_client,$content='',$numerorelance=false)
-	{
-		$sql='SELECT id_client_status FROM `clients_status` WHERE status = '.$status.' ';
-
-		$result = $this->bdd->query($sql);
-		$id_client_status = (int)($this->bdd->result($result,0,0));
-
-		$this->id_client = $id_client;
-		$this->id_client_status = $id_client_status;
-		$this->id_user = $id_user;
-		$this->content = $content;
-		if (is_integer($numerorelance))
-			$this->numero_relance=$numerorelance;
-		$this->id_client_status_history = $this->create();
-		return $this->id_client_status_history;
-	}
-
-        function get_last_statut($id_client)
-	{
-		$sql = 'SELECT * FROM `clients_status_history` WHERE id_client = '.$id_client.' ORDER BY id_client_status_history DESC LIMIT 1';
-
-		$resultat = $this->bdd->query($sql);
-		$result = array();
-		while($record = $this->bdd->fetch_array($resultat))
-		{
-			$result[] = $record;
-		}
-		return $result[0];
-	}
 }
