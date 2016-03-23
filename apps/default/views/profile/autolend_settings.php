@@ -226,6 +226,7 @@ $(window).load(function(){
 
 
     $('.cell-inner').click(function () {
+        disableSimpleRateSetting();
 
         if (!$('#autobid-block').hasClass('autobid-param-advanced-locked')) {
             var cell = $(this);
@@ -339,6 +340,13 @@ $(window).load(function(){
 
         ctx.stroke();
         $('#param-advanced-global-progress-label').html(percentage +'%');
+    }
+
+    function disableSimpleRateSetting(){
+        $('#autobid-param-simple-taux-min').val('<?= $this->lng['autobid']['settings-select-rate'] ?>');
+        $('.c2-sb-list-item-link').removeClass('c2-sb-list-item-link-active');
+        $('.c2-sb-text').html('<?= $this->lng['autobid']['settings-select-rate'] ?>');
+        $('.c2-sb-wrap').addClass("field-error");
     }
 });
 </script>
