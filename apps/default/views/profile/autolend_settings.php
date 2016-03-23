@@ -61,6 +61,7 @@
                         <div id="select-autobid-taux" style="display:none;">
                             <select name="autobid-param-simple-taux-min" id="autobid-param-simple-taux-min" class="custom-select field-small required" >
                                 <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
+                                <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
                                 <?php foreach (range(\bids::BID_RATE_MAX, \bids::BID_RATE_MIN, -$this->fAutoBidStep) as $fRate) : ?>
                                     <option value="<?= $fRate ?>" <?= (round($fRate,1) == round($this->aSettingsSubmitted['simple-taux-min'],1)) ? 'selected' : '' ?> >
                                         <?= $this->ficelle->formatNumber($fRate, 1) ?>%
@@ -213,6 +214,16 @@ $(window).load(function(){
 
         }
     });
+
+    $('#validate_settings_novice').click(function (e) {
+        if ($('#autobid-param-simple-taux-min').val() <= 0) {
+            $("#autobid-param-simple-taux-min").addClass("field-error");
+            e.preventDefault();
+        } else {
+            $("#autobid-param-simple-taux-min").removeClass("field-error");
+        }
+    });
+
 
     $('.cell-inner').click(function () {
 

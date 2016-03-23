@@ -151,8 +151,10 @@
 
         $('.link-less').click(function () {
             noviceModification();
+            $('#autobid-param-simple-taux-min').val('<?= $this->lng['autobid']['settings-select-rate'] ?>');
             $('.c2-sb-list-item-link').removeClass('c2-sb-list-item-link-active');
-            $('.c2-sb-text').html('Choisir');
+            $('.c2-sb-text').html('<?= $this->lng['autobid']['settings-select-rate'] ?>');
+            $('.c2-sb-wrap').addClass("field-error");
         });
 
         $('#settings_modifications_expert').click(function () {
