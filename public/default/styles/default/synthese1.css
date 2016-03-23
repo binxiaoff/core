@@ -357,14 +357,20 @@ div#ongoing_bids div.row.bid span.circle_label {
     text-decoration: none;
 }
 
-.autobid_switch h2{
+.autobid_links h2 {
     color: #d9aa34;
     border-bottom: none;
     padding-bottom: 0px;
     margin-bottom: 0px;
+    white-space: nowrap;
 }
-.autobid_switch div{
-    float:right;
+
+.autobid_links div {
+    width: 90%;
     padding-right: 10px;
     margin-top: 24px;
+}
+
+.autobid_links a.bottom-link {
+    float: left;
 }
