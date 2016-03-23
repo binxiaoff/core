@@ -61,7 +61,7 @@
 .autobid-stars {
     width: 67px;
     height: 13px;
-    background: url(images/stars-sprite.png) no-repeat top center;
+    background: url(images/etoile.png) no-repeat top center;
     display: inline-block;
 }
 .autobid-stars.stars-35 {
