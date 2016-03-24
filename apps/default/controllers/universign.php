@@ -179,15 +179,12 @@ class universignController extends bootstrap
                         $exp_name = $this->mails_text->exp_name;
                         eval("\$exp_name = \"$exp_name\";");
 
-                        // Nettoyage de printemps
                         $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                         $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
                         $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                         $this->email->addRecipient(trim($destinaire));
-                        //$this->email->addRecipient(trim(implode(',', $this->Config['DebugMailIt'])));
-
                         $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
                         $this->email->setHTMLBody(utf8_decode($texteMail));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
@@ -530,7 +527,7 @@ class universignController extends bootstrap
 
                 //send request and stores response values
                 $r = &$c->send($f);
-                $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir send to Universign', array($projects_pouvoir->id_project), array($projects_pouvoir->id_project));
+                $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir send to Universign', array($projects_pouvoir->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
                     $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url

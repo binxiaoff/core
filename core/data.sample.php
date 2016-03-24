@@ -65,6 +65,6 @@ class --classe-- extends --classe--_crud
     public function exist($id, $field = '--id--')
     {
         $result = $this->bdd->query('SELECT * FROM `--table--` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_assoc($result, 0, 0) > 0);
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 }

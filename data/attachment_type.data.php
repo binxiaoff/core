@@ -121,7 +121,7 @@ class attachment_type extends attachment_type_crud
     public function exist($id, $field = 'id')
     {
         $result = $this->bdd->query('SELECT * FROM `attachment_type` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getAllTypesForProjects($sLanguage, $bIncludeOthers = true, array $aTypes = null)

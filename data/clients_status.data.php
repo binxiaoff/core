@@ -74,20 +74,20 @@ class clients_status extends clients_status_crud
     public function exist($id, $field = 'id_client_status')
     {
         $result = $this->bdd->query('SELECT * FROM `clients_status` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getLastStatut($id_client)
     {
-        $sql = 'SELECT id_client_status
-                FROM `clients_status_history`
-                WHERE id_client = ' . $id_client . '
-                ORDER BY added DESC
-                LIMIT 1
-                ';
+        $sql = '
+            SELECT id_client_status
+            FROM clients_status_history
+            WHERE id_client = ' . $id_client . '
+            ORDER BY added DESC, id_client_status_history DESC
+            LIMIT 1';
 
         $result           = $this->bdd->query($sql);
-        $id_client_status = (int)($this->bdd->result($result, 0, 0));
+        $id_client_status = (int) $this->bdd->result($result, 0, 0);
 
         return parent::get($id_client_status, 'id_client_status');
     }

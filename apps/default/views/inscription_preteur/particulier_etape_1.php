@@ -56,7 +56,7 @@
                    placeholder="<?=$this->lng['etape1']['code-postal']?>" title="<?=$this->lng['etape1']['code-postal']?>" value="<?=$this->clients_adresses->cp_fiscal?>"/>
             <input type="text" id="ville_inscription" name="ville_inscription" class="field field-small required" data-autocomplete="city"
                    placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville_fiscal?>"/>
-            <select name="pays1" id="pays1" class="custom-select required field-small">
+            <select name="pays1" id="pays1" class="country custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
                 <option value=""><?=$this->lng['etape1']['pays']?></option>
                 <?php foreach ($this->lPays as $p) { ?>
@@ -80,7 +80,7 @@
                        placeholder="<?=$this->lng['etape1']['code-postal']?>" value="<?=$this->clients_adresses->cp?>" title="<?=$this->lng['etape1']['code-postal']?>" />
                 <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
                        placeholder="<?=$this->lng['etape1']['ville']?>" title="<?=$this->lng['etape1']['ville']?>" value="<?=$this->clients_adresses->ville?>" />
-                <select name="pays2" id="pays2" class="custom-select required field-small">
+                <select name="pays2" id="pays2" class="country custom-select required field-small">
                     <option value=""><?=$this->lng['etape1']['pays']?></option>
                     <option value=""><?=$this->lng['etape1']['pays']?></option>
                     <?php foreach ($this->lPays as $p) { ?>
@@ -139,7 +139,7 @@
                    placeholder="<?=$this->lng['etape1']['commune-de-naissance']?>" value="<?=$this->clients->ville_naissance?>">
             <input type="hidden" id="insee_birth" name="insee_birth" value="<?=$this->clients->insee_birth!=''?$this->clients->insee_birth:''?>"/>
             <span class="inline-text inline-text-alt inline-text-alt-small"><?=$this->lng['etape1']['pays-de-naissance']?> :</span>
-            <select name="pays3" id="pays3" class="custom-select required field-small">
+            <select name="pays3" id="pays3" class="country custom-select required field-small">
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <option value=""><?=$this->lng['etape1']['pays-de-naissance']?></option>
                 <?php foreach($this->lPays as $p) { ?>

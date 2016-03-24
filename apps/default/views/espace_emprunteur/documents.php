@@ -83,40 +83,37 @@
         <?php endforeach; ?>
         </tbody>
     </table>
-
-
 </div>
 <div class="invoices">
     <h2><?= $this->lng['espace-emprunteur']['factures'] ?></h2>
     <table class="invoices" width="100%">
         <thead>
-        <tr>
-            <th>
-                <div class="th-wrap">
-                    <i class="tooltip-anchor icon-double"></i>
-                    <div><?= $this->lng['espace-emprunteur']['no-facture'] ?></div>
-                </div>
-            </th>
-            <th>
-                <div class="th-wrap">
-                <i class="icon-person tooltip-anchor" style="margin-left:-15px;"></i>
-                    <div><?= $this->lng['espace-emprunteur']['identifiant-projet'] ?></div>
-                </div>
-                </th>
-            <th>
-                <div class="th-wrap">
-                    <i class="icon-calendar tooltip-anchor" style="margin-left:-15px;" ></i>
-                    <div><?= $this->lng['espace-emprunteur']['date-facture'] ?></div>
-                </div>
-
-            </th>
-            <th>
-                <div class="th-wrap">
-                <i title="<?= $this->lng['preteur-operations-pdf']['info-titre-bon-caisse'] ?>" class="tooltip-anchor icon-bdc"></i>
-                    <div><?= $this->lng['espace-emprunteur']['facture'] ?></div>
+            <tr>
+                <th>
+                    <div class="th-wrap">
+                        <i class="tooltip-anchor icon-double"></i>
+                        <div><?= $this->lng['espace-emprunteur']['no-facture'] ?></div>
                     </div>
                 </th>
-        </tr>
+                <th>
+                    <div class="th-wrap">
+                    <i class="icon-person tooltip-anchor" style="margin-left:-15px;"></i>
+                        <div><?= $this->lng['espace-emprunteur']['identifiant-projet'] ?></div>
+                    </div>
+                    </th>
+                <th>
+                    <div class="th-wrap">
+                        <i class="icon-calendar tooltip-anchor" style="margin-left:-15px;" ></i>
+                        <div><?= $this->lng['espace-emprunteur']['date-facture'] ?></div>
+                    </div>
+                </th>
+                <th>
+                    <div class="th-wrap">
+                        <i class="tooltip-anchor icon-bdc"></i>
+                        <div><?= $this->lng['espace-emprunteur']['facture'] ?></div>
+                    </div>
+                </th>
+            </tr>
         </thead>
         <tbody>
         <?php foreach ($this->aClientsInvoices as $aInvoice) : ?>

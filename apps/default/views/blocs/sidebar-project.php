@@ -12,7 +12,7 @@ if ($this->projects_status->status == \projects_status::REMBOURSEMENT_ANTICIPE) 
     $this->fireView('../blocs/sidebar-project/not-connected');
 } elseif ($this->page_attente) {
     $this->fireView('../blocs/sidebar-project/waiting');
-} elseif ($this->clients_status->status < 60) {
+} elseif ($this->clients_status->status < clients_status::VALIDATED) {
     $this->fireView('../blocs/sidebar-project/pending');
 } else {
     $this->fireView('../blocs/sidebar-project/default-connected');

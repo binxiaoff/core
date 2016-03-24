@@ -137,7 +137,7 @@ final class Cron
      */
     private function startCron($sName, $iDelay)
     {
-        $this->oLogger    = $this->oBootstrap->setLogger($sName, 'cron.log')->getLogger();
+        $this->oLogger    = $this->oBootstrap->setLogger($sName, 'cron.' . date('Ymd') . '.log')->getLogger();
         $this->oSemaphore = $this->oBootstrap->setSettings()->getSettings();
         $this->oSemaphore->get('Controle cron ' . $sName, 'type');
 

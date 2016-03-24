@@ -30,12 +30,6 @@ if ($this->bShortTunnel) {
     $_SESSION['utm_source2'] = '';
 }
 
-$this->ficelle->source(
-    isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
-    $this->lurl . (isset($this->params[0]) ? '/' . $this->params[0] : ''),
-    isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
-);
-
 $bProcessForm = false;
 
 if (isset($_POST['spy_inscription_landing_page_depot_dossier'])) {
@@ -109,5 +103,5 @@ if ($bProcessForm) {
 $this->ordreProject = 1;
 $this->type         = 0;
 
-$this->lProjetsFunding = $this->projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], 0, 6);
+$this->lProjetsFunding = $this->projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], array(), 0, 6);
 $this->nbProjects      = $this->projects->countSelectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)), ' AND p.status = 0 AND p.display = 0');

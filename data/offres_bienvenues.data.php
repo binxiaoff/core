@@ -91,6 +91,6 @@ class offres_bienvenues extends offres_bienvenues_crud
     {
         $sql    = 'SELECT * FROM `offres_bienvenues` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

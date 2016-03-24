@@ -651,32 +651,6 @@ function valid_etape6(id_project) {
     });
 }
 
-function recapdashboard(month, annee) {
-    var val = {
-        month: month,
-        annee: annee
-    };
-    $.post(add_url + '/ajax/recapdashboard', val).done(function (data) {
-
-
-        $("#recapDashboard").html(data);
-
-    });
-}
-
-function ratioDashboard(month, annee) {
-    var val = {
-        month: month,
-        annee: annee
-    };
-    $.post(add_url + '/ajax/ratioDashboard', val).done(function (data) {
-
-
-        $("#ratioDashboard").html(data);
-
-    });
-}
-
 
 function generer_le_mdp(id_client) {
 
@@ -709,19 +683,6 @@ function send_email_borrower_area(id_client, type) {
             setTimeout(function () {
                 $(".reponse_email").slideUp();
             }, 3000);
-        }
-    });
-}
-
-function loadDashYear(annee) {
-    var val = {
-        annee: annee
-    };
-    $.post(add_url + '/ajax/loadDashYear', val).done(function (data) {
-        if (data != 'nok') {
-
-            $(".contentLoadYear").html(data);
-
         }
     });
 }
