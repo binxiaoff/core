@@ -125,7 +125,7 @@
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
                                     <?php if ($this->CountEnchere > 0) : ?>
-                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
+                                        <span><?= $this->ficelle->formatNumber($this->avgRate, 1) . ' %' ?></span>
                                     <?php else : ?>
                                         <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
                                     <?php endif; ?>
@@ -180,19 +180,18 @@
                                                 <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                                                 <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                                             </tr>
-                                        <?php endif; ?>
-                                        <?php if ($e['ordre'] == 6) : ?>
+                                        <?php elseif ($e['ordre'] == 6) : ?>
                                         <tr>
                                             <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
                                         </tr>
-                                        <?php else : ?>
+                                    <?php endif; ?>
+                                    <?php else : ?>
                                         <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
                                             <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
                                             <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
                                             <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                                             <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                                         </tr>
-                                        <?php endif; ?>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
                             </table>

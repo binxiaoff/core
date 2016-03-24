@@ -275,7 +275,6 @@ class ajaxController extends bootstrap
         $this->triPartxInt = explode(';', $this->triPartxInt);
 
         $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
         $this->companies         = $this->loadData('companies');
         $this->companies_details = $this->loadData('companies_details');
         $this->favoris           = $this->loadData('favoris');
@@ -355,7 +354,6 @@ class ajaxController extends bootstrap
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ',' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
         }
         foreach ($this->lProjetsFunding as $iKey => $aProject) {
-            $this->projects_status->getLastStatut($aProject['id_project']);
             $this->companies->get($aProject['id_company'], 'id_company');
 
             $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait_full']);
@@ -365,7 +363,7 @@ class ajaxController extends bootstrap
                 $this->lProjetsFunding[$iKey]['daterest'] = "Terminé";
             }
 
-            $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $this->projects_status->status), 1);
+            $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
         }
     }
 
@@ -448,7 +446,6 @@ class ajaxController extends bootstrap
         $this->bids             = $this->loadData('bids');
         $this->projects         = $this->loadData('projects');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->projects_status  = $this->loadData('projects_status');
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
@@ -482,10 +479,14 @@ class ajaxController extends bootstrap
             $order = 'ordre ' . $direction;
         }
 
+        /** @var \projects_status $oProjectStatus */
+        $oProjectStatus = $this->loadData('projects_status');
+        $oProjectStatus->getLastStatut($this->projects->id_project);
+
         $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
         $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
         $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
+        $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
         $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
@@ -525,10 +526,14 @@ class ajaxController extends bootstrap
             $order = 'ordre ' . $direction;
         }
 
+        /** @var \projects_status $oProjectStatus */
+        $oProjectStatus = $this->loadData('projects_status');
+        $oProjectStatus->getLastStatut($this->projects->id_project);
+
         $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
         $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
         $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
+        $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
         $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 

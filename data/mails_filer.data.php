@@ -64,7 +64,7 @@ class mails_filer extends mails_filer_crud
     {
         $result = $this->bdd->query('SELECT * FROM mails_filer WHERE ' . $field . ' = "' . $id . '"');
 
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getListOfEmails($sEmail, $sStartDate = '2013-01-01', $sEndDate = null)

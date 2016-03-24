@@ -68,7 +68,7 @@ class companies extends companies_crud
     public function exist($id, $field = 'id_company')
     {
         $result = $this->bdd->query('SELECT * FROM `companies` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     /**
@@ -102,7 +102,7 @@ class companies extends companies_crud
 
         $resultat  = $this->bdd->query($sql);
         $aProjects = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $aProjects[] = $record;
         }
         return $aProjects;

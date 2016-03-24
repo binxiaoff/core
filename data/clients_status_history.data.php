@@ -48,6 +48,7 @@ class clients_status_history extends clients_status_history_crud
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
+
         return $result;
     }
 
@@ -104,4 +105,20 @@ class clients_status_history extends clients_status_history_crud
         return $result[0];
     }
 
+    /**
+     * @param clients $oClient
+     * @return string
+     */
+    public function getCompletnessRequestContent(\clients $oClient)
+    {
+        $sQuery = ' SELECT content FROM `clients_status_history` where id_client = ' . $oClient->id_client . ' and id_client_status = 2 order by added desc limit 1 ';
+        $rQuery = $this->bdd->query($sQuery);
+        $sCompletenessRequestContent = "";
+
+        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            $sCompletenessRequestContent = $aRow['content'];
+        }
+
+        return $sCompletenessRequestContent;
+    }
 }
