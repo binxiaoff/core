@@ -92,7 +92,15 @@ class devboxController extends bootstrap
 
         while ($aRow = $this->bdd->fetch_assoc($rResult)) {
             $oProjects->get($aRow['id_project']);
-            $rAnnualAccountResult = $this->bdd->query('SELECT id_bilan FROM companies_bilans WHERE id_company = ' . $oProjects->id_company . ' ORDER BY cloture_exercice_fiscal DESC LIMIT 1');
+            $rAnnualAccountResult = $this->bdd->query('
+                SELECT id_bilan
+                FROM companies_bilans
+                WHERE id_company = ' . $oProjects->id_company . '
+                    AND YEAR(cloture_exercice_fiscal) < YEAR(CURDATE())
+                    AND (ca != 0 OR resultat_brute_exploitation != 0 OR resultat_exploitation != 0 OR investissements != 0)
+                ORDER BY cloture_exercice_fiscal DESC
+                LIMIT 1'
+            );
 
             if (
                 false !== ($aAnnualAccount = $this->bdd->fetch_assoc($rAnnualAccountResult))
