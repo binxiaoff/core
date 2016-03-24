@@ -26,7 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\ULogger;
 use Unilend\librairies\Cache;
 
 class lenders_accounts extends lenders_accounts_crud
@@ -73,7 +72,7 @@ class lenders_accounts extends lenders_accounts_crud
     {
         $sql    = 'SELECT * FROM `lenders_accounts` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     /**
@@ -234,8 +233,8 @@ class lenders_accounts extends lenders_accounts_crud
             $aRecord = $oCache->get($sKey);
 
             if (false === $aRecord) {
-                $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = $iLenderId";
-                $oQuery = $this->bdd->query($sQuery);
+                $sQuery  = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = $iLenderId";
+                $oQuery  = $this->bdd->query($sQuery);
                 $aRecord = $this->bdd->fetch_array($oQuery);
                 $oCache->set($sKey, $aRecord);
             }

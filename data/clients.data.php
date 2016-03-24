@@ -84,7 +84,7 @@ class clients extends clients_crud
     {
         $sql    = 'SELECT * FROM `clients` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     //******************************************************************************************//
@@ -214,8 +214,7 @@ class clients extends clients_crud
                 FROM `clients_status_history`
                 WHERE id_client = ' . $id_client . '
                 ORDER BY added DESC
-                LIMIT 1
-                ';
+                LIMIT 1';
         $result           = $this->bdd->query($sql);
         $id_client_status = (int) ($this->bdd->result($result, 0, 0));
 

@@ -70,7 +70,7 @@ class pays_v2 extends pays_v2_crud
     {
         $sql    = 'SELECT * FROM `pays_v2` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getZoneB040Countries()
