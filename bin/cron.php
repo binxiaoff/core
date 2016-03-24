@@ -9,8 +9,8 @@
 require_once __DIR__ . '/../Autoloader.php';
 require_once __DIR__ . '/../config.php';
 
-use Unilend\core\Cron;
 use Unilend\core\Bootstrap;
+use Unilend\core\Cron;
 use Unilend\librairies\ULogger;
 
 Autoloader::register();
@@ -35,6 +35,6 @@ try {
     $oCron->parseCommand();
     $oCron->executeCron();
 } catch (\UnexpectedValueException $oException) {
-    $oBootstrap->setLogger('cron', 'cron.log');
+    $oBootstrap->setLogger('cron', 'cron.' . date('Ymd') . '.log');
     $oBootstrap->getLogger()->addRecord(ULogger::CRITICAL, $oException->getMessage(), array(__FILE__ . ' at ' . __LINE__));
 }

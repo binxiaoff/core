@@ -72,7 +72,7 @@ class loans extends loans_crud
     {
         $sql    = 'SELECT * FROM `loans` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getBidsValid($id_project, $id_lender)
@@ -169,37 +169,26 @@ class loans extends loans_crud
     }
 
     // retourne la moyenne des prets validés d'un preteur sur un projet
-    public function getAvgLoansPreteur($id_project, $id_lender, $champ = 'amount')
+    public function getAvgLoansPreteur($id_project, $id_lender)
     {
-        $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
-        if ($avg == '') {
-            $avg = 0;
-        }
-
-        return $avg;
+        return $this->bdd->result($result, 0, 'avg');
     }
 
     // retourne la moyenne des prets validés d'un preteur
     public function getAvgPrets($id_lender)
     {
-        $sql = 'SELECT AVG(rate) as avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
-        if ($avg == '') {
-            $avg = 0;
-        }
-
-        return $avg;
+        return $this->bdd->result($result, 0, 'avg');
     }
 
     // sum prêtée d'un lender
     public function sumPrets($id_lender)
     {
-
         $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = "0"';
 
         $result  = $this->bdd->query($sql);
@@ -244,22 +233,6 @@ class loans extends loans_crud
         return $montant;
     }
 
-    public function sumPretsByProject($id_lender, $year, $order = '')
-    {
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = 'SELECT SUM(amount) as montant,AVG(rate) as rate, id_project FROM `loans` WHERE id_lender = ' . $id_lender . ' AND YEAR(added) = ' . $year . ' AND status = 0 GROUP BY id_project' . $order;
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     public function getSumPretsByMonths($id_lender, $year)
     {
         $sql = 'SELECT SUM(amount/100) AS montant, LEFT(added,7) AS date FROM loans WHERE YEAR(added) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 0 GROUP BY LEFT(added,7)';
@@ -270,16 +243,6 @@ class loans extends loans_crud
             $res[$d[1]] = $rec['montant'];
         }
         return $res;
-    }
-
-    public function sumLoansbyDay($date)
-    {
-
-        $sql = 'SELECT SUM(amount) FROM `loans` WHERE LEFT(added,10) = "' . $date . '" AND status = 0';
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        return $montant / 100;
     }
 
     public function sum($where = '', $champ)
@@ -294,28 +257,6 @@ class loans extends loans_crud
         $return = (int)($this->bdd->result($result, 0, 0));
 
         return $return;
-    }
-
-    // On recup les projet dont le preteur a un loan valide
-    public function getProjectsPreteurLoans($id_lender)
-    {
-
-        $sql = '
-            SELECT
-                l.id_project,
-                p.title
-            FROM loans l
-            LEFT JOIN projects p ON l.id_project = p.id_project
-            WHERE id_lender = ' . $id_lender . ' AND l.status = 0
-            GROUP BY l.id_project
-            ORDER BY p.title ASC';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
     }
 
     // On recup la liste des loans d'un preteur en les regoupant par projet

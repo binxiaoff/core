@@ -310,7 +310,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->select('status_pre_emp IN(2,3) AND status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
     }
 
     public function _requete_dossiers_csv()
@@ -325,7 +325,7 @@ class statsController extends bootstrap
         $this->projects         = $this->loadData('projects');
         $this->projects_status  = $this->loadData('projects_status');
 
-        $this->lEmpr = $this->clients->select('status_pre_emp IN(2,3) AND status = 1');
+        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
 
         $header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
         $header = utf8_encode($header);
@@ -374,8 +374,8 @@ class statsController extends bootstrap
             SELECT p.id_project as id_project, c.name,
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
-            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
-            IFNULL(cr.value, 0),
+            (SELECT label FROM projects_status ps WHERE ps.id_project_status = (SELECT id_project_status FROM projects_status_history psh WHERE psh.id_project = p.id_project ORDER BY id_project_status_history DESC LIMIT 1)) AS status,
+            IFNULL(cr.value, 0) AS score_altares,
             c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
@@ -461,8 +461,8 @@ class statsController extends bootstrap
             SELECT p.id_project as id_project, c.name,
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
-            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
-            IFNULL(cr.value, 0),
+            (SELECT label FROM projects_status ps WHERE ps.id_project_status = (SELECT id_project_status FROM projects_status_history psh WHERE psh.id_project = p.id_project ORDER BY id_project_status_history DESC LIMIT 1)) AS status,
+            IFNULL(cr.value, 0) AS score_altares,
             c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,
@@ -631,9 +631,7 @@ class statsController extends bootstrap
 
             (SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status = 0) as Nombre_encheres_en_cours,
 
-            ((SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status = 2) +
-
-            (SELECT COUNT(lo.id_loan) FROM loans lo WHERE lo.id_lender = la.id_lender_account AND lo.status = 1))  as Nombre_encheres_rejetees,
+            (SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status IN (1, 2)) as Nombre_encheres_rejetees,
 
             (SELECT COUNT(lo.id_loan) FROM loans lo WHERE lo.id_lender = la.id_lender_account AND lo.status = 0)  as Nombre_encheres_acceptees,
 
@@ -651,9 +649,8 @@ class statsController extends bootstrap
             (SELECT CONCAT(u.firstname,' ',u.name) FROM users u WHERE u.id_user = " . $_SESSION['user']['id_user'] . ") as Personne_qui_a_fait_la_requete
 
             FROM lenders_accounts la
-            LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client
-            WHERE c.id_client <> 'NULL'";
+            INNER JOIN clients c ON la.id_client_owner = c.id_client
+            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client";
 
         if (isset($this->params[0]) && $this->params[0] === 'csv') {
             $this->exportQueryCSV($sql, 'requete_etude_base_preteur_' . date('Ymd'));
@@ -1238,7 +1235,6 @@ class statsController extends bootstrap
             LEFT JOIN clients_adresses ca ON l.id_client_owner = ca.id_client
             LEFT JOIN companies comp ON l.id_company_owner = comp.id_company
             WHERE c.status = 1
-            AND status_pre_emp IN (1,3)
             ORDER BY l.added DESC';
 
         if (isset($this->params[0]) && $this->params[0] == 'csv') {
@@ -1251,8 +1247,8 @@ class statsController extends bootstrap
         $this->sql = 'SELECT p.id_project as id_project, c.name,
             (SELECT cli.source FROM clients cli WHERE cli.id_client = c.id_client_owner) as source,
             title, p.added,
-            (SELECT label from projects_status ps where ps.`id_project_status` = (select `id_project_status` FROM projects_status_history psh where psh.id_project = p.id_project order by added desc limit 1)) as status,
-            IFNULL(cr.value, 0),
+            (SELECT label FROM projects_status ps WHERE ps.id_project_status = (SELECT id_project_status FROM projects_status_history psh WHERE psh.id_project = p.id_project ORDER BY id_project_status_history LIMIT 1)) as status,
+            IFNULL(cr.value, 0) AS score_altares,
             c.risk, p.amount,p.period,
             (SELECT ca FROM companies_bilans cb WHERE date=2011 and cb.id_company = c.id_company) as ca2011,
             (SELECT ca FROM companies_bilans cb WHERE date=2012 and cb.id_company = c.id_company) as ca2012,

@@ -88,15 +88,15 @@ class depot_de_dossierController extends bootstrap
         }
 
         $this->clients->id_langue      = $this->language;
-        $this->clients->slug_origine   = $this->tree->slug;
-        $this->clients->source         = $_SESSION['utm_source'];
-        $this->clients->source2        = $_SESSION['utm_source2'];
-        $this->clients->status_pre_emp = 2;
+
+        $this->setSource($this->clients);
+
         if (empty($_SESSION['forms']['depot-de-dossier']['email']) || true === $this->clients->existEmail($_SESSION['forms']['depot-de-dossier']['email'])) { // Email does not exist in DB
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'];
         } else {
             $this->clients->email = $_SESSION['forms']['depot-de-dossier']['email'] . '-' . time();
         }
+
         $this->clients->create();
 
         if (false === is_numeric($this->clients->id_client) || $this->clients->id_client < 1) {

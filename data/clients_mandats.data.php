@@ -71,6 +71,6 @@ class clients_mandats extends clients_mandats_crud
     public function exist($id, $field = 'id_mandat')
     {
         $result = $this->bdd->query('SELECT * FROM clients_mandats WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

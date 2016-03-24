@@ -68,7 +68,7 @@ class echeanciers_recouvrements_prorata extends echeanciers_recouvrements_prorat
     {
         $sql    = 'SELECT * FROM `echeanciers_recouvrements_prorata` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function sumCapitalInterets($where = '')

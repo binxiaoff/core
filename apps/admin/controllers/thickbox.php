@@ -107,6 +107,10 @@ class thickboxController extends bootstrap
                 $this->bCustomSite   = true;
                 $this->bDecisionDate = false;
                 $this->bReceiver     = false;
+
+                $aProjectTexts = $this->ln->selectFront('projet', $this->language, $this->App);
+                $this->sInfoStatusChange = trim($aProjectTexts['info-passage-statut-probleme']);
+
                 break;
             case \projects_status::PROBLEME_J_X:
                 $this->bAskEmail     = true;

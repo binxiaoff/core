@@ -1,9 +1,6 @@
-<?php
+<?php $this->bIsConnected = $this->clients->checkAccess(); ?>
 
-$this->bIsConnected = $this->clients->checkAccess();
-
-if ($this->ficelle->is_mobile() == true) {
-    ?>
+<?php if ($this->ficelle->is_mobile() == true) : ?>
     <style type="text/css">
         .sidebar-fixed {
             left: auto;
@@ -13,31 +10,29 @@ if ($this->ficelle->is_mobile() == true) {
             z-index: auto;
         }
     </style>
-    <?php
-}
+<?php endif; ?>
+<?php
+    $tab_date_retrait      = explode(' ', $this->projects->date_retrait_full);
+    $heure                 = $tab_date_retrait[1];
+    $tab_heure_sans_minute = explode(':', $heure);
+    $heure_sans_minute     = $tab_heure_sans_minute[0] . "h" . $tab_heure_sans_minute[1];
 
-$tab_date_retrait      = explode(' ', $this->projects->date_retrait_full);
-$heure                 = $tab_date_retrait[1];
-$tab_heure_sans_minute = explode(':', $heure);
-$heure_sans_minute     = $tab_heure_sans_minute[0] . "h" . $tab_heure_sans_minute[1];
+    if ($heure_sans_minute == '00h00') {
+        $HfinFunding       = explode(':', $this->heureFinFunding);
+        $heure_sans_minute = $HfinFunding[0] . 'h00';
+    }
 
-if ($heure_sans_minute == '00h00') {
-    $HfinFunding       = explode(':', $this->heureFinFunding);
-    $heure_sans_minute = $HfinFunding[0] . 'h00';
-}
-
-if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) {
-    $this->dateRest = $this->lng['preteur-projets']['termine'];
-} else {
-    $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1];
-    ?>
+    if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->page_attente) :
+        $this->dateRest = $this->lng['preteur-projets']['termine'];
+    else :
+        $this->heureFinFunding = $tab_heure_sans_minute[0] . ':' . $tab_heure_sans_minute[1]; ?>
     <script type="text/javascript">
         var cible = new Date('<?= $this->mois_jour ?>, <?= $this->annee ?> <?= $this->heureFinFunding ?>:00');
         var letime = parseInt((cible.getTime()) / 1000, 10);
         setTimeout('decompteProjetDetail(letime,"val","<?= $this->lurl ?>/projects/detail/<?= $this->params[0] ?>")', 500);
         setTimeout('decompteProjetDetail(letime,"valM","<?= $this->lurl ?>/projects/detail/<?= $this->params[0] ?>")', 500);
     </script>
-<?php } ?>
+<?php endif; ?>
 
 <div class="main">
     <div class="shell">
@@ -46,24 +41,24 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                 <h1 class="left"><?= $this->lng['preteur-projets']['decouvrez-les'] ?> <?= $this->nbProjects ?> <?= $this->lng['preteur-projets']['projets-en-cours'] ?></h1>
                 <nav class="nav-tools left">
                     <ul>
-                        <?php if ($this->positionProject['previous'] != '') { ?>
+                        <?php if ($this->positionProject['previous'] != '') : ?>
                             <li>
                             <a class="prev notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['previous'] ?>">arrpw</a>
                             </li>
-                        <?php } ?>
-                        <li <?= ($this->positionProject['previous'] == '' || $this->positionProject['next'] == '' ? 'class="listpro"' : '') ?> >
-                            <a class="view notext" href="<?= $this->lurl ?>/<?= ($_SESSION['page_projet'] == 'projets_fo' || ! isset($_SESSION['page_projet']) ? $this->tree->getSlug(4, $this->language) : 'projects') ?>">view</a>
-                        </li>
-                        <?php if ($this->positionProject['next'] != '') { ?>
+                        <?php endif; ?>
+                            <li <?= ($this->positionProject['previous'] == '' || $this->positionProject['next'] == '' ? 'class="listpro"' : '') ?> >
+                                <a class="view notext" href="<?= $this->lurl ?>/<?= ($_SESSION['page_projet'] == 'projets_fo' || ! isset($_SESSION['page_projet']) ? $this->tree->getSlug(4, $this->language) : 'projects') ?>">view</a>
+                            </li>
+                        <?php if ($this->positionProject['next'] != '') : ?>
                             <li>
                             <a class="next notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['next'] ?>">arrow</a>
                             </li>
-                        <?php } ?>
+                        <?php endif; ?>
                     </ul>
                 </nav>
             </div>
 
-            <?php if (isset($_SESSION['messFinEnchere']) && $_SESSION['messFinEnchere'] != false) { ?>
+            <?php if (isset($_SESSION['messFinEnchere']) && $_SESSION['messFinEnchere'] != false) : ?>
                 <div class="messFinEnchere" style="float:right;color:#C84747;margin-top:18px;"><?= $_SESSION['messFinEnchere'] ?></div>
                 <?php unset($_SESSION['messFinEnchere']); ?>
                 <script type="text/javascript">
@@ -71,7 +66,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                         $('.messFinEnchere').slideUp();
                     }, 5000);
                 </script>
-            <?php } elseif (isset($_SESSION['messPretOK']) && $_SESSION['messPretOK'] != false) { ?>
+            <?php elseif (isset($_SESSION['messPretOK']) && $_SESSION['messPretOK'] != false) : ?>
                 <div class="messPretOK" style="float:right;color:#40B34F;margin-top:18px;"><?= $_SESSION['messPretOK'] ?></div>
                 <?php unset($_SESSION['messPretOK']); ?>
                 <script type="text/javascript">
@@ -79,7 +74,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                         $('.messPretOK').slideUp();
                     }, 5000);
                 </script>
-            <?php } ?>
+            <?php endif; ?>
 
             <h2><?= $this->projects->title ?></h2>
             <div class="content-col left">
@@ -101,16 +96,16 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                         </p>
                     </div>
                     <div class="main-project-info clearfix">
-                        <?php if ($this->projects->photo_projet != '') { ?>
+                        <?php if ($this->projects->photo_projet != '') : ?>
                         <div class="img-holder borderless left">
                             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
                         </div>
-                        <?php } ?>
+                        <?php endif; ?>
                         <div class="info left">
                             <?php $this->companies->get($this->projects->id_company); ?>
                             <h3><?= $this->companies->name ?></h3>
-                            <?= ($this->companies->city != '' ? '<p><i class="icon-place"></i>' . $this->lng['preteur-projets']['localisation'] . ' : ' . $this->companies->city . '</p>' : '') ?>
-                            <?= ($this->companies->sector != '' ? '<p>' . $this->lng['preteur-projets']['secteur'] . ' : ' . $this->lSecteurs[$this->companies->sector] . '</p>' : '') ?>
+                                <?= ($this->companies->city != '' ? '<p><i class="icon-place"></i>' . $this->lng['preteur-projets']['localisation'] . ' : ' . $this->companies->city . '</p>' : '') ?>
+                                <?= ($this->companies->sector != '' ? '<p>' . $this->lng['preteur-projets']['secteur'] . ' : ' . $this->lSecteurs[$this->companies->sector] . '</p>' : '') ?>
                             <ul class="stat-list">
                                 <li>
                                     <span class="i-holder"><i class="icon-calendar tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-periode'] ?>"></i></span>
@@ -126,39 +121,35 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
 
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
-                                    <?php if ($this->CountEnchere > 0) { ?>
-                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
-                                    <?php } else { ?>
+                                    <?php if ($this->CountEnchere > 0) : ?>
+                                        <span><?= $this->ficelle->formatNumber($this->avgRate, 1) . ' %' ?></span>
+                                    <?php else : ?>
                                         <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
-                                    <?php } ?>
+                                    <?php endif; ?>
                                 </li>
                             </ul>
                         </div>
                     </div>
                     <nav class="tabs-nav">
                         <ul>
-                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) { ?>
+                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) :  ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a></li>
                                 <li><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
-                            <?php } else { ?>
+                            <?php else : ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
-                            <?php } ?>
+                            <?php endif; ?>
                             <li><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a></li>
-                            <?php
-                            if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) {
-                                if (isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1) {
-                                    ?>
+                            <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) : ?>
+                                <?php if (isset($_SESSION['client']) && $this->bIsLender) : ?>
                                     <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
-                                    <?php
-                                }
-                            }
-                            ?>
+                                <?php endif;?>
+                            <?php endif; ?>
                         </ul>
                     </nav>
                     <div class="tabs">
-                        <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>
+                        <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                         <div class="tab tc" id="bids">
-                            <?php if (count($this->lEnchere) > 0): ?>
+                            <?php if (count($this->lEnchere) > 0) : ?>
                             <table class="table orders-table">
                                 <tr>
                                     <th width="125"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
@@ -177,45 +168,35 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                                             <i class="icon-arrows"></i></span>
                                     </th>
                                 </tr>
-                                <?php
-                                    foreach ($this->lEnchere as $key => $e) {
-                                        $vous = ($this->lenders_accounts->id_lender_account == $e['id_lender_account']);
-
-                                        if ($this->CountEnchere >= 12) {
-                                            if ($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere - 5) {
-                                                ?>
-                                                <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
-                                                    <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
-                                                    <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                                                    <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
-                                                    <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
-                                                </tr>
-                                                <?php
-                                            }
-                                            if ($e['ordre'] == 6) {
-                                                ?>
-                                                <tr>
-                                                    <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
-                                                </tr>
-                                                <?php
-                                            }
-                                        } else {
-                                            ?>
+                                <?php foreach ($this->lEnchere as $key => $e) : ?>
+                                    <?php $vous = ($this->lenders_accounts->id_lender_account == $e['id_lender_account']) ?>
+                                    <?php if ($this->CountEnchere >= 12) : ?>
+                                        <?php if ($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere - 5) : ?>
                                             <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
                                                 <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
                                                 <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
                                                 <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
                                                 <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
                                             </tr>
-                                            <?php
-                                        }
-                                    }
-                                ?>
+                                        <?php elseif ($e['ordre'] == 6) : ?>
+                                        <tr>
+                                            <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
+                                        </tr>
+                                    <?php endif; ?>
+                                    <?php else : ?>
+                                        <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
+                                            <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
+                                            <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
+                                            <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
+                                            <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
+                                        </tr>
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
                             </table>
-                            <?php if ($this->CountEnchere >= 12): ?>
-                                <a class="btn btn-large displayAll"><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a>
+                            <?php if ($this->CountEnchere >= 12) : ?>
+                            <a class="btn btn-large displayAll"><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a>
                             <?php else: ?>
-                                <div class="displayAll"></div>
+                            <div class="displayAll"></div>
                             <?php endif; ?>
                             <script>
                                 $("#triNum").click(function () {
@@ -250,9 +231,9 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                                     });
                                 });
                             </script>
-                            <?php else: ?>
-                                <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
-                            <?php endif; ?>
+                        <?php else : ?>
+                            <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
+                        <?php endif; ?>
                         </div>
                         <div id="tri" style="display:none;">ordre</div>
                         <div id="direction" style="display:none;">1</div>
@@ -286,7 +267,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                             </article>
                         </div>
                         <div class="tab">
-                        <?php if (false === $this->bIsConnected): ?>
+                        <?php if (false === $this->bIsConnected) : ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
                             </div>
@@ -294,7 +275,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                             <div style="text-align:center;">
                                 <a target="_parent" href="<?= $this->lng['preteur-projets']['cta-lien-comptes-financiers'] ?>" class="btn btn-medium"><?= $this->lng['preteur-projets']['cta-comptes-financiers'] ?></a>
                             </div>
-                        <?php else: ?>
+                        <?php  else : ?>
                             <div class="statistic-tables year-nav clearfix">
                                 <ul class="right">
                                     <?php for ($i = 0; $i < 3; $i++): ?>
@@ -542,26 +523,26 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
         <div class="single-project-mobile">
             <h3><?= $this->projects->title ?></h3>
             <p><?= $this->projects->nature_project ?></p>
-            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>
+            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                 <strong class="green-span"><i class="icon-clock-green"></i><?= $this->lng['preteur-projets']['reste'] ?>
                 <span id="valM"><?= $this->dateRest ?></span></strong>,
-            <?php else: ?>
+            <?php else : ?>
                 <strong class="red-span"><span id="valM"><?= $this->dateRest ?></span></strong>
             <?php endif; ?>
             <?= $this->lng['preteur-projets']['le'] ?> <?= strtolower($this->date_retrait) ?> <?= $this->lng['preteur-projets']['a'] ?> <?= $heure_sans_minute ?>
             <?php $this->fireView('../blocs/project-mobile-header'); ?>
             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
-            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == 60): ?>
+            <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == \projects_status::FUNDE) : ?>
                 <div class="single-project-actions">
                     <a href="<?= $this->lurl . '/thickbox/pop_up_offer_mobile/' . $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
                 </div>
-            <?php elseif (false === $this->bIsConnected): ?>
+            <?php elseif (false === $this->bIsConnected) : ?>
             <div class="single-project-actions">
                 <a target="_parent" class="btn login-toggle" id="seconnecter" style="width:210px; display:block;margin:auto; float: none;"><?= $this->lng['preteur-projets']['se-connecter'] ?></a>
                 <a href="<?= $this->lurl . '/' . $this->tree->getSlug(127, $this->language) ?>" target="_parent" class="btn sinscrire_cta" id="sinscrire" style=""><?= $this->lng['preteur-projets']['sinscrire'] ?></a>
             </div>
             <?php endif; ?>
-            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING): ?>
+            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                 <article class="ex-article">
                     <h3><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a><i class="icon-arrow-down up"></i></h3>
                     <div class="article-entry" style="display: none;">
@@ -595,7 +576,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                 <div class="article-entry" style="display: none;">
                     <p>
                         <div class="tab">
-                        <?php if (false === $this->bIsConnected): ?>
+                        <?php if (false === $this->bIsConnected) : ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
                             </div>
@@ -603,7 +584,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                             <div style="text-align:center;">
                                 <a target="_parent" href="<?= $this->lng['preteur-projets']['cta-lien-comptes-financiers'] ?>" class="btn btn-medium"><?= $this->lng['preteur-projets']['cta-comptes-financiers'] ?></a>
                             </div>
-                        <?php else: ?>
+                        <?php else : ?>
                             <div class="statistic-table">
                                 <table>
                                     <tr class="year-nav">
@@ -761,7 +742,7 @@ if ($this->projects_status->status != \projects_status::EN_FUNDING || $this->pag
                     </p>
                 </div>
             </article>
-            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $_SESSION['client']['status_pre_emp'] == 1): ?>
+            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $this->bIsLender) : ?>
                 <article class="ex-article">
                     <h3>
                         <a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a><i class="icon-arrow-down up"></i>

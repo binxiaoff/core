@@ -64,7 +64,7 @@ class companies_actif_passif extends companies_actif_passif_crud
     public function exist($id, $field = 'id_actif_passif')
     {
         $result = $this->bdd->query('SELECT * FROM companies_actif_passif WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function calcultateFromBalance()

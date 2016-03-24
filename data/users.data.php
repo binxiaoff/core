@@ -69,7 +69,7 @@ class users extends users_crud
     {
         $sql    = 'SELECT * FROM `users` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     //******************************************************************************************//

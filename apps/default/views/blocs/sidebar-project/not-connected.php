@@ -40,7 +40,7 @@
                                 </span>
                                 <a class="popup-link mdpoublie" href="<?= $this->lurl ?>/thickbox/pop_up_mdp"><?= $this->lng['header']['mot-de-passe-oublie'] ?></a>
                             </div>
-                            <?php if (isset($_POST['project_detail'], $_SESSION['login']) && $_SESSION['login']['nb_tentatives_precedentes'] > 10) { ?>
+                            <?php if (isset($_POST['project_detail'], $_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 10) { ?>
                                 <div class="row">
                                     <input type="text" name="captcha" class="field field-mini input_captcha_login" id="captcha" value="captcha">
                                     <div class="content_captcha_login" style="float:left;width:126px;">
@@ -74,7 +74,7 @@
                                 $(".seconnecteropen").html('true');
                             }, <?= ($_SESSION['login']['duree_waiting'] * 1000) ?>);
                         </script>
-                    <?php } elseif (isset($_POST['project_detail'], $_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] <= 1) { ?>
+                    <?php } elseif (isset($_POST['project_detail']) && empty($_SESSION['login']['nb_tentatives_precedentes'])) { ?>
                         <p class="error_login" style="text-align:center;"><?= $this->error_login ?></p>
                     <?php } ?>
 

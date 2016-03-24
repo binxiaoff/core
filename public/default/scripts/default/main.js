@@ -345,23 +345,32 @@ function validateIban(iban) {
 
 function initAutocompleteCity()
 {
+    $('[data-autocomplete=birth_city]').parent().find('.country').change(function() {
+        $("#insee_birth").val('');
+    });
     $('[data-autocomplete]').each(function() {
         if($(this).data('autocomplete') == 'city' || $(this).data('autocomplete') == 'post_code' || $(this).data('autocomplete') == 'birth_city') {
-            var getBirthPlace= '';
+            var getBirthPlace = '';
             if ($(this).data('autocomplete') == 'birth_city') {
                 getBirthPlace = 'birthplace/';
             }
             $(this).autocomplete({
                 source: add_url + '/ajax/get_cities/' + getBirthPlace,
                 minLength: 3,
-
-                search: function( event, ui ) {
+                search: function(event, ui) {
                     if ($(this).data('autocomplete') == 'birth_city'){
                         $("#insee_birth").val('');
+                        if ($('#group_identiy').find(".country").val() != 1) {
+                            return false;
+                        }
+                    } else {
+                        if($(this).parents('.row').find(".country").val() != 1){
+                            return false;
+                        }
                     }
+
                     $(this).removeClass('LV_invalid_field');
                 },
-
                 select: function( event, ui ) {
                     event.preventDefault();
 
@@ -372,22 +381,22 @@ function initAutocompleteCity()
                         var row = $(this).parent(".row");
 
                         switch ($(this).data('autocomplete')) {
-                            case 'birth_city' :
+                            case 'birth_city':
                                 $(this).val(match[1])
                                     .removeClass('LV_invalid_field')
                                     .addClass('LV_valid_field');
                                 $("#insee_birth").val(ui.item.value);
                                 break;
-                            case 'city' :
+                            case 'city':
                                 $(this).val(match[1])
                                     .removeClass('LV_invalid_field')
                                     .addClass('LV_valid_field');
                                 $(this).siblings("[data-autocomplete='post_code']")
-                                    .val( match[2])
+                                    .val(match[2])
                                     .removeClass('LV_invalid_field')
                                     .addClass('LV_valid_field');
                                 break;
-                            case 'post_code' :
+                            case 'post_code':
                                 $(this).val( match[2])
                                     .removeClass('LV_invalid_field')
                                     .addClass('LV_valid_field');

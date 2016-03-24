@@ -93,7 +93,7 @@ class projects extends projects_crud
     public function exist($id, $field = 'id_project')
     {
         $result = $this->bdd->query('SELECT * FROM projects WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function searchDossiers($date1 = '', $date2 = '', $montant = '', $duree = '', $status = '', $analyste = '', $siren = '', $id = '', $raison_sociale = '', $iAdvisorId = '', $iSalesPersonId = '', $start = '', $nb = '')
@@ -178,72 +178,61 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function selectProjectsByStatus($status, $where = '', $order = '', $start = '', $nb = '')
+    public function selectProjectsByStatus($status, $where = '', $order = '', $aRateRange = array(), $start = '', $nb = '', $bUseCache = true)
     {
-        $sWhereClause = 'projects_status.status IN (' . $status . ')';
+        $oCache    = Cache::getInstance();
+        $sCacheKey = $oCache->makeKey(__METHOD__, $status, $where, $order, serialize($aRateRange), $start, $nb);
 
-        if ('' !== trim($where)) {
-            $sWhereClause .= ' ' . $where . ' ';
-        }
+        if (false === $bUseCache || false === ($aResult = $oCache->get($sCacheKey))) {
+            $sWhereClause = 'projects_status.status IN (' . $status . ')';
 
-        if ($order == '') {
-            $order = 'lestatut ASC, p.date_retrait DESC';
-        }
+            if ('' !== trim($where)) {
+                $sWhereClause .= ' ' . $where . ' ';
+            }
 
-        $sql = '
-          SELECT p.*,
+            if ($order == '') {
+                $order = 'lestatut ASC, p.date_retrait DESC';
+            }
+
+            $sql = 'SELECT p.*,
               projects_status.status,
               CASE WHEN projects_status.status = ' . \projects_status::EN_FUNDING . '
                 THEN "1"
                 ELSE "2"
-              END AS lestatut
-            FROM projects p
+              END AS lestatut ';
+
+            if (2 === count($aRateRange)) {
+                $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
+            }
+
+            $sql .= " FROM projects p
             INNER JOIN projects_last_status_history USING (id_project)
             INNER JOIN projects_status_history USING (id_project_status_history)
-            INNER JOIN projects_status USING (id_project_status)
-            WHERE ' . $sWhereClause . '
-            ORDER BY ' . $order .
-            ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+            INNER JOIN projects_status USING (id_project_status) ";
 
-        $result        = array();
-        $resultat      = $this->bdd->query($sql);
-        $positionStart = $start + $nb;
+            if (2 === count($aRateRange)) {
+                $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
+            }
 
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-            // on récupere la derniere position pour demarrer une autre requete au meme niveau
-            $result[0]['positionStart'] = $positionStart;
+            $sql .= 'WHERE ' . $sWhereClause;
+
+            if (2 === count($aRateRange)) {
+                $sql .= ' GROUP BY p.id_project';
+                $sql .= ' HAVING avg_rate >= "' . $aRateRange[0] . '" AND avg_rate <' . ($aRateRange[1] == 10 ? '= "10' : ' "' . $aRateRange[1]) . '"';
+            }
+
+            $sql .= " ORDER BY " . $order .
+                ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
+            $aResult = array();
+            $rResult = $this->bdd->query($sql);
+            while ($record = $this->bdd->fetch_array($rResult)) {
+                $aResult[] = $record;
+            }
+
+            $oCache->set($sCacheKey, $aResult, 60);
         }
-        return $result;
-    }
-
-    // version slim
-    public function selectProjectsByStatusSlim($status, $where = '', $order = '', $start = '', $nb = '')
-    {
-        if ($where != '') {
-            $where = ' ' . $where . ' ';
-        }
-
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = '
-            SELECT
-            p.id_project,
-            p.date_publication_full
-            FROM projects p
-            WHERE (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.added DESC LIMIT 1)  IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-
-        $positionStart = $start + $nb;
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
+        return $aResult;
     }
 
     public function countSelectProjectsByStatus($status, $where = '')
@@ -309,14 +298,13 @@ class projects extends projects_crud
         return $result;
     }
 
-    public function positionProject($id_project, $status = '', $order = '')
+    public function positionProject($id_project, $status, $order)
     {
-        if ($status == '') {
-            $status = implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT));
-        }
+        $oCache    = Cache::getInstance();
+        $sKey      = $oCache->makeKey(__METHOD__, $id_project, $status, $order);
 
-        // On recupere les en funding et les fundé
-        $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', ($order != '' ? $order : 'p.date_publication DESC'));
+        if (false === ($aSiblings = $oCache->get($sKey))) {
+            $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', $order);
 
         foreach ($lProjets as $k => $p) {
             if ($p['id_project'] == $id_project) {
@@ -326,7 +314,11 @@ class projects extends projects_crud
             }
         }
 
-        return array('previous' => $previous, 'next' => $next);
+            $aSiblings = array('previous' => $previous, 'next' => $next);
+            $oCache->set($sKey, $aSiblings, Cache::SHORT_TIME);
+        }
+
+        return $aSiblings;
     }
 
     // liste les projets favoris dont la date de retrait est dans j-2
@@ -381,7 +373,7 @@ class projects extends projects_crud
                     ( SELECT ps.status FROM projects_status ps
                     LEFT JOIN projects_status_history psh ON ( ps.id_project_status = psh.id_project_status )
                     WHERE psh.id_project = p.id_project ORDER BY
-                    psh.added DESC LIMIT 1) IN (' . $statusString . ')';
+                    psh.id_project_status_history DESC LIMIT 1) IN (' . $statusString . ')';
 
         $result = $this->bdd->query($sql);
         $record = $this->bdd->result($result);
@@ -403,7 +395,7 @@ class projects extends projects_crud
                         FROM projects_status ps
                         LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status)
                         WHERE psh.id_project = p.id_project
-                        ORDER BY psh.added DESC LIMIT 1
+                        ORDER BY psh.id_project_status_history DESC LIMIT 1
                     ) IN (' . $statusString . ')';
         $result = $this->bdd->query($sql);
         $record = $this->bdd->result($result);
@@ -418,7 +410,7 @@ class projects extends projects_crud
         $aElements = $oCache->get($sKey);
 
         if (false === $aElements) {
-            $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, $iStart, $iLimit);
+            $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, array(), $iStart, $iLimit);
             $anbProjects      = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
             $aElements = array(
                 'lProjectsFunding' => $alProjetsFunding,
@@ -533,7 +525,12 @@ class projects extends projects_crud
         return $aProjects;
     }
 
-    public function calculateAvgInterestRate(bids $oBids, loans $oLoans, $iProjectId = null, $iProjectStatus = null)
+    /**
+     * @param int|null $iProjectId
+     * @param int|null $iProjectStatus
+     * @return float
+     */
+    public function getAverageInterestRate($iProjectId = null, $iProjectStatus = null)
     {
         if ($iProjectId === null) {
             $iProjectId = $this->id_project;
@@ -542,49 +539,49 @@ class projects extends projects_crud
         if ($iProjectStatus === null) {
             $oProject_status = new \projects_status($this->bdd);
             $oProject_status->getLastStatut($iProjectId);
-            $iProjectStatus = $oProject_status->status;
+            $iProjectStatus = (int) $oProject_status->status;
         }
 
-        $iUpperValue = 0;
-        $iLowerValue = 0;
-
-        switch ((int) $iProjectStatus) {
+        switch ($iProjectStatus) {
             case \projects_status::FUNDE:
             case \projects_status::REMBOURSEMENT:
             case \projects_status::REMBOURSE:
             case \projects_status::PROBLEME:
+            case \projects_status::PROBLEME_J_X:
             case \projects_status::RECOUVREMENT:
             case \projects_status::REMBOURSEMENT_ANTICIPE:
-                foreach ($oLoans->select('id_project = ' . $iProjectId) as $aLoan) {
-                    $iUpperValue += ($aLoan['rate'] * ($aLoan['amount']));
-                    $iLowerValue += ($aLoan['amount']);
-                }
-                break;
-            case \projects_status::EN_FUNDING:
-                foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 0') as $aBid) {
-                    $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
-                    $iLowerValue += ($aBid['amount']);
-                }
-                break;
-            case \projects_status::FUNDING_KO:
-            foreach ($oBids->select('id_project = ' . $iProjectId) as $aBid) {
-                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
-                $iLowerValue += ($aBid['amount']);
-            }
-            break;
-            case \projects_status::PRET_REFUSE:
+            case \projects_status::PROCEDURE_SAUVEGARDE:
+            case \projects_status::REDRESSEMENT_JUDICIAIRE:
+            case \projects_status::LIQUIDATION_JUDICIAIRE:
             case \projects_status::DEFAUT:
-            foreach ($oBids->select('id_project = ' . $iProjectId . ' AND status = 1') as $aBid) {
-                $iUpperValue += ($aBid['rate'] * ($aBid['amount']));
-                $iLowerValue += ($aBid['amount']);
-            }
-            break;
+                $rResult = $this->bdd->query('
+                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
+                    FROM loans
+                    WHERE id_project = ' . $iProjectId
+                );
+                return round($this->bdd->result($rResult, 0, 0), 2);
+            case \projects_status::PRET_REFUSE:
+            case \projects_status::EN_FUNDING:
+                $rResult = $this->bdd->query('
+                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
+                    FROM bids
+                    WHERE id_project = ' . $iProjectId . '
+                    AND status IN (0, 1)'
+                );
+                return round($this->bdd->result($rResult, 0, 0), 2);
+            case \projects_status::FUNDING_KO:
+                $rResult = $this->bdd->query('
+                    SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
+                    FROM bids
+                    WHERE id_project = ' . $iProjectId
+                );
+                return round($this->bdd->result($rResult, 0, 0), 2);
             default:
                 trigger_error('Unknown project status. Could not calculate amounts', E_USER_WARNING);
                 break;
         }
 
-        return $iUpperValue > 0 && $iLowerValue > 0 ? round(($iUpperValue / $iLowerValue), 2) : 0;
+        return 0.0;
     }
 
     public function getLoansAndLendersForProject($iProjectId = null)

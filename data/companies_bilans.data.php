@@ -64,7 +64,7 @@ class companies_bilans extends companies_bilans_crud
     public function exist($id, $field = 'id_bilan')
     {
         $result = $this->bdd->query('SELECT * FROM companies_bilans WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function calcultateFromBalance()

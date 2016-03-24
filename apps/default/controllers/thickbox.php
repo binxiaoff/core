@@ -309,8 +309,6 @@ class thickboxController extends bootstrap
     {
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
         $this->projects                 = $this->loadData('projects');
-        $oLoans                         = $this->loadData('loans');
-        $oBids                          = $this->loadData('bids');
 
         if (is_numeric($this->params[0])) {
             $this->projects->get($this->params[0], 'id_project');
@@ -318,8 +316,7 @@ class thickboxController extends bootstrap
             $this->projects->get($this->params[0], 'hash');
         }
 
-        $fIR       = $this->projects->calculateAvgInterestRate($oBids, $oLoans, $this->projects->id_project);
-        $this->fIR = (is_null($fIR) === false) ? $fIR : 0;
+        $this->fIR = $this->projects->getAverageInterestRate($this->projects->id_project);
     }
 
     public function _pop_up_nouveau_projet()
