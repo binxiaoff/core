@@ -5565,13 +5565,28 @@ class cronController extends bootstrap
             $sMailClient = $this->clients->email;
         }
 
+        if ($oProject->date_publication_full != '0000-00-00 00:00:00') {
+            $oPublicationDate = new DateTime($oProject->date_publication_full);
+        } else {
+            $oPublicationDate = new DateTime($oProject->date_publication . ' 00:00:00');
+        }
+
+        if ($oProject->date_retrait_full != '0000-00-00 00:00:00') {
+            $oEndDate = new DateTime($oProject->date_retrait_full);
+        } else {
+            $oEndDate = new DateTime($oProject->date_fin);
+        }
+        $oFundingTime = $oPublicationDate->diff($oEndDate);
+        $sFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
+        $sFundingTime .= ($sFundingTime == 1 ? ' jour' : ' jours');
+
         $aMail = array(
             'surl'           => $this->surl,
             'url'            => $this->furl,
             'nom_entreprise' => $oCompanies->name,
             'projet_p'       => $this->furl . '/projects/detail/' . $oProject->slug,
             'montant'        => $this->ficelle->formatNumber((float) $oProject->amount, 0),
-            'duree'          => $oProject->period,
+            'duree'          => $sFundingTime,
             'prenom_e'       => $sFirstName,
             'lien_fb'        => $this->like_fb,
             'lien_tw'        => $this->twitter,
