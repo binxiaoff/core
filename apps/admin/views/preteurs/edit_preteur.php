@@ -483,8 +483,8 @@
                         case \clients_status::COMPLETENESS: ?>
                             <tr>
                                 <td>
-                                    Complétude le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
-                                    par <?= $this->users->name ?><br>
+                                    Complétude le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br/>
+                                    par <?= $this->users->name ?><br/>
                                     <?= $a['content'] ?>
                                 </td>
                             </tr>
@@ -492,7 +492,7 @@
                         case \clients_status::COMPLETENESS_REMINDER: ?>
                             <tr>
                                 <td>
-                                    Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
+                                    Complétude Relance le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br/>
                                     <?= $a['content'] ?>
                                 </td>
                             </tr>
@@ -500,7 +500,7 @@
                         case \clients_status::COMPLETENESS_REPLY: ?>
                             <tr>
                                 <td>
-                                    Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
+                                    Complétude Reponse le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br/>
                                     <?= $a['content'] ?>
                                 </td>
                             </tr>
@@ -515,24 +515,23 @@
                             <?php break;
                         case \clients_status::VALIDATED: ?>
                             <tr>
-                                <td>Compte validé le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
+                                <td>Compte validé le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br />
                                     par <?= $this->users->name ?></td>
                             </tr>
                             <?php break;
                         case \clients_status::CLOSED_LENDER_REQUEST : ?>
                             <tr>
-                                <td>Compte clôturé à la demande du prêteur
-                                    le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
+                                <td>Compte clôturé à la demande du prêteur (mis hors ligne) <br />
+                                    le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br />
                                     par <?= $this->users->name ?></td>
                             </tr>
                             <?php break;
                         case \clients_status::CLOSED_BY_UNILEND : ?>
                             <tr>
-                                <td>Compte passé hors ligne par Unilend <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?>
-                                    par <?= $this->users->name ?>
-                                <?php if (false === empty($a['content'])) :?>
-                                <br>Motif : <?= $a['content'] ?>
-                                <?php endif; ?>
+                                <td>Compte clôturé par Unilend (mis hors ligne) <br />
+                                    le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?> <br />
+                                    par <?= $this->users->name ?><br />
+                                    <?= $a['content'] ?>
                                 </td>
                             </tr>
                             <?php break;
@@ -545,48 +544,52 @@
         <div class="droite">
             <table class="tabLesStatuts">
                 <tr>
-                    <?php if ($this->clients_status->status != clients_status::VALIDATED) : ?>
-                        <td><input type="button" id="valider_preteur" class="btn" value="Valider le prêteur"></td>
-                    <?php endif; ?>
-                </tr>
-                <tr>
-                    <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_BY_UNILEND, \clients_status::CLOSED_LENDER_REQUEST))) : ?>
                     <td>
-                        <input type="button" id="completude_edit" class="btn btnCompletude" value="Complétude">
+                        <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']
+                            || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide']) : ?>
+                        <a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a>
+                        <?php endif; ?>
                     </td>
-                    <?php endif; ?>
                     <td>
-                        <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true) : ?>
+                        <?php if (isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm']) : ?>
                             <img src="<?= $this->surl ?>/images/admin/mail.png" alt="email" style="position: relative; top: 7px;"/>
                             <span style="color:green;">Votre email a été envoyé</span>
+                            <?php unset($_SESSION['email_completude_confirm']); ?>
+                            <?php unset($_SESSION['compte_valide']); ?>
                         <?php endif; ?>
                     </td>
                 </tr>
-                <?php if (
-                    isset($_SESSION['email_completude_confirm']) && $_SESSION['email_completude_confirm'] == true
-                    || isset($_SESSION['compte_valide']) && $_SESSION['compte_valide'] == true
-                ) : ?>
-                    <tr>
-                        <td><a href="<?= $this->lurl ?>/preteurs/activation" class="btn_link btnBackListe">Revenir à la liste<br/> de contôle</a></td>
-                        <td></td>
-                    </tr>
-                    <?php unset($_SESSION['email_completude_confirm']); ?>
-                    <?php unset($_SESSION['compte_valide']); ?>
-                <?php endif; ?>
                 <tr>
-                    <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
-                    <td>
-                        <input type="button"
-                               onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
-                               class="btnRouge" value="Clôturer le compte">
+                    <td colspan="2">
+                        <?php if ($this->clients_status->status != clients_status::VALIDATED && $this->clients->status == \clients::STATUS_ONLINE) : ?>
+                        <input type="button" id="valider_preteur" class="btn" value="Valider le prêteur">
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <tr>
-                    <?php endif; ?>
-                    <td><input type="button"
-                               onclick="if(confirm('Voulez vous <?= ($this->clients->status == \clients::STATUS_ONLINE ? 'changer le status du client en status en hors ligne' : 'revenir dans le status avant la mis hors ligne') ?> ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= $this->clients->status == \clients::STATUS_ONLINE ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ?>';}"
+                    <td colspan="2">
+                        <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_BY_UNILEND, \clients_status::CLOSED_LENDER_REQUEST))) : ?>
+                        <input type="button" id="completude_edit" class="btn btnCompletude" value="Complétude">
+                        <?php endif; ?>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
+                <tr>
+                    <td colspan="2">
+                        <input type="button"
+                               onclick="if(confirm('Voulez vous <?= ($this->clients->status == \clients::STATUS_ONLINE ? 'mettre le client hors ligne et changer son status en Clôturé par Unilend ' : 'remettre le client en ligne et revenir au status avant la mis hors ligne') ?> ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= $this->clients->status == \clients::STATUS_ONLINE ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ?>';}"
                                class="<?= (\clients::STATUS_ONLINE == $this->clients->status ? 'btnRouge' : 'btn') ?>"
-                               value="<?= (\clients::STATUS_ONLINE == $this->clients->status  ? 'Changer le status du client en status en hors ligne' : 'Revenir dans le status avant la mis hors ligne') ?>"
+                               value="<?= (\clients::STATUS_ONLINE == $this->clients->status  ? 'Hors ligne / Clôturé par Unilend ' : 'En ligne / Status avant mis hors ligne') ?>"
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
+                        <input type="button"
+                               onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                               class="btnRouge" value="Hors ligne / Clôturé à la demande du client">
+                        <?php endif; ?>
                     </td>
                 </tr>
             </table>
@@ -616,7 +619,9 @@
                         <tr>
                             <td>
                                 <label for="id">Saisir votre message :</label>
-                                <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude']) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
+                                <textarea name="content_email_completude" id="content_email_completude">
+                                    <?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?>
+                                </textarea>
                             </td>
                         </tr>
                         <tr>
