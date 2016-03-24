@@ -41,7 +41,7 @@
         <tr class="unProjet" id="project<?= $aProject['id_project'] ?>">
             <td>
                 <?php
-                if ($this->projects_status->status < \projects_status::FUNDE) {
+                if ($aProject['status'] < \projects_status::FUNDE) {
                     $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
                     $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
@@ -97,7 +97,7 @@
                 </a>
             </td>
             <td>
-                <?php if ($this->projects_status->status >= \projects_status::FUNDE) { ?>
+                <?php if ($aProject['status'] >= \projects_status::FUNDE) { ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn btn-info btn-small multi grise1 btn-grise"><?= $this->lng['preteur-projets']['voir-le-projet'] ?></a>
                 <?php } else { ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn btn-info btn-small">PRÊTEZ</a>
