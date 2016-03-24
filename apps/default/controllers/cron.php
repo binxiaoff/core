@@ -7494,7 +7494,8 @@ class cronController extends bootstrap
                     'bic_sfpmei'       => $sBIC,
                     'iban_sfpmei'      => $sIBAN,
                     'tel_emprunteur'   => $sBorrowerPhoneNumber,
-                    'email_emprunteur' => $sBorrowerEmail
+                    'email_emprunteur' => $sBorrowerEmail,
+                    'annee'            => date('Y')
                 );
 
                 foreach ($aProjects as $aProject) {
@@ -7508,6 +7509,7 @@ class cronController extends bootstrap
                             'sujet'                              => htmlentities($oMailsText->subject, null, 'UTF-8'),
                             'entreprise'                         => htmlentities($oCompanies->name, null, 'UTF-8'),
                             'civilite_e'                         => $oClients->civilite,
+                            'prenom_e'                           => htmlentities($oClients->prenom, null, 'UTF-8'),
                             'nom_e'                              => htmlentities($oClients->nom, null, 'UTF-8'),
                             'mensualite_e'                       => $this->ficelle->formatNumber(($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100),
                             'num_dossier'                        => $oProjects->id_project,
