@@ -93,9 +93,8 @@
                         <h2><?= $this->lng['preteur-synthese']['title-autobid-switch'] ?></h2>
                         <?php if ($this->bFirstTimeActivation) : ?>
                         <p><a href="<?= $this->lurl ?>/autolend/" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-explanation'] ?></a></p>
-                        <?php else: ?>
-                        <p><a href="<?= $this->lurl ?>/profile/autolend#parametrage" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-settings'] ?></a></p>
                         <?php endif; ?>
+                        <p><a href="<?= $this->lurl ?>/profile/autolend#parametrage" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-settings'] ?></a></p>
                     </div>
                 </div>
                 <?php endif; ?>
