@@ -221,7 +221,7 @@ class projects extends projects_crud
     public function selectProjectsByStatus($status, $where = '', $order = '', $aRateRange = array(), $start = '', $nb = '', $bUseCache = true)
     {
         $oCache    = Cache::getInstance();
-        $sCacheKey = $oCache->makeKey(__METHOD__, $status, $where, $order, $aRateRange, $start, $nb);
+        $sCacheKey = $oCache->makeKey(__METHOD__, $status, $where, $order, serialize($aRateRange), $start, $nb);
 
         if (false === $bUseCache || false === ($aResult = $oCache->get($sCacheKey))) {
             $sWhereClause = 'projects_status.status IN (' . $status . ')';
