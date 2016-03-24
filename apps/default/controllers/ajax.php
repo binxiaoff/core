@@ -275,7 +275,6 @@ class ajaxController extends bootstrap
         $this->triPartxInt = explode(';', $this->triPartxInt);
 
         $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
         $this->companies         = $this->loadData('companies');
         $this->companies_details = $this->loadData('companies_details');
         $this->favoris           = $this->loadData('favoris');
@@ -355,7 +354,6 @@ class ajaxController extends bootstrap
             $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ',' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
         }
         foreach ($this->lProjetsFunding as $iKey => $aProject) {
-            $this->projects_status->getLastStatut($aProject['id_project']);
             $this->companies->get($aProject['id_company'], 'id_company');
 
             $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait_full']);
@@ -365,7 +363,7 @@ class ajaxController extends bootstrap
                 $this->lProjetsFunding[$iKey]['daterest'] = "Terminé";
             }
 
-            $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $this->projects_status->status), 1);
+            $this->lProjetsFunding[$iKey]['taux'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
         }
     }
 
