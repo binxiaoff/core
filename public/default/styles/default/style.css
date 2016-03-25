@@ -1168,3 +1168,16 @@ table#bids td {
     text-decoration: none;
     display: inline-block;
 }
+
+.autobid:hover:after {
+    background: #f4f4f4;
+    border-radius: 5px;
+    bottom: 26px;
+    color: #d9aa34;
+    content:  "Offre réalisée par Autolend";
+    left: 20%;
+    padding: 5px 15px;
+    position: absolute;
+    z-index: 98;
+    width: 220px;
+}
