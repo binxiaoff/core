@@ -41,7 +41,7 @@ class LoanManager
             $oAcceptedBid->amount  = $aAcceptedBid['amount'] * 100;
             $oAcceptedBid->create();
 
-            if ($oAcceptedBid->id > 0 && $this->oLogger instanceof ULogger) {
+            if ($oAcceptedBid->id_accepted_bid > 0 && $this->oLogger instanceof ULogger) {
                 switch ($oLoan->id_type_contract) {
                     case \loans::TYPE_CONTRACT_BDC:
                         $sType = 'BDC';

@@ -184,7 +184,7 @@ class cronController extends bootstrap
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= NOW()");
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
