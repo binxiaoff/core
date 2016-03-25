@@ -27,81 +27,92 @@
 // **************************************************************************************************** //
 class --classe--
 {
-    --declaration--
+    /** @var \bdd */
+    protected $bdd;
 
-    function --table--($bdd, $params = '')
+--declaration--
+
+    function --table--($bdd,$params='')
     {
         $this->bdd = $bdd;
-        if ($params == '') {
+        if($params=='')
             $params = array();
-        }
         $this->params = $params;
-        --initialisation--
+--initialisation--
     }
 
-    function get($id, $field = '--id--')
+    function get($id,$field='--id--')
     {
-        $sql    = 'SELECT * FROM  `--table--` WHERE ' . $field . '="' . $id . '"';
+        $sql = 'SELECT * FROM  `--table--` WHERE '.$field.'="'.$id.'"';
         $result = $this->bdd->query($sql);
 
-        if ($this->bdd->num_rows() == 1) {
+        if($this->bdd->num_rows()==1)
+        {
             $record = $this->bdd->fetch_array($result);
 
-            --remplissage--
+    --remplissage--
             return true;
-        } else {
+        }
+        else
+        {
             $this->unsetData();
             return false;
         }
     }
 
-    function update($cs = '')
+    function update($cs='')
     {
-        --escapestring--
+--escapestring--
 
-        $sql = 'UPDATE `--table--` SET --updatefields-- WHERE --id--="' . $this->--id--.'"';
+        $sql = 'UPDATE `--table--` SET --updatefields-- WHERE --id--="'.$this->--id--.'"';
         $this->bdd->query($sql);
 
-        if ($cs == '') {
-            --controleslug--
-        } else {
-            --controleslugmulti--
+        if($cs=='')
+        {
+    --controleslug--
+        }
+        else
+        {
+    --controleslugmulti--
         }
 
         $this->get($this->--id--,'--id--');
     }
 
-    function delete($id, $field = '--id--')
+    function delete($id,$field='--id--')
     {
-        if ($id == '')
+        if($id=='')
             $id = $this->--id--;
-        $sql = 'DELETE FROM `--table--` WHERE ' . $field . '="' . $id . '"';
+        $sql = 'DELETE FROM `--table--` WHERE '.$field.'="'.$id.'"';
         $this->bdd->query($sql);
     }
 
-    function create($cs = '')
+    function create($cs='')
     {
-        --escapestring--
+--escapestring--
 
-    $sql = 'INSERT INTO `--table--`(--clist--) VALUES(--cvalues--)';
+        $sql = 'INSERT INTO `--table--`(--clist--) VALUES(--cvalues--)';
         $this->bdd->query($sql);
 
         $this->--id-- = $this->bdd->insert_id();
 
-        if ($cs == '') {
-            --controleslug--
-        } else {
-            --controleslugmulti--
+        if($cs=='')
+        {
+    --controleslug--
+        }
+        else
+        {
+    --controleslugmulti--
         }
 
-        $this->get($this->--id--, '--id--');
+        $this->get($this->--id--,'--id--');
 
         return $this->--id--;
     }
 
     function unsetData()
     {
-        --initialisation--
+--initialisation--
     }
 
     public function multiInsert($aData)
@@ -114,7 +125,7 @@ class --classe--
                 $aInsertRow[] = '"' . $mColumn . '"';
             }
             $aInsert[] = '(' . implode(',', $aInsertRow) . ')';
-        }
+}
 
         $sInsert = 'INSERT INTO `--table--` (' . $sColumnLabel . ') VALUES ' . implode(',', $aInsert);
 

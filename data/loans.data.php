@@ -74,7 +74,7 @@ class loans extends loans_crud
     {
         $sql    = 'SELECT * FROM `loans` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getBidsValid($id_project, $id_lender)
@@ -171,37 +171,26 @@ class loans extends loans_crud
     }
 
     // retourne la moyenne des prets validés d'un preteur sur un projet
-    public function getAvgLoansPreteur($id_project, $id_lender, $champ = 'amount')
+    public function getAvgLoansPreteur($id_project, $id_lender)
     {
-        $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
-        if ($avg == '') {
-            $avg = 0;
-        }
-
-        return $avg;
+        return $this->bdd->result($result, 0, 'avg');
     }
 
     // retourne la moyenne des prets validés d'un preteur
     public function getAvgPrets($id_lender)
     {
-        $sql = 'SELECT AVG(rate) as avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
+        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
-        if ($avg == '') {
-            $avg = 0;
-        }
-
-        return $avg;
+        return $this->bdd->result($result, 0, 'avg');
     }
 
     // sum prêtée d'un lender
     public function sumPrets($id_lender)
     {
-
         $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = "0"';
 
         $result  = $this->bdd->query($sql);

@@ -221,3 +221,64 @@ form .row .pass-field-holder ~ .pass-field-holder { margin-left: 38px !important
 form .row.small-select .c2-sb-wrap ~ .c2-sb-wrap { margin-left: 38px !important; }
 
 .form-page form .row-triple-fields-alt .field-alt { margin: 0 !important; width: 202px !important; }
+.group{
+    position: relative;
+
+    border:solid 1px #b10366;
+    border-radius: 6px;
+
+    padding: 20px;
+    margin: 30px 0;
+}
+
+.group .group-ttl{
+    position: absolute;
+
+    top: 0;
+    margin-top: -12px;
+    color: #b10366;
+
+    display: inline-block;
+    background: #FFFFFF;
+    padding: 0 10px;
+}
+
+.form-page form .row{
+    padding: 14px 0;
+}
+
+.form-page .group .row .field-large,
+.form-page .group .row .pass-field-holder{
+    width: 402px !important;
+}
+
+.form-page .group .row .field-mega{
+    width: 880px !important;
+}
+
+div.group div.row.row-triple-fields div.c2-sb-wrap.populated {
+    margin-left: 33px;
+}
+
+.form-page .group .row .pass-field-holder{
+    margin-right: 38px;
+}
+
+.exInfoBulle {
+    color: #b10366;
+    display: block;
+    font-size: 14px;
+    line-height: 14px;
+    margin-top: 0
+}
+
+
+
+
+@media only screen and (max-width: 767px){
+    .form-page .group .row .field-large,
+    .form-page .group .row .pass-field-holder,
+    .form-page .group .row .field-mega{
+        width: 100% !important;
+    }
+}

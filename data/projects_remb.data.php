@@ -69,6 +69,6 @@ class projects_remb extends projects_remb_crud
     public function exist($id, $field = 'id_project_remb')
     {
         $result = $this->bdd->query('SELECT * FROM `projects_remb` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

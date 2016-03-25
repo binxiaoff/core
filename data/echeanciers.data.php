@@ -64,7 +64,7 @@ class echeanciers extends echeanciers_crud
     {
         $sql    = 'SELECT * FROM `echeanciers` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     // retourne la sum total d'un emprunt
@@ -417,7 +417,7 @@ class echeanciers extends echeanciers_crud
 
         $result = $this->bdd->query($sql);
         $res    = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_array($result)) {
             $retenues             = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
             $res[$record['date']] = $retenues;
         }
@@ -966,6 +966,27 @@ class echeanciers extends echeanciers_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    public function getRepaymentOfTheDay(\DateTime $oDate)
+    {
+        $sDate = $oDate->format('Y-m-d');
+
+        $sQuery = '
+           SELECT id_project,
+              ordre,
+              COUNT(*) AS nb_repayment,
+              COUNT(CASE status WHEN 1 THEN 1 ELSE NULL END) AS nb_repayment_paid
+            FROM echeanciers
+            WHERE DATE(date_echeance) =  "' . $sDate . '"
+            GROUP BY id_project, ordre';
+
+        $rQuery = $this->bdd->query($sQuery);
+        $aResult   = array();
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
+            $aResult[] = $aRow;
+        }
+        return $aResult;
     }
 
     // retourne la somme total a rembourser pour un projet

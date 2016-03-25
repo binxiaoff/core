@@ -77,6 +77,6 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
     public function exist($id, $field = 'id_client_gestion_type_notif')
     {
         $result = $this->bdd->query('SELECT * FROM `clients_gestion_type_notif` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

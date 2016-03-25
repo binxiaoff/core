@@ -2,7 +2,7 @@
     <div class="shell">
         <?= $this->fireView('../blocs/inscription-preteur') ?>
         <p><?= $this->lng['etape1']['contenu'] ?></p>
-        <?php if ($this->emprunteurCreatePreteur == false) { ?>
+        <?php if ($this->emprunteurCreatePreteur == false) : ?>
             <div id="content_type_personne">
                 <div class="row">
                     <div class="form-choose fixed">
@@ -12,45 +12,42 @@
                             <label for="typePersonne-1">
                                 <?= $this->lng['etape1']['particulier'] ?>
                             </label>
-                            <input <?= ($this->modif == false ? 'checked' : ($this->modif == true && in_array($this->clients->type, array(1, 3)) ? 'checked' : '')) ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-1" value="1">
+                            <input <?= ($this->modif == false ? 'checked' : ($this->modif == true && in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER)) ? 'checked' : '')) ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-1" value="1">
                         </div>
                         <div class="radio-holder" id="lab_radio2">
                             <label for="typePersonne-2">
                                 <?= $this->lng['etape1']['societe'] ?>
                             </label>
-                            <input <?= ($this->modif == true && in_array($this->clients->type, array(2, 4)) ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-2" value="2">
+                            <input <?= ($this->modif == true && in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER)) ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-2" value="2">
                         </div>
                     </div>
                 </div>
             </div>
-        <?php } ?>
+        <?php endif; ?>
         <span style="text-align:center; color:#C84747;"><?= $this->messageDeuxiemeCompte ?></span>
         <span style="text-align:center; color:#C84747;"><?= $this->reponse_email ?></span>
         <span style="text-align:center; color:#C84747;"><?= $this->reponse_age ?></span>
 
         <div class="register-form">
-            <?php if ($this->emprunteurCreatePreteur == false) { ?>
+            <?php if ($this->emprunteurCreatePreteur == false) : ?>
                 <div class="particulier">
                     <?= $this->fireView('particulier_etape_1') ?>
                 </div>
-            <?php } ?>
+            <?php endif; ?>
             <div class="societe">
                 <?= $this->fireView('societe_etape_1') ?>
             </div>
-            <?php
-            // si modif et que c'est une societe
-            if ($this->modif == true && in_array($this->clients->type, array(2, 4))) {
-            ?>
+            <?php if ($this->modif == true && in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
             <script>
                 $(".particulier").hide();
                 $(".societe").show();
             </script>
-            <?php } ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
 <script>
-    <?php if ($this->emprunteurCreatePreteur == false && $this->modif == false || $this->modif == true && in_array($this->clients->type, array(1, 3))) { ?>
+    <?php if ($this->emprunteurCreatePreteur == false && $this->modif == false || $this->modif == true && in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) { ?>
     $(window).load(function() {
         $(".societe").hide();
     });
@@ -125,6 +122,14 @@
                 }
             });
         });
+
+        $("#nationalite").change(function(){
+            if($("#nationalite").val() == 35) {
+                $("#error-message-nationality").show();
+            } else {
+                $("#error-message-nationality").hide();
+            }
+        })
     });
 
     // display particulier
@@ -194,6 +199,10 @@
         if ('' == $("#naissance").val() || ('' == $('#insee_birth').val() && 1 == $('#pays3').val()) || controleCity($('#naissance'), $('#pays3'), false) == false) {
             $("#naissance").removeClass("LV_valid_field");
             $("#naissance").addClass("LV_invalid_field");
+            radio = false;
+        }
+
+        if($("#nationalite").val() == 35) {
             radio = false;
         }
 

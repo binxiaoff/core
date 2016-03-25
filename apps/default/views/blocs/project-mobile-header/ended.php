@@ -2,7 +2,7 @@
 
 $aReplacements = array(
     '[NB_PRETEURS]' => $this->NbPreteurs . ' prêteurs',
-    '[TAUX]'        => $this->ficelle->formatNumber($this->AvgLoans, 1) . '&nbsp;%',
+    '[TAUX]'        => $this->ficelle->formatNumber($this->avgRate, 1) . '&nbsp;%',
     '[JOURS]'       => $this->interDebutFin['day'] . ' jours',
     '[HEURES]'      => $this->interDebutFin['hour'] . ' heures',
     '[MINUTES]'     => $this->interDebutFin['minute'] . ' minutes'

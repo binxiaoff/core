@@ -127,7 +127,7 @@
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
                                     <?php if ($this->CountEnchere > 0) : ?>
-                                        <span><?= $this->ficelle->formatNumber(($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) ? $this->AvgLoans : $this->avgRate, 1) . ' %' ?></span>
+                                        <span><?= $this->ficelle->formatNumber($this->avgRate, 1) . ' %' ?></span>
                                     <?php else : ?>
                                         <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : ' %') ?></span>
                                     <?php endif; ?>
@@ -207,13 +207,12 @@
                                                     </span>
                                                 </td>
                                             </tr>
-                                        <?php endif; ?>
-                                        <?php if ($aBid['ordre'] == 6) : ?>
+                                        <?php elseif ($aBid['ordre'] == 6) : ?>
                                         <tr>
                                             <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
                                         </tr>
                                         <?php endif; ?>
-                                        <?php else : ?>
+                                    <?php else : ?>
                                         <tr <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' class="enchereVousColor"' : '' )?>>
                                             <td>
                                                 <div style="position: relative">
@@ -239,14 +238,14 @@
                                                 <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'green-span' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'red-span' : '')) ?>"><?= $this->status[$aBid['status']] ?></span>
                                             </td>
                                         </tr>
-                                        <?php endif; ?>
+                                    <?php endif; ?>
                                 <?php endforeach; ?>
                             </table>
                             <?php if ($this->CountEnchere >= 12) : ?>
                             <a class="btn btn-large displayAll"><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a>
                             <?php else: ?>
                             <div class="displayAll"></div>
-                                <?php endif ?>
+                            <?php endif ?>
                             <script>
                                 $("#triNum").click(function () {
                                     $("#tri").html('ordre');

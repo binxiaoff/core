@@ -79,7 +79,7 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
         }
 
         $result = $this->bdd->query('SELECT * FROM clients_gestion_notifications WHERE 1 = 1 ' . $list);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     // On recup les notifs du preteurs

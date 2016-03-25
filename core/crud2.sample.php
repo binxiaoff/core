@@ -27,6 +27,9 @@
 // **************************************************************************************************** //
 class --classe--
 {
+    /** @var \bdd */
+    protected $bdd;
+
     --declaration--
 
     public function --table--($bdd,$params = '')

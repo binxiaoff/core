@@ -296,13 +296,11 @@ function controlePostCodeCity(elmCp, elmCity, elmCountry, async)
 
 function appendProjects() {
     var offset = $('.unProjet:last').offset();
-    var load = false;
 
     if ((offset.top - $(window).height() <= $(window).scrollTop())
-        && load == false && ($('.unProjet').size() >= 10) &&
+        && ($('.unProjet').size() >= 10) &&
         ($('.unProjet').size() != $('.nbProjet').text())) {
 
-        load = true;
         $(window).off("scroll");
 
         var last_id = $('.unProjet:last').attr('id');
@@ -322,16 +320,17 @@ function appendProjects() {
             data: val,
             dataType: 'json',
             success: function(obj) {
-                var positionStart = obj.positionStart;
-                var affichage = obj.affichage;
+                if (obj.hasMore == true) {
+                    var positionStart = obj.positionStart;
+                    var affichage = obj.affichage;
 
+                    $('.unProjet:last').after(affichage);
+                    offset = $('.unProjet:last').offset();
+                    $(window).scroll(appendProjects);
+
+                    $('#positionStart').html(positionStart);
+                }
                 $('.loadmore').fadeOut(500);
-                $('.unProjet:last').after(affichage);
-                offset = $('.unProjet:last').offset();
-                load = false;
-                $(window).scroll(appendProjects);
-
-                $('#positionStart').html(positionStart);
             }
         });
     }

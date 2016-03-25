@@ -45,8 +45,8 @@
         <tr>
             <th>ID</th>
             <th>Nom / Raison sociale</th>
-            <th>Nom d'usage</th>
             <th>Prénom / Dirigeant</th>
+            <th>Téléphone</th>
             <th>Email</th>
             <th>&nbsp;</th>
         </tr>
@@ -70,8 +70,8 @@
             <tr class="<?= ($i++ % 2 == 1 ? '' : 'odd') ?> leLender<?= $c['id_lender_account'] ?>">
                 <td><?= $c['id_client'] ?></td>
                 <td><?= $c['nom_ou_societe'] ?></td>
-                <td><?= $c['nom_usage'] ?></td>
                 <td><?= $c['prenom_ou_dirigeant'] ?></td>
+                <td><?= $c['telephone'] ?></td>
                 <td><?= $c['email'] ?></td>
                 <td class="attrib" align="center">
                     <a onclick="attribuer_preteur(<?= $c['id_client'] ?>, <?= $this->id_reception ?>);" title="Attribuer client <?= $c['id_client'] ?>">Attribuer</a>

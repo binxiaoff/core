@@ -116,10 +116,9 @@ class bootstrap extends Controller
             }
         }
 
-        // Mise en tableau de l'url
-        $urlParams = explode('/', $_SERVER['REQUEST_URI']);
+        $this->setSessionSource();
 
-        // On sniff le partenaire
+        $urlParams = explode('/', $_SERVER['REQUEST_URI']);
         $this->handlePartenaire($urlParams);
 
         $sKey      = $this->oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
@@ -128,24 +127,18 @@ class bootstrap extends Controller
             $this->settings->get('Google Webmaster Tools', 'type');
             $this->google_webmaster_tools = $this->settings->value;
 
-            // Recuperation du code Google Analytics
             $this->settings->get('Google Analytics', 'type');
             $this->google_analytics = $this->settings->value;
 
-            // Recuperation de la Baseline Title
             $this->settings->get('Baseline Title', 'type');
             $this->baseline_title = $this->settings->value;
 
-
-            // Récup du lien fb
             $this->settings->get('Facebook', 'type');
             $this->like_fb = $this->settings->value;
 
-            // Récup du lien Twitter
             $this->settings->get('Twitter', 'type');
             $this->twitter = $this->settings->value;
 
-            // lien page cookies (id_tree)
             $this->settings->get('id page cookies', 'type');
             $this->id_tree_cookies = $this->settings->value;
 
@@ -167,19 +160,13 @@ class bootstrap extends Controller
             $this->twitter                = $aElements['Twitter'];
             $this->id_tree_cookies        = $aElements['TreeCookies'];
         }
-        // super login //
 
-        /////////////////
-
-        // Récuperation du menu footer
         $this->menuFooter = $this->tree->getMenu('footer', $this->language, $this->lurl);
-
         $this->navFooter1 = $this->tree->getMenu('footer-nav-1', $this->language, $this->lurl);
         $this->navFooter2 = $this->tree->getMenu('footer-nav-2', $this->language, $this->lurl);
         $this->navFooter3 = $this->tree->getMenu('footer-nav-3', $this->language, $this->lurl);
         $this->navFooter4 = $this->tree->getMenu('footer-nav-4', $this->language, $this->lurl);
 
-        // Notes
         $this->lNotes = array(
             'A' => 'etoile1',
             'B' => 'etoile2',
@@ -345,9 +332,6 @@ class bootstrap extends Controller
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
-            $this->addDataLayer('id_client', $this->clients->id_client);
-            $this->addDataLayer('email_client', $this->clients->email);
-
             $this->bIsLender                   = $this->clients->isLender();
             $this->bIsBorrower                 = $this->clients->isBorrower();
             $this->bIsBorrowerAndLender        = ($this->bIsBorrower && $this->bIsLender);
@@ -374,6 +358,9 @@ class bootstrap extends Controller
                 }
             }
         }
+        $this->setSessionMail();
+
+        false === isset($_SESSION['email']) || $_SESSION['email'] == '' ? $this->addDataLayer('unique_id', '') : $this->addDataLayer('unique_id', md5($_SESSION['email']));
 
         // page projet tri
         // 1 : terminé bientôt
@@ -745,5 +732,130 @@ class bootstrap extends Controller
     protected function addDataLayer($sKey, $mValue)
     {
         $this->aDataLayer[$sKey] = $mValue;
+    }
+
+    /**
+     * Set the source details in session
+     */
+    private function setSessionSource()
+    {
+        $aAvailableUtm = $this->getUTM();
+
+        if (false === empty($aAvailableUtm)) {
+            $_SESSION['source']                 = $aAvailableUtm;
+            $_SESSION['source']['slug_origine'] = $this->getSlug();
+        } elseif (true === empty($_SESSION['source'])) {
+            $_SESSION['source'] = array(
+                'utm_source'   => 'Directe',
+                'slug_origine' => $this->getSlug()
+            );
+        }
+    }
+
+    /**
+     * This looks for UTMs in GET and POST parameters and returns them
+     * @return array
+     */
+    private function getUTM()
+    {
+        $aUTM = array();
+        if (false === empty($_POST)) {
+            foreach ($_POST as $mKey => $mValue) {
+                if ('utm_' === strtolower(substr($mKey, 0, 4))) {
+                    $aUTM[$mKey] = $this->filterPost($mKey);
+                }
+            }
+        } elseif (false === empty($_GET)) {
+            foreach ($_GET as $mKey => $mValue) {
+                if ('utm_' === strtolower(substr($mKey, 0, 4))) {
+                    $aUTM[$mKey] = $this->filterGet($mKey);
+                }
+            }
+        }
+        return $aUTM;
+    }
+
+    /**
+     * @return string
+     */
+    private function getSlug()
+    {
+        if (false === empty($_POST['slug_origine'])) {
+            $sSlugOrigine = $this->filterPost('slug_origine');
+        } elseif (false === empty($_GET['slug_origine'])) {
+            $sSlugOrigine = $this->filterGet('slug_origine');
+        } elseif (false === empty($this->tree->slug)) {
+            $sSlugOrigine = trim($this->tree->slug);
+        } else {
+            $sSlugOrigine = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+            if ('/' === $sSlugOrigine) {
+                $sSlugOrigine = '';
+            }
+        }
+        return $sSlugOrigine;
+    }
+
+    /**
+     * Filter and sanitize POST field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    protected function filterPost($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_POST, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
+    /**
+     * Filter and sanitize GET field
+     * @param string $sFieldName
+     * @param int $iFilter
+     * @return string
+     */
+    protected function filterGet($sFieldName, $iFilter = FILTER_SANITIZE_STRING)
+    {
+        if (false !== ($mValue = filter_input(INPUT_GET, $sFieldName, $iFilter))) {
+            return trim($mValue);
+        }
+        return '';
+    }
+
+
+    /**
+     * Set the source keys of the given object : UTMs + slug_origine
+     * @param \clients|\prospects $oClient object
+     */
+    protected function setSource(&$oClient)
+    {
+        $aSourceColumn = array(
+            'source'       => 'utm_source',
+            'source2'      => 'utm_source2',
+            'source3'      => 'utm_campaign',
+            'slug_origine' => 'slug_origine'
+        );
+
+        foreach ($aSourceColumn as $sObjectField => $sUtmKey) {
+            if (true === isset($_SESSION['source'][$sUtmKey])) {
+                $oClient->$sObjectField = $_SESSION['source'][$sUtmKey];
+            }
+        }
+    }
+
+
+    /**
+     * This looks for email address in SESSION, GET and POST parameters then add it to SESSION
+     */
+    private function setSessionMail()
+    {
+        if (isset($this->clients->email) && false === empty($this->clients->email)) {
+            $_SESSION['email'] = $this->clients->email;
+        } elseif (false === empty($_POST['email']) && $this->ficelle->isEmail($_POST['email'])) {
+            $_SESSION['email'] = $_POST['email'];
+        } elseif (false === empty($_GET['email']) && $this->ficelle->isEmail($_GET['email'])) {
+            $_SESSION['email'] = $_GET['email'];
+        }
     }
 }

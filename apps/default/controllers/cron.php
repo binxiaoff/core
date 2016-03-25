@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\librairies\Cache;
 use Unilend\librairies\ULogger;
 
 class cronController extends bootstrap
@@ -104,36 +105,6 @@ class cronController extends bootstrap
         }
     }
 
-    // Les taches executées toutes les minutes
-    // Lors que les offres acceptées évoluent après l'indexation, on à un soucis avec les offres acceptées qui n'ont pas de date d'opération. Cette fonction va donc chercher une date dans la table loan pour mettre à jour celle de l'indexation
-    public function _minute()
-    {
-        if (true === $this->startCron('correctionOffreAccepteAucuneDate', 5)) {
-            $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-            $this->loans                   = $this->loadData('loans');
-            $this->transactions            = $this->loadData('transactions');
-
-            $this->L_offres_acceptees_no_dated = $this->indexage_vos_operations->select('libelle_operation = "Offre acceptée" AND date_operation = "0000-00-00 00:00:00"', '', 0, 500);
-
-            $this->oLogger->addRecord(ULogger::INFO, 'Affected rows count: ' . count($this->L_offres_acceptees_no_dated), array('ID' => $this->iStartTime));
-
-            if (count($this->L_offres_acceptees_no_dated) > 0) {
-                foreach ($this->L_offres_acceptees_no_dated as $offre) {
-                    $this->loans->get($offre['bdc'], 'id_loan');
-
-                    $this->indexage_vos_operations_boucle = $this->loadData('indexage_vos_operations');
-
-                    $this->indexage_vos_operations_boucle->get($offre['id'], 'id');
-                    $this->indexage_vos_operations_boucle->date_operation = $this->loans->updated;
-                    $this->indexage_vos_operations_boucle->solde          = $this->transactions->getSoldeDateLimite_fulldate($offre['id_client'], $this->loans->updated) * 100;
-                    $this->indexage_vos_operations_boucle->update();
-                }
-            }
-
-            $this->stopCron();
-        }
-    }
-
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
@@ -228,7 +199,7 @@ class cronController extends bootstrap
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
     {
-        if (true === $this->startCron('check_projet_a_funder', 10)) {
+        if (true === $this->startCron('check_projet_a_funder', 5)) {
             /** @var \projects $oProject */
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
@@ -236,7 +207,7 @@ class cronController extends bootstrap
 
             $bHasProjectPublished = false;
 
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()");
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
@@ -251,9 +222,8 @@ class cronController extends bootstrap
                 }
             }
             if ($bHasProjectPublished) {
-                $oCache = \Unilend\librairies\Cache::getInstance();
-                $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
-                $oCache->delete($sKey);
+                $sKey = $this->oCache->makeKey(Cache::LIST_PROJECTS, $this->tabProjectDisplay);
+                $this->oCache->delete($sKey);
             }
 
             $this->stopCron();
@@ -280,7 +250,7 @@ class cronController extends bootstrap
             $bHasProjectFinished = false;
             $oLoggerEndProject   = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.' . date('Ymd') . '.log');
 
-            $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING, ' AND p.status = 0');
+            $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING, '', '', array(), '', '', false);
             foreach ($aProjectsList as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
                     $oEndDate = $oProjectManager->getProjectEndDate($oProject);
@@ -363,7 +333,7 @@ class cronController extends bootstrap
         $today = date('Y-m-d');
         $time = strtotime($today . ' 00:00:00');
 
-        $lProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT . ', ' . \projects_status::PROBLEME);
+        $lProjects = $projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT . ', ' . \projects_status::PROBLEME, '', '', array(), '', '', false);
 
         foreach ($lProjects as $p) {
             $projects_status->getLastStatut($p['id_project']);
@@ -1271,7 +1241,7 @@ class cronController extends bootstrap
 
         $today = date('Y-m-d');
 
-        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT);
+        $this->lProjects = $this->projects->selectProjectsByStatus(\projects_status::REMBOURSEMENT, '', '', array(), '', '', false);
 
         foreach ($this->lProjects as $k => $p) {
             // on recup la companie
@@ -3482,7 +3452,7 @@ class cronController extends bootstrap
             $loans    = $this->loadData('loans');
             $projects = $this->loadData('projects');
 
-            $lProjects = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)));
+            $lProjects = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)), '', '', array(), '', '', false);
 
             if (count($lProjects) > 0) {
                 $a          = 0;
@@ -3679,7 +3649,7 @@ class cronController extends bootstrap
             $transactions   = $this->loadData('transactions');
             $projects_check = $this->loadData('projects_check');
 
-            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND DATE(p.date_fin) = "' . date('Y-m-d') . '"');
+            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND DATE(p.date_fin) = "' . date('Y-m-d') . '"', '', array(), '', '', false);
 
             foreach ($lProjets as $p) {
                 if ($projects_check->get($p['id_project'], 'id_project') === false ) {
@@ -3910,7 +3880,7 @@ class cronController extends bootstrap
                 \projects_status::LIQUIDATION_JUDICIAIRE,
                 \projects_status::DEFAUT
             );
-            $aProjects = $oProjects->selectProjectsByStatus(implode(',', $aProjectStatuses));
+            $aProjects = $oProjects->selectProjectsByStatus(implode(',', $aProjectStatuses), '', '', array(), '', '', false);
             $xml = '<?xml version="1.0" encoding="UTF-8"?>';
             $xml .= '<partenaire>';
 
@@ -4122,7 +4092,7 @@ class cronController extends bootstrap
     }
 
     // Une fois par jour (crée le 27/04/2015)
-    private function check_remboursement_preteurs()
+    private function check_prelevements_emprunteurs()
     {
         $echeanciers = $this->loadData('echeanciers');
         $projects    = $this->loadData('projects');
@@ -4147,7 +4117,7 @@ class cronController extends bootstrap
         $this->settings->get('Adresse notification check remb preteurs', 'type');
         $destinataire = $this->settings->value;
 
-        $this->mails_text->get('notification-check-remboursements-preteurs', 'lang = "' . $this->language . '" AND type');
+        $this->mails_text->get('notification-prelevement-emprunteur', 'lang = "' . $this->language . '" AND type');
 
         $sujetMail = $this->mails_text->subject;
         eval("\$sujetMail = \"$sujetMail\";");
@@ -4168,6 +4138,48 @@ class cronController extends bootstrap
             Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
+
+    public function _check_remboursement_preteurs()
+    {
+        $oRepayment = $this->loadData('echeanciers');
+        $oProject    = $this->loadData('projects');
+        $oDate       = new \DateTime();
+        $aRepayments = $oRepayment->getRepaymentOfTheDay($oDate);
+        $sRepayments  = '';
+        foreach ($aRepayments as $aRepayment) {
+            $oProject->get($aRepayment['id_project'], 'id_project');
+            $sRepayments .= '
+                <tr>
+                    <td>' . $aRepayment['id_project'] . '</td>
+                    <td>' . $oProject->title_bo . '</td>
+                    <td>' . $aRepayment['ordre'] . '</td>
+                    <td>' . $aRepayment['nb_repayment'] . '</td>
+                    <td>' . $aRepayment['nb_repayment_paid'] . '</td>
+                    <td>' . ($aRepayment['nb_repayment'] === $aRepayment['nb_repayment_paid'] ? 'Oui' : 'Non') . '</td>
+                </tr>';
+        }
+
+        $aReplacements = array(
+            '[#SURL#]'         => $this->surl,
+            '[#REPAYMENTS#]'   => $sRepayments
+        );
+
+        $this->settings->get('Adresse notification check remb preteurs', 'type');
+        $sRecipient = $this->settings->value;
+
+        $this->mails_text->get('notification-check-remboursements-preteurs', 'lang = "' . $this->language . '" AND type');
+
+        $this->email = $this->loadLib('email');
+        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
+        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($this->mails_text->subject)) . '?=');
+        $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), utf8_decode($this->mails_text->content)));
+        $this->email->addRecipient(trim($sRecipient));
+
+        if ('prod' === $this->Config['env']) {
+            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+        }
+    }
+
 
     // Cron une fois par jour a 19h30 (* 18-20 * * *)
     public function _alertes_quotidienne()
@@ -5557,7 +5569,7 @@ class cronController extends bootstrap
             $timeFin   = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
 
             if (date('H:i') == $paramDebut) {
-                $this->check_remboursement_preteurs();
+                $this->check_prelevements_emprunteurs();
             } elseif ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
                 $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
                 if ($lProjetsAremb != false) {
@@ -5752,6 +5764,8 @@ class cronController extends bootstrap
 
     public function _indexation()
     {
+        return; // @todo Waiting for confirmation that cron is useless following TMA-38 changes
+
         if (true === $this->startCron('indexation', 60)) {
             ini_set('max_execution_time', 3600);
             ini_set('memory_limit', '4096M');
