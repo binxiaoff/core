@@ -402,8 +402,8 @@ class espace_emprunteurController extends Bootstrap
             $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
             $aProjectsPostFunding[$iKey]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
 
-            $aNextRepayment                                          = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
-            $aProjectsPostFunding[$iKey]['MonthlyPayment']         = (($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100);
+            $aNextRepayment                                        = array_shift($oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1));
+            $aProjectsPostFunding[$iKey]['MonthlyPayment']         = ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100;
             $aProjectsPostFunding[$iKey]['DateNextMonthlyPayment'] = $aNextRepayment[0]['date_echeance_emprunteur'];
         }
 
