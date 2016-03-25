@@ -6728,16 +6728,14 @@ class cronController extends bootstrap
                 $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
                 if ($lProjetsAremb != false) {
                     foreach ($lProjetsAremb as $r) {
-                        $projects_remb_log->id_project          = $r['id_project'];
-                        $projects_remb_log->ordre               = $r['ordre'];
-                        $projects_remb_log->debut               = date('Y-m-d H:i:s');
-                        $projects_remb_log->fin                 = '0000-00-00 00:00:00';
-                        $projects_remb_log->montant_remb_net    = 0;
-                        $projects_remb_log->etat                = 0;
-                        $projects_remb_log->nb_pret_remb        = 0;
-                        $projects_remb_log->id_project_remb_log = $projects_remb_log->create();
-
-                        $projects_remb_log->get($projects_remb_log->id_project_remb_log, 'id_project_remb_log');
+                        $projects_remb_log->id_project       = $r['id_project'];
+                        $projects_remb_log->ordre            = $r['ordre'];
+                        $projects_remb_log->debut            = date('Y-m-d H:i:s');
+                        $projects_remb_log->fin              = '0000-00-00 00:00:00';
+                        $projects_remb_log->montant_remb_net = 0;
+                        $projects_remb_log->etat             = 0;
+                        $projects_remb_log->nb_pret_remb     = 0;
+                        $projects_remb_log->create();
 
                         $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
                         $dateDernierStatut = $dernierStatut[0]['added'];
@@ -7447,11 +7445,17 @@ class cronController extends bootstrap
     public function _projet_process_fast_completude()
     {
         if ($this->startCron('projet process fast completude', 5)) {
-            $this->projects_status         = $this->loadData('projects_status');
-            $this->projects_status_history = $this->loadData('projects_status_history');
+            $this->loadData('projects_status'); // Loaded for class constants
+            $this->loadData('users'); // Loaded for class constants
 
-            foreach ($this->projects->getFastProcessStep3() as $iProjectId) {
-                $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
+            /** @var \projects $oProject */
+            $oProject = $this->loadData('projects');
+
+            /** @var \projects_status_history $oProjectStatusHistory */
+            $oProjectStatusHistory = $this->loadData('projects_status_history');
+
+            foreach ($oProject->getFastProcessStep3() as $iProjectId) {
+                $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
             }
 
             $this->stopCron();
