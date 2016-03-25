@@ -446,7 +446,6 @@ class ajaxController extends bootstrap
         $this->bids              = $this->loadData('bids');
         $this->projects          = $this->loadData('projects');
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
-        $this->projects_status   = $this->loadData('projects_status');
         $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
@@ -489,7 +488,7 @@ class ajaxController extends bootstrap
         $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
         $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
         $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
+        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
         $this->status         = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
@@ -539,7 +538,7 @@ class ajaxController extends bootstrap
         $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
         $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
         $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
+        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
         $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
