@@ -1,16 +1,6 @@
+<h3><?= $this->lng['autobid']['settings-subtitle'] ?></h3>
+
 <p id="last-upadated-date" style="display: none"></p>
-
-
-<div id="autobid_modify_parameters">
-    <div class="row text-center">
-        <button class="btn" type="button" id="settings_modifications_novice">
-            <?= $this->lng['autobid']['settings-button-modify-parameters'] ?>
-        </button>
-        <button class="btn" type="button" id="settings_modifications_expert">
-            <?= $this->lng['autobid']['settings-button-modify-parameters'] ?>
-        </button>
-    </div>
-</div>
 
 <div id="autobid_settings_form_errors" >
     <div class="row errors-autobid" id="errors-autobid-param-form-simple">
@@ -35,17 +25,30 @@
     <div id="settings_instructions_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>">
         <p><?= $this->lng['autobid']['settings-expert-instructions'] ?></p>
     </div>
+    <div>
+
+
+    </div>
+<style>
+    #autobid-amount input.field no_field {
+        background-color: transparent;
+        border-color: transparent;
+    }
+</style>
+
     <div class="autobid-param-form">
         <form action="<?= $this->lurl ?>/profile/autolend" method="post" enctype="multipart/form-data">
             <div class="row">
                 <label for=""><?= $this->lng['autobid']['settings-label-amount'] ?>
                     <span class="label-note"><?= $this->lng['autobid']['settings-example-amount'] ?></span>
                 </label>
+                <span id="autobid-amount-no-input"><?= (isset($this->aSettingsSubmitted)) ? $this->aSettingsSubmitted['amount'] : '' ?> €</span>
                 <input type="text" name="autobid-amount" id="autobid-amount"
                        value="<?= (isset($this->aSettingsSubmitted)) ? $this->aSettingsSubmitted['amount'] : '' ?>"
                        class="field required<?= (isset($this->aErrors['amount'])) ? ' LV_invalid_field' : '' ?>"
                        data-validators="Presence&amp;Numericality {minimum: <?= $this->iMinimumBidAmount ?>}"
                        onkeyup="noDecimale(this.value,this.id);"
+                       style="display: none;"
                     <?= (empty($this->aErrors)) ? 'disabled="disabled"' : '' ?>/>
             </div>
             <div id="novice-settings" class="autobid-param-form-simple" style="display:none">
@@ -54,10 +57,9 @@
                         <label for=""><?= $this->lng['autobid']['settings-simple-label-rate'] ?>
                             <span class="label-note"><?= $this->lng['autobid']['settings-simple-example-rate'] ?></span>
                         </label>
-                        <input type="text" name="autobid-param-simple-taux-min-field" id="autobid-param-simple-taux-min-field"
-                               class="field required"
-                               value="<?= (false === empty($this->aSettingsSubmitted['simple-taux-min'])) ? $this->ficelle->formatNumber($this->aSettingsSubmitted['simple-taux-min'], 1) : '' ?> %"
-                               disabled="disabled"/>
+                        <span id="autobid-param-simple-taux-min-field-no-input">
+                            <?= (false === empty($this->aSettingsSubmitted['simple-taux-min'])) ? $this->ficelle->formatNumber($this->aSettingsSubmitted['simple-taux-min'], 1) : '' ?> %
+                        </span>
                         <div id="select-autobid-taux" style="display:none;">
                             <select name="autobid-param-simple-taux-min" id="autobid-param-simple-taux-min" class="custom-select field-small required" >
                                 <option value="0"><?= $this->lng['autobid']['settings-select-rate'] ?></option>
@@ -180,10 +182,22 @@
                 <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
             </button>
             <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
-                Annuler
+                <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
             </button>
         </div>
     </div>
+
+    <div id="autobid_modify_parameters">
+        <div class="row text-center">
+            <button class="btn" type="button" id="settings_modifications_novice">
+                <?= $this->lng['autobid']['settings-button-modify-parameters'] ?>
+            </button>
+            <button class="btn" type="button" id="settings_modifications_expert">
+                <?= $this->lng['autobid']['settings-button-modify-parameters'] ?>
+            </button>
+        </div>
+    </div>
+
 </div>
 
 <script type="text/javascript">

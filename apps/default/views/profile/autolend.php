@@ -191,7 +191,7 @@
 
             $('#autobid-amount').prop('disabled', true);
 
-            $('#autobid-param-simple-taux-min-field').show();
+            $('#autobid-param-simple-taux-min-field-no-input').show();
             $('#select-autobid-taux').hide();
             $('#rate-settings-novice').show();
 
@@ -212,10 +212,12 @@
             $('#settings_modifications_expert').hide();
 
             $('#autobid-amount').prop('disabled', false);
+            $('#autobid-amount').show();
+            $('#autobid-amount-no-input').hide();
 
             $('#rate-settings-novice').show();
             $('#select-autobid-taux').show();
-            $('#autobid-param-simple-taux-min-field').hide();
+            $('#autobid-param-simple-taux-min-field-no-input').hide();
 
             if ($('#autobid-amount').val()) {
                 $('.link-more').show();
@@ -267,6 +269,8 @@
             $('#settings_modifications_expert').hide();
 
             $('#autobid-amount').prop('disabled', false);
+            $('#autobid-amount').show();
+            $('#autobid-amount-no-input').hide();
 
             $('#autobid-param-simple-taux-min-field').hide();
             $('#select-autobid-taux').hide();
@@ -283,6 +287,7 @@
             $('.param-advanced-buttons').show();
             $('.apply-global-medium-rate').show();
             $('#validate_settings_expert').show();
+            $('#cancel_modification_settings').show();
         }
 
         function autoBidSwitchOn() {

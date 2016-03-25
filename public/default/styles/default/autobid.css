@@ -494,3 +494,15 @@ td.param-off div.cell-inner div.param-advanced-bottom div.param-advanced-buttons
 #settings_modifications.btn {
     margin-bottom: 10px;
 }
+
+div.autobid-tabs h3 {
+    text-align: center;
+}
+
+#autobid_modify_parameters{
+    margin-top: 1.5em;
+}
+
+#autobid-amount-no-input, #autobid-param-simple-taux-min-field-no-input {
+    float: right;
+}
