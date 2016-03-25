@@ -29,13 +29,6 @@
 
 
     </div>
-<style>
-    #autobid-amount input.field no_field {
-        background-color: transparent;
-        border-color: transparent;
-    }
-</style>
-
     <div class="autobid-param-form">
         <form action="<?= $this->lurl ?>/profile/autolend" method="post" enctype="multipart/form-data">
             <div class="row">
@@ -77,11 +70,11 @@
                     <a href="#" class="link-more" style="display:none;"><?= $this->lng['autobid']['settings-link-to-expert-mode'] ?></a>
                 </div>
                 <div class="row text-center" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" id="validate_settings_novice">
+                    <button class="btn" style="display:none;" id="cancel_modification_settings_novice" onClick="window.location.reload()" >
+                        <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
+                    </button>
                     <button class="btn" type="submit" name="send-form-autobid-param-simple">
                         <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
-                    </button>
-                    <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
-                        <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
                     </button>
                 </div>
             </div>
@@ -177,12 +170,12 @@
             <a href="#" class="link-less" style="display:none;"><?= $this->lng['autobid']['settings-link-to-novice-mode'] ?></a>
         </div>
 
-        <div class="row text-center" >
+        <div class="row text-center" id="buttons-expert-settings">
+            <button class="btn" style="display:none;" id="cancel_modification_settings_expert" onClick="window.location.reload()" >
+                <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
+            </button>
             <button class="btn" id="validate_settings_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" >
                 <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
-            </button>
-            <button class="btn" style="display:none;" id="cancel_modification_settings" onClick="window.location.reload()" >
-                <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
             </button>
         </div>
     </div>

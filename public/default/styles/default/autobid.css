@@ -506,3 +506,7 @@ div.autobid-tabs h3 {
 #autobid-amount-no-input, #autobid-param-simple-taux-min-field-no-input {
     float: right;
 }
+
+#buttons-expert-settings button {
+    width: 210px;
+}

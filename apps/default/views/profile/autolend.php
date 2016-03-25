@@ -198,7 +198,7 @@
             $('.link-more').hide();
 
             $('#validate_settings_novice').hide();
-            $('#cancel_modification_settings').hide();
+            $('#cancel_modification_settings_novice').hide();
         }
 
         function noviceModification() {
@@ -224,7 +224,7 @@
             }
 
             $('#validate_settings_novice').show();
-            $('#cancel_modification_settings').show();
+            $('#cancel_modification_settings_novice').show();
 
             $('.unit').removeClass('.unit');
         }
@@ -279,7 +279,7 @@
             $('.link-less').show();
 
             $('#validate_settings_novice').hide();
-            $('#cancel_modification_settings').hide();
+            $('#cancel_modification_settings_novice').hide();
 
             $('#autobid-block').removeClass('autobid-param-advanced-locked');
 
@@ -287,7 +287,7 @@
             $('.param-advanced-buttons').show();
             $('.apply-global-medium-rate').show();
             $('#validate_settings_expert').show();
-            $('#cancel_modification_settings').show();
+            $('#cancel_modification_settings_expert').show();
         }
 
         function autoBidSwitchOn() {
