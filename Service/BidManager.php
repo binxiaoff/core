@@ -40,7 +40,7 @@ class BidManager
     /** @var AutoBidSettingsManager */
     private $oAutoBidSettingsManager;
 
-    /** @var $oLenderManager */
+    /** @var LenderManager */
     private $oLenderManager;
 
     public function __construct()
@@ -78,8 +78,6 @@ class BidManager
         $oSettings = Loader::loadData('settings');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
-        /** @var \clients_status $oClient */
-        $oClient = Loader::loadData('clients');
         /** @var \transactions $oTransaction */
         $oTransaction = Loader::loadData('transactions');
         /** @var \wallets_lines $oWalletsLine */
@@ -111,7 +109,7 @@ class BidManager
         }
 
         $iClientId = $oLenderAccount->id_client_owner;
-        if (false === $oClient->get($iClientId) || false === $this->oLenderManager->canBid($oLenderAccount)) {
+        if (false === $this->oLenderManager->canBid($oLenderAccount)) {
             return false;
         }
 
@@ -253,8 +251,11 @@ class BidManager
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = Loader::loadData('lenders_accounts');
+        
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
-            if ($oAutoBid->rate_min <= $fCurrentRate) {
+            if ($oAutoBid->rate_min <= $fCurrentRate && $oLenderAccount->get($oBid->id_lender_account) && $this->oLenderManager->canBid($oLenderAccount)) {
                 if (self::MODE_REBID_AUTO_BID_CREATE === $iMode) {
                     $iBidOrder = $oBid->counter('id_project = ' . $oBid->id_project) + 1;
 

@@ -19,7 +19,11 @@ class LenderManager
     {
         /** @var \clients_status $oClientStatus */
         $oClientStatus = Loader::loadData('clients_status');
-        if ($oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == \clients_status::VALIDATED) {
+        /** @var \clients $oClient */
+        $oClient = Loader::loadData('clients');
+
+        if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
+             && $oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == \clients_status::VALIDATED) {
             return true;
         }
         return false;
