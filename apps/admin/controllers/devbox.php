@@ -1061,7 +1061,7 @@ class devboxController extends bootstrap
 
             $sClientId  = $aRow[0];
             $sProjectId = $aRow[1];
-            $fAmount    = intval(str_replace(',', '.', $aRow[2]) * 100);
+            $fAmount    = str_replace(',', '.', $aRow[2]) * 100;
 
             if ($oLender->get($sClientId, 'id_client_owner')) {
                 $oTransaction->id_project       = $sProjectId;
