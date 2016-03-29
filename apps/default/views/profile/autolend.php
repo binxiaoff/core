@@ -245,7 +245,7 @@
             $('.link-more').hide();
             $('.link-less').hide();
 
-            $('#cancel_modification_settings').hide();
+            $('#cancel_modification_settings_expert').hide();
 
             $('#autobid-block').addClass('autobid-param-advanced-locked');
 
