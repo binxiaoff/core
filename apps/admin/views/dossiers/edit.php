@@ -772,68 +772,74 @@
             -moz-column-count: 2; /* Firefox */
             column-count: 2;
         }
+        div.div-left-pos, div.div-right-pos {
+            margin: 0;
+            -webkit-column-break-inside: avoid; /* Chrome, Safari */
+            page-break-inside: avoid;           /* Theoretically FF 20+ */
+            break-inside: avoid-column;         /* IE 11 */
+            display:table;                      /* Actually FF 20+ */
+        }
     </style>
 
     <div id="lesEtapes">
         <div id="title_tab_email">Email</div>
         <div id="tab_email" class="div-2-columns">
-
-            <div id="edit_projects_tab_email">
-                <h2>Configuration d'envoi d'Email</h2>
-                <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
-                <br/>
-                <br/>
-                <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?= $this->projects->id_project ?>">Sauvegarder</a>
-            </div>
-            <br />
-            <div id="tab_email_msg">Données sauvegardées</div>
-            <br />
-            <div id="send_cgv">
-                <h2>Envoi des CGV</h2>
-                <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Envoyer</a>
-            </div>
-
-            <?php if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
-            <br />
-            <br />
-            <div id="send_completeness" style="height: 50%;">
-                <h2>Complétude - Personnalisation du message</h2>
-                <div class="liwording">
-                    <table>
-                        <?php foreach($this->completude_wording as $sSlug => $sWording):?><tr>
-                            <td>
-                                <a class="add_wording" id="add-<?= $sSlug ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
-                            </td>
-                            <td>
-                                <span class="content-add-<?= $sSlug ?>"><?= $sWording ?></span>
-                            </td>
-                            </tr>
-                        <?php endforeach?>
-                    </table>
+            <div class="div-left-pos">
+                <div id="edit_projects_tab_email">
+                    <h2>Configuration d'envoi d'Email</h2>
+                    <input type="checkbox" name="stop_relances" id="stop_relances" value="1" <?= $this->projects->stop_relances == 1 ? 'checked':'' ?>/> <label for="stop_relances">Arrêt des relances</label>
+                    <br/>
+                    <br/>
+                    <a href="#" class="btn_link" id="save_projects_tab_email" data-project-id="<?= $this->projects->id_project ?>">Sauvegarder</a>
                 </div>
                 <br />
-                <h3 class="test">Listes : </h3>
-                <div class="content_li_wording"></div>
-                <fieldset style="width:100%;">
-                    <table class="formColor" style="width:100%;">
-                        <tr>
-                            <td>
-                                <label for="id">Saisir votre message :</label>
-                                <textarea name="content_email_completude" id="content_email_completude"></textarea>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <a id="completude_preview" href="<?= $this->lurl ?>/dossiers/completude_preview/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Prévisualiser</a>
-                            </th>
-                        </tr>
-                    </table>
-                </fieldset>
+                <div id="tab_email_msg">Données sauvegardées</div>
+                <br />
+                <div id="send_cgv">
+                    <h2>Envoi des CGV</h2>
+                    <a href="<?= $this->lurl ?>/dossiers/send_cgv_ajax/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Envoyer</a>
+                </div>
+
+                <?php if (in_array($this->current_projects_status->status, array(\projects_status::EN_ATTENTE_PIECES, \projects_status::ATTENTE_ANALYSTE, \projects_status::REVUE_ANALYSTE, \projects_status::COMITE, \projects_status::PREP_FUNDING))) { ?>
+                <br />
+                <br />
+                <div id="send_completeness" style="height: 50%;">
+                    <h2>Complétude - Personnalisation du message</h2>
+                    <div class="liwording">
+                        <table>
+                            <?php foreach($this->completude_wording as $sSlug => $sWording):?><tr>
+                                <td>
+                                    <a class="add_wording" id="add-<?= $sSlug ?>"><img src="<?= $this->surl ?>/images/admin/add.png"></a>
+                                </td>
+                                <td>
+                                    <span class="content-add-<?= $sSlug ?>"><?= $sWording ?></span>
+                                </td>
+                                </tr>
+                            <?php endforeach?>
+                        </table>
+                    </div>
+                    <br />
+                    <h3 class="test">Listes : </h3>
+                    <div class="content_li_wording"></div>
+                    <fieldset style="width:100%;">
+                        <table class="formColor" style="width:100%;">
+                            <tr>
+                                <td>
+                                    <label for="id">Saisir votre message :</label>
+                                    <textarea name="content_email_completude" id="content_email_completude"></textarea>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <a id="completude_preview" href="<?= $this->lurl ?>/dossiers/completude_preview/<?= $this->projects->id_project ?>" class="btn_link thickbox cboxElement">Prévisualiser</a>
+                                </th>
+                            </tr>
+                        </table>
+                    </fieldset>
+                </div>
+                <?php } ?>
             </div>
-            <?php } ?>
-            <br/>
-            <br/>
-            <div style="height: 50%; overflow-y:auto;">
+            <div class="div-right-pos">
                 <h2>Historique</h2>
                 <?php if (false === empty($this->aEmails) || false === empty($this->project_cgv->id)) : ?>
                     <table class="tablesorter">
