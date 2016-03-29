@@ -194,7 +194,7 @@ class preteursController extends bootstrap
         $this->attachment       = $this->loadData('attachment');
         $this->attachment_type  = $this->loadData('attachment_type');
         $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender();
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
 
         //// transactions mouvements ////
         $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
@@ -341,7 +341,7 @@ class preteursController extends bootstrap
         $this->attachment       = $this->loadData('attachment');
         $this->attachment_type  = $this->loadData('attachment_type');
         $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
-        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender();
+        $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
 
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);

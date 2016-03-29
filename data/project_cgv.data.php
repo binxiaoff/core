@@ -72,7 +72,7 @@ class project_cgv extends project_cgv_crud
     public function exist($id, $field = 'id')
     {
         $result = $this->bdd->query('SELECT * FROM project_cgv WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function generateFileName()

@@ -107,7 +107,7 @@ class villes extends villes_crud
     {
         $sql    = 'SELECT * FROM `villes` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function generateCodeInsee($sCodeDepartement, $sCodeCommune)

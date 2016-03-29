@@ -64,6 +64,6 @@ class demande_contact extends demande_contact_crud
     public function exist($id, $field = 'id_demande_contact')
     {
         $result = $this->bdd->query('SELECT * FROM `demande_contact` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

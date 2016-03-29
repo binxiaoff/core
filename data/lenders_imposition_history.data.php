@@ -67,7 +67,7 @@ class lenders_imposition_history extends lenders_imposition_history_crud
     {
         $sql    = 'SELECT * FROM `lenders_imposition_history` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
 
