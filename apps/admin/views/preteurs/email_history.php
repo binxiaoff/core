@@ -44,6 +44,7 @@
     <div><?= $this->sClientStatusMessage ?></div>
 
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
+    <h2>ID Client : <?= $this->clients->id_client ?></h2>
     <h2>Préférences Notifications</h2>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
@@ -53,9 +54,6 @@
     <div class="form-body">
         <div class="form-row">
             <table>
-                <tr>
-                    <th colspan="6">ID Client : <?= $this->clients->id_client ?></th>
-                </tr>
                 <tr>
                     <th width="auto"><span><br>Offres et Projets</span></th>
                     <th width="100px"><br>Immédiatement</th>

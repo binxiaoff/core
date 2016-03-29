@@ -76,13 +76,13 @@
     <form action="" method="post" enctype="multipart/form-data" id="form_etape1">
         <h2>Etape 1</h2>
         <table class="form" style="margin: auto;">
+            <tr>
+                <th>ID Client :</th>
+                <td colspan="3">
+                    <span><?= $this->clients->id_client ?></span>
+                </td>
+            </tr>
             <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
-                <tr>
-                    <th>ID Client :</th>
-                    <td colspan="3">
-                        <span><?= $this->clients->id_client ?></span>
-                    </td>
-                </tr>
                 <tr class="particulier">
                     <th>Civilite :</th>
                     <td colspan="3">
