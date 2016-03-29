@@ -1125,6 +1125,7 @@ class devboxController extends bootstrap
                     $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
                     $oTransactions->transaction                      = 2;
                     $oTransactions->create();
+                    echo 'transaction created for client' . $iClientId;
                 }
 
                 if (false === $oWalletsLines->exist($oTransactions->id_transaction, 'id_transaction')) {
@@ -1135,6 +1136,7 @@ class devboxController extends bootstrap
                     $oWalletsLines->type                             = 1;
                     $oWalletsLines->amount                           = $oWelcomeOfferDetails->montant;
                     $oWalletsLines->create();
+                    echo 'wallet line created for client' . $iClientId;
                 }
 
                 if (false === $oBankUnilend->exist($oTransactions->id_transaction, 'id_transaction')) {
@@ -1142,9 +1144,10 @@ class devboxController extends bootstrap
                     $oBankUnilend->montant        = '-' . $oWelcomeOfferDetails->montant;
                     $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                     $oBankUnilend->create();
+                    echo 'bank Unilend created for client' . $iClientId;
                 }
             }
-
+            echo 'all done';
         }
     }
 }
