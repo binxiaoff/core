@@ -54,6 +54,9 @@
         <div class="form-row">
             <table>
                 <tr>
+                    <th colspan="6">ID Client : <?= $this->clients->id_client ?></th>
+                </tr>
+                <tr>
                     <th width="auto"><span><br>Offres et Projets</span></th>
                     <th width="100px"><br>Immédiatement</th>
                     <th width="100px"><p>Synthèse<br>quotidienne</p></th>
