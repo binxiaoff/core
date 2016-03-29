@@ -63,7 +63,7 @@ class compteur_factures extends compteur_factures_crud
     public function exist($id, $field = 'id_compteur_facture')
     {
         $result = $this->bdd->query('SELECT * FROM compteur_factures WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     /**

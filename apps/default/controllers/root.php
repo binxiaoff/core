@@ -60,9 +60,6 @@ class rootController extends bootstrap
                     header('Location:' . $this->lurl . '/projects');
                     die;
                 } else {
-                    // source
-                    $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', $this->lurl . '/inscription_preteur/etape1', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
-
                     header('Location:' . $this->lurl . '/inscription_preteur');
                     die;
                 }
@@ -70,11 +67,6 @@ class rootController extends bootstrap
 
             // Redirection depot de dossier
             if ($this->tree->id_tree == 128) {
-                $this->ficelle->source(
-                    isset($_GET['utm_source']) ? $_GET['utm_source'] : '',
-                    $this->lurl . '/lp-depot-de-dossier',
-                    isset($_GET['utm_source2']) ? $_GET['utm_source2'] : ''
-                );
                 header('Location: ' . $this->lurl . '/lp-depot-de-dossier');
                 die;
             }
@@ -427,8 +419,6 @@ class rootController extends bootstrap
                 $this->companies_details = $this->loadData('companies_details');
                 $this->bids              = $this->loadData('bids');
 
-                $this->ficelle->source(isset($_GET['utm_source']) ? $_GET['utm_source'] : '', '', isset($_GET['utm_source2']) ? $_GET['utm_source2'] : '');
-
                 // Heure fin periode funding
                 $this->settings->get('Heure fin periode funding', 'type');
                 $this->heureFinFunding = $this->settings->value;
@@ -629,7 +619,7 @@ class rootController extends bootstrap
         $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
 
         // recupération du title et slug pour le Breadcrumbs
-        $this->page_title = $this->lng['recherche-corpo']['title'];
+        $this->page_title = $this->lng['search']['title'];
         $this->page_slug  = "search";
 
         // Vérification recherche

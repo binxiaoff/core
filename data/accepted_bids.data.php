@@ -36,17 +36,17 @@ class accepted_bids extends accepted_bids_crud
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
-            $where = ' WHERE '.$where;
+            $where = ' WHERE ' . $where;
         }
 
         if ($order != '') {
-            $order = ' ORDER BY '.$order;
+            $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `accepted_bids`'.$where.$order.($nb!='' && $start !=''?' LIMIT '.$start.','.$nb:($nb!=''?' LIMIT '.$nb:''));
+        $sql = 'SELECT * FROM `accepted_bids`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -56,25 +56,25 @@ class accepted_bids extends accepted_bids_crud
     public function counter($where = '')
     {
         if ($where != '') {
-            $where = ' WHERE '.$where;
+            $where = ' WHERE ' . $where;
         }
 
-        $sql='SELECT count(*) FROM `accepted_bids` '.$where;
+        $sql = 'SELECT count(*) FROM `accepted_bids` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     public function exist($id, $field = 'id_accepted_bid')
     {
-        $sql = 'SELECT * FROM `accepted_bids` WHERE '.$field.'="'.$id.'"';
+        $sql    = 'SELECT * FROM `accepted_bids` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0)>0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getAcceptedAmount($iBidId)
     {
-        $aBids = $this->select('id_bid = ' . $iBidId);
+        $aBids   = $this->select('id_bid = ' . $iBidId);
         $fAmount = 0;
         foreach ($aBids as $aBid) {
             $fAmount += $aBid['amount'] / 100;
@@ -93,12 +93,12 @@ class accepted_bids extends accepted_bids_crud
                     accepted_bids ab
                     INNER JOIN loans l ON l.id_loan = ab.id_loan
                 WHERE
-                    id_project = '.$iProjectID.'
+                    id_project = ' . $iProjectID . '
                 GROUP BY
                     id_bid';
 
         $resultat = $this->bdd->query($sql);
-        $result = array();
+        $result   = array();
 
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
@@ -114,10 +114,10 @@ class accepted_bids extends accepted_bids_crud
                     accepted_bids ab
                     INNER JOIN loans l ON l.id_loan = ab.id_loan
                 WHERE
-                    l.id_lender = '.$iLenderId.'
-                     AND l.id_project = '.$iProjectId;
+                    l.id_lender = ' . $iLenderId . '
+                     AND l.id_project = ' . $iProjectId;
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int) ($this->bdd->result($result, 0, 0));
     }
 }

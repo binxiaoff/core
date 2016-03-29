@@ -67,7 +67,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
     {
         $sql    = 'SELECT * FROM `echeanciers_emprunteur` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function sum($sum, $where = '')

@@ -9,7 +9,7 @@
                     <?= $this->lng['preteur-projets']['ce-projet-est-integralement-finance-par'] ?>
                     <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->NbPreteurs, 0) ?> <?= $this->lng['preteur-projets']['preteur'] ?><?= ($this->NbPreteurs > 1 ? 's' : '') ?></strong>
                     <br/><?= $this->lng['preteur-projets']['au-taux-de'] ?>
-                    <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->AvgLoans, 1) ?> %</strong>
+                    <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</strong>
                     <br/><?= $this->lng['preteur-projets']['en'] ?> <?= ($this->interDebutFin['day'] > 0 ? $this->interDebutFin['day'] . ' jours ' : '') ?><?= ($this->interDebutFin['hour'] > 0 ? $this->interDebutFin['hour'] . ' heures ' : '') ?> <?= $this->lng['preteur-projets']['et'] ?> <?= $this->interDebutFin['minute'] ?> <?= $this->lng['preteur-projets']['minutes'] ?>
                 </p>
                 <p>

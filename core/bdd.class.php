@@ -59,12 +59,10 @@ class bdd
         }
     }
 
-    public function debug($function, $time = '')
+    public function debug($function)
     {
-        $this->log_debug[] = $function . ' ' . $time;
-
         if ($this->option['DEBUG_DISPLAY'] != false) {
-            $_SESSION['debug'][] = array('requete' => $function, 'time' => $time);
+            $_SESSION['debug'][] = $function;
         }
     }
 
@@ -133,48 +131,25 @@ class bdd
         if ($connect_id == null) {
             $connect_id = $this->connect_id;
         }
-        $time = '';
 
         $this->requete = $requete;
-
-        if ($this->option['BDD_PANIC'] == true) {
-            $start = microtime(true);
-        }
-
         $this->ressource = @mysql_query($requete, $connect_id);
 
-        if ($this->option['BDD_PANIC'] == true && (true == isset($_SERVER['HTTP_HOST']) && $_SERVER['HTTP_HOST'] == 'fr.nuxe.com')) {
-            $stop = microtime(true);
-            $time = ($stop - $start);
-
-            if (($stop - $start) > $this->option['BDD_PANIC_SEUIL']) {
-                mail($this->option['BDD_PANIC_MAIL'], '[' . $this->config['NOM'] . '] Slow query : ' . $time, $requete . "\r\n\r\nSESSION:\r\n" . serialize($_SESSION) . "\r\n\r\nSERVER:\r\n" . serialize($_SERVER));
-            }
-        }
-
-        if (!$this->ressource) {
-
+        if (false === $this->ressource) {
             $msg = 'Erreur lors de l\'execution de la requete "<i>' . $this->requete . '</i>"';
             $this->error($msg);
             return false;
         } else {
-            $this->debug($this->requete, $time);
+            $this->debug($this->requete);
             return $this->ressource;
         }
     }
 
-    public function fetch_array($ressource = null)
+    public function fetch_array($ressource)
     {
-        if ($ressource == null) {
-            $ressource = $this->ressource;
-        }
-
         $array = @mysql_fetch_array($ressource);
 
-        if (!is_resource($ressource)) {
-            $this->error('L\'argument passé à la fonction fetch_array() n\'est pas une ressource !');
-        } elseif (!$array) {
-        } else {
+        if (false !== $array) {
             return $array;
         }
     }

@@ -985,8 +985,6 @@ class dossiersController extends bootstrap
 
                                 // si existe pas
                                 if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false) {
-
-                                    // transaction
                                     $this->transactions->id_client        = $this->clients->id_client;
                                     $this->transactions->montant          = '-' . ($montant * 100); // moins car c'est largent qui part d'unilend
                                     $this->transactions->montant_unilend  = ($partUnliend * 100);
@@ -1075,7 +1073,7 @@ class dossiersController extends bootstrap
                                     $aLastLoans    = array();
 
                                     foreach ($aAcceptedBids as $aBid) {
-                                        $this->notifications->type            = 4; // accepté
+                                        $this->notifications->type            = \notifications::TYPE_LOAN_ACCEPTED;
                                         $this->notifications->id_lender       = $aBid['id_lender'];
                                         $this->notifications->id_project      = $this->projects->id_project;
                                         $this->notifications->amount          = $aBid['amount'];
@@ -1090,7 +1088,7 @@ class dossiersController extends bootstrap
                                         foreach ($aLoansForBid as $aLoan) {
                                             if (in_array($aLoan['id_loan'], $aLastLoans) === false ) {
                                                 $this->clients_gestion_mails_notif->id_client       = $oLender->id_client_owner;
-                                                $this->clients_gestion_mails_notif->id_notif        = 4; // offre acceptée
+                                                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
                                                 $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                                 $this->clients_gestion_mails_notif->id_transaction  = 0;
                                                 $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
@@ -1496,6 +1494,7 @@ class dossiersController extends bootstrap
                 'surl'                 => $this->surl,
                 'civilite_e'           => $this->clients->civilite,
                 'nom_e'                => htmlentities($this->clients->nom, null, 'UTF-8'),
+                'prenom_e'             => htmlentities($this->clients->prenom, null, 'UTF-8'),
                 'entreprise'           => htmlentities($this->companies->name, null, 'UTF-8'),
                 'montant_emprunt'      => $this->ficelle->formatNumber($this->projects->amount, 0),
                 'mensualite_e'         => $this->ficelle->formatNumber(($oPaymentSchedule->montant + $oPaymentSchedule->commission + $oPaymentSchedule->tva) / 100),
@@ -1509,7 +1508,8 @@ class dossiersController extends bootstrap
                 'tel_emprunteur'       => $sBorrowerPhoneNumber,
                 'email_emprunteur'     => $sBorrowerEmail,
                 'lien_fb'              => $sFacebookURL,
-                'lien_tw'              => $sTwitterURL
+                'lien_tw'              => $sTwitterURL,
+                'annee'                => date('Y')
             );
 
         $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
@@ -2714,22 +2714,16 @@ class dossiersController extends bootstrap
                                         // Partie pour l'etat sur un remb preteur
                                         $etat = $e['prelevements_obligatoires'] + $e['retenues_source'] + $e['csg'] + $e['prelevements_sociaux'] + $e['contributions_additionnelles'] + $e['prelevements_solidarite'] + $e['crds'];
 
-                                        // Partie on enregistre les mouvements
-                                        // On regarde si on a pas deja
                                         if ($this->transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
-                                            // On recup lenders_accounts
                                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
-                                            // On recup le client
                                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                                            // echeance preteur
                                             $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
                                             $this->echeanciers->status             = 1; // remboursé
                                             $this->echeanciers->status_email_remb  = 1; // remboursé
                                             $this->echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
                                             $this->echeanciers->update();
 
-                                            // On enregistre la transaction
                                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
                                             $this->transactions->montant          = ($rembNet * 100);
                                             $this->transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
@@ -2742,7 +2736,6 @@ class dossiersController extends bootstrap
                                             $this->transactions->transaction      = 2; // transaction virtuelle
                                             $this->transactions->create();
 
-                                            // on enregistre la transaction dans son wallet
                                             $this->wallets_lines->id_lender                = $e['id_lender'];
                                             $this->wallets_lines->type_financial_operation = 40;
                                             $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
@@ -2751,14 +2744,14 @@ class dossiersController extends bootstrap
                                             $this->wallets_lines->amount                   = $rembNet * 100;
                                             $this->wallets_lines->create();
 
-                                            $this->notifications->type       = 2; // remb
+                                            $this->notifications->type       = \notifications::TYPE_REPAYMENT;
                                             $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
                                             $this->notifications->id_project = $this->projects->id_project;
                                             $this->notifications->amount     = $rembNet * 100;
                                             $this->notifications->create();
 
                                             $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
-                                            $this->clients_gestion_mails_notif->id_notif        = 5; // remb preteur
+                                            $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
                                             $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
                                             $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
                                             $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;

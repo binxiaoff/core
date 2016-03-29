@@ -504,6 +504,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     <div class="clear"></div>
                 </div>
                 <input type="tel" id="inscription_telephone" name="telephone" placeholder="Téléphone*" maxlength="10">
+                <p id="error-message-nationality" style="color:#C84747; display: none">Nous sommes désolés, seuls les nationaux de l'Espace Economique Européen peuvent s'inscrire sur Unilend pour le moment.</p>
                 <select id="inscription_id_nationalite" name="id_nationalite" class="custom-select">
                     <option value="">Nationalité*</option>
                     <option value="35">Autre</option>
@@ -1024,6 +1025,17 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         $('#inscription_cgv').change(function () {
             $(this).parent().find('label').removeClass('error');
         });
+
+        $('#inscription_id_nationalite').change(function () {
+            if ($('#inscription_id_nationalite').val() == 35) {
+                $('#inscription_id_nationalite').next('.c2-sb-wrap').addClass('error');
+                $('#error-message-nationality').show();
+            } else {
+                $('#error-message-nationality').hide();
+            }
+        });
+
+
         $('#errorAge').html('');
 
         var civilite = '';
@@ -1144,9 +1156,9 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         url: "<?= $url_site ?>/collect/prospect",
                         data: DATA,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
+                            var parsedData = jQuery.parseJSON(data);
 
-                            if (parsedDate.reponse == 'OK') {
+                            if (parsedData.reponse == 'OK') {
                                 $('#form_inscription').removeClass('etape1');
                                 $('#form_inscription').addClass('etape2');
 
@@ -1177,7 +1189,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                 });
                             }
                             else {
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     if (intituleErreur == "Nom") {
@@ -1189,7 +1201,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                     if (intituleErreur == "Email" || intituleErreur == "Format email") {
                                         $('#inscription_email').addClass('error');
                                     }
-                                    if (intituleErreur == "Email existant" && parsedDate.reponse.length > 1) {
+                                    if (intituleErreur == "Email existant" && parsedData.reponse.length > 1) {
                                         $('#inscription_email').addClass('error');
                                     }
                                     else {
@@ -1326,7 +1338,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     $('#inscription_telephone').addClass('error');
                     erreur = 1;
                 }
-                if (!inscription_id_nationalite) {
+                if (!inscription_id_nationalite || inscription_id_nationalite == 35) {
                     $('#inscription_id_nationalite').next('.c2-sb-wrap').addClass('error');
                     erreur = 1;
                 }
@@ -1469,13 +1481,14 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         + '&signature_cgv=' + 1
                         + '&forme_preteur=' + 1,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
+                            var parsedData = jQuery.parseJSON(data);
 
-                            if (parsedDate.reponse == 'OK') {
-                                var url = parsedDate.URL;
+                            if (parsedData.reponse == 'OK') {
+                                var url = parsedData.URL;
 
                                 dataLayer.push({
                                     'email_lead': email,
+                                    'unique_id': parsedData.uniqueid,
                                     'source1_lead': utm_source,
                                     'source2_lead': utm_source2,
                                     'event': 'signupPreteurStep2OK'
@@ -1492,7 +1505,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                 return false;
                             }
                             else {
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     if (intituleErreur == "Mot de passe") {
