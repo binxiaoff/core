@@ -150,7 +150,7 @@ function decompte(time, id) {
 
     // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire
     var ecartFuseau = aujourdhui.getTimezoneOffset();
-    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 1));
+    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 2));
 
     time_tmp = parseInt(aujourdhui.getTime() / 1000, 10);
     restant  = time - time_tmp;
@@ -200,7 +200,7 @@ function decompteProjetDetail(time, id, lien) {
 
     // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire  // + 1 heure d'hiver - +2 heure d'ete
     var ecartFuseau = aujourdhui.getTimezoneOffset();
-    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 1));
+    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 2));
 
     time_tmp = parseInt(aujourdhui.getTime() / 1000, 10);
     restant  = time - time_tmp;
