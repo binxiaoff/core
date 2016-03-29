@@ -342,7 +342,7 @@ class bootstrap extends Controller
 
             if ($this->bIsBorrower) {
                 $this->getDataBorrower();
-                if ('espace_emprunteur' === $command->Name) {
+                if (in_array($command->Name, array('espace_emprunteur', 'root', 'depot_de_dossier'))) {
                     $this->bDisplayHeaderBorrower      = true;
                     $this->bShowChoiceBorrowerOrLender = false;
                     $this->bDisplayHeaderLender        = false;
