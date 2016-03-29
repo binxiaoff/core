@@ -149,8 +149,12 @@ function decompte(time, id) {
     var aujourdhui = new Date();
 
     // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire
+    var diff = 1;
+    if (aujourdhui.dst()) {
+        diff = 2;
+    }
     var ecartFuseau = aujourdhui.getTimezoneOffset();
-    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 2));
+    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + diff));
 
     time_tmp = parseInt(aujourdhui.getTime() / 1000, 10);
     restant  = time - time_tmp;
@@ -199,8 +203,12 @@ function decompteProjetDetail(time, id, lien) {
     var aujourdhui = new Date();
 
     // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire  // + 1 heure d'hiver - +2 heure d'ete
+    var diff = 1;
+    if (aujourdhui.dst()) {
+        diff = 2;
+    }
     var ecartFuseau = aujourdhui.getTimezoneOffset();
-    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 2));
+    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + diff));
 
     time_tmp = parseInt(aujourdhui.getTime() / 1000, 10);
     restant  = time - time_tmp;
@@ -406,4 +414,14 @@ function initAutocompleteCity()
             });
         }
     });
+}
+
+Date.prototype.stdTimezoneOffset = function() {
+    var jan = new Date(this.getFullYear(), 0, 1); // A day in winter time for sure
+    var jul = new Date(this.getFullYear(), 6, 1); // A day in summer time for sure
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
+
+Date.prototype.dst = function() {
+    return this.getTimezoneOffset() < this.stdTimezoneOffset();
 }
