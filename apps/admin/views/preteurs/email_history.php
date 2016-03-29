@@ -67,8 +67,7 @@
                             \clients_gestion_type_notif::TYPE_NEW_PROJECT,
                             \clients_gestion_type_notif::TYPE_BID_PLACED,
                             \clients_gestion_type_notif::TYPE_BID_REJECTED,
-                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
-                            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
+                            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
                         ))
                     ) : ?>
                         <tr>
@@ -77,15 +76,12 @@
                                 <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['immediatement'] ? ' checked' : '') ?> disabled="disabled" />
                             </td>
                             <td>
-                                <?php if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
                                 <input type="checkbox" <?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['quotidienne'] ? ' checked' : '') ?> disabled="disabled" />
-                                <?php endif; ?>
                             </td>
                             <td>
                                 <?php if (false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
                                         \clients_gestion_type_notif::TYPE_BID_PLACED,
-                                        \clients_gestion_type_notif::TYPE_BID_REJECTED,
-                                        \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
+                                        \clients_gestion_type_notif::TYPE_BID_REJECTED
                                     ))
                                 ) : ?>
                                     <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['hebdomadaire'] ? ' checked' : '') ?> disabled="disabled" />
@@ -96,8 +92,7 @@
                                     false === in_array($aNotificationType['id_client_gestion_type_notif'], array(
                                         \clients_gestion_type_notif::TYPE_NEW_PROJECT,
                                         \clients_gestion_type_notif::TYPE_BID_PLACED,
-                                        \clients_gestion_type_notif::TYPE_BID_REJECTED,
-                                        \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM
+                                        \clients_gestion_type_notif::TYPE_BID_REJECTED
                                     ))
                                 ) : ?>
                                     <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['mensuelle'] ? ' checked' : '') ?> disabled="disabled" />
@@ -113,23 +108,31 @@
                     <th><span>Remboursements</span></th>
                 </tr>
                 <?php foreach ($this->aTypesOfNotifications as $aNotificationType) : ?>
-                    <?php if ($aNotificationType['id_client_gestion_type_notif'] == \clients_gestion_type_notif::TYPE_REPAYMENT) : ?>
+                    <?php if (in_array($aNotificationType['id_client_gestion_type_notif'],
+                        array(\clients_gestion_type_notif::TYPE_REPAYMENT,
+                              \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))) : ?>
                         <tr>
                             <td><p><?= $aNotificationType['nom'] ?></p></td>
                             <td>
-                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['immediatement'] ? ' checked' : '') ?> disabled="disabled" />
+                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['immediatement'] ? ' checked' : '') ?> disabled="disabled"/>
                             </td>
                             <td>
-                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['quotidienne'] ? ' checked' : '') ?> disabled="disabled" />
+                                <?php if ($aNotificationType['id_client_gestion_type_notif'] != \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM): ?>
+                                    <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['quotidienne'] ? ' checked' : '') ?> disabled="disabled"/>
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['hebdomadaire'] ? ' checked' : '') ?> disabled="disabled" />
+                                <?php if ($aNotificationType['id_client_gestion_type_notif'] != \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM): ?>
+                                    <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['hebdomadaire'] ? ' checked' : '') ?> disabled="disabled"/>
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['mensuelle'] ? ' checked' : '') ?> disabled="disabled" />
+                                <?php if ($aNotificationType['id_client_gestion_type_notif'] != \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM): ?>
+                                    <input type="checkbox"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']]['mensuelle'] ? ' checked' : '') ?> disabled="disabled"/>
+                                <?php endif; ?>
                             </td>
                             <td>
-                                <input type="radio"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']['id_client_gestion_type_notif']]['uniquement_notif'] ? ' checked' : '') ?> disabled="disabled" />
+                                <input type="radio"<?= (1 == $this->aClientsNotifications[$aNotificationType['id_client_gestion_type_notif']['id_client_gestion_type_notif']]['uniquement_notif'] ? ' checked' : '') ?> disabled="disabled"/>
                             </td>
                         </tr>
                     <?php endif; ?>
