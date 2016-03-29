@@ -577,10 +577,17 @@
                     <td colspan="2"><div style="padding-bottom: 25px;"></div></td></tr>
                 <tr>
                     <td colspan="2">
-                        <input type="button"
-                               onclick="if(confirm('Voulez vous <?= ($this->clients->status == \clients::STATUS_ONLINE ? 'mettre le client hors ligne et changer son status en Clôturé par Unilend ' : 'remettre le client en ligne et revenir au status avant la mis hors ligne') ?> ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= $this->clients->status == \clients::STATUS_ONLINE ? \clients::STATUS_OFFLINE : \clients::STATUS_ONLINE ?>';}"
-                               class="<?= (\clients::STATUS_ONLINE == $this->clients->status ? 'btnRouge' : 'btn') ?>"
-                               value="<?= (\clients::STATUS_ONLINE == $this->clients->status  ? 'Hors ligne / Clôturé par Unilend ' : 'En ligne / Status avant mis hors ligne') ?>"
+                        <?php if ($this->clients->status == \clients::STATUS_ONLINE) :?>
+                            <input type="button"
+                                   onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                                   class="btnRouge"
+                                   value="Hors ligne / Clôturé par Unilend">
+                        <?php else: ?>
+                            <input type="button"
+                                   onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_ONLINE ?>';}"
+                                   class="btn"
+                                   value="En ligne / Status avant mis hors ligne">
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <tr>
