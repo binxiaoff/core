@@ -5566,19 +5566,19 @@ class cronController extends bootstrap
         }
 
         if ($oProject->date_publication_full != '0000-00-00 00:00:00') {
-            $oPublicationDate = new DateTime($oProject->date_publication_full);
+            $oPublicationDate = new \DateTime($oProject->date_publication_full);
         } else {
-            $oPublicationDate = new DateTime($oProject->date_publication . ' 00:00:00');
+            $oPublicationDate = new \DateTime($oProject->date_publication);
         }
 
         if ($oProject->date_retrait_full != '0000-00-00 00:00:00') {
-            $oEndDate = new DateTime($oProject->date_retrait_full);
+            $oEndDate = new \DateTime($oProject->date_retrait_full);
         } else {
-            $oEndDate = new DateTime($oProject->date_fin);
+            $oEndDate = new \DateTime($oProject->date_retrait);
         }
         $oFundingTime = $oPublicationDate->diff($oEndDate);
-        $sFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
-        $sFundingTime .= ($sFundingTime == 1 ? ' jour' : ' jours');
+        $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
+        $sFundingTime = $iFundingTime . ($iFundingTime == 1 ? ' jour' : ' jours');
 
         $aMail = array(
             'surl'           => $this->surl,
