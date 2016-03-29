@@ -44,13 +44,13 @@
     <div><?= $this->sClientStatusMessage ?></div>
 
     <h1>Detail prêteur : <?= $this->clients->prenom . ' ' . $this->clients->nom ?></h1>
-    <h2>ID Client : <?= $this->clients->id_client ?></h2>
-    <h2>Préférences Notifications</h2>
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/preteurs/edit/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Consulter Prêteur</a>
         <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Modifier Prêteur</a>
         <a href="<?= $this->lurl ?>/preteurs/portefeuille/<?= $this->lenders_accounts->id_lender_account ?>" class="btn_link">Portefeuille & Performances</a>
     </div>
+    <p>ID Client : <?= $this->clients->id_client ?></p>
+    <h2>Préférences Notifications</h2>
     <div class="form-body">
         <div class="form-row">
             <table>
