@@ -3179,9 +3179,9 @@ class cronController extends bootstrap
                     $retenuesFiscales = $prelevements_obligatoires + $retenues_source + $csg + $prelevements_sociaux + $contributions_additionnelles + $prelevements_solidarite + $crds;
 
                     // Solde promotion
-                    $soldePromotion += $unilend_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
-                    $soldePromotion -= $offres_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
-                    $soldePromotion += $offres_bienvenue_retrait[$date]['montant']; // (on ajoute le offres retirées d'un compte) ajouté le 19/11/2014
+                    $soldePromotion += $unilend_bienvenue[$date]['montant'];
+                    $soldePromotion -= $offres_bienvenue[$date]['montant'];
+                    $soldePromotion += (- $offres_bienvenue_retrait[$date]['montant']);
 
                     $offrePromo = $offres_bienvenue[$date]['montant'] + $offres_bienvenue_retrait[$date]['montant'];
                     // ADD $rejetrembEmprunteur[$date]['montant'] // 22/01/2015
