@@ -258,7 +258,7 @@ class Dispatcher
         }
 
         if (! file_exists($this->path . 'apps/' . $this->App . '/' . $bootstrap . '.php')) {
-            call_user_func(array(&$this, '_error'), 'bootstrap not found : ' . $this->App . '/' . $bootstrap . '.php');
+            call_user_func(array($this, '_error'), 'bootstrap not found : ' . $this->App . '/' . $bootstrap . '.php');
         } else {
             include($this->path . 'apps/' . $this->App . '/' . $bootstrap . '.php');
         }

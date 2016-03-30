@@ -862,14 +862,8 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des librairies
-        $this->xml2array = $this->loadLib('xml2array');
-
-        $xmlstring = file_get_contents('http://www.capital.fr/wrapper-unilend.xml');
-
-        $result  = $this->xml2array->getArray($xmlstring);
-        $content = $result['wrapper']['content'];
-        $content = explode('<!--CONTENT_ZONE-->', $content);
+        $oXml    = new SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
+        $content = explode('<!--CONTENT_ZONE-->', (string)$oXml->content);
 
         $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);

@@ -148,7 +148,7 @@ class Controller
         if ($FunctionToCall == '') {
             $FunctionToCall = 'default';
         }
-        if (!is_callable(array(&$this, '_' . $FunctionToCall))) {
+        if (!is_callable(array($this, '_' . $FunctionToCall))) {
             if ($this->catchAll == true) {
                 $current_params = $this->Command->getParameters();
                 $arr            = array(0 => $FunctionToCall);
@@ -161,7 +161,7 @@ class Controller
         }
         $this->setView($FunctionToCall);
         $this->params = $this->Command->getParameters();
-        call_user_func(array(&$this, '_' . $FunctionToCall));
+        call_user_func(array($this, '_' . $FunctionToCall));
 
         // Si la page courante doit être cachée, on cherche la page en cache ou on initie le processus de création de la version en cache
         if ($this->cacheCurrentPage) {
@@ -219,7 +219,7 @@ class Controller
         }
 
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $head . '.php')) {
-            call_user_func(array(&$this, '_error'), 'head not found : views/' . $head . '.php');
+            call_user_func(array($this, '_error'), 'head not found : views/' . $head . '.php');
         } else {
             include($this->path . 'apps/' . $this->App . '/views/' . $head . '.php');
         }
@@ -235,7 +235,7 @@ class Controller
         if ($view != '') {
             if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
                 call_user_func(array(
-                    &$this, '_error'
+                    $this, '_error'
                 ), 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
             } else {
                 if ($this->is_view_template && file_exists($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php')) {
@@ -256,7 +256,7 @@ class Controller
             $header = 'header';
         }
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $header . '.php')) {
-            call_user_func(array(&$this, '_error'), 'header not found : views/' . $header . '.php');
+            call_user_func(array($this, '_error'), 'header not found : views/' . $header . '.php');
         } else {
             include($this->path . 'apps/' . $this->App . '/views/' . $header . '.php');
         }
@@ -268,7 +268,7 @@ class Controller
         $footer = empty($footer) ? (empty($this->footer) ? 'footer' : $this->footer) : $footer;
 
         if (! file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
-            call_user_func(array(&$this, '_error'), 'footer not found : views/' . $footer . '.php');
+            call_user_func(array($this, '_error'), 'footer not found : views/' . $footer . '.php');
         } else {
             include $this->path . 'apps/' . $this->App . '/views/' . $footer . '.php';
         }
