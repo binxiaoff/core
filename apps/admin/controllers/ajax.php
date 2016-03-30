@@ -1775,7 +1775,7 @@ class ajaxController extends bootstrap
 
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
                     if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
-                        $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
+                        $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
                     }
 
                     $content_risk = '
