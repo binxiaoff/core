@@ -44,7 +44,7 @@
                     <select name="duree" id="duree" class="field field-large required custom-select">
                         <option value="0"><?= $this->lng['espace-emprunteur']['duree'] ?></option>
                         <?php foreach ($this->dureePossible as $duree): ?>
-                            <option value="<?= $duree ?>"> <?= $duree . ' ' . $this->lng['espace-emprunteur']['mois'] ?></option>
+                            <option value="<?= $duree ?>"><?= $duree . ' ' . $this->lng['espace-emprunteur']['mois'] ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
