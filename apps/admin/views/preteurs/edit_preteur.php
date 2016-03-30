@@ -579,12 +579,12 @@
                     <td colspan="2">
                         <?php if ($this->clients->status == \clients::STATUS_ONLINE) :?>
                             <input type="button"
-                                   onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                                   onclick="if(confirm('Voulez vous mettre le client hors ligne et changer son status en Clôturé par Unilend')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
                                    class="btnRouge"
                                    value="Hors ligne / Clôturé par Unilend">
                         <?php else: ?>
                             <input type="button"
-                                   onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_ONLINE ?>';}"
+                                   onclick="if(confirm('Voulez vous remettre le client en ligne et revenir au status avant la mis hors ligne ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/status/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_ONLINE ?>';}"
                                    class="btn"
                                    value="En ligne / Status avant mis hors ligne">
                         <?php endif; ?>
@@ -594,7 +594,7 @@
                     <td colspan="2">
                         <?php if (false === in_array($this->clients_status->status, array(\clients_status::CLOSED_LENDER_REQUEST)) ) : ?>
                         <input type="button"
-                               onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/LenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
+                               onclick="if(confirm('Voulez vous vraiment desactiver ce prêteur (mettre son compte hors ligne et changer son stauts en Clôturé à la demande du preteur ?')){window.location = '<?= $this->lurl ?>/preteurs/lenderOnlineOffline/deactivate/<?= $this->lenders_accounts->id_lender_account ?>/<?= \clients::STATUS_OFFLINE ?>';}"
                                class="btnRouge" value="Hors ligne / Clôturé à la demande du client">
                         <?php endif; ?>
                     </td>

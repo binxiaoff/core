@@ -1602,16 +1602,13 @@ class preteursController extends bootstrap
         unset($this->aChangesRepayment[$iIdSchedule]);
     }
 
-    private function changeClientStatus($iClientId, $iStatus, $iOrigin)
+    private function changeClientStatus(\clients $oClient, $iStatus, $iOrigin)
     {
-        $oClient = $this->loadData('clients');
-        $oClient->get($iClientId, 'id_client');
-
         if (false === $oClient->isBorrower()) {
             $oClient->status = $iStatus;
             $oClient->update();
 
-            $serialize = serialize(array('id_client' => $iClientId, 'status' => $oClient->status));
+            $serialize = serialize(array('id_client' => $oClient->id_client, 'status' => $oClient->status));
             switch ($iOrigin) {
                 case 1:
                     $this->users_history->histo($iOrigin, 'status preteur', $_SESSION['user']['id_user'], $serialize);
@@ -1740,7 +1737,7 @@ class preteursController extends bootstrap
                 $this->sClientStatusMessage = '<div class="attention" style="background-color:#F2F258">Attention : compte en modification - créé le ' . date('d/m/Y', $sTimeCreate) . '</div>';
                 break;
             case \clients_status::CLOSED_LENDER_REQUEST:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé à la demande du prêteur</div>';
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
                 break;
             case \clients_status::CLOSED_BY_UNILEND:
                 $this->sClientStatusMessage = '<div class="attention">Attention : compte passé hors ligne par Unilend</div>';
@@ -1800,12 +1797,11 @@ class preteursController extends bootstrap
         echo $sRibChangeStatus;
     }
 
-    public function _LenderOnlineOffline()
+    public function _lenderOnlineOffline()
     {
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $iOriginForUserHistory = 1;
         /** @var \clients_status_history $oClientsStatusHistory */
         $oClientsStatusHistory = $this->loadData('clients_status_history');
         /** @var \lenders_accounts $oLendersAccount */
@@ -1817,12 +1813,12 @@ class preteursController extends bootstrap
         $oClient->get($oLendersAccount->id_client_owner, 'id_client');
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
-            $this->changeClientStatus($oClient->id_client, $this->params[2], $iOriginForUserHistory);
+            $this->changeClientStatus($oClient, $this->params[2], 1);
             if ($this->params[2] == \clients::STATUS_OFFLINE) {
                 $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $oClient->id_client);
             } else {
                 $aLastTwoStatus = $oClientsStatusHistory->select('id_client =  ' . $oClient->id_client, 'id_client_status_history DESC', null, 2);
-                $oClientStatus = $this->loadData('clients_status');
+                $oClientStatus  = $this->loadData('clients_status');
                 $oClientStatus->get($aLastTwoStatus[1]['id_client_status']);
                 $sContent = 'Compte remis en ligne par Unilend';
                 $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], $oClientStatus->status, $oClient->id_client, $sContent);
@@ -1832,7 +1828,7 @@ class preteursController extends bootstrap
         }
 
         if (isset($this->params[0]) && $this->params[0] == 'deactivate') {
-            $this->changeClientStatus($oClient->id_client, $this->params[2], $iOriginForUserHistory);
+            $this->changeClientStatus($oClient, $this->params[2], 1);
             $this->sendEmailClosedAccount($oClient);
             $oClientsStatusHistory->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_LENDER_REQUEST, $oClient->id_client);
             header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $oLendersAccount->id_lender_account);
