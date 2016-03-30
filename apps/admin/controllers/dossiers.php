@@ -4038,12 +4038,114 @@ class dossiersController extends bootstrap
         $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
         $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $this->tnmp->constructionVariablesServeur($aVariables))));
 
-        if ($this->Config['env'] == 'prod') {
+        if ($this->Config['env'] === 'prod') {
             Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
             $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
         } else {
             $this->email->addRecipient($sRecipient);
             Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
         }
+    }
+
+    public function _status()
+    {
+        if (false === empty($_POST)) {
+            $sURL = '/dossiers/status/' . $_POST['status'];
+
+            if (false === empty($_POST['first-range-start']) && false === empty($_POST['first-range-end'])) {
+                $oStart = new \DateTime(str_replace('/', '-', $_POST['first-range-start']));
+                $oEnd   = new \DateTime(str_replace('/', '-', $_POST['first-range-end']));
+                $sURL .= '/' . $oStart->format('Y-m-d') . '_' . $oEnd->format('Y-m-d');
+
+                if (false === empty($_POST['second-range-start']) && false === empty($_POST['second-range-end'])) {
+                    $oStart = new \DateTime(str_replace('/', '-', $_POST['second-range-start']));
+                    $oEnd   = new \DateTime(str_replace('/', '-', $_POST['second-range-end']));
+                    $sURL .= '/' . $oStart->format('Y-m-d') . '_' . $oEnd->format('Y-m-d');
+                }
+            }
+
+            header('Location: ' . $sURL);
+            exit;
+        }
+
+        $this->loadJs('admin/vis/vis.min');
+        $this->loadCss('../scripts/admin/vis/vis.min');
+
+        /** @var \projects_status $oProjectStatus */
+        $oProjectStatus  = $this->loadData('projects_status');
+        $this->aStatuses = $oProjectStatus->select('', 'status ASC');
+
+        if (
+            isset($this->params[0], $this->params[1])
+            && $this->params[0] == (int) $this->params[0]
+            && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[1], $aMatches)
+        ) {
+            $this->iBaseStatus      = $this->params[0];
+            $this->oFirstRangeStart = new \DateTime($aMatches[1]);
+            $this->oFirstRangeEnd   = new \DateTime($aMatches[2]);
+
+            /** @var \projects_status_history $oProjectStatusHistory */
+            $oProjectStatusHistory = $this->loadData('projects_status_history');
+            $aBaseStatus           = $oProjectStatusHistory->getStatusByDates($this->iBaseStatus, $this->oFirstRangeStart, $this->oFirstRangeEnd);
+
+            $oProjectStatus->get($this->iBaseStatus);
+
+            $this->aHistory = array(
+                'label'    => $aBaseStatus[0]['label'],
+                'count'    => count($aBaseStatus),
+                'status'   => $oProjectStatus->status,
+                'children' => $this->getStatusChildren(array_column($aBaseStatus, 'id_project_status_history'))
+            );
+
+            foreach ($this->aHistory['children'] as $iChildStatus => &$aChild) {
+                if ($iChildStatus > 0) {
+                    $this->aHistory['children'][$iChildStatus]['children'] = $this->getStatusChildren($aChild['id_project_status_history']);
+                }
+            }
+
+            if (isset($this->params[2]) && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[2], $aMatches)) {
+                $this->oSecondRangeStart = new \DateTime($aMatches[1]);
+                $this->oSecondRangeEnd   = new \DateTime($aMatches[2]);
+            }
+        }
+    }
+
+    private function getStatusChildren(array $aStatusHistory)
+    {
+        /** @var \projects_status_history $oProjectStatusHistory */
+        $oProjectStatusHistory = $this->loadData('projects_status_history');
+        $aChildrenStatus       = $oProjectStatusHistory->getFollowingStatus($aStatusHistory);
+        $aStatus               = array();
+
+        array_map(function ($aElement) use (&$aStatus) {
+            if (false === isset($aStatus[$aElement['status']])) {
+                $aStatus[$aElement['status']] = array(
+                    'count'                     => 1,
+                    'label'                     => $aElement['label'],
+                    'min_days'                  => $aElement['diff_days'],
+                    'max_days'                  => $aElement['diff_days'],
+                    'total_days'                => $aElement['diff_days'],
+                    'id_project_status_history' => array($aElement['id_project_status_history'])
+                );
+            } else {
+                $aStatus[$aElement['status']]['count']++;
+                $aStatus[$aElement['status']]['total_days'] += $aElement['diff_days'];
+                $aStatus[$aElement['status']]['id_project_status_history'][] = $aElement['id_project_status_history'];
+
+                if ($aElement['diff_days'] < $aStatus[$aElement['status']]['min_days']) {
+                    $aStatus[$aElement['status']]['min_days'] = $aElement['diff_days'];
+                }
+
+                if ($aElement['diff_days'] > $aStatus[$aElement['status']]['max_days']) {
+                    $aStatus[$aElement['status']]['max_days'] = $aElement['diff_days'];
+                }
+            }
+        }, $aChildrenStatus);
+
+        return array_map(function ($aStatus) {
+            $aStatus['avg_days'] = round($aStatus['total_days'] / $aStatus['count'], 1);
+            return $aStatus;
+        }, $aStatus);
+
     }
 }
