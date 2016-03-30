@@ -509,9 +509,8 @@ class projects extends projects_crud
             INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE p.stop_relances = 0
-                AND ps.status = ' . $iStatus . '
-                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE_FORMAT(psh.added, "%Y-%m-%d")
+            WHERE ps.status = ' . $iStatus . '
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(psh.added)
                 AND psh.numero_relance = ' . $iPreviousReminderIndex
         );
 
