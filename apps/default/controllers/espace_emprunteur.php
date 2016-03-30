@@ -17,6 +17,7 @@ class espace_emprunteurController extends Bootstrap
                 die;
             }
 
+            $this->clients->get($_SESSION['client']['id_client']);
             $this->clients->checkAccessBorrower();
             $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
             $aAllCompanyProjects = array_shift($this->companies->getProjectsForCompany($this->companies->id_company));
@@ -31,9 +32,6 @@ class espace_emprunteurController extends Bootstrap
         $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
         $this->projects                 = $this->loadData('projects');
 
-        $this->clients->get($_SESSION['client']['id_client']);
-        $this->companies->get($this->clients->id_client, 'id_client_owner');
-
         $this->dates = $this->loadLib('dates');
     }
 
@@ -47,7 +45,8 @@ class espace_emprunteurController extends Bootstrap
     {
         $this->loadCss('default/preteurs/new-style');
 
-        $oTemporary_links = $this->loadData('temporary_links_login');
+        $oTemporary_links   = $this->loadData('temporary_links_login');
+        $this->bLinkExpired = false;
 
         if (isset($this->params[0])) {
             $oTemporary_links->get($this->params[0], 'token');
@@ -290,7 +289,13 @@ class espace_emprunteurController extends Bootstrap
         if (isset($_POST['valider_demande_projet'])) {
             unset($_SESSION['forms']['nouvelle-demande']);
 
-            if (empty($_POST['montant'])) {
+            $this->settings->get('Somme à emprunter max', 'type');
+            $fMaxAmount = $this->settings->value;
+
+            $this->settings->get('Somme à emprunter min', 'type');
+            $fMinAmount = $this->settings->value;
+
+            if (empty($_POST['montant']) || $fMinAmount > $_POST['montant'] || $fMaxAmount < $_POST['montant']) {
                 $_SESSION['forms']['nouvelle-demande']['errors']['montant'] = true;
             }
             if (empty($_POST['duree'])) {
