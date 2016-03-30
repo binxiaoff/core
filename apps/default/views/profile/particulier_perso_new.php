@@ -237,10 +237,10 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                         <?= $this->lng['etape2']['justificatif-de-domicile'] ?>
                     </label>
                     <div class="uploader"><!-- début uploader -->
-                        <input id="text_just_dom" type="text" class="field" readonly value="<?= ($this->attachments[\attachment_type::JUSTIFICATIF_DOMICILE]["path"] != '' ? $this->attachments[\attachment_type::JUSTIFICATIF_DOMICILE]["path"] : $this->lng['etape2']['aucun-fichier-selectionne']) ?>">
+                        <input id="text_just_dom" type="text" class="field" readonly value="<?= empty($this->attachments[\attachment_type::JUSTIFICATIF_DOMICILE]["path"]) ?  $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[\attachment_type::JUSTIFICATIF_DOMICILE]["path"] ?>">
                         <div class="file-holder">
                         <span class="btn btn-small">
-                            <?= ($this->attachments[\attachment_type::JUSTIFICATIF_DOMICILE]["path"] != '') ? '&hArr;' : '+' ?>
+                            <?= empty($this->attachments[\attachment_type::JUSTIFICATIF_DOMICILE]["path"]) ? '+' : '&hArr;' ?>
                             <span class="file-upload">
                                 <input type="file" class="file-field" name="justificatif_domicile" id="file_just_dom">
                             </span>

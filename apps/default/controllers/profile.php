@@ -1542,25 +1542,6 @@ class profileController extends bootstrap
         }
     }
 
-    // SOCIETE //
-    public function _societe_perso()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-    }
-
-    public function _societe_bank()
-    {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-    }
-
     public function _societe_doc()
     {
         if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
@@ -1614,13 +1595,13 @@ class profileController extends bootstrap
      * @param integer $attachmentType
      * @return bool
      */
-	private function uploadAttachment($lenderAccountId, $attachmentType, $sFieldName = null)
-	{
-		if(false === isset($this->upload) || false === $this->upload instanceof upload) {
-			$this->upload = $this->loadLib('upload');
-		}
+    private function uploadAttachment($lenderAccountId, $attachmentType, $sFieldName = null)
+    {
+        if (false === isset($this->upload) || false === $this->upload instanceof upload) {
+            $this->upload = $this->loadLib('upload');
+        }
 
-        if(false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
+        if (false === isset($this->attachment) || false === $this->attachment instanceof attachment) {
             $this->attachment = $this->loadData('attachment');
         }
 
