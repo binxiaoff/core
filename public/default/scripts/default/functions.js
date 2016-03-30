@@ -146,7 +146,10 @@
                 $('#rule-selector').on('change', function () {
                     var idx = $(this).val();
                     $('.uploader[data-file="' + idx + '"]').slideDown().siblings('.uploader:visible').slideUp();
-                })
+                });
+                Form.initialise({
+                    selector: 'form'
+                });
             }
         });
 

@@ -44,16 +44,14 @@
                     <select name="duree" id="duree" class="field field-large required custom-select">
                         <option value="0"><?= $this->lng['espace-emprunteur']['duree'] ?></option>
                         <?php foreach ($this->dureePossible as $duree): ?>
-                            <option
-                                value="<?= $duree ?>"<?= $duree == $this->aForm['duree'] ? ' selected' : '' ?>><?= $duree . ' ' . $this->lng['espace-emprunteur']['mois'] ?>
-                            </option>
+                            <option value="<?= $duree ?>"><?= $duree . ' ' . $this->lng['espace-emprunteur']['mois'] ?></option>
                         <?php endforeach ?>
                     </select>
                 </div>
                 <div class="form-row">
                   <textarea name="commentaires" id="commentaires" cols="35" rows="25"
                       placeholder="<?= $this->lng['espace-emprunteur']['pop-up-nouveau-projet-toutes-informations-utiles'] ?>"
-                      class="field" required="required"></textarea>
+                      data-validators="Presence" class="field required"></textarea>
                     <em><?= $this->lng['espace-emprunteur']['champs-obligatoires']?></em>
                 </div>
                 <input type="submit" class="btn"

@@ -18,7 +18,7 @@
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
 	<br />
-    <h1><?=count($this->lProjectsNok)?> incidences de remboursement :</h1>
+    <h1><?=count($this->lProjectsNok)?> incidents de remboursement :</h1>
     <?php
 	if(count($this->lProjectsNok) > 0)
 	{

@@ -284,8 +284,15 @@ class projects extends projects_crud
             LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
             LEFT JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
             WHERE projects_status.status IN (' . $status . ')' . $where;
+        
+        $aCount = $this->bdd->fetch_assoc($this->bdd->query($sql));
 
-        return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
+        if (is_array($aCount)) {
+            return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
+        } else {
+            return 0;
+        }
+
     }
 
     public function searchDossiersByStatus(array $aStatus, $siren = null, $societe = null, $nom = null, $prenom = null, $projet = null, $email = null, $start = null, $nb = null)
@@ -502,9 +509,8 @@ class projects extends projects_crud
             INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
             INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
             INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-            WHERE p.stop_relances = 0
-                AND ps.status = ' . $iStatus . '
-                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE_FORMAT(psh.added, "%Y-%m-%d")
+            WHERE ps.status = ' . $iStatus . '
+                AND DATE_SUB(CURDATE(), INTERVAL ' . $iDaysInterval . ' DAY) = DATE(psh.added)
                 AND psh.numero_relance = ' . $iPreviousReminderIndex
         );
 

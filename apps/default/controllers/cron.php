@@ -3179,9 +3179,9 @@ class cronController extends bootstrap
                     $retenuesFiscales = $prelevements_obligatoires + $retenues_source + $csg + $prelevements_sociaux + $contributions_additionnelles + $prelevements_solidarite + $crds;
 
                     // Solde promotion
-                    $soldePromotion += $unilend_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
-                    $soldePromotion -= $offres_bienvenue[$date]['montant'];  // ajouté le 19/11/2014
-                    $soldePromotion += $offres_bienvenue_retrait[$date]['montant']; // (on ajoute le offres retirées d'un compte) ajouté le 19/11/2014
+                    $soldePromotion += $unilend_bienvenue[$date]['montant'];
+                    $soldePromotion -= $offres_bienvenue[$date]['montant'];
+                    $soldePromotion += (- $offres_bienvenue_retrait[$date]['montant']);
 
                     $offrePromo = $offres_bienvenue[$date]['montant'] + $offres_bienvenue_retrait[$date]['montant'];
                     // ADD $rejetrembEmprunteur[$date]['montant'] // 22/01/2015
@@ -5565,13 +5565,28 @@ class cronController extends bootstrap
             $sMailClient = $this->clients->email;
         }
 
+        if ($oProject->date_publication_full != '0000-00-00 00:00:00') {
+            $oPublicationDate = new \DateTime($oProject->date_publication_full);
+        } else {
+            $oPublicationDate = new \DateTime($oProject->date_publication);
+        }
+
+        if ($oProject->date_retrait_full != '0000-00-00 00:00:00') {
+            $oEndDate = new \DateTime($oProject->date_retrait_full);
+        } else {
+            $oEndDate = new \DateTime($oProject->date_retrait);
+        }
+        $oFundingTime = $oPublicationDate->diff($oEndDate);
+        $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
+        $sFundingTime = $iFundingTime . ($iFundingTime == 1 ? ' jour' : ' jours');
+
         $aMail = array(
             'surl'           => $this->surl,
             'url'            => $this->furl,
             'nom_entreprise' => $oCompanies->name,
             'projet_p'       => $this->furl . '/projects/detail/' . $oProject->slug,
             'montant'        => $this->ficelle->formatNumber((float) $oProject->amount, 0),
-            'duree'          => $oProject->period,
+            'duree'          => $sFundingTime,
             'prenom_e'       => $sFirstName,
             'lien_fb'        => $this->like_fb,
             'lien_tw'        => $this->twitter,
@@ -6728,16 +6743,14 @@ class cronController extends bootstrap
                 $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
                 if ($lProjetsAremb != false) {
                     foreach ($lProjetsAremb as $r) {
-                        $projects_remb_log->id_project          = $r['id_project'];
-                        $projects_remb_log->ordre               = $r['ordre'];
-                        $projects_remb_log->debut               = date('Y-m-d H:i:s');
-                        $projects_remb_log->fin                 = '0000-00-00 00:00:00';
-                        $projects_remb_log->montant_remb_net    = 0;
-                        $projects_remb_log->etat                = 0;
-                        $projects_remb_log->nb_pret_remb        = 0;
-                        $projects_remb_log->id_project_remb_log = $projects_remb_log->create();
-
-                        $projects_remb_log->get($projects_remb_log->id_project_remb_log, 'id_project_remb_log');
+                        $projects_remb_log->id_project       = $r['id_project'];
+                        $projects_remb_log->ordre            = $r['ordre'];
+                        $projects_remb_log->debut            = date('Y-m-d H:i:s');
+                        $projects_remb_log->fin              = '0000-00-00 00:00:00';
+                        $projects_remb_log->montant_remb_net = 0;
+                        $projects_remb_log->etat             = 0;
+                        $projects_remb_log->nb_pret_remb     = 0;
+                        $projects_remb_log->create();
 
                         $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
                         $dateDernierStatut = $dernierStatut[0]['added'];
@@ -7364,75 +7377,79 @@ class cronController extends bootstrap
                         $iDaysSincePreviousReminder = $iDaysInterval - $iPreviousReminderDaysInterval;
 
                         foreach ($this->projects->getReminders($iStatus, $iDaysSincePreviousReminder, $iReminderIndex - 1) as $iProjectId) {
-                            if ($this->mails_text->get('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, 'lang = "' . $this->language . '" AND type')) {
-                                $this->projects->get($iProjectId, 'id_project');
-                                $this->companies->get($this->projects->id_company, 'id_company');
+                            try {
+                                if ($this->mails_text->get('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, 'lang = "' . $this->language . '" AND type')) {
+                                    $this->projects->get($iProjectId, 'id_project');
+                                    $this->companies->get($this->projects->id_company, 'id_company');
 
-                                if ($this->projects->id_prescripteur > 0) {
-                                    $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
-                                    $this->clients->get($this->prescripteurs->id_client, 'id_client');
-                                } else {
-                                    $this->clients->get($this->companies->id_client_owner, 'id_client');
-                                }
+                                    if ($this->projects->id_prescripteur > 0) {
+                                        $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+                                        $this->clients->get($this->prescripteurs->id_client, 'id_client');
+                                    } else {
+                                        $this->clients->get($this->companies->id_client_owner, 'id_client');
+                                    }
 
-                                if (false === empty($this->clients->email)) {
-                                    $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
-                                    $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+                                    if (false === empty($this->clients->email) && 0 == $this->projects->stop_relances) {
+                                        $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+                                        $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
 
-                                    $oSubmissionDate = new \DateTime($this->projects->added);
+                                        $oSubmissionDate = new \DateTime($this->projects->added);
 
-                                    // @todo arbitrary default value
-                                    $iAverageFundingDuration = 15;
-                                    reset($aAverageFundingDurations);
-                                    foreach ($aAverageFundingDurations as $aAverageFundingDuration) {
-                                        if ($this->projects->amount >= $aAverageFundingDuration['min'] && $this->projects->amount <= $aAverageFundingDuration['max']) {
-                                            $iAverageFundingDuration = $aAverageFundingDuration['heures'] / 24;
-                                            break;
+                                        // @todo arbitrary default value
+                                        $iAverageFundingDuration = 15;
+                                        reset($aAverageFundingDurations);
+                                        foreach ($aAverageFundingDurations as $aAverageFundingDuration) {
+                                            if ($this->projects->amount >= $aAverageFundingDuration['min'] && $this->projects->amount <= $aAverageFundingDuration['max']) {
+                                                $iAverageFundingDuration = $aAverageFundingDuration['heures'] / 24;
+                                                break;
+                                            }
+                                        }
+
+                                        if (in_array($iStatus, array(7, 8))) {
+                                            $oCompletenessDate = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
+                                            $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
+                                        }
+
+                                        $aReplacements['liste_pieces']            = $this->projects_status_history->content;
+                                        $aReplacements['raison_sociale']          = $this->companies->name;
+                                        $aReplacements['prenom']                  = $this->clients->prenom;
+                                        $aReplacements['montant']                 = $this->ficelle->formatNumber($this->projects->amount, 0);
+                                        $aReplacements['delai_demande']           = $iDaysInterval;
+                                        $aReplacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
+                                        $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
+                                        $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
+                                        $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
+                                        $aReplacements['sujet']                   = htmlentities($this->mails_text->subject, null, 'UTF-8');
+                                        $aReplacements['annee']                   = date('Y');
+
+                                        $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
+                                        $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+
+                                        $this->email = $this->loadLib('email');
+                                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                                        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
+                                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                                        if ($this->Config['env'] === 'prod') {
+                                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $aNMPFilters);
+                                            $this->tnmp->sendMailNMP($aNMPFilters, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                        } else {
+                                            $this->email->addRecipient($sRecipientEmail);
+                                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                         }
                                     }
 
-                                    if (in_array($iStatus, array(7, 8))) {
-                                        $oCompletenessDate = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
-                                        $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
-                                    }
-
-                                    $aReplacements['liste_pieces']            = $this->projects_status_history->content;
-                                    $aReplacements['raison_sociale']          = $this->companies->name;
-                                    $aReplacements['prenom']                  = $this->clients->prenom;
-                                    $aReplacements['montant']                 = $this->ficelle->formatNumber($this->projects->amount, 0);
-                                    $aReplacements['delai_demande']           = $iDaysInterval;
-                                    $aReplacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
-                                    $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
-                                    $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
-                                    $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
-                                    $aReplacements['sujet']                   = htmlentities($this->mails_text->subject, null, 'UTF-8');
-                                    $aReplacements['annee']                   = date('Y');
-
-                                    $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
-                                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
-
-                                    $this->email = $this->loadLib('email');
-                                    $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                                    $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-                                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                                    if ($this->Config['env'] === 'prod') {
-                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $aNMPFilters);
-                                        $this->tnmp->sendMailNMP($aNMPFilters, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    /**
+                                     * When project is pending documents, abort status is not automatic and must be set manually in BO
+                                     */
+                                    if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
+                                        $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
                                     } else {
-                                        $this->email->addRecipient($sRecipientEmail);
-                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                        $this->projects_status_history->addStatus(\users::USER_ID_CRON, $iStatus, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
                                     }
                                 }
-
-                                /**
-                                 * When project is pending documents, abort status is not automatic and must be set manually in BO
-                                 */
-                                if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
-                                } else {
-                                    $this->projects_status_history->addStatus(\users::USER_ID_CRON, $iStatus, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
-                                }
+                            } catch (\Exception $oException) {
+                                $this->oLogger->addRecord(ULogger::ALERT, 'Error trying to send reminded for project ' . $this->projects->id_client . '(' . $oException->getMessage() . ')');
                             }
                         }
 
@@ -7447,11 +7464,17 @@ class cronController extends bootstrap
     public function _projet_process_fast_completude()
     {
         if ($this->startCron('projet process fast completude', 5)) {
-            $this->projects_status         = $this->loadData('projects_status');
-            $this->projects_status_history = $this->loadData('projects_status_history');
+            $this->loadData('projects_status'); // Loaded for class constants
+            $this->loadData('users'); // Loaded for class constants
 
-            foreach ($this->projects->getFastProcessStep3() as $iProjectId) {
-                $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
+            /** @var \projects $oProject */
+            $oProject = $this->loadData('projects');
+
+            /** @var \projects_status_history $oProjectStatusHistory */
+            $oProjectStatusHistory = $this->loadData('projects_status_history');
+
+            foreach ($oProject->getFastProcessStep3() as $iProjectId) {
+                $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
             }
 
             $this->stopCron();
@@ -7494,7 +7517,8 @@ class cronController extends bootstrap
                     'bic_sfpmei'       => $sBIC,
                     'iban_sfpmei'      => $sIBAN,
                     'tel_emprunteur'   => $sBorrowerPhoneNumber,
-                    'email_emprunteur' => $sBorrowerEmail
+                    'email_emprunteur' => $sBorrowerEmail,
+                    'annee'            => date('Y')
                 );
 
                 foreach ($aProjects as $aProject) {
@@ -7508,6 +7532,7 @@ class cronController extends bootstrap
                             'sujet'                              => htmlentities($oMailsText->subject, null, 'UTF-8'),
                             'entreprise'                         => htmlentities($oCompanies->name, null, 'UTF-8'),
                             'civilite_e'                         => $oClients->civilite,
+                            'prenom_e'                           => htmlentities($oClients->prenom, null, 'UTF-8'),
                             'nom_e'                              => htmlentities($oClients->nom, null, 'UTF-8'),
                             'mensualite_e'                       => $this->ficelle->formatNumber(($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100),
                             'num_dossier'                        => $oProjects->id_project,
