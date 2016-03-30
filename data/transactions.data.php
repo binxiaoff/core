@@ -727,7 +727,7 @@ class transactions extends transactions_crud
               (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
               p.title as title,
               lo.id_loan as bdc,
-              ab.amount as amount_operation
+              lo.amount as amount_operation
             FROM loans lo
               INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
               INNER JOIN bids b ON ab.id_bid = b.id_bid
