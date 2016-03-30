@@ -4122,8 +4122,7 @@ class dossiersController extends bootstrap
                 $aStatus[$aElement['status']] = array(
                     'count'                     => 1,
                     'label'                     => $aElement['label'],
-                    'min_days'                  => $aElement['diff_days'],
-                    'max_days'                  => $aElement['diff_days'],
+                    'max_date'                  => $aElement['added'],
                     'total_days'                => $aElement['diff_days'],
                     'id_project_status_history' => array($aElement['id_project_status_history'])
                 );
@@ -4132,15 +4131,18 @@ class dossiersController extends bootstrap
                 $aStatus[$aElement['status']]['total_days'] += $aElement['diff_days'];
                 $aStatus[$aElement['status']]['id_project_status_history'][] = $aElement['id_project_status_history'];
 
-                if ($aElement['diff_days'] < $aStatus[$aElement['status']]['min_days']) {
-                    $aStatus[$aElement['status']]['min_days'] = $aElement['diff_days'];
-                }
-
-                if ($aElement['diff_days'] > $aStatus[$aElement['status']]['max_days']) {
-                    $aStatus[$aElement['status']]['max_days'] = $aElement['diff_days'];
+                if ($aElement['added'] > $aStatus[$aElement['status']]['max_date']) {
+                    $aStatus[$aElement['status']]['max_date'] = $aElement['added'];
                 }
             }
         }, $aChildrenStatus);
+
+        uasort($aStatus, function($aFirstElement, $aSecondElement) {
+            if ($aFirstElement['count'] === $aSecondElement['count']) {
+                return 0;
+            }
+            return $aFirstElement['count'] > $aSecondElement['count'] ? -1 : 1;
+        });
 
         return array_map(function ($aStatus) {
             $aStatus['avg_days'] = round($aStatus['total_days'] / $aStatus['count'], 1);

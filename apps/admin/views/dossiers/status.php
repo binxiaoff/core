@@ -86,14 +86,16 @@
                 <?php if (0 == $iChildStatus) : ?>
                     {id: 'level2-<?= $iChildStatus ?>', label: 'Pas de changement : <?= $aChild['count'] ?>', level: 2, group: 'disabled'},
                 <?php else : ?>
-                    {id: 'level2-<?= $iChildStatus ?>', label: '<?= $aChild['label'] ?> : <?= $aChild['count'] ?>\n\nMoyenne : <?= $aChild['avg_days'] ?>\nMin : <?= $aChild['min_days'] ?>\nMax : <?= $aChild['max_days'] ?>', level: 2},
-                    <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
-                        <?php if (0 == $iSubChildStatus) : ?>
-                            {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: 'Pas de changement : <?= $aSubChild['count'] ?>', level: 3, group: 'disabled'},
-                        <?php else : ?>
-                            {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= $aSubChild['label'] ?> : <?= $aSubChild['count'] ?>\n\nMoyenne : <?= $aSubChild['avg_days'] ?>\nMin : <?= $aSubChild['min_days'] ?>\nMax : <?= $aSubChild['max_days'] ?>', level: 3},
-                        <?php endif; ?>
-                    <?php endforeach; ?>
+                    {id: 'level2-<?= $iChildStatus ?>', label: '<?= $aChild['label'] ?> : <?= $aChild['count'] ?>\n\nMoyenne : <?= $aChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aChild['max_date'], 'd/m/Y') ?>', level: 2},
+                    <?php if (count($aChild['children']) > 1 || false === isset($aChild['children'][0])) : ?>
+                        <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
+                            <?php if (0 == $iSubChildStatus) : ?>
+                                {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: 'Pas de changement : <?= $aSubChild['count'] ?>', level: 3, group: 'disabled'},
+                            <?php else : ?>
+                                {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= $aSubChild['label'] ?> : <?= $aSubChild['count'] ?>\n\nMoyenne : <?= $aSubChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aSubChild['max_date'], 'd/m/Y') ?>', level: 3},
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 <?php endif; ?>
             <?php endforeach; ?>
         ]);
