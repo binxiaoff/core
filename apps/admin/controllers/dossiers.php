@@ -4084,13 +4084,12 @@ class dossiersController extends bootstrap
             $this->oFirstRangeStart = new \DateTime($aMatches[1]);
             $this->oFirstRangeEnd   = new \DateTime($aMatches[2]);
 
+            $oProjectStatus->get($this->iBaseStatus);
+
             /** @var \projects_status_history $oProjectStatusHistory */
             $oProjectStatusHistory = $this->loadData('projects_status_history');
             $aBaseStatus           = $oProjectStatusHistory->getStatusByDates($this->iBaseStatus, $this->oFirstRangeStart, $this->oFirstRangeEnd);
-
-            $oProjectStatus->get($this->iBaseStatus);
-
-            $this->aHistory = array(
+            $this->aHistory        = array(
                 'label'    => $aBaseStatus[0]['label'],
                 'count'    => count($aBaseStatus),
                 'status'   => $oProjectStatus->status,
@@ -4106,6 +4105,19 @@ class dossiersController extends bootstrap
             if (isset($this->params[2]) && 1 === preg_match('/([0-9]{4}-[0-9]{2}-[0-9]{2})_([0-9]{4}-[0-9]{2}-[0-9]{2})/', $this->params[2], $aMatches)) {
                 $this->oSecondRangeStart = new \DateTime($aMatches[1]);
                 $this->oSecondRangeEnd   = new \DateTime($aMatches[2]);
+                $aBaseStatus             = $oProjectStatusHistory->getStatusByDates($this->iBaseStatus, $this->oSecondRangeStart, $this->oSecondRangeEnd);
+                $this->aCompareHistory   = array(
+                    'label'    => $aBaseStatus[0]['label'],
+                    'count'    => count($aBaseStatus),
+                    'status'   => $oProjectStatus->status,
+                    'children' => $this->getStatusChildren(array_column($aBaseStatus, 'id_project_status_history'))
+                );
+
+                foreach ($this->aCompareHistory['children'] as $iChildStatus => &$aChild) {
+                    if ($iChildStatus > 0) {
+                        $this->aCompareHistory['children'][$iChildStatus]['children'] = $this->getStatusChildren($aChild['id_project_status_history']);
+                    }
+                }
             }
         }
     }
