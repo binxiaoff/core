@@ -1094,7 +1094,6 @@ class devboxController extends bootstrap
         $this->autoFireView   = false;
         $this->hideDecoration();
 
-        $this->offres_bienvenues = $this->loadData('offres_bienvenues');
         $oWelcomeOfferDetails    = $this->loadData('offres_bienvenues_details');
         $oTransactions           = $this->loadData('transactions');
         $oWalletsLines           = $this->loadData('wallets_lines');
@@ -1137,10 +1136,10 @@ class devboxController extends bootstrap
                     $oBankUnilend->create();
 
                     $iNumberOfCreatedTransactions += 1;
-                    echo 'Missing lines created for client ' . $iClientId;
+                    echo 'Missing lines created for client ' . $iClientId . '<br/>';
                 }
             }
-            echo $iNumberOfCreatedTransactions . ' transactions created';
         }
+        echo $iNumberOfCreatedTransactions . ' transactions created';
     }
 }
