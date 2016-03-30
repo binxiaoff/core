@@ -278,51 +278,51 @@ class Controller
     public function fireDebug()
     {
         echo '
-			<div style="display: none; overflow:auto; position:fixed; top:95%; left:0px; background-color:#F1EDED;font-size:11px; width:99%; height:400px; z-index:9999; padding:0 0 20px 10px;border-top: 1px solid #919191;margin:-400px auto 20px auto; " id="divdebug" >
-				<div style="clear:both;"></div>
-				<div style="color: black;">
-					<fieldset style="border:1px solid black; padding:5px; background-color:white;">
-						<legend style="border:1px solid black; padding:2px; background-color:white;"><strong>General:</strong></legend>
-						<table cellpadding="0" cellspacing="0" border="0" style="font-size:12px;">
-							<tr>
-								<td width="150px">Controlleur</td>
-								<td>' . $this->current_controller . '</td>
-							</tr>
-							<tr>
-								<td>Vue</td>
-								<td>' . $this->current_function . '</td>
-							</tr>
-							<tr>
-								<td>Template</td>
-								<td>' . (isset($this->current_template) ? $this->current_template : '') . '</td>
-							</tr>
-							<tr>
-								<td>Mon IP</td>
-								<td>' . $_SERVER['REMOTE_ADDR'] . '</td>
-							</tr>
-							<tr>
-								<td>Base utilis&eacute;e</td>
-								<td>' . $this->Config['bdd_config'][$this->Config['env']]['BDD'] . '</td>
-							</tr>
-						</table>
-					</fieldset>
-				</div>
-				<div style="margin-top: 10px; color: #066500;">
-				<fieldset style="border:1px solid #066500; padding:5px; background-color:white;">
-					<legend style="border:1px solid #066500; padding:2px; background-color:white;"><strong>$this->params:</strong></legend>
-			';
+            <div style="display: none; overflow:auto; position:fixed; top:95%; left:0px; background-color:#F1EDED;font-size:11px; width:99%; height:400px; z-index:9999; padding:0 0 20px 10px;border-top: 1px solid #919191;margin:-400px auto 20px auto; " id="divdebug" >
+                <div style="clear:both;"></div>
+                <div style="color: black;">
+                    <fieldset style="border:1px solid black; padding:5px; background-color:white;">
+                        <legend style="border:1px solid black; padding:2px; background-color:white;"><strong>General:</strong></legend>
+                        <table cellpadding="0" cellspacing="0" border="0" style="font-size:12px;">
+                            <tr>
+                                <td width="150px">Controlleur</td>
+                                <td>' . $this->current_controller . '</td>
+                            </tr>
+                            <tr>
+                                <td>Vue</td>
+                                <td>' . $this->current_function . '</td>
+                            </tr>
+                            <tr>
+                                <td>Template</td>
+                                <td>' . (isset($this->current_template) ? $this->current_template : '') . '</td>
+                            </tr>
+                            <tr>
+                                <td>Mon IP</td>
+                                <td>' . $_SERVER['REMOTE_ADDR'] . '</td>
+                            </tr>
+                            <tr>
+                                <td>Base utilis&eacute;e</td>
+                                <td>' . $this->Config['bdd_config'][$this->Config['env']]['BDD'] . '</td>
+                            </tr>
+                        </table>
+                    </fieldset>
+                </div>
+                <div style="margin-top: 10px; color: #066500;">
+                <fieldset style="border:1px solid #066500; padding:5px; background-color:white;">
+                    <legend style="border:1px solid #066500; padding:2px; background-color:white;"><strong>$this->params:</strong></legend>
+            ';
         if (count($this->params) > 0) {
             foreach ($this->params as $key => $elem) {
                 echo '$this->params[\'' . $key . '\'] = ' . $elem . '<br />';
             }
         }
         echo '
-				</fieldset>
-				</div>
-				<div style="margin-top: 10px; color: #7C0CCF;">
-				<fieldset style="border:1px solid #7C0CCF; padding:5px; background-color:white;">
-					<legend style="border:1px solid #7C0CCF; padding:2px; background-color:white;"><strong>$_POST:</strong></legend>
-			';
+                </fieldset>
+                </div>
+                <div style="margin-top: 10px; color: #7C0CCF;">
+                <fieldset style="border:1px solid #7C0CCF; padding:5px; background-color:white;">
+                    <legend style="border:1px solid #7C0CCF; padding:2px; background-color:white;"><strong>$_POST:</strong></legend>
+            ';
         if (count($_POST) > 0) {
             foreach ($_POST as $key => $elem) {
                 if (is_array($elem)) {
@@ -338,12 +338,12 @@ class Controller
             }
         }
         echo '
-				</fieldset>
-				</div>
-				<div style="margin-top: 10px; color: #ff7800;">
-				<fieldset style="border:1px solid #ff7800; padding:5px; background-color:white;">
-					<legend style="border:1px solid #ff7800; padding:2px; background-color:white;"><strong>setDebug:</strong></legend>
-			';
+                </fieldset>
+                </div>
+                <div style="margin-top: 10px; color: #ff7800;">
+                <fieldset style="border:1px solid #ff7800; padding:5px; background-color:white;">
+                    <legend style="border:1px solid #ff7800; padding:2px; background-color:white;"><strong>setDebug:</strong></legend>
+            ';
         if (isset($_SESSION['msg']) && count($_SESSION['msg']) > 0) {
             foreach ($_SESSION['msg'] as $title => $elem) {
                 echo '<PRE>';
@@ -353,12 +353,12 @@ class Controller
             }
         }
         echo '
-				</fieldset>
-				</div>
-				<div style="margin-top: 10px; color: red;">
-					<fieldset style="border:1px solid red; padding:5px; background-color:white;">
-						<legend style="border:1px solid red; padding:2px; background-color:white;"><strong>Errors:</strong></legend>
-			';
+                </fieldset>
+                </div>
+                <div style="margin-top: 10px; color: red;">
+                    <fieldset style="border:1px solid red; padding:5px; background-color:white;">
+                        <legend style="border:1px solid red; padding:2px; background-color:white;"><strong>Errors:</strong></legend>
+            ';
         if (isset($_SESSION['error']) && count($_SESSION['error']) > 0) {
             foreach ($_SESSION['error'] as $elem) {
                 echo '<PRE>';
@@ -367,12 +367,12 @@ class Controller
             }
         }
         echo '
-				</fieldset>
-				</div>
-				<div style="margin-top: 10px; color: #44251F;">
-					<fieldset style="border:1px solid #44251F; padding:5px; background-color:white;">
-						<legend style="border:1px solid #44251F; padding:2px; background-color:white;"><strong>Sessions:</strong></legend>
-			';
+                </fieldset>
+                </div>
+                <div style="margin-top: 10px; color: #44251F;">
+                    <fieldset style="border:1px solid #44251F; padding:5px; background-color:white;">
+                        <legend style="border:1px solid #44251F; padding:2px; background-color:white;"><strong>Sessions:</strong></legend>
+            ';
         if (count($_SESSION) > 0) {
             foreach ($_SESSION as $key => $elem) {
                 if ($key != 'debug' && $key != 'msg' && $key != 'error') {
@@ -385,35 +385,35 @@ class Controller
             }
         }
         echo '
-					</fieldset>
-				</div>
-				<div style="margin-top: 10px; color:#0096ff;">
-					<fieldset style="border:1px solid #0096ff; padding:5px; background-color:white;">
-						<legend style="border:1px solid #0096ff; padding:2px; background-color:white;"><strong>BDD:</strong></legend>
-			';
+                    </fieldset>
+                </div>
+                <div style="margin-top: 10px; color:#0096ff;">
+                    <fieldset style="border:1px solid #0096ff; padding:5px; background-color:white;">
+                        <legend style="border:1px solid #0096ff; padding:2px; background-color:white;"><strong>BDD:</strong></legend>
+            ';
         if (count($_SESSION['debug']) > 0) {
-            foreach ($_SESSION['debug'] as $i => $elem) {
-                echo '<span title="Time = ' . $elem['time'] . '" ' . (($elem['time']) > $this->Config['bdd_option'][$this->Config['env']]['BDD_PANIC_SEUIL'] ? 'style="color:red;font-weight:bold"' : '') . '>' . ($i == 0 ? '' : '<hr>') . ' ' . $elem['requete'] . '</span>';
+            foreach ($_SESSION['debug'] as $i => $sQuery) {
+                echo '<span>' . ($i == 0 ? '' : '<hr>') . ' ' . $sQuery . '</span>';
             }
         }
         echo '
-					</fieldset>
-				</div>
-			</div>
-			<div style="position:fixed; top:100%; left:0px; width:100%; height:20px; background-color:#F1EDED;border-top: 1px solid #919191;font-size:12px; margin:-20px auto 0 auto;  ">
-				<span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'block\';">[O]</span>
-				<span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'none\';">[X]</span> |
-				<span style="color: #ff7800; font-weight:bold;">' . (isset($_SESSION['msg']) ? count($_SESSION['msg']) : 0) . ' setdebug</span> |
-				<span style="color: red; font-weight:bold;">' . (isset($_SESSION['error']) ? count($_SESSION['error']) : 0) . ' erreur </span> |
-				<span style="color: #0096ff; font-weight:bold;">' . (isset($_SESSION['debug']) ? count($_SESSION['debug']) : 0) . ' requ&ecirc;tes </span> |
-				<span style="color: #066500; font-weight:bold;">' . count($this->params) . ' params </span> |
-				<span style="color: #7C0CCF; font-weight:bold;">' . count($_POST) . ' post </span> |
-				<span style="color: #44251F; font-weight:bold;"> session </span> |
-				<span style="color: #000000; font-weight:bold;">
-					<form method="post" style="float:right;">[<input type="submit" name="killsession" value="KILL SESSION" style="border:none; font-weight:bold; cursor:pointer;" />]</form>
-				</span>
-			</div>
-		';
+                    </fieldset>
+                </div>
+            </div>
+            <div style="position:fixed; top:100%; left:0px; width:100%; height:20px; background-color:#F1EDED;border-top: 1px solid #919191;font-size:12px; margin:-20px auto 0 auto;  ">
+                <span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'block\';">[O]</span>
+                <span style="cursor: pointer;" onclick="document.getElementById(\'divdebug\').style.display=\'none\';">[X]</span> |
+                <span style="color: #ff7800; font-weight:bold;">' . (isset($_SESSION['msg']) ? count($_SESSION['msg']) : 0) . ' setdebug</span> |
+                <span style="color: red; font-weight:bold;">' . (isset($_SESSION['error']) ? count($_SESSION['error']) : 0) . ' erreur </span> |
+                <span style="color: #0096ff; font-weight:bold;">' . (isset($_SESSION['debug']) ? count($_SESSION['debug']) : 0) . ' requ&ecirc;tes </span> |
+                <span style="color: #066500; font-weight:bold;">' . count($this->params) . ' params </span> |
+                <span style="color: #7C0CCF; font-weight:bold;">' . count($_POST) . ' post </span> |
+                <span style="color: #44251F; font-weight:bold;"> session </span> |
+                <span style="color: #000000; font-weight:bold;">
+                    <form method="post" style="float:right;">[<input type="submit" name="killsession" value="KILL SESSION" style="border:none; font-weight:bold; cursor:pointer;" />]</form>
+                </span>
+            </div>
+        ';
     }
 
     //Ajoute une information dans la fenetre de debug

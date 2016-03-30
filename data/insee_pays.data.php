@@ -77,7 +77,7 @@ class insee_pays extends insee_pays_crud
     {
         $sql    = 'SELECT * FROM `insee_pays` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function getByCountryIso($sCodeIso)
@@ -103,5 +103,5 @@ class insee_pays extends insee_pays_crud
             return false;
         }
     }
-
 }
+

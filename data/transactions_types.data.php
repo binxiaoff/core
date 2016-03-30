@@ -89,6 +89,6 @@ class transactions_types extends transactions_types_crud
     {
         $sql    = 'SELECT * FROM `transactions_types` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

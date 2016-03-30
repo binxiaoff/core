@@ -64,7 +64,7 @@ class echeanciers extends echeanciers_crud
     {
         $sql    = 'SELECT * FROM `echeanciers` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     // retourne la sum total d'un emprunt
@@ -417,7 +417,7 @@ class echeanciers extends echeanciers_crud
 
         $result = $this->bdd->query($sql);
         $res    = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_array($result)) {
             $retenues             = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
             $res[$record['date']] = $retenues;
         }

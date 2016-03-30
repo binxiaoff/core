@@ -149,8 +149,12 @@ function decompte(time, id) {
     var aujourdhui = new Date();
 
     // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire
+    var diff = 1;
+    if (aujourdhui.dst()) {
+        diff = 2;
+    }
     var ecartFuseau = aujourdhui.getTimezoneOffset();
-    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 1));
+    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + diff));
 
     time_tmp = parseInt(aujourdhui.getTime() / 1000, 10);
     restant  = time - time_tmp;
@@ -199,8 +203,12 @@ function decompteProjetDetail(time, id, lien) {
     var aujourdhui = new Date();
 
     // on fait en sorte d'etre a lheure fr quelque soit le fuseau horaire  // + 1 heure d'hiver - +2 heure d'ete
+    var diff = 1;
+    if (aujourdhui.dst()) {
+        diff = 2;
+    }
     var ecartFuseau = aujourdhui.getTimezoneOffset();
-    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + 1));
+    aujourdhui.setHours(aujourdhui.getHours() + (ecartFuseau / 60 + diff));
 
     time_tmp = parseInt(aujourdhui.getTime() / 1000, 10);
     restant  = time - time_tmp;
@@ -360,10 +368,15 @@ function initAutocompleteCity()
                 search: function(event, ui) {
                     if ($(this).data('autocomplete') == 'birth_city'){
                         $("#insee_birth").val('');
+                        if ($('#group_identiy').find(".country").val() != 1) {
+                            return false;
+                        }
+                    } else {
+                        if($(this).parents('.row').find(".country").val() != 1){
+                            return false;
+                        }
                     }
-                    if ($(this).parent().find(".country").val() != 1) {
-                        return false;
-                    }
+
                     $(this).removeClass('LV_invalid_field');
                 },
                 select: function( event, ui ) {
@@ -406,4 +419,14 @@ function initAutocompleteCity()
             });
         }
     });
+}
+
+Date.prototype.stdTimezoneOffset = function() {
+    var jan = new Date(this.getFullYear(), 0, 1); // A day in winter time for sure
+    var jul = new Date(this.getFullYear(), 6, 1); // A day in summer time for sure
+    return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
+
+Date.prototype.dst = function() {
+    return this.getTimezoneOffset() < this.stdTimezoneOffset();
 }

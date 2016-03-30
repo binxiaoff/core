@@ -1494,6 +1494,7 @@ class dossiersController extends bootstrap
                 'surl'                 => $this->surl,
                 'civilite_e'           => $this->clients->civilite,
                 'nom_e'                => htmlentities($this->clients->nom, null, 'UTF-8'),
+                'prenom_e'             => htmlentities($this->clients->prenom, null, 'UTF-8'),
                 'entreprise'           => htmlentities($this->companies->name, null, 'UTF-8'),
                 'montant_emprunt'      => $this->ficelle->formatNumber($this->projects->amount, 0),
                 'mensualite_e'         => $this->ficelle->formatNumber(($oPaymentSchedule->montant + $oPaymentSchedule->commission + $oPaymentSchedule->tva) / 100),
@@ -1507,7 +1508,8 @@ class dossiersController extends bootstrap
                 'tel_emprunteur'       => $sBorrowerPhoneNumber,
                 'email_emprunteur'     => $sBorrowerEmail,
                 'lien_fb'              => $sFacebookURL,
-                'lien_tw'              => $sTwitterURL
+                'lien_tw'              => $sTwitterURL,
+                'annee'                => date('Y')
             );
 
         $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
