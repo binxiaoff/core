@@ -284,8 +284,15 @@ class projects extends projects_crud
             LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
             LEFT JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
             WHERE projects_status.status IN (' . $status . ')' . $where;
+        
+        $aCount = $this->bdd->fetch_assoc($this->bdd->query($sql));
 
-        return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
+        if (is_array($aCount)) {
+            return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
+        } else {
+            return 0;
+        }
+
     }
 
     public function searchDossiersByStatus(array $aStatus, $siren = null, $societe = null, $nom = null, $prenom = null, $projet = null, $email = null, $start = null, $nb = null)
