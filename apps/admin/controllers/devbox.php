@@ -1131,16 +1131,16 @@ class devboxController extends bootstrap
                     $oWalletsLines->amount                           = $oWelcomeOfferDetails->montant;
                     $oWalletsLines->create();
 
-                    $oBankUnilend->id_transaction = $oTransactions->id_transaction;
-                    $oBankUnilend->montant        = -$oWelcomeOfferDetails->montant;
-                    $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
+                    $oBankUnilend->id_transaction                    = $oTransactions->id_transaction;
+                    $oBankUnilend->montant                           = -$oWelcomeOfferDetails->montant;
+                    $oBankUnilend->type                              = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                     $oBankUnilend->create();
 
                     $iNumberOfCreatedTransactions += 1;
                     echo 'Missing lines created for client ' . $iClientId;
                 }
             }
-            echo $iNumberOfCreatedTransactions . 'transactions created';
+            echo $iNumberOfCreatedTransactions . ' transactions created';
         }
     }
 }
