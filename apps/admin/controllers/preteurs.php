@@ -537,7 +537,7 @@ class preteursController extends bootstrap
                     $iOriginForUserHistory = 3;
 
                     if (false === empty($aExistingClient) && $aExistingClient['id_client'] != $this->clients->id_client) {
-                        $this->changeClientStatus($this->clients->id_client, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
+                        $this->changeClientStatus($this->clients, \clients::STATUS_OFFLINE, $iOriginForUserHistory);
                         $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::CLOSED_BY_UNILEND, $this->clients->id_client, 'Doublon avec client ID : ' . $aExistingClient['id_client']);
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                         die;
@@ -871,9 +871,11 @@ class preteursController extends bootstrap
 
         if (isset($this->params[0]) && $this->params[0] == 'status') {
             $iOriginForUserHistory = 12;
+            $oClient = $this->loadData('clients');
+            $oClient->get($this->params[1], 'id_client');
 
             $this->changeClientStatus(
-                $this->params[1],
+                $oClient,
                 $this->params[2],
                 (($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::TO_BE_CHECKED),
                 $iOriginForUserHistory
