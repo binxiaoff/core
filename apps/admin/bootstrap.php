@@ -145,6 +145,7 @@ class bootstrap extends Controller
 
         $this->loadJs('admin/external/jquery/jquery');
         $this->loadJs('admin/external/jquery/plugin/jquery-ui/jquery-ui.min');
+        $this->loadJs('admin/external/jquery/plugin/jquery-ui/jquery-ui.datepicker-fr');
         $this->loadJs('admin/freeow/jquery.freeow.min');
         $this->loadJs('admin/external/jquery/plugin/colorbox/jquery.colorbox-min');
         $this->loadJs('admin/treeview/jquery.treeview');
