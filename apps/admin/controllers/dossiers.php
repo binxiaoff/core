@@ -3529,8 +3529,8 @@ class dossiersController extends bootstrap
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
         $L_echeance         = $this->echeanciers->getLastOrder($id_project);
-        $next_echeanche     = (isset($L_echeance)) ? $L_echeance : null;
-        $ordre_echeance_ra  = (isset($L_echeance)) ? $L_echeance['ordre'] + 1 : 1;
+        $next_echeanche     = $L_echeance;
+        $ordre_echeance_ra  = isset($L_echeance['ordre']) ? $L_echeance['ordre'] + 1 : 1;
         $date_next_echeance = $next_echeanche['date_echeance'];
 
         // Date 4 jours ouvrés avant date next echeance
@@ -3558,7 +3558,7 @@ class dossiersController extends bootstrap
 
                 if (count($L_echeance) > 0) {
                     // on refait le meme process pour la nouvelle date
-                    $next_echeanche = $L_echeance;
+                    $next_echeanche = $L_echeance[0];
                     $date_next_echeance = $next_echeanche['date_echeance'];
 
                     // Date 4 jours ouvrés avant date next echeance
