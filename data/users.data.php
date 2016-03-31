@@ -118,7 +118,7 @@ class users extends users_crud
 
             if ($user != false) {
                 $_SESSION['auth']  = true;
-                $_SESSION['token'] = md5(md5(mktime() . $this->securityKey));
+                $_SESSION['token'] = md5(md5(time() . $this->securityKey));
                 $_SESSION['user']  = $user;
 
                 $sql = 'UPDATE ' . $this->userTable . ' SET lastlogin = NOW() WHERE email = "' . $_POST[$email] . '" AND password = "' . md5($_POST[$pass]) . '"';
@@ -201,12 +201,12 @@ class users extends users_crud
                 }
             }
         } else {
-            if ($_SESSION['auth'] != true) {
+            if (false === isset($_SESSION['auth']) || $_SESSION['auth'] != true) {
                 header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             }
 
-            if (trim($_SESSION['token']) == '') {
+            if (false === isset($_SESSION['token']) || trim($_SESSION['token']) == '') {
                 header('Location: ' . $this->params['lurl'] . '/login');
                 die;
             }

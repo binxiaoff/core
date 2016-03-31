@@ -42,16 +42,22 @@
     <br>
     <table class="form" style="margin: auto;">
         <tr>
-            <th>Prénom :</th>
-            <td><?= $this->clients->prenom ?></td>
+            <th>ID Client :</th>
+            <td><?= $this->clients->id_client ?></td>
             <th>Date de création :</th>
             <td><?= $this->dates->formatDate($this->clients->added, 'd/m/Y') ?></td>
         </tr>
         <tr>
-            <th>Nom :</th>
-            <td><?= $this->clients->nom ?></td>
+            <th>Prénom :</th>
+            <td><?= $this->clients->prenom ?></td>
             <th>Source :</th>
             <td><?= $this->clients->source ?></td>
+        </tr>
+        <tr>
+            <th>Nom :</th>
+            <td><?= $this->clients->nom ?></td>
+            <th></th>
+            <td></td>
         </tr>
         <tr>
             <th>Email :</th>

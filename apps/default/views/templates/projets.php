@@ -203,18 +203,13 @@
                         <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>" />
 
                         <div class="project-mobile-image-caption">
-                            <p>
-                                <?= $this->ficelle->formatNumber($project['amount'], 0) ?>€ |
-                                <span class="cadreEtoiles" style="margin-right: 12px; top: 8px;display: inline-block;">
-                                    <span style="display: inline-block;" class="etoile<?= $this->lNotes[$project['risk']] ?>"></span>
-                                </span> |
-                                <?php if ($iSumbids > 0) { ?>
-                                    <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
-                                <?php } else { ?>
-                                    <?= ($project['target_rate'] == '-' ? $project['target_rate'] : number_format($project['target_rate'], 1, ',', ' %')) ?>
-                                <?php } ?>
-                                | <?= ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
-                            </p>
+                            <?= $this->ficelle->formatNumber($project['amount'], 0) ?>€ | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$project['risk']] ?>"></div></div> |
+                            <?php if ($iSumbids > 0) { ?>
+                                <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
+                            <?php } else { ?>
+                                <?= ($project['target_rate'] == '-' ? $project['target_rate'] : number_format($project['target_rate'], 1, ',', ' %')) ?>
+                            <?php } ?>
+                            | <?= ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
                         </div>
                     </div>
                     <div class="project-mobile-content">

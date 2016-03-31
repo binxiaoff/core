@@ -514,6 +514,7 @@ class projectsController extends bootstrap
             $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
             $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+            $this->direction    = 1;
 
             if ($this->avgAmount == false) {
                 $this->avgAmount = 0;

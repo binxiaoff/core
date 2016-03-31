@@ -1379,10 +1379,18 @@ class ajaxController extends bootstrap
                 $content_risk = '';
 
                 if ($_POST['status'] == 1) {
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
+                    $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);
 
-                    $aExistingStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = ' . projects_status::PREP_FUNDING);
-                    if (empty($aExistingStatus)) {
+                    $aExistingStatus = array();
+                    foreach ($aProjects as $aProject) {
+                        $aStatusHistory = $this->projects_status_history->getHistoryDetails($aProject['id_project']);
+                        foreach ($aStatusHistory as $aStatus) {
+                            $aExistingStatus[] = $aStatus['status'];
+                        }
+                    }
+
+                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
+                    if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                         $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
                     }
 

@@ -1623,8 +1623,6 @@ class inscription_preteurController extends bootstrap
             }
             header('location:' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
             die;
-        } else {
-            unset($this->lenders_accounts);
         }
     }
 

@@ -45,7 +45,7 @@
                         foreach ($this->lTypeNotifs as $n) {
                             $id_notif = $n['id_client_gestion_type_notif'];
 
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))) {
+                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED))) {
                                 ?>
                                 <tr>
                                     <td>
@@ -63,17 +63,15 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
-                                            <div class="form-controls">
-                                                <div class="checkbox">
-                                                    <input onchange="checkbox(this.id)" type="checkbox" id="quotidienne_<?= $id_notif ?>" name="quotidienne_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['quotidienne'] == 1 ? 'checked' : '') ?> />
-                                                    <label for="quotidienne_<?= $id_notif ?>"></label>
-                                                </div>
+                                        <div class="form-controls">
+                                            <div class="checkbox">
+                                                <input onchange="checkbox(this.id)" type="checkbox" id="quotidienne_<?= $id_notif ?>" name="quotidienne_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['quotidienne'] == 1 ? 'checked' : '') ?> />
+                                                <label for="quotidienne_<?= $id_notif ?>"></label>
                                             </div>
-                                        <?php endif; ?>
+                                        </div>
                                     </td>
                                     <td>
-                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
+                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED))): ?>
                                             <div class="form-controls">
                                                 <div class="checkbox">
                                                     <input onchange="checkbox(this.id)" type="checkbox" id="hebdomadaire_<?= $id_notif ?>" name="hebdomadaire_<?= $id_notif ?>" <?= (in_array($id_notif, array(2)) ? 'class="check-delete" disabled checked' : ($this->NotifC[$id_notif]['hebdomadaire'] == 1 ? 'checked' : '')) ?> />
@@ -83,7 +81,7 @@
                                         <?php endif; ?>
                                     </td>
                                     <td>
-                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
+                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_BID_REJECTED))): ?>
                                             <div class="form-controls">
                                                 <div class="checkbox">
                                                     <input onchange="checkbox(this.id)" type="checkbox" id="mensuelle_<?= $id_notif ?>" name="mensuelle_<?= $id_notif ?>" <?= (in_array($id_notif, array(1, 2)) ? 'class="check-delete" disabled checked' : ($this->NotifC[$id_notif]['mensuelle'] == 1 ? 'checked' : '')) ?> />
@@ -130,7 +128,7 @@
                         <?php
                         foreach ($this->lTypeNotifs as $n) {
                             $id_notif = $n['id_client_gestion_type_notif'];
-                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_REPAYMENT))) {
+                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_REPAYMENT, \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))) {
                                 ?>
                                 <tr>
                                     <td>
@@ -149,28 +147,34 @@
                                     </td>
 
                                     <td>
-                                        <div class="form-controls">
-                                            <div class="checkbox">
-                                                <input onchange="checkbox(this.id)" type="checkbox" id="quotidienne_<?= $id_notif ?>" name="quotidienne_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['quotidienne'] == 1 ? 'checked' : '') ?> />
-                                                <label for="quotidienne_<?= $id_notif ?>"></label>
+                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
+                                            <div class="form-controls">
+                                                <div class="checkbox">
+                                                    <input onchange="checkbox(this.id)" type="checkbox" id="quotidienne_<?= $id_notif ?>" name="quotidienne_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['quotidienne'] == 1 ? 'checked' : '') ?> />
+                                                    <label for="quotidienne_<?= $id_notif ?>"></label>
+                                                </div>
                                             </div>
-                                        </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div class="form-controls">
-                                            <div class="checkbox">
-                                                <input onchange="checkbox(this.id)" type="checkbox" id="hebdomadaire_<?= $id_notif ?>" name="hebdomadaire_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['hebdomadaire'] == 1 ? 'checked' : '') ?> />
-                                                <label for="hebdomadaire_<?= $id_notif ?>"></label>
+                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
+                                            <div class="form-controls">
+                                                <div class="checkbox">
+                                                    <input onchange="checkbox(this.id)" type="checkbox" id="hebdomadaire_<?= $id_notif ?>" name="hebdomadaire_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['hebdomadaire'] == 1 ? 'checked' : '') ?> />
+                                                    <label for="hebdomadaire_<?= $id_notif ?>"></label>
+                                                </div>
                                             </div>
-                                        </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
-                                        <div class="form-controls">
-                                            <div class="checkbox">
-                                                <input onchange="checkbox(this.id)" type="checkbox" id="mensuelle_<?= $id_notif ?>" name="mensuelle_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['mensuelle'] == 1 ? 'checked' : '') ?> />
-                                                <label for="mensuelle_<?= $id_notif ?>"></label>
+                                        <?php if (false === in_array($id_notif, array(\clients_gestion_type_notif::TYPE_PROJECT_PROBLEM))): ?>
+                                            <div class="form-controls">
+                                                <div class="checkbox">
+                                                    <input onchange="checkbox(this.id)" type="checkbox" id="mensuelle_<?= $id_notif ?>" name="mensuelle_<?= $id_notif ?>" <?= ($this->NotifC[$id_notif]['mensuelle'] == 1 ? 'checked' : '') ?> />
+                                                    <label for="mensuelle_<?= $id_notif ?>"></label>
+                                                </div>
                                             </div>
-                                        </div>
+                                        <?php endif; ?>
                                     </td>
                                     <td>
                                         <div class="form-controls">
