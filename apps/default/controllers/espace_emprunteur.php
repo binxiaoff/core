@@ -22,7 +22,7 @@ class espace_emprunteurController extends Bootstrap
             $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
             $aAllCompanyProjects = array_shift($this->companies->getProjectsForCompany($this->companies->id_company));
 
-            if ((int)$aAllCompanyProjects['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects['project_status'] <= projects_status::PREP_FUNDING) {
+            if ((int)$aAllCompanyProjects['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects['project_status'] < projects_status::PREP_FUNDING) {
                 header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects['hash']);
                 die;
             }

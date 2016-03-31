@@ -673,17 +673,26 @@ class dossiersController extends bootstrap
                     }
 
                     if ($this->current_projects_status->status != $_POST['status']) {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
                         if ((int)$_POST['status'] === \projects_status::PREP_FUNDING) {
-                            $aExistingStatus = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = ' . projects_status::PREP_FUNDING);
-                            if (empty($aExistingStatus)) {
+                            $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);
+
+                            $aExistingStatus = array();
+                            foreach ($aProjects as $aProject) {
+                                $aStatusHistory = $this->projects_status_history->getHistoryDetails($aProject['id_project']);
+                                foreach ($aStatusHistory as $aStatus) {
+                                    $aExistingStatus[] = $aStatus['status'];
+                                }
+                            }
+
+                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                            if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
                             }
                         }
 
                         // Si statut a funder, en funding ou fundé
-                        if (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
+                        elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
                             $companies        = $this->loadData('companies');
                             $clients          = $this->loadData('clients');
                             $clients_adresses = $this->loadData('clients_adresses');
