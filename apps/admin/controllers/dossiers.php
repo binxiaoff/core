@@ -445,7 +445,6 @@ class dossiersController extends bootstrap
                     }
 
                     if ($this->current_projects_status->status != $_POST['status']) {
-
                         if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects       = $this->projects->select('id_company = ' . $this->projects->id_company);
                             $aExistingStatus = array();

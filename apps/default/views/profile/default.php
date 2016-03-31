@@ -73,10 +73,10 @@
             $(".page<?= $i ?>").hide();
                 <?php endif; ?>
             <?php endfor; ?>
-            }
+            };
     <?php else : ?>
         $(".page2").hide();
         $(".page3").hide();
     <?php endif; ?>
-    });
+    })
 </script>
