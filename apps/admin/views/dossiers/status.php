@@ -88,112 +88,10 @@
             yearRange: '2013:<?= date('Y') ?>'
         });
 
-        var nodes = new vis.DataSet([
-            {id: 'level1', label: '<?= $this->aHistory['label'] ?> : <?= $this->aHistory['count'] ?>', level: 1},
-            <?php foreach ($this->aHistory['children'] as $iChildStatus => $aChild) : ?>
-                <?php if (0 == $iChildStatus) : ?>
-                    {id: 'level2-<?= $iChildStatus ?>', label: 'Pas de changement : <?= $aChild['count'] ?>', level: 2, group: 'disabled'},
-                <?php else : ?>
-                    {id: 'level2-<?= $iChildStatus ?>', label: '<?= $aChild['label'] ?> : <?= $aChild['count'] ?>\n\nMoyenne : <?= $aChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aChild['max_date'], 'd/m/Y') ?>', level: 2},
-                    <?php if (count($aChild['children']) > 1 || false === isset($aChild['children'][0])) : ?>
-                        <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
-                            <?php if (0 == $iSubChildStatus) : ?>
-                                {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: 'Pas de changement : <?= $aSubChild['count'] ?>', level: 3, group: 'disabled'},
-                            <?php else : ?>
-                                {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= $aSubChild['label'] ?> : <?= $aSubChild['count'] ?>\n\nMoyenne : <?= $aSubChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aSubChild['max_date'], 'd/m/Y') ?>', level: 3},
-                            <?php endif; ?>
-                        <?php endforeach; ?>
-                    <?php endif; ?>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        ]);
-
-        var edges = new vis.DataSet([
-            <?php foreach ($this->aHistory['children'] as $iChildStatus => $aChild) : ?>
-                <?php if (0 == $iChildStatus) : ?>
-                    {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aHistory['count'] * 100, 1) ?> %', color: '#aaa'},
-                <?php else : ?>
-                    {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aHistory['count'] * 100, 1) ?> %'},
-                    <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
-                        <?php if (0 == $iSubChildStatus) : ?>
-                            {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %', color: '#aaa'},
-                        <?php else : ?>
-                            {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %'},
-                        <?php endif; ?>
-                    <?php endforeach; ?>
-                <?php endif; ?>
-            <?php endforeach; ?>
-        ]);
-
-        var container = document.getElementById('status-chart');
-        var data = {
-            nodes: nodes,
-            edges: edges
-        };
-        var options = {
-            layout: {
-                hierarchical: {
-                    direction: 'LR',
-                    levelSeparation: 275,
-                    nodeSpacing: 125
-                }
-            },
-            interaction: {
-                dragNodes: false,
-                tooltipDelay: 0
-            },
-            physics: {
-                enabled: false
-            },
-            nodes: {
-                borderWidth: 6,
-                borderWidthSelected: 6,
-                color: {
-                    background: '#b20066',
-                    border: '#b20066',
-                    highlight: {
-                        background: '#8e0252',
-                        border: '#8e0252'
-                    }
-                },
-                font: {
-                    align: 'left',
-                    color: '#fff',
-                    size: 16
-                },
-                labelHighlightBold: false,
-                shape: 'box',
-                shapeProperties: {
-                    borderRadius: 0
-                }
-            },
-            edges: {
-                arrows: 'to',
-                font: {
-                    background: '#fff',
-                    size: 15
-                },
-                width: 2
-            },
-            groups: {
-                disabled: {
-                    color: {
-                        background: '#aaa',
-                        border: '#aaa',
-                        highlight: {
-                            background: '#999',
-                            border: '#999'
-                        }
-                    }
-                }
-            }
-        };
-        var statusTree = new vis.Network(container, data, options);
-
-        <?php if (isset($this->aCompareHistory)) : ?>
-            nodes = new vis.DataSet([
-                {id: 'level1', label: '<?= $this->aCompareHistory['label'] ?> : <?= $this->aCompareHistory['count'] ?>', level: 1},
-                <?php foreach ($this->aCompareHistory['children'] as $iChildStatus => $aChild) : ?>
+        <?php if (isset($this->aHistory)) : ?>
+            var nodes = new vis.DataSet([
+                {id: 'level1', label: '<?= $this->aHistory['label'] ?> : <?= $this->aHistory['count'] ?>', level: 1},
+                <?php foreach ($this->aHistory['children'] as $iChildStatus => $aChild) : ?>
                     <?php if (0 == $iChildStatus) : ?>
                         {id: 'level2-<?= $iChildStatus ?>', label: 'Pas de changement : <?= $aChild['count'] ?>', level: 2, group: 'disabled'},
                     <?php else : ?>
@@ -211,12 +109,12 @@
                 <?php endforeach; ?>
             ]);
 
-            edges = new vis.DataSet([
-                <?php foreach ($this->aCompareHistory['children'] as $iChildStatus => $aChild) : ?>
+            var edges = new vis.DataSet([
+                <?php foreach ($this->aHistory['children'] as $iChildStatus => $aChild) : ?>
                     <?php if (0 == $iChildStatus) : ?>
-                        {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aCompareHistory['count'] * 100, 1) ?> %', color: '#aaa'},
+                        {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aHistory['count'] * 100, 1) ?> %', color: '#aaa'},
                     <?php else : ?>
-                        {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aCompareHistory['count'] * 100, 1) ?> %'},
+                        {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aHistory['count'] * 100, 1) ?> %'},
                         <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
                             <?php if (0 == $iSubChildStatus) : ?>
                                 {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %', color: '#aaa'},
@@ -228,12 +126,116 @@
                 <?php endforeach; ?>
             ]);
 
-            container = document.getElementById('second-status-chart');
-            data = {
+            var container = document.getElementById('status-chart');
+            var data = {
                 nodes: nodes,
                 edges: edges
             };
-            var secondStatusTree = new vis.Network(container, data, options);
+            var options = {
+                layout: {
+                    hierarchical: {
+                        direction: 'LR',
+                        levelSeparation: 275,
+                        nodeSpacing: 125
+                    }
+                },
+                interaction: {
+                    dragNodes: false,
+                    tooltipDelay: 0
+                },
+                physics: {
+                    enabled: false
+                },
+                nodes: {
+                    borderWidth: 6,
+                    borderWidthSelected: 6,
+                    color: {
+                        background: '#b20066',
+                        border: '#b20066',
+                        highlight: {
+                            background: '#8e0252',
+                            border: '#8e0252'
+                        }
+                    },
+                    font: {
+                        align: 'left',
+                        color: '#fff',
+                        size: 16
+                    },
+                    labelHighlightBold: false,
+                    shape: 'box',
+                    shapeProperties: {
+                        borderRadius: 0
+                    }
+                },
+                edges: {
+                    arrows: 'to',
+                    font: {
+                        background: '#fff',
+                        size: 15
+                    },
+                    width: 2
+                },
+                groups: {
+                    disabled: {
+                        color: {
+                            background: '#aaa',
+                            border: '#aaa',
+                            highlight: {
+                                background: '#999',
+                                border: '#999'
+                            }
+                        }
+                    }
+                }
+            };
+            var statusTree = new vis.Network(container, data, options);
+
+            <?php if (isset($this->aCompareHistory)) : ?>
+                nodes = new vis.DataSet([
+                    {id: 'level1', label: '<?= $this->aCompareHistory['label'] ?> : <?= $this->aCompareHistory['count'] ?>', level: 1},
+                    <?php foreach ($this->aCompareHistory['children'] as $iChildStatus => $aChild) : ?>
+                        <?php if (0 == $iChildStatus) : ?>
+                            {id: 'level2-<?= $iChildStatus ?>', label: 'Pas de changement : <?= $aChild['count'] ?>', level: 2, group: 'disabled'},
+                        <?php else : ?>
+                            {id: 'level2-<?= $iChildStatus ?>', label: '<?= $aChild['label'] ?> : <?= $aChild['count'] ?>\n\nMoyenne : <?= $aChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aChild['max_date'], 'd/m/Y') ?>', level: 2},
+                            <?php if (count($aChild['children']) > 1 || false === isset($aChild['children'][0])) : ?>
+                                <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
+                                    <?php if (0 == $iSubChildStatus) : ?>
+                                        {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: 'Pas de changement : <?= $aSubChild['count'] ?>', level: 3, group: 'disabled'},
+                                    <?php else : ?>
+                                        {id: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= $aSubChild['label'] ?> : <?= $aSubChild['count'] ?>\n\nMoyenne : <?= $aSubChild['avg_days'] ?> jours\nDate max : <?= $this->dates->formatDate($aSubChild['max_date'], 'd/m/Y') ?>', level: 3},
+                                    <?php endif; ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                ]);
+
+                edges = new vis.DataSet([
+                    <?php foreach ($this->aCompareHistory['children'] as $iChildStatus => $aChild) : ?>
+                        <?php if (0 == $iChildStatus) : ?>
+                            {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aCompareHistory['count'] * 100, 1) ?> %', color: '#aaa'},
+                        <?php else : ?>
+                            {from: 'level1', to: 'level2-<?= $iChildStatus ?>', label: '<?= round($aChild['count'] / $this->aCompareHistory['count'] * 100, 1) ?> %'},
+                            <?php foreach ($aChild['children'] as $iSubChildStatus => $aSubChild) : ?>
+                                <?php if (0 == $iSubChildStatus) : ?>
+                                    {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %', color: '#aaa'},
+                                <?php else : ?>
+                                    {from: 'level2-<?= $iChildStatus ?>', to: 'level3-<?= $iChildStatus ?>-<?= $iSubChildStatus ?>', label: '<?= round($aSubChild['count'] / $aChild['count'] * 100, 1) ?> %'},
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
+                    <?php endforeach; ?>
+                ]);
+
+                container = document.getElementById('second-status-chart');
+                data = {
+                    nodes: nodes,
+                    edges: edges
+                };
+                var secondStatusTree = new vis.Network(container, data, options);
+            <?php endif; ?>
         <?php endif; ?>
     });
 </script>
