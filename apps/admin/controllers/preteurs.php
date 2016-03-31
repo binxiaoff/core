@@ -1299,8 +1299,6 @@ class preteursController extends bootstrap
 
     public function _control_fiscal_city()
     {
-        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
-
         /** @var lenders_accounts $oLenders */
         $oLenders       = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchCity(200);
@@ -1308,8 +1306,6 @@ class preteursController extends bootstrap
 
     public function _control_birth_city()
     {
-        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
-
         /** @var lenders_accounts $oLenders */
         $oLenders       = $this->loadData('lenders_accounts');
         $this->aLenders = $oLenders->getLendersToMatchBirthCity(200);
