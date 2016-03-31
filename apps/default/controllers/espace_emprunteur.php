@@ -289,7 +289,13 @@ class espace_emprunteurController extends Bootstrap
         if (isset($_POST['valider_demande_projet'])) {
             unset($_SESSION['forms']['nouvelle-demande']);
 
-            if (empty($_POST['montant'])) {
+            $this->settings->get('Somme à emprunter max', 'type');
+            $fMaxAmount = $this->settings->value;
+
+            $this->settings->get('Somme à emprunter min', 'type');
+            $fMinAmount = $this->settings->value;
+
+            if (empty($_POST['montant']) || $fMinAmount > $_POST['montant'] || $fMaxAmount < $_POST['montant']) {
                 $_SESSION['forms']['nouvelle-demande']['errors']['montant'] = true;
             }
             if (empty($_POST['duree'])) {

@@ -258,13 +258,17 @@
             }
 
             // Remb preteur
-            if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
+            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                 // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
 
                 ?>
                 <!-- debut transasction remb -->
                 <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
-                    <td><?= $t['libelle_operation'] ?> <span class="plusmoinsOperations"></span></td>
+                    <td><?= $t['libelle_operation'] ?>
+                    <?php if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']): ?>
+                        <span class="plusmoinsOperations"></span>
+                    <?php endif; ?>
+                    </td>
                     <td><?= $t['bdc'] ?></td>
                     <td class="companieleft"><?= $t['libelle_projet'] ?></td>
                     <td><?= $this->dates->formatDate($t['date_operation'], 'd-m-Y') ?></td>
@@ -273,6 +277,7 @@
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                     <td colspan="7">
+                        <?php if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']): ?>
                         <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>" style="display:none;">
                             <table class="soustable" width="100%">
                                 <tbody>
@@ -320,6 +325,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <?php endif; ?>
                         <script type="text/javascript">
                             $(".remb_<?=$t['id_transaction']?>").click(function () {
                                 $(".content_remb_<?=$t['id_transaction']?>").slideToggle();
