@@ -3528,20 +3528,21 @@ class dossiersController extends bootstrap
         $this->echeanciers            = $this->loadData('echeanciers');
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-        $L_echeance         = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()", 'ordre ASC', 0, 1);
-        $next_echeanche     = (isset($L_echeance[0])) ? $L_echeance[0] : null;
-        $ordre_echeance_ra  = (isset($L_echeance[0])) ? $L_echeance[0]['ordre'] + 1 : 1;
+        $L_echeance         = $this->echeanciers->getLastOrder($id_project);
+        $next_echeanche     = (isset($L_echeance)) ? $L_echeance : null;
+        $ordre_echeance_ra  = (isset($L_echeance)) ? $L_echeance['ordre'] + 1 : 1;
         $date_next_echeance = $next_echeanche['date_echeance'];
 
         // Date 4 jours ouvrés avant date next echeance
         $jo = $this->loadLib('jours_ouvres');
 
-        $dateEcheance                            = strtotime($date_next_echeance);
+        $dateEcheance = strtotime($date_next_echeance);
         $date_next_echeance_4jouvres_avant_stamp = "";
 
         if ($dateEcheance != "" && isset($dateEcheance)) {
             $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
         }
+
         if (false === empty($next_echeanche)) {
             // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
             if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
@@ -3549,13 +3550,15 @@ class dossiersController extends bootstrap
                 $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($next_echeanche['date_echeance']);
 
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
-
+                $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . "
+                    AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()
+                    AND id_lender = (SELECT id_lender
+                    FROM echeanciers where id_project = " . $id_project . " LIMIT 1)
+                    AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
 
                 if (count($L_echeance) > 0) {
                     // on refait le meme process pour la nouvelle date
-                    $next_echeanche = $L_echeance[0];
-
+                    $next_echeanche = $L_echeance;
                     $date_next_echeance = $next_echeanche['date_echeance'];
 
                     // Date 4 jours ouvrés avant date next echeance
