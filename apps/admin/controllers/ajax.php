@@ -1967,46 +1967,6 @@ class ajaxController extends bootstrap
         die;
     }
 
-    public function _recouvrement()
-    {
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->echeanciers             = $this->loadData('echeanciers');
-        $this->receptions              = $this->loadData('receptions');
-
-        if (isset($_POST['id_reception']) && $this->receptions->get($_POST['id_reception'], 'type = 1 AND type_remb = 3 AND id_reception')) {
-            $this->projects->get($this->receptions->id_project, 'id_project');
-
-            $retour = $_POST['date'];
-            if ($retour != false) {
-                $retour = explode('/',$retour);
-                $retour = $retour[2].'-'.$retour[1].'-'.$retour[0];
-                $this->lastDateRecouvrement = date('d/m/Y', strtotime($retour));
-                $this->lastFormatSql = date('Y-m-d', strtotime($retour));
-                $_SESSION['DER'] = $this->lastFormatSql;
-            } else {
-                $this->lastDateRecouvrement = date('d/m/Y');
-                $this->lastFormatSql = date('Y-m-d');
-                $_SESSION['DER'] = $this->lastFormatSql;
-            }
-
-            $this->CapitalEchu      = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'capital');
-            $this->InteretsEchu     = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <= "' . $this->lastFormatSql . '"', 'interets');
-            $this->CapitalRestantDu = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) > "' . $this->lastFormatSql . '"', 'capital');
-            $lastEcheanceImpaye     = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status = 0 AND LEFT(date_echeance,10) <=  "' . $this->lastFormatSql . '"', 'date_echeance DESC', 0, 1);
-            $dateLastEcheanceImpaye = date('Y-m-d', strtotime($lastEcheanceImpaye[0]['date_echeance']));
-            $echeanceMoisDER        = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'date_echeance DESC', 0, 1);
-            $interetsMoisDER        = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND ordre = ' . ($lastEcheanceImpaye[0]['ordre'] + 1), 'interets');
-            $nbJourMoisDER          = date('t', strtotime($echeanceMoisDER[0]['date_echeance']));
-            $diff                   = $this->dates->nbJours($dateLastEcheanceImpaye, $this->lastFormatSql);
-            $this->interetsCourus   = round(($diff / $nbJourMoisDER) * $interetsMoisDER, 2);
-            $this->montantRecouvre  = $this->receptions->sum('type_remb = 3 AND type = 1 AND remb = 1 AND id_project = ' . $this->projects->id_project);
-            $this->montantRecouvre  = $this->montantRecouvre / 100;
-        } else {
-            die;
-        }
-    }
-
     public function _get_cities()
     {
         $this->autoFireView = false;

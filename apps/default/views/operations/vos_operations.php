@@ -299,26 +299,6 @@
                                         <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['montant_prelevement']) ?> €</td>
                                         <td>&nbsp;</td>
                                     </tr>
-                                    <?php if ($t['recouvrement'] == 1): ?>
-                                        <tr>
-                                            <td></td>
-                                            <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-ht'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_ht'] / 100) ?> €</td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-tva'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_tva'] / 100) ?> €</td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                        <tr>
-                                            <td></td>
-                                            <td class="detail_left"><?= $this->lng['preteur-operations-vos-operations']['com-ttc'] ?></td>
-                                            <td class="chiffres" style="color:red;">-<?= $this->ficelle->formatNumber($t['commission_ttc']) ?> €</td>
-                                            <td>&nbsp;</td>
-                                        </tr>
-                                    <?php endif; ?>
                                     <tr>
                                         <td colspan="4" style=" height:4px;"></td>
                                     </tr>

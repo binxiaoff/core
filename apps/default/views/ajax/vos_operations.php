@@ -145,6 +145,7 @@ foreach ($this->lTrans as $t) {
             </tr>
             <tr class="content_transact ' . ($i % 2 == 1 ? '' : 'odd') . '" height="0">
                 <td colspan="7">';
+
         if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']) {
             $html .= '<div class="div_content_transact content_remb_' . $t['id_transaction'] . '" style="display:none;">
                     <table class="soustable" width="100%">
@@ -169,30 +170,8 @@ foreach ($this->lTrans as $t) {
                             </tr>
                             <tr>
                                 <td colspan="4" style=" height:4px;"></td>
-                            </tr>';
-
-            if ($t['recouvrement'] == 1) {
-                $html .= '
-                            <tr>
-                                <td></td>
-                                <td class="detail_left">' . $this->lng['preteur-operations-vos-operations']['com-ht'] . '</td>
-                                <td class="chiffres" style="color:red;">-' . $this->ficelle->formatNumber($t['commission_ht'] / 100) . ' €</td>
-                                <td>&nbsp;</td>
                             </tr>
-                            <tr>
-                                <td></td>
-                                <td class="detail_left">' . $this->lng['preteur-operations-vos-operations']['com-tva'] . '</td>
-                                <td class="chiffres" style="color:red;">-' . $this->ficelle->formatNumber($t['commission_tva'] / 100) . ' €</td>
-                                <td>&nbsp;</td>
-                            </tr>
-                            <tr>
-                                <td></td>
-                                <td class="detail_left">' . $this->lng['preteur-operations-vos-operations']['com-ttc'] . '</td>
-                                <td class="chiffres" style="color:red;">-' . $this->ficelle->formatNumber($t['commission_ttc']) . ' €</td>
-                                <td>&nbsp;</td>
-                            </tr>';
-            }
-            $html .= '</tbody>
+                        </tbody>
                     </table>
                 </div>';
         }

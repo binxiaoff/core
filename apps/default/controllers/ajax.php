@@ -1582,28 +1582,6 @@ class ajaxController extends bootstrap
         $this->date_debut_display = date('d/m/Y', $date_debut_time);
         $this->date_fin_display   = date('d/m/Y', $date_fin_time);
 
-        $array_type_transactions = array(
-            1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(
-                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
-                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
-                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
-            ),
-            3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => array(1 => $this->lng['preteur-operations-vos-operations']['remboursement'], 2 => $this->lng['preteur-operations-vos-operations']['recouvrement']),
-            7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-            16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-            17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
-        );
-
-        ////////// DEBUT PARTIE TRI TYPE TRANSAC /////////////
         $array_type_transactions_liste_deroulante = array(
             1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
             2 => '3,4,7,8',
@@ -1621,7 +1599,6 @@ class ajaxController extends bootstrap
             if (in_array($_POST['tri_projects'], array(0, 1))) {
                 $tri_project = '';
             } else {
-                //$tri_project = ' HAVING le_id_project = '.$_POST['tri_projects'];
                 $tri_project = ' AND id_projet = ' . $_POST['tri_projects'];
             }
         }

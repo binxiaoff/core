@@ -2558,9 +2558,6 @@ class dossiersController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        $this->settings->get('Cabinet de recouvrement', 'type');
-        $this->cab = $this->settings->value;
-
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
@@ -2767,19 +2764,20 @@ class dossiersController extends bootstrap
                                             $this->clients_gestion_mails_notif->create();
 
                                             if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                                                // mail recouvré
-                                                // on envoie un mail recouvré au lieu du mail remboursement
-                                                //*******************************************//
+                                                //**************************************//
                                                 //*** ENVOI DU MAIL RECOUVRE PRETEUR ***//
-                                                //*******************************************//
+                                                //**************************************//
                                                 $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
                                                 $this->companies->get($this->projects->id_company, 'id_company');
+
+                                                $this->settings->get('Cabinet de recouvrement', 'type');
+                                                $sRecoveryCompany = $this->settings->value;
 
                                                 $varMail = array(
                                                     'surl'             => $this->surl,
                                                     'url'              => $this->furl,
                                                     'prenom_p'         => $this->clients->prenom,
-                                                    'cab_recouvrement' => $this->cab,
+                                                    'cab_recouvrement' => $sRecoveryCompany,
                                                     'mensualite_p'     => $this->ficelle->formatNumber($rembNet),
                                                     'nom_entreprise'   => $this->companies->name,
                                                     'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
@@ -2807,9 +2805,6 @@ class dossiersController extends bootstrap
                                                     $this->email->addRecipient(trim($this->clients->email));
                                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                                 }
-
-                                                // et on fait passer le satut recouvrement en remboursement
-                                                ////////////////////////////
                                             } elseif (isset($this->params[2]) && $this->params[2] == 'regul') {
                                                 //*******************************************//
                                                 //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
