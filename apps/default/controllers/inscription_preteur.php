@@ -1590,7 +1590,7 @@ class inscription_preteurController extends bootstrap
             $this->error_justificatif_domicile = true;
         }
 
-        if (empty($_FILES['attestation_hebergement_tiers']) && empty($_FILES['cni_passport_tiers_hebergeant'])) {
+        if (false === empty($_FILES['attestation_hebergement_tiers']) && false === empty($_FILES['cni_passport_tiers_hebergeant'])) {
             if (false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS))
                 || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT))
             ){
