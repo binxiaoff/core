@@ -33,10 +33,6 @@
             yearRange: '<?=(date('Y') - 1)?>:<?=(date('Y') + 16)?>'
         });
 
-        $(".radio_exonere").change(function () {
-            if ($(this).val() == 1)$('.exo').fadeIn(); else $('.exo').fadeOut();
-        });
-
         initAutocompleteCity($('#ville'), $('#cp'));
         initAutocompleteCity($('#ville2'), $('#cp2'));
         initAutocompleteCity($('#com-naissance'), $('#insee_birth'));
@@ -76,73 +72,54 @@
     <form action="" method="post" enctype="multipart/form-data" id="form_etape1">
         <h2>Etape 1</h2>
         <table class="form" style="margin: auto;">
-            <tr>
-                <th>ID Client :</th>
-                <td colspan="3">
-                    <span><?= $this->clients->id_client ?></span>
-                </td>
-            </tr>
             <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
                 <tr class="particulier">
+                    <th>ID Client :</th>
+                    <td>
+                        <span><?= $this->clients->id_client ?></span>
+                    </td>
+                    <td colspan="2"><h3>Exonération fiscale</h3></td>
+                </tr>
+                <tr class="particulier">
                     <th>Civilite :</th>
-                    <td colspan="3">
-                        <input type="radio" name="civilite"
-                               id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?>
-                               value="Mme"><label for="civilite1">Madame</label>
-                        <input type="radio" name="civilite"
-                               id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?>
-                               value="M."><label for="civilite2">Monsieur</label>
+                    <td>
+                        <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"><label for="civilite1">Madame</label>
+                        <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."><label for="civilite2">Monsieur</label>
+                    </td>
+                    <td colspan="2" rowspan="6">
+
                     </td>
                 </tr>
                 <tr class="particulier">
                     <th><label for="nom-famille">Nom de famille :</label></th>
-                    <td><input type="text" class="input_large" name="nom-famille" id="nom-famille"
-                               value="<?= $this->clients->nom ?>"></td>
-
+                    <td><input type="text" class="input_large" name="nom-famille" id="nom-famille" value="<?= $this->clients->nom ?>"></td>
+                </tr>
+                <tr class="particulier">
                     <th><label for="nom-usage">Nom d'usage :</label></th>
-                    <td><input type="text" class="input_large" name="nom-usage" id="nom-usage"
-                               value="<?= $this->clients->nom_usage ?>"></td>
+                    <td><input type="text" class="input_large" name="nom-usage" id="nom-usage" value="<?= $this->clients->nom_usage ?>"></td>
                 </tr>
                 <tr class="particulier">
                     <th><label for="prenom">Prénom :</label></th>
-                    <td><input type="text" class="input_large" name="prenom" id="prenom"
-                               value="<?= $this->clients->prenom ?>"></td>
-
+                    <td><input type="text" class="input_large" name="prenom" id="prenom" value="<?= $this->clients->prenom ?>"></td>
+                </tr>
+                <tr class="particulier">
                     <th><label for="email">Email :</label></th>
-                    <td><input type="text" class="input_large" name="email" id="email"
-                               value="<?= $this->clients->email ?>"></td>
+                    <td><input type="text" class="input_large" name="email" id="email" value="<?= $this->clients->email ?>"></td>
                 </tr>
                 <tr class="particulier">
                     <th></th>
-                    <td><input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2"
-                               name="generer_mdp2" value="Générer mdp" class="btn"
-                               onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/><span
-                            style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span></td>
-
-                    <th><label for="exonere">Exonéré :</label></th>
-                    <td><input id="exonere" class="radio_exonere"
-                               type="radio" <?= ($this->lenders_accounts->exonere == 1 ? 'checked' : '') ?>
-                               name="exonere" value="1">Oui
-                        <input id="exonere2" class="radio_exonere"
-                                 type="radio" <?= ($this->lenders_accounts->exonere == 0 ? 'checked' : '') ?>
-                                 name="exonere" value="0">Non
+                    <td>
+                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp2" name="generer_mdp2" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
                     </td>
                 </tr>
-                <tr class="exo"<?= ($this->lenders_accounts->exonere == 1 ? '' : 'style="display:none;"') ?> >
-                    <th></th>
-                    <td></td>
-                    <th>Debut</th>
-                    <td><input type="text" name="debut" id="debut" class="input_dp" value="<?= $this->debut_exo ?>"/>
+            <?php else : ?>
+                <tr class="societe">
+                    <th>ID Client :</th>
+                    <td colspan="3">
+                        <span><?= $this->clients->id_client ?></span>
                     </td>
                 </tr>
-                <tr class="exo" <?= ($this->lenders_accounts->exonere == 1 ? '' : 'style="display:none;"') ?>>
-                    <th></th>
-                    <td></td>
-                    <th>Fin</th>
-                    <td><input type="text" name="fin" id="fin" class="input_dp" value="<?= $this->fin_exo ?>"/></td>
-                </tr>
-                <?php else : ?>
-                <!-- societe -->
                 <tr class="societe">
                     <th><label for="raison-sociale">Raison sociale :</label></th>
                     <td><input type="text" class="input_large" name="raison-sociale" id="raison-sociale" value="<?= $this->companies->name ?>"></td>
@@ -171,11 +148,12 @@
                     <th></th>
                     <td></td>
                     <th></th>
-                    <td><input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn"
-                               onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/><span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span></td>
+                    <td>
+                        <input style="font-size: 11px; height: 25px; width: 105px;" type="button" id="generer_mdp" name="generer_mdp" value="Générer mdp" class="btn" onclick="generer_le_mdp('<?= $this->clients->id_client ?>')"/>
+                        <span style="margin-left:5px;color:green; display:none;" class="reponse">mdp généré</span>
+                    </td>
                 </tr>
-                <?php endif; ?>
-            <!-- fin societe -->
+            <?php endif; ?>
             <tr>
                 <th><h3>Adresse fiscale</h3></th>
                 <td></td>
@@ -211,10 +189,12 @@
                     <th></th>
                     <td></td>
                 </tr>
-                <?php endif; ?>
+            <?php endif; ?>
             <tr>
-                <td colspan="4"><input type="checkbox" name="meme-adresse" id="meme-adresse" <?= ($this->meme_adresse_fiscal == 1 ? 'checked' : '') ?>><label for="meme-adresse">Mon adresse de
-                        correspondance est identique à mon adresse de fiscale </label></td>
+                <td colspan="4">
+                    <input type="checkbox" name="meme-adresse" id="meme-adresse" <?= ($this->meme_adresse_fiscal == 1 ? 'checked' : '') ?>>
+                    <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse de fiscale </label>
+                </td>
             </tr>
             <tr class="meme-adresse" style="display:none;">
                 <th><label for="adresse2">Adresse :</label></th>
@@ -243,8 +223,7 @@
             <?php if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) : ?>
                 <tr class="particulier">
                     <th><label for="phone">Téléphone :</label></th>
-                    <td><input type="text" class="input_large" name="phone" id="phone"
-                               value="<?= $this->clients->telephone ?>"></td>
+                    <td><input type="text" class="input_large" name="phone" id="phone" value="<?= $this->clients->telephone ?>"></td>
                     <th><label for="com-naissance">Commune de naissance :</label></th>
                     <td>
                         <input type="text" class="input_large" name="com-naissance" id="com-naissance" value="<?= $this->clients->ville_naissance ?>" data-autocomplete="birth_city">
@@ -282,15 +261,18 @@
                 </tr>
                 <tr class="societe">
                     <td colspan="4"><input <?= ($this->companies->status_client == 1 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise1" value="1"/>
-                        <label for="enterprise1"> Je suis le dirigeant de l'entreprise </label></td>
+                        <label for="enterprise1"> Je suis le dirigeant de l'entreprise </label>
+                    </td>
                 </tr>
                 <tr class="societe">
                     <td colspan="4"><input <?= ($this->companies->status_client == 2 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise2" value="2"/>
-                        <label for="enterprise2"> Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label></td>
+                        <label for="enterprise2"> Je ne suis pas le dirigeant de l'entreprise mais je bénéficie d'une délégation de pouvoir </label>
+                    </td>
                 </tr>
                 <tr class="societe">
                     <td colspan="4"><input <?= ($this->companies->status_client == 3 ? 'checked' : '') ?> type="radio" name="enterprise" id="enterprise3" value="3"/>
-                        <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label></td>
+                        <label for="enterprise3"> Je suis un conseil externe de l'entreprise </label>
+                    </td>
                 </tr>
                 <tr <?= ($this->companies->status_client == 3 ? '' : 'style="display:none;"') ?> class="statut_dirigeant_e3 societe">
                     <th><label for="status_conseil_externe_entreprise">Expert comptable :</label></th>
@@ -303,8 +285,7 @@
                         </select>
                     </td>
                     <th><label for="preciser_conseil_externe_entreprise">Autre (préciser) :</label></th>
-                    <td><input type="text" name="preciser_conseil_externe_entreprise" id="preciser_conseil_externe_entreprise" class="input_large"
-                               value="<?= $this->companies->preciser_conseil_externe_entreprise ?>"/></td>
+                    <td><input type="text" name="preciser_conseil_externe_entreprise" id="preciser_conseil_externe_entreprise" class="input_large" value="<?= $this->companies->preciser_conseil_externe_entreprise ?>"/></td>
                 </tr>
                 <tr class="societe">
                     <th colspan="4" style="text-align:left;"><br/>Vos coordonnées :</th>
@@ -314,7 +295,6 @@
                     <td>
                         <input <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e1" value="Mme"/>
                         <label for="civilite_e1">Madame</label>
-
                         <input <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> type="radio" name="civilite_e" id="civilite_e2" value="M."/>
                         <label for="civilite_e2">Monsieur</label>
                     </td>
@@ -394,7 +374,7 @@
                         </tr>
                         <tr>
                             <td colspan="5">
-                                <span class="btn" id="change_bank_account_btn" name="change_bank_account_btn">Valider les modifications sur le RIB</span>
+                                <span class="btn" id="change_bank_account_btn">Valider les modifications sur le RIB</span>
                             </td>
                             <td colspan="2" valign="middle">
                                 <p id="iban_ok" style="margin:0px;"></p>
@@ -422,9 +402,7 @@
                     <tr class="particulier">
                         <td colspan="2">
                             <div id="row_precision" style="display:none;">
-                                <input type="text" id="preciser" name="preciser"
-                                       value="<?= ($this->lenders_accounts->precision != '' ? $this->lenders_accounts->precision : '') ?>"
-                                       class="input_large">
+                                <input type="text" id="preciser" name="preciser" value="<?= ($this->lenders_accounts->precision != '' ? $this->lenders_accounts->precision : '') ?>" class="input_large">
                             </div>
                         </td>
                     </tr>
@@ -702,23 +680,22 @@
         $("#" + id_input).remove();
     }
 
-    $(".add").click(function () {
+    $(".add").click(function() {
         var id = $(this).attr("id");
         addWordingli(id);
     });
 
-    $("#completude_edit").click(function () {
+    $("#completude_edit").click(function() {
         $('.message_completude').slideToggle();
     });
 
 
-    $("#valider_preteur").click(function () {
+    $("#valider_preteur").click(function() {
         $("#statut_valider_preteur").val('1');
         $("#form_etape1").submit();
     });
 
-    // previsualisation
-    $("#previsualisation").click(function () {
+    $("#previsualisation").click(function() {
         var content = $("#content_email_completude").val();
         var input = '';
         $(".input_li").each(function (index) {
@@ -732,42 +709,30 @@
         });
     });
 
-    <?php
-    if($this->meme_adresse_fiscal==0)
-    {
-        ?>$('.meme-adresse').show('slow');
-    <?php
-    }
+    <?php if ($this->meme_adresse_fiscal == 0) : ?>
+        $('.meme-adresse').show();
+    <?php endif; ?>
 
-    if($this->companies->status_client == 1)
-    {
-        ?>$('.statut_dirigeant_e').hide('slow');
-    $('.statut_dirigeant_e3').hide('slow');
-    <?php
-    }
-    elseif($this->companies->status_client == 2)
-    {
-        ?>$('.statut_dirigeant_e').show('slow');
-    $('.statut_dirigeant_e3').hide('slow');
-    <?php
-    }
-    elseif($this->companies->status_client == 3)
-    {
-        ?>$('.statut_dirigeant_e').show('slow');
-    $('.statut_dirigeant_e3').show('slow');<?
-    }
-    ?>
+    <?php if ($this->companies->status_client == 1) : ?>
+        $('.statut_dirigeant_e').hide('slow');
+        $('.statut_dirigeant_e3').hide('slow');
+    <?php elseif($this->companies->status_client == 2) : ?>
+        $('.statut_dirigeant_e').show('slow');
+        $('.statut_dirigeant_e3').hide('slow');
+    <?php elseif($this->companies->status_client == 3) : ?>
+        $('.statut_dirigeant_e').show('slow');
+        $('.statut_dirigeant_e3').show('slow');
+    <?php endif; ?>
 
-    $('#meme-adresse').click(function () {
-        if ($(this).attr('checked') == true) {
-            $('.meme-adresse').hide('slow');
-        }
-        else {
-            $('.meme-adresse').show('slow');
+    $('#meme-adresse').click(function() {
+        if ($(this).is(':checked') == true) {
+            $('.meme-adresse').hide();
+        } else {
+            $('.meme-adresse').show();
         }
     });
 
-    $('#type1,#type2').click(function () {
+    $('#type1,#type2').click(function() {
         var type = $('input[name=type]:checked', '#form_etape1').val();
 
         if (type == 1) {
@@ -780,26 +745,26 @@
         }
     });
 
-    $('#enterprise1').click(function () {
+    $('#enterprise1').click(function() {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_e').hide('slow');
             $('.statut_dirigeant_e3').hide('slow');
         }
     });
-    $('#enterprise2').click(function () {
+    $('#enterprise2').click(function() {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_e').show('slow');
             $('.statut_dirigeant_e3').hide('slow');
         }
     });
-    $('#enterprise3').click(function () {
+    $('#enterprise3').click(function() {
         if ($(this).attr('checked') == true) {
             $('.statut_dirigeant_e').show('slow');
             $('.statut_dirigeant_e3').show('slow');
         }
     });
 
-    $("#change_bank_account_btn").click(function () {
+    $("#change_bank_account_btn").click(function() {
         var rib = {
             bic: $('#bic').val(),
             iban1: $('#iban1').val(),
@@ -829,7 +794,7 @@
         });
     });
 
-    $("#origine_des_fonds").change(function () {
+    $("#origine_des_fonds").change(function() {
         if ($(this).val() == '1000000') {
             $("#row_precision").show();
         } else {
