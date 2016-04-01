@@ -519,24 +519,13 @@ class preteursController extends bootstrap
                 }
                 ///////////////////////////////////////////////////////////////////
 
-                // mise a jour
                 $this->clients->update();
                 $this->clients_adresses->update();
                 $this->lenders_accounts->update();
                 $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-                // Si on a une entreprise reliée, on la supprime car elle n'a plus rien a faire ici. on est un particulier.
-                $this->companies = $this->loadData('companies');
-                if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
-                    $this->companies->delete($this->companies->id_company, 'id_company');
-                }
-
-                $this->clients->get($this->clients->id_client, 'id_client');
-
-                // Histo user //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(3, 'modif info preteur', $_SESSION['user']['id_user'], $serialize);
-                ////////////////
 
                 if (isset($_POST['statut_valider_preteur']) && 1 == $_POST['statut_valider_preteur']) {
                     $aExistingClient       = array_shift($this->clients->getDuplicates($this->clients->nom, $this->clients->prenom, $this->clients->naissance));
