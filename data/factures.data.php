@@ -71,6 +71,6 @@ class factures extends factures_crud
     {
         $sql    = 'SELECT * FROM `factures` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

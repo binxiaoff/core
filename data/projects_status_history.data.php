@@ -78,7 +78,7 @@ class projects_status_history extends projects_status_history_crud
     {
         $sql    = 'SELECT * FROM `projects_status_history` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function addStatus($id_user, $status, $id_project, $numero_relance = 0, $content = '')
@@ -200,5 +200,51 @@ class projects_status_history extends projects_status_history_crud
 
         $oResult = new \DateTime($sResult);
         return $oResult;
+    }
+
+    public function getStatusByDates($iStatus, \DateTime $oStartDate, \DateTime $oEndDate)
+    {
+        $sQuery = '
+            SELECT psh.*, ps.label, ps.status
+            FROM projects_status_history psh
+            INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+            WHERE ps.id_project_status = ' . $iStatus . '
+                AND psh.added >= "' . $oStartDate->format('Y-m-d') . '"
+                AND psh.added <= "' . $oEndDate->format('Y-m-d') . '"
+            GROUP BY psh.id_project, ps.status';
+
+        $aResult = array();
+        $rResult = $this->bdd->query($sQuery);
+
+        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
+            $aResult[] = $aRow;
+        }
+
+        return $aResult;
+    }
+
+    public function getFollowingStatus(array $aBaseStatusId)
+    {
+        $sQuery = '
+            SELECT IFNULL(next_status.id_project_status_history, base_status.id_project_status_history) AS id_project_status_history,
+                IFNULL(ps.label, "none") AS label,
+                IFNULL(ps.status, "0") AS status,
+                IFNULL(DATEDIFF(next_status.added, base_status.added), "") AS diff_days,
+                IFNULL(next_status.added, "") AS added
+            FROM projects_status_history base_status
+            LEFT JOIN projects_status_history next_status ON next_status.id_project_status_history = (SELECT id_project_status_history FROM projects_status_history WHERE id_project = base_status.id_project AND id_project_status_history > base_status.id_project_status_history AND id_project_status != base_status.id_project_status ORDER BY id_project_status_history ASC LIMIT 1)
+            LEFT JOIN projects_status ps ON next_status.id_project_status = ps.id_project_status
+            WHERE base_status.id_project_status_history IN (' . implode(', ', $aBaseStatusId) . ')
+            GROUP BY id_project_status_history
+            ORDER BY status ASC';
+
+        $aResult = array();
+        $rResult = $this->bdd->query($sQuery);
+
+        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
+            $aResult[] = $aRow;
+        }
+
+        return $aResult;
     }
 }

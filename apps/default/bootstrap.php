@@ -334,28 +334,36 @@ class bootstrap extends Controller
 
             $this->bIsLender                   = $this->clients->isLender();
             $this->bIsBorrower                 = $this->clients->isBorrower();
-            $this->bIsBorrowerAndLender        = ($this->bIsBorrower && $this->bIsLender);
+            $this->bIsBorrowerAndLender        = $this->bIsBorrower && $this->bIsLender;
             $this->bDisplayHeaderLender        = false;
             $this->bDisplayHeaderBorrower      = false;
             $this->bShowChoiceBorrowerOrLender = $this->bIsBorrowerAndLender;
 
-
-            if ($this->bIsBorrower) {
+            if ($this->bIsBorrowerAndLender) {
                 $this->getDataBorrower();
-                if ('espace_emprunteur' === $command->Name) {
+                $this->getDataLender();
+
+                if (in_array($command->Name, array('espace_emprunteur', 'depot_de_dossier'))) {
                     $this->bDisplayHeaderBorrower      = true;
                     $this->bShowChoiceBorrowerOrLender = false;
                     $this->bDisplayHeaderLender        = false;
-                }
-            }
-
-            if ($this->bIsLender) {
-                $this->getDataLender();
-                if ($command->Name != 'espace_emprunteur') {
-                    $this->bDisplayHeaderLender        = true;
-                    $this->bShowChoiceBorrowerOrLender = false;
+                } else {
                     $this->bDisplayHeaderBorrower      = false;
+                    $this->bShowChoiceBorrowerOrLender = true;
+                    $this->bDisplayHeaderLender        = true;
                 }
+            } elseif ($this->bIsBorrower) {
+                $this->getDataBorrower();
+
+                $this->bDisplayHeaderBorrower      = true;
+                $this->bShowChoiceBorrowerOrLender = false;
+                $this->bDisplayHeaderLender        = false;
+            } elseif ($this->bIsLender) {
+                $this->getDataLender();
+
+                $this->bDisplayHeaderLender        = true;
+                $this->bShowChoiceBorrowerOrLender = false;
+                $this->bDisplayHeaderBorrower      = false;
             }
         }
         $this->setSessionMail();
@@ -722,7 +730,6 @@ class bootstrap extends Controller
     {
         $this->oCompanyDisplay = $this->loadData('companies');
         $this->oCompanyDisplay->get($this->clients->id_client, 'id_client_owner');
-
     }
 
     /**

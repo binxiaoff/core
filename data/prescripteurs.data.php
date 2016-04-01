@@ -77,6 +77,6 @@ class prescripteurs extends prescripteurs_crud
     {
         $sql    = 'SELECT * FROM `prescripteurs` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 }

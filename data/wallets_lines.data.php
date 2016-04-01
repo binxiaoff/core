@@ -88,7 +88,7 @@ class wallets_lines extends wallets_lines_crud
         $sql    = 'SELECT * FROM `wallets_lines` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
 
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     // retourne la moyenne des prets validés d'un preteur

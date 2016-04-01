@@ -69,7 +69,7 @@ class prelevements extends prelevements_crud
     public function exist($id, $field = 'id_prelevement')
     {
         $result = $this->bdd->query('SELECT * FROM `prelevements` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result, 0, 0) > 0);
+        return ($this->bdd->fetch_array($result) > 0);
     }
 
     public function sum($where = '')
