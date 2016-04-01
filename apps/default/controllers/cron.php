@@ -7299,7 +7299,8 @@ class cronController extends bootstrap
                                 'solde_p'              => $this->ficelle->formatNumber($getsolde) . (($getsolde >= 2) ? ' euros' : ' euro'),
                                 'motif_virement'       => $this->clients->getLenderPattern($this->clients->id_client),
                                 'lien_fb'              => $this->like_fb,
-                                'lien_tw'              => $this->twitter
+                                'lien_tw'              => $this->twitter,
+                                'annee'                => date('Y')
                             );
                             $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
 
