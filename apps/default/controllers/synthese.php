@@ -121,7 +121,7 @@ class syntheseController extends bootstrap
         }
 
         // Liste des projets en cours (projets a decouvrir)
-        $aProjectsInFunding   = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC');
+        $aProjectsInFunding   = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
         $this->lProjetEncours = $aProjectsInFunding;
 
         $this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
