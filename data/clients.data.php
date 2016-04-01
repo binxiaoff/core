@@ -422,48 +422,6 @@ class clients extends clients_crud
         return $result;
     }
 
-    public function selectPreteurs($dateMoins1Mois)
-    {
-        $sql = '
-        SELECT
-            c.id_client,
-           la.id_lender_account,
-           c.type,
-           la.exonere,
-           la.debut_exoneration,
-           la.fin_exoneration,
-           e.id_project,
-           e.id_loan,
-           e.ordre,
-           e.montant,
-           e.capital,
-           e.interets,
-           e.prelevements_obligatoires,
-           e.retenues_source,
-           e.csg,
-           e.prelevements_sociaux,
-           e.contributions_additionnelles,
-           e.prelevements_solidarite,
-           e.crds,
-           e.date_echeance,
-           e.date_echeance_reel,
-           e.status,
-           e.date_echeance_emprunteur,
-           e.date_echeance_emprunteur_reel
-        FROM echeanciers e
-        LEFT JOIN lenders_accounts la  ON la.id_lender_account = e.id_lender
-        LEFT JOIN clients c ON c.id_client = la.id_client_owner
-        WHERE LEFT(e.date_echeance_reel,7) = "' . $dateMoins1Mois . '" AND e.status = 1 ORDER BY e.date_echeance ASC';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // presteurs by status
     public function selectPreteursByStatus($status = '', $where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
