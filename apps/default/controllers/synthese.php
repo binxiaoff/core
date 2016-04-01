@@ -159,14 +159,14 @@ class syntheseController extends bootstrap
         $this->sumInterets = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0', 'interets');
         $this->sumInterets -= $this->sumRevenuesFiscalesRemb; // interets net
 
-        $total = $this->solde + $this->sumBidsEncours + $this->sumPrets; // solde + bids en cours + prets validés
+        $total = $this->solde + $this->sumBidsEncours + $this->sumRestanteARemb;
 
-        $this->soldePourcent          = $total > 0 ? round($this->solde / $total * 100, 1) : 0; // solde du compte en pourcentage
-        $this->sumBidsEncoursPourcent = $total > 0 ? round($this->sumBidsEncours / $total * 100, 1) : 0; // bids en pourcentage
-        $this->sumPretsPourcent       = $total > 0 ? round($this->sumPrets / $total * 100, 1) : 0; // pret en pourcentage
+        $this->soldePourcent          = $total > 0 ? round($this->solde / $total * 100, 1) : 0;
+        $this->sumBidsEncoursPourcent = $total > 0 ? round($this->sumBidsEncours / $total * 100, 1) : 0;
+        $this->sumPretsPourcent       = $total > 0 ? round($this->sumRestanteARemb / $total * 100, 1) : 0;
         $this->sumProblemsPourcent    = $total > 0 ? round($this->sumProblems / $total * 100, 1) : 0;
 
-        $this->SumDepot = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30'); // sommes deposé
+        $this->SumDepot = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30');
 
         // Année de creation
         $anneeCreationCompte = date('Y', strtotime($this->clients->added));
