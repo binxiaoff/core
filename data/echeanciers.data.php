@@ -760,68 +760,6 @@ class echeanciers extends echeanciers_crud
         $this->bdd->query($sql);
     }
 
-    // mise à jour remb exoneration preteur
-    public function update_prelevements_obligatoires($id_lender, $exonere, $prelevements_obligatoires = '', $debut = '', $fin = '')
-    {
-        if ($exonere == 1) {
-
-            if ($debut != '' && $fin != '') {
-                $debutfin = ' AND LEFT(date_echeance,10) >= "' . $debut . '" AND LEFT(date_echeance,10) <= "' . $fin . '"';
-            } else {
-                $debutfin = '';
-            }
-
-            $sql = 'UPDATE echeanciers SET prelevements_obligatoires = 0, updated = "' . date('Y-m-d H:i:s') . '" WHERE id_lender = ' . $id_lender . ' AND status = 0 ' . $debutfin;
-        } elseif ($exonere == 0 && $prelevements_obligatoires != '') {
-            $sql = 'UPDATE echeanciers SET prelevements_obligatoires = ROUND((interets/100) * ' . $prelevements_obligatoires . ',2), updated = "' . date('Y-m-d H:i:s') . '" WHERE id_lender = ' . $id_lender . ' AND status = 0';
-        }
-        $this->bdd->query($sql);
-    }
-
-    // Mise à jour impositions etranger ou non
-    public function update_imposition_etranger($id_lender, $etranger, $tabImpo = array(), $exonere, $debut = '', $fin = '')
-    {
-        // 0 : fr/fr
-        // 1 : fr/resident etranger
-        // 2 : no fr/resident etranger
-
-        if ($etranger > 0) {
-            $sql = '
-                UPDATE echeanciers e
-                INNER JOIN loans l ON e.id_loan = l.id_loan
-                SET
-                    e.prelevements_obligatoires = 0,
-                    e.retenues_source = IF(l.id_type_contract = ' . \loans::TYPE_CONTRACT_BDC . ', ROUND(e.interets / 100 * ' . $tabImpo['retenues_source'] . ', 2), 0),
-                    e.csg = 0,
-                    e.prelevements_sociaux = 0,
-                    e.contributions_additionnelles = 0,
-                    e.prelevements_solidarite = 0,
-                    e.crds = 0,
-                    e.updated = "' . date('Y-m-d H:i:s') . '"
-                WHERE e.status = 0 AND l.id_lender = ' . $id_lender;
-
-            $this->bdd->query($sql);
-        } else {
-            $sql = '
-            UPDATE echeanciers SET
-                prelevements_obligatoires = ROUND(interets / 100 * ' . $tabImpo['prelevements_obligatoires'] . ', 2),
-                retenues_source = 0,
-                csg = ROUND(interets / 100 * ' . $tabImpo['csg'] . ', 2),
-                prelevements_sociaux = ROUND(interets / 100 * ' . $tabImpo['prelevements_sociaux'] . ', 2),
-                contributions_additionnelles = ROUND(interets / 100 * ' . $tabImpo['contributions_additionnelles'] . ', 2),
-                prelevements_solidarite = ROUND(interets / 100 * ' . $tabImpo['prelevements_solidarite'] . ', 2),
-                crds = ROUND(interets / 100 * ' . $tabImpo['crds'] . ', 2),
-                updated = "' . date('Y-m-d H:i:s') . '"
-            WHERE id_lender = ' . $id_lender . ' AND status = 0';
-
-            $this->bdd->query($sql);
-
-            if ($debut != '' && $fin != '' && $exonere == 1) {
-                $this->update_prelevements_obligatoires($id_lender, $exonere, $tabImpo['prelevements_obligatoires'], $debut, $fin);
-            }
-        }
-    }
-
     // Utilisé dans le cron remb auto
     public function selectEcheances_a_remb($where = '', $order = '', $start = '', $nb = '')
     {

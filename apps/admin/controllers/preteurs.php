@@ -37,7 +37,6 @@ class preteursController extends bootstrap
         $this->companies              = $this->loadData('companies');
         $this->projects               = $this->loadData('projects');
         $this->wallets_lines          = $this->loadData('wallets_lines');
-        $this->echeanciers            = $this->loadData('echeanciers');
         $this->attachment             = $this->loadData('attachment');
         $this->attachment_type        = $this->loadData('attachment_type');
     }
@@ -177,17 +176,18 @@ class preteursController extends bootstrap
         $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
 
-        //// transactions mouvements ////
         $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
 
-        $year = date('Y');
+        /** @var \lender_tax_exemption $oLenderTaxExemption */
+        $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
+        $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
 
         $this->transactions = $this->loadData('transactions');
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
         $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
-        $this->lTrans       = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23,26) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
+        $this->lTrans       = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23,26) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
         $this->lesStatuts = array(
             1  => $this->lng['profile']['versement-initial'],
@@ -387,23 +387,18 @@ class preteursController extends bootstrap
                     $this->clients->email = $_POST['email'];
                 }
 
-                //// fin check doublon mail ////
+                $oBirthday = new \DateTime(str_replace('/', '-', $_POST['naissance']));
 
-                $this->clients->telephone       = str_replace(' ', '', $_POST['phone']);
-                $this->clients->ville_naissance = $_POST['com-naissance'];
-                $this->clients->insee_birth     = $_POST['insee_birth'];
-
-                $naissance                        = explode('/', $_POST['naissance']);
-                $j                                = $naissance[0];
-                $m                                = $naissance[1];
-                $y                                = $naissance[2];
-                $this->clients->naissance         = $y . '-' . $m . '-' . $j;
+                $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
+                $this->clients->ville_naissance   = $_POST['com-naissance'];
+                $this->clients->insee_birth       = $_POST['insee_birth'];
+                $this->clients->naissance         = $oBirthday->format('Y-m-d');
                 $this->clients->id_pays_naissance = $_POST['id_pays_naissance'];
-
-                $this->clients->id_nationalite = $_POST['nationalite'];
-                $this->clients->id_langue = 'fr';
-                $this->clients->type      = 1;
-                $this->clients->fonction  = '';
+                $this->clients->id_nationalite    = $_POST['nationalite'];
+                $this->clients->id_langue         = 'fr';
+                $this->clients->type              = 1;
+                $this->clients->fonction          = '';
+                $this->clients->update();
 
                 $this->lenders_accounts->id_company_owner = 0;
 
@@ -456,70 +451,17 @@ class preteursController extends bootstrap
                             $oLenderTaxExemption->id_lender   = $this->lenders_accounts->id_lender_account;
                             $oLenderTaxExemption->iso_country = 'FR';
                             $oLenderTaxExemption->year        = $iExemptionYear;
+                            $oLenderTaxExemption->id_user     = $_SESSION['user']['id_user'];
                             $oLenderTaxExemption->create();
                         }
                     }
                 }
 
-                $this->lenders_accounts->exonere = $_POST['exonere'];
-
-                /////////////////////////// EXONERATION MISE A JOUR SUR LES ECHEANCES ////////////////////////////////////////
-
-                $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-                $this->echeanciers                = $this->loadData('echeanciers');
-
-                $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
-                $prelevements_obligatoires = $this->settings->value;
-
-                $this->etranger = 0;
-                // fr/resident etranger
-                if ($this->clients->id_nationalite <= 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 1;
-                } // no fr/resident etranger
-                elseif ($this->clients->id_nationalite > 1 && $this->clients_adresses->id_pays_fiscal > 1) {
-                    $this->etranger = 2;
+                if (in_array($this->iNextYear, $this->aExemptionYears) && false === isset($_POST['tax_exemption'][$this->iNextYear])) {
+                    $oLenderTaxExemption->get($this->lenders_accounts->id_lender_account . '" AND year = ' . $this->iNextYear . ' AND iso_country = "FR', 'id_lender');
+                    $oLenderTaxExemption->delete($oLenderTaxExemption->id_lender_tax_exemption);
                 }
 
-                // On garde une trace de l'action
-                $this->lenders_imposition_history->id_lender         = $this->lenders_accounts->id_lender_account;
-                $this->lenders_imposition_history->exonere           = $this->lenders_accounts->exonere;
-                $this->lenders_imposition_history->resident_etranger = $this->etranger;
-                $this->lenders_imposition_history->id_pays           = $this->clients_adresses->id_pays;
-                $this->lenders_imposition_history->id_user           = $_SESSION['user']['id_user'];
-                // KLE,BT 17712 on ne veut plus ajouter de ligne sur la sauvegarde, seulement sur la validation du preteur
-                // $this->lenders_imposition_history->create();
-
-                if ($this->etranger == 0) {
-                    // on retire les prelevements sur les futures echeances
-                    if ($this->lenders_accounts->exonere == 1) {
-                        if (isset($_POST['debut']) && $_POST['debut'] != '') {
-                            $debut     = explode('/', $_POST['debut']);
-                            $debut_exo = $debut[2] . '-' . $debut[1] . '-' . $debut[0];
-                        } else {
-                            $debut_exo = '';
-                        }
-
-                        if (isset($_POST['fin']) && $_POST['fin'] != '') {
-                            $fin     = explode('/', $_POST['fin']);
-                            $fin_exo = $fin[2] . '-' . $fin[1] . '-' . $fin[0];
-                        } else {
-                            $fin_exo = '';
-                        }
-
-                        $this->lenders_accounts->debut_exoneration = $debut_exo;
-                        $this->lenders_accounts->fin_exoneration   = $fin_exo;
-
-                        $this->echeanciers->update_prelevements_obligatoires($this->lenders_accounts->id_lender_account, 1, '', $debut_exo, $fin_exo);
-                    } elseif (0 == $this->lenders_accounts->exonere) { // on ajoute les prelevements sur les futures echeances
-                        $this->lenders_accounts->debut_exoneration = '0000-00-00';
-                        $this->lenders_accounts->fin_exoneration   = '0000-00-00';
-
-                        $this->echeanciers->update_prelevements_obligatoires($this->lenders_accounts->id_lender_account, 0, $prelevements_obligatoires);
-                    }
-                }
-                ///////////////////////////////////////////////////////////////////
-
-                $this->clients->update();
                 $this->clients_adresses->update();
                 $this->lenders_accounts->update();
                 $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
@@ -542,45 +484,40 @@ class preteursController extends bootstrap
 
                     $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
 
-                    // gestion alert notification //
                     $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
                     $this->clients_gestion_type_notif    = $this->loadData('clients_gestion_type_notif');
 
-                    ////// Liste des notifs //////
                     $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
                     $this->lNotifs     = $this->clients_gestion_notifications->select('id_client = ' . $this->clients->id_client);
 
-                    if (false == $this->lNotifs ) {
+                    if (false == $this->lNotifs) {
                         foreach ($this->lTypeNotifs as $n) {
                             $this->clients_gestion_notifications->id_client = $this->clients->id_client;
                             $this->clients_gestion_notifications->id_notif  = $n['id_client_gestion_type_notif'];
                             $id_notif                                       = $n['id_client_gestion_type_notif'];
-                            // immediatement
-                            if (in_array($id_notif, array(3, 6, 7, 8))) {
+
+                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_BID_REJECTED, \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT, \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT, \clients_gestion_type_notif::TYPE_DEBIT))) {
                                 $this->clients_gestion_notifications->immediatement = 1;
                             } else {
                                 $this->clients_gestion_notifications->immediatement = 0;
                             }
-                            // quotidienne
-                            if (in_array($id_notif, array(1, 2, 4, 5))) {
+
+                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_BID_PLACED, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, \clients_gestion_type_notif::TYPE_REPAYMENT))) {
                                 $this->clients_gestion_notifications->quotidienne = 1;
                             } else {
                                 $this->clients_gestion_notifications->quotidienne = 0;
                             }
-                            // hebdomadaire
-                            if (in_array($id_notif, array(1, 4))) {
+
+                            if (in_array($id_notif, array(\clients_gestion_type_notif::TYPE_NEW_PROJECT, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED))) {
                                 $this->clients_gestion_notifications->hebdomadaire = 1;
                             } else {
                                 $this->clients_gestion_notifications->hebdomadaire = 0;
                             }
-                            // mensuelle
+
                             $this->clients_gestion_notifications->mensuelle = 0;
                             $this->clients_gestion_notifications->create();
                         }
                     }
-
-                    /////////////////////////////////
-
 
                     // Mail au client particulier //
                     // Recuperation du modele de mail
@@ -636,15 +573,13 @@ class preteursController extends bootstrap
                 $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
                 header('location:' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                 die;
-            } // societe
-            elseif (in_array($this->clients->type, array(2, 4))) {
-                $this->companies->name    = $_POST['raison-sociale'];
-                $this->companies->forme   = $_POST['form-juridique'];
-                $this->companies->capital = str_replace(' ', '', $_POST['capital-sociale']);
-                $this->companies->siren   = $_POST['siren'];
-                $this->companies->siret   = $_POST['siret']; //(19/11/2014)
-                $this->companies->phone   = str_replace(' ', '', $_POST['phone-societe']);
-
+            } elseif (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+                $this->companies->name         = $_POST['raison-sociale'];
+                $this->companies->forme        = $_POST['form-juridique'];
+                $this->companies->capital      = str_replace(' ', '', $_POST['capital-sociale']);
+                $this->companies->siren        = $_POST['siren'];
+                $this->companies->siret        = $_POST['siret']; //(19/11/2014)
+                $this->companies->phone        = str_replace(' ', '', $_POST['phone-societe']);
                 $this->companies->tribunal_com = $_POST['tribunal_com'];
 
                 ////////////////////////////////////
@@ -1329,59 +1264,21 @@ class preteursController extends bootstrap
         $this->autoFireView = false;
     }
 
-    private function foreignerTax($oClients, $oLendersAccounts, $oClientsAdresses)
+    private function foreignerTax(\clients $oClients, \lenders_accounts $oLendersAccounts, \clients_adresses $oClientsAdresses)
     {
-        $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
-        $sPrelevementsObligatoires = $this->settings->value;
-
-        $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-        $sContributionsAdditionnelles = $this->settings->value;
-
-        $this->settings->get('EQ-CRDS', 'type');
-        $sCrds = $this->settings->value;
-
-        $this->settings->get('EQ-CSG', 'type');
-        $sCsg = $this->settings->value;
-
-        $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
-        $sPrelevementsSolidarite = $this->settings->value;
-
-        $this->settings->get('EQ-Prélèvement social', 'type');
-        $sPrelevementsSociaux = $this->settings->value;
-
-        $this->settings->get('EQ-Retenue à la source', 'type');
-        $sRetenuesSource = $this->settings->value;
-
         $iForeigner = 0;
-        // fr/resident etranger
-        if ($oClients->id_nationalite <= 1 && $oClientsAdresses->id_pays_fiscal > 1) {
+        if ($oClients->id_nationalite <= 1 && $oClientsAdresses->id_pays_fiscal > 1) { // frrançais / résident étranger
             $iForeigner = 1;
-        } // no fr/resident etranger
-        elseif ($oClients->id_nationalite > 1 && $oClientsAdresses->id_pays_fiscal > 1) {
+        } elseif ($oClients->id_nationalite > 1 && $oClientsAdresses->id_pays_fiscal > 1) {  // non français / résident étranger
             $iForeigner = 2;
         }
 
-        // On garde une trace de l'action
-        $oLendersImpositionHistory = $this->loadData('lenders_imposition_history');
-
+        $oLendersImpositionHistory                    = $this->loadData('lenders_imposition_history');
         $oLendersImpositionHistory->id_lender         = $oLendersAccounts->id_lender_account;
-        $oLendersImpositionHistory->exonere           = $oLendersAccounts->exonere;
         $oLendersImpositionHistory->resident_etranger = $iForeigner;
         $oLendersImpositionHistory->id_pays           = $oClientsAdresses->id_pays_fiscal;
         $oLendersImpositionHistory->id_user           = $_SESSION['user']['id_user'];
         $oLendersImpositionHistory->create();
-
-        $tabImpo = array(
-            'prelevements_obligatoires'    => $sPrelevementsObligatoires,
-            'contributions_additionnelles' => $sContributionsAdditionnelles,
-            'crds'                         => $sCrds,
-            'csg'                          => $sCsg,
-            'prelevements_solidarite'      => $sPrelevementsSolidarite,
-            'prelevements_sociaux'         => $sPrelevementsSociaux,
-            'retenues_source'              => $sRetenuesSource
-        );
-
-        $this->loadData('echeanciers')->update_imposition_etranger($oLendersAccounts->id_lender_account, $iForeigner, $tabImpo, $oLendersAccounts->exonere, $oLendersAccounts->debut_exoneration, $oLendersAccounts->fin_exoneration);
     }
 
     public function _modify_passed_repaymet_schedule()

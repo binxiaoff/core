@@ -111,7 +111,13 @@
             </tr>
             <tr>
                 <th>Exonéré :</th>
-                <td><?= ($this->lenders_accounts->exonere == 1 ? 'Oui' : 'Non') ?></td>
+                <td>
+                    <?php if (empty($this->aExemptionYears)) : ?>
+                        Non
+                    <?php else : ?>
+                        <?= implode('<br>', $this->aExemptionYears) ?>
+                    <?php endif; ?>
+                </td>
             </tr>
         </table>
     </div>
@@ -138,7 +144,7 @@
                 <td><?= $this->ficelle->formatNumber($this->SumInscription) ?> €</td>
             </tr>
             <tr>
-                <th>Taux moyen :</th>
+                <th>Taux moyen pondéré :</th>
                 <td><?= $this->ficelle->formatNumber($this->txMoyen) ?> %</td>
             </tr>
             <tr>
