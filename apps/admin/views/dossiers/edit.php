@@ -767,23 +767,23 @@
             display: inline;
         }
 
-        div.div-2-columns {
-            -webkit-column-count: 2; /* Chrome, Safari, Opera */
-            -moz-column-count: 2; /* Firefox */
-            column-count: 2;
+        .div-2-columns {
+            display: -webkit-flex;
+            display: flex;
+            -webkit-flex: 1;
+            -ms-flex: 1;
+            flex: 1;
         }
-        div.div-left-pos, div.div-right-pos {
-            margin: 0;
-            -webkit-column-break-inside: avoid; /* Chrome, Safari */
-            page-break-inside: avoid;           /* Theoretically FF 20+ */
-            break-inside: avoid-column;         /* IE 11 */
-            display:table;                      /* Actually FF 20+ */
+        .div-left-pos, .div-right-pos {
+            margin: 2px;
+            min-width: 50%;
         }
     </style>
 
     <div id="lesEtapes">
         <div id="title_tab_email">Email</div>
-        <div id="tab_email" class="div-2-columns">
+        <div id="tab_email" >
+            <div class="div-2-columns">
             <div class="div-left-pos">
                 <div id="edit_projects_tab_email">
                     <h2>Configuration d'envoi d'Email</h2>
@@ -869,6 +869,7 @@
                         </tbody>
                     </table>
                 <?php endif; ?>
+            </div>
             </div>
         </div>
         <br/>
