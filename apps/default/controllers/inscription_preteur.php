@@ -999,77 +999,11 @@ class inscription_preteurController extends bootstrap
     {
         $bFormOk = true;
 
-        $this->clients_adresses->adresse_fiscal      = $_POST['adresse_inscription'];
-        $this->clients_adresses->ville_fiscal        = $_POST['ville_inscription'];
-        $this->clients_adresses->cp_fiscal           = $_POST['postal'];
-        $this->clients_adresses->id_pays_fiscal      = $_POST['pays1'];
-
-        if (false === empty($_POST['mon-addresse'])) {
-            $this->clients_adresses->meme_adresse_fiscal = 1;
-            $this->clients_adresses->adresse1 = $_POST['adresse_inscription'];
-            $this->clients_adresses->ville    = $_POST['ville_inscription'];
-            $this->clients_adresses->cp       = $_POST['postal'];
-            $this->clients_adresses->id_pays  = $_POST['pays1'];
-        } else {
-            $this->clients_adresses->meme_adresse_fiscal = 0;
-            $this->clients_adresses->adresse1 = $_POST['adress2'];
-            $this->clients_adresses->ville    = $_POST['ville2'];
-            $this->clients_adresses->cp       = $_POST['postal2'];
-            $this->clients_adresses->id_pays  = $_POST['pays2'];
-        }
-
-        $this->clients->civilite  = $_POST['sex'];
-        $this->clients->nom       = $this->ficelle->majNom($_POST['nom-famille']);
-        $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) ? '' : $this->ficelle->majNom($_POST['nom-dusage']);
-        $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
-        $this->clients->email     = $_POST['email'];
-
-        if ($this->emprunteurCreatePreteur == false) {
-            $this->clients->secrete_question = $_POST['secret-question'];
-            $this->clients->secrete_reponse  = md5($_POST['secret-response']);
-        }
-
-        //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
-        $sCodeInsee = '';
-        if (\pays_v2::COUNTRY_FRANCE == $_POST['pays3']) {
-            if (! isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) {
-                /** @var villes $oVilles */
-                $oVilles = $this->loadData('villes');
-                if (false === $oVilles->get($_POST['naissance'], 'ville')) {
-                    $bFormOk = false;
-                } else {
-                    $sCodeInsee = $oVilles->insee;
-                }
-                unset($oVilles);
-            } else {
-                $sCodeInsee = $_POST['insee_birth'];
-            }
-        } else {
-            /** @var pays_v2 $oPays */
-            $oPays = $this->loadData('pays_v2');
-            /** @var insee_pays $oInseePays */
-            $oInseePays = $this->loadData('insee_pays');
-
-            if ($oPays->get($_POST['pays3']) && $oInseePays->getByCountryIso(trim($oPays->iso))) {
-                $sCodeInsee = $oInseePays->COG;
-            } else {
-                $bFormOk = false;
-            }
-            unset($oPays, $oInseePays);
-        }
-
-        $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
-        $this->clients->ville_naissance   = $_POST['naissance'];
-        $this->clients->insee_birth       = $sCodeInsee;
-        $this->clients->id_pays_naissance = $_POST['pays3'];
-        $this->clients->id_nationalite    = $_POST['nationalite'];
-        $this->clients->naissance         = $_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'];
-
         if (isset($_SESSION['client']) && $_SESSION['client']['etape_inscription_preteur'] > 3) {
             $bFormOk = false;
         }
 
-        if (false === $this->dates->ageplus18($this->clients->naissance)) {
+        if (false === $this->dates->ageplus18($_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'])) {
             $bFormOk                 = false;
             $_SESSION['reponse_age'] = $this->lng['etape1']['erreur-age'];
         }
@@ -1124,7 +1058,6 @@ class inscription_preteurController extends bootstrap
         if (! isset($_POST['ville_inscription']) || $_POST['ville_inscription'] == $this->lng['etape1']['ville']) {
             $bFormOk = false;
         }
-
         if (! isset($_POST['postal']) || $_POST['postal'] == $this->lng['etape1']['code-postal']) {
             $bFormOk = false;
         } else {
@@ -1156,11 +1089,87 @@ class inscription_preteurController extends bootstrap
         if (isset($_POST['check_etranger']) && $_POST['check_etranger'] != 'on') {
             $bFormOk = false;
         }
+        if (false ===  isset($_POST['phone']) || false === is_numeric($_POST['phone']) || $_POST['phone'] == $this->lng['etape1']['telephone']) {
+            $bFormOk = false;
+        }
+
+        $bCountryCheckOk = true;
+        /** @var villes $oVilles */
+        $oVilles = $this->loadData('villes');
+        /** @var pays_v2 $oPays */
+        $oPays = $this->loadData('pays_v2');
+        /** @var nationalites_v2 $Nationalities */
+        $Nationalities = $this->loadData('nationalites_v2');
+
+        if (false === isset($_POST['nationalite']) || false === $Nationalities->get($_POST['nationalite'], 'id_nationalite')) {
+            $bFormOk         = false;
+            $bCountryCheckOk = false;
+        }
+        if (false === isset($_POST['pays3']) || false === $oPays->get($_POST['pays3'], 'id_pays')) {
+            $bFormOk         = false;
+            $bCountryCheckOk = false;
+        }
+        if (false === isset($_POST['naissance']) || false === $oVilles->get($_POST['naissance'], 'ville')) {
+            $bFormOk         = false;
+            $bCountryCheckOk = false;
+        }
+
+        if ($bCountryCheckOk) {
+            $sCodeInsee = '';
+            if (\pays_v2::COUNTRY_FRANCE == $_POST['pays3']) {
+                $sCodeInsee = (false === isset($_POST['insee_birth']) || '' === $_POST['insee_birth']) ? $oVilles->insee : $_POST['insee_birth'];
+                unset($oVilles);
+            } else {
+                /** @var insee_pays $oInseePays */
+                $oInseePays = $this->loadData('insee_pays');
+                if ($oPays->get($_POST['pays3']) && $oInseePays->getByCountryIso(trim($oPays->iso))) {
+                    $sCodeInsee = $oInseePays->COG;
+                }
+                unset($oPays, $oInseePays);
+            }
+        }
 
         if ($bFormOk) {
             if ($this->emprunteurCreatePreteur == false) {
                 $this->clients->password = md5($_POST['pass']);
             }
+
+            $this->clients_adresses->adresse_fiscal      = $_POST['adresse_inscription'];
+            $this->clients_adresses->ville_fiscal        = $_POST['ville_inscription'];
+            $this->clients_adresses->cp_fiscal           = $_POST['postal'];
+            $this->clients_adresses->id_pays_fiscal      = $_POST['pays1'];
+
+            if (false === empty($_POST['mon-addresse'])) {
+                $this->clients_adresses->meme_adresse_fiscal = 1;
+                $this->clients_adresses->adresse1 = $_POST['adresse_inscription'];
+                $this->clients_adresses->ville    = $_POST['ville_inscription'];
+                $this->clients_adresses->cp       = $_POST['postal'];
+                $this->clients_adresses->id_pays  = $_POST['pays1'];
+            } else {
+                $this->clients_adresses->meme_adresse_fiscal = 0;
+                $this->clients_adresses->adresse1 = $_POST['adress2'];
+                $this->clients_adresses->ville    = $_POST['ville2'];
+                $this->clients_adresses->cp       = $_POST['postal2'];
+                $this->clients_adresses->id_pays  = $_POST['pays2'];
+            }
+
+            $this->clients->civilite  = $_POST['sex'];
+            $this->clients->nom       = $this->ficelle->majNom($_POST['nom-famille']);
+            $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) ? '' : $this->ficelle->majNom($_POST['nom-dusage']);
+            $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
+            $this->clients->email     = $_POST['email'];
+
+            if ($this->emprunteurCreatePreteur == false) {
+                $this->clients->secrete_question = $_POST['secret-question'];
+                $this->clients->secrete_reponse  = md5($_POST['secret-response']);
+            }
+
+            $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
+            $this->clients->ville_naissance   = $_POST['naissance'];
+            $this->clients->insee_birth       = $sCodeInsee;
+            $this->clients->id_pays_naissance = $_POST['pays3'];
+            $this->clients->id_nationalite    = $_POST['nationalite'];
+            $this->clients->naissance         = $_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'];
 
             $this->clients->id_langue = 'fr';
             $this->clients->type      = ($this->clients->id_nationalite == \nationalites_v2::NATIONALITY_FRENCH) ? \clients::TYPE_PERSON : \clients::TYPE_PERSON_FOREIGNER;
@@ -1173,39 +1182,6 @@ class inscription_preteurController extends bootstrap
             $aPost['pass']            = md5($_POST['pass']);
             $aPost['pass2']           = md5($_POST['pass2']);
             $aPost['secret-response'] = md5($_POST['secret-response']);
-
-
-            if ($this->modif) {
-                if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
-                    $this->clients->email = $this->email;
-                }
-
-                $this->clients->update();
-                $this->clients_adresses->update();
-                $this->lenders_accounts->update();
-
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
-                $this->clients_history_actions->histo(13, 'edition inscription etape 1 particulier', $this->clients->id_client, $serialize);
-
-                if ($this->companies->get($this->clients->id_client, 'id_client_owner')) {
-                    $this->companies->delete($this->companies->id_company, 'id_company');
-                }
-            } else {
-                if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
-                    $this->clients->email = '';
-                }
-                $this->setSource($this->clients);
-
-                $this->clients->create();
-                $this->clients_adresses->id_client = $this->clients->id_client;
-                $this->clients_adresses->create();
-
-                $this->lenders_accounts->id_client_owner = $this->clients->id_client;
-                $this->lenders_accounts->create();
-
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
-                $this->clients_history_actions->histo(14, 'inscription etape 1 particulier', $this->clients->id_client, $serialize);
-            }
 
             if (isset($_POST['accept-cgu']) && false === empty($_POST['accept-cgu'])) {
                 $bHasAlreadyAccepted = $this->acceptations_legal_docs->get($this->lienConditionsGeneralesParticulier, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc');
@@ -1220,10 +1196,38 @@ class inscription_preteurController extends bootstrap
                 }
             }
 
+            if ($this->modif) {
+                if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
+                    $this->clients->email = $this->email;
+                }
+
+                $this->clients->update();
+                $this->clients_adresses->update();
+                $this->lenders_accounts->update();
+
+                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
+                $this->clients_history_actions->histo(13, 'edition inscription etape 1 particulier', $this->clients->id_client, $serialize);
+            }
+
             if (empty($this->reponse_email)) {
                 if ($this->emprunteurCreatePreteur == false && $this->modif == false
                     || $this->modif == true && $this->clients->etape_inscription_preteur == 0
                 ) {
+                    if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
+                        $this->clients->email = '';
+                    }
+                    $this->setSource($this->clients);
+
+                    $this->clients->create();
+                    $this->clients_adresses->id_client = $this->clients->id_client;
+                    $this->clients_adresses->create();
+
+                    $this->lenders_accounts->id_client_owner = $this->clients->id_client;
+                    $this->lenders_accounts->create();
+
+                    $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
+                    $this->clients_history_actions->histo(14, 'inscription etape 1 particulier', $this->clients->id_client, $serialize);
+
                     $this->sendSubscriptionConfirmationEmail($this->clients);
 
                     $this->clients->status                     = \clients::STATUS_ONLINE;
