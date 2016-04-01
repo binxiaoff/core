@@ -144,7 +144,7 @@ class preteursController extends bootstrap
         // le nombre de prets effectué
         $this->loans    = $this->loadData('loans');
         $this->nb_pret  = $this->loans->counter('id_lender = "' . $this->lenders_accounts->id_lender_account . '" AND status = 0');
-        $this->txMoyen  = $this->loans->getAvgPrets('id_lender = "' . $this->lenders_accounts->id_lender_account . '" AND status = 0');
+        $this->txMoyen  = $this->loans->getAvgPrets($this->lenders_accounts->id_lender_account);
         $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
 
         if (isset($this->params[1])) {
