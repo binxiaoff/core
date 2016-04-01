@@ -86,8 +86,17 @@
                         <input type="radio" name="civilite" id="civilite1" <?= ($this->clients->civilite == 'Mme' ? 'checked' : '') ?> value="Mme"><label for="civilite1">Madame</label>
                         <input type="radio" name="civilite" id="civilite2" <?= ($this->clients->civilite == 'M.' ? 'checked' : '') ?> value="M."><label for="civilite2">Monsieur</label>
                     </td>
-                    <td colspan="2" rowspan="6">
-
+                    <td colspan="2" rowspan="6" style="vertical-align: top">
+                        <?php if (false === in_array($this->iNextYear, $this->aExemptionYears)) : ?>
+                            <input type="checkbox" id="tax_exemption[<?= $this->iNextYear ?>]" name="tax_exemption[<?= $this->iNextYear ?>]" value="1">
+                            <label for="tax_exemption[<?= $this->iNextYear ?>]"><?= $this->iNextYear ?></label>
+                            <br>
+                        <?php endif; ?>
+                        <?php foreach ($this->aExemptionYears as $iExemptionYear) : ?>
+                            <input type="checkbox" id="tax_exemption[<?= $iExemptionYear ?>]" name="tax_exemption[<?= $iExemptionYear ?>]" value="1" checked<?php if ($this->iNextYear != $iExemptionYear) : ?> disabled<?php endif; ?>>
+                            <label for="tax_exemption[<?= $iExemptionYear ?>]"><?= $iExemptionYear ?></label>
+                            <br>
+                        <?php endforeach; ?>
                     </td>
                 </tr>
                 <tr class="particulier">

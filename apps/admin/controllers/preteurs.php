@@ -254,17 +254,15 @@ class preteursController extends bootstrap
             $this->origine_fonds = explode(';', $this->origine_fonds);
 
         } else {
-            // Adresse fiscal
             $this->meme_adresse_fiscal = $this->clients_adresses->meme_adresse_fiscal;
             $this->adresse_fiscal      = $this->clients_adresses->adresse_fiscal;
             $this->city_fiscal         = $this->clients_adresses->ville_fiscal;
             $this->zip_fiscal          = $this->clients_adresses->cp_fiscal;
 
-            $debut_exo       = explode('-', $this->lenders_accounts->debut_exoneration);
-            $this->debut_exo = $debut_exo[2] . '/' . $debut_exo[1] . '/' . $debut_exo[0];
-
-            $fin_exo       = explode('-', $this->lenders_accounts->fin_exoneration);
-            $this->fin_exo = $fin_exo[2] . '/' . $fin_exo[1] . '/' . $fin_exo[0];
+            /** @var \lender_tax_exemption $oLenderTaxExemption */
+            $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
+            $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
+            $this->iNextYear       = date('Y') + 1;
 
             $this->settings->get("Liste deroulante origine des fonds", 'status = 1 AND type');
             $this->origine_fonds = $this->settings->value;
@@ -343,13 +341,12 @@ class preteursController extends bootstrap
                 } else {
                     $this->clients_adresses->meme_adresse_fiscal = 0;
                 }
-                // adresse fiscal
+
                 $this->clients_adresses->adresse_fiscal = $_POST['adresse'];
                 $this->clients_adresses->ville_fiscal   = $_POST['ville'];
                 $this->clients_adresses->cp_fiscal      = $_POST['cp'];
                 $this->clients_adresses->id_pays_fiscal = $_POST['id_pays_fiscal'];
 
-                // pas la meme
                 if ($this->clients_adresses->meme_adresse_fiscal == 0) {
                     $this->clients_adresses->adresse1 = $_POST['adresse2'];
                     $this->clients_adresses->ville    = $_POST['ville2'];
@@ -361,7 +358,6 @@ class preteursController extends bootstrap
                     $this->clients_adresses->cp       = $_POST['cp'];
                     $this->clients_adresses->id_pays  = $_POST['id_pays_fiscal'];
                 }
-                ////////////////////////////////////////
 
                 $this->clients->civilite  = $_POST['civilite'];
                 $this->clients->nom       = $this->ficelle->majNom($_POST['nom-famille']);
@@ -418,16 +414,14 @@ class preteursController extends bootstrap
                     $this->lenders_accounts->precision = '';
                 }
 
-                // debut fichiers //
                 foreach ($_FILES as $field => $file) {
-                    //We made the field name = attachment type id
+                    // Field name = attachment type id
                     $iAttachmentType = $field;
                     if ('' !== $file['name']) {
                         $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
                     }
                 }
 
-                // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
                     if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
                         $create = false;
@@ -454,6 +448,19 @@ class preteursController extends bootstrap
                     }
                 }
 
+                if (isset($_POST['tax_exemption'])) {
+                    foreach ($_POST['tax_exemption'] as $iExemptionYear => $iExemptionValue) {
+                        if (false === in_array($iExemptionYear, $this->aExemptionYears)) {
+                            /** @var \lender_tax_exemption $oLenderTaxExemption */
+                            $oLenderTaxExemption = $this->loadData('lender_tax_exemption');
+                            $oLenderTaxExemption->id_lender   = $this->lenders_accounts->id_lender_account;
+                            $oLenderTaxExemption->iso_country = 'FR';
+                            $oLenderTaxExemption->year        = $iExemptionYear;
+                            $oLenderTaxExemption->create();
+                        }
+                    }
+                }
+
                 $this->lenders_accounts->exonere = $_POST['exonere'];
 
                 /////////////////////////// EXONERATION MISE A JOUR SUR LES ECHEANCES ////////////////////////////////////////
@@ -461,7 +468,6 @@ class preteursController extends bootstrap
                 $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
                 $this->echeanciers                = $this->loadData('echeanciers');
 
-                // EQ-Acompte d'impôt sur le revenu
                 $this->settings->get("EQ-Acompte d'impôt sur le revenu", 'type');
                 $prelevements_obligatoires = $this->settings->value;
 
