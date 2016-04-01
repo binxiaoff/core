@@ -55,7 +55,6 @@ class inscription_preteurController extends bootstrap
         $this->settings->get("Liste deroulante conseil externe de l'entreprise", 'type');
         $this->conseil_externe = $this->ficelle->explodeStr2array($this->settings->value);
 
-        $this->emprunteurCreatePreteur = false;
         $this->preteurOnline           = false;
         $this->hash_client             = '';
 
@@ -67,7 +66,7 @@ class inscription_preteurController extends bootstrap
 
         $this->checkSession();
         //while there is no system to create a lender from an existing borrower account, if it is a borrower (tested in checkSession()), we redirect to the project page.
-        if ($this->emprunteurCreatePreteur) {
+        if ($this->bIsBorrower) {
             $this->clients->type           = \clients::TYPE_LEGAL_ENTITY;
             header('Location:' . $this->lurl . '/projects');
             die;
@@ -90,9 +89,9 @@ class inscription_preteurController extends bootstrap
             unset($_SESSION['messageDeuxiemeCompte']);
         }
 
-        $this->modif = $this->emprunteurCreatePreteur || $this->preteurOnline;
+        $this->modif = $this->bIsBorrower || $this->preteurOnline;
 
-        if ($this->emprunteurCreatePreteur
+        if ($this->bIsBorrower
             || (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash'))
             || (isset($_SESSION['client']) && $this->clients->get($_SESSION['client']['id_client'], 'id_client'))
         ) {
@@ -171,13 +170,12 @@ class inscription_preteurController extends bootstrap
         $this->settings->get("Liste deroulante origine des fonds societe", 'status = 1 AND type');
         $this->origine_fonds_E = explode(';', $this->settings->value);
 
-        $this->emprunteurCreatePreteur = false;
         $this->preteurOnline           = false;
         $this->hash_client             = '';
 
         $this->checkSession();
 
-        if ($this->emprunteurCreatePreteur || $this->preteurOnline || isset($this->params[0]) && $this->clients->get($this->params[0], 'status = 1 AND etape_inscription_preteur < 3 AND hash')) {
+        if ($this->bIsBorrower || $this->preteurOnline || isset($this->params[0]) && $this->clients->get($this->params[0], 'status = 1 AND etape_inscription_preteur < 3 AND hash')) {
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
@@ -984,23 +982,22 @@ class inscription_preteurController extends bootstrap
         if (isset($_SESSION['client'])) {
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
-            if ($this->bIsLender && $this->clients->etape_inscription_preteur == 3) {
+            if ($this->bIsLender && $this->clients->etape_inscription_preteur >= 3) {
                 header('Location:' . $this->lurl . '/projects');
                 die;
             } elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
                 $this->preteurOnline = true;
-            } elseif ($this->bIsBorrower) {
-                $this->emprunteurCreatePreteur = true;
             }
         }
     }
 
     private function validStep1PhysicalPerson()
     {
-        $bFormOk = true;
+        $bFormOk             = true;
+        $bClientModification = false;
 
-        if (isset($_SESSION['client']) && $_SESSION['client']['etape_inscription_preteur'] > 3) {
-            $bFormOk = false;
+        if (isset($_SESSION['client']) && $this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
+            $bClientModification = true;
         }
 
         if (false === $this->dates->ageplus18($_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'])) {
@@ -1022,19 +1019,17 @@ class inscription_preteurController extends bootstrap
         ) {
             $bFormOk = false;
         } elseif (false === $this->clients->existEmail($_POST['email'])) {
-            if($this->modif == true){
-                if($_POST['email'] != $this->email){
-                    $this->reponse_email = $this->lng['etape1']['erreur-email'];
-                    $this->error_email_exist = true;
-                }
-            } else{
-                $this->reponse_email = $this->lng['etape1']['erreur-email'];
+            if (
+                false === $bClientModification
+                || $bClientModification && ($_POST['email'] != $this->clients->email)
+            ) {
+                $this->reponse_email     = $this->lng['etape1']['erreur-email'];
                 $this->error_email_exist = true;
+                $bFormOk = false;
             }
         }
 
-        // Emprunteur crée un compte preteur (pas en place donc on passe tout le temps de dans)
-        if ($this->emprunteurCreatePreteur == false) {
+        if ($this->bIsBorrower == false) {
             if (! isset($_POST['pass']) || $_POST['pass'] == '') {
                 $bFormOk = false;
             }
@@ -1080,7 +1075,7 @@ class inscription_preteurController extends bootstrap
             if (! isset($_POST['ville2']) || $_POST['ville2'] == $this->lng['etape1']['ville']) {
                 $bFormOk = false;
             }
-            if (! isset($_POST['postal2']) || $_POST['postal2'] == $this->lng['etape1']['postal']) {
+            if (! isset($_POST['postal2']) || $_POST['postal2'] == $this->lng['etape1']['code-postal']) {
                 $bFormOk = false;
             }
         }
@@ -1129,10 +1124,21 @@ class inscription_preteurController extends bootstrap
             }
         }
 
-        if ($bFormOk) {
-            if ($this->emprunteurCreatePreteur == false) {
-                $this->clients->password = md5($_POST['pass']);
+        if (false === $bFormOk) {
+            //TODO pass filled in information to the page
+            $_SESSION['form_lender_subscription_step_1'] = $_POST;
+            if (false === empty($this->reponse_email)) {
+                $_SESSION['reponse_email'] = $this->reponse_email;
             }
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
+            die;
+
+        } else {
+            $this->clients->civilite  = $_POST['sex'];
+            $this->clients->nom       = $this->ficelle->majNom($_POST['nom-famille']);
+            $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] != $this->lng['etape1']['nom-dusage']) ? $this->ficelle->majNom($_POST['nom-dusage']) : '';
+            $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
+            $this->clients->email     = $_POST['email'];
 
             $this->clients_adresses->adresse_fiscal      = $_POST['adresse_inscription'];
             $this->clients_adresses->ville_fiscal        = $_POST['ville_inscription'];
@@ -1153,15 +1159,10 @@ class inscription_preteurController extends bootstrap
                 $this->clients_adresses->id_pays  = $_POST['pays2'];
             }
 
-            $this->clients->civilite  = $_POST['sex'];
-            $this->clients->nom       = $this->ficelle->majNom($_POST['nom-famille']);
-            $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) ? '' : $this->ficelle->majNom($_POST['nom-dusage']);
-            $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom']);
-            $this->clients->email     = $_POST['email'];
-
-            if ($this->emprunteurCreatePreteur == false) {
+            if ($this->bIsBorrower == false) {
                 $this->clients->secrete_question = $_POST['secret-question'];
                 $this->clients->secrete_reponse  = md5($_POST['secret-response']);
+                $this->clients->password         = md5($_POST['pass']);
             }
 
             $this->clients->telephone         = str_replace(' ', '', $_POST['phone']);
@@ -1178,28 +1179,16 @@ class inscription_preteurController extends bootstrap
             $this->clients->slug                      = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
             $this->lenders_accounts->id_company_owner = 0; // pas de companie pour les personnes physique
 
+
             $aPost                    = $_POST;
             $aPost['pass']            = md5($_POST['pass']);
             $aPost['pass2']           = md5($_POST['pass2']);
             $aPost['secret-response'] = md5($_POST['secret-response']);
 
-            if (isset($_POST['accept-cgu']) && false === empty($_POST['accept-cgu'])) {
-                $bHasAlreadyAccepted = $this->acceptations_legal_docs->get($this->lienConditionsGeneralesParticulier, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc');
-
-                $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesParticulier;
-                $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
-
-                if ($bHasAlreadyAccepted) {
-                    $this->acceptations_legal_docs->update();
-                } else {
-                    $this->acceptations_legal_docs->create();
-                }
-            }
-
-            if ($this->modif) {
-                if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
+            if ($bClientModification) {
+                if (isset($this->error_email_exist) &&  $this->error_email_exist) {
                     $this->clients->email = $this->email;
-                }
+                } // TODO check if this still makes any sense
 
                 $this->clients->update();
                 $this->clients_adresses->update();
@@ -1207,47 +1196,44 @@ class inscription_preteurController extends bootstrap
 
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
                 $this->clients_history_actions->histo(13, 'edition inscription etape 1 particulier', $this->clients->id_client, $serialize);
+
+            } elseif ($this->bIsBorrower == false) {
+                if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
+                    $this->clients->email = '';
+                } // TODO check if this still makes any sense
+
+                $this->setSource($this->clients);
+
+                $this->clients->status                     = \clients::STATUS_ONLINE;
+                $this->clients->status_inscription_preteur = 1; // inscription terminé
+                $this->clients->etape_inscription_preteur  = 1; // etape 1 ok
+                $this->clients->type = $this->clients->id_nationalite == \nationalites_v2::NATIONALITY_FRENCH ? \clients::TYPE_PERSON : \clients::TYPE_PERSON_FOREIGNER;
+                $this->clients->create();
+
+                $this->clients_adresses->id_client = $this->clients->id_client;
+                $this->clients_adresses->create();
+
+                $this->lenders_accounts->id_client_owner = $this->clients->id_client;
+                $this->lenders_accounts->status = \lenders_accounts::LENDER_STATUS_ONLINE;
+                $this->lenders_accounts->create();
+
+                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
+                $this->clients_history_actions->histo(14, 'inscription etape 1 particulier', $this->clients->id_client, $serialize);
+
+                $this->sendSubscriptionConfirmationEmail($this->clients);
             }
 
-            if (empty($this->reponse_email)) {
-                if ($this->emprunteurCreatePreteur == false && $this->modif == false
-                    || $this->modif == true && $this->clients->etape_inscription_preteur == 0
-                ) {
-                    if (isset($this->error_email_exist) &&  $this->error_email_exist == true) {
-                        $this->clients->email = '';
-                    }
-                    $this->setSource($this->clients);
+            if (isset($_POST['accept-cgu']) && false === empty($_POST['accept-cgu'])) {
+                $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesParticulier;
+                $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
 
-                    $this->clients->create();
-                    $this->clients_adresses->id_client = $this->clients->id_client;
-                    $this->clients_adresses->create();
-
-                    $this->lenders_accounts->id_client_owner = $this->clients->id_client;
-                    $this->lenders_accounts->create();
-
-                    $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
-                    $this->clients_history_actions->histo(14, 'inscription etape 1 particulier', $this->clients->id_client, $serialize);
-
-                    $this->sendSubscriptionConfirmationEmail($this->clients);
-
-                    $this->clients->status                     = \clients::STATUS_ONLINE;
-                    $this->clients->status_inscription_preteur = 1; // inscription terminé
-                    $this->clients->etape_inscription_preteur  = 1; // etape 1 ok
-                    $this->clients->type = $this->clients->id_nationalite == \nationalites_v2::NATIONALITY_FRENCH ? \clients::TYPE_PERSON : \clients::TYPE_PERSON_FOREIGNER;
-                    $this->clients->update();
-
-                    $this->lenders_accounts->status = \lenders_accounts::LENDER_STATUS_ONLINE;
-                    $this->lenders_accounts->update();
+                if ($this->acceptations_legal_docs->get($this->lienConditionsGeneralesParticulier, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc')) {
+                    $this->acceptations_legal_docs->update();
+                } else {
+                    $this->acceptations_legal_docs->create();
                 }
-                header('Location: ' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
-                die;
-            } else {
-                $_SESSION['reponse_email'] = $this->reponse_email;
-                header('Location: ' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
-                die;
             }
-        } else {
-            header('Location: ' . $this->lurl . '/inscription_preteur/etape1/' . $this->params[0]);
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
             die;
         }
     }
@@ -1304,7 +1290,7 @@ class inscription_preteurController extends bootstrap
             }
         }
 
-        if ($this->emprunteurCreatePreteur == false) {
+        if ($this->bIsBorrower == false) {
             if (! isset($_POST['passE']) || $_POST['passE'] == '') {
                 $bFormOk = false;
             }
@@ -1445,7 +1431,7 @@ class inscription_preteurController extends bootstrap
             $this->clients->ville_naissance = '';
             $this->clients->slug            = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
 
-            if ($this->emprunteurCreatePreteur == false) {
+            if ($this->bIsBorrower == false) {
                 $this->clients->secrete_question = $_POST['secret-questionE'];
                 $this->clients->secrete_reponse  = md5($_POST['secret-responseE']);
             }
@@ -1465,7 +1451,7 @@ class inscription_preteurController extends bootstrap
 
                 $this->lenders_accounts->id_company_owner = $this->companies->id_company;
 
-                if ($this->emprunteurCreatePreteur && false === $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
+                if ($this->bIsBorrower && false === $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
                     $this->lenders_accounts->id_client_owner = $this->clients->id_client;
                     $this->lenders_accounts->create();
                 }
@@ -1513,7 +1499,7 @@ class inscription_preteurController extends bootstrap
                 header('location:' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
                 die;
             } else {
-                if ($this->emprunteurCreatePreteur == false && $this->modif == false || $this->modif == true && $this->clients->etape_inscription_preteur == 0) {
+                if ($this->isB == false && $this->modif == false || $this->modif == true && $this->clients->etape_inscription_preteur == 0) {
 
                     $this->sendSubscriptionConfirmationEmail($this->clients);
 
