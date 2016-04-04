@@ -41,10 +41,10 @@ class lenders_imposition_history extends lenders_imposition_history_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `lenders_imposition_history`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
+        $sql      = 'SELECT * FROM `lenders_imposition_history`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
         $result   = array();
+        $resultat = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
@@ -57,37 +57,13 @@ class lenders_imposition_history extends lenders_imposition_history_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `lenders_imposition_history` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM lenders_imposition_history ' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_lenders_imposition_history')
     {
-        $sql    = 'SELECT * FROM `lenders_imposition_history` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM lenders_imposition_history WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
-    }
-
-
-    //si le lender est exoneré a une date donnée
-    public function is_exonere_at_date($id_lender, $date)
-    {
-        $sql = '
-            SELECT lih.exonere
-            FROM lenders_imposition_history lih
-            WHERE lih.added <= "' . $date . '" AND lih.id_lender = ' . $id_lender . '
-            ORDER BY lih.added DESC
-            LIMIT 1';
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record['exonere'];
-        }
-        if (empty($result) || $result[0] == 0) {
-            return false;
-        }
-        return true;
     }
 }

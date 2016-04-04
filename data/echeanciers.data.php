@@ -844,41 +844,6 @@ class echeanciers extends echeanciers_crud
         return $result;
     }
 
-    // debug
-    public function requeteGetecheancePrelevement()
-    {
-        $sql = "SELECT
-                la.id_client_owner as id_client,
-                la.id_lender_account,
-                la.updated,
-                la.debut_exoneration,
-                la.fin_exoneration,
-                e.id_echeancier,
-                e.date_echeance,
-                e.date_echeance_reel,
-                e.status,
-                e.interets,
-                e.prelevements_obligatoires,
-                e.id_project
-            FROM lenders_accounts la
-            LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
-            WHERE DATE(la.updated) >= '2014-11-28'
-                AND la.exonere = 1
-                AND la.debut_exoneration >= '2014-11-28'
-                AND e.status = 1
-                AND DATE(e.updated) >= '2014-11-28'
-                AND la.debut_exoneration = '2015-01-01'
-                AND DATE(e.date_echeance_reel) >= '2014-12-01'
-            ORDER BY e.date_echeance_reel";
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     // Utilisé dans cron check remb preteurs (27/04/2015)
     public function selectEcheanciersByprojetEtOrdre()
     {

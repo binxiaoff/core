@@ -445,16 +445,11 @@ class operationsController extends bootstrap
 
         $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
 
-        header("Content-type: application/vnd.ms-excel; charset=utf-8");
-        header("Expires: 0");
-        header("Cache-Control: must-revalidate, post-check=0, pre-check=0");
-        header("content-disposition: attachment;filename=" . $this->bdd->generateSlug('operations_' . date('Y-m-d')) . ".xls");
-        // si exoneré à la date de la transact on change le libelle
-        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
-        // on check si il s'agit d'une PM ou PP
-        if ($this->clients->type != 1 && $this->clients->type != 3) {
-            $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
-        }
+        header('Content-type: application/vnd.ms-excel; charset=utf-8');
+        header('Expires: 0');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('content-disposition: attachment;filename=' . $this->bdd->generateSlug('operations_' . date('Y-m-d')) . '.xls');
+
         ?>
         <meta http-equiv="content-type" content="application/xhtml+xml; charset=UTF-8"/>
         <table border=1>
@@ -483,25 +478,18 @@ class operationsController extends bootstrap
                 $t['libelle_operation'] = $t['libelle_operation'];
                 $t['libelle_projet']    = $t['libelle_projet'];
                 if ($t['montant_operation'] > 0) {
-                    $plus    = '+';
-                    $moins   = '&nbsp;';
                     $couleur = ' style="color:#40b34f;"';
                 } else {
-                    $plus    = '&nbsp;';
-                    $moins   = '-';
                     $couleur = ' style="color:red;"';
                 }
 
                 $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
+                $solde      = $t['solde'];
 
-                $solde = $t['solde'];
-                // remb
-                if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
+                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT || $t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
-                    $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-
-                    if ($t['type_transaction'] == 23) {
+                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
                         $this->echeanciers->prelevements_obligatoires    = 0;
                         $this->echeanciers->retenues_source              = 0;
                         $this->echeanciers->interets                     = 0;
@@ -533,7 +521,7 @@ class operationsController extends bootstrap
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
-                    <?
+                    <?php
                 } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
                     // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
                     switch ($t['type_transaction']) {
@@ -562,7 +550,6 @@ class operationsController extends bootstrap
                             $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
                             break;
                     }
-                    $type = "";
                     if ($t['type_transaction'] == 8 && $t['montant'] > 0) {
                         $type = "Annulation retrait des fonds - compte bancaire clos";
                     } else {
@@ -714,18 +701,16 @@ class operationsController extends bootstrap
                     $interets        = $this->echeanciers->interets;
                 }
 
-                // si exoneré à la date de la transact on change le libelle
-                $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
-                // on check si il s'agit d'une PM ou PP
-                if ($clients->type == 1 or $clients->type == 3) {
-                    // Si le client est exoneré on doit modifier le libelle de prelevement
-                    // on doit checker si le client est exonéré
-                    $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-                    $exoneration                      = $this->lenders_imposition_history->is_exonere_at_date($this->lenders_accounts->id_lender_account, $t['date_transaction']);
-                    if ($exoneration) {
+                if ($clients->type == \clients::TYPE_PERSON || $clients->type == \clients::TYPE_PERSON_FOREIGNER) {
+                    /** @var \lender_tax_exemption $oTaxExemption */
+                    $oTaxExemption = $this->loadDate('lender_tax_exemption');
+
+                    if ($oTaxExemption->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND year = "' . substr($t['date_transaction'], 0, 4) . '"') > 0) {
                         $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
+                    } else {
+                        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
                     }
-                } else {// PM
+                } else {
                     $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
                 }
 
@@ -738,10 +723,10 @@ class operationsController extends bootstrap
                 $this->indexage_vos_operations->bdc                 = $t['bdc'];
                 $this->indexage_vos_operations->libelle_projet      = $t['title'];
                 $this->indexage_vos_operations->date_operation      = $t['date_tri'];
-                $this->indexage_vos_operations->solde               = $t['solde'] * 100;
+                $this->indexage_vos_operations->solde               = bcmul($t['solde'], 100);
                 $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
                 $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
-                $this->indexage_vos_operations->montant_prelevement = $retenuesfiscals * 100;
+                $this->indexage_vos_operations->montant_prelevement = bcmul($retenuesfiscals, 100);
 
                 if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
                     $this->indexage_vos_operations->montant_capital = $t['montant'];
