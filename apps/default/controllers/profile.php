@@ -1741,8 +1741,7 @@ class profileController extends bootstrap
 
             $oClientStatusHistory->addStatus('-2', $sClientStatus, $this->clients->id_client, $sContentForHistory);
             $this->sendAccountModificationEmail($this->clients);
-            $_SESSION['form_profile_doc']['reponse_upload'] = $this->lng['profile']['message-completness-document-upload'];
-            $_SESSION['form_profile_doc']['detail_upload']  = $sContentForHistory;
+            $_SESSION['form_profile_doc']['answer_upload'] = $this->lng['profile']['message-completness-document-upload'];
         }
 
         if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
