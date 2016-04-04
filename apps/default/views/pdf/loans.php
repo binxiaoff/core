@@ -41,10 +41,10 @@
         <div style="clear:both;"></div>
         <br/>
         <strong>Historique des projets financés par votre compte Unilend n°<?= $this->clients->id_client ?></strong><br/>
-        <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (isset($this->lenders_accounts->id_company) && $this->lenders_accounts->id_company != 0 ? $this->companies->name : $this->clients->prenom . ' ' . $this->clients->nom) ?>
+        <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner!= 0 ? $this->companies->name : $this->clients->prenom . ' ' . $this->clients->nom) ?>
         <br/>
-        <?php if (isset($this->lenders_accounts->id_company) && $this->lenders_accounts->id_company != 0): ?>
-            <?= $this->lng['preteur-operations-pdf']['Representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?><br/>
+        <?php if (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner != 0): ?>
+            <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?><br/>
         <?php endif; ?>
     </div>
 
