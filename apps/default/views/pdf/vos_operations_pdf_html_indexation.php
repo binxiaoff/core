@@ -22,20 +22,20 @@
         <b><?=$this->lng['preteur-operations-pdf']['paris-le']?> <?=(date('d/m/Y'))?></b>
         <br /><br /><br />
         <?
-        if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
+        if (isset($this->oLendersAccounts->id_company_owner) && $this->oLendersAccounts->id_company_owner != 0) {
 
-            $this->companies->get($this->oLendersAccounts->id_company,'id_company');
+            $this->companies->get($this->oLendersAccounts->id_company_owner);
             ?>
-            <b><?=$this->companies->name?></b><br />
-            <?=$this->companies->adresse1?><br />
-            <?=$this->companies->zip.' '.$this->companies->city?>
+            <b><?= $this->companies->name ?></b><br/>
+            <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
+            <?= $this->companies->adresse1 ?><br/>
+            <?= $this->companies->zip . ' ' . $this->companies->city ?>
             <?
-        }
-        else{
+        } else {
             ?>
-            <b><?=$this->clients->prenom.' '.$this->clients->nom?></b><br />
-            <?=$this->clients_adresses->adresse1?><br />
-            <?=$this->clients_adresses->cp.' '.$this->clients_adresses->ville?>
+            <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
+            <?= $this->clients_adresses->adresse1 ?><br/>
+            <?= $this->clients_adresses->cp . ' ' . $this->clients_adresses->ville ?>
             <?
         }
         ?>
@@ -44,12 +44,10 @@
     <div style="clear:both;"></div>
     <br />
     <b><?=$this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n']?><?=$this->clients->id_client?></b><br />
-    <?=$this->lng['preteur-operations-pdf']['titulaire']?> <?=(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0?$this->companies->name:$this->clients->prenom.' '.$this->clients->nom)?><br />
-    <?
-    if(isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0){
-        ?><?=$this->lng['preteur-operations-pdf']['Representant-legal']?> <?=$this->clients->civilite.' '.$this->clients->prenom.' '.$this->clients->nom?><br /><?
-    }
-    ?>
+    <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (isset($this->oLendersAccounts->id_company_owner) && $this->oLendersAccounts->id_company_owner != 0 ? $this->companies->name : $this->clients->prenom . ' ' . $this->clients->nom) ?><br/>
+    <?php if (isset($this->oLendersAccounts->id_company_owner) && $this->oLendersAccounts->id_company_owner != 0) : ?>
+        <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?><br/>
+    <?php endif; ?>
 
 </div>
 <br /><br />
@@ -267,7 +265,7 @@
         }
     }
 
-    $soldetotal = $this->transactions->getSoldeDateLimite($t['id_client'],$this->date_fin);
+    $soldetotal = $this->transactions->getSoldeDateLimite($this->clients->id_client, $this->date_fin);
     ?>
     <tr>
         <td colspan="7" ></td>
@@ -297,11 +295,8 @@ if($asterix_on) {
 
 <br /><br />
 <div class="pdfFooter">
-
     <?=$this->lng['preteur-operations-pdf']['prestataire-de-services-de-paiement']?><br />
     <?=$this->lng['preteur-operations-pdf']['agent-prestataire-de-services-de-paiement']?><br />
-
-
 </div>
 
 <script type="text/javascript">
@@ -329,18 +324,18 @@ if($asterix_on) {
         $(".load_table_vos_operations").fadeIn();
 
         var val = {
-            debut 				: $("#debut").val(),
-            fin 				: $("#fin").val(),
-            nbMois 				: $("#nbMois").val(),
-            annee 				: $("#annee").val(),
-            tri_type_transac 	: $("#tri_type_transac").val(),
-            tri_projects 		: $("#tri_projects").val(),
-            id_last_action		: $(this).attr('id'),
-            order 				: order,
-            type 				: type
+            debut               : $("#debut").val(),
+            fin                 : $("#fin").val(),
+            nbMois              : $("#nbMois").val(),
+            annee               : $("#annee").val(),
+            tri_type_transac    : $("#tri_type_transac").val(),
+            tri_projects        : $("#tri_projects").val(),
+            id_last_action      : $(this).attr('id'),
+            order               : order,
+            type                : type
         }
 
-        $.post(add_url+"/ajax/vos_operations",val).done(function( data ) {
+        $.post(add_url + "/ajax/vos_operations", val).done(function (data) {
 
             $(".content_table_vos_operations").html(data);
             $(".load_table_vos_operations").fadeOut();
