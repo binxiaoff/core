@@ -57,8 +57,7 @@ if (count($this->lEnchere) > 0) {
     }
     ?>
     <script>
-        $("#direction_mobile").html('<?=$this->direction?>');
-
+        $("#direction_mobile").html('<?= $this->direction ?>');
 
         $("#triNum_mobile").click(function () {
             $("#tri_mobile").html('ordre');
@@ -81,7 +80,6 @@ if (count($this->lEnchere) > 0) {
         });
 
         $(".displayAll_mobile").click(function () {
-
             var tri = $("#tri_mobile").html();
             var direction = $("#direction_mobile").html();
             $.post(add_url + '/ajax/displayAll_mobile', {id: <?= $this->projects->id_project ?>, tri: tri, direction: direction}).done(function (data) {

@@ -184,29 +184,47 @@ class attachment_type extends attachment_type_crud
         return $aTypes;
     }
 
-    public function getAllTypesForLender()
+    public function getAllTypesForLender($sLanguage, $bIncludeOthers = true, array $aTypes = null)
     {
-        $aTypes = array(
-            self::CNI_PASSPORTE,
-            self::CNI_PASSPORTE_VERSO,
-            self::JUSTIFICATIF_DOMICILE,
-            self::RIB,
-            self::ATTESTATION_HEBERGEMENT_TIERS,
-            self::CNI_PASSPORT_TIERS_HEBERGEANT,
-            self::CNI_PASSPORTE_DIRIGEANT,
-            self::DELEGATION_POUVOIR,
-            self::KBIS,
-            self::JUSTIFICATIF_FISCAL,
-            self::DISPENSE_PRELEVEMENT_2014,
-            self::DISPENSE_PRELEVEMENT_2015,
-            self::DISPENSE_PRELEVEMENT_2016,
-            self::DISPENSE_PRELEVEMENT_2017,
-            self::AUTRE1,
-            self::AUTRE2,
-            self::AUTRE3
+        if (null === $aTypes){
+            $aTypes = array(
+                self::CNI_PASSPORTE,
+                self::CNI_PASSPORTE_VERSO,
+                self::JUSTIFICATIF_DOMICILE,
+                self::RIB,
+                self::ATTESTATION_HEBERGEMENT_TIERS,
+                self::CNI_PASSPORT_TIERS_HEBERGEANT,
+                self::CNI_PASSPORTE_DIRIGEANT,
+                self::DELEGATION_POUVOIR,
+                self::KBIS,
+                self::JUSTIFICATIF_FISCAL,
+                self::DISPENSE_PRELEVEMENT_2014,
+                self::DISPENSE_PRELEVEMENT_2015,
+                self::DISPENSE_PRELEVEMENT_2016,
+                self::DISPENSE_PRELEVEMENT_2017,
+                self::AUTRE1,
+                self::AUTRE2,
+                self::AUTRE3,
+                self::AUTRE4
+            );
+        }
+
+        $oTextes = new \textes($this->bdd);
+        $aTranslations = $oTextes->selectFront('projet', $sLanguage);
+
+        $aTypes = array_map(
+            function($aType) use ($aTranslations) {
+                $aType['label'] = $aTranslations['document-type-' . $aType['id']];
+                return $aType;
+            },
+            $this->getAllTypes($aTypes)
         );
 
-        return $this->getAllTypes($aTypes);
+        if (false === $bIncludeOthers) {
+            $aTypes = array_slice($aTypes, 0, count($aTypes) - 4);
+        }
+
+        return $aTypes;
     }
 
     private function getAllTypes($aTypes)

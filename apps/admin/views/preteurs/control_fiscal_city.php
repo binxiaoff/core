@@ -98,20 +98,20 @@
 <script>
     $('.edit_lender').click(function(e){
         e.preventDefault();
-        var adresseId = $(this).data('adresseId');
+        var adresseId = $(this).data('adresseid');
         $('#edit_lenders_'+adresseId).show("slow");
         initAutocompleteCity($('#city_'+adresseId), $('#cp_'+adresseId));
     });
 
     $('.close_edit').click(function(e){
         e.preventDefault();
-        var adresseId = $(this).data('adresseId');
+        var adresseId = $(this).data('adresseid');
         $('#edit_lenders_'+adresseId).hide("fast");
     });
 
     $('.save_lender').click(function(e){
         e.preventDefault();
-        var adresseId = $(this).data('adresseId');
+        var adresseId = $(this).data('adresseid');
         var clientId = $('#id_client_'+adresseId).val();
 
         var zip = $('#cp_'+adresseId).val();

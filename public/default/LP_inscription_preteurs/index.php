@@ -508,6 +508,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     <div class="clear"></div>
                 </div>
                 <input type="tel" id="inscription_telephone" name="telephone" placeholder="T&eacute;l&eacute;phone" maxlength="10">
+                <p id="error-message-nationality" style="color:#C84747; display: none">Nous sommes désolés, seuls les nationaux de l'Espace Economique Européen peuvent s'inscrire sur Unilend pour le moment.</p>
                 <select id="inscription_id_nationalite" name="id_nationalite" class="custom-select">
                     <option value="">Nationalit&eacute;</option>
                     <option value="35">Autre</option>
@@ -1002,6 +1003,15 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         });
         $('#errorAge').html('');
 
+        $('#inscription_id_nationalite').change(function () {
+            if ($('#inscription_id_nationalite').val() == 35) {
+                $('#inscription_id_nationalite').next('.c2-sb-wrap').addClass('error');
+                $('#error-message-nationality').show();
+            } else {
+                $('#error-message-nationality').hide();
+            }
+        });
+
         var civilite = '';
         var nom = '';
         var prenom = '';
@@ -1290,7 +1300,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     $('#inscription_telephone').addClass('error');
                     erreur = 1;
                 }
-                if (!inscription_id_nationalite) {
+                if (!inscription_id_nationalite || inscription_id_nationalite == 35 ) {
                     $('#inscription_id_nationalite').next('.c2-sb-wrap').addClass('error');
                     erreur = 1;
                 }

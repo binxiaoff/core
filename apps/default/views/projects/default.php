@@ -197,9 +197,7 @@
                         <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $project['photo_projet'] ?>" alt="<?= $project['photo_projet'] ?>">
                         <div class="project-mobile-image-caption">
                             <p><?= $this->ficelle->formatNumber($project['amount'], 0) ?>€ |
-                                <span class="cadreEtoiles" style="margin-right: 12px; top: 8px;display: inline-block;">
-                                    <span style="display: inline-block;" class="etoile <?= $this->lNotes[$project['risk']] ?>"></span>
-                                </span> |
+                            <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$project['risk']] ?>"></div></div> |
                                 <?
                                 if ($iSumbids > 0) {
                                     ?><?= $this->ficelle->formatNumber($avgRate, 1) ?>%<?
