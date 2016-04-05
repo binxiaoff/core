@@ -458,30 +458,8 @@ class ProjectManager
         $oSettings->get('TVA', 'type');
         $tva = $oSettings->value;
 
-        $oSettings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
-        $prelevements_obligatoires = $oSettings->value;
-
-        $oSettings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-        $contributions_additionnelles = $oSettings->value;
-
-        $oSettings->get('EQ-CRDS', 'type');
-        $crds = $oSettings->value;
-
-        $oSettings->get('EQ-CSG', 'type');
-        $csg = $oSettings->value;
-
-        $oSettings->get('EQ-Prélèvement de Solidarité', 'type');
-        $prelevements_solidarite = $oSettings->value;
-
-        $oSettings->get('EQ-Prélèvement social', 'type');
-        $prelevements_sociaux = $oSettings->value;
-
-        $oSettings->get('EQ-Retenue à la source', 'type');
-        $retenues_source = $oSettings->value;
-
         $oProjectStatus->getLastStatut($oProject->id_project);
 
-        // Si le projet est bien en funde on créer les echeances
         if ($oProjectStatus->status == \projects_status::FUNDE) {
             $lLoans = $oLoan->select('id_project = ' . $oProject->id_project);
 
@@ -491,126 +469,34 @@ class ProjectManager
                 $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' : ' . $iLoanNbTotal . ' in total.');
             }
 
-            // on parcourt les loans du projet en remboursement
             foreach ($lLoans as $l) {
-                //////////////////////////////
-                // Echeancier remboursement //
-                //////////////////////////////
-
                 $oLenderAccount->get($l['id_lender'], 'id_lender_account');
                 $oClient->get($oLenderAccount->id_client_owner, 'id_client');
 
                 $oClientAdresse->get($oLenderAccount->id_client_owner, 'id_client');
 
-                // 0 : fr/fr
-                // 1 : fr/resident etranger
-                // 2 : no fr/resident etranger
-                $etranger = 0;
-                // fr/resident etranger
-                if ($oClient->id_nationalite <= 1 && $oClientAdresse->id_pays_fiscal > 1) {
-                    $etranger = 1;
-                } // no fr/resident etranger
-                elseif ($oClient->id_nationalite > 1 && $oClientAdresse->id_pays_fiscal > 1) {
-                    $etranger = 2;
-                }
-
                 $oLoan->get($l['id_loan']);
                 $tabl = $oLoan->getRepaymentSchedule($commission, $tva);
 
                 $aRepaymentSchedule = array();
-                // on crée les echeances de chaques preteurs
                 foreach ($tabl['repayment_schedule'] as $k => $e) {
-                    // Date d'echeance preteur
                     $dateEcheance = $this->oDate->dateAddMoisJoursV3($oProject->date_fin, $k);
                     $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
 
-                    // Date d'echeance emprunteur
                     $dateEcheance_emprunteur = $this->oDate->dateAddMoisJoursV3($oProject->date_fin, $k);
-                    // on retire 6 jours ouvrés
                     $dateEcheance_emprunteur = $this->oWorkingDay->display_jours_ouvres($dateEcheance_emprunteur, 6);
                     $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
-
-                    // particulier
-                    if (in_array($oClient->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
-                        if ($etranger > 0) {
-                            $montant_prelevements_obligatoires    = 0;
-                            $montant_contributions_additionnelles = 0;
-                            $montant_crds                         = 0;
-                            $montant_csg                          = 0;
-                            $montant_prelevements_solidarite      = 0;
-                            $montant_prelevements_sociaux         = 0;
-
-                            switch ($oLoan->id_type_contract) {
-                                case \loans::TYPE_CONTRACT_BDC:
-                                    $montant_retenues_source = round($retenues_source * $e['interest'], 2);
-                                    break;
-                                case \loans::TYPE_CONTRACT_IFP:
-                                    $montant_retenues_source = 0;
-                                    break;
-                                default:
-                                    $montant_retenues_source = 0;
-                                    trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
-                                    break;
-                            }
-                        } else {
-                            if ($oLenderAccount->exonere == 1 // @todo should not be usefull and field should be deleted from DB but as long as it exists and BO interface is based on it, we must use it
-                                && $oLenderAccount->debut_exoneration != '0000-00-00'
-                                && $oLenderAccount->fin_exoneration != '0000-00-00'
-                                && date('Y-m-d', strtotime($dateEcheance)) >= $oLenderAccount->debut_exoneration
-                                && date('Y-m-d', strtotime($dateEcheance)) <= $oLenderAccount->fin_exoneration
-                            ) {
-                                $montant_prelevements_obligatoires = 0;
-                            } else {
-                                $montant_prelevements_obligatoires = round($prelevements_obligatoires * $e['interest'], 2);
-                            }
-
-                            $montant_contributions_additionnelles = round($contributions_additionnelles * $e['interest'], 2);
-                            $montant_crds                         = round($crds * $e['interest'], 2);
-                            $montant_csg                          = round($csg * $e['interest'], 2);
-                            $montant_prelevements_solidarite      = round($prelevements_solidarite * $e['interest'], 2);
-                            $montant_prelevements_sociaux         = round($prelevements_sociaux * $e['interest'], 2);
-                            $montant_retenues_source              = 0;
-                        }
-                    } // entreprise
-                    else {
-                        $montant_prelevements_obligatoires    = 0;
-                        $montant_contributions_additionnelles = 0;
-                        $montant_crds                         = 0;
-                        $montant_csg                          = 0;
-                        $montant_prelevements_solidarite      = 0;
-                        $montant_prelevements_sociaux         = 0;
-
-                        switch ($oLoan->id_type_contract) {
-                            case \loans::TYPE_CONTRACT_BDC:
-                                $montant_retenues_source = round($retenues_source * $e['interest'], 2);
-                                break;
-                            case \loans::TYPE_CONTRACT_IFP:
-                                $montant_retenues_source = 0;
-                                break;
-                            default:
-                                $montant_retenues_source = 0;
-                                trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
-                                break;
-                        }
-                    }
 
                     $aRepaymentSchedule[] = array(
                         'id_lender'                    => $l['id_lender'],
                         'id_project'                   => $oProject->id_project,
                         'id_loan'                      => $l['id_loan'],
                         'ordre'                        => $k,
-                        'montant'                      => $e['repayment'] * 100,
-                        'capital'                      => $e['capital'] * 100,
-                        'interets'                     => $e['interest'] * 100,
-                        'commission'                   => $e['commission'] * 100,
-                        'tva'                          => $e['vat_amount'] * 100,
-                        'prelevements_obligatoires'    => $montant_prelevements_obligatoires,
-                        'contributions_additionnelles' => $montant_contributions_additionnelles,
-                        'crds'                         => $montant_crds,
-                        'csg'                          => $montant_csg,
-                        'prelevements_solidarite'      => $montant_prelevements_solidarite,
-                        'prelevements_sociaux'         => $montant_prelevements_sociaux,
-                        'retenues_source'              => $montant_retenues_source,
+                        'montant'                      => bcmul($e['repayment'], 100),
+                        'capital'                      => bcmul($e['capital'], 100),
+                        'interets'                     => bcmul($e['interest'], 100),
+                        'commission'                   => bcmul($e['commission'], 100),
+                        'tva'                          => bcmul($e['vat_amount'], 100),
                         'date_echeance'                => $dateEcheance,
                         'date_echeance_emprunteur'     => $dateEcheance_emprunteur,
                     );
@@ -657,20 +543,17 @@ class ProjectManager
         }
 
         foreach ($aPaymentList as $iIndex => $aPayment) {
-            // Date d'echeance emprunteur
             $sPaymentDate = $this->oDate->dateAddMoisJoursV3($oProject->date_fin, $iIndex);
-            // on retire 6 jours ouvrés
             $sPaymentDate = $this->oWorkingDay->display_jours_ouvres($sPaymentDate, 6);
-
             $sPaymentDate = date('Y-m-d H:i', $sPaymentDate) . ':00';
 
             $oPaymentSchedule->id_project               = $oProject->id_project;
             $oPaymentSchedule->ordre                    = $iIndex;
-            $oPaymentSchedule->montant                  = $aPayment['montant'] * 100; // sum montant preteurs
-            $oPaymentSchedule->capital                  = $aPayment['capital'] * 100; // sum capital preteurs
-            $oPaymentSchedule->interets                 = $aPayment['interets'] * 100; // sum interets preteurs
-            $oPaymentSchedule->commission               = $aCommission['commission_monthly'] * 100; // on recup com du projet
-            $oPaymentSchedule->tva                      = $aCommission['vat_amount_monthly'] * 100; // et tva du projet
+            $oPaymentSchedule->montant                  = bcmul($aPayment['montant'], 100);
+            $oPaymentSchedule->capital                  = bcmul($aPayment['capital'], 100);
+            $oPaymentSchedule->interets                 = bcmul($aPayment['interets'], 100);
+            $oPaymentSchedule->commission               = bcmul($aCommission['commission_monthly'], 100);
+            $oPaymentSchedule->tva                      = bcmul($aCommission['vat_amount_monthly'], 100);
             $oPaymentSchedule->date_echeance_emprunteur = $sPaymentDate;
             $oPaymentSchedule->create();
 
