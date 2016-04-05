@@ -170,4 +170,15 @@ class clients_gestion_notifications extends clients_gestion_notifications_crud
                 AND cgmn.status_check_' . $sFrequency . ' = 0
                 AND cgmn.id_notif = ' . $iNotificationType;
     }
+
+    public static function getAllPeriod()
+    {
+        return array(
+            self::TYPE_NOTIFICATION_IMMEDIATE,
+            self::TYPE_NOTIFICATION_DAILY,
+            self::TYPE_NOTIFICATION_WEEKLY,
+            self::TYPE_NOTIFICATION_MONTHLY,
+            self::TYPE_NOTIFICATION_NO_MAIL,
+        );
+    }
 }
