@@ -219,6 +219,7 @@ class cronController extends bootstrap
                     $this->zippage($oProject->id_project);
 
                     $this->sendNewProjectEmail($oProject->id_project);
+                    $this->sendProjectOnlineEmailBorrower($oProject->id_project);
                 }
             }
             if ($bHasProjectPublished) {
