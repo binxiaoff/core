@@ -443,11 +443,13 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->bids             = $this->loadData('bids');
-        $this->projects         = $this->loadData('projects');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->bids              = $this->loadData('bids');
+        $this->projects          = $this->loadData('projects');
+        $this->lenders_accounts  = $this->loadData('lenders_accounts');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
@@ -483,11 +485,11 @@ class ajaxController extends bootstrap
         $oProjectStatus = $this->loadData('projects_status');
         $oProjectStatus->getLastStatut($this->projects->id_project);
 
-        $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
-        $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
+        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
+        $this->status         = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
     // Affichage du tableau d'offres en cours mobile
@@ -495,10 +497,14 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->bids             = $this->loadData('bids');
-        $this->projects         = $this->loadData('projects');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
+        $this->bids                   = $this->loadData('bids');
+        $this->projects               = $this->loadData('projects');
+        $this->lenders_accounts       = $this->loadData('lenders_accounts');
+        $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
+
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
@@ -525,15 +531,14 @@ class ajaxController extends bootstrap
         } else {
             $order = 'ordre ' . $direction;
         }
-
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = $this->loadData('projects_status');
         $oProjectStatus->getLastStatut($this->projects->id_project);
 
-        $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-        $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
+        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
+        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
         $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
@@ -1738,5 +1743,25 @@ class ajaxController extends bootstrap
         $this->aBorrowerOperations = $oClients->getDataForBorrowerOperations($aClientProjectIDs, $oStartTime, $oEndTime, $iTransaction, $oClients->id_client);
         $this->sDisplayDateTimeStart = $oStartTime->format('d/m/Y');
         $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
+    }
+
+    public function _rejectedBids()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = true;
+
+        $this->oProject = $this->loadData('projects');
+        $oClient        = $this->loadData('clients');
+        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oBids          = $this->loadData('bids');
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
+
+        if (isset($this->params[0]) && isset($this->params[1]) && $this->oProject->get($this->params[0]) && $oClient->get($this->params[1], 'hash')) {
+            $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+            $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
+        }
     }
 }

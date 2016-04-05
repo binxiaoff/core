@@ -21,33 +21,30 @@
         <div class="section-c tabs-c">
             <nav class="tabs-nav">
                 <ul class="navProfile">
-                    <li <?= (! isset($this->params[0]) || $this->params[0] == 1 ? 'class="active"' : '') ?>>
-                        <a id="title_1" href="#"><?= $this->lng['profile']['titre-4'] ?></a>
-                    </li>
-                    <li id='title_2_tab' <?= (isset($this->params[0]) && $this->params[0] == 2 ? 'class="active"' : '') ?> >
-                        <a id="title_2" href="#"><?= $this->lng['profile']['titre-3'] ?></a>
-                    </li>
-                    <li id='title_3_tab' <?= (isset($this->params[0]) && $this->params[0] == 3 ? 'class="active"' : '') ?> >
-                        <a id="title_3" href="#"><?= $this->lng['profile']['titre-1'] ?></a>
-                    </li>
+                    <li><a id="notif" href="#notification"><?= $this->lng['profile']['titre-4'] ?></a></li>
+                    <li><a id="secu" href="#securite"><?= $this->lng['profile']['titre-3'] ?></a></li>
+                    <li><a id="info" href="#info_perso"><?= $this->lng['profile']['titre-1'] ?></a></li>
+                    <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
+                    <li><a id="auto" href="#"><?= $this->lng['profile']['title-tab-autobid'] ?></a></li>
+                    <?php endif; ?>
                 </ul>
             </nav>
             <div class="tabs">
-                <div class="tab page1 tab-manage">
+                <div class="tab notification">
                     <?= $this->fireView('/gestion_alertes') ?>
                 </div>
-                <div class="tab page2">
+                <div class="tab securite" style="display: none;">
                     <?= $this->fireView('/secu_new') ?>
                 </div>
-                <div class="tab page3">
+                <div class="tab info_perso" style="display: none;">
                 <?php
-                    if ($this->Command->Function == 'societe') {
-                        $this->fireView('/societe_perso_new');
-                        $this->fireView('/societe_bank_new');
-                    } else {
-                        $this->fireView('/particulier_perso_new');
-                        $this->fireView('/particulier_bank_new');
-                    }
+                if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                    $this->fireView('/particulier_perso_new');
+                    $this->fireView('/particulier_bank_new');
+                } elseif (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+                    $this->fireView('/societe_perso_new');
+                    $this->fireView('/societe_bank_new');
+                }
                 ?>
                 </div>
             </div>
@@ -55,28 +52,31 @@
     </div>
 </div>
 
-<script>
-    <?php if (isset($this->params[0]) && $this->params[0] == 2) : ?>
-        setTimeout(function () {
-            $("#title_2_tab").click();
-        }, 0);
-    <?php elseif (isset($this->params[0]) && $this->params[0] == 3) : ?>
-        setTimeout(function () {
-            $("#title_3_tab").click();
-        }, 0);
-    <?php endif; ?>
+<script type="text/javascript">
 
-    $(window).load(function () {
-    <?php if (isset($this->params[0]) && $this->params[0] > 1 && $this->params[0] <= 3) : ?>
-            <?php for ($i = 1; $i <= 3; $i++) : ?>
-                <?php if ($this->params[0] != $i) : ?>
-            $(".page<?= $i ?>").hide();
-                <?php endif; ?>
-            <?php endfor; ?>
-            }
-    <?php else : ?>
-        $(".page2").hide();
-        $(".page3").hide();
-    <?php endif; ?>
+    $( window ).load(function() {
+        $('#notif').click(function() {
+            location.hash = "notification";
+        });
+        $('#secu').click(function() {
+            location.hash = "securite";
+        });
+        $('#info').click(function() {
+            location.hash = "info_perso";
+        });
+        $('#auto').click(function() {
+            window.location.replace("<?= $this->lurl ?>/profile/autolend");
+        });
+
+        var tab;
+
+        if (window.location.hash == "#notification" || window.location.hash == "") {
+            tab = $('#notif');
+        } else if (window.location.hash == "#securite") {
+            tab = $('#secu');
+        } else if (window.location.hash == "#info_perso") {
+            tab = $('#info');
+        }
+        tab.trigger( "click" );
     });
 </script>

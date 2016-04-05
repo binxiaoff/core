@@ -66,7 +66,7 @@
                         <th width="22%"><?= $this->lng['espace-emprunteur']['table-projets-nature'] ?></th>
                         <th width="11%"><?= $this->lng['espace-emprunteur']['table-projets-montant-duree'] ?></th>
                         <th width="22%"><?= $this->lng['espace-emprunteur']['table-projets-status'] ?></th>
-                        <th width="17%"></th>
+                        <th width="17%"><?= $this->lng['espace-emprunteur']['table-predict-autobid'] ?></th>
                         <th width="18%"></th>
                     </tr>
                     </thead>
@@ -78,6 +78,7 @@
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?> € /  <?= $aProject['period'] ?>
                                 <?= $this->lng['espace-emprunteur']['mois'] ?></td>
                             <td><?= $this->lng['espace-emprunteur'][ $aProject['project_status_label'] ] ?></td>
+                            <td><?= $aProject['predict_autobid'] ?> %</td>
                             <?php if ($aProject['project_status_label'] === 'en-attente-de-pieces' ): ?>
                             <td>
                                 <a href="<?= $this->url . '/depot_de_dossier/fichiers/' . $aProject['hash'] ?>">
