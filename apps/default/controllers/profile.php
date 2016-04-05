@@ -927,14 +927,6 @@ class profileController extends bootstrap
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                 ),
             ),
-            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
-                'title' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation'],
-                'info' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info'],
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
             \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
                 'title' => $this->lng['gestion-alertes']['autobid-balance-low'],
                 'info' => $this->lng['gestion-alertes']['autobid-balance-low-info'],
@@ -961,6 +953,14 @@ class profileController extends bootstrap
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                'title' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation'],
+                'info' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info'],
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                 ),
             ),
