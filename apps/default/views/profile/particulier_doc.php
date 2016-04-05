@@ -1,12 +1,17 @@
+<style>
+    div.reponseProfile ul {
+        padding-left: 35px;
+    }
+</style>
+
 <div class="main form-page account-page account-page-personal">
     <div class="shell">
         <div class="account-data">
             <h2><?= $this->lng['profile']['validation-compte'] ?></h2>
 
-            <?php if (isset($_SESSION['form_profile_doc']) && $_SESSION['reponse_upload'] != '') : ?>
-                <div class="reponseProfile">
-                    <?= $_SESSION['form_profile_doc']['reponse_upload'] ?>
-                    <?= $_SESSION['form_profile_doc']['detail_upload'] ?>
+            <?php if (isset($_SESSION['form_profile_doc']) && $_SESSION['form_profile_doc']['answer_upload'] != '') : ?>
+                <div class="reponseProfile" style="text-align: left;">
+                    <?= $_SESSION['form_profile_doc']['answer_upload'] ?>
                 </div>
                 <?php unset($_SESSION['form_profile_doc']); ?>
             <?php else : ?>
