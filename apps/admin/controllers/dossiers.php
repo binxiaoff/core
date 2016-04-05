@@ -673,8 +673,7 @@ class dossiersController extends bootstrap
                     }
 
                     if ($this->current_projects_status->status != $_POST['status']) {
-
-                        if ((int)$_POST['status'] === \projects_status::PREP_FUNDING) {
+                        if ($_POST['status'] == \projects_status::PREP_FUNDING) {
                             $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);
 
                             $aExistingStatus = array();
@@ -686,13 +685,13 @@ class dossiersController extends bootstrap
                             }
 
                             $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+
                             if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
                             }
-                        }
+                        } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
+                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
-                        // Si statut a funder, en funding ou fundé
-                        elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
                             $companies        = $this->loadData('companies');
                             $clients          = $this->loadData('clients');
                             $clients_adresses = $this->loadData('clients_adresses');
@@ -793,6 +792,8 @@ class dossiersController extends bootstrap
                                 $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
                                 mail($to, $subject, $message, $headers);
                             }
+                        } else {
+                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
                         }
                     }
 
