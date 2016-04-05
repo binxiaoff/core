@@ -29,33 +29,12 @@
 class clients_history_actions extends clients_history_actions_crud
 {
 
-    function clients_history_actions($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::clients_history_actions($bdd, $params);
     }
 
-    function get($id, $field = 'id_client_history_action')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_client_history_action')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -70,10 +49,11 @@ class clients_history_actions extends clients_history_actions_crud
         while ($record = $this->bdd->fetch_array($resultat)) {
             $result[] = $record;
         }
+
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -82,22 +62,35 @@ class clients_history_actions extends clients_history_actions_crud
         $sql = 'SELECT count(*) FROM `clients_history_actions` ' . $where;
 
         $result = $this->bdd->query($sql);
+
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_client_history_action')
+    public function exist($id, $field = 'id_client_history_action')
     {
         $sql    = 'SELECT * FROM `clients_history_actions` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+
+        return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    function histo($id_form, $nom_form, $id_client, $serialize)
+    public function histo($id_form, $nom_form, $id_client, $serialize)
     {
         $this->id_form   = $id_form;
         $this->nom_form  = $nom_form;
         $this->id_client = $id_client;
         $this->serialize = $serialize;
         $this->create();
+    }
+
+    public function getLastAutoBidOnOffActions($iClientID)
+    {
+        $sQuery = 'SELECT *  FROM `clients_history_actions` WHERE `nom_form` = "autobid_on_off" and id_client = ' . $iClientID . ' order by ADDED DESC LIMIT 2 ';
+        $aAutoBidHistory = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aAutoBidHistory[] = $aRecord;
+        }
+        return $aAutoBidHistory;
     }
 }

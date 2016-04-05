@@ -154,7 +154,7 @@
                 </div><!-- /.uploader -->
             </div><!-- /.row -->
             <div class="row row-upload">
-                <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-id-thirs-person-housing'] ?></label>
+                <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-id-third-person-housing'] ?></label>
                 <div class="uploader">
                     <input id="txt_cni_passport_tiers_hebergeant" type="text"
                            class="field required <?= (isset($this->txt_identite_tiers_hebergeant) && $this->txt_identite_tiers_hebergeant == true ? 'LV_invalid_field' : '') ?>"
