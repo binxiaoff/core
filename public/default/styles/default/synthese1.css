@@ -267,3 +267,110 @@
     }
     .rd-desc span{ display: inline-block; }
 }
+
+div#ongoing_bids div.row.bid span.autobid {
+    width: auto;
+    display: inline-block;
+}
+div#ongoing_bids div.row.bid span.amount {
+    width: 65px;
+    display: inline-block;
+}
+div#ongoing_bids div.row.bid span.rate {
+    width: 50px;
+    display: inline-block;
+}
+div#ongoing_bids div.row.bid span.circle_label {
+    width: auto;
+    display: inline-block;
+}
+
+#ongoing_bids .bid{
+    padding: 5px 10px 5px 10px;
+}
+#ongoing_bids .autobid {
+    -webkit-border-radius: 9px;
+    -moz-border-radius: 9px;
+    border-radius: 9px;
+    color: #ffffff;
+    font-weight: bold;
+    background: #d9aa34;
+    padding: 5px 10px 5px 10px;
+    text-decoration: none;
+}
+#ongoing_bids .no_autobid {
+    padding: 5px 10px 5px 10px;
+    background: transparent;
+    color: transparent;
+    font-weight: bold;
+}
+#ongoing_bids .pending {
+    color: #289922;
+    padding-right: 10px;
+}
+
+#ongoing_bids .rejected {
+    color: #eb3023;
+    padding-right: 10px;
+}
+
+#ongoing_bids .circle_pending {
+    width: 14px;
+    height: 14px;
+    -webkit-border-radius: 14px;
+    -moz-border-radius: 14px;
+    border-radius: 14px;
+    background: #289922;
+    text-decoration: none;
+    display: inline-block;
+}
+
+#ongoing_bids .circle_rejected {
+    width: 14px;
+    height: 14px;
+    -webkit-border-radius: 14px;
+    -moz-border-radius: 14px;
+    border-radius: 14px;
+    background: #eb3023;
+    text-decoration: none;
+    display: inline-block;
+}
+
+#ongoing_bids .amount {
+    padding: 5px 10px 5px 10px;
+    text-align: right;
+}
+
+#ongoing_bids .rate{
+    padding: 5px 10px 5px 10px;
+}
+
+.btn_show_rejected_bids {
+    background: transparent;
+    -webkit-border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    -webkit-box-shadow: 0px 1px 3px #666666;
+    -moz-box-shadow: 0px 1px 3px #666666;
+    color: #827f82;
+    padding: 5px 10px 5px 10px;
+    text-decoration: none;
+}
+
+.autobid_links h2 {
+    color: #d9aa34;
+    border-bottom: none;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    white-space: nowrap;
+}
+
+.autobid_links div {
+    width: 90%;
+    padding-right: 10px;
+    margin-top: 24px;
+}
+
+.autobid_links a.bottom-link {
+    float: left;
+}

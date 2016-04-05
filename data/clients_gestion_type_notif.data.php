@@ -28,15 +28,18 @@
 
 class clients_gestion_type_notif extends clients_gestion_type_notif_crud
 {
-    const TYPE_NEW_PROJECT          = 1;
-    const TYPE_BID_PLACED           = 2;
-    const TYPE_BID_REJECTED         = 3;
-    const TYPE_LOAN_ACCEPTED        = 4;
-    const TYPE_REPAYMENT            = 5;
-    const TYPE_BANK_TRANSFER_CREDIT = 6;
-    const TYPE_CREDIT_CARD_CREDIT   = 7;
-    const TYPE_DEBIT                = 8;
-    const TYPE_PROJECT_PROBLEM      = 9;
+    const TYPE_NEW_PROJECT                  = 1;
+    const TYPE_BID_PLACED                   = 2;
+    const TYPE_BID_REJECTED                 = 3;
+    const TYPE_LOAN_ACCEPTED                = 4;
+    const TYPE_REPAYMENT                    = 5;
+    const TYPE_BANK_TRANSFER_CREDIT         = 6;
+    const TYPE_CREDIT_CARD_CREDIT           = 7;
+    const TYPE_DEBIT                        = 8;
+    const TYPE_PROJECT_PROBLEM              = 9;
+    const TYPE_AUTOBID_BALANCE_LOW          = 10;
+    const TYPE_AUTOBID_BALANCE_INSUFFICIENT = 11;
+    const TYPE_AUTOBID_FIRST_ACTIVATION     = 12;
 
     public function __construct($bdd, $params = '')
     {
@@ -68,7 +71,7 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
         }
 
         $result = $this->bdd->query('SELECT COUNT(*) FROM `clients_gestion_type_notif` ' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
+        return (int)$this->bdd->result($result, 0, 0);
     }
 
     public function exist($id, $field = 'id_client_gestion_type_notif')
