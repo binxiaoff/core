@@ -174,7 +174,6 @@ class inscription_preteurController extends bootstrap
             } elseif ($this->clients->id_nationalite > \nationalites_v2::NATIONALITY_FRENCH && $this->clients_adresses->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
                 $this->etranger = 2;
             }
-
             if (isset($_POST['send_form_inscription_preteur_particulier_etape_2'])) {
                 $this->validStep2PhysicalPerson();
             } elseif (isset($_POST['send_form_inscription_preteur_societe_etape_2'])) {
@@ -1541,7 +1540,7 @@ class inscription_preteurController extends bootstrap
             $this->error_justificatif_domicile = true;
         }
 
-        if (false === empty($_FILES['attestation_hebergement_tiers']) && false === empty($_FILES['cni_passport_tiers_hebergeant'])) {
+        if (false === empty($_FILES['attestation_hebergement_tiers']['name']) && false === empty($_FILES['cni_passport_tiers_hebergeant']['name'])) {
             if (false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::ATTESTATION_HEBERGEMENT_TIERS))
                 || false === is_numeric($this->uploadAttachment($this->lenders_accounts->id_lender_account, attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT))
             ){
