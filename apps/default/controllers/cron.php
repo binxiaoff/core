@@ -3274,7 +3274,7 @@ class cronController extends bootstrap
 
                     $sommePrelev = $sommePrelev / 100;
 
-                    $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']; // update le 22/01/2015
+                    $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant'] + $virementRecouv[$date]['montant'];
 
                     $totalAlimCB += $alimCB[$date]['montant'];
                     $totalAlimVirement += $alimVirement[$date]['montant'];
