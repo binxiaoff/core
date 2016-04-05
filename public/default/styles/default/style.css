@@ -1088,3 +1088,96 @@ form .row.rel .euro-sign { left: 0; right: auto; }
     .tabs-nav li { padding: 0 2px; }
     .project-c .tab { width: 100%; }
 }
+
+/* ===========================
+    Project Page AutoBid related styles
+============================ */
+
+table#bids td {
+    padding: 8px;
+}
+
+#bids.autobid {
+    -webkit-border-radius: 6px;
+    -moz-border-radius: 6px;
+    border-radius: 6px;
+    color: #ffffff;
+    font-weight: bold;
+    background: #d9aa34;
+    padding: 3px 6px 3px 6px;
+    text-decoration: none;
+}
+
+#bids.no_autobid {
+    padding: 3px 6px 3px 6px;
+    background: transparent;
+    color: transparent;
+    font-weight: bold;
+}
+
+#lOffres {
+    position: relative;
+}
+
+#lOffres .orders-table-wrapper {
+    max-height: 100px;
+    overflow-y: scroll;
+    margin-top: 48px;
+}
+
+#lOffres .orders-table > thead {
+    position: absolute;
+    width: 100%;
+    top: -48px;
+}
+
+.autobid {
+    -webkit-border-radius: 9px;
+    -moz-border-radius: 9px;
+    border-radius: 9px;
+    color: #ffffff;
+    font-weight: bold;
+    background: #d9aa34;
+    padding: 5px 10px 5px 10px;
+    text-decoration: none;
+}
+
+.no_autobid {
+    padding: 5px 10px 5px 10px;
+    background: transparent;
+    color: transparent;
+    font-weight: bold;
+}
+.circle_pending {
+    width: 15px;
+    height: 15px;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    background: #289922;
+    text-decoration: none;
+    display: inline-block;
+}
+.circle_rejected {
+    width: 15px;
+    height: 15px;
+    -webkit-border-radius: 15px;
+    -moz-border-radius: 15px;
+    border-radius: 15px;
+    background: #eb3023;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.autobid:hover:after {
+    background: #f4f4f4;
+    border-radius: 5px;
+    bottom: 26px;
+    color: #d9aa34;
+    content:  "Offre réalisée par Autolend";
+    left: 20%;
+    padding: 5px 15px;
+    position: absolute;
+    z-index: 98;
+    width: 220px;
+}

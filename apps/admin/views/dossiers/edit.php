@@ -88,18 +88,17 @@
         cursor: pointer;
     }
 
-    div.div-2-columns {
-        -webkit-column-count: 2;
-        -moz-column-count: 2;
-        column-count: 2;
+    .div-2-columns {
+        display: -webkit-flex;
+        display: flex;
+        -webkit-flex: 1;
+        -ms-flex: 1;
+        flex: 1;
     }
 
-    div.div-left-pos, div.div-right-pos {
-        margin: 0;
-        -webkit-column-break-inside: avoid;
-        page-break-inside: avoid;
-        break-inside: avoid-column;
-        display:table;
+    .div-left-pos, .div-right-pos {
+        margin: 2px;
+        min-width: 50%;
     }
 </style>
 <script type="text/javascript">
@@ -331,6 +330,12 @@
             <div class="droite">
                 <h2>Projet</h2>
                 <table class="form" style="width: 575px;">
+                    <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>
+                    <tr>
+                        <th><label for="autobid_statistic"> AutoLend funding statistic  :</label></th>
+                        <td><?= $this->fPredictAutoBid ?> % </td>
+                    </tr>
+                    <?php endif; ?>
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
                         <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €</td>

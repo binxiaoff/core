@@ -256,13 +256,13 @@ table.lng label { cursor: pointer; font-weight: bold; }
 .clear { clear: both; }
 
 .attention{
-	background-color: #FFE8E8;
-	color: #C84747;
-	font-size: 20px;
-	margin: auto auto 10px;
-	padding: 5px;
-	text-align: center;
-	width: 600px;
+    background-color: #FFE8E8;
+    color: #C84747;
+    font-size: 20px;
+    margin: auto auto 10px;
+    padding: 5px;
+    text-align: center;
+    width: 600px;
 }
 
 
@@ -295,3 +295,105 @@ table.lng label { cursor: pointer; font-weight: bold; }
 .ui-widget-content a { color: #a1a5a7; font-size: 14px; font-style: italic; line-height: 1.2; }
 
 table.hidden_table{display: none;}
+
+/*Autobid table locked version */
+.autobid-param-advanced-locked .table-container {
+    margin: 0 auto;
+    float: none;
+    display: block;
+}
+
+.param-advanced-edit {
+
+}
+.param-advanced-edit span {
+    font-style: italic;
+    color: #a1a5a7;
+    display: block;
+    margin: 20px 0;
+}
+
+.autobid-param-advanced-table {
+    width: 60%;
+}
+.autobid-param-advanced-table th {
+    text-align: center;
+    font-size: 14px;
+    text-transform: uppercase;
+    color: #a1a5a7;
+    font-weight: normal;
+    background: #f5f6f6;
+    width: 16.66666%;
+    vertical-align: middle;
+}
+.autobid-param-advanced-table .table-title {
+    background: #a1a5a7;
+    color: #FFF;
+    font-size: 14px;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding: 12px 0;
+}
+.autobid-param-advanced-table .empty {
+    background: transparent;
+
+}
+.autobid-param-advanced-table td {
+    text-align: center;
+    background: #c6e9d7;
+    color: #42b77a;
+    border: 1px solid #fff;
+    padding: 5px;
+    width: 16.66666%;
+    vertical-align: top;
+}
+
+.autobid-param-advanced-table td.param-over {
+    background: #f9babe;
+    color: #ec1a29;
+}
+.autobid-param-advanced-table td.param-off {
+    background: #e3e4e4;
+}
+
+.autobid-param-advanced-table td.param-off .param-advanced-bottom {
+    display: none;
+}
+
+.table-legend > span {
+    display: inline-block;
+    width: 260px;
+    font-style: italic;
+    font-size: 14px;
+    color: #a1a5a7;
+}
+.table-legend .rate-legend {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 10px;
+}
+.table-legend .legend-green {
+    background: #c6e9d7;
+}
+.table-legend .legend-red {
+    background: #f9babe;
+}
+.table-legend .legend-gray {
+    background: #e3e4e4;
+}
+
+.autobid-param-advanced-table td .cell-inner {
+    min-height: 30px;
+}
+
+.autobid-param-advanced-table td .param-advanced-label {
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.autobid-param-advanced-locked .autobid-param-advanced-table td .param-advanced-label {
+    font-size: 14px;
+    position: relative;
+    top: 10px;
+}

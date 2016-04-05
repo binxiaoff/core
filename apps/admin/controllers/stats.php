@@ -567,98 +567,6 @@ class statsController extends bootstrap
         print(utf8_decode($csv));
     }
 
-    // DC le 22/06/2015
-    public function _requete_etude_base_preteurs()
-    {
-
-        $sql = "SELECT
-            c.id_client as ID_client,
-            la.id_lender_account as ID_lender,
-            c.source,
-            CASE c.type
-                WHEN 1 THEN 'Physique'
-                WHEN 2 THEN 'Moral'
-                ELSE ''
-            END as Personne_moral_ou_physique,
-
-            c.nom as Nom,
-
-            c.prenom as Prenom,
-
-            CASE c.naissance
-                WHEN '0000-00-00' THEN 'No date'
-                ELSE c.naissance
-            END as age,
-
-            CASE c.civilite
-                WHEN 'M.' THEN 'Masculin'
-                ELSE 'Feminin'
-            END as Sexe,
-
-            c.email as Email,
-
-            c.telephone as Telephone,
-
-            (SELECT
-                CASE
-                    WHEN b.nom_banque = NULL THEN la.bic
-                    ELSE b.nom_banque
-                END
-            FROM banques b WHERE trim(b.swift_code_banque)=trim(bic)) as Banque,
-
-            ca.adresse1 as Adresse,
-
-            ca.ville as Ville,
-
-            ca.cp as Code_postal,
-
-            c.added as Date_inscription,
-
-            CASE c.status
-                WHEN 1 THEN 'Actif'
-                ELSE 'Bloque'
-            END as Compte_actif_bloque,
-
-            c.lastlogin as Date_derniere_connection,
-
-            (SELECT ROUND((SUM(t.montant)/100),2) FROM transactions t WHERE t.id_client = c.id_client AND t.type_transaction IN(1,3,4,7) AND t.status = 1 AND t.etat = 1) as montant_verse,
-
-            (SELECT COUNT(t.montant) FROM transactions t WHERE t.id_client = c.id_client AND t.type_transaction IN(1,3,4,7) AND t.status = 1 AND t.etat = 1) as Nombre_de_versement,
-
-            (SELECT ROUND((t.montant/100),2) FROM transactions t WHERE t.id_client = c.id_client AND t.type_transaction IN(1,3,4,7) AND t.status = 1 AND t.etat = 1 ORDER BY added ASC LIMIT 1) as montant_premier_versement,
-
-            (SELECT ROUND((SUM(wl.amount)/100),2) FROM wallets_lines wl WHERE wl.id_lender = la.id_lender_account) as Montant_disponible_a_date,
-
-            (SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status = 0) as Nombre_encheres_en_cours,
-
-            (SELECT COUNT(bi.id_bid) FROM bids bi WHERE bi.id_lender_account = la.id_lender_account AND bi.status IN (1, 2)) as Nombre_encheres_rejetees,
-
-            (SELECT COUNT(lo.id_loan) FROM loans lo WHERE lo.id_lender = la.id_lender_account AND lo.status = 0)  as Nombre_encheres_acceptees,
-
-            (SELECT ROUND(SUM(lo.amount)/100,2) FROM loans lo WHERE lo.id_lender = la.id_lender_account AND lo.status = 0) as montant_prete,
-
-            NOW() as Date_de_la_requete,
-
-            CASE (SELECT id_client_status FROM `clients_status_history` WHERE id_client = la.id_client_owner ORDER BY added DESC LIMIT 1)
-                WHEN 6 THEN 'Oui'
-                ELSE 'Non'
-            END as Validation ,
-
-            (SELECT csh.added FROM clients_status_history csh WHERE csh.id_client = la.id_client_owner AND csh.id_client_status = 6 ORDER BY added ASC LIMIT 1) as date_validation,
-
-            (SELECT CONCAT(u.firstname,' ',u.name) FROM users u WHERE u.id_user = " . $_SESSION['user']['id_user'] . ") as Personne_qui_a_fait_la_requete
-
-            FROM lenders_accounts la
-            INNER JOIN clients c ON la.id_client_owner = c.id_client
-            LEFT JOIN clients_adresses ca ON c.id_client = ca.id_client";
-
-        if (isset($this->params[0]) && $this->params[0] === 'csv') {
-            $this->exportQueryCSV($sql, 'requete_etude_base_preteur_' . date('Ymd'));
-        } else {
-            $this->result = $this->bdd->query($sql);
-        }
-    }
-
     public function _requete_beneficiaires()
     {
         $this->companies        = $this->loadData('companies');
@@ -1480,5 +1388,50 @@ class statsController extends bootstrap
             'sum_82'  => $iSum82,
             'sum_118' => $iSum118,
         );
+    }
+
+    public function _autobid_statistic()
+    {
+        $oProject = $this->loadData('projects');
+        if (isset($_POST['date_from'], $_POST['date_to']) && false === empty($_POST['date_from']) && false === empty($_POST['date_to'])) {
+            $aProjectList = $oProject->getAutoBidProjectStatistic(
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00'),
+                \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59')
+            );
+
+            $this->aProjectList = array();
+            foreach ($aProjectList as $aProject) {
+                $fRisk                = constant('\projects::RISK_' . trim($aProject['risk']));
+                $this->aProjectList[] = array(
+                    'id_project' => $aProject['id_project'],
+                    'percentage' => round(($aProject['amount_total_autobid'] / $aProject['amount_total']) * 100, 2) . ' %',
+                    'period' => $aProject['period'],
+                    'risk' => $fRisk,
+                    'bids_nb' => $aProject['bids_nb'],
+                    'avg_amount' => $aProject['avg_amount'],
+                    'weighted_avg_rate' => round($aProject['weighted_avg_rate'], 1),
+                    'avg_amount_autobid' => $aProject['avg_amount_autobid'],
+                    'weighted_avg_rate_autobid' => false === empty($aProject['weighted_avg_rate_autobid']) ? round($aProject['weighted_avg_rate_autobid'], 2) : '',
+                    'status_label' => $aProject['status_label'],
+                    'date_fin' => $aProject['date_fin']
+                );
+            }
+            if (isset($_POST['extraction_csv'])) {
+                $aHeader = array(
+                    'id_project',
+                    'pourcentage',
+                    'period',
+                    'risk',
+                    'nombre de bids',
+                    'montant moyen',
+                    'taux moyen pondéré',
+                    'montant moyen autolend',
+                    'taux moyen pondéré autolend',
+                    'status',
+                    'date fin de projet'
+                );
+                $this->exportCSV($this->aProjectList, 'statistiques_autolends' . date('Ymd'), $aHeader);
+            }
+        }
     }
 }

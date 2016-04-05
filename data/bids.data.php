@@ -26,14 +26,17 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\librairies\Cache;
+
 class bids extends bids_crud
 {
-    const STATUS_BID_PENDING    = 0;
-    const STATUS_BID_ACCEPTED   = 1;
-    const STATUS_BID_REJECTED   = 2;
+    const STATUS_BID_PENDING                  = 0;
+    const STATUS_BID_ACCEPTED                 = 1;
+    const STATUS_BID_REJECTED                 = 2;
+    const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
     const BID_RATE_MIN = 4;
-    const BID_RATE_MAX = 9.9;
+    const BID_RATE_MAX = 10;
 
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
@@ -69,7 +72,7 @@ class bids extends bids_crud
         $sql = 'SELECT count(*) FROM `bids` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
     public function exist($id, $field = 'id_bid')
@@ -162,7 +165,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = 0';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
     }
 
@@ -171,7 +174,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year;
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
     }
 
@@ -180,7 +183,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' AND status = 0';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
     }
 
@@ -190,7 +193,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = "1" AND LEFT(added,7) = "' . $year . '-' . $month . '"';
 
         $result  = $this->bdd->query($sql);
-        $montant = (int) ($this->bdd->result($result, 0, 0));
+        $montant = (int)($this->bdd->result($result, 0, 0));
         if ($montant > 0) {
             $montant = $montant / 100;
         } else {
@@ -208,7 +211,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(' . $champ . ') FROM `bids` ' . $where;
 
         $result = $this->bdd->query($sql);
-        $return = (int) ($this->bdd->result($result, 0, 0));
+        $return = (int)($this->bdd->result($result, 0, 0));
 
         return $return;
     }
@@ -218,7 +221,7 @@ class bids extends bids_crud
         $sql = 'SELECT count(DISTINCT id_lender_account) FROM `bids` WHERE id_project = ' . $id_project . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result, 0, 0));
     }
 
     public function getProjectMaxRate($iProjectId)
@@ -230,7 +233,7 @@ class bids extends bids_crud
     public function getLenders($iProjectId, $aStatus = array())
     {
         $iProjectId = $this->bdd->escape_string($iProjectId);
-        $sStatus = '';
+        $sStatus    = '';
         if (false === empty($aStatus)) {
             $sStatus = implode(',', $aStatus);
             $sStatus = $this->bdd->escape_string($sStatus);
@@ -243,12 +246,84 @@ class bids extends bids_crud
 
         $sQuery .= 'Group BY id_lender_account';
 
-        $rQuery = $this->bdd->query($sQuery);
+        $rQuery   = $this->bdd->query($sQuery);
         $aLenders = array();
         while ($aRow = $this->bdd->fetch_array($rQuery)) {
             $aLenders[] = $aRow;
         }
 
         return $aLenders;
+    }
+
+    public function getAutoBids($iProjectId, $iStatus, $iLimit = 100, $iOffset = 0)
+    {
+        $sQuery = 'SELECT * FROM `bids` b
+                   INNER JOIN autobid ab ON ab.id_autobid = b.id_autobid
+                   WHERE b.id_project = ' . $iProjectId . '
+                   AND b.status = ' . $iStatus . '
+                   LIMIT ' . $iLimit . ' OFFSET ' . $iOffset;
+
+        $rQuery = $this->bdd->query($sQuery);
+        $aBids  = array();
+        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            $aBids[] = $aRow;
+        }
+
+        return $aBids;
+    }
+
+    public function getAcceptationPossibilityRounded()
+    {
+        $oCache      = Cache::getInstance();
+        $sKey        = $oCache->makeKey('bids_getAcceptationPossibilityRounded');
+        $mPercentage = $oCache->get($sKey);
+
+        if (false === $mPercentage) {
+            $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
+                        FROM bids b
+                        INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
+                        INNER JOIN projects p ON p.id_project = b.id_project
+                        INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
+                        INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
+                        INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
+                        WHERE ps.status >= ' . \projects_status::FUNDE . '
+                        AND ps.status != ' . \projects_status::FUNDING_KO . ' GROUP BY b.rate ORDER BY b.rate DESC';
+            $rQuery  = $this->bdd->query($sQuery);
+            $aResult = array();
+            $iTotal = 0;
+            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
+                $aResult[] = $aRow;
+                $iTotal += $aRow['count_bid'];
+            }
+
+            $mPercentage    = array();
+            $iSubTotal = 0;
+            foreach ($aResult as $aRate) {
+                $iSubTotal += $aRate['count_bid'];
+                $sRate = (string) number_format($aRate['rate'], 1);
+                $mPercentage[$sRate] = ($iSubTotal / $iTotal) * 100;
+                if ($mPercentage[$sRate] < 1) {
+                    $mPercentage[$sRate] = 1;
+                } elseif ($mPercentage[$sRate] > 99) {
+                    $mPercentage[$sRate] =  99;
+                } else {
+                    $mPercentage[$sRate] = (int) $mPercentage[$sRate];
+                }
+            }
+            $oCache->set($sKey, $mPercentage, Cache::MEDIUM_TIME);
+        }
+
+        return $mPercentage;
+    }
+
+    public function shuffleAutoBidOrder($iProjectId)
+    {
+        $sShuffle = 'UPDATE  bids
+                     SET ordre = (@current_order := @current_order + 1)
+                     WHERE id_project = ' . $iProjectId . '
+                     AND id_autobid != 0
+                     ORDER BY RAND()';
+        $this->bdd->query('SET @current_order := 0');
+        $this->bdd->query($sShuffle);
     }
 }

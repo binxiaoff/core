@@ -43,6 +43,9 @@ class notifications extends notifications_crud
     const TYPE_PROJECT_RECEIVERSHIP           = 13;
     const TYPE_PROJECT_COMPULSORY_LIQUIDATION = 14;
     const TYPE_PROJECT_FAILURE                = 15;
+    const TYPE_AUTOBID_BALANCE_LOW            = 16;
+    const TYPE_AUTOBID_BALANCE_INSUFFICIENT   = 17;
+    const TYPE_AUTOBID_FIRST_ACTIVATION       = 18;
 
     public function __construct($bdd, $params = '')
     {

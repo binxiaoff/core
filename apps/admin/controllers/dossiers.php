@@ -248,6 +248,11 @@ class dossiersController extends bootstrap
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
+            if ($this->projects_status->status == projects_status::PREP_FUNDING) {
+                $fPredictAmountAutoBid = $this->get('AutoBidSettingsManager')->predictAmount($this->projects->risk, $this->projects->period);
+                $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
+            }
+
             if (isset($_POST['last_annual_accounts'])) {
                 $this->projects->id_dernier_bilan = $_POST['last_annual_accounts'];
                 $this->projects->update();
@@ -463,6 +468,8 @@ class dossiersController extends bootstrap
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
                             }
                         } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
+                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+
                             $companies        = $this->loadData('companies');
                             $clients          = $this->loadData('clients');
                             $clients_adresses = $this->loadData('clients_adresses');
@@ -563,6 +570,8 @@ class dossiersController extends bootstrap
                                 $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
                                 mail($to, $subject, $message, $headers);
                             }
+                        } else {
+                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
                         }
                     }
 

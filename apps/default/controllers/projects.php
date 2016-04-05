@@ -94,17 +94,24 @@ class projectsController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->projects_status_history       = $this->loadData('projects_status_history');
+        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
 
-        $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
+        $this->lng['landing-page']           = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        if ($this->clients->checkAccess()) {
-            $this->setHeader('header_account');
+        if (false === empty($this->clients->id_client)) {
+            $this->lenders_accounts = $this->loadData('lenders_accounts');
+            $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+
+            $this->clients_status = $this->loadData('clients_status');
+            $this->clients_status->getLastStatut($this->clients->id_client);
         }
 
-        if (in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) {
-            $this->restriction_ip = true;
-        } else {
-            $this->restriction_ip = false;
+        $this->bIsConnected                  = $this->clients->checkAccess();
+        $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
+        $this->restriction_ip                = in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]);
+
+        if ($this->bIsConnected) {
+            $this->setHeader('header_account');
         }
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0' && $this->projects->display == \projects::DISPLAY_PROJECT_ON) {
@@ -124,13 +131,6 @@ class projectsController extends bootstrap
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->projects_status->getLastStatut($this->projects->id_project);
 
-            if (false === empty($this->clients->id_client)) {
-                $this->lenders_accounts = $this->loadData('lenders_accounts');
-                $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-                $this->clients_status = $this->loadData('clients_status');
-                $this->clients_status->getLastStatut($this->clients->id_client);
-            }
             $this->lastStatushisto = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
             $this->lastStatushisto = $this->lastStatushisto[0];
 
@@ -417,7 +417,7 @@ class projectsController extends bootstrap
             }
             // FIN INSCRIPTION PRETEUR //
 
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
             $this->mois_jour  = $this->dates->formatDate($this->projects->date_retrait, 'F d');
             $this->annee      = $this->dates->formatDate($this->projects->date_retrait, 'Y');
 
@@ -506,11 +506,11 @@ class projectsController extends bootstrap
             }
 
             $sCacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
-            if (false === ($this->lEnchere = $this->oCache->get($sCacheKey))) {
-                $this->lEnchere = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-                $this->oCache->set($sCacheKey, $this->lEnchere, Cache::SHORT_TIME);
+            if (false === ($this->aBidsOnProject = $this->oCache->get($sCacheKey))) {
+                $this->aBidsOnProject  = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+                $this->oCache->set($sCacheKey, $this->aBidsOnProject, Cache::SHORT_TIME);
             }
-            $this->CountEnchere = count($this->lEnchere);
+            $this->CountEnchere = count($this->aBidsOnProject );
             $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
             $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
