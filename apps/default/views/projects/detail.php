@@ -495,22 +495,24 @@
                                         <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong>
                                     </p>
                                 </div>
-                                <?php foreach ($this->aStatusHistory as $aHistory): ?>
-                                    <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
-                                        <p>
-                                            <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
-                                            <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
-                                            <br/>
-                                            <?php if (false === empty($aHistory['site_content'])): ?>
-                                                <?= nl2br($aHistory['site_content']) ?>
-                                                <?php if (1 == $aHistory['failure']): ?>
-                                                    <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                <?php if ($this->bidsvalid['solde'] > 0) : ?>
+                                    <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                                        <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                            <p>
+                                                <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
+                                                <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
+                                                <br/>
+                                                <?php if (false === empty($aHistory['site_content'])): ?>
+                                                    <?= nl2br($aHistory['site_content']) ?>
+                                                    <?php if (1 == $aHistory['failure']): ?>
+                                                        <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                                    <?php endif; ?>
+                                                    <br/><br/>
                                                 <?php endif; ?>
-                                                <br/><br/>
-                                            <?php endif; ?>
-                                        </p>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -796,22 +798,24 @@
                                 </div>
                             </div>
                         </p>
-                        <?php foreach ($this->aStatusHistory as $aHistory): ?>
-                            <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
-                                <p>
-                                    <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
-                                    <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
-                                    <br/>
-                                    <?php if (false === empty($aHistory['site_content'])): ?>
-                                        <?= nl2br($aHistory['site_content']) ?>
-                                        <?php if (1 == $aHistory['failure']): ?>
-                                            <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
-                                        <?php endif; ?>
+                        <?php if ($this->bidsvalid['solde'] > 0) : ?>
+                            <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                                <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                    <p>
+                                        <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
+                                        <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
                                         <br/>
-                                    <?php endif; ?>
-                                </p>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+                                        <?php if (false === empty($aHistory['site_content'])): ?>
+                                            <?= nl2br($aHistory['site_content']) ?>
+                                            <?php if (1 == $aHistory['failure']): ?>
+                                                <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                            <?php endif; ?>
+                                            <br/>
+                                        <?php endif; ?>
+                                    </p>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </article>
             <?php endif; ?>
