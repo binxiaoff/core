@@ -1237,9 +1237,106 @@ class preteursController extends bootstrap
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
         $oClientsNotifications       = $this->loadData('clients_gestion_notifications');
-        $oTypesOfClientNotifications = $this->loadData('clients_gestion_type_notif');
-        $this->aTypesOfNotifications = $oTypesOfClientNotifications->select();
         $this->aClientsNotifications = $oClientsNotifications->getNotifs($this->clients->id_client);
+
+        $this->aNotificationPeriode = \clients_gestion_notifications::getAllPeriod();
+
+        $this->aInfosNotifications['vos-offres-et-vos-projets']['title'] = 'Offres et Projets';
+        $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = array(
+            \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
+                'title' => 'Annonce des nouveaux projets',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_BID_PLACED => array(
+                'title' => 'Offres réalisées',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
+                'title' => 'Offres refusées',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
+                'title' => 'Offres acceptées',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
+                'title' => 'AutoLend soldes faible',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
+                'title' => 'AutoLend soldes insuffisante',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+        );
+        $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';
+        $this->aInfosNotifications['vos-remboursements']['notifications'] = array(
+            \clients_gestion_type_notif::TYPE_REPAYMENT => array(
+                'title' => 'Remboursement(s)',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                'title' => 'Problème sur un projet',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+        );
+        $this->aInfosNotifications['mouvements-sur-votre-compte']['title'] = 'Mouvements sur le compte';
+        $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = array(
+            \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
+                'title' => 'Alimentation de votre compte par virement',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => array(
+                'title' => 'Alimentation de votre compte par carte bancaire',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+            \clients_gestion_type_notif::TYPE_DEBIT => array(
+                'title' => 'retrait',
+                'available_types' => array(
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
+                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
+                ),
+            ),
+        );
 
         if (isset($_SESSION['FilterMails'])) {
             $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_SESSION['FilterMails']['StartDate']);
@@ -1297,6 +1394,35 @@ class preteursController extends bootstrap
         $this->totalProjects     = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
 
         $this->getMessageAboutClientStatus();
+
+        $oTextes                   = $this->loadData('textes');
+        $this->lng['autobid']      = $oTextes->selectFront('autobid', $this->language, $this->App);
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager   = $this->get('AutoBidSettingsManager');
+        /** @var \Unilend\Service\ClientManager $oClientManager */
+        $oClientManager            = $this->get('ClientManager');
+        $oAutoBidPeriod            = $this->loadData('autobid_periods');
+
+        $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
+        $this->aSettingsDates      = $oAutoBidSettingsManager->getLastDateOnOff($this->clients->id_client);
+        if (0 < count($this->aSettingsDates)) {
+            $this->sValidationDate     = $oAutoBidSettingsManager->getValidationDate($this->lenders_accounts)->format('d/m/Y');
+        }
+        $this->fAverageRateUnilend = round($this->projects->getAvgRate(), 1);
+        $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
+
+        $this->aAutoBidSettings = array();
+        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        foreach ($aAutoBidSettings as $aSetting) {
+            $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
+            if ($aPeriod) {
+                $aSetting['AverageRateUnilend']                           = $this->projects->getAvgRate($aSetting['evaluation'], $aPeriod['min'], $aPeriod['max']);
+                $aSetting['period_min']                                   = $aPeriod['min'];
+                $aSetting['period_max']                                   = $aPeriod['max'];
+                $aSetting['note']                                         = constant('\projects::RISK_' . $aSetting['evaluation']);
+                $this->aAutoBidSettings[$aSetting['id_autobid_period']][] = $aSetting;
+            }
+        }
     }
 
     public function _control_fiscal_city()
@@ -1747,6 +1873,26 @@ class preteursController extends bootstrap
                 trigger_error('Unknown Client Status : ' . $oClientsStatus->status, E_USER_NOTICE);
                 break;
         }
+    }
+
+    public function _saveBetaTesterSetting()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $oClientSettingsManager = $this->get('ClientSettingsManager');
+        $oClient                = $this->loadData('clients');
+        $oLendersAccount        = $this->loadData('lenders_accounts');
+
+         if(isset($this->params[0]) && is_numeric($this->params[0]) && isset($this->params[1]) && in_array($this->params[1], array('on', 'off'))){
+             $oClient->get($this->params[0]);
+             $oLendersAccount->get($oClient->id_client, 'id_client_owner');
+             $sValue = ('on' == $this->params[1]) ? \client_settings::BETA_TESTER_ON : \client_settings::BETA_TESTER_OFF;
+             $oClientSettingsManager->saveClientSetting($oClient, \client_setting_type::TYPE_BETA_TESTER, $sValue);
+
+             header('Location: ' . $this->lurl . '/preteurs/portefeuille/' . $oLendersAccount->id_lender_account);
+             die;
+         }
     }
 
     public function _change_bank_account()
