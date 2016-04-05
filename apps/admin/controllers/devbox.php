@@ -1061,7 +1061,7 @@ class devboxController extends bootstrap
 
             $sClientId  = $aRow[0];
             $sProjectId = $aRow[1];
-            $fAmount    = intval(str_replace(',', '.', $aRow[2]) * 100);
+            $fAmount    = str_replace(',', '.', $aRow[2]) * 100;
 
             if ($oLender->get($sClientId, 'id_client_owner')) {
                 $oTransaction->id_project       = $sProjectId;
@@ -1087,5 +1087,59 @@ class devboxController extends bootstrap
         }
         fclose($rHandle);
         echo 'done';
+    }
+
+    public function _createMissingLinesForWelcomeOffer()
+    {
+        $this->autoFireView   = false;
+        $this->hideDecoration();
+
+        $oWelcomeOfferDetails    = $this->loadData('offres_bienvenues_details');
+        $oTransactions           = $this->loadData('transactions');
+        $oWalletsLines           = $this->loadData('wallets_lines');
+        $oBankUnilend            = $this->loadData('bank_unilend');
+        $oLendersAccounts        = $this->loadData('lenders_accounts');
+        //load for use of constants
+        $this->loadData('transactions_types');
+
+        $aClients = array(4040,7323,8769,8870,10064,10309,12115,12491,13327,22466,23235,23355,23774,24062,26163,26542,26921,29450,29517,29529,30214,34783,34878,35127,35156,35387,35420,35519,35625,35645,36022,36587,37048,37476,37542,39050,39559,40983,42381,43531,44146,44264,44390,44549,44605,45016,45217,45370,45928,46213,46278,46570,46763,46855,46891,47068,47088,47116,47195,47213,47216,47220,47280,47301,47382,47398,47445,47464,47525,47535,47555,47573,47594,47777,47782,47809,47815,47824,47881,48018,48057,48110,48125,48126,48141,48157,48173,48180,48199,48227,48231,48302,48320,48323,48409,48417,48421,48450,48481,48514,48531,48535,48536,48543,48581,48596,48608,48617,48620,48632,49156,49160,49181,49194,49378,49589,49836,50027,50244,50333,50378,50379,50392,50416,50432,50490,50522,50534,50541,50556,50570,50581,50584,50600,50640,50670,50748,50750);
+
+        $iNumberOfCreatedTransactions = 0;
+
+        foreach ($aClients as $iClientId) {
+            if ($oWelcomeOfferDetails->get('1" AND id_client = "' . $iClientId, 'id_offre_bienvenue')) {
+                $oLendersAccounts->get($iClientId, 'id_client_owner');
+
+                if (false === $oTransactions->exist($iClientId . '" AND type_transaction = "' . \transactions_types::TYPE_WELCOME_OFFER, 'id_client' )) {
+                    $oTransactions->id_client                        = $iClientId;
+                    $oTransactions->montant                          = $oWelcomeOfferDetails->montant;
+                    $oTransactions->id_offre_bienvenue_detail        = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
+                    $oTransactions->id_langue                        = 'fr';
+                    $oTransactions->date_transaction                 = $oWelcomeOfferDetails->added;
+                    $oTransactions->status                           = '1';
+                    $oTransactions->etat                             = '1';
+                    $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
+                    $oTransactions->transaction                      = 2;
+                    $oTransactions->create();
+
+                    $oWalletsLines->id_lender                        = $oLendersAccounts->id_lender_account;
+                    $oWalletsLines->type_financial_operation         = \wallets_lines::TYPE_MONEY_SUPPLY;
+                    $oWalletsLines->id_transaction                   = $oTransactions->id_transaction;
+                    $oWalletsLines->status                           = 1;
+                    $oWalletsLines->type                             = 1;
+                    $oWalletsLines->amount                           = $oWelcomeOfferDetails->montant;
+                    $oWalletsLines->create();
+
+                    $oBankUnilend->id_transaction                    = $oTransactions->id_transaction;
+                    $oBankUnilend->montant                           = -$oWelcomeOfferDetails->montant;
+                    $oBankUnilend->type                              = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
+                    $oBankUnilend->create();
+
+                    $iNumberOfCreatedTransactions += 1;
+                    echo 'Missing lines created for client ' . $iClientId . '<br/>';
+                }
+            }
+        }
+        echo $iNumberOfCreatedTransactions . ' transactions created';
     }
 }

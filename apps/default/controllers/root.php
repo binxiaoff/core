@@ -619,7 +619,7 @@ class rootController extends bootstrap
         $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
 
         // recupération du title et slug pour le Breadcrumbs
-        $this->page_title = $this->lng['recherche-corpo']['title'];
+        $this->page_title = $this->lng['search']['title'];
         $this->page_slug  = "search";
 
         // Vérification recherche

@@ -368,10 +368,15 @@ function initAutocompleteCity()
                 search: function(event, ui) {
                     if ($(this).data('autocomplete') == 'birth_city'){
                         $("#insee_birth").val('');
+                        if ($('#group_identiy').find(".country").val() != 1) {
+                            return false;
+                        }
+                    } else {
+                        if($(this).parents('.row').find(".country").val() != 1){
+                            return false;
+                        }
                     }
-                    if ($(this).parent().find(".country").val() != 1) {
-                        return false;
-                    }
+
                     $(this).removeClass('LV_invalid_field');
                 },
                 select: function( event, ui ) {

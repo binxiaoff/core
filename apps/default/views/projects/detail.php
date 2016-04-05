@@ -47,7 +47,7 @@
                             </li>
                         <?php endif; ?>
                             <li <?= ($this->positionProject['previous'] == '' || $this->positionProject['next'] == '' ? 'class="listpro"' : '') ?> >
-                                <a class="view notext" href="<?= $this->lurl ?>/<?= ($_SESSION['page_projet'] == 'projets_fo' || ! isset($_SESSION['page_projet']) ? $this->tree->getSlug(4, $this->language) : 'projects') ?>">view</a>
+                                <a class="view notext" href="<?= $this->lurl ?>/<?= (false === isset($_SESSION['page_projet']) || $_SESSION['page_projet'] === 'projets_fo' ? $this->tree->getSlug(4, $this->language) : 'projects') ?>">view</a>
                             </li>
                         <?php if ($this->positionProject['next'] != '') : ?>
                             <li>
@@ -495,22 +495,24 @@
                                         <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong>
                                     </p>
                                 </div>
-                                <?php foreach ($this->aStatusHistory as $aHistory): ?>
-                                    <?php if (false === empty($aHistory['site_content'])): ?>
-                                        <p>
-                                            <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
-                                            <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                <?php if ($this->bidsvalid['solde'] > 0) : ?>
+                                    <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                                        <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                            <p>
+                                                <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
                                                 <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
-                                            <?php endif; ?>
-                                            <br/>
-                                            <?= nl2br($aHistory['site_content']) ?>
-                                            <?php if (1 == $aHistory['failure']): ?>
-                                                <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
-                                            <?php endif; ?>
-                                            <br/><br/>
-                                        </p>
-                                    <?php endif; ?>
-                                <?php endforeach; ?>
+                                                <br/>
+                                                <?php if (false === empty($aHistory['site_content'])): ?>
+                                                    <?= nl2br($aHistory['site_content']) ?>
+                                                    <?php if (1 == $aHistory['failure']): ?>
+                                                        <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                                    <?php endif; ?>
+                                                    <br/><br/>
+                                                <?php endif; ?>
+                                            </p>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                <?php endif; ?>
                             </div>
                         <?php endif; ?>
                     </div>
@@ -796,22 +798,24 @@
                                 </div>
                             </div>
                         </p>
-                        <?php foreach ($this->aStatusHistory as $aHistory): ?>
-                            <?php if (false === empty($aHistory['site_content'])): ?>
-                                <p>
-                                    <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
-                                    <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                        <?php if ($this->bidsvalid['solde'] > 0) : ?>
+                            <?php foreach ($this->aStatusHistory as $aHistory): ?>
+                                <?php if (isset($this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']])): ?>
+                                    <p>
+                                        <?= date('d/m/Y', strtotime($aHistory['added'])) ?>
                                         <strong class="pinky-span"><?= $this->lng['preteur-projets']['titre-historique-statut-' . $aHistory['status']] ?></strong>
-                                    <?php endif; ?>
-                                    <br/>
-                                    <?= nl2br($aHistory['site_content']) ?>
-                                    <?php if (1 == $aHistory['failure']): ?>
-                                        <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
-                                    <?php endif; ?>
-                                    <br/>
-                                </p>
-                            <?php endif; ?>
-                        <?php endforeach; ?>
+                                        <br/>
+                                        <?php if (false === empty($aHistory['site_content'])): ?>
+                                            <?= nl2br($aHistory['site_content']) ?>
+                                            <?php if (1 == $aHistory['failure']): ?>
+                                                <p>Vous avez récupéré <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb / $this->bidsvalid['solde'] * 100) ?>&nbsp;%</strong> de votre capital.</p>
+                                            <?php endif; ?>
+                                            <br/>
+                                        <?php endif; ?>
+                                    </p>
+                                <?php endif; ?>
+                            <?php endforeach; ?>
+                        <?php endif; ?>
                     </div>
                 </article>
             <?php endif; ?>

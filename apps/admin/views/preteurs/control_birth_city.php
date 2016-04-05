@@ -89,20 +89,20 @@
 <script>
     $('.edit_lender').click(function(e){
         e.preventDefault();
-        var clientId = $(this).data('clientId');
+        var clientId = $(this).data('clientid');
         $('#edit_lenders_'+clientId).show("slow");
         initAutocompleteCity($('#city_'+clientId), $('#insee_'+clientId));
     });
 
     $('.close_edit').click(function(e){
         e.preventDefault();
-        var clientId = $(this).data('clientId');
+        var clientId = $(this).data('clientid');
         $('#edit_lenders_'+clientId).hide("fast");
     });
 
     $('.save_lender').click(function(e){
         e.preventDefault();
-        var clientId = $(this).data('clientId');
+        var clientId = $(this).data('clientid');
 
         var insee = $('#insee_'+clientId).val();
         var city = $('#city_'+clientId).val();
