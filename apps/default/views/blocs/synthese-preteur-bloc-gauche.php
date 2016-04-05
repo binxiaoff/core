@@ -9,9 +9,7 @@
             #cboxLoadedContent{margin-bottom:0;}
             .popup{background-color:#E3E4E5;}
         </style>
-        <?php
-
-        if ($this->solde > 0 || $this->soldePourcent > 0 || $this->sumBidsEncoursPourcent > 0 || $this->sumPretsPourcent > 0) {
+        <?php if ($this->solde > 0 || $this->soldePourcent > 0 || $this->sumBidsEncoursPourcent > 0 || $this->sumPretsPourcent > 0) {
             // On met ca pour eviter les débordements
             if ($this->solde >= 1000) {
                 $fondsdispo = str_replace(' ', '<br>', $this->lng['preteur-synthese']['de-fond-disponible']);
@@ -33,86 +31,75 @@
         ?>
     </div>
 </div>
-
 <div class="post-schedule">
-    <h2><?= $this->lng['preteur-synthese']['encheres-en-cours'] ?> <span><?= ($this->lProjetsBidsEncours != false ? count($this->lProjetsBidsEncours) : 0) ?> <i class="icon-box-arrow"></i></span></h2>
-    <div class="body">
-    <?php
-        if ($this->lProjetsBidsEncours != false) {
-            foreach ($this->lProjetsBidsEncours as $f) {
-                $this->companies->get($f['id_company'], 'id_company');
-                $this->projects_status->getLastStatut($f['id_project']);
+    <div id="ongoing_bids">
+        <h2><?= $this->lng['preteur-synthese']['title-offers-widget'] ?> <span><?= $this->iDisplayTotalNumberOfBids ?><i class="icon-box-arrow"></i></span></h2>
+        <div class="body">
+            <div class="post-box clearfix">
+                <?php if ($this->bHasNoBidsOnProjectsInFunding ) : ?>
+                    <p><?= $this->lng['preteur-synthese']['text-no-bids-on-projects-in-funding'] ?></p>
+                <?php else : ?>
+                    <?php foreach ($this->aOngoingBidsByProject as $aProject) : ?>
+                        <div class="project_bloc">
+                            <h3><?= $aProject['title'] ?>,
+                                <small><?= $this->lng['preteur-synthese']['reste'] ?>:
+                                    <span id="project_<?= $aProject['id_project'] ?>">
+                                        <script type="text/javascript">
+                                            var cible<?= $aProject['id_project'] ?> = new Date('<?= $aProject['oEndFunding']->format('D F d Y H:i:s') ?>');
+                                            var time<?= $aProject['id_project'] ?> = parseInt(cible<?= $aProject['id_project'] ?>.getTime() / 1000, 10);
+                                            setTimeout('decompte(time<?= $aProject['id_project'] ?>,"project_<?= $aProject['id_project'] ?>")', 500);
+                                        </script>
+                                    </span>
+                                </small>
+                            </h3>
+                        <?php foreach ($aProject['aPendingBids'] as $aBid) : ?>
+                            <div class="row bid">
+                                <span class="<?= (false === empty($aBid['id_autobid']) && $this->bIsAllowedToSeeAutobid) ? 'autobid' : 'no_autobid' ?>">A</span>
+                                <span class="amount"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</span>
+                                <span class="rate"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</span>
+                                <span class="circle_label">
+                                    <span class="circle_pending"></span>
+                                    <span class="pending"><?= $this->lng['preteur-synthese']['label-pending-bid'] ?></span>
+                                </span>
+                            </div>
+                        <?php endforeach; ?>
+                            <?php if (false === empty($aProject['aRejectedBid'])) : ?>
+                            <div class="rejected_bids_<?= $aProject['id_project'] ?>">
+                                <div class="row bid">
+                                    <span class="<?= (false === empty($aBid['id_autobid']) && $this->bIsAllowedToSeeAutobid) ? 'autobid' : 'no_autobid' ?>">A</span>
+                                    <span class="amount"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['amount'] / 100, 0) ?> €</span>
+                                    <span class="rate"><?= $this->ficelle->formatNumber($aProject['aRejectedBid']['rate'], 1) ?> %</span>
+                                    <span class="circle_label">
+                                        <span class="circle_rejected"></span>
+                                        <span class="rejected"><?= $this->lng['preteur-synthese']['label-rejected-bid'] ?>
+                                            <a href="<?= $this->lurl . '/projects/detail/' . $aProject['slug'] ?>"><?= $this->lng['preteur-synthese']['label-new-offer'] ?></a>
+                                        </span>
+                                    </span>
 
-                // date fin 21h a chaque fois
-                $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $f['date_retrait'] . ' ' . $this->heureFinFunding . ':00');
-                if ($inter['mois'] > 0) {
-                    $dateRest = $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'];
-                } else {
-                    $dateRest = '';
-                }
-
-                $mois_jour            = $this->dates->formatDate($f['date_retrait'], 'F d');
-                $annee                = $this->dates->formatDate($f['date_retrait'], 'Y');
-                $soldeBid             = $this->bids->getSoldeBid($f['id_project']);
-                $payer                = $soldeBid;
-                $resteApayer          = ($f['amount'] - $soldeBid);
-                $pourcentage          = ((1 - ($resteApayer / $f['amount'])) * 100);
-                $decimales            = 2;
-                $decimalesPourcentage = 2;
-
-                if ($soldeBid >= $f['amount']) {
-                    $payer                = $f['amount'];
-                    $resteApayer          = 0;
-                    $pourcentage          = 100;
-                    $decimales            = 0;
-                    $decimalesPourcentage = 0;
-                }
-
-                $iSumbids = $this->bids->counter('id_project = ' . $f['id_project']);
-                $avgRate  = $this->projects->getAverageInterestRate($f['id_project'], $this->projects_status->status);
-
-                ?>
-                <div class="post-box clearfix">
-                    <h3><?= $f['title'] ?>, <small><?= $this->companies->city ?><?= ($this->companies->city != '' ? ',' : '') ?> <?= $this->companies->zip ?></small></h3>
-                    <?php
-
-                    if ($this->projects_status->status > \projects_status::EN_FUNDING) {
-                        $dateRest = $this->lng['preteur-synthese']['termine'];
-                        $reste = '';
-                    } else {
-                        $reste = $this->lng['preteur-synthese']['reste'] . ' ';
-                        ?>
-                        <script>
-                            var cible<?= $f['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $this->heureFinFunding ?>:00');
-                            var letime<?= $f['id_project'] ?> = parseInt(cible<?= $f['id_project'] ?>.getTime() / 1000, 10);
-                            setTimeout('decompte(letime<?= $f['id_project'] ?>,"val<?= $f['id_project'] ?>")', 500);
-                        </script>
-                        <?php
-                    }
-                    if ($f['photo_projet'] != '') {
-                        ?><a href="<?= $this->lurl ?>/projects/detail/<?= $f['slug'] ?>" class="img-holder"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $f['photo_projet'] ?>" alt="<?= $f['photo_projet'] ?>"></a><?php
-                    }
-                    ?>
-                    <div class="info">
-                        <ul class="list">
-                            <li><i class="icon-pig-gray"></i><?= $this->ficelle->formatNumber($f['amount'], 0) ?> €</li>
-                            <li><i class="icon-clock-gray"></i><?= ($reste == '' ? '' : $reste) ?> <span id="val<?= $f['id_project'] ?>"><?= $dateRest ?></span></li>
-                            <li><i class="icon-target"></i><?= $this->lng['preteur-synthese']['couvert-a'] ?> <?= $this->ficelle->formatNumber($pourcentage, $decimalesPourcentage) ?> %</li>
-                            <?php if ($iSumbids > 0): ?>
-                                <li><i class="icon-graph-gray"></i><?= $this->ficelle->formatNumber($avgRate) ?> %</li>
-                            <?php else: ?>
-                                <li><i class="icon-graph-gray"></i><?= ($f['target_rate'] == '-' ? '-' : $this->ficelle->formatNumber($f['target_rate']) . ' %') ?></li>
+                                </div>
+                                <?php if ($aProject['iNumberOfRejectedBids'] > 1) : ?>
+                                <div class="row bid">
+                                    <span class="btn_show_rejected_bids" data-id-project="<?= $aProject['id_project'] ?>">...</span>
+                                </div>
+                                <?php endif; ?>
+                            </div>
                             <?php endif; ?>
-
-                        </ul>
-
-                        <a class="btn alone" href="<?= $this->lurl ?>/projects/detail/<?= $f['slug'] ?>"><?= $this->lng['preteur-synthese']['voir-le-projet'] ?></a>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+                <?php if ($this->bIsAllowedToSeeAutobid ) : ?>
+                <div class="autobid_links">
+                    <div class="text" style="float: left;">
+                        <h2><?= $this->lng['preteur-synthese']['title-autobid-switch'] ?></h2>
+                        <?php if ($this->bFirstTimeActivation) : ?>
+                        <p><a href="<?= $this->lurl ?>/autolend/" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-explanation'] ?></a></p>
+                        <?php endif; ?>
+                        <p><a href="<?= $this->lurl ?>/profile/autolend#parametrage" class="bottom-link"><?= $this->lng['preteur-synthese']['title-link-to-autobid-settings'] ?></a></p>
                     </div>
                 </div>
-                <?php
-            }
-        }
-        ?>
+                <?php endif; ?>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -216,3 +203,19 @@
         } ?>
     </div>
 </div>
+
+<script type="text/javascript">
+    $(".btn_show_rejected_bids").click(function () {
+
+        var values = {
+            id_project: $(this).data('id-project'),
+            client: "<?= $this->clients->hash ?>"
+        };
+
+        $.get(add_url + "/ajax/rejectedBids/"+values.id_project+"/"+values.client).done(function (data) {
+            var obj = jQuery.parseJSON(data);
+            $(".rejected_bids_"+values.id_project).html(obj.html);
+            $(this).fadeOut();
+        });
+    });
+</script>

@@ -1,11 +1,16 @@
 <style type="text/css">
     .status-chart {
+        border: 1px solid #b20066;
+        border-radius: 10px;
         display: inline-block;
         height: 600px;
         width: 100%;
     }
     .status-chart.half {
-        width: 575px;
+        width: 573px;
+    }
+    #second-status-chart {
+        float: right;
     }
     .search-box {
         border: 1px #b20066 solid;
@@ -141,7 +146,10 @@
                 },
                 interaction: {
                     dragNodes: false,
-                    tooltipDelay: 0
+                    navigationButtons: true,
+                    keyboard: {
+                        bindToWindow: true
+                    }
                 },
                 physics: {
                     enabled: false
