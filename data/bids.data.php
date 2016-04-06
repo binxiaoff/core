@@ -87,7 +87,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project;
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result, 0, 0);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -105,7 +105,7 @@ class bids extends bids_crud
         $sql = 'SELECT AVG(' . $champ . ') as avg FROM bids WHERE id_project = ' . $id_project . $status;
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
+        $avg    = $this->bdd->result($result);
         if ($avg == '') {
             $avg = 0;
         }
@@ -121,7 +121,7 @@ class bids extends bids_crud
         $sql = 'SELECT AVG(' . $champ . ') as avg FROM bids WHERE id_lender_account = ' . $id_lender . $status;
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
+        $avg    = $this->bdd->result($result);
         if ($avg == '') {
             $avg = 0;
         } else {
@@ -138,7 +138,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project . ' AND id_lender_account = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {

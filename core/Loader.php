@@ -12,7 +12,18 @@ class Loader
         $config = self::loadConfig();
 
         if (null === $db) {
-            $db = new \bdd($config['bdd_config'][$config['env']], $config['bdd_option'][$config['env']]);
+            if (false === DataBase::isConnected()) {
+                $dbParams = [
+                    'dbname'   => $config['bdd_config'][$config['env']]['BDD'],
+                    'user'     => $config['bdd_config'][$config['env']]['USER'],
+                    'password' => $config['bdd_config'][$config['env']]['PASSWORD'],
+                    'host'     => $config['bdd_config'][$config['env']]['HOST'],
+                    'driver'   => $config['bdd_config'][$config['env']]['DRIVER'],
+                    'charset'  => $config['bdd_config'][$config['env']]['CHARSET'],
+                ];
+                DataBase::connect($dbParams);
+            }
+            $db = DataBase::instance();
         }
 
         $path = $config['path'][$config['env']];

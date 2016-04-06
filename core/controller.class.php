@@ -73,7 +73,19 @@ class Controller
         $this->App          = $app;
         $this->included_js  = array();
         $this->included_css = array();
-        $this->bdd          = new bdd($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
+
+        if (false === \Unilend\core\DataBase::isConnected()) {
+            $dbParams = [
+                'dbname'   => $this->Config['bdd_config'][$this->Config['env']]['BDD'],
+                'user'     => $this->Config['bdd_config'][$this->Config['env']]['USER'],
+                'password' => $this->Config['bdd_config'][$this->Config['env']]['PASSWORD'],
+                'host'     => $this->Config['bdd_config'][$this->Config['env']]['HOST'],
+                'driver'   => $this->Config['bdd_config'][$this->Config['env']]['DRIVER'],
+                'charset'  => $this->Config['bdd_config'][$this->Config['env']]['CHARSET'],
+            ];
+            \Unilend\core\DataBase::connect($dbParams);
+        }
+        $this->bdd = \Unilend\core\DataBase::instance();
 
         // Initialisation des propriétés nécessaires au cache
         $this->enableCache      = false;

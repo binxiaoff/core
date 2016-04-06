@@ -285,7 +285,7 @@ class projects extends projects_crud
             LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
             LEFT JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
             WHERE projects_status.status IN (' . $status . ')' . $where;
-        
+
         $aCount = $this->bdd->fetch_assoc($this->bdd->query($sql));
 
         if (is_array($aCount)) {
@@ -375,20 +375,25 @@ class projects extends projects_crud
         $sql = 'SELECT * FROM `favoris` WHERE id_client = ' . $id_client;
 
         $resultat = $this->bdd->query($sql);
-        $lesfav   = '';
-        $i        = 0;
-        while ($f = $this->bdd->fetch_array($resultat)) {
-            $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
-            $i++;
-        }
-
-        $sql = 'SELECT *,DATEDIFF(date_retrait,CURRENT_DATE) as datediff FROM projects WHERE id_project IN (' . $lesfav . ') AND DATEDIFF(date_retrait,CURRENT_DATE)<=2 AND DATEDIFF(date_retrait,CURRENT_DATE)>=0 AND date_fin = "0000-00-00 00:00:00" ORDER BY datediff';
-
-        $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+
+        if (0 < $this->bdd->num_rows($resultat)) {
+            $lesfav   = '';
+            $i        = 0;
+            while ($f = $this->bdd->fetch_array($resultat)) {
+                $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
+                $i++;
+            }
+
+            $sql = 'SELECT *,DATEDIFF(date_retrait,CURRENT_DATE) as datediff FROM projects WHERE id_project IN (' . $lesfav . ') AND DATEDIFF(date_retrait,CURRENT_DATE)<=2 AND DATEDIFF(date_retrait,CURRENT_DATE)>=0 AND date_fin = "0000-00-00 00:00:00" ORDER BY datediff';
+
+            $resultat = $this->bdd->query($sql);
+
+            while ($record = $this->bdd->fetch_array($resultat)) {
+                $result[] = $record;
+            }
         }
+
         return $result;
     }
 

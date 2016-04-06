@@ -1,9 +1,9 @@
 <?php
-namespace Unilend\core\DataBase;
+namespace Unilend\core;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Cache\QueryCacheProfile;
+use Doctrine\DBAL\Driver\Statement;
 
 class DataBase
 {
@@ -13,15 +13,17 @@ class DataBase
     /** @var Connection Current connection */
     private static $connection;
 
+    /** @var DataBase self instant*/
+    private static $instance;
+
     /** @var string Last SQL command */
     public static $sql;
 
     /**
      * Static class - cannot be instantiated.
      */
-    final public function __construct()
+    private function __construct()
     {
-        throw new \LogicException('Cannot instantiate static class ' . get_class($this));
     }
 
     /********************* Connections handling *********************/
@@ -56,7 +58,12 @@ class DataBase
      */
     public static function isConnected()
     {
-        return self::getConnection()->isConnected();
+        try {
+            $connected = self::getConnection()->isConnected();
+        } catch (\Exception $exception) {
+            $connected = false;
+        }
+        return $connected;
     }
 
 
@@ -90,6 +97,23 @@ class DataBase
     /********************* Backwards compatibility methods *********************/
 
     /**
+     * Returns an instance of self
+     *
+     * @deprecated for backwards compatibility only.
+     *
+     * @return DataBase
+     *
+     */
+    public static function instance()
+    {
+        if (true === is_null(self::$instance)) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    /**
      * Executes a statement
      *
      * @param string $statement
@@ -100,31 +124,32 @@ class DataBase
      */
     public static function query($statement)
     {
+        self::$sql = $statement;
         return self::getConnection()->executeQuery($statement);
     }
 
     /**
      * Fetches the next row from a result set
      *
-     * @param \Doctrine\DBAL\Statement $statement
+     * @param \Doctrine\DBAL\Driver\Statement $statement
      *
      * @deprecated for backwards compatibility only.
      *
      * @return mixed
      */
-    public static function fetch_array($statement)
+    public static function fetch_array(Statement $statement)
     {
         return $statement->fetch(\PDO::FETCH_BOTH);
     }
 
     /**
-     * @param \Doctrine\DBAL\Statement $statement
+     * @param Statement $statement
      *
      * @deprecated for backwards compatibility only.
      *
      * @return mixed
      */
-    public static function fetch_assoc($statement)
+    public static function fetch_assoc(Statement $statement)
     {
         return $statement->fetch(\PDO::FETCH_ASSOC);
     }
@@ -132,19 +157,19 @@ class DataBase
     /**
      * Returns the number of rows affected by the last SQL statement
      *
-     * @param \Doctrine\DBAL\Statement $statement
+     * @param Statement $statement
      *
      * @deprecated for backwards compatibility only.
      *
      * @return mixed
      */
-    public static function num_rows($statement)
+    public static function num_rows(Statement $statement)
     {
         return $statement->rowCount();
     }
 
     /**
-     * Quotes a string for use in a query.
+     * Escapes a string for use in a query.
      *
      * @param string $string
      *
@@ -156,7 +181,10 @@ class DataBase
      */
     public static function escape_string($string)
     {
-        return self::getConnection()->quote($string);
+        $search = array("\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a");
+        $replace = array("\\\\","\\0","\\n", "\\r", "\'", '\"', "\\Z");
+
+        return str_replace($search, $replace, $string);
     }
 
     /**
@@ -177,13 +205,13 @@ class DataBase
      *
      * @deprecated for backwards compatibility only.
      *
-     * @param \Doctrine\DBAL\Statement $statement
+     * @param Statement $statement
      * @param int $row not used, for backwards compatibility only.
      * @param int $column
      *
      * @return mixed
      */
-    public static function result($statement, $row = 0, $column = 0)
+    public static function result(Statement $statement, $row = 0, $column = 0)
     {
         return $statement->fetchColumn($column);
     }
@@ -369,9 +397,9 @@ class DataBase
     /**
      * Closes the cursor, enabling the statement to be executed again.
      *
-     * @param \Doctrine\DBAL\Statement $statement
+     * @param Statement $statement
      */
-    public function free_result($statement)
+    public function free_result(Statement $statement)
     {
         $statement->closeCursor();
     }

@@ -219,7 +219,7 @@ class transactions extends transactions_crud
                 AND id_client = ' . $id_client;
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -241,7 +241,7 @@ class transactions extends transactions_crud
                 AND DATE(added) <= "' . $dateLimite . '"';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -263,7 +263,7 @@ class transactions extends transactions_crud
                 AND added <= "' . $dateLimite . '"';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -284,7 +284,7 @@ class transactions extends transactions_crud
                 AND YEAR(added) = ' . $year;
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -311,7 +311,7 @@ class transactions extends transactions_crud
                 AND type_transaction IN(1, 3, 4, 7)';
 
         $result  = $this->bdd->query($sql);
-        $montant = $this->bdd->result($result, 0, 'montant');
+        $montant = $this->bdd->result($result);
         if ($montant == '') {
             $montant = 0;
         } else {
@@ -332,7 +332,7 @@ class transactions extends transactions_crud
                 AND type_transaction IN(' . $type_transaction . ')';
 
         $result  = $this->bdd->query($sql);
-        $montant = $this->bdd->result($result, 0, 'montant');
+        $montant = $this->bdd->result($result);
         if ($montant == '') {
             $montant = 0;
         } else {
@@ -354,7 +354,7 @@ class transactions extends transactions_crud
                 AND id_client = ' . $id_client;
 
         $result  = $this->bdd->query($sql);
-        $montant = $this->bdd->result($result, 0, 'montant');
+        $montant = $this->bdd->result($result);
         if ($montant == '') {
             $montant = 0;
         } else {
@@ -375,7 +375,7 @@ class transactions extends transactions_crud
                 AND id_client = ' . $id_client;
 
         $result  = $this->bdd->query($sql);
-        $montant = $this->bdd->result($result, 0, 'montant');
+        $montant = $this->bdd->result($result);
         if ($montant == '') {
             $montant = 0;
         } else {
@@ -538,7 +538,7 @@ class transactions extends transactions_crud
             GROUP BY DATE(date_transaction)';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -561,7 +561,7 @@ class transactions extends transactions_crud
             GROUP BY DATE(date_transaction)';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -583,7 +583,7 @@ class transactions extends transactions_crud
             GROUP BY DATE(date_transaction)';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -604,7 +604,7 @@ class transactions extends transactions_crud
                 AND id_client = ' . $id_client;
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -626,7 +626,7 @@ class transactions extends transactions_crud
                 AND type_transaction IN(6, 9)';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -767,7 +767,7 @@ class transactions extends transactions_crud
                 AND t.id_transaction <= ' . $id_transaction;
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
