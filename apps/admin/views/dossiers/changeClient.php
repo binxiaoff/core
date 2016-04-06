@@ -3,7 +3,7 @@ if(!isset($this->params[0]) || $this->params[0] == '')
 {
 	?>
     <script>
-	parent.$.fn.colorbox.close();
+	parent.$.colorbox.close();
 	</script>
 	<?
 }
@@ -11,9 +11,9 @@ if(!isset($this->params[0]) || $this->params[0] == '')
 
 
 <div id="popup">
-	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
-        <h1>Recherche : <?=$this->params['0']?></h1>            
-        
+	<a onclick="parent.$.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
+        <h1>Recherche : <?=$this->params['0']?></h1>
+
         <?
         if($this->lClients != false)
 		{
@@ -26,11 +26,10 @@ if(!isset($this->params[0]) || $this->params[0] == '')
             <input type="hidden" id="nom_change_<?=$c['id_client']?>" value="<?=$c['nom']?>">
             <input class="radio" type="radio" name="clients" id="client_<?=$c['id_client']?>" value="<?=$c['id_client']?>"> <?=$c['prenom']?> <?=$c['nom']?>
             </td></tr><?
-			$i++;
 		}
 		?>
         </table>
-        <button id="valider_search" style="float:right" class="btn_link" onclick="parent.$.fn.colorbox.close();">Valider</button><?
+        <button id="valider_search" style="float:right" class="btn_link" onclick="parent.$.colorbox.close();">Valider</button><?
 		}
 		else
 		{
@@ -45,21 +44,21 @@ if(!isset($this->params[0]) || $this->params[0] == '')
 		var id = $('input[name=clients]:checked').val();
 		var prenom = $("#prenom_change_"+id).val();
 		var nom = $("#nom_change_"+id).val();
-		
+
 		$("#id_client").val(id);
 		$("#prenom").val(prenom);
 		$("#nom").val(nom);
-		
+
 		$("#prenomHtml").html(prenom);
 		$("#nomHtml").html(nom);
 		$("#id_clientHtml").html(id);
-		
-		
+
+
 		$("#search").val('');
-		
-		
-		
-		
-		
+
+
+
+
+
 	});
 </script>
