@@ -3052,17 +3052,13 @@ class cronController extends bootstrap
                     c.type,
                     IFNULL(
                         (
-                            IFNULL(
-                                (
-                                    SELECT p.iso
-                                    FROM lenders_imposition_history lih
-                                    JOIN pays_v2 p ON p.id_pays = lih.id_pays
-                                    WHERE lih.added <= e.date_echeance_reel
-                                    AND lih.id_lender = e.id_lender
-                                    ORDER BY lih.added DESC
-                                    LIMIT 1
-                                ), p.iso
-                            )
+                            SELECT p.iso
+                            FROM lenders_imposition_history lih
+                            JOIN pays_v2 p ON p.id_pays = lih.id_pays
+                            WHERE lih.added <= e.date_echeance_reel
+                            AND lih.id_lender = e.id_lender
+                            ORDER BY lih.added DESC
+                            LIMIT 1
                         ), "FR"
                     ) AS iso_pays,
                     la.exonere,
