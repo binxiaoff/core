@@ -1319,6 +1319,7 @@ class statsController extends bootstrap
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
 
+        /** @var \PHPExcel_Writer_CSV $oWriter */
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
         $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');

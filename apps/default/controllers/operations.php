@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class operationsController extends bootstrap
 {
     const LAST_OPERATION_DATE = '2013-01-01';
@@ -143,6 +141,7 @@ class operationsController extends bootstrap
             $oActiveSheet->setCellValue('L' . ($iRowIndex + 2), $sNote);
         }
 
+        /** @var \PHPExcel_Writer_Excel5 $oWriter */
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
         $oWriter->save('php://output');
     }

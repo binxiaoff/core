@@ -322,6 +322,7 @@
                             </div>
                         <?php  else : ?>
                             <div class="statistic-tables year-nav clearfix">
+                                <a class="btn" href="<?= $this->lurl ?>/projects/csv/<?= $this->projects->id_project ?>"><?= $this->lng['preteur-projets']['csv-extract-button'] ?></a>
                                 <ul class="right">
                                     <?php for ($i = 0; $i < 3; $i++): ?>
                                     <li>
@@ -584,7 +585,7 @@
             <img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $this->projects->photo_projet ?>" alt="<?= $this->projects->photo_projet ?>">
             <?php if ($this->bIsConnected && false === $this->page_attente && $this->clients_status->status == \projects_status::FUNDE) : ?>
                 <div class="single-project-actions">
-                    <a href="<?= $this->lurl . '/thickbox/pop_up_offer_mobile/' . $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
+                    <a href="<?= $this->lurl ?>/thickbox/pop_up_offer_mobile/<?= $this->projects->id_project ?>" class="btn popup-link"><?= $this->lng['preteur-projets']['preter'] ?></a>
                 </div>
             <?php elseif (false === $this->bIsConnected) : ?>
             <div class="single-project-actions">

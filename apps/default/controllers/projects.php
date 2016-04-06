@@ -559,4 +559,172 @@ class projectsController extends bootstrap
             $this->setView('../root/404');
         }
     }
+
+    public function _csv()
+    {
+        /** @var \projects $oProject */
+        $oProject = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === $oProject->get($this->params[0], 'id_project')
+            || $oProject->status != 0
+            || $oProject->display != \projects::DISPLAY_PROJECT_ON
+            || false === $this->clients->checkAccess()
+        ) {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            $this->setView('../root/404');
+            return;
+        }
+
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        /** @var \companies $oCompany */
+        $oCompany = $this->loadData('companies');
+        $oCompany->get($oProject->id_company, 'id_company');
+
+        /** @var \companies_bilans $oAnnualAccounts */
+        $oAnnualAccounts = $this->loadData('companies_bilans');
+        $aAnnualAccounts = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+
+        $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
+
+        /** @var \companies_actif_passif $oAssetsDebts */
+        $oAssetsDebts = $this->loadData('companies_actif_passif');
+        $aAssetsDebts = $oAssetsDebts->select('id_bilan IN (' . implode(', ', $aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $aAnnualAccountsIds) . ') ASC');
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=' . $oProject->slug . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        $iRow         = 1;
+        $oDocument    = new PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+        $oActiveSheet->setCellValueByColumnAndRow(0, $iRow, 'Date de clôture');
+        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, $this->dates->formatDate($aAnnualAccounts[0]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, $this->dates->formatDate($aAnnualAccounts[1]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, $this->dates->formatDate($aAnnualAccounts[2]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, 'Durée de l\'exercice');
+        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, str_replace('[DURATION]', $aAnnualAccounts[0]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, str_replace('[DURATION]', $aAnnualAccounts[1]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, str_replace('[DURATION]', $aAnnualAccounts[2]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['compte-de-resultats']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['chiffe-daffaires']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['ca']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-brut-dexploitation']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_brute_exploitation']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-dexploitation']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exploitation']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-financier']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_financier']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['produit-exceptionnel']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['produit_exceptionnel']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['charges-exceptionnelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['charges_exceptionnelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-exceptionnel']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exceptionnel']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-net']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_net']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['investissements']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['investissements']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['bilan']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['actif']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['immobilisations-corporelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['immobilisations-incorporelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_incorporelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['immobilisations-financieres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_financieres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['stocks']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['stocks']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['creances-clients']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['creances_clients']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['disponibilites']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['disponibilites']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['valeurs-mobilieres-de-placement']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-actifs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles'] + $aAssetsDebts[$i]['immobilisations_incorporelles'] + $aAssetsDebts[$i]['immobilisations_financieres'] + $aAssetsDebts[$i]['stocks'] + $aAssetsDebts[$i]['creances_clients'] + $aAssetsDebts[$i]['disponibilites'] + $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['passif']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['capitaux-propres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['provisions-pour-risques-charges']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['provisions_pour_risques_et_charges']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['amortissement-sur-immo']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['amortissement_sur_immo']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['depreciation-actif-circulant']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['depreciation_actif_circulant']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['dettes-financieres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_financieres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['dettes-fournisseurs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_fournisseurs']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['autres-dettes']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['autres_dettes']);
+        }
+        if ($aAssetsDebts[0]['comptes_regularisation'] != 0 || $aAssetsDebts[1]['comptes_regularisation'] != 0 || $aAssetsDebts[2]['comptes_regularisation'] != 0) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['comptes-regularisation']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation']);
+            }
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-passifs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['amortissement_sur_immo']);
+        }
+
+        /** @var \PHPExcel_Writer_CSV $oWriter */
+        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
+        $oWriter->setDelimiter(';');
+        $oWriter->save('php://output');
+    }
 }
