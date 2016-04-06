@@ -253,7 +253,7 @@
         </div>
         <div class="row">
             <input type="text" id="secret-responseE" name="secret-responseE" title="<?= $this->lng['etape1']['response'] ?>" placeholder="<?= $this->lng['etape1']['response'] ?>"
-                   value="<?= $this->lng['etape1']['response'] ?>" class="field field-mega required" data-validators="Presence">
+                   value="" class="field field-mega required" data-validators="Presence">
         </div>
         <?php endif; ?>
     </div>

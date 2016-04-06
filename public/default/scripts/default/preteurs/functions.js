@@ -30,7 +30,6 @@
             .on('focusout', '.field, textarea', function () {
                 if (this.value == '') {
                     $(this).removeClass('populated');
-                    this.value = this.title;
                 } else {
                     $(this).addClass('populated');
                 }

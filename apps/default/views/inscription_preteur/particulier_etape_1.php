@@ -24,7 +24,7 @@
                 <input type="text" name="nom-dusage" id="nom-dusage" title="<?= $this->lng['etape1']['nom-dusage'] ?>"
                        value="<?= $this->aForm['particulier']['nom-dusage'] ?>"
                        placeholder="<?= $this->lng['etape1']['nom-dusage'] ?>"
-                       class="field field-small" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+                       class="field field-small" data-validators="Format,{  pattern:/^([^0-9]*)$/}">
                 <input type="text" name="prenom" id="prenom" title="<?= $this->lng['etape1']['prenom'] ?>"
                        value="<?= empty($this->aForm['particulier']['prenom']) && false === empty($this->aLanding['prenom']) ? $this->aLanding['prenom'] : $this->aForm['particulier']['prenom'] ?>"
                        placeholder = "<?= $this->lng['etape1']['prenom'] ?>"
@@ -199,7 +199,7 @@
             <div class="row">
                 <input type="text" id="secret-question" name="secret-question" title="<?= $this->lng['etape1']['question-secrete'] ?>"
                        placeholder="<?= $this->lng['etape1']['question-secrete'] ?>"
-                       value="<?= $this->aForm['particulier']['secret-question'] ?>"
+                       value=""
                        class="field field-mega required" data-validators="Presence">
                 <label class="exInfoBulle"><?= $this->lng['etape1']['info-question-secrete'] ?></label>
 
