@@ -123,7 +123,7 @@ class depot_de_dossierController extends bootstrap
         $sAlertEmail = $this->settings->value;
 
         try {
-            $oAltares = new Altares($this->bdd);
+            $oAltares = new Altares();
             $oResult  = $oAltares->getEligibility($iSIREN);
         } catch (\Exception $oException) {
             $oLogger = new ULogger('connection', $this->logPath, 'altares.log');

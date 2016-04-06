@@ -2,6 +2,8 @@
 
 namespace Unilend\librairies;
 
+use Unilend\core\Loader;
+
 class Altares
 {
     const RESPONSE_CODE_INACTIVE                       = 1;
@@ -20,27 +22,15 @@ class Altares
     private $sIdentification;
 
     /**
-     * @var \bdd
-     */
-    private $oDatabase;
-
-    /**
      * @var \settings
      */
     private $oSettings;
 
-    /**
-     * @param \bdd $oDatabase
-     */
-    public function __construct(\bdd $oDatabase)
+    public function __construct()
     {
         ini_set('default_socket_timeout', 60);
 
-        require_once __DIR__ . '/../data/settings.data.php';
-
-        $this->oDatabase = $oDatabase;
-        $this->oSettings = new \settings($oDatabase);
-
+        $this->oSettings = Loader::loadData('settings');
         $this->oSettings->get('Altares login', 'type');
 
         $this->sIdentification = $this->oSettings->value;
@@ -113,21 +103,21 @@ class Altares
     public function setProjectData(\projects &$oProject, $oEligibilityInfo = null)
     {
         if (is_null($oEligibilityInfo)) {
-            $oCompany = new \companies($this->oDatabase);
+            $oCompany = Loader::loadData('companies');
             $oCompany->get($oProject->id_company);
 
             $oEligibilityInfo = $this->getEligibility($oCompany->siren)->myInfo;
         }
 
         /** @var \company_rating_history $oCompanyRatingHistory */
-        $oCompanyRatingHistory = new \company_rating_history($this->oDatabase);
+        $oCompanyRatingHistory = Loader::loadData('company_rating_history');
         $oCompanyRatingHistory->id_company = $oProject->id_company;
         $oCompanyRatingHistory->id_user    = isset($_SESSION['user']['id_user']) ? $_SESSION['user']['id_user'] : 0;
         $oCompanyRatingHistory->action     = \company_rating_history::ACTION_WS;
         $oCompanyRatingHistory->create();
 
         /** @var \company_rating $oCompanyRating */
-        $oCompanyRating = new \company_rating($this->oDatabase);
+        $oCompanyRating = Loader::loadData('company_rating');
 
         if (false === empty($oProject->id_company_rating_history)) {
             foreach ($oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history) as $sRating => $mValue) {
@@ -191,10 +181,10 @@ class Altares
         $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
 
         if (isset($oBalanceSheets->myInfo->bilans) && is_array($oBalanceSheets->myInfo->bilans)) {
-            $oCompanyAssetsDebts    = new \companies_actif_passif($this->oDatabase);
-            $oCompanyAnnualAccounts = new \companies_bilans($this->oDatabase);
-            $oCompanyBalance        = new \company_balance($this->oDatabase);
-            $oCompaniesBalanceTypes = new \company_balance_type($this->oDatabase);
+            $oCompanyAssetsDebts    = Loader::loadData('companies_actif_passif');
+            $oCompanyAnnualAccounts = Loader::loadData('companies_bilans');
+            $oCompanyBalance        = Loader::loadData('company_balance');
+            $oCompaniesBalanceTypes = Loader::loadData('company_balance_type');
 
             $aCodes = $oCompaniesBalanceTypes->getAllByCode();
 
@@ -244,8 +234,8 @@ class Altares
      */
     private function setCompanyFinancial($iCompanyId, $oEligibilityInfo)
     {
-        $oCompanyAnnualAccounts = new \companies_bilans($this->oDatabase);
-        $oCompanyAssetsDebts    = new \companies_actif_passif($this->oDatabase);
+        $oCompanyAnnualAccounts = Loader::loadData('companies_bilans');
+        $oCompanyAssetsDebts    = Loader::loadData('companies_actif_passif');
 
         if (isset($oEligibilityInfo->bilans) && is_array($oEligibilityInfo->bilans)) {
             $aAnnualAccounts = array();

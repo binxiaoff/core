@@ -298,7 +298,7 @@ class dossiersController extends bootstrap
                     $this->loadData('company_rating'); // Used in order to generate CRUD
                     $this->loadData('company_rating_history'); // Used in order to generate CRUD
 
-                    $oAltares = new Altares($this->bdd);
+                    $oAltares = new Altares();
                     $oResult  = $oAltares->getEligibility($this->companies->siren);
 
                     if ($oResult->exception == '' && isset($oResult->myInfo) && is_object($oResult->myInfo)) {
@@ -1736,7 +1736,7 @@ class dossiersController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
 
             if (isset($this->params[1]) && $this->params[1] === 'altares') {
-                $oAltares = new Altares($this->bdd);
+                $oAltares = new Altares();
                 $oResult  = $oAltares->getEligibility($this->companies->siren);
                 $oAltares->setCompanyData($this->companies, $oResult->myInfo);
                 $oAltares->setProjectData($this->projects, $oResult->myInfo);
