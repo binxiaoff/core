@@ -125,6 +125,8 @@ class preteursController extends bootstrap
 
     public function _edit()
     {
+        $this->loadData('transactions_types'); // Included for class constants
+
         $this->projects = $this->loadData('projects');
 
         $this->lenders_accounts = $this->loadData('lenders_accounts');
