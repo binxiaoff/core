@@ -64,6 +64,9 @@ class Cache
     {
         $aKey = array();
         foreach (func_get_args() as $mParameters) {
+            if (null === $mParameters) {
+                $mParameters = '';
+            }
             if (is_scalar($mParameters)) {
                 $aKey[] = $mParameters;
             } else {
