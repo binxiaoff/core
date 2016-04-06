@@ -91,7 +91,7 @@
                         <input type="text" name="nom_inscription" title="<?= $this->lng['etape1']['nom'] ?>" placeholder="<?= $this->lng['etape1']['nom'] ?>"
                                value="<?= $this->aForm['societe']['nom_inscription'] ?>"
                                id="nom_inscription" class="field field-large required" data-validators="Presence&Format,{  pattern:/^([^0-9]*)$/}">
-                        <input type="text" name="prenom_inscription" title="<?= $this->lng['etape1']['prenom'] ?>"
+                        <input type="text" name="prenom_inscription" title="<?= $this->lng['etape1']['prenom'] ?>" placeholder="<?= $this->lng['etape1']['prenom'] ?>"
                                value="<?= $this->aForm['societe']['prenom_inscription'] ?>"
                                id="prenom_inscription" class="field field-large required" data-validators="Presence&Format,{  pattern:/^([^0-9]*)$/}">
                     </div>
@@ -174,7 +174,7 @@
             <div class="row">
                 <div class="cb-holder">
                     <label for="mon-addresse"><?= $this->lng['etape1']['meme-adresse'] ?></label>
-                    <input type="checkbox" class="custom-input" name="mon-addresse" id="mon-addresse" data-condition="hide:.addr_correspondance" >
+                    <input <?= $this->aForm['societe']['mon-addresse'] == 0 ? '' : 'checked="checked"' ?> type="checkbox" class="custom-input" name="mon-addresse" id="mon-addresse" data-condition="hide:.addr_correspondance" >
                 </div>
             </div>
             <div class="addr_correspondance">
@@ -233,11 +233,15 @@
         <!-- partie mot de passe societe -->
         <div class="row">
             <span class="pass-field-holder">
-                <input type="password" name="passE" id="passE" title="<?= $this->lng['etape1']['mot-de-passe'] ?>" value="" class="field field-large required">
+                <input type="password" name="passE" id="passE" title="<?= $this->lng['etape1']['mot-de-passe'] ?>"
+                       placeholder="<?= $this->lng['etape1']['mot-de-passe'] ?>"
+                       value="" class="field field-large required">
                 <em><?= $this->lng['etape1']['info-mdp'] ?></em>
             </span>
             <span class="pass-field-holder">
-                <input type="password" name="passE2" id="passE2" title="<?= $this->lng['etape1']['confirmation-de-mot-de-passe'] ?>" value="" class="field field-large " data-validators="Confirmation,{ match: 'passE' }">
+                <input type="password" name="passE2" id="passE2" title="<?= $this->lng['etape1']['confirmation-de-mot-de-passe'] ?>"
+                       placeholder="<?= $this->lng['etape1']['confirmation-de-mot-de-passe'] ?>"
+                       value="" class="field field-large " data-validators="Confirmation,{ match: 'passE' }">
             </span>
         </div>
         <div class="row">
