@@ -72,6 +72,7 @@ sed -i "s/html_errors = .*/html_errors = On/" /etc/php5/fpm/php.ini
 sed -i "s/upload_max_filesize = .*/upload_max_filesize = 64M/" /etc/php5/fpm/php.ini
 sed -i "s/post_max_size = .*/post_max_size = 64M/" /etc/php5/fpm/php.ini
 sed -i "s/short_open_tag = Off/short_open_tag = On/" /etc/php5/fpm/php.ini
+sed -i "s/max_execution_time = .*/max_execution_time = 300/" /etc/php5/fpm/php.ini
 printf '
 [xdebug]zend_extension=/usr/lib/php5/20131226/xdebug.so
 xdebug.remote_enable=1
@@ -137,7 +138,7 @@ apt-get update > /dev/null
 apt-get install -y ruby-all-dev ruby-switch libsqlite3-dev
 ruby-switch --set ruby2.0
 gem install mailcatcher
-sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env catchmail' /etc/php5/fpm/php.ini
+sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env /usr/local/bin/catchmail' /etc/php5/fpm/php.ini
 ln -fs /vagrant/conf/vhosts/mailcatcher.nginx.conf /etc/nginx/sites-enabled/mailcatcher.conf
 cp /vagrant/conf/mailcatcher.conf /etc/init/mailcatcher.conf
 
