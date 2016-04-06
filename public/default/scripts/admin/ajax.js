@@ -261,6 +261,43 @@ function deleteMemo(id_project_comment, id_project) {
     }
 }
 
+function valid_etape1(id_project) {
+
+    var val = {
+        montant_etape1: $("#montant_etape1").val(),
+        duree_etape1: $("#duree_etape1").val(),
+        siren_etape1: $("#siren_etape1").val(),
+        id_project: id_project,
+        etape: 1
+    };
+    $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
+        $("#siren").val($("#siren_etape1").val());
+        $("#montant").val($("#montant_etape1").val());
+        $('#duree option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
+
+        $("#montant_etape3").val($("#montant_etape1").val());
+        $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
+
+        $("#valid_etape1").slideDown();
+
+        if (0 == $("#duree_etape1").val()) {
+            $("#status").css('display', 'none');
+            $("#msgProject").css('display', 'none');
+            $("#displayPeriodHS").css('display', 'block');
+            $("#msgProjectPeriodHS").css('display', 'block');
+        } else {
+            $("#status").css('display', 'block');
+            $("#msgProject").css('display', 'block');
+            $("#displayPeriodHS").css('display', 'none');
+            $("#msgProjectPeriodHS").css('display', 'none');
+        }
+        setTimeout(function () {
+            $("#valid_etape1").slideUp();
+        }, 3000);
+
+    });
+}
+
 // Creation du client apres saisi de l'email dans l'etape 2 de la creation de dossier
 
 function create_client(id_project) {
