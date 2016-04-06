@@ -793,6 +793,7 @@
                                     </tr>
                                 </table>
                             </div>
+                            <a class="btn" href="<?= $this->lurl ?>/projects/csv/<?= $this->projects->id_project ?>"><?= $this->lng['preteur-projets']['csv-extract-button'] ?></a>
                         <?php endif; ?>
                         </div>
                     </p>
