@@ -60,7 +60,7 @@ mysql -uroot -pROOTPASSWORD -e "flush privileges"
 # install php
 add-apt-repository -y ppa:ondrej/php5-5.6
 apt-get update > /dev/null
-apt-get install -y php5-fpm php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached php5-xdebug php5-imagick
+apt-get install -y php5-fpm php5-mcrypt php5-mysql php5-cli php5-gd php5-curl php5-memcache php5-intl php5-geoip memcached php5-xdebug php5-imagick libssh2-1-dev libssh2-php
 
 # modify php.ini
 sed -i "s/error_reporting = .*/error_reporting = E_ALL/" /etc/php5/fpm/php.ini
@@ -92,6 +92,7 @@ apt-get install -y nginx
 ln -fs /vagrant/conf/vhosts/admin.unilend.fr.nginx.conf /etc/nginx/sites-enabled/admin.unilend.fr.conf
 ln -fs /vagrant/conf/vhosts/www.unilend.fr.nginx.conf /etc/nginx/sites-enabled/www.unilend.fr.conf
 ln -fs /vagrant/conf/vhosts/phpmyadmin.nginx.conf /etc/nginx/sites-enabled/phpmyadmin.conf
+sed -i "s/types_hash_max_size 2048;/types_hash_max_size 2048;\n        fastcgi_read_timeout 300;/" /etc/nginx/nginx.conf
 
 # copy unversioned files
 lftp -e 'set ssl:verify-certificate no; mirror /TechTeam/vagrant/files_outside_git  /srv/sites/unilend; bye' -u vagrantftp,X9d\@\$nsa -p 21 synology.corp.unilend.fr
@@ -139,3 +140,8 @@ gem install mailcatcher
 sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env catchmail' /etc/php5/fpm/php.ini
 ln -fs /vagrant/conf/vhosts/mailcatcher.nginx.conf /etc/nginx/sites-enabled/mailcatcher.conf
 cp /vagrant/conf/mailcatcher.conf /etc/init/mailcatcher.conf
+
+#increase swap memory
+/bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
+/sbin/mkswap /var/swap.1
+/sbin/swapon /var/swap.1
