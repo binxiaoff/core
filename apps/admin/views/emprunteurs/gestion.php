@@ -16,7 +16,7 @@
 			$("#societe").val('');
 			$("#prenom").val('');
 			$("#email").val('');
-			$('#status option[value="choisir"]').attr('selected', true);
+			$('#status option[value="choisir"]').prop('selected', true);
 
 		});
 
