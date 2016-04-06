@@ -1178,6 +1178,41 @@ class dossiersController extends bootstrap
                 /** @var company_rating $oCompanyRating */
                 $oCompanyRating = $this->loadData('company_rating');
                 $this->aRatings = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
+
+                if (
+                    (false === isset($this->aRatings['xerfi']) || false === isset($this->aRatings['xerfi_unilend']))
+                    && false === empty($this->companies->code_naf)
+                ) {
+                    /** @var xerfi $oXerfi */
+                    $oXerfi = $this->loadData('xerfi');
+
+                    if (false === $oXerfi->get($this->companies->code_naf)) {
+                        $sXerfiScore   = 'N/A';
+                        $sXerfiUnilend = 'PAS DE DONNEES';
+                    } elseif ('' === $oXerfi->score) {
+                        $sXerfiScore   = 'N/A';
+                        $sXerfiUnilend = $oXerfi->unilend_rating;
+                    } else {
+                        $sXerfiScore   = $oXerfi->score;
+                        $sXerfiUnilend = $oXerfi->unilend_rating;
+                    }
+
+                    if (false === isset($this->aRatings['xerfi'])) {
+                        $oCompanyRating->id_company_rating_history = $this->projects->id_company_rating_history;
+                        $oCompanyRating->type                      = 'xerfi';
+                        $oCompanyRating->value                     = $sXerfiScore;
+                        $oCompanyRating->create();
+                    }
+
+                    if (false === isset($this->aRatings['xerfi_unilend'])) {
+                        $oCompanyRating->id_company_rating_history = $this->projects->id_company_rating_history;
+                        $oCompanyRating->type                      = 'xerfi_unilend';
+                        $oCompanyRating->value                     = $sXerfiUnilend;
+                        $oCompanyRating->create();
+                    }
+
+                    $this->aRatings = $oCompanyRating->getHistoryRatingsByType($this->projects->id_company_rating_history);
+                }
             }
 
             $this->recup_info_remboursement_anticipe($this->projects->id_project);
