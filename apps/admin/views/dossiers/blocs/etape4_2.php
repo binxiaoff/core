@@ -17,7 +17,7 @@
                 changeYear: true,
                 yearRange: '<?= (date('Y') - 5) ?>:<?= (date('Y') + 5) ?>'
             });
-            $.fn.colorbox({html: $box.show()});
+            $.colorbox({html: $box.show()});
         });
     });
 </script>
