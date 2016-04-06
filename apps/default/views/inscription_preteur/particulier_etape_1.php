@@ -7,28 +7,28 @@
                     <span class="title"><?= $this->lng['etape1']['civilite'] ?></span>
                     <div class="radio-holder validationRadio1">
                         <label for="female"><?= $this->lng['etape1']['madame'] ?></label>
-                        <input <?= $this->aForm['sex'] == 'Mme' ? 'checked="checked"' : '' ?> type="radio" class="custom-input" name="sex" id="female" value="Mme">
+                        <input <?= $this->aForm['particulier']['sex'] == 'Mme' ? 'checked="checked"' : '' ?> type="radio" class="custom-input" name="sex" id="female" value="Mme">
                     </div>
                     <div class="radio-holder validationRadio2">
                         <label for="male"><?= $this->lng['etape1']['monsieur'] ?></label>
-                        <input <?= $this->aForm['sex'] == 'M.' ? 'checked="checked"' : '' ?> type="radio" class="custom-input" name="sex" id="male" value="M.">
+                        <input <?= $this->aForm['particulier']['sex'] == 'M.' ? 'checked="checked"' : '' ?> type="radio" class="custom-input" name="sex" id="male" value="M.">
                     </div>
                 </div>
             </div>
             <div class="row" id="row_identity_name">
                 <input type="text" name="nom-famille" id="nom-famille"
                        title="<?= $this->lng['etape1']['nom-de-famille'] ?>"
-                       value="<?= empty($this->aForm['nom-famille']) && false === empty($this->aLanding['nom']) ? $this->aLanding['nom'] : $this->aForm['nom-famille'] ?>"
+                       value="<?= empty($this->aForm['particulier']['nom-famille']) && false === empty($this->aLanding['nom']) ? $this->aLanding['nom'] : $this->aForm['particulier']['nom-famille'] ?>"
                        placeholder = "<?= $this->lng['etape1']['nom-de-famille'] ?>"
-                       class="field field-small required <?= empty($this->aForm['nom-famille']) ? "LV_valid_field" : '' ?>" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
+                       class="field field-small required <?= empty($this->aForm['particulier']['nom-famille']) ? "LV_valid_field" : '' ?>" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
                 <input type="text" name="nom-dusage" id="nom-dusage" title="<?= $this->lng['etape1']['nom-dusage'] ?>"
-                       value="<?= $this->aForm['nom-dusage'] ?>"
+                       value="<?= $this->aForm['particulier']['nom-dusage'] ?>"
                        placeholder="<?= $this->lng['etape1']['nom-dusage'] ?>"
                        class="field field-small" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
                 <input type="text" name="prenom" id="prenom" title="<?= $this->lng['etape1']['prenom'] ?>"
-                       value="<?= empty($this->aForm['prenom']) && false === empty($this->aLanding['prenom']) ? $this->aLanding['prenom'] : $this->aForm['prenom'] ?>"
+                       value="<?= empty($this->aForm['particulier']['prenom']) && false === empty($this->aLanding['prenom']) ? $this->aLanding['prenom'] : $this->aForm['particulier']['prenom'] ?>"
                        placeholder = "<?= $this->lng['etape1']['prenom'] ?>"
-                       class="field field-small required <?= (empty($this->aForm['prenom']) ? "LV_valid_field" : '') ?>"
+                       class="field field-small required <?= (empty($this->aForm['particulier']['prenom']) ? "LV_valid_field" : '') ?>"
                        data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
             </div>
             <div class="row small-select">
@@ -37,7 +37,7 @@
                     <option value=""><?= $this->lng['etape1']['jour'] ?></option>
                     <option value=""><?= $this->lng['etape1']['jour'] ?></option>
                     <?php for ($i = 1; $i <= 31; $i++) : ?>
-                        <option <?= ($this->aForm['jour_naissance'] == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
+                        <option <?= ($this->aForm['particulier']['jour_naissance'] == $i ? 'selected' : '') ?> value="<?= $i ?>"><?= $i ?></option>
                     <?php endfor; ?>
                 </select>
                 <select name="mois_naissance" id="mois_naissance" class="custom-select required field-tiny">
@@ -45,7 +45,7 @@
                     <option value=""><?= $this->lng['etape1']['mois'] ?></option>
                     <?php foreach ($this->dates->tableauMois['fr'] as $k => $mois) : ?>
                         <?php if ($k > 0) : ?>
-                            <option <?= $this->aForm['mois_naissance'] == $k ? "selected" : '' ?> value="'<?= $k  ?>"> <?= $mois ?></option>;
+                            <option <?= $this->aForm['particulier']['mois_naissance'] == $k ? "selected" : '' ?> value="'<?= $k  ?>"> <?= $mois ?></option>;
                         <?php endif; ?>
                     <?php endforeach;?>
                 </select>
@@ -53,7 +53,7 @@
                     <option value=""><?= $this->lng['etape1']['annee'] ?></option>
                     <option value=""><?= $this->lng['etape1']['annee'] ?></option>
                     <?php for ($i = date('Y') - 18; $i >= 1910; $i--) : ?>
-                        <option <?= $this->aForm['annee_naissance'] == $i ? "selected" : '' ?> value="<?= $i ?>"><?= $i ?></option>
+                        <option <?= $this->aForm['particulier']['annee_naissance'] == $i ? "selected" : '' ?> value="<?= $i ?>"><?= $i ?></option>
                     <?php endfor; ?>
                 </select>
                 <div style="clear: both;"></div>
@@ -64,8 +64,8 @@
                 <span class="inline-text inline-text-alt inline-text-alt-small"><?= $this->lng['etape1']['commune-de-naissance'] ?>:</span>
                 <input type="text" name="naissance" id="naissance" class="field field-small required" data-autocomplete="birth_city"
                        placeholder="<?= $this->lng['etape1']['commune-de-naissance'] ?>"
-                       value="<?= $this->aForm['naissance'] ?>">
-                <input type="hidden" id="insee_birth" name="insee_birth" value="<?= $this->aForm['insee_birth'] ?>"/>
+                       value="<?= $this->aForm['particulier']['naissance'] ?>">
+                <input type="hidden" id="insee_birth" name="insee_birth" value="<?= $this->aForm['particulier']['insee_birth'] ?>"/>
             </div>
             <div class="row row-triple-fields row-triple-fields-alt">
                 <span style="color:#C84747; display: none" id="error-message-nationality">
@@ -77,7 +77,7 @@
                     <option value=""><?= $this->lng['etape1']['pays-de-naissance'] ?></option>
                     <option value=""><?= $this->lng['etape1']['pays-de-naissance'] ?></option>
                     <?php foreach ($this->lPays as $p) : ?>
-                        <option <?= ($this->aForm['pays3'] == $p['id_pays'] ? 'selected' : ($this->aForm['pays3'] == 0 && $p['id_pays'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                        <option <?= ($this->aForm['particulier']['pays3'] == $p['id_pays'] ? 'selected' : ($this->aForm['particulier']['pays3'] == 0 && $p['id_pays'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
                     <?php endforeach; ?>
                 </select>
                 <span class="inline-text" style="margin-left: 40px;"><?= $this->lng['etape1']['nationalite'] ?> :</span>
@@ -85,7 +85,7 @@
                     <option value=""><?= $this->lng['etape1']['nationalite'] ?></option>
                     <option value=""><?= $this->lng['etape1']['nationalite'] ?></option>
                     <?php foreach ($this->lNatio as $p) : ?>
-                        <option <?= ($this->aForm['nationalite'] == $p['id_nationalite'] ? 'selected' : ($this->aForm['nationalite'] == 0 && $p['id_nationalite'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
+                        <option <?= ($this->aForm['particulier']['nationalite'] == $p['id_nationalite'] ? 'selected' : ($this->aForm['particulier']['nationalite'] == 0 && $p['id_nationalite'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_nationalite'] ?>"><?= $p['fr_f'] ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -105,15 +105,15 @@
                 <span class="pass-field-holder">
                     <input type="text" name="email" id="email" title="<?= $this->lng['etape1']['email'] ?>"
                            placeholder ="<?= $this->lng['etape1']['email'] ?>"
-                           value="<?= empty($this->aForm['email']) && false === empty($this->aLanding['email']) ? $this->aLanding['email'] : $this->aForm['email'] ?>"
-                           class="field field-large required <?= empty($this->aForm['email']) ? "LV_valid_field" : '' ?>"
+                           value="<?= empty($this->aForm['particulier']['email']) && false === empty($this->aLanding['email']) ? $this->aLanding['email'] : $this->aForm['particulier']['email'] ?>"
+                           class="field field-large required <?= empty($this->aForm['particulier']['email']) ? "LV_valid_field" : '' ?>"
                            data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this.value,'conf_email')">
                     <em><?= $this->lng['etape1']['info-email'] ?></em>
                 </span>
                 <span class="pass-field-holder">
                     <input type="text" name="conf_email" id="conf_email" title="<?= $this->lng['etape1']['confirmation-email'] ?>" placeholder="<?= $this->lng['etape1']['confirmation-email'] ?>"
-                           value="<?= $this->aForm['conf_email'] ?>"
-                           class="field field-large required <?= (empty($this->aForm['conf_email']) ? "LV_valid_field" : "") ?>"
+                           value="<?= $this->aForm['particulier']['conf_email'] ?>"
+                           class="field field-large required <?= (empty($this->aForm['particulier']['conf_email']) ? "LV_valid_field" : "") ?>"
                            data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }">
                 </span>
             </div>
@@ -121,7 +121,7 @@
                 <span class="inline-text inline-text-alt"><?= $this->lng['etape1']['telephone'] ?> :</span>
                 <input type="text" name="phone" id="phone" title="<?= $this->lng['etape1']['telephone'] ?>"
                        placeholder="<?= $this->lng['etape1']['telephone'] ?>"
-                       value="<?= $this->aForm['phone'] ?>" class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
+                       value="<?= $this->aForm['particulier']['phone'] ?>" class="field field-small required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
             </div>
         </div> <!-- end GROUP -->
     </div>
@@ -134,19 +134,19 @@
 
             <div class="row">
                 <input type="text" id="adresse_inscription" name="adresse_inscription" title="<?= $this->lng['etape1']['adresse'] ?>" placeholder="<?= $this->lng['etape1']['adresse'] ?>"
-                       value="<?= $this->aForm['adresse_inscription'] ?>"
+                       value="<?= $this->aForm['particulier']['adresse_inscription'] ?>"
                        class="field field-mega required" data-validators="Presence">
             </div>
             <div class="row row-triple-fields">
                 <input type="text" id="postal" name="postal" class="field field-small required" data-autocomplete="post_code"
-                       placeholder="<?= $this->lng['etape1']['code-postal'] ?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= $this->aForm['postal'] ?>"/>
+                       placeholder="<?= $this->lng['etape1']['code-postal'] ?>" title="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= $this->aForm['particulier']['postal'] ?>"/>
                 <input type="text" id="ville_inscription" name="ville_inscription" class="field field-small required" data-autocomplete="city"
-                       placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= $this->aForm['ville_inscription'] ?>"/>
+                       placeholder="<?= $this->lng['etape1']['ville'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" value="<?= $this->aForm['particulier']['ville_inscription'] ?>"/>
                 <select name="pays1" id="pays1" class="country custom-select required field-small">
                     <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                     <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                     <?php foreach ($this->lPays as $p) : ?>
-                        <option <?= ($this->aForm['pays1'] == $p['id_pays'] ? 'selected' : ($this->aForm['pays1'] == 0 && $p['id_pays'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                        <option <?= ($this->aForm['particulier']['pays1'] == $p['id_pays'] ? 'selected' : ($this->aForm['particulier']['pays1'] == 0 && $p['id_pays'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -155,7 +155,7 @@
                     <label for="mon-addresse"><?= $this->lng['etape1']['meme-adresse'] ?>
                         <p class="exInfoBulle"><?= $this->lng['etape1']['instruction-second-address'] ?></p>
                     </label>
-                    <input <?= $this->aForm['mon-addresse'] == 0 ? '' : 'checked="checked"' ?>
+                    <input <?= $this->aForm['particulier']['mon-addresse'] == 0 ? '' : 'checked="checked"' ?>
                         type="checkbox" class="custom-input" name="mon-addresse" id="mon-addresse" data-condition="hide:.add-address">
                 </div>
             </div>
@@ -163,19 +163,19 @@
                 <p><?= $this->lng['etape1']['adresse-de-correspondance'] ?></p>
                 <div class="row">
                     <input type="text" id="address2" name="adress2" title="<?= $this->lng['etape1']['adresse'] ?>" placeholder="<?= $this->lng['etape1']['adresse'] ?>"
-                           value="<?= $this->aForm['adress2'] ?>"
+                           value="<?= $this->aForm['particulier']['adress2'] ?>"
                            class="field field-mega required" data-validators="Presence">
                 </div>
                 <div class="row row-triple-fields">
                     <input type="text" id="postal2" name="postal2" class="field field-small required" data-autocomplete="post_code"
-                           placeholder="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= $this->aForm['postal2'] ?>" title="<?= $this->lng['etape1']['code-postal'] ?>"/>
+                           placeholder="<?= $this->lng['etape1']['code-postal'] ?>" value="<?= $this->aForm['particulier']['postal2'] ?>" title="<?= $this->lng['etape1']['code-postal'] ?>"/>
                     <input type="text" id="ville2" name="ville2" class="field field-small required" data-autocomplete="city"
-                           placeholder="<?= $this->lng['etape1']['ville'] ?>" value="<?= $this->aForm['ville2'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" />
+                           placeholder="<?= $this->lng['etape1']['ville'] ?>" value="<?= $this->aForm['particulier']['ville2'] ?>" title="<?= $this->lng['etape1']['ville'] ?>" />
                     <select name="pays2" id="pays2" class="country custom-select required field-small">
                         <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                         <option value=""><?= $this->lng['etape1']['pays'] ?></option>
                         <?php foreach ($this->lPays as $p) : ?>
-                            <option <?= ($this->aForm['pays2'] == $p['id_pays'] ? 'selected' : ($this->aForm['pays2'] == 0 && $p['id_pays'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
+                            <option <?= ($this->aForm['particulier']['pays2'] == $p['id_pays'] ? 'selected' : ($this->aForm['particulier']['pays2'] == 0 && $p['id_pays'] == 1 ? 'selected' : '')) ?> value="<?= $p['id_pays'] ?>"><?= $p['fr'] ?></option>
                         <?php endforeach; ?>
                     </select>
                 </div>
@@ -199,7 +199,7 @@
             <div class="row">
                 <input type="text" id="secret-question" name="secret-question" title="<?= $this->lng['etape1']['question-secrete'] ?>"
                        placeholder="<?= $this->lng['etape1']['question-secrete'] ?>"
-                       value="<?= $this->aForm['secret-question'] ?>"
+                       value="<?= $this->aForm['particulier']['secret-question'] ?>"
                        class="field field-mega required" data-validators="Presence">
                 <label class="exInfoBulle"><?= $this->lng['etape1']['info-question-secrete'] ?></label>
 

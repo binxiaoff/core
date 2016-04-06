@@ -66,46 +66,82 @@ class inscription_preteurController extends bootstrap
             if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
             }
-
-            $this->modif       = true;
-            $this->email       = $this->clients->email;
         }
 
-
-        $aForm          = isset($_SESSION['forms']['lender_subscription_step_1']['values']) ? $_SESSION['forms']['lender_subscription_step_1']['values'] : array();
-        $this->aLanding = array(
+        $aFormPhysicalPerson        = isset($_SESSION['forms']['lender_subscription_step_1']['particulier']['values']) ? $_SESSION['forms']['lender_subscription_step_1']['particulier']['values'] : array();
+        $aFormLegalEntity           = isset($_SESSION['forms']['lender_subscription_step_1']['societe']['values']) ? $_SESSION['forms']['lender_subscription_step_1']['societe']['values'] : array();
+        $this->aLanding             = array(
             'email'  => isset($_SESSION['landing_client']['email']) ? $_SESSION['landing_client']['email'] : null,
             'prenom' => isset($_SESSION['landing_client']['prenom']) ? $_SESSION['landing_client']['prenom'] : null,
             'nom'    => isset($_SESSION['landing_client']['nom']) ? $_SESSION['landing_client']['nom'] : null
         );
-        $this->aForm    = array(
-            'sex'                 => isset($aForm['sex']) ? $aForm['sex'] : $this->clients->civilite,
-            'nom-famille'         => isset($aForm['nom-famille']) ? $aForm['nom-famille'] : $this->clients->nom,
-            'nom-dusage'          => isset($aForm['nom-dusage']) ? $aForm['nom-dusage'] : $this->clients->nom_usage,
-            'prenom'              => isset($aForm['prenom']) ? $aForm['prenom'] : $this->clients->prenom,
-            'jour_naissance'      => isset($aForm['jour_naissance']) ? $aForm['jour_naissance'] : substr($this->clients->naissance, 0, 2),
-            'mois_naissance'      => isset($aForm['mois_naissance']) ? $aForm['mois_naissance'] : substr($this->clients->naissance, 3, 2),
-            'annee_naissance'     => isset($aForm['annee_naissance']) ? $aForm['annee_naissance'] : substr($this->clients->naissance, -1, 4),
-            'naissance'           => isset($aForm['naissance']) ? $aForm['naissance'] : $this->clients->ville_naissance,
-            'insee_birth'         => isset($aForm['insee_birth']) ? $aForm['insee_birth'] : $this->clients->insee_birth,
-            'pays3'               => isset($aForm['pays3']) ? $aForm['pays3'] : $this->clients->id_pays_naissance,
-            'nationalite'         => isset($aForm['nationalite']) ? $aForm['nationalite'] : $this->clients->id_nationalite,
-            'email'               => isset($aForm['email']) ? $aForm['email'] : $this->clients->email,
-            'conf_email'          => isset($aForm['conf_email']) ? $aForm['conf_email'] : $this->clients->email,
-            'phone'               => isset($aForm['phone']) ? $aForm['phone'] : $this->clients->telephone,
-            'adresse_inscription' => isset($aForm['adresse_inscription']) ? $aForm['adresse_inscription'] : $this->clients_adresses->adresse_fiscal,
-            'postal'              => isset($aForm['postal']) ? $aForm['postal'] : $this->clients_adresses->cp_fiscal,
-            'ville_inscription'   => isset($aForm['ville_inscription']) ? $aForm['ville_inscription'] : $this->clients_adresses->ville_fiscal,
-            'pays1'               => isset($aForm['pays1']) ? $aForm['pays1'] : $this->clients_adresses->id_pays_fiscal,
-            'mon-addresse'        => isset($aForm['mon-addresse']) ? $aForm['mon-addresse'] : $this->clients_adresses->meme_adresse_fiscal,
-            'adress2'             => isset($aForm['adress2']) ? $aForm['adress2'] : $this->clients_adresses->adresse1,
-            'postal2'             => isset($aForm['postal2']) ? $aForm['postal2'] : $this->clients_adresses->cp,
-            'ville2'              => isset($aForm['ville2']) ? $aForm['ville2'] : $this->clients_adresses->ville,
-            'pays2'               => isset($aForm['pays2']) ? $aForm['pays2'] : $this->clients_adresses->id_pays,
-            'secret-question'     => isset($aForm['secret-question']) ? $aForm['secret-question'] : $this->clients->secrete_question,
-            'particulier'         => isset($aForm['form_inscription_preteur_particulier_etape_1']) || in_array($this->clients->type, array(clients::TYPE_PERSON, clients::TYPE_PERSON_FOREIGNER))
+        $this->aForm['particulier'] = array(
+            'sex'                 => isset($aFormPhysicalPerson['sex']) ? $aFormPhysicalPerson['sex'] : $this->clients->civilite,
+            'nom-famille'         => isset($aFormPhysicalPerson['nom-famille']) ? $aFormPhysicalPerson['nom-famille'] : $this->clients->nom,
+            'nom-dusage'          => isset($aFormPhysicalPerson['nom-dusage']) ? $aFormPhysicalPerson['nom-dusage'] : $this->clients->nom_usage,
+            'prenom'              => isset($aFormPhysicalPerson['prenom']) ? $aFormPhysicalPerson['prenom'] : $this->clients->prenom,
+            'jour_naissance'      => isset($aFormPhysicalPerson['jour_naissance']) ? $aFormPhysicalPerson['jour_naissance'] : substr($this->clients->naissance, -2, 2),
+            'mois_naissance'      => isset($aFormPhysicalPerson['mois_naissance']) ? $aFormPhysicalPerson['mois_naissance'] : substr($this->clients->naissance, 5, 2),
+            'annee_naissance'     => isset($aFormPhysicalPerson['annee_naissance']) ? $aFormPhysicalPerson['annee_naissance'] : substr($this->clients->naissance, 0, 4),
+            'naissance'           => isset($aFormPhysicalPerson['naissance']) ? $aFormPhysicalPerson['naissance'] : $this->clients->ville_naissance,
+            'insee_birth'         => isset($aFormPhysicalPerson['insee_birth']) ? $aFormPhysicalPerson['insee_birth'] : $this->clients->insee_birth,
+            'pays3'               => isset($aFormPhysicalPerson['pays3']) ? $aFormPhysicalPerson['pays3'] : $this->clients->id_pays_naissance,
+            'nationalite'         => isset($aFormPhysicalPerson['nationalite']) ? $aFormPhysicalPerson['nationalite'] : $this->clients->id_nationalite,
+            'email'               => isset($aFormPhysicalPerson['email']) ? $aFormPhysicalPerson['email'] : $this->clients->email,
+            'conf_email'          => isset($aFormPhysicalPerson['conf_email']) ? $aFormPhysicalPerson['conf_email'] : $this->clients->email,
+            'phone'               => isset($aFormPhysicalPerson['phone']) ? $aFormPhysicalPerson['phone'] : $this->clients->telephone,
+            'adresse_inscription' => isset($aFormPhysicalPerson['adresse_inscription']) ? $aFormPhysicalPerson['adresse_inscription'] : $this->clients_adresses->adresse_fiscal,
+            'postal'              => isset($aFormPhysicalPerson['postal']) ? $aFormPhysicalPerson['postal'] : $this->clients_adresses->cp_fiscal,
+            'ville_inscription'   => isset($aFormPhysicalPerson['ville_inscription']) ? $aFormPhysicalPerson['ville_inscription'] : $this->clients_adresses->ville_fiscal,
+            'pays1'               => isset($aFormPhysicalPerson['pays1']) ? $aFormPhysicalPerson['pays1'] : $this->clients_adresses->id_pays_fiscal,
+            'mon-addresse'        => isset($aFormPhysicalPerson['mon-addresse']) ? $aFormPhysicalPerson['mon-addresse'] : $this->clients_adresses->meme_adresse_fiscal,
+            'adress2'             => isset($aFormPhysicalPerson['adress2']) ? $aFormPhysicalPerson['adress2'] : $this->clients_adresses->adresse1,
+            'postal2'             => isset($aFormPhysicalPerson['postal2']) ? $aFormPhysicalPerson['postal2'] : $this->clients_adresses->cp,
+            'ville2'              => isset($aFormPhysicalPerson['ville2']) ? $aFormPhysicalPerson['ville2'] : $this->clients_adresses->ville,
+            'pays2'               => isset($aFormPhysicalPerson['pays2']) ? $aFormPhysicalPerson['pays2'] : $this->clients_adresses->id_pays,
+            'secret-question'     => isset($aFormPhysicalPerson['secret-question']) ? $aFormPhysicalPerson['secret-question'] : $this->clients->secrete_question,
+            'bIsPhysicalPerson'   => isset($aFormPhysicalPerson['form_inscription_preteur_particulier_etape_1']) || in_array($this->clients->type, array(
+                    clients::TYPE_PERSON,
+                    clients::TYPE_PERSON_FOREIGNER
+                ))
         );
-        $this->aErrors  = isset($_SESSION['forms']['lender_subscription_step_1']['errors']) ? $_SESSION['forms']['lender_subscription_step_1']['errors'] : array();
+        $this->aForm['societe']     = array(
+            'raison_sociale_inscription'  => isset($aFormLegalEntity['raison_sociale_inscription']) ? $aFormLegalEntity['raison_sociale_inscription'] : $this->companies->name,
+            'forme_juridique_inscription' => isset($aFormLegalEntity['forme_juridique_inscription']) ? $aFormLegalEntity['forme_juridique_inscription'] : $this->companies->forme,
+            'siren_inscription'           => isset($aFormLegalEntity['siren_inscription']) ? $aFormLegalEntity['siren_inscription'] : $this->companies->siren,
+            'capital_social_inscription'  => isset($aFormLegalEntity['capital_social_inscription']) ? $aFormLegalEntity['capital_social_inscription'] : $this->companies->capital,
+            'phone_inscription'           => isset($aFormLegalEntity['phone_inscription']) ? $aFormLegalEntity['phone_inscription'] : $this->companies->phone,
+            'enterprise'                  => isset($aFormLegalEntity['enterprise']) ? $aFormLegalEntity['enterprise'] : $this->companies->status_client,
+            'external-consultant'         => isset($aFormLegalEntity['external-consultant']) ? $aFormLegalEntity['external-consultant'] : $this->companies->status_conseil_externe_entreprise,
+            'autre_inscription'           => isset($aFormLegalEntity['autre_inscription']) ? $aFormLegalEntity['autre_inscription'] : $this->companies->preciser_conseil_externe_entreprise,
+            'genre1'                      => isset($aFormLegalEntity['genre1']) ? $aFormLegalEntity['genre1'] : $this->clients->civilite,
+            'nom_inscription'             => isset($aFormLegalEntity['nom_inscription']) ? $aFormLegalEntity['nom_inscription'] : $this->clients->nom,
+            'prenom_inscription'          => isset($aFormLegalEntity['prenom_inscription']) ? $aFormLegalEntity['prenom_inscription'] : $this->clients->prenom,
+            'fonction_inscription'        => isset($aFormLegalEntity['fonction_inscription']) ? $aFormLegalEntity['fonction_inscription'] : $this->clients->fonction,
+            'genre2'                      => isset($aFormLegalEntity['genre2']) ? $aFormLegalEntity['genre2'] : $this->companies->civilite_dirigeant,
+            'nom2_inscription'            => isset($aFormLegalEntity['nom2_inscription']) ? $aFormLegalEntity['nom2_inscription'] : $this->companies->nom_dirigeant,
+            'prenom2_inscription'         => isset($aFormLegalEntity['prenom2_inscription']) ? $aFormLegalEntity['prenom2_inscription'] : $this->companies->prenom_dirigeant,
+            'fonction2_inscription'       => isset($aFormLegalEntity['fonction2_inscription']) ? $aFormLegalEntity['fonction2_inscription'] : $this->companies->fonction_dirigeant,
+            'email2_inscription'          => isset($aFormLegalEntity['email2_inscription']) ? $aFormLegalEntity['email2_inscription'] : $this->companies->email_dirigeant,
+            'phone_new2_inscription'      => isset($aFormLegalEntity['phone_new2_inscription']) ? $aFormLegalEntity['phone_new2_inscription'] : $this->companies->phone_dirigeant,
+            'adresse_inscriptionE'        => isset($aFormLegalEntity['adresse_inscriptionE']) ? $aFormLegalEntity['adresse_inscriptionE'] : $this->companies->adresse1,
+            'postalE'                     => isset($aFormLegalEntity['postalE']) ? $aFormLegalEntity['postalE'] : $this->companies->zip,
+            'ville_inscriptionE'          => isset($aFormLegalEntity['ville_inscriptionE']) ? $aFormLegalEntity['ville_inscriptionE'] : $this->companies->city,
+            'pays1E'                      => isset($aFormLegalEntity['pays1E']) ? $aFormLegalEntity['pays1E'] : $this->companies->id_pays,
+            'address2E'                   => isset($aFormLegalEntity['address2E']) ? $aFormLegalEntity['address2E'] : $this->clients_adresses->adresse1,
+            'postal2E'                    => isset($aFormLegalEntity['postal2E']) ? $aFormLegalEntity['postal2E'] : $this->clients_adresses->cp,
+            'ville2E'                     => isset($aFormLegalEntity['ville2E']) ? $aFormLegalEntity['ville2E'] : $this->clients_adresses->ville,
+            'pays2E'                      => isset($aFormLegalEntity['pays2E']) ? $aFormLegalEntity['pays2E'] : $this->clients_adresses->id_pays,
+            'email_inscription'           => isset($aFormLegalEntity['email_inscription']) ? $aFormLegalEntity['email_inscription'] : $this->clients->email,
+            'conf_email_inscription'      => isset($aFormLegalEntity['conf_email_inscription']) ? $aFormLegalEntity['conf_email_inscription'] : $this->clients->email,
+            'phone_new_inscription'       => isset($aFormLegalEntity['phone_new_inscription']) ? $aFormLegalEntity['phone_new_inscription'] : $this->clients->telephone,
+            'secret-questionE'            => isset($aFormLegalEntity['secret-questionE']) ? $aFormLegalEntity['secret-questionE'] : $this->clients->secrete_question,
+            'bIsLegalEntity'              => isset($aFormLegalEntity['send_form_inscription_preteur_societe_etape_1']) || in_array($this->clients->type, array(
+                    clients::TYPE_LEGAL_ENTITY,
+                    clients::TYPE_LEGAL_ENTITY_FOREIGNER
+                ))
+        );
+        $this->aErrors              = isset($_SESSION['forms']['lender_subscription_step_1']['errors']) ? $_SESSION['forms']['lender_subscription_step_1']['errors'] : array();
 
         unset($_SESSION['forms']['lender_subscription_step_1']);
 
@@ -153,7 +189,7 @@ class inscription_preteurController extends bootstrap
 
         $this->checkSession();
 
-        if ($this->bIsBorrower || $this->preteurOnline || isset($this->params[0]) && $this->clients->get($this->params[0], 'status = 1 AND etape_inscription_preteur < 3 AND hash')) {
+        if (isset($this->params[0]) && $this->clients->get($this->params[0], 'status = 1 AND etape_inscription_preteur < 3 AND hash') || false === empty($this->clients->id_client)) {
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
@@ -165,8 +201,6 @@ class inscription_preteurController extends bootstrap
             $this->iban5 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 16, 4);
             $this->iban6 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 20, 4);
             $this->iban7 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 24, 3);
-
-            $this->hash_client = $this->clients->hash;
 
             $this->etranger = 0;
             if ($this->clients->id_nationalite <= \nationalites_v2::NATIONALITY_FRENCH && $this->clients_adresses->id_pays_fiscal > \pays_v2::COUNTRY_FRANCE) {
@@ -925,7 +959,6 @@ class inscription_preteurController extends bootstrap
             'url'            => $this->lurl,
             'prenom'         => $oClient->prenom,
             'email_p'        => $oClient->email,
-            'mdp'            => $_POST['pass'],
             'motif_virement' => $oClient->getLenderPattern($oClient->id_client),
             'lien_fb'        => $lien_fb,
             'lien_tw'        => $lien_tw,
@@ -954,34 +987,40 @@ class inscription_preteurController extends bootstrap
         }
     }
 
-    private function checkSession() {
-
+    private function checkSession()
+    {
         if (isset($_SESSION['client'])) {
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
-            if ($this->bIsLender && $this->clients->etape_inscription_preteur >= 3) {
-                header('Location:' . $this->lurl . '/projects');
-                die;
-            } elseif ($this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
-                $this->preteurOnline = true;
-            } elseif ($this->bIsBorrower) {
+            if ($this->isLenderWithSubscriptionProcessFinished($this->clients) || $this->get('ClientManager')->isBorrower($this->clients)) {
                 header('Location:' . $this->lurl . '/projects');
                 die;
             }
         }
     }
 
+    private function isLenderWithSubscriptionProcessFinished(\clients $oClient)
+    {
+        return $this->get('ClientManager')->isLender($oClient) && $oClient->etape_inscription_preteur >= 3;
+    }
+
+    private function isLenderWithOngoingSubscriptionProcess(\clients $oClient)
+    {
+        return $this->get('ClientManager')->isLender($oClient) && $oClient->etape_inscription_preteur < 3;
+    }
+
+
     private function validStep1PhysicalPerson()
     {
         $bFormOk             = true;
         $bClientModification = false;
 
-        if (isset($_SESSION['client']) && $this->bIsLender && $this->clients->etape_inscription_preteur < 3) {
+        if (isset($_SESSION['client']) || $this->isLenderWithOngoingSubscriptionProcess($this->clients)) {
             $bClientModification = true;
         }
 
         if (false === $this->dates->ageplus18($_POST['annee_naissance'] . '-' . $_POST['mois_naissance'] . '-' . $_POST['jour_naissance'])) {
-            $bFormOk                 = false;
+            $bFormOk                                                          = false;
             $_SESSION['forms']['lender_subscription_step_1']['errors']['age'] = $this->lng['etape1']['erreur-age'];
         }
 
@@ -993,16 +1032,13 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if ((false === isset($_POST['email']) && false === $this->ficelle->isEmail($_POST['email']))
-            || $_POST['email'] != $_POST['conf_email']
-        ) {
+        if ((false === isset($_POST['email']) && false === $this->ficelle->isEmail($_POST['email'])) || $_POST['email'] != $_POST['conf_email']) {
             $bFormOk = false;
-        } elseif (false === $this->clients->existEmail($_POST['email'])) {
-            if (false === $bClientModification || $bClientModification && ($_POST['email'] != $this->clients->email)
-            ) {
-                $_SESSION['forms']['lender_subscription_step_1']['errors']['email'] = $this->lng['etape1']['erreur-email'];
-                $bFormOk                                                            = false;
-            }
+        }
+
+        if (false === $this->clients->existEmail($_POST['email']) && (false === $bClientModification || $bClientModification && ($_POST['email'] != $this->clients->email))) {
+            $_SESSION['forms']['lender_subscription_step_1']['errors']['email'] = $this->lng['etape1']['erreur-email'];
+            $bFormOk                                                            = false;
         }
 
         if (! isset($_POST['pass']) || $_POST['pass'] == '') {
@@ -1042,7 +1078,7 @@ class inscription_preteurController extends bootstrap
             unset($oVilles);
         }
 
-        if ($this->clients_adresses->meme_adresse_fiscal == 0) {
+        if (isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse'])) {
             if (! isset($_POST['adress2']) || $_POST['adress2'] == $this->lng['etape1']['adresse']) {
                 $bFormOk = false;
             }
@@ -1099,8 +1135,8 @@ class inscription_preteurController extends bootstrap
         }
 
         if (false === $bFormOk) {
-            $_SESSION['forms']['lender_subscription_step_1']['values'] = $_POST;
-            header('Location: ' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
+            $_SESSION['forms']['lender_subscription_step_1']['particulier']['values'] = $_POST;
+            header('Location: ' . $this->lurl . '/inscription_preteur/etape1/');
             die;
         } else {
             $this->clients->civilite  = $_POST['sex'];
@@ -1161,7 +1197,7 @@ class inscription_preteurController extends bootstrap
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
                 $this->clients_history_actions->histo(13, 'edition inscription etape 1 particulier', $this->clients->id_client, $serialize);
 
-            } elseif ($this->bIsBorrower == false) {
+            } else {
                 $this->setSource($this->clients);
 
                 $this->clients->status                     = \clients::STATUS_ONLINE;
@@ -1184,12 +1220,13 @@ class inscription_preteurController extends bootstrap
             }
 
             if (isset($_POST['accept-cgu']) && false === empty($_POST['accept-cgu'])) {
-                $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesParticulier;
-                $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
-
                 if ($this->acceptations_legal_docs->get($this->lienConditionsGeneralesParticulier, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc')) {
+                    $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesParticulier;
+                    $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
                     $this->acceptations_legal_docs->update();
                 } else {
+                    $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesParticulier;
+                    $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
                     $this->acceptations_legal_docs->create();
                 }
             }
@@ -1200,72 +1237,28 @@ class inscription_preteurController extends bootstrap
 
     private function validStep1LegalEntity()
     {
-        $bFormOk = true;
 
-        $this->companies->name    = $_POST['raison_sociale_inscription'];
-        $this->companies->forme   = $_POST['forme_juridique_inscription'];
-        $this->companies->capital = str_replace(' ', '', $_POST['capital_social_inscription']);
-        $this->companies->phone   = str_replace(' ', '', $_POST['phone_inscription']);
-        $this->companies->siren   = $_POST['siren_inscription'];
+        $bFormOk             = true;
+        $bClientModification = false;
 
-        if (isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse'])) {
-            $this->companies->status_adresse_correspondance = '1';
-            $this->clients_adresses->adresse1 = $_POST['adresse_inscriptionE'];
-            $this->clients_adresses->ville    = $_POST['ville_inscriptionE'];
-            $this->clients_adresses->cp       = $_POST['postalE'];
-            $this->companies->id_pays         = $_POST['pays1E'];
-        } else {
-            $this->companies->status_adresse_correspondance = '0';
-            $this->clients_adresses->adresse1 = $_POST['adress2E'];
-            $this->clients_adresses->ville    = $_POST['ville2E'];
-            $this->clients_adresses->cp       = $_POST['postal2E'];
-            $this->clients_adresses->id_pays  = $_POST['pays2E'];
+        if (isset($_SESSION['client']) || $this->isLenderWithOngoingSubscriptionProcess($this->clients)) {
+            $bClientModification = true;
         }
 
-        $this->companies->adresse1 = $_POST['adresse_inscriptionE'];
-        $this->companies->city     = $_POST['ville_inscriptionE'];
-        $this->companies->zip      = $_POST['postalE'];
-        $this->companies->id_pays  = $_POST['pays1E'];
-
-        $this->companies->status_client = $_POST['enterprise'];
-
-        $this->clients->civilite  = $_POST['genre1'];
-        $this->clients->nom       = $this->ficelle->majNom($_POST['nom_inscription']);
-        $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom_inscription']);
-        $this->clients->fonction  = $_POST['fonction_inscription'];
-        $this->clients->email     = $_POST['email_inscription'];
-        $this->clients->telephone = str_replace(' ', '', $_POST['phone_new_inscription']);
-
-        if (\companies::CLIENT_STATUS_DELEGATION_OF_POWER == $this->companies->status_client|| \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $this->companies->status_client) {
-            $this->companies->civilite_dirigeant = $_POST['genre2'];
-            $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_inscription']);
-            $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_inscription']);
-            $this->companies->fonction_dirigeant = $_POST['fonction2_inscription'];
-            $this->companies->email_dirigeant    = $_POST['email2_inscription'];
-            $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone_new2_inscription']);
-
-            if ($this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
-                $this->companies->status_conseil_externe_entreprise   = $_POST['external-consultant'];
-                $this->companies->preciser_conseil_externe_entreprise = $_POST['autre_inscription'];
-            }
+        if (! isset($_POST['passE']) || $_POST['passE'] == '') {
+            $bFormOk = false;
         }
-
-        if ($this->bIsBorrower == false) {
-            if (! isset($_POST['passE']) || $_POST['passE'] == '') {
-                $bFormOk = false;
-            }
-            if (! isset($_POST['passE2']) || $_POST['passE2'] == '') {
-                $bFormOk = false;
-            }
-            if (isset($_POST['passE']) && isset($_POST['passE2']) && $_POST['passE'] != $_POST['passE2']) {
-                $bFormOk = false;
-            }
-            if (! isset($_POST['secret-questionE']) || $_POST['secret-questionE'] == $this->lng['etape1']['question-secrete']) {
-                $bFormOk = false;
-            }
-            if (! isset($_POST['secret-responseE']) || $_POST['secret-responseE'] == $this->lng['etape1']['response']) {
-                $bFormOk = false;
-            }
+        if (! isset($_POST['passE2']) || $_POST['passE2'] == '') {
+            $bFormOk = false;
+        }
+        if (isset($_POST['passE']) && isset($_POST['passE2']) && $_POST['passE'] != $_POST['passE2']) {
+            $bFormOk = false;
+        }
+        if (! isset($_POST['secret-questionE']) || $_POST['secret-questionE'] == $this->lng['etape1']['question-secrete']) {
+            $bFormOk = false;
+        }
+        if (! isset($_POST['secret-responseE']) || $_POST['secret-responseE'] == $this->lng['etape1']['response']) {
+            $bFormOk = false;
         }
 
         if (! isset($_POST['raison_sociale_inscription']) || $_POST['raison_sociale_inscription'] == $this->lng['etape1']['raison-sociale']) {
@@ -1306,8 +1299,8 @@ class inscription_preteurController extends bootstrap
             unset($oVilles);
         }
 
-        if ($this->companies->status_adresse_correspondance == 0) {
-            if (! isset($_POST['adress2E']) || $_POST['adress2E'] == $this->lng['etape1']['adresse']) {
+        if (isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse'])) {
+            if (! isset($_POST['address2E']) || $_POST['address2E'] == $this->lng['etape1']['adresse']) {
                 $bFormOk = false;
             }
             if (! isset($_POST['ville2E']) || $_POST['ville2E'] == $this->lng['etape1']['ville']) {
@@ -1331,21 +1324,13 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if ((false === isset($_POST['email_inscription']) || $_POST['email_inscription'] == $this->lng['etape1']['email'])
-            || (isset($_POST['email_inscription']) && false === $this->ficelle->isEmail($_POST['email_inscription']))
-            || $_POST['email_inscription'] != $_POST['conf_email_inscription']
-        ) {
+        if (false === isset($_POST['email_inscription']) && $_POST['email_inscription'] != $_POST['conf_email_inscription']) {
             $bFormOk = false;
-        } elseif (false === $this->clients->existEmail($_POST['email_inscription'])) {
-            if ($this->modif == true) {
-                if ($_POST['email_inscription'] != $this->email) {
-                    $this->reponse_email     = $this->lng['etape1']['erreur-email'];
-                    $this->error_email_exist = true;
-                }
-            } else {
-                $this->reponse_email     = $this->lng['etape1']['erreur-email'];
-                $this->error_email_exist = true;
-            }
+        }
+
+        if (false === $this->clients->existEmail($_POST['email_inscription']) && (false === $bClientModification || $bClientModification && $_POST['email'] != $this->clients->email)) {
+            $_SESSION['forms']['lender_subscription_step_1']['errors']['email'] = $this->lng['etape1']['erreur-email'];
+            $bFormOk                                                            = false;
         }
 
         if (! isset($_POST['phone_new_inscription']) || $_POST['phone_new_inscription'] == $this->lng['etape1']['telephone']) {
@@ -1355,7 +1340,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk = false;
         }
 
-        if ($this->companies->status_client == \companies::CLIENT_STATUS_DELEGATION_OF_POWER || $this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
+        if ($_POST['external-consultant'] == \companies::CLIENT_STATUS_DELEGATION_OF_POWER || $_POST['external-consultant'] == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
             if (! isset($_POST['nom2_inscription']) || $_POST['nom2_inscription'] == $this->lng['etape1']['nom']) {
                 $bFormOk = false;
             }
@@ -1375,33 +1360,71 @@ class inscription_preteurController extends bootstrap
             } elseif (strlen($_POST['phone_new2_inscription']) < 9 || strlen($_POST['phone_new2_inscription']) > 14) {
                 $bFormOk = false;
             }
-            if ($this->companies->status_client == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
+            if ($_POST['external-consultant'] == \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT) {
                 if (! isset($_POST['external-consultant']) || $_POST['external-consultant'] == '') {
                     $bFormOk = false;
                 }
             }
         }
 
-        if ($bFormOk) {
-            $this->clients->password = md5($_POST['passE']);
+        if (false === $bFormOk) {
+            $_SESSION['forms']['lender_subscription_step_1']['societe']['values'] = $_POST;
+            header('location:' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
+            die;
+        } else {
+            $this->companies->name                          = $_POST['raison_sociale_inscription'];
+            $this->companies->forme                         = $_POST['forme_juridique_inscription'];
+            $this->companies->capital                       = str_replace(' ', '', $_POST['capital_social_inscription']);
+            $this->companies->phone                         = str_replace(' ', '', $_POST['phone_inscription']);
+            $this->companies->siren                         = $_POST['siren_inscription'];
+            $this->companies->status_adresse_correspondance = isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse']) ? 1 : 0;
+            $this->companies->id_pays                       = isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse']) ? $_POST['pays1E'] : $_POST['pays2E'];
+            $this->companies->adresse1                      = $_POST['adresse_inscriptionE'];
+            $this->companies->city                          = $_POST['ville_inscriptionE'];
+            $this->companies->zip                           = $_POST['postalE'];
+            $this->companies->id_pays                       = $_POST['pays1E'];
+            $this->companies->status_client                 = $_POST['enterprise'];
 
-            $this->clients->id_langue       = 'fr';
-            $this->clients->nom_usage       = '';
-            $this->clients->naissance       = '0000-00-00';
-            $this->clients->ville_naissance = '';
-            $this->clients->slug            = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
+            $this->clients_adresses->adresse1               = isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse']) ? $_POST['adresse_inscriptionE'] : $_POST['address2E'];
+            $this->clients_adresses->ville                  = isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse']) ? $_POST['ville_inscriptionE'] : $_POST['ville2E'];
+            $this->clients_adresses->cp                     = isset($_POST['mon-addresse']) && false === empty($_POST['mon-addresse']) ? $_POST['postalE'] : $_POST['postal2E'];
 
-            if ($this->bIsBorrower == false) {
-                $this->clients->secrete_question = $_POST['secret-questionE'];
-                $this->clients->secrete_reponse  = md5($_POST['secret-responseE']);
+            $this->clients->civilite                        = $_POST['genre1'];
+            $this->clients->nom                             = $this->ficelle->majNom($_POST['nom_inscription']);
+            $this->clients->prenom                          = $this->ficelle->majNom($_POST['prenom_inscription']);
+            $this->clients->fonction                        = $_POST['fonction_inscription'];
+            $this->clients->email                           = $_POST['email_inscription'];
+            $this->clients->telephone                       = str_replace(' ', '', $_POST['phone_new_inscription']);
+
+            if (\companies::CLIENT_STATUS_DELEGATION_OF_POWER == $_POST['external-consultant'] || \companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $_POST['external-consultant']) {
+                $this->companies->civilite_dirigeant = $_POST['genre2'];
+                $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_inscription']);
+                $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_inscription']);
+                $this->companies->fonction_dirigeant = $_POST['fonction2_inscription'];
+                $this->companies->email_dirigeant    = $_POST['email2_inscription'];
+                $this->companies->phone_dirigeant    = str_replace(' ', '', $_POST['phone_new2_inscription']);
+
+                if (\companies::CLIENT_STATUS_EXTERNAL_CONSULTANT == $_POST['external-consultant']) {
+                    $this->companies->status_conseil_externe_entreprise   = $_POST['external-consultant'];
+                    $this->companies->preciser_conseil_externe_entreprise = $_POST['autre_inscription'];
+                }
             }
+
+            $this->clients->id_langue        = 'fr';
+            $this->clients->nom_usage        = '';
+            $this->clients->naissance        = '0000-00-00';
+            $this->clients->ville_naissance  = '';
+            $this->clients->slug             = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
+            $this->clients->secrete_question = $_POST['secret-questionE'];
+            $this->clients->secrete_reponse  = md5($_POST['secret-responseE']);
+            $this->clients->password         = md5($_POST['passE']);
 
             $aPost = $_POST;
             $aPost['passE']            = md5($_POST['passE']);
             $aPost['passE2']           = md5($_POST['passE2']);
             $aPost['secret-responseE'] = md5($_POST['secret-responseE']);
 
-            if ($this->modif) {
+            if ($bClientModification) {
                 if ($this->companies->exist($this->clients->id_client, 'id_client_owner')) {
                     $this->companies->update();
                 } else {
@@ -1409,74 +1432,56 @@ class inscription_preteurController extends bootstrap
                     $this->companies->id_company      = $this->companies->create();
                 }
 
-                $this->lenders_accounts->id_company_owner = $this->companies->id_company;
-
-                if ($this->bIsBorrower && false === $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
-                    $this->lenders_accounts->id_client_owner = $this->clients->id_client;
+                if ($this->get('ClientManager')->isBorrower($this->clients) && false === $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
+                    $this->lenders_accounts->id_client_owner  = $this->clients->id_client;
+                    $this->lenders_accounts->id_company_owner = $this->companies->id_company;
+                    $this->lenders_accounts->status           = \lenders_accounts::LENDER_STATUS_ONLINE;
                     $this->lenders_accounts->create();
                 }
 
-                $this->lenders_accounts->update();
                 $this->clients->update();
                 $this->clients_adresses->update();
 
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost ));
-                $this->clients_history_actions->histo(14, 'inscription etape 1 entreprise', $this->clients->id_client, $serialize);
-
+                $this->clients_history_actions->histo(16, 'edition inscription etape 1 entreprise', $this->clients->id_client, $serialize);
             } else {
                 $this->setSource($this->clients);
 
+                $this->clients->status                     = \clients::STATUS_ONLINE;
+                $this->clients->status_inscription_preteur = 1;
+                $this->clients->etape_inscription_preteur  = 1;
+                $this->clients->type                       = (\pays_v2::COUNTRY_FRANCE == $_POST['pays1E']) ? \clients::TYPE_LEGAL_ENTITY : \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
                 $this->clients->create();
+
                 $this->clients_adresses->id_client = $this->clients->id_client;
                 $this->clients_adresses->create();
 
                 $this->companies->id_client_owner = $this->clients->id_client;
                 $this->companies->create();
 
+                $this->lenders_accounts->status           = \lenders_accounts::LENDER_STATUS_ONLINE;
                 $this->lenders_accounts->id_client_owner  = $this->clients->id_client;
                 $this->lenders_accounts->id_company_owner = $this->companies->id_company;
                 $this->lenders_accounts->create();
 
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
-                $this->clients_history_actions->histo(16, 'edition inscription etape 1 entreprise', $this->clients->id_client, $serialize);
+                $this->clients_history_actions->histo(14, 'inscription etape 1 entreprise', $this->clients->id_client, $serialize);
+
+                $this->sendSubscriptionConfirmationEmail($this->clients);
             }
 
             if (isset($_POST['accept-cgu']) && false === empty($_POST['accept-cgu-societe'])) {
-                $bHasAlreadyAccepted = $this->acceptations_legal_docs->get($this->lienConditionsGeneralesSociete, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc');
-
-                $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesSociete;
-                $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
-
-                if ($bHasAlreadyAccepted) {
+                if ($this->acceptations_legal_docs->get($this->lienConditionsGeneralesSociete, 'id_client = "' . $this->clients->id_client . '" AND id_legal_doc')) {
+                    $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesSociete;
+                    $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
                     $this->acceptations_legal_docs->update();
                 } else {
+                    $this->acceptations_legal_docs->id_legal_doc = $this->lienConditionsGeneralesSociete;
+                    $this->acceptations_legal_docs->id_client    = $this->clients->id_client;
                     $this->acceptations_legal_docs->create();
                 }
             }
-
-            if (false === empty($this->reponse_email)) {
-                $_SESSION['reponse_email'] = $this->reponse_email;
-                header('location:' . $this->lurl . '/inscription_preteur/etape1/' . $this->clients->hash);
-                die;
-            } else {
-                if ($this->isB == false && $this->modif == false || $this->modif == true && $this->clients->etape_inscription_preteur == 0) {
-
-                    $this->sendSubscriptionConfirmationEmail($this->clients);
-
-                    $this->clients->status                     = \clients::STATUS_ONLINE;
-                    $this->clients->status_inscription_preteur = 1;
-                    $this->clients->etape_inscription_preteur  = 1;
-                    $this->clients->type                       = (\pays_v2::COUNTRY_FRANCE == $this->companies->id_pays) ? \clients::TYPE_LEGAL_ENTITY : \clients::TYPE_LEGAL_ENTITY_FOREIGNER;
-                    $this->lenders_accounts->status            = \lenders_accounts::LENDER_STATUS_ONLINE;
-
-                    $this->clients->update();
-                    $this->lenders_accounts->update();
-                }
-                header('location:' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
-                die;
-            }
-        } else {
-            header('location:' . $this->lurl . '/inscription_preteur/etape1/' . $this->params[0]);
+            header('location:' . $this->lurl . '/inscription_preteur/etape2/' . $this->clients->hash);
             die;
         }
     }

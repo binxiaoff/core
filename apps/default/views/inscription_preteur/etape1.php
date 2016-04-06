@@ -11,13 +11,13 @@
                             <label for="typePersonne-1">
                                 <?= $this->lng['etape1']['particulier'] ?>
                             </label>
-                            <input <?= (isset($this->aForm['particulier']) && $this->aForm['particulier'] ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-1" value="1">
+                            <input <?= (isset($this->aForm['particulier']) && $this->aForm['particulier']['bIsPhysicalPerson'] ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-1" value="1">
                         </div>
                         <div class="radio-holder" id="lab_radio2">
                             <label for="typePersonne-2">
                                 <?= $this->lng['etape1']['societe'] ?>
                             </label>
-                            <input <?= (isset($this->aForm['societe']) && $this->aForm['societe'] ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-2" value="2">
+                            <input <?= (isset($this->aForm['societe']) && $this->aForm['societe']['bIsLegalEntity'] ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-2" value="2">
                         </div>
                     </div>
                 </div>
@@ -34,7 +34,7 @@
             <div class="societe">
                 <?= $this->fireView('societe_etape_1') ?>
             </div>
-            <?php if (isset($this->aForm['societe']) && $this->aForm['societe']) : ?>
+            <?php if (isset($this->aForm['societe']) && $this->aForm['societe']['bIsLegalEntity']) : ?>
             <script>
                 $(".particulier").hide();
                 $(".societe").show();
@@ -44,7 +44,7 @@
     </div>
 </div>
 <script>
-    <?php if (false === $this->emprunteurCreatePreteur || isset($this->aForm['particulier']) && $this->aForm['particulier']) { ?>
+    <?php if (false === $this->emprunteurCreatePreteur || isset($this->aForm['particulier']) && $this->aForm['particulier']['bIsPhysicalPerson']) { ?>
     $(window).load(function() {
         $(".societe").hide();
     });
