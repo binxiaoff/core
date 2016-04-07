@@ -111,7 +111,7 @@
                     <input type="text" name="conf_email" id="conf_email" title="<?= $this->lng['etape1']['confirmation-email'] ?>"
                            value="<?= (($this->modif || isset($_SESSION['landing_client']['email']) && $_SESSION['landing_client']['email'] != '') && $this->clients->email != '' ? $this->clients->email : $this->lng['etape1']['confirmation-email']) ?>"
                            class="field field-large required <?= ($this->clients->email != '' ? "LV_valid_field" : "") ?>"
-                           data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }" onkeyup="checkConf('email', this.value)">
+                           data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }" onkeyup="checkConf($('#email').val(), 'conf_email')">
                 </span>
             </div>
             <div class="row">
