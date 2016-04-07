@@ -1430,7 +1430,6 @@ class cronController extends bootstrap
             $bank                                = $this->loadData('bank_lines');
             $projects                            = $this->loadData('projects');
             $companies                           = $this->loadData('companies');
-            $prelevements                        = $this->loadData('prelevements');
             $bank_unilend                        = $this->loadData('bank_unilend');
             $this->notifications                 = $this->loadData('notifications');
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
@@ -1622,15 +1621,22 @@ class cronController extends bootstrap
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
                                 preg_match_all('#[0-9]+#', $motif, $extract);
-                                $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
-                                $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
+                                $iProjectId = (int) $extract[0][0];
+
+                                /** @var \echeanciers_emprunteur $oRepaymentSchedule */
+                                $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                                $aNextRepayment = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+
+                                /** @var \prelevements $oBankDirectDebit */
+                                $oBankDirectDebit = $this->loadData('prelevements');
 
                                 if (
-                                    count($listPrel) > 0
-                                    && false !== strpos($motif, $listPrel[0]['motif'])
-                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
+                                    count($aNextRepayment) > 0
+                                    && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
+                                    && false !== strpos($motif, $oBankDirectDebit->motif)
+                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
                                 ) {
-                                    $projects->get($nombre, 'id_project');
+                                    $projects->get($iProjectId, 'id_project');
                                     $companies->get($projects->id_company, 'id_company');
                                     $clients->get($companies->id_client_owner, 'id_client');
 
@@ -4451,7 +4457,7 @@ class cronController extends bootstrap
         }
     }
 
-        /**
+    /**
      * Send new projects summary email
      * @param array $aCustomerId
      * @param string $sFrequency (quotidienne/hebdomadaire)
