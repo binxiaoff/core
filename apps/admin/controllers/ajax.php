@@ -1071,11 +1071,15 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $lender         = $this->loadData('lenders_accounts');
-        $preteur        = $this->loadData('clients');
-        $bids           = $this->loadData('bids');
-        $transactions   = $this->loadData('transactions');
-        $wallets_lines  = $this->loadData('wallets_lines');
+        /** @var \lenders_accounts $lender */
+        $lender = $this->loadData('lenders_accounts');
+        /** @var \bids $bids */
+        $bids = $this->loadData('bids');
+        /** @var \transactions $transactions */
+        $transactions = $this->loadData('transactions');
+        /** @var \wallets_lines $wallets_lines */
+        $wallets_lines = $this->loadData('wallets_lines');
+        /** @var \projects projects */
         $this->projects = $this->loadData('projects');
 
         if (isset($_POST['id_lender'], $_POST['id_bid']) && $bids->get($_POST['id_bid'], 'id_bid') && $lender->get($_POST['id_lender'], 'id_lender_account')) {
@@ -1083,20 +1087,17 @@ class ajaxController extends bootstrap
             $this->users_history->histo(4, 'Bid en cours delete', $_SESSION['user']['id_user'], $serialize);
 
             $wallets_lines->get($bids->id_lender_wallet_line, 'id_wallet_line');
-            $transactions->get($wallets_lines->id_transaction, 'id_transaction');
 
-            $transactions->delete($transactions->id_transaction, 'id_transaction');
+            $transactions->delete($wallets_lines->id_transaction, 'id_transaction');
             $wallets_lines->delete($wallets_lines->id_wallet_line, 'id_wallet_line');
             $bids->delete($bids->id_bid, 'id_bid');
 
-            // on recharge l'affichage
             $this->lBids = $bids->select('id_lender_account = ' . $_POST['id_lender'] . ' AND status = 0', 'added DESC');
         }
     }
 
     public function _loadMouvTransac()
     {
-
         $this->autoFireView = true;
 
         $this->transactions = $this->loadData('transactions');

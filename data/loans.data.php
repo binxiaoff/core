@@ -219,22 +219,6 @@ class loans extends loans_crud
         return $montant;
     }
 
-    // sum prêtée d'un du projet
-    public function sumPretsProjet($id_project)
-    {
-
-        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_project = ' . $id_project;
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        if ($montant > 0) {
-            $montant = $montant / 100;
-        } else {
-            $montant = 0;
-        }
-        return $montant;
-    }
-
     public function getSumPretsByMonths($id_lender, $year)
     {
         $sql = 'SELECT SUM(amount/100) AS montant, LEFT(added,7) AS date FROM loans WHERE YEAR(added) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 0 GROUP BY LEFT(added,7)';

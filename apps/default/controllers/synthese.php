@@ -2,8 +2,7 @@
 
 class syntheseController extends bootstrap
 {
-
-    function syntheseController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -12,7 +11,7 @@ class syntheseController extends bootstrap
         $this->setHeader('header_account');
 
         if (!$this->clients->checkAccess()) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
         $this->clients->checkAccessLender();
@@ -26,11 +25,10 @@ class syntheseController extends bootstrap
         $this->page            = 'synthese';
     }
 
-    function _default()
+    public function _default()
     {
         $this->loadCss('default/synthese1');
 
-        $this->transactions            = $this->loadData('transactions');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->loans                   = $this->loadData('loans');
         $this->echeanciers             = $this->loadData('echeanciers');
@@ -77,7 +75,7 @@ class syntheseController extends bootstrap
 
                 $_SESSION['qs_ok'] = 'OK';
 
-                header('Location:' . $this->lurl . '/synthese');
+                header('Location: ' . $this->lurl . '/synthese');
                 die;
             }
         }

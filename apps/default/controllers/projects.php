@@ -233,15 +233,15 @@ class projectsController extends bootstrap
                     unset($_SESSION['tokenBid']);
 
                     $this->transactions->id_client        = $this->clients->id_client;
-                    $this->transactions->montant          = '-' . ($montant_p * 100);
+                    $this->transactions->montant          = - $montant_p * 100;
                     $this->transactions->id_langue        = 'fr';
                     $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                    $this->transactions->status           = '1';
-                    $this->transactions->etat             = '1';
+                    $this->transactions->status           = 1;
+                    $this->transactions->etat             = 1;
                     $this->transactions->id_project       = $this->projects->id_project;
-                    $this->transactions->transaction      = '2';
                     $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $this->transactions->type_transaction = '2';
+                    $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
+                    $this->transactions->transaction      = \transactions::VIRTUAL;
                     $this->transactions->create();
 
                     $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
@@ -249,7 +249,7 @@ class projectsController extends bootstrap
                     $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                     $this->wallets_lines->status                   = 1;
                     $this->wallets_lines->type                     = 2; // transaction virtuelle
-                    $this->wallets_lines->amount                   = '-' . ($montant_p * 100);
+                    $this->wallets_lines->amount                   = - $montant_p * 100;
                     $this->wallets_lines->id_project               = $this->projects->id_project;
                     $this->wallets_lines->create();
 

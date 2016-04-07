@@ -185,7 +185,7 @@ class preteursController extends bootstrap
 
         $this->transactions = $this->loadData('transactions');
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
-        $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND transaction = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
+        $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
         $this->lTrans       = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23,26) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
@@ -479,7 +479,7 @@ class preteursController extends bootstrap
                         header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                         die;
                     } elseif (0 == $this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')')) { // On check si on a deja eu le compte validé au moins une fois. si c'est pas le cas on check l'offre
-                        $this->create_offre_bienvenue($this->clients->id_client);
+                        $this->createWelcomeOffer($this->clients->id_client);
                     }
 
                     $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
@@ -738,7 +738,7 @@ class preteursController extends bootstrap
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
                         $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
                     } else {
-                        $this->create_offre_bienvenue($this->clients->id_client);
+                        $this->createWelcomeOffer($this->clients->id_client);
                         $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
                     }
 
@@ -1011,8 +1011,7 @@ class preteursController extends bootstrap
         $this->sumDispoPourOffresSelonMax = (($this->montant_limit * 100) - $sumOffresTransac);
     }
 
-    // OFFRE DE BIENVENUE
-    public function create_offre_bienvenue($id_client)
+    private function createWelcomeOffer($id_client)
     {
         $this->clients = $this->loadData('clients');
 
@@ -1055,11 +1054,11 @@ class preteursController extends bootstrap
                     $transactions->id_offre_bienvenue_detail = $offres_bienvenues_details->id_offre_bienvenue_detail;
                     $transactions->id_langue                 = 'fr';
                     $transactions->date_transaction          = date('Y-m-d H:i:s');
-                    $transactions->status                    = '1';
-                    $transactions->etat                      = '1';
+                    $transactions->status                    = 1;
+                    $transactions->etat                      = 1;
                     $transactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
-                    $transactions->type_transaction          = 16; // Offre de bienvenue
-                    $transactions->transaction               = 2; // transaction virtuelle
+                    $transactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
+                    $transactions->transaction               = \transactions::VIRTUAL;
                     $transactions->create();
 
                     $wallets_lines->id_lender                = $lenders_accounts->id_lender_account;
@@ -1538,7 +1537,7 @@ class preteursController extends bootstrap
                         $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_unilend', $oTransactionsUnilend->montant_unilend . ' + (' . -1 * $iRepaymentNetDiff . ')');
                         $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_etat', $oTransactionsUnilend->montant_etat . ' + (' . $iRepaymentTaxDiff . ')');
 
-                        $oTransactionsUnilend->montant_unilend += -1 * $iRepaymentNetDiff;
+                        $oTransactionsUnilend->montant_unilend += - $iRepaymentNetDiff;
                         $oTransactionsUnilend->montant_etat    += $iRepaymentTaxDiff;
                         $oTransactionsUnilend->update();
 

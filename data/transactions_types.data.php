@@ -46,6 +46,8 @@ class transactions_types extends transactions_types_crud
     const TYPE_WELCOME_OFFER                       = 16;
     const TYPE_WELCOME_OFFER_CANCELLATION          = 17;
     const TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER = 18;
+    const TYPE_SPONSORSHIP_SPONSORED_REWARD        = 19;
+    const TYPE_SPONSORSHIP_SPONSOR_REWARD          = 20;
     const TYPE_BORROWER_ANTICIPATED_REPAYMENT      = 22;
     const TYPE_LENDER_ANTICIPATED_REPAYMENT        = 23;
     const TYPE_REGULATION_BANK_TRANSFER            = 24;

@@ -1116,8 +1116,8 @@ class devboxController extends bootstrap
                     $oTransactions->id_offre_bienvenue_detail        = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
                     $oTransactions->id_langue                        = 'fr';
                     $oTransactions->date_transaction                 = $oWelcomeOfferDetails->added;
-                    $oTransactions->status                           = '1';
-                    $oTransactions->etat                             = '1';
+                    $oTransactions->status                           = 1;
+                    $oTransactions->etat                             = 1;
                     $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
                     $oTransactions->transaction                      = 2;
                     $oTransactions->create();

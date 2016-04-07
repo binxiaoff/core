@@ -824,24 +824,22 @@ class ajaxController extends bootstrap
                 // on effectue une demande de virement
                 // on retire la somme dur les transactions, bank_line et wallet
                 $this->transactions->id_client        = $this->clients->id_client;
-                $this->transactions->montant          = '-' . ($montant * 100);
+                $this->transactions->montant          = - $montant * 100;
                 $this->transactions->id_langue        = 'fr';
                 $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                $this->transactions->status           = '1'; // on met en mode reglé pour ne plus avoir la somme sur le compte
-                $this->transactions->etat             = '1';
+                $this->transactions->status           = 1;
+                $this->transactions->etat             = 1;
                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $this->transactions->civilite_fac     = $this->clients->civilite;
                 $this->transactions->nom_fac          = $this->clients->nom;
                 $this->transactions->prenom_fac       = $this->clients->prenom;
-                if ($this->clients->type == 2) {
-                    $this->transactions->societe_fac = $this->companies->name;
-                }
+                $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
                 $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
                 $this->transactions->cp_fac           = $this->clients_adresses->cp;
                 $this->transactions->ville_fac        = $this->clients_adresses->ville;
                 $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
-                $this->transactions->type_transaction = 8; // on signal que c'est un retrait
-                $this->transactions->transaction      = 1; // transaction physique
+                $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL;
+                $this->transactions->transaction      = \transactions::PHYSICAL;
                 $this->transactions->create();
 
                 $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
@@ -849,7 +847,7 @@ class ajaxController extends bootstrap
                 $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                 $this->wallets_lines->status                   = 1;
                 $this->wallets_lines->type                     = 1;
-                $this->wallets_lines->amount                   = '-' . ($montant * 100);
+                $this->wallets_lines->amount                   = - $montant * 100;
                 $this->wallets_lines->create();
 
                 // Transaction physique donc on enregistre aussi dans la bank lines
@@ -936,7 +934,7 @@ class ajaxController extends bootstrap
                 $loans   = $this->loadData('loans');
 
                 // on recup la somme versé a l'inscription si y en a 1
-                $transac->get($this->clients->id_client, 'type_transaction = 1 AND status = 1 AND etat = 1 AND transaction = 1 AND id_client');
+                $transac->get($this->clients->id_client, 'type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . ' AND status = 1 AND etat = 1 AND id_client');
 
                 $soldePrets = $loans->sumPrets($this->lenders_accounts->id_lender_account);
 

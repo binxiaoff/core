@@ -30,10 +30,8 @@ class alimentationController extends bootstrap
 
     public function _default()
     {
-        // On recup la lib et le reste payline
-        require_once($this->path . 'protected/payline/include.php');
+        require_once $this->path . 'protected/payline/include.php';
 
-        // Chargement des datas
         $this->companies               = $this->loadData('companies');
         $this->companies_details       = $this->loadData('companies_details');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
@@ -60,10 +58,7 @@ class alimentationController extends bootstrap
         $this->settings->get('Virement - titulaire du compte', 'type');
         $this->titulaire = $this->settings->value;
 
-        // On recupere l'adresse client
         $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
-        // On recupere le lender account
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         // si c'est une societe
@@ -161,21 +156,19 @@ class alimentationController extends bootstrap
                 $this->transactions->montant          = $montant * 100;
                 $this->transactions->id_langue        = 'fr';
                 $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                $this->transactions->status           = '0';
-                $this->transactions->etat             = '0';
+                $this->transactions->status           = 0;
+                $this->transactions->etat             = 0;
                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $this->transactions->civilite_fac     = $this->clients->civilite;
                 $this->transactions->nom_fac          = $this->clients->nom;
                 $this->transactions->prenom_fac       = $this->clients->prenom;
-                if ($this->clients->type == 2) {
-                    $this->transactions->societe_fac = $this->companies->name;
-                }
+                $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
                 $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
                 $this->transactions->cp_fac           = $this->clients_adresses->cp;
                 $this->transactions->ville_fac        = $this->clients_adresses->ville;
                 $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
-                $this->transactions->type_transaction = 7; // on signal que c'est une alimentation par prelevement
-                $this->transactions->transaction      = 1; // transaction physique
+                $this->transactions->type_transaction = \transactions_types::TYPE_DIRECT_DEBIT;
+                $this->transactions->transaction      = \transactions::PHYSICAL;
                 $this->transactions->create();
 
                 $this->prelevements->id_client        = $this->clients->id_client;
@@ -250,7 +243,6 @@ class alimentationController extends bootstrap
             if (is_numeric($amount) && $amount >= 20 && $amount <= 10000) {
                 $amount = (number_format($amount, 2, '.', '') * 100);
 
-                // Histo client //
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
                 $this->clients_history_actions->histo(2, 'alim cb', $this->clients->id_client, $serialize);
 
@@ -258,22 +250,20 @@ class alimentationController extends bootstrap
                 $this->transactions->montant          = $amount;
                 $this->transactions->id_langue        = 'fr';
                 $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                $this->transactions->status           = '0';
-                $this->transactions->etat             = '0';
+                $this->transactions->status           = 0;
+                $this->transactions->etat             = 0;
                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $this->transactions->civilite_fac     = $this->clients->civilite;
                 $this->transactions->nom_fac          = $this->clients->nom;
                 $this->transactions->prenom_fac       = $this->clients->prenom;
-                if ($this->clients->type == 2) {
-                    $this->transactions->societe_fac = $this->companies->name;
-                }
+                $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
                 $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
                 $this->transactions->cp_fac           = $this->clients_adresses->cp;
                 $this->transactions->ville_fac        = $this->clients_adresses->ville;
                 $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
-                $this->transactions->type_transaction = 3; // on signal que une alimentation par cb
+                $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
                 $this->transactions->transaction      = 1; // transaction physique
-                $this->transactions->id_transaction   = $this->transactions->create();
+                $this->transactions->create();
 
                 //***************//
                 //*** PAYLINE ***//
@@ -285,25 +275,19 @@ class alimentationController extends bootstrap
                 $payline->cancelURL       = $this->lurl . '/alimentation/payment/' . $this->clients->hash . '/';
                 $payline->notificationURL = NOTIFICATION_URL;
 
-                // PAYMENT
                 $array['payment']['amount']   = $amount;
                 $array['payment']['currency'] = ORDER_CURRENCY;
                 $array['payment']['action']   = PAYMENT_ACTION;
                 $array['payment']['mode']     = PAYMENT_MODE;
 
-                // ORDER
                 $array['order']['ref']      = $this->transactions->id_transaction;
                 $array['order']['amount']   = $amount;
                 $array['order']['currency'] = ORDER_CURRENCY;
 
-                // CONTRACT NUMBERS
                 $array['payment']['contractNumber'] = CONTRACT_NUMBER;
-                $contracts                          = explode(";", CONTRACT_NUMBER_LIST);
-                $array['contracts']                 = $contracts;
-                $secondContracts                    = explode(";", SECOND_CONTRACT_NUMBER_LIST);
-                $array['secondContracts']           = $secondContracts;
+                $array['contracts']                 = explode(';', CONTRACT_NUMBER_LIST);
+                $array['secondContracts']           = explode(';', SECOND_CONTRACT_NUMBER_LIST);
 
-                // EXECUTE
                 $result = $payline->doWebPayment($array);
 
                 $this->transactions->get($this->transactions->id_transaction, 'id_transaction');
@@ -313,14 +297,12 @@ class alimentationController extends bootstrap
                 // si on retourne quelque chose
                 if (isset($result)) {
                     if ($result['result']['code'] == '00000') {
-                        header("location:" . $result['redirectURL']);
-                        exit();
-                    } // Si erreur on envoie sur mon mail
-                    elseif (isset($result)) {
-
+                        header('Location: ' . $result['redirectURL']);
+                        die;
+                    } elseif (isset($result)) {
                         mail('alertesit@unilend.fr', 'unilend erreur payline', 'alimentation preteur (client : ' . $this->clients->id_client . ') | ERROR : ' . $result['result']['code'] . ' ' . $result['result']['longMessage']);
 
-                        header('location:' . $this->lurl . '/alimentation/erreur/' . $this->clients->hash);
+                        header('Location: ' . $this->lurl . '/alimentation/erreur/' . $this->clients->hash);
                         die;
                     }
                 }
@@ -335,10 +317,8 @@ class alimentationController extends bootstrap
         $this->autoFireView   = false;
         $this->autoFireFooter = false;
 
-        // On recup la lib et le reste payline
-        require_once($this->path . 'protected/payline/include.php');
+        require_once $this->path . 'protected/payline/include.php';
 
-        // Chargement des datas
         $this->transactions     = $this->loadData('transactions');
         $this->backpayline      = $this->loadData('backpayline');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
@@ -390,8 +370,8 @@ class alimentationController extends bootstrap
                         $this->transactions->montant          = $response['payment']['amount'];
                         $this->transactions->id_langue        = 'fr';
                         $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                        $this->transactions->status           = '1';
-                        $this->transactions->etat             = '1';
+                        $this->transactions->status           = 1;
+                        $this->transactions->etat             = 1;
                         $this->transactions->id_partenaire    = $_SESSION['partenaire']['id_partenaire'];
                         $this->transactions->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
                         $this->transactions->update();
@@ -481,25 +461,25 @@ class alimentationController extends bootstrap
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
                         }
-                        header('location:' . $this->lurl . '/alimentation/confirmation/cb/' . $this->transactions->id_transaction);
+                        header('Location: ' . $this->lurl . '/alimentation/confirmation/cb/' . $this->transactions->id_transaction);
                         die;
                     } else {
-                        header('location:' . $this->lurl . '/alimentation');
+                        header('Location: ' . $this->lurl . '/alimentation');
                         die;
                     }
                 } elseif ($response['result']['code'] == '02319') { // Paiement annulé
                     $this->transactions->get($response['order']['ref'], 'id_transaction');
                     $this->transactions->id_backpayline = $this->backpayline->id_backpayline;
-                    $this->transactions->statut         = '0';
-                    $this->transactions->etat           = '3';
+                    $this->transactions->statut         = 0;
+                    $this->transactions->etat           = 3;
                     $this->transactions->update();
 
-                    header('location:' . $this->lurl . '/alimentation');
+                    header('Location: ' . $this->lurl . '/alimentation');
                     die;
                 } else {
                     mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $this->clients->id_client . ') : ' . serialize($response));
 
-                    header('location:' . $this->lurl . '/alimentation/erreur/');
+                    header('Location: ' . $this->lurl . '/alimentation/erreur/');
                     die;
                 }
             }
@@ -524,5 +504,5 @@ class alimentationController extends bootstrap
     {
 
     }
-
 }
+

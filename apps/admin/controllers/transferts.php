@@ -95,7 +95,7 @@ class transfertsController extends bootstrap
                 $transactions->date_transaction = date('Y-m-d H:i:s');
                 $transactions->status           = 1;
                 $transactions->etat             = 1;
-                $transactions->transaction      = 1;
+                $transactions->transaction      = \transactions::PHYSICAL;
                 $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $transactions->create();
@@ -122,7 +122,7 @@ class transfertsController extends bootstrap
                 $transactions->date_transaction = date('Y-m-d H:i:s');
                 $transactions->status           = 1;
                 $transactions->etat             = 1;
-                $transactions->transaction      = 1;
+                $transactions->transaction      = \transactions::PHYSICAL;
                 $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $transactions->create();
@@ -244,7 +244,7 @@ class transfertsController extends bootstrap
             $transactions->date_transaction = date('Y-m-d H:i:s');
             $transactions->status           = 1;
             $transactions->etat             = 1;
-            $transactions->transaction      = 1;
+            $transactions->transaction      = \transactions::PHYSICAL;
             $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $transactions->create();
@@ -460,12 +460,12 @@ class transfertsController extends bootstrap
 
             $new_transactions->id_prelevement   = $receptions->id_reception;
             $new_transactions->id_client        = $clients->id_client;
-            $new_transactions->montant          = '-' . $receptions->montant;
+            $new_transactions->montant          = - $receptions->montant;
             $new_transactions->id_langue        = 'fr';
             $new_transactions->date_transaction = date('Y-m-d H:i:s');
             $new_transactions->status           = 1;
             $new_transactions->etat             = 1;
-            $new_transactions->transaction      = 1;
+            $new_transactions->transaction      = \transactions::PHYSICAL;
             $new_transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
             $new_transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $new_transactions->id_user          = $_SESSION['user']['id_user'];
@@ -473,7 +473,7 @@ class transfertsController extends bootstrap
 
             $bank_unilend->id_transaction = $new_transactions->id_transaction;
             $bank_unilend->id_project     = $projects->id_project;
-            $bank_unilend->montant        = '-' . $receptions->montant;
+            $bank_unilend->montant        = - $receptions->montant;
             $bank_unilend->type           = 1;
             $bank_unilend->create();
 
@@ -607,8 +607,8 @@ class transfertsController extends bootstrap
                 $oTransactions->id_offre_bienvenue_detail        = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
                 $oTransactions->id_langue                        = 'fr';
                 $oTransactions->date_transaction                 = date('Y-m-d H:i:s');
-                $oTransactions->status                           = '1';
-                $oTransactions->etat                             = '1';
+                $oTransactions->status                           = 1;
+                $oTransactions->etat                             = 1;
                 $oTransactions->ip_client                        = $_SERVER['REMOTE_ADDR'];
                 $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
                 $oTransactions->transaction                      = 2;

@@ -86,63 +86,6 @@ class transactions extends transactions_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    /* Nouvelle fonction utilisée désormais par les fonctions de stats par statuts de transaction ci dessous (factorisation)*/
-
-    public function getMonthlyTransactionsBy($year = false, $status = false, $etat = false, $transaction = false, $type_transaction = array(), $type_transaction_filterout = array())
-    {
-        if ($year === false) {
-            return false;
-        }
-        if ($status === false) {
-            return false;
-        }
-        if ($etat === false) {
-            return false;
-        }
-        if ($transaction === false) {
-            return false;
-        }
-
-        $sql = "
-            SELECT SUM(montant / 100) AS montant,
-                DATE_FORMAT(date_transaction, '%m') AS monthTransaction
-            FROM transactions
-            WHERE status = " . $status . "
-                AND etat = " . $etat . "
-                AND transaction = " . $transaction;
-
-        if (count($type_transaction_filterout) > 0) {
-            $sql .= " AND type_transaction not in (" . implode(",", $type_transaction_filterout) . ")";
-        }
-        if (count($type_transaction) > 0) {
-            $sql .= " AND type_transaction in (" . implode(",", $type_transaction) . ")";
-        }
-
-        $sql .= " AND year(date_transaction) = " . $year . " GROUP BY monthTransaction";
-
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $res[$rec['monthTransaction']] = $rec['montant'];
-        }
-        return $res;
-    }
-
-    public function recupCAByMonthForAYear($year)
-    {
-        return $this->getMonthlyTransactionsBy($year, 1, 1, 1, array(), array(9));
-    }
-
-    public function recupVirmentEmprByMonthForAYear($year)
-    {
-        return $this->getMonthlyTransactionsBy($year, 1, 1, 1, array(9), array());
-    }
-
-    public function recupRembEmprByMonthForAYear($year)
-    {
-        return $this->getMonthlyTransactionsBy($year, 1, 1, 1, array(6), array());
-    }
-
     public function getSumDepotByMonths($id_client, $year)
     {
         $sql = '
@@ -484,43 +427,6 @@ class transactions extends transactions_crud
         return $lresult;
     }
 
-    // total soldes d'un mois par jour
-    public function getSoldeReelMonthByday($month, $year)
-    {
-        // On recup le nombre de jour dans le mois
-        $mois    = mktime(0, 0, 0, $month, 1, $year);
-        $nbJours = date("t", $mois);
-
-        $listDates = array();
-        for ($i = 1; $i <= $nbJours; $i++) {
-            $listDates[$i] = date('Y-m') . '-' . (strlen($i) < 2 ? '0' : '') . $i;
-        }
-
-        $sql = '
-            SELECT SUM(montant) AS solde,
-                DATE(date_transaction) AS jour
-            FROM transactions
-            WHERE etat = 1
-                AND status = 1
-                AND transaction = 1
-                AND MONTH(added) = ' . $month . '
-                AND YEAR(added) = ' . $year . '
-            GROUP BY DATE(date_transaction)';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$record['jour']] = $record['solde'];
-        }
-
-        // on affiche chaque jours du mois
-        foreach ($listDates as $d) {
-            $lresult[$d]['montant'] = ($result[$d] != false ? $result[$d] : '0');
-        }
-
-        return $lresult;
-    }
-
     // solde d'une journée
     public function getSoldeReelDay($date)
     {
@@ -555,8 +461,7 @@ class transactions extends transactions_crud
             FROM transactions
             WHERE etat = 1
                 AND status = 1
-                AND transaction = 1
-                AND type_transaction = 9
+                AND type_transaction =  ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
                 AND DATE(date_transaction) = "' . $date . '"
             GROUP BY DATE(date_transaction)';
 
