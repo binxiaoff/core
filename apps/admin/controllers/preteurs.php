@@ -211,8 +211,6 @@ class preteursController extends bootstrap
 
     public function _edit_preteur()
     {
-        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
-
         $this->clients_mandats         = $this->loadData('clients_mandats');
         $this->nationalites            = $this->loadData('nationalites_v2');
         $this->pays                    = $this->loadData('pays_v2');
