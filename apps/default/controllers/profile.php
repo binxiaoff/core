@@ -32,9 +32,10 @@ class profileController extends bootstrap
 
     public function _default()
     {
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($oLenderAccount);
 
         if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
@@ -75,6 +76,10 @@ class profileController extends bootstrap
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
+
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         $this->lPays = $this->pays->select('', 'ordre ASC');
         $this->lNatio = $this->nationalites->select('', 'ordre ASC');
@@ -263,12 +268,12 @@ class profileController extends bootstrap
         if (isset($_POST['send_form_particulier_perso'])) {
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
             $this->clients_history_actions->histo(4, 'info perso profile', $this->clients->id_client, $serialize);
+
+            $this->etranger     = 0;
             if ($_POST['nationalite'] == \nationalites_v2::NATIONALITY_FRENCH && $_POST['pays1'] > \pays_v2::COUNTRY_FRANCE) {
                 $this->etranger = 1;
-            } elseif ($_POST['nationalite'] != 1 && $_POST['pays1'] > 1) {
+            } elseif ($_POST['nationalite'] != \nationalites_v2::NATIONALITY_FRENCH && $_POST['pays1'] > \pays_v2::COUNTRY_FRANCE) {
                 $this->etranger = 2;
-            } else {
-                $this->etranger = 0;
             }
 
             $adresse_fiscal    = $this->clients_adresses->adresse_fiscal;
@@ -289,32 +294,20 @@ class profileController extends bootstrap
             $naissance         = $this->clients->naissance;
 
             $this->form_ok = true;
+            $this->reponse_email = '';
 
-            $this->clients_adresses->meme_adresse_fiscal = ($_POST['mon-addresse'] != false ) ? 1 : 0;
-
-            $this->clients_adresses->adresse_fiscal = $_POST['adresse_inscription'];
-            $this->clients_adresses->ville_fiscal   = $_POST['ville_inscription'];
-            $this->clients_adresses->cp_fiscal      = $_POST['postal'];
-            $this->clients_adresses->id_pays_fiscal = $_POST['pays1'];
-
-            if ($this->clients_adresses->meme_adresse_fiscal == 0) {
-                $this->clients_adresses->adresse1 = $_POST['adress2'];
-                $this->clients_adresses->ville    = $_POST['ville2'];
-                $this->clients_adresses->cp       = $_POST['postal2'];
-                $this->clients_adresses->id_pays  = $_POST['pays2'];
-            } else {
-                $this->clients_adresses->adresse1 = $_POST['adresse_inscription'];
-                $this->clients_adresses->ville    = $_POST['ville_inscription'];
-                $this->clients_adresses->cp       = $_POST['postal'];
-                $this->clients_adresses->id_pays  = $_POST['pays1'];
-            }
+            $this->clients_adresses->meme_adresse_fiscal = (empty($_POST['mon-addresse'])) ? 1 : 0;
+            $this->clients_adresses->adresse_fiscal      = $_POST['adresse_inscription'];
+            $this->clients_adresses->ville_fiscal        = $_POST['ville_inscription'];
+            $this->clients_adresses->cp_fiscal           = $_POST['postal'];
+            $this->clients_adresses->id_pays_fiscal      = $_POST['pays1'];
+            $this->clients_adresses->adresse1            = (empty($_POST['mon-addresse'])) ? $_POST['adress2'] : $_POST['adresse_inscription'];
+            $this->clients_adresses->ville               = (empty($_POST['mon-addresse'])) ? $_POST['ville2'] : $_POST['ville_inscription'];
+            $this->clients_adresses->cp                  = (empty($_POST['mon-addresse'])) ? $_POST['postal2'] : $_POST['postal'];
+            $this->clients_adresses->id_pays             = (empty($_POST['mon-addresse'])) ? $_POST['pays2'] : $_POST['pays1'];
 
             $this->clients->civilite = $_POST['sex'];
-            if (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) {
-                $this->clients->nom_usage = '';
-            } else {
-                $this->clients->nom_usage = $this->ficelle->majNom($_POST['nom-dusage']);
-            }
+            $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) ? '' : $this->ficelle->majNom($_POST['nom-dusage']);
 
             //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
             $sCodeInsee = '';
@@ -407,7 +400,7 @@ class profileController extends bootstrap
                 if (! isset($_POST['ville2']) || $_POST['ville2'] == $this->lng['etape1']['ville']) {
                     $this->form_ok = false;
                 }
-                if (! isset($_POST['postal2']) || $_POST['postal2'] == $this->lng['etape1']['postal']) {
+                if (! isset($_POST['postal2']) || $_POST['postal2'] == $this->lng['etape1']['code-postal']) {
                     $this->form_ok = false;
                 }
             }
@@ -712,7 +705,7 @@ class profileController extends bootstrap
                     }
                 }
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['titre-1'] . ' ' . $this->lng['profile']['sauvegardees'];
-                header('Location: ' . $this->lurl . '/profile/particulier/3');
+                header('Location: ' . $this->lurl . '/profile/particulier/#info_perso');
                 die;
             }
         } elseif (isset($_POST['send_form_mdp'])) {
@@ -871,6 +864,10 @@ class profileController extends bootstrap
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
         $this->clients_status->getLastStatut($this->clients->id_client);
+
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         $this->settings->get("Liste deroulante origine des fonds societe", 'status = 1 AND type');
         $this->origine_fonds_E = explode(';', $this->settings->value);
