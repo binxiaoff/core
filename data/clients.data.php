@@ -502,6 +502,46 @@ class clients extends clients_crud
         return $result;
     }
 
+    /**
+     * @param string $sLastStatus list of last status to use separated by a column
+     * @param string $sWhere additional condition to filter result lik: date
+     * @return array
+     */
+    public function selectLendersByLastStatus($sLastStatus = '', $sWhere = '')
+    {
+        $sSql = '
+            SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
+                   ca.adresse1, ca.adresse2, ca.adresse3, ca.ville, ca.cp, p.iso, p.fr,
+                   la.id_client_owner, la.iban, la.bic,
+                   csh.added,
+                   cs.status, cs.label
+            FROM clients_status_history csh
+            INNER JOIN clients c ON c.id_client = csh.id_client
+            INNER JOIN clients_adresses ca ON c.id_client = ca.id_client
+            INNER JOIN pays_v2 p ON p.id_pays = ca.id_pays
+            INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
+            INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+            WHERE csh.id_client_status_history = (
+                SELECT MAX(csh1.id_client_status_history)
+                FROM clients_status_history csh1
+                WHERE csh1.id_client = csh.id_client
+            )';
+        if (false === empty($sLastStatus)) {
+            $sSql .= ' AND cs.status IN (' . $sLastStatus . ' ) ';
+        }
+        if (false === empty($sWhere)) {
+            $sSql .= ' AND ' . $sWhere;
+        }
+
+        $oResult = $this->bdd->query($sSql);
+        $aResult = array();
+        while ($aRecord = $this->bdd->fetch_assoc($oResult)) {
+            $aResult[$aRecord['id_client']] = $aRecord;
+        }
+        unset($oResult);
+        return $aResult;
+    }
+
     // presteurs by status
     public function selectPreteursByStatusSlim($status = '', $where = '', $order = '', $start = '', $nb = '')
     {

@@ -2,6 +2,8 @@
 
 use Unilend\librairies\Cache;
 use Unilend\librairies\ULogger;
+use Unilend\librairies\greenPoint\greenPoint;
+use Unilend\librairies\greenPoint\greenPointStatus;
 
 class cronController extends bootstrap
 {
@@ -6531,6 +6533,277 @@ class cronController extends bootstrap
             $this->oLogger->addRecord(ULogger::INFO, 'Nombre d\'offres de Bienvenue retirées : ' . $iNumberOfUnusedWelcomeOffers);
 
             $this->stopCron();
+        }
+    }
+
+    /**
+     * @param null $sBeginDate
+     * @param null $sEndDate
+     */
+    public function _greenPointValidation($sBeginDate = null, $sEndDate = null)
+    {
+        /**
+         * Test case : id_lender : 4278, 4856
+         */
+        $oClients = $this->loadData('clients');
+
+        $oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
+        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
+
+        $aStatusToCheck = array(
+            \clients_status::TO_BE_CHECKED,
+            \clients_status::COMPLETENESS,
+            \clients_status::COMPLETENESS_REMINDER,
+            \clients_status::COMPLETENESS_REPLY,
+            \clients_status::MODIFICATION
+        );
+
+        $aQueryID = array();
+
+        $aClientsToCheck = $oClients->selectLendersByLastStatus(implode(', ', $aStatusToCheck), ' id_client_owner in (4278, 4856) ');
+
+        if (false === empty($aClientsToCheck)) {
+
+            $oLendersAcount = $this->loadData('lenders_accounts');
+
+            $oGreenPoint = new greenPoint($this->bdd, $this->Config['env']);
+
+            foreach ($aClientsToCheck as $iClientId => $aClient) {
+
+                $aAttachments = array();
+                $iLenderId    = $aClient['id_client_owner'];
+
+                $aAttachments = $oLendersAcount->getAttachments($iLenderId);
+
+                if (false === empty($aAttachments)) {
+
+                    foreach ($aAttachments as $iAttachmentTypeId => $aAttachment) {
+                        if ($oGreenPointAttachment->counter(' id_attachment = ' . $aAttachment['id']) > 0 ) {
+                            continue;
+                        }
+                        $oGreenPointAttachment->unsetData();
+                        try {
+                            switch ($iAttachmentTypeId) {
+                                case attachment_type::CNI_PASSPORTE:
+                                case attachment_type::CNI_PASSPORTE_VERSO:
+                                case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
+                                case attachment_type::CNI_PASSPORTE_DIRIGEANT:
+
+                                    $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $aAttachment['path'], $aClient, 'idcontrol');
+                                    $iQRID            = $oGreenPoint->idControl($aData, false);
+                                    $aQueryID[$iQRID] = $iAttachmentTypeId;
+                                    break;
+                                case attachment_type::RIB:
+
+                                    $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $aAttachment['path'], $aClient, 'ibanflash');
+                                    $iQRID            = $oGreenPoint->ibanFlash($aData, false);
+                                    $aQueryID[$iQRID] = $iAttachmentTypeId;
+                                    break;
+                                case attachment_type::JUSTIFICATIF_DOMICILE:
+                                case attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
+
+                                    $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $aAttachment['path'], $aClient, 'addresscontrol');
+                                    $iQRID            = $oGreenPoint->addressControl($aData, false);
+                                    $aQueryID[$iQRID] = $iAttachmentTypeId;
+                                    break;
+                            }
+                        } catch (Exception $e) {
+                            $aError[$iAttachmentTypeId][] = array('iErrorCode' => $e->getCode(), 'sErrorMessage' => $e->getMessage());
+                        }
+                    }
+                    if ( false === empty($aQueryID) && is_array($aQueryID)) {
+                        $aResult = $oGreenPoint->sendRequests();
+                        var_dump('***************************************',$aResult, $aQueryID);
+                        $this->processGreenPointResponse($iClientId,$aResult, $aQueryID, $oGreenPointAttachment, $oGreenPointAttachmentDetail);
+                        unset($aResult, $aQueryID);
+                    } else {
+                        var_dump("Client : $iLenderId has no attachements to validate");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * @param int $iClientId
+     * @param array $aAttachment
+     * @param string $sType
+     * @return array
+     */
+    private function getGreenPointData($iClientId, $iAttachmentId, $sPath, &$aClient, $sType)
+    {
+        $aData = array(
+            'files'    => '@' . realpath($sPath),
+            'dossier'  => $iClientId,
+            'document' => $iAttachmentId,
+            'detail'   => 1,
+            'nom'      => $this->getAllowedFirstNames($aClient['nom'], $aClient['nom_usage']),
+            'prenom'   => $aClient['prenom']
+        );
+
+        switch ($sType) {
+            case 'idcontrol':
+                $this->addIdControlData($aData, $aClient);
+                return $aData;
+            case 'ibanflash':
+                $this->addIbanData($aData, $aClient);
+                return $aData;
+            case 'addresscontrol':
+                $this->addAddressData($aData, $aClient);
+                return $aData;
+            default:
+                return $aData;
+        }
+    }
+
+    /**
+     * @param string $sNom
+     * @param string $sNomUsage
+     * @return string
+     */
+    private function getAllowedFirstNames($sNom, $sNomUsage)
+    {
+        $sAllowedNames = $sNom;
+        if( false === empty($sNomUsage)){
+            $sAllowedNames .= '|' . $sNomUsage;
+        }
+        return $sAllowedNames;
+    }
+
+    /**
+     * @param array $aData
+     * @param array $aAttachment
+     */
+    private function addIdControlData(&$aData, &$aClient)
+    {
+        $aData['date_naissance'] = $aClient['naissance'];
+    }
+
+    /**
+     * @param array $aData
+     * @param array $aAttachment
+     */
+    private function addIbanData(&$aData, &$aClient)
+    {
+        $aData['iban'] = $aClient['iban'];
+        $aData['bic']  = $aClient['bic'];
+    }
+
+    /**
+     * @param array $aData
+     * @param array $aAttachment
+     */
+    private function addAddressData(&$aData, &$aClient)
+    {
+        $aData['adresse']     = $this->getFullAddress($aClient['adresse1'], $aClient['adresse2'],  $aClient['adresse3']);
+        $aData['code_postal'] = $aClient['cp'];
+        $aData['ville']       = $aClient['ville'];
+        $aData['pays']        = strtoupper($aClient['fr']);
+    }
+
+    /**
+     * @param string $sAddress1
+     * @param string $sAddress2
+     * @param string $sAddress3
+     * @return string
+     */
+    private function getFullAddress($sAddress1, $sAddress2, $sAddress3)
+    {
+        $sFullAddress = $sAddress1;
+        if( false === empty($sAddress2) ){
+            $sFullAddress .= ' ' . $sAddress2;
+        }
+        if(false === empty($sAddress3)){
+            $sFullAddress .= ' ' . $sAddress3;
+        }
+        return $sFullAddress;
+    }
+
+    /**
+     * @param int $iClientId
+     * @param int $iAttachmentId
+     * @param array $aResponseDetail
+     * @param array $aResponseKeys
+     * @param \greenpoint_attachment $oGreenPointAttachment
+     * @param \greenpoint_attachment_detail $oGreenPointAttachmentDetail
+     */
+    private function processGreenPointResponse($iClientId, $aResponseDetail, $aResponseKeys, &$oGreenPointAttachment, &$oGreenPointAttachmentDetail)
+    {
+        $fGetColumnValue = function ($array, $key)
+        {
+            return isset($array[$key]) ? $array[$key] : null;
+        };
+
+        $fFormateDate = function ($sDate)
+        {
+            $oDate = DateTime::createFromFormat('d/m/Y', $sDate);
+            if(is_object($oDate)){
+                return $oDate->format('Y-m-d');
+            } else {
+                return null;
+            }
+        };
+
+        foreach ($aResponseKeys as $iQRID => $iAttachmentTypeId) {
+            if (! isset($aResponseDetail[$iQRID])) {
+                var_dump('no data for QRID = ' . $iQRID);
+                continue;
+            }
+            $oGreenPointAttachment->id_client     = $iClientId;
+            $oGreenPointAttachment->control_level = 1;
+
+            $iAttachmentId                        = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
+            $aResponse                            = json_decode($aResponseDetail[$iQRID]['RESPONSE'], 1);
+            $oGreenPointAttachment->id_attachment = $iAttachmentId;
+
+            $oGreenPointAttachment->validation_code = $fGetColumnValue($aResponse, 'code');
+
+            if (isset($aResponse['resource']) && is_array($aResponse['resource'])) {
+                $oGreenPointAttachment->validation_status = $fGetColumnValue($aResponse['resource'], 'statut_verification');
+                switch ($iAttachmentTypeId) {
+                    case attachment_type::CNI_PASSPORTE:
+                    case attachment_type::CNI_PASSPORTE_VERSO:
+                    case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
+                    case attachment_type::CNI_PASSPORTE_DIRIGEANT:
+                        $oGreenPointAttachment->validation_status_label = $fGetColumnValue(greenPointStatus::$aAddressControlStatusLabel, (int) $oGreenPointAttachment->validation_status);
+                        break;
+                    case attachment_type::RIB:
+                        $oGreenPointAttachment->validation_status_label = $fGetColumnValue(greenPointStatus::$aIbanFlashStatusLabel, (int) $oGreenPointAttachment->validation_status);
+                        break;
+                    case attachment_type::JUSTIFICATIF_DOMICILE:
+                    case attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
+                        $oGreenPointAttachment->validation_status_label = $fGetColumnValue(greenPointStatus::$aAddressControlStatusLabel, (int) $oGreenPointAttachment->validation_status);
+                        break;
+                }
+                $oGreenPointAttachment->agency = null;
+
+                $oGreenPointAttachmentDetail->document_type              = $fGetColumnValue($aResponse['resource'], 'type_id');
+                $oGreenPointAttachmentDetail->identity_civility          = $fGetColumnValue($aResponse['resource'], 'sexe');
+                $oGreenPointAttachmentDetail->identity_name              = $fGetColumnValue($aResponse['resource'], 'prenom');
+                $oGreenPointAttachmentDetail->identity_surname           = $fGetColumnValue($aResponse['resource'], 'nom');
+                $oGreenPointAttachmentDetail->identity_civility          = $fGetColumnValue($aResponse['resource'], 'sexe');
+                $oGreenPointAttachmentDetail->identity_expiration_date   = $fFormateDate($fGetColumnValue($aResponse['resource'], 'expirationdate'));
+                $oGreenPointAttachmentDetail->identity_birthdate         = $fFormateDate($fGetColumnValue($aResponse['resource'], 'date_naissance'));
+                $oGreenPointAttachmentDetail->identity_mrz1              = $fGetColumnValue($aResponse['resource'], 'mrz1');
+                $oGreenPointAttachmentDetail->identity_mrz2              = $fGetColumnValue($aResponse['resource'], 'mrz2');
+                $oGreenPointAttachmentDetail->identity_mrz3              = $fGetColumnValue($aResponse['resource'], 'mrz3');
+                $oGreenPointAttachmentDetail->identity_nationality       = $fGetColumnValue($aResponse['resource'], 'nationalite');
+                $oGreenPointAttachmentDetail->identity_issuing_country   = $fGetColumnValue($aResponse['resource'], 'pays_emetteur');
+                $oGreenPointAttachmentDetail->identity_issuing_authority = $fGetColumnValue($aResponse['resource'], 'autorite_emettrice');
+                $oGreenPointAttachmentDetail->identity_document_number   = $fGetColumnValue($aResponse['resource'], 'numero');
+                $oGreenPointAttachmentDetail->bank_details_iban          = $fGetColumnValue($aResponse['resource'], 'iban');
+                $oGreenPointAttachmentDetail->bank_details_bic           = $fGetColumnValue($aResponse['resource'], 'bic');
+                $oGreenPointAttachmentDetail->bank_details_url           = $fGetColumnValue($aResponse['resource'], 'url');
+                $oGreenPointAttachmentDetail->address_address            = $fGetColumnValue($aResponse['resource'], 'adresse');
+                $oGreenPointAttachmentDetail->address_postal_code        = $fGetColumnValue($aResponse['resource'], 'code_postal');
+                $oGreenPointAttachmentDetail->address_city               = $fGetColumnValue($aResponse['resource'], 'ville');
+                $oGreenPointAttachmentDetail->address_country            = $fGetColumnValue($aResponse['resource'], 'pays');
+            }
+
+            $oGreenPointAttachmentDetail->id_greenpoint_attachment = $oGreenPointAttachment->create();
+            $iddetail                                              = $oGreenPointAttachmentDetail->create();
+            $oGreenPointAttachment->unsetData();
+            $oGreenPointAttachmentDetail->unsetData();
         }
     }
 }
