@@ -120,16 +120,18 @@
             var m = $('#mois_naissance').val();
             var y = $('#annee_naissance').val();
 
-            $.post(add_url + "/ajax/controleAge", {d: d, m: m, y: y}).done(function (data) {
-                if (data == 'ok') {
-                    $(".check_age").html('true');
-                    $(".error_age").slideUp();
-                }
-                else {
-                    $(".check_age").html('false');
-                    $(".error_age").slideDown();
-                }
-            });
+            if (d > 0 && m > 0 && y > 0) {
+                $.post(add_url + "/ajax/controleAge", {d: d, m: m, y: y}).done(function (data) {
+                    if (data == 'ok') {
+                        $(".check_age").html('true');
+                        $(".error_age").slideUp();
+                    }
+                    else {
+                        $(".check_age").html('false');
+                        $(".error_age").slideDown();
+                    }
+                });
+            }
         });
 
         $("#nationalite").change(function(){
