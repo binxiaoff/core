@@ -56,21 +56,30 @@
     $(document).ready(function () {
         // mdp controle particulier
         $('#pass').keyup(function () {
-            controleMdp($(this).val(), 'pass');
+            controleMdp($(this).val(), 'pass', true, 'pass2');
         });
         // mdp controle particulier
         $('#pass').blur(function () {
             controleMdp($(this).val(), 'pass');
         });
 
+        $('#pass2').keyup(function () {
+            $(this).removeClass("LV_invalid_field");
+        });
+
         // mdp controle societe
         $('#passE').keyup(function () {
-            controleMdp($(this).val(), 'passE');
+            controleMdp($(this).val(), 'passE', true, 'passE2');
         });
         // mdp controle societe
         $('#passE').blur(function () {
             controleMdp($(this).val(), 'passE');
         });
+
+        $('#passE2').keyup(function () {
+            $(this).removeClass("LV_invalid_field");
+        });
+
 
         // confirmation mdp particulier
         $('#pass2').bind('paste', function (e) {

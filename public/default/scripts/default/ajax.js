@@ -203,7 +203,7 @@ function transfert(id_client)
 }
 
 // fonction controle mdp
-function controleMdp(mdp,id,async)
+function controleMdp(mdp,id,async, idConfirmation)
 {
     async = typeof async !== 'undefined' ? async : true;
     var result = false;
@@ -216,6 +216,7 @@ function controleMdp(mdp,id,async)
     }).done(function(data){
         if(data == 'ok'){
             $("#"+id).removeClass("LV_invalid_field");$("#"+id).addClass("LV_valid_field");
+            $("#"+idConfirmation).addClass("LV_invalid_field");
             result = true;
         } else{
             $("#"+id).removeClass("LV_valid_field");$("#"+id).addClass("LV_invalid_field");
