@@ -102,7 +102,7 @@ class projectsController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->projects_status_history       = $this->loadData('projects_status_history');
-        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
 
         $this->lng['landing-page']           = $this->ln->selectFront('landing-page', $this->language, $this->App);
 

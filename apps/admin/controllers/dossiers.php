@@ -352,7 +352,7 @@ class dossiersController extends bootstrap
             }
 
             if ($this->projects_status->status == projects_status::PREP_FUNDING) {
-                $fPredictAmountAutoBid = $this->get('AutoBidSettingsManager')->predictAmount($this->projects->risk, $this->projects->period);
+                $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($this->projects->risk, $this->projects->period);
                 $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
             }
 

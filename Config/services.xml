@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="unilend.service.autobid_settings_manager" class="Unilend\Service\AutoBidSettingsManager">
+        </service>
+
+        <service id="unilend.service.bid_manager" class="Unilend\Service\BidManager">
+        </service>
+
+        <service id="unilend.service.client_manager" class="Unilend\Service\ClientManager">
+        </service>
+
+        <service id="unilend.service.client_settings_manager" class="Unilend\Service\ClientSettingsManager">
+        </service>
+
+        <service id="unilend.service.lender_manager" class="Unilend\Service\LenderManager">
+        </service>
+
+        <service id="unilend.service.loan_manager" class="Unilend\Service\LoanManager">
+        </service>
+
+        <service id="unilend.service.notification_manager" class="Unilend\Service\NotificationManager">
+        </service>
+
+        <service id="unilend.service.email_manager" class="Unilend\Service\MailerManager">
+        </service>
+
+        <service id="unilend.service.project_manager" class="Unilend\Service\ProjectManager">
+        </service>
+    </services>
+</container>

@@ -183,7 +183,7 @@ class cronController extends bootstrap
             /** @var \projects $oProject */
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager = $this->get('unilend.service.project_manager');
             $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
@@ -203,7 +203,7 @@ class cronController extends bootstrap
             /** @var \projects $oProject */
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager = $this->get('unilend.service.project_manager');
 
             $bHasProjectPublished = false;
 
@@ -244,9 +244,9 @@ class cronController extends bootstrap
             /** @var \bids $oBid */
             $oBid = $this->loadData('bids');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager = $this->get('unilend.service.project_manager');
             /** @var \Unilend\Service\MailerManager $oMailerManager */
-            $oMailerManager = $this->get('MailerManager');
+            $oMailerManager = $this->get('unilend.service.email_manager');
 
             $bHasProjectFinished = false;
             $oLoggerEndProject   = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.' . date('Ymd') . '.log');

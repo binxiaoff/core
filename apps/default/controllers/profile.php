@@ -32,7 +32,7 @@ class profileController extends bootstrap
 
     public function _default()
     {
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($oLenderAccount);
@@ -1914,7 +1914,7 @@ class profileController extends bootstrap
     public function _autolend()
     {
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->oLendersAccounts  = $this->loadData('lenders_accounts');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
@@ -2003,7 +2003,7 @@ class profileController extends bootstrap
         $this->autoFireView = false;
 
         /** @var $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
 
         $oLendersAccounts = $this->loadData('lenders_accounts');
         $oSettings        = $this->loadData('settings');
@@ -2074,7 +2074,7 @@ class profileController extends bootstrap
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount          = $this->loadData('lenders_accounts');
         $oClientSettings         = $this->loadData('client_settings');
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $sInstruction            = '';
 
         if (false === empty($_POST['setting']) && $oLenderAccount->get($_POST['id_lender'])) {
@@ -2091,7 +2091,7 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = true;
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
         $oClientStatus           = $this->loadData('clients_status');
         $oClientStatus->getLastStatut($this->clients->id_client);
