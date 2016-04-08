@@ -473,20 +473,37 @@ class projectsController extends bootstrap
                     $oAssetsDebts->creances_clients                   = 0;
                     $oAssetsDebts->disponibilites                     = 0;
                     $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
+                    $oAssetsDebts->comptes_regularisation_actif       = 0;
                     $oAssetsDebts->capitaux_propres                   = 0;
                     $oAssetsDebts->provisions_pour_risques_et_charges = 0;
                     $oAssetsDebts->amortissement_sur_immo             = 0;
+                    $oAssetsDebts->depreciation_actif_circulant       = 0;
                     $oAssetsDebts->dettes_financieres                 = 0;
                     $oAssetsDebts->dettes_fournisseurs                = 0;
                     $oAssetsDebts->autres_dettes                      = 0;
+                    $oAssetsDebts->comptes_regularisation_passif      = 0;
                     $oAssetsDebts->create();
                 }
                 $this->listAP = $this->companies_actif_passif->select('id_bilan IN (' . implode(', ', $this->aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $this->aAnnualAccountsIds) . ') ASC');
             }
 
             foreach ($this->listAP as $ap) {
-                $this->totalAnneeActif[]  = $ap['immobilisations_corporelles'] + $ap['immobilisations_incorporelles'] + $ap['immobilisations_financieres'] + $ap['stocks'] + $ap['creances_clients'] + $ap['disponibilites'] + $ap['valeurs_mobilieres_de_placement'];
-                $this->totalAnneePassif[] = $ap['capitaux_propres'] + $ap['provisions_pour_risques_et_charges'] + $ap['dettes_financieres'] + $ap['dettes_fournisseurs'] + $ap['autres_dettes'] + $ap['amortissement_sur_immo'];
+                $this->totalAnneeActif[]  = $ap['immobilisations_corporelles']
+                    + $ap['immobilisations_incorporelles']
+                    + $ap['immobilisations_financieres']
+                    + $ap['stocks']
+                    + $ap['creances_clients']
+                    + $ap['disponibilites']
+                    + $ap['valeurs_mobilieres_de_placement']
+                    + $ap['comptes_regularisation_actif'];
+                $this->totalAnneePassif[] = $ap['capitaux_propres']
+                    + $ap['provisions_pour_risques_et_charges']
+                    + $ap['amortissement_sur_immo']
+                    + $ap['depreciation_actif_circulant']
+                    + $ap['dettes_financieres']
+                    + $ap['dettes_fournisseurs']
+                    + $ap['autres_dettes']
+                    + $ap['comptes_regularisation_passif'];
             }
 
             if ($this->soldeBid >= $this->projects->amount) {
@@ -677,9 +694,15 @@ class projectsController extends bootstrap
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
         }
+        if ($aAssetsDebts[0]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_actif'] != 0) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['comptes-regularisation']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_actif']);
+            }
+        }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-actifs']);
         for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles'] + $aAssetsDebts[$i]['immobilisations_incorporelles'] + $aAssetsDebts[$i]['immobilisations_financieres'] + $aAssetsDebts[$i]['stocks'] + $aAssetsDebts[$i]['creances_clients'] + $aAssetsDebts[$i]['disponibilites'] + $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles'] + $aAssetsDebts[$i]['immobilisations_incorporelles'] + $aAssetsDebts[$i]['immobilisations_financieres'] + $aAssetsDebts[$i]['stocks'] + $aAssetsDebts[$i]['creances_clients'] + $aAssetsDebts[$i]['disponibilites'] + $aAssetsDebts[$i]['valeurs_mobilieres_de_placement'] + $aAssetsDebts[$i]['comptes_regularisation_actif']);
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['passif']);
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['capitaux-propres']);
@@ -710,15 +733,15 @@ class projectsController extends bootstrap
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['autres_dettes']);
         }
-        if ($aAssetsDebts[0]['comptes_regularisation'] != 0 || $aAssetsDebts[1]['comptes_regularisation'] != 0 || $aAssetsDebts[2]['comptes_regularisation'] != 0) {
+        if ($aAssetsDebts[0]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_passif'] != 0) {
             $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['comptes-regularisation']);
             for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation']);
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_passif']);
             }
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-passifs']);
         for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['amortissement_sur_immo']);
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['depreciation_actif_circulant'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
         }
 
         /** @var \PHPExcel_Writer_CSV $oWriter */

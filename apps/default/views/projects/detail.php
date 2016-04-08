@@ -448,7 +448,14 @@
                                                         <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) ?>&nbsp;€</td>
                                                     <?php endfor; ?>
                                                 </tr>
-
+                                                <?php if ($this->listAP[0]['comptes_regularisation_actif'] != 0 || $this->listAP[1]['comptes_regularisation_actif'] != 0 || $this->listAP[2]['comptes_regularisation_actif'] != 0) : ?>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['comptes-regularisation'] ?></td>
+                                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['comptes_regularisation_actif'], 0) ?>&nbsp;€</td>
+                                                        <?php endfor; ?>
+                                                    </tr>
+                                                <?php endif; ?>
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-actifs'] ?></td>
                                                     <?php for ($i = 0; $i < 3; $i++): ?>
@@ -506,11 +513,11 @@
                                                         <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) ?>&nbsp;€</td>
                                                     <?php endfor; ?>
                                                 </tr>
-                                                <?php if ($this->listAP[0]['comptes_regularisation'] != 0 && $this->listAP[1]['comptes_regularisation'] != 0 && $this->listAP[2]['comptes_regularisation'] != 0) : ?>
+                                                <?php if ($this->listAP[0]['comptes_regularisation_passif'] != 0 || $this->listAP[1]['comptes_regularisation_passif'] != 0 || $this->listAP[2]['comptes_regularisation_passif'] != 0) : ?>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['comptes-regularisation'] ?></td>
                                                     <?php for ($i = 0; $i < 3; $i++): ?>
-                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['comptes_regularisation'], 0) ?>&nbsp;€</td>
+                                                        <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['comptes_regularisation_passif'], 0) ?>&nbsp;€</td>
                                                     <?php endfor; ?>
                                                 </tr>
                                                 <?php endif; ?>
@@ -730,7 +737,14 @@
                                                         <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) ?>&nbsp;€</td>
                                                     <?php endfor; ?>
                                                 </tr>
-
+                                                <?php if ($this->listAP[0]['comptes_regularisation_actif'] != 0 || $this->listAP[1]['comptes_regularisation_actif'] != 0 || $this->listAP[2]['comptes_regularisation_actif'] != 0) : ?>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['comptes-regularisation'] ?></td>
+                                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['comptes_regularisation_actif'], 0) ?>&nbsp;€</td>
+                                                        <?php endfor; ?>
+                                                    </tr>
+                                                <?php endif; ?>
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-actifs'] ?></td>
                                                     <?php for ($i = 0; $i < 3; $i++): ?>
@@ -782,6 +796,14 @@
                                                         <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['autres_dettes'], 0) ?>&nbsp;€</td>
                                                     <?php endfor; ?>
                                                 </tr>
+                                                <?php if ($this->listAP[0]['comptes_regularisation_passif'] != 0 || $this->listAP[1]['comptes_regularisation_passif'] != 0 || $this->listAP[2]['comptes_regularisation_passif'] != 0) : ?>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['comptes-regularisation'] ?></td>
+                                                        <?php for ($i = 0; $i < 3; $i++): ?>
+                                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['comptes_regularisation_passif'], 0) ?>&nbsp;€</td>
+                                                        <?php endfor; ?>
+                                                    </tr>
+                                                <?php endif; ?>
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-passifs'] ?></td>
                                                     <?php for ($i = 0; $i < 3; $i++): ?>

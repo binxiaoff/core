@@ -47,6 +47,7 @@
             'creances_clients'                => 'Créances clients',
             'disponibilites'                  => 'Disponibilités',
             'valeurs_mobilieres_de_placement' => 'Valeurs mobilières de placement',
+            'comptes_regularisation_actif'    => 'Comptes de régularisation'
         );
 
         ?>
@@ -93,7 +94,7 @@
             'dettes_financieres'                 => 'Dettes financières',
             'dettes_fournisseurs'                => 'Dettes fournisseurs',
             'autres_dettes'                      => 'Autres dettes',
-            'comptes_regularisation'             => 'Comptes de régularisation'
+            'comptes_regularisation_passif'      => 'Comptes de régularisation'
         );
 
         ?>
