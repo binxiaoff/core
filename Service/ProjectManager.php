@@ -46,6 +46,9 @@ class ProjectManager
     /** @var MailerManager */
     private $oMailerManager;
 
+    /** @var LenderManager */
+    private $oLenderManager;
+
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
@@ -58,6 +61,7 @@ class ProjectManager
         $this->oNotificationManager    = Loader::loadService('NotificationManager');
         $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
         $this->oMailerManager          = Loader::loadService('MailerManager');
+        $this->oLenderManager          = Loader::loadService('LenderManager');
 
         $this->oNMP       = Loader::loadData('nmp');
         $this->oNMPDesabo = Loader::loadData('nmp_desabo');
@@ -765,6 +769,12 @@ class ProjectManager
                 break;
             case \projects_status::ATTENTE_ANALYSTE:
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, \email::EMAIL_ADDRESS_ANALYSTS);
+                break;
+            case \projects_status::REMBOURSEMENT:
+            case \projects_status::PROBLEME:
+            case \projects_status::PROBLEME_J_X:
+            case \projects_status::RECOUVREMENT:
+                $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
                 break;
         }
     }

@@ -6443,27 +6443,37 @@ class cronController extends bootstrap
                                     GROUP BY id_project');
             $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
 
-            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 400;
+            /** @var \Unilend\Service\LenderManager $oLenderManager */
+            $oLenderManager = $this->get('LenderManager');
+            $oLenderManager->addLendersWithLatePaymentsToLendersAccountsStatQueue();
+
+            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 200;
             $oDateTime               = new DateTime('NOW');
             $fTimeStart              = microtime(true);
-            $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLendersAccountStats    = $this->loadData('lenders_account_stats');
-            $aLendersAccounts        = $oLendersAccountStats->selectLendersForIRR($iAmountOfLenderAccounts);
+            $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
 
-            foreach ($aLendersAccounts as $aLender) {
+            /** @var lenders_accounts $oLendersAccountStats */
+            $oLendersAccountStats       = $this->loadData('lenders_account_stats');
+            /** @var lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
+            $oLendersAccountsStatsQueue = $this->loadData('lenders_accounts_stats_queue');
+            $aIRRsCalculated            = 0;
+
+            foreach ($oLendersAccountsStatsQueue->select(null, null, null, $iAmountOfLenderAccounts) as $aLender) {
                 try {
-                    $fXIRR                                   = $oLendersAccountStats->calculateIRR($aLender['id_lender']);
-                    $oLendersAccountStats->id_lender_account = $aLender['id_lender'];
+                    $oLendersAccountStats->id_lender_account = $aLender['id_lender_account'];
                     $oLendersAccountStats->tri_date          = $oDateTime->format('Y-m-d H:i:s');
-                    $oLendersAccountStats->tri_value         = $fXIRR;
+                    $oLendersAccountStats->tri_value         = $oLendersAccountStats->calculateIRR($aLender['id_lender_account'], $oLoggerIRR);
                     $oLendersAccountStats->create();
+
+                    $oLendersAccountsStatsQueue->delete($aLender['id_lender_accont'], 'id_lender_account');
+                    $aIRRsCalculated += 1;
 
                 } catch (Exception $e) {
                     $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage());
                 }
             }
             $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
-            $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for ' . count($aLendersAccounts) . ' lenders : ' . round(microtime(true) - $fTimeStart, 2));
+            $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for ' . count($aIRRsCalculated) . ' lenders : ' . round(microtime(true) - $fTimeStart, 2));
             $this->stopCron();
         }
     }

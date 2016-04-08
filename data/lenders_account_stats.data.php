@@ -21,37 +21,6 @@ class lenders_account_stats extends lenders_account_stats_crud
     }
 
     /**
-     * @param int $iLimit number of lender accounts to be selected
-     * @return array with lenders
-     */
-    public function selectLendersForIRR($iLimit)
-    {
-        $sql = 'SELECT
-                    l.id_lender,
-                    la.added,
-                    MAX(las.tri_date) AS last_tri_date
-                FROM
-                    lenders_accounts la
-                    INNER JOIN clients c ON la.id_client_owner = c.id_client
-                    INNER JOIN loans l ON l.id_lender = la.id_lender_account
-                    LEFT JOIN lenders_account_stats las ON la.id_lender_account = las.id_lender_account
-                WHERE
-                    c.status = 1
-                GROUP BY
-                    l.id_lender
-                ORDER BY
-                    last_tri_date ASC,
-                    la.added DESC
-                LIMIT ' . $iLimit;
-        $result   = $this->bdd->query($sql);
-        $aLenders = array();
-        while ($record = $this->bdd->fetch_array($result)) {
-            $aLenders[] = $record;
-        }
-        return $aLenders;
-    }
-
-    /**
      * @param int $iLendersAccountId unique identifier of the lender
      * @return array with dates and values of loans and dues sorted by date (impacts result of calculation)
      */
@@ -168,17 +137,16 @@ class lenders_account_stats extends lenders_account_stats_crud
     }
 
     /**
-     * @param int $iLendersAccountId unique identifier of the lender for who the IRR should be calculated
-     * @return float with IRR value
-     * @throws Exception when not values are available to be used in the calculation,
-     * when the result is not in the accepted range
+     * @param $iLendersAccountId
+     * @param ULogger $oLoggerIRR
+     * @return float
+     * @throws Exception
      */
-    public function calculateIRR($iLendersAccountId)
+    public function calculateIRR($iLendersAccountId, ULogger $oLoggerIRR)
     {
         /* @var array $config */
         include __DIR__ . '/../config.php';
 
-        $oLoggerIRR = new ULogger('Calculate IRR', $config['log_path'][ENVIRONMENT], 'IRR.log');
         $fGuess     = 0.1;
         $oLoggerIRR->addRecord(ULogger::INFO, 'Guess : ' . $fGuess . ' MAX_INTERATIONS : '. 100);
 
@@ -241,5 +209,37 @@ class lenders_account_stats extends lenders_account_stats_crud
         }
 
         return $fLossRate;
+    }
+
+    /**
+     * @param array|null $aProjectStatus
+     * @return array
+     */
+    public function getLendersWithLatePaymentsForProjectStatus(array $aProjectStatus = null)
+    {
+        $sProjectStatus = '';
+        if (false === empty($aProjectStatus)) {
+            $sProjectStatus = 'AND ps.status IN (' . implode(',', $aProjectStatus) . ')';
+        }
+
+        $sQuery =   'SELECT
+                        e.id_lender
+                    FROM
+                        echeanciers e
+                        INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
+                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE
+                        e.date_echeance < NOW()
+                        AND e.status = 0 ' . $sProjectStatus . '
+                    GROUP BY
+                        id_lender';
+
+        $aLenderIds = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aLenderIds[] = $aRecord;
+        }
+        return $aLenderIds;
     }
 }
