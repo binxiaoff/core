@@ -516,7 +516,7 @@
                     ?>
                 </tr>
                 <!-- Stocks -->
-                <tr>
+                <tr class="sub-total">
                     <td>Total actif immobilisé</td>
                     <td>BJ</td>
                     <?php
@@ -839,7 +839,7 @@
                     }
                     ?>
                 </tr>
-                <tr>
+                <tr class="sub-total">
                     <td>Total actif circulant</td>
                     <td>CJ</td>
                     <?php
@@ -1057,7 +1057,7 @@
                     ?>
                 </tr>
                 <!-- Dettes financières -->
-                <tr>
+                <tr class="sub-total">
                     <td>Amortissements sur Immobilisations</td>
                     <td>BK</td>
                     <?php
@@ -1077,7 +1077,7 @@
                     }
                     ?>
                 </tr>
-                <tr>
+                <tr class="sub-total">
                     <td>Dépréciation de l'actif circulant</td>
                     <td>CK</td>
                     <?php
@@ -1097,7 +1097,7 @@
                     }
                     ?>
                 </tr>
-                <tr>
+                <tr class="sub-total">
                     <td>Provisions pour risques et charges</td>
                     <td>DR</td>
                     <?php
@@ -2274,7 +2274,7 @@
         </table>
         <div id="valid_etape4_2" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
-            <input type="submit" class="btn_link" value="Sauvegarder">
+            <input type="submit" class="btn_link" value="Sauvegarder les bilans">
         </div>
     </form>
 </div>
