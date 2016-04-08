@@ -1,0 +1,13 @@
+#!/usr/bin/env php
+<?php
+set_time_limit(0);
+
+require __DIR__ . '/../Autoloader.php';
+
+use Unilend\apps\Console;
+use Unilend\core\Console\Application;
+
+$application = new Application('Unilend console', '1.0');
+$cron = new Console\ExampleCron();
+$application->add($cron);
+$application->run();
