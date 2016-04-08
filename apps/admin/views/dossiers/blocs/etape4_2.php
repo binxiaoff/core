@@ -82,7 +82,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AA'] - $aBalanceSheet['AA']) / $aBalanceSheet['AA'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AA'] - $aBalanceSheet['AA']) / abs($aBalanceSheet['AA']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -102,7 +102,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AB'] - $aBalanceSheet['AB']) / $aBalanceSheet['AB'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AB'] - $aBalanceSheet['AB']) / abs($aBalanceSheet['AB']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -122,7 +122,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AD'] - $aBalanceSheet['AD']) / $aBalanceSheet['AD'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AD'] - $aBalanceSheet['AD']) / abs($aBalanceSheet['AD']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -142,7 +142,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AF'] - $aBalanceSheet['AF']) / $aBalanceSheet['AF'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AF'] - $aBalanceSheet['AF']) / abs($aBalanceSheet['AF']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -162,7 +162,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AH'] - $aBalanceSheet['AH']) / $aBalanceSheet['AH'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AH'] - $aBalanceSheet['AH']) / abs($aBalanceSheet['AH']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -182,7 +182,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AJ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AJ'] - $aBalanceSheet['AJ']) / $aBalanceSheet['AJ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AJ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AJ'] - $aBalanceSheet['AJ']) / abs($aBalanceSheet['AJ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -202,7 +202,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AL'] - $aBalanceSheet['AL']) / $aBalanceSheet['AL'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AL'] - $aBalanceSheet['AL']) / abs($aBalanceSheet['AL']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -222,7 +222,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -243,7 +243,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AN'] - $aBalanceSheet['AN']) / $aBalanceSheet['AN'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AN'] - $aBalanceSheet['AN']) / abs($aBalanceSheet['AN']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -263,7 +263,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AP'] - $aBalanceSheet['AP']) / $aBalanceSheet['AP'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AP'] - $aBalanceSheet['AP']) / abs($aBalanceSheet['AP']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -283,7 +283,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AR']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AR'] - $aBalanceSheet['AR']) / $aBalanceSheet['AR'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AR']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AR'] - $aBalanceSheet['AR']) / abs($aBalanceSheet['AR']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -304,7 +304,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AT'] - $aBalanceSheet['AT']) / $aBalanceSheet['AT'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AT'] - $aBalanceSheet['AT']) / abs($aBalanceSheet['AT']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -324,7 +324,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AV'] - $aBalanceSheet['AV']) / $aBalanceSheet['AV'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AV'] - $aBalanceSheet['AV']) / abs($aBalanceSheet['AV']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -344,7 +344,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['AX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AX'] - $aBalanceSheet['AX']) / $aBalanceSheet['AX'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['AX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['AX'] - $aBalanceSheet['AX']) / abs($aBalanceSheet['AX']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -364,7 +364,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -385,7 +385,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CS']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CS'] - $aBalanceSheet['CS']) / $aBalanceSheet['CS'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CS']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CS'] - $aBalanceSheet['CS']) / abs($aBalanceSheet['CS']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -405,7 +405,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CU'] - $aBalanceSheet['CU']) / $aBalanceSheet['CU'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CU'] - $aBalanceSheet['CU']) / abs($aBalanceSheet['CU']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -425,7 +425,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BB'] - $aBalanceSheet['BB']) / $aBalanceSheet['BB'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BB'] - $aBalanceSheet['BB']) / abs($aBalanceSheet['BB']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -445,7 +445,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BD'] - $aBalanceSheet['BD']) / $aBalanceSheet['BD'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BD'] - $aBalanceSheet['BD']) / abs($aBalanceSheet['BD']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -465,7 +465,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BF'] - $aBalanceSheet['BF']) / $aBalanceSheet['BF'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BF'] - $aBalanceSheet['BF']) / abs($aBalanceSheet['BF']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -485,7 +485,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BH'] - $aBalanceSheet['BH']) / $aBalanceSheet['BH'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BH'] - $aBalanceSheet['BH']) / abs($aBalanceSheet['BH']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -505,7 +505,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -526,7 +526,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BJ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BJ'] - $aBalanceSheet['BJ']) / $aBalanceSheet['BJ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BJ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BJ'] - $aBalanceSheet['BJ']) / abs($aBalanceSheet['BJ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -546,7 +546,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BL'] - $aBalanceSheet['BL']) / $aBalanceSheet['BL'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BL'] - $aBalanceSheet['BL']) / abs($aBalanceSheet['BL']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -566,7 +566,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BN'] - $aBalanceSheet['BN']) / $aBalanceSheet['BN'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BN'] - $aBalanceSheet['BN']) / abs($aBalanceSheet['BN']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -586,7 +586,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BP'] - $aBalanceSheet['BP']) / $aBalanceSheet['BP'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BP'] - $aBalanceSheet['BP']) / abs($aBalanceSheet['BP']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -606,7 +606,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BR']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BR'] - $aBalanceSheet['BR']) / $aBalanceSheet['BR'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BR']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BR'] - $aBalanceSheet['BR']) / abs($aBalanceSheet['BR']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -626,7 +626,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BT'] - $aBalanceSheet['BT']) / $aBalanceSheet['BT'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BT'] - $aBalanceSheet['BT']) / abs($aBalanceSheet['BT']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -646,7 +646,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -667,7 +667,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BV'] - $aBalanceSheet['BV']) / $aBalanceSheet['BV'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BV'] - $aBalanceSheet['BV']) / abs($aBalanceSheet['BV']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -687,7 +687,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BX'] - $aBalanceSheet['BX']) / $aBalanceSheet['BX'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BX'] - $aBalanceSheet['BX']) / abs($aBalanceSheet['BX']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -707,7 +707,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BZ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BZ'] - $aBalanceSheet['BZ']) / $aBalanceSheet['BZ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BZ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BZ'] - $aBalanceSheet['BZ']) / abs($aBalanceSheet['BZ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -727,7 +727,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CB'] - $aBalanceSheet['CB']) / $aBalanceSheet['CB'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CB'] - $aBalanceSheet['CB']) / abs($aBalanceSheet['CB']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -747,7 +747,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -768,7 +768,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CF'] - $aBalanceSheet['CF']) / $aBalanceSheet['CF'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CF'] - $aBalanceSheet['CF']) / abs($aBalanceSheet['CF']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -788,7 +788,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CD'] - $aBalanceSheet['CD']) / $aBalanceSheet['CD'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CD'] - $aBalanceSheet['CD']) / abs($aBalanceSheet['CD']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -808,7 +808,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -829,7 +829,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CH'] - $aBalanceSheet['CH']) / $aBalanceSheet['CH'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CH'] - $aBalanceSheet['CH']) / abs($aBalanceSheet['CH']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -849,7 +849,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CJ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CJ'] - $aBalanceSheet['CJ']) / $aBalanceSheet['CJ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CJ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CJ'] - $aBalanceSheet['CJ']) / abs($aBalanceSheet['CJ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -869,7 +869,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CW'] - $aBalanceSheet['CW']) / $aBalanceSheet['CW'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CW'] - $aBalanceSheet['CW']) / abs($aBalanceSheet['CW']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -889,7 +889,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CM']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CM'] - $aBalanceSheet['CM']) / $aBalanceSheet['CM'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CM']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CM'] - $aBalanceSheet['CM']) / abs($aBalanceSheet['CM']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -909,7 +909,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CN'] - $aBalanceSheet['CN']) / $aBalanceSheet['CN'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CN'] - $aBalanceSheet['CN']) / abs($aBalanceSheet['CN']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -929,7 +929,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -951,7 +951,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <th><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></th>
+                            <th><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></th>
                             <?php
                         }
                         ?>
@@ -986,7 +986,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DA'] - $aBalanceSheet['DA']) / $aBalanceSheet['DA'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DA'] - $aBalanceSheet['DA']) / abs($aBalanceSheet['DA']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1006,7 +1006,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DL'] - $aBalanceSheet['DL']) / $aBalanceSheet['DL'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DL'] - $aBalanceSheet['DL']) / abs($aBalanceSheet['DL']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1026,7 +1026,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DO']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DO'] - $aBalanceSheet['DO']) / $aBalanceSheet['DO'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DO']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DO'] - $aBalanceSheet['DO']) / abs($aBalanceSheet['DO']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1046,7 +1046,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1067,7 +1067,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['BK']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BK'] - $aBalanceSheet['BK']) / $aBalanceSheet['BK'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['BK']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['BK'] - $aBalanceSheet['BK']) / abs($aBalanceSheet['BK']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1087,7 +1087,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['CK']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CK'] - $aBalanceSheet['CK']) / $aBalanceSheet['CK'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['CK']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['CK'] - $aBalanceSheet['CK']) / abs($aBalanceSheet['CK']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1107,7 +1107,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DR']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DR'] - $aBalanceSheet['DR']) / $aBalanceSheet['DR'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DR']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DR'] - $aBalanceSheet['DR']) / abs($aBalanceSheet['DR']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1127,7 +1127,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DS']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DS'] - $aBalanceSheet['DS']) / $aBalanceSheet['DS'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DS']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DS'] - $aBalanceSheet['DS']) / abs($aBalanceSheet['DS']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1147,7 +1147,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DT'] - $aBalanceSheet['DT']) / $aBalanceSheet['DT'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DT'] - $aBalanceSheet['DT']) / abs($aBalanceSheet['DT']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1167,7 +1167,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DU'] - $aBalanceSheet['DU']) / $aBalanceSheet['DU'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DU'] - $aBalanceSheet['DU']) / abs($aBalanceSheet['DU']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1187,7 +1187,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DV'] - $aBalanceSheet['DV']) / $aBalanceSheet['DV'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DV'] - $aBalanceSheet['DV']) / abs($aBalanceSheet['DV']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1207,7 +1207,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1228,7 +1228,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DW'] - $aBalanceSheet['DW']) / $aBalanceSheet['DW'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DW'] - $aBalanceSheet['DW']) / abs($aBalanceSheet['DW']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1248,7 +1248,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DX'] - $aBalanceSheet['DX']) / $aBalanceSheet['DX'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DX'] - $aBalanceSheet['DX']) / abs($aBalanceSheet['DX']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1268,7 +1268,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1289,7 +1289,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DY']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DY'] - $aBalanceSheet['DY']) / $aBalanceSheet['DY'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DY']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DY'] - $aBalanceSheet['DY']) / abs($aBalanceSheet['DY']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1309,7 +1309,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['DZ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DZ'] - $aBalanceSheet['DZ']) / $aBalanceSheet['DZ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['DZ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['DZ'] - $aBalanceSheet['DZ']) / abs($aBalanceSheet['DZ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1329,7 +1329,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['EA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EA'] - $aBalanceSheet['EA']) / $aBalanceSheet['EA'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['EA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EA'] - $aBalanceSheet['EA']) / abs($aBalanceSheet['EA']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1349,7 +1349,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1370,7 +1370,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['EB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EB'] - $aBalanceSheet['EB']) / $aBalanceSheet['EB'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['EB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EB'] - $aBalanceSheet['EB']) / abs($aBalanceSheet['EB']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1390,7 +1390,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['ED']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['ED'] - $aBalanceSheet['ED']) / $aBalanceSheet['ED'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['ED']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['ED'] - $aBalanceSheet['ED']) / abs($aBalanceSheet['ED']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1410,7 +1410,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <td><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1432,7 +1432,7 @@
 
                         if (false === is_null($iPreviousTotal)) {
                             ?>
-                            <th><?= empty($iPreviousTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / $iPreviousTotal * 100) . '&nbsp;%' ?></th>
+                            <th><?= empty($iTotal) ? 'N/A' : round(($iPreviousTotal - $iTotal) / abs($iTotal) * 100) . '&nbsp;%' ?></th>
                             <?php
                         }
                         ?>
@@ -1466,7 +1466,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['EH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EH'] - $aBalanceSheet['EH']) / $aBalanceSheet['EH'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['EH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EH'] - $aBalanceSheet['EH']) / abs($aBalanceSheet['EH']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1486,7 +1486,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['EI']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EI'] - $aBalanceSheet['EI']) / $aBalanceSheet['EI'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['EI']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['EI'] - $aBalanceSheet['EI']) / abs($aBalanceSheet['EI']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1506,7 +1506,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HP'] - $aBalanceSheet['HP']) / $aBalanceSheet['HP'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HP'] - $aBalanceSheet['HP']) / abs($aBalanceSheet['HP']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1526,7 +1526,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HQ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HQ'] - $aBalanceSheet['HQ']) / $aBalanceSheet['HQ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HQ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HQ'] - $aBalanceSheet['HQ']) / abs($aBalanceSheet['HQ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1546,7 +1546,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['A1']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['A1'] - $aBalanceSheet['A1']) / $aBalanceSheet['A1'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['A1']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['A1'] - $aBalanceSheet['A1']) / abs($aBalanceSheet['A1']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1566,7 +1566,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['0J']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['0J'] - $aBalanceSheet['0J']) / $aBalanceSheet['0J'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['0J']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['0J'] - $aBalanceSheet['0J']) / abs($aBalanceSheet['0J']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1586,7 +1586,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['VH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['VH'] - $aBalanceSheet['VH']) / $aBalanceSheet['VH'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['VH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['VH'] - $aBalanceSheet['VH']) / abs($aBalanceSheet['VH']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1606,7 +1606,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['VI']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['VI'] - $aBalanceSheet['VI']) / $aBalanceSheet['VI'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['VI']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['VI'] - $aBalanceSheet['VI']) / abs($aBalanceSheet['VI']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1640,7 +1640,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FL'] - $aBalanceSheet['FL']) / $aBalanceSheet['FL'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FL']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FL'] - $aBalanceSheet['FL']) / abs($aBalanceSheet['FL']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1660,7 +1660,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FM']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FM'] - $aBalanceSheet['FM']) / $aBalanceSheet['FM'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FM']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FM'] - $aBalanceSheet['FM']) / abs($aBalanceSheet['FM']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1680,7 +1680,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FN'] - $aBalanceSheet['FN']) / $aBalanceSheet['FN'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FN'] - $aBalanceSheet['FN']) / abs($aBalanceSheet['FN']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1700,7 +1700,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FO']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FO'] - $aBalanceSheet['FO']) / $aBalanceSheet['FO'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FO']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FO'] - $aBalanceSheet['FO']) / abs($aBalanceSheet['FO']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1720,7 +1720,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FP'] - $aBalanceSheet['FP']) / $aBalanceSheet['FP'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FP'] - $aBalanceSheet['FP']) / abs($aBalanceSheet['FP']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1740,7 +1740,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FQ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FQ'] - $aBalanceSheet['FQ']) / $aBalanceSheet['FQ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FQ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FQ'] - $aBalanceSheet['FQ']) / abs($aBalanceSheet['FQ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1760,7 +1760,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FS']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FS'] - $aBalanceSheet['FS']) / $aBalanceSheet['FS'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FS']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FS'] - $aBalanceSheet['FS']) / abs($aBalanceSheet['FS']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1780,7 +1780,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FT'] - $aBalanceSheet['FT']) / $aBalanceSheet['FT'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FT']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FT'] - $aBalanceSheet['FT']) / abs($aBalanceSheet['FT']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1800,7 +1800,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FU'] - $aBalanceSheet['FU']) / $aBalanceSheet['FU'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FU'] - $aBalanceSheet['FU']) / abs($aBalanceSheet['FU']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1820,7 +1820,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FV'] - $aBalanceSheet['FV']) / $aBalanceSheet['FV'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FV'] - $aBalanceSheet['FV']) / abs($aBalanceSheet['FV']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1840,7 +1840,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FW'] - $aBalanceSheet['FW']) / $aBalanceSheet['FW'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FW'] - $aBalanceSheet['FW']) / abs($aBalanceSheet['FW']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1860,7 +1860,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FX'] - $aBalanceSheet['FX']) / $aBalanceSheet['FX'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FX']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FX'] - $aBalanceSheet['FX']) / abs($aBalanceSheet['FX']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1880,7 +1880,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FY']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FY'] - $aBalanceSheet['FY']) / $aBalanceSheet['FY'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FY']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FY'] - $aBalanceSheet['FY']) / abs($aBalanceSheet['FY']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1900,7 +1900,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['FZ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FZ'] - $aBalanceSheet['FZ']) / $aBalanceSheet['FZ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['FZ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['FZ'] - $aBalanceSheet['FZ']) / abs($aBalanceSheet['FZ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1920,7 +1920,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GA'] - $aBalanceSheet['GA']) / $aBalanceSheet['GA'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GA'] - $aBalanceSheet['GA']) / abs($aBalanceSheet['GA']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1940,7 +1940,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GB'] - $aBalanceSheet['GB']) / $aBalanceSheet['GB'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GB'] - $aBalanceSheet['GB']) / abs($aBalanceSheet['GB']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1960,7 +1960,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GC']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GC'] - $aBalanceSheet['GC']) / $aBalanceSheet['GC'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GC']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GC'] - $aBalanceSheet['GC']) / abs($aBalanceSheet['GC']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -1980,7 +1980,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GD'] - $aBalanceSheet['GD']) / $aBalanceSheet['GD'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GD']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GD'] - $aBalanceSheet['GD']) / abs($aBalanceSheet['GD']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2000,7 +2000,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GE']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GE'] - $aBalanceSheet['GE']) / $aBalanceSheet['GE'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GE']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GE'] - $aBalanceSheet['GE']) / abs($aBalanceSheet['GE']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2020,7 +2020,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GG']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GG'] - $aBalanceSheet['GG']) / $aBalanceSheet['GG'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GG']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GG'] - $aBalanceSheet['GG']) / abs($aBalanceSheet['GG']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2040,7 +2040,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GV'] - $aBalanceSheet['GV']) / $aBalanceSheet['GV'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GV']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GV'] - $aBalanceSheet['GV']) / abs($aBalanceSheet['GV']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2060,7 +2060,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GM']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GM'] - $aBalanceSheet['GM']) / $aBalanceSheet['GM'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GM']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GM'] - $aBalanceSheet['GM']) / abs($aBalanceSheet['GM']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2080,7 +2080,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GQ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GQ'] - $aBalanceSheet['GQ']) / $aBalanceSheet['GQ'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GQ']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GQ'] - $aBalanceSheet['GQ']) / abs($aBalanceSheet['GQ']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2100,7 +2100,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GU'] - $aBalanceSheet['GU']) / $aBalanceSheet['GU'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GU']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GU'] - $aBalanceSheet['GU']) / abs($aBalanceSheet['GU']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2120,7 +2120,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['GW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GW'] - $aBalanceSheet['GW']) / $aBalanceSheet['GW'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['GW']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['GW'] - $aBalanceSheet['GW']) / abs($aBalanceSheet['GW']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2140,7 +2140,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HA'] - $aBalanceSheet['HA']) / $aBalanceSheet['HA'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HA']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HA'] - $aBalanceSheet['HA']) / abs($aBalanceSheet['HA']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2160,7 +2160,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HB'] - $aBalanceSheet['HB']) / $aBalanceSheet['HB'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HB']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HB'] - $aBalanceSheet['HB']) / abs($aBalanceSheet['HB']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2180,7 +2180,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HC']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HC'] - $aBalanceSheet['HC']) / $aBalanceSheet['HC'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HC']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HC'] - $aBalanceSheet['HC']) / abs($aBalanceSheet['HC']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2200,7 +2200,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HE']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HE'] - $aBalanceSheet['HE']) / $aBalanceSheet['HE'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HE']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HE'] - $aBalanceSheet['HE']) / abs($aBalanceSheet['HE']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2220,7 +2220,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HF'] - $aBalanceSheet['HF']) / $aBalanceSheet['HF'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HF']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HF'] - $aBalanceSheet['HF']) / abs($aBalanceSheet['HF']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2240,7 +2240,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HG']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HG'] - $aBalanceSheet['HG']) / $aBalanceSheet['HG'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HG']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HG'] - $aBalanceSheet['HG']) / abs($aBalanceSheet['HG']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
@@ -2260,7 +2260,7 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['HN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HN'] - $aBalanceSheet['HN']) / $aBalanceSheet['HN'] * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['HN']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HN'] - $aBalanceSheet['HN']) / abs($aBalanceSheet['HN']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
