@@ -774,6 +774,7 @@ class ProjectManager
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
             case \projects_status::RECOUVREMENT:
+            case \projects_status::PROCEDURE_SAUVEGARDE:
                 $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
                 break;
         }
