@@ -800,6 +800,17 @@
     }
     ?>
 
+"4 : Transfert de charges";"A1";<?php
+    $iColumn = 0;
+    $iPreviousBalanceSheetId = null;
+
+    foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
+        if (false === is_null($iPreviousBalanceSheetId)) {
+            ?>"<?= empty($aBalanceSheet['A1']) ? '' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['A1'] - $aBalanceSheet['A1']) / $aBalanceSheet['A1'] * 100) . ' %' ?>";<?php } ?>"<?= $aBalanceSheet['A1'] ?>";<?php
+        $iPreviousBalanceSheetId = $iBalanceSheetId;
+    }
+    ?>
+
 "A5 : Investissements";"0J";<?php
     $iColumn = 0;
     $iPreviousBalanceSheetId = null;

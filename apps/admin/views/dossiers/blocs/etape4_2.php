@@ -1537,6 +1537,26 @@
                     ?>
                 </tr>
                 <tr>
+                    <td>4 : Transfert de charges</td>
+                    <td>A1</td>
+                    <?php
+                    $iColumn = 0;
+                    $iPreviousBalanceSheetId = null;
+
+                    foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
+                        if (false === is_null($iPreviousBalanceSheetId)) {
+                            ?>
+                            <td><?= empty($aBalanceSheet['A1']) ? '-' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['A1'] - $aBalanceSheet['A1']) / $aBalanceSheet['A1'] * 100) . '&nbsp;%' ?></td>
+                            <?php
+                        }
+                        ?>
+                        <td><input type="text" class="numbers" name="A1[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet['A1'], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <?php
+                        $iPreviousBalanceSheetId = $iBalanceSheetId;
+                    }
+                    ?>
+                </tr>
+                <tr>
                     <td>A5 : Investissements</td>
                     <td>0J</td>
                     <?php
