@@ -114,7 +114,7 @@
                 </tr>
                 <tr>
                     <td>Frais de développement</td>
-                    <td>AD</td>
+                    <td>AD / CX</td>
                     <?php
                     $iColumn = 0;
                     $iPreviousBalanceSheetId = null;
