@@ -90,6 +90,8 @@ class dossiersController extends bootstrap
         $this->prescripteurs                   = $this->loadData('prescripteurs');
         $this->clients_prescripteurs           = $this->loadData('clients');
         $this->companies_prescripteurs         = $this->loadData('companies');
+        /** @var \Unilend\Service\ProjectManager $oProjectManager */
+        $oProjectManager                       = $this->get('ProjectManager');
 
         $this->settings->get('Durée des prêts autorisées', 'type');
         $this->dureePossible = explode(',', $this->settings->value);
@@ -346,7 +348,7 @@ class dossiersController extends bootstrap
             $this->aEmails = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
 
             if (isset($_POST['problematic_status']) && $this->current_projects_status->status != $_POST['problematic_status']) {
-                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects->id_project);
+                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
 
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
@@ -689,13 +691,13 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                             if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
                             }
                         } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
-                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                             $companies        = $this->loadData('companies');
                             $clients          = $this->loadData('clients');
@@ -798,7 +800,7 @@ class dossiersController extends bootstrap
                                 mail($to, $subject, $message, $headers);
                             }
                         } else {
-                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
                         }
                     }
 
@@ -852,7 +854,7 @@ class dossiersController extends bootstrap
 
                         $nb_loans = $loans->getNbPreteurs($this->projects->id_project);
 
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects->id_project);
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
 
                         $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
                         $companies->get($this->projects->id_company, 'id_company');
@@ -973,7 +975,7 @@ class dossiersController extends bootstrap
                                 $settingsControleRemb->value = 0;
                                 $settingsControleRemb->update();
 
-                                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects->id_project);
+                                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
 
                                 //*** virement emprunteur ***//
                                 $this->transactions     = $this->loadData('transactions');
@@ -3095,9 +3097,11 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->update();
                     }
 
+                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                    $oProjectManager                     = $this->get('ProjectManager');
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
                     if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->params['0']);
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
                     }
 
                     $settingsControleRemb->value = 1;
@@ -3131,6 +3135,8 @@ class dossiersController extends bootstrap
                 $this->companies                     = $this->loadData('companies');
                 $this->loans                         = $this->loadData('loans');
                 $loans                               = $this->loadData('loans');
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                $oProjectManager                     = $this->get('ProjectManager');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -3165,7 +3171,7 @@ class dossiersController extends bootstrap
                     $remboursement_anticipe_mail_a_envoyer->create();
 
                     //on change le statut du projet
-                    $this->projects_status_history->addStatus(-1, \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
+                    $oProjectManager->addProjectStatus(-1, \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
 
                     // REMB ECHEANCE PRETEURS ----------------------------------------------------------------------
                     // FB
@@ -3395,7 +3401,7 @@ class dossiersController extends bootstrap
 
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
                     if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
                     }
 
                     header('Location:' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
@@ -3914,9 +3920,9 @@ class dossiersController extends bootstrap
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
-            $this->loadData('projects_status');
-            $oProjects_status_history = $this->loadData('projects_status_history');
-            $oProjects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects->id_project, 1, $varMail['liste_pieces']);
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects, 1, $varMail['liste_pieces']);
 
             unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
 

@@ -6284,13 +6284,16 @@ class cronController extends bootstrap
                                         }
                                     }
 
+                                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                                    $oProjectManager = $this->get('ProjectManager');
+
                                     /**
                                      * When project is pending documents, abort status is not automatic and must be set manually in BO
                                      */
                                     if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                        $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
+                                        $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $this->projects, $iReminderIndex, $this->projects_status_history->content);
                                     } else {
-                                        $this->projects_status_history->addStatus(\users::USER_ID_CRON, $iStatus, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
+                                        $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $this->projects, $iReminderIndex, $this->projects_status_history->content);
                                     }
                                 }
                             } catch (\Exception $oException) {
@@ -6314,12 +6317,12 @@ class cronController extends bootstrap
 
             /** @var \projects $oProject */
             $oProject = $this->loadData('projects');
-
-            /** @var \projects_status_history $oProjectStatusHistory */
-            $oProjectStatusHistory = $this->loadData('projects_status_history');
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
 
             foreach ($oProject->getFastProcessStep3() as $iProjectId) {
-                $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
+                $oProject->get($iProjectId, 'id_project');
+                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $oProject);
             }
 
             $this->stopCron();
@@ -6456,11 +6459,11 @@ class cronController extends bootstrap
                     $oLendersAccountStats->create();
 
                 } catch (Exception $e) {
-                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage());
+                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage());
                 }
             }
             $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
-            $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for '. count($aLendersAccounts) .' lenders : ' . round(microtime(true) - $fTimeStart, 2));
+            $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for ' . count($aLendersAccounts) . ' lenders : ' . round(microtime(true) - $fTimeStart, 2));
             $this->stopCron();
         }
     }

@@ -81,68 +81,6 @@ class projects_status_history extends projects_status_history_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    public function addStatus($id_user, $status, $id_project, $numero_relance = 0, $content = '')
-    {
-        $result = $this->bdd->query('SELECT id_project_status FROM projects_status WHERE status = ' . $status);
-
-        $this->id_project        = $id_project;
-        $this->id_project_status = (int) $this->bdd->result($result, 0, 0);
-        $this->id_user           = $id_user;
-        $this->numero_relance    = $numero_relance;
-        $this->content           = $content;
-        $this->create();
-
-        $this->statusUpdateTrigger($status, $id_project);
-    }
-
-    private function statusUpdateTrigger($iStatus, $iProjectId)
-    {
-        switch ($iStatus) {
-            case \projects_status::A_TRAITER:
-                $oSettings = new \settings($this->bdd);
-                $oSettings->get('Adresse notification inscription emprunteur', 'type');
-
-                $this->sendNotification('notification-depot-de-dossier', $iProjectId, trim($oSettings->value));
-                break;
-            case \projects_status::ATTENTE_ANALYSTE:
-                $this->sendNotification('notification-projet-a-traiter', $iProjectId, \email::EMAIL_ADDRESS_ANALYSTS);
-                break;
-        }
-    }
-
-    private function sendNotification($sNotificationType, $iProjectId, $sRecipient)
-    {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
-
-        // @todo intl
-        $oMailsText = new \mails_text($this->bdd);
-        $oMailsText->get($sNotificationType, 'lang = "fr" AND type');
-
-        $oProjects = new \projects($this->bdd);
-        $oProjects->get($iProjectId, 'id_project');
-
-        $oCompanies = new \companies($this->bdd);
-        $oCompanies->get($oProjects->id_company, 'id_company');
-
-        $aReplacements = array(
-            '[SURL]'           => $config['static_url'][ENVIRONMENT],
-            '[ID_PROJET]'      => $iProjectId,
-            '[MONTANT]'        => $oProjects->amount,
-            '[RAISON_SOCIALE]' => utf8_decode($oCompanies->name),
-            '[LIEN_REPRISE]'   => $config['url'][ENVIRONMENT]['admin'] . '/depot_de_dossier/reprise/' . $oProjects->hash,
-            '[LIEN_BO_PROJET]' => $config['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $iProjectId
-        );
-
-        $oEmail = new \email();
-        $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-        $oEmail->setSubject(utf8_decode($oMailsText->subject));
-        $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
-        $oEmail->addRecipient($sRecipient);
-
-        Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
-    }
-
     public function getBeforeLastStatus($iProjectId)
     {
         $result = $this->select('id_project=' . $iProjectId, 'added DESC', 1, 1);

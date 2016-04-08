@@ -1185,8 +1185,11 @@ class depot_de_dossierController extends bootstrap
      */
     private function redirect($sPage, $iProjectStatus = null, $sRejectionMessage = '')
     {
+        /** @var \Unilend\Service\ProjectManager $oProjectManager */
+        $oProjectManager = $this->get('ProjectManager');
+
         if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
-            $this->projects_status_history->addStatus(-2, $iProjectStatus, $this->projects->id_project, 0, $sRejectionMessage);
+            $oProjectManager->addProjectStatus(-2, $iProjectStatus, $this->projects, 0, $sRejectionMessage);
         }
 
         header('Location: ' . $this->lurl . '/depot_de_dossier/' . $sPage . '/' . $this->projects->hash);

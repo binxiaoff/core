@@ -241,6 +241,8 @@ class ajaxController extends bootstrap
         $this->companies               = $this->loadData('companies');
         $this->clients                 = $this->loadData('clients');
         $this->clients_history         = $this->loadData('clients_history');
+        /** @var \Unilend\Service\ProjectManager $oProjectManager */
+        $oProjectManager = $this->get('ProjectManager');
 
         if (isset($this->params[0]) && isset($this->params[1])) {
             if ($this->projects->get($this->params[1], 'id_project') &&
@@ -256,7 +258,7 @@ class ajaxController extends bootstrap
                 $this->companies->get($this->projects->id_company, 'id_company') &&
                 $this->params[0] == 30
             ) {
-                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $this->params[0], $this->projects->id_project);
+                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $this->params[0], $this->projects);
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
 
                 //*****************************************//
@@ -852,13 +854,14 @@ class ajaxController extends bootstrap
         $this->projects                = $this->loadData('projects');
         $this->companies               = $this->loadData('companies');
         $this->clients                 = $this->loadData('clients');
-        $this->projects_status_history = $this->loadData('projects_status_history');
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects->id_project);
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects);
 
             //**********************************************//
             //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
@@ -1161,8 +1164,9 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                // on maj le statut
-                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                 //on recup le statut courant
                 $this->current_projects_status = $this->loadData('projects_status');
@@ -1440,11 +1444,12 @@ class ajaxController extends bootstrap
                     $this->projects_notes->id_project = $this->projects->id_project;
                     $this->projects_notes->create();
                 }
-
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                $oProjectManager               = $this->get('ProjectManager');
                 if ($_POST['status'] == 1) {
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects->id_project);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
                 } elseif ($_POST['status'] == 2) {
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects->id_project);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects);
 
                     //////////////////////////////////////
                     /// MAIL emprunteur-dossier-rejete ///
@@ -1762,6 +1767,9 @@ class ajaxController extends bootstrap
 
                 $btn_etape6 = '';
 
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                $oProjectManager               = $this->get('ProjectManager');
+
                 if ($_POST['status'] == 1) {
                     $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);
 
@@ -1773,7 +1781,7 @@ class ajaxController extends bootstrap
                         }
                     }
 
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects->id_project);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
                     if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                         $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein', $this->clients);
                     }
@@ -1795,7 +1803,7 @@ class ajaxController extends bootstrap
                         </td>
                     ';
                 } elseif ($_POST['status'] == 2) {
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects->id_project);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects);
 
                     //////////////////////////////////////
                     /// MAIL emprunteur-dossier-rejete ///
@@ -1837,7 +1845,7 @@ class ajaxController extends bootstrap
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
                 } elseif ($_POST['status'] == 4) {
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects->id_project);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects);
 
                     $btn_etape6 = '
                         <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
