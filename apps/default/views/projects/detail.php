@@ -322,7 +322,10 @@
                             </div>
                         <?php  else : ?>
                             <div class="statistic-tables year-nav clearfix">
-                                <a class="btn" href="<?= $this->lurl ?>/projects/csv/<?= $this->projects->id_project ?>"><?= $this->lng['preteur-projets']['csv-extract-button'] ?></a>
+                                <div class="csv-extract">
+                                    <a href="<?= $this->lurl ?>/projects/csv/<?= $this->projects->id_project ?>"><img src="<?= $this->surl ?>/images/default/xls_hd.png" alt="<?= $this->lng['preteur-projets']['csv-extract-button'] ?>"/></a>
+                                    <?= $this->lng['preteur-projets']['csv-extract-button'] ?>
+                                </div>
                                 <ul class="right">
                                     <?php for ($i = 0; $i < 3; $i++): ?>
                                     <li>
@@ -815,7 +818,12 @@
                                     </tr>
                                 </table>
                             </div>
-                            <a class="btn" href="<?= $this->lurl ?>/projects/csv/<?= $this->projects->id_project ?>"><?= $this->lng['preteur-projets']['csv-extract-button'] ?></a>
+                            <div class="csv-extract">
+                                <a href="<?= $this->lurl ?>/projects/csv/<?= $this->projects->id_project ?>">
+                                    <img src="<?= $this->surl ?>/images/default/xls_hd.png" alt="<?= $this->lng['preteur-projets']['csv-extract-button'] ?>"/>
+                                    <?= $this->lng['preteur-projets']['csv-extract-button'] ?>
+                                </a>
+                            </div>
                         <?php endif; ?>
                         </div>
                     </p>

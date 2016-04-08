@@ -426,6 +426,9 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .single-project-mobile .statistic-table td.intitule { width: auto; }
     .single-project-mobile .statistic-table td.sameSize { width: 60px; }
     .single-project-mobile .statistic-table td.inner-table { padding: 0 !important; }
+    .single-project-mobile .csv-extract { display: block; text-align: center; }
+    .single-project-mobile .csv-extract > a { padding: 0; }
+    .single-project-mobile .csv-extract img { display: inline-block; width: 50px; }
 
     .tab .table-filter .period,
     .tab .table-filter .export,
