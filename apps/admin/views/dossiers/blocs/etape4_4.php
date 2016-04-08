@@ -71,14 +71,14 @@
                 <?php endforeach; ?>
                 <tr>
                     <td>Total</td>
-                    <?php foreach ($this->lCompanies_actif_passif as $aAssetsDebts): ?>
+                    <?php foreach ($this->lCompanies_actif_passif as $iIndex => $aAssetsDebts): ?>
                         <?php
                             $iTotal = 0;
                             foreach (array_keys($aAssetsFields) as $sKey) {
                                 $iTotal += $aAssetsDebts[$sKey];
                             }
                         ?>
-                        <td class="grisfonceBG"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
+                        <td id="total_actif_<?= $iIndex ?>" class="grisfonceBG" data-total="<?= $iTotal ?>"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
                     <?php endforeach; ?>
                 </tr>
             </tbody>
@@ -118,14 +118,14 @@
                 <?php endforeach; ?>
                 <tr>
                     <td>Total</td>
-                    <?php foreach ($this->lCompanies_actif_passif as $aAssetsDebts): ?>
+                    <?php foreach ($this->lCompanies_actif_passif as $iIndex => $aAssetsDebts): ?>
                         <?php
                             $iTotal = 0;
                             foreach (array_keys($aDebtsFields) as $sKey) {
                                 $iTotal += $aAssetsDebts[$sKey];
                             }
                         ?>
-                        <td class="grisfonceBG"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
+                        <td id="total_passif_<?= $iIndex ?>" class="grisfonceBG" data-total="<?= $iTotal ?>"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
                     <?php endforeach; ?>
                 </tr>
             </tbody>

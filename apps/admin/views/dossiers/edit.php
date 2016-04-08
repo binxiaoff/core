@@ -717,8 +717,25 @@
             </div>
             <div style="display:none" class="recharge">
                 <script type="text/javascript">
-                    $("#status").change(function () {
-                        var status = $("#status").val();
+                    var previous_status;
+                    $('#status').on('focus', function() {
+                        previous_status = this.value;
+                    }).change(function() {
+                        var status = $('#status').val();
+
+                        if (
+                            status == <?= \projects_status::ATTENTE_ANALYSTE ?>
+                            && (
+                                $('#total_actif_0').data('total') != $('#total_passif_0').data('total')
+                                || $('#total_actif_1').data('total') != $('#total_passif_1').data('total')
+                                || $('#total_actif_2').data('total') != $('#total_passif_2').data('total')
+                            )
+                        ) {
+                            alert('Certains comptes ne sont pas équilibrés');
+                            $('#status option[value="' + previous_status + '"]').prop('selected', true);
+                            return;
+                        }
+
                         $('.hidden_table').hide();
 
                         if (status == <?= \projects_status::A_FUNDER ?>) {

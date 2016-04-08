@@ -478,8 +478,23 @@ function send_email_borrower_area(id_client, type) {
 }
 
 function check_status_dossier(status, id_project) {
-    if (status == 25) var message = 'passer en revue';
-    else if (status == 30) var message = 'rejeter';
+    if (
+        $('#total_actif_0').data('total') != $('#total_passif_0').data('total')
+        || $('#total_actif_1').data('total') != $('#total_passif_1').data('total')
+        || $('#total_actif_2').data('total') != $('#total_passif_2').data('total')
+    ) {
+        alert('Certains comptes ne sont pas équilibrés');
+        return;
+    }
+
+    if (status == 25) {
+        var message = 'passer en revue';
+    } else if (status == 30) {
+        var message = 'rejeter';
+    } else {
+        console.log('Valeur inconnue');
+        return;
+    }
 
     if (confirm('Etes vous sur de ' + message + ' le dossier ?') == true) {
         $.post(add_url + '/ajax/check_status_dossier', {
