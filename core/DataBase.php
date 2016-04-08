@@ -43,6 +43,22 @@ class DataBase
     }
 
     /**
+     * Returns an instance of self
+     *
+     *
+     * @return DataBase
+     *
+     */
+    public static function instance()
+    {
+        if (true === is_null(self::$instance)) {
+            self::$instance = new self();
+        }
+
+        return self::$instance;
+    }
+
+    /**
      * Disconnects from database (doesn't destroy Connection object).
      * @return void
      */
@@ -95,23 +111,6 @@ class DataBase
     }
 
     /********************* Backwards compatibility methods *********************/
-
-    /**
-     * Returns an instance of self
-     *
-     * @deprecated for backwards compatibility only.
-     *
-     * @return DataBase
-     *
-     */
-    public static function instance()
-    {
-        if (true === is_null(self::$instance)) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
-    }
 
     /**
      * Executes a statement

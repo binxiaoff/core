@@ -7,12 +7,6 @@ class Autoloader
     public static function register()
     {
         spl_autoload_register(function($sClassName) {
-            $sPath = __DIR__ . '/' . str_replace(array('Unilend\\', '\\'), array('', DIRECTORY_SEPARATOR), $sClassName) . '.php';
-            if (file_exists($sPath)) {
-                require_once $sPath;
-            }
-        });
-        spl_autoload_register(function($sClassName) {
             $sPath = __DIR__ . '/data/' . $sClassName . '.data.php';
             if (file_exists($sPath)) {
                 require_once $sPath;
