@@ -19,6 +19,12 @@
             });
             $.colorbox({html: $box.show()});
         });
+
+        $('.annual-accounts .numbers').on('focus', function() {
+            $(this).closest('tr').addClass('highlighted');
+        }).on('blur', function() {
+            $(this).closest('tr').removeClass('highlighted');
+        });
     });
 </script>
 <style type="text/css">
