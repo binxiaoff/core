@@ -81,18 +81,30 @@ class projects_status_history extends projects_status_history_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    public function addStatus($id_user, $status, $id_project, $numero_relance = 0, $content = '')
+    public function addStatus($sUserId, $iStatus, $iProjectId, $sReminderId = 0, $sComment = '')
     {
-        $result = $this->bdd->query('SELECT id_project_status FROM projects_status WHERE status = ' . $status);
+        $rQuery = $this->bdd->query('SELECT id_project_status FROM projects_status WHERE status = ' . $iStatus);
 
-        $this->id_project        = $id_project;
-        $this->id_project_status = (int) $this->bdd->result($result, 0, 0);
-        $this->id_user           = $id_user;
-        $this->numero_relance    = $numero_relance;
-        $this->content           = $content;
+        if (in_array($iStatus, array(\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE))) {
+            $oCompanies = new \companies($this->bdd);
+            $oProjects = new \projects($this->bdd);
+
+            $aProjects = $oCompanies->getProjectsForCompany($iProjectId);
+            foreach ($aProjects as $aProject) {
+                $oProjects->get($aProject['id_project'], 'id_project');
+                $oProjects->stop_relances = '1';
+                $oProjects->update();
+            }
+        }
+
+        $this->id_project        = $iProjectId;
+        $this->id_project_status = (int) $this->bdd->result($rQuery, 0, 0);
+        $this->id_user           = $sUserId;
+        $this->numero_relance    = $sReminderId;
+        $this->content           = $sComment;
         $this->create();
 
-        $this->statusUpdateTrigger($status, $id_project);
+        $this->statusUpdateTrigger($iStatus, $iProjectId);
     }
 
     private function statusUpdateTrigger($iStatus, $iProjectId)
