@@ -775,6 +775,8 @@ class ProjectManager
             case \projects_status::PROBLEME_J_X:
             case \projects_status::RECOUVREMENT:
             case \projects_status::PROCEDURE_SAUVEGARDE:
+            case \projects_status::REDRESSEMENT_JUDICIAIRE:
+            case \projects_status::LIQUIDATION_JUDICIAIRE:
                 $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
                 break;
         }
