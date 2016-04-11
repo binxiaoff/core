@@ -37,38 +37,20 @@ class LenderManager
     }
 
     /**
-     * @param \lenders_accounts $oLenderAccount
-     *
+     * @param array $aLenders
      */
-    public function addToLendersAccountsStatQueue(\lenders_accounts $oLenderAccount)
-    {
-        /** @var \lenders_accounts_stats_queue $oLendersAccountsStatQueue */
-        $oLendersAccountsStatQueue = Loader::loadData('lenders_accounts_stats_queue');
-
-        if (false === $oLendersAccountsStatQueue->exist($oLenderAccount->id_lender_account, 'id_lender_account')) {
-            $oLendersAccountsStatQueue->id_lender_account = $oLenderAccount->id_lender_account;
-            $oLendersAccountsStatQueue->create();
-        }
-    }
-
-    public function addLendersWithLatePaymentsToLendersAccountsStatQueue()
-    {
-        /** @var \lenders_account_stats $oLendersAccountsStats */
-        $oLendersAccountsStats = Loader::loadData('lenders_account_stats');
-        $this->addLendersToLendersAccountsStatQueue($oLendersAccountsStats->getLendersWithLatePaymentsForProjectStatus(array(\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT)));
-
-    }
-
     public function addLendersToLendersAccountsStatQueue(array $aLenders)
     {
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
+        /** @var \lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
+        $oLendersAccountsStatsQueue = Loader::loadData('lenders_accounts_stats_queue');
 
         foreach ($aLenders as $aLender) {
             if (array_key_exists('id_lender', $aLender) && $oLenderAccount->get($aLender['id_lender'], 'id_lender_account')
                 || array_key_exists('id_lender_account', $aLender) && $oLenderAccount->get($aLender['id_lender_account'], 'id_lender_account')
             ) {
-                $this->addToLendersAccountsStatQueue($oLenderAccount);
+                $oLendersAccountsStatsQueue->addLenderToQueue($oLenderAccount);
             }
         }
     }

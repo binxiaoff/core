@@ -68,4 +68,12 @@ class lenders_accounts_stats_queue extends lenders_accounts_stats_queue_crud
         return ($this->bdd->fetch_assoc($result) > 0);
     }
 
+    public function addLenderToQueue(\lenders_accounts $oLenderAccount)
+    {
+        if (false === $this->exist($oLenderAccount->id_lender_account, 'id_lender_account')) {
+            $this->id_lender_account = $oLenderAccount->id_lender_account;
+            $this->create();
+        }
+    }
+
 }
