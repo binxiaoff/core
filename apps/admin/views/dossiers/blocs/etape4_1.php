@@ -54,12 +54,12 @@
                         <td colspan="2"><h2>Déclaration client</h2></td>
                     </tr>
                     <tr>
-                        <th style="width: 25%;"><label for="grade_sfac">Grade SFAC</label></th>
+                        <th style="width: 25%;"><label for="grade_euler_hermes">Grade Euler-Hermes</label></th>
                         <td style="width: 30%;">
-                            <select name="ratings[grade_sfac]" id="grade_sfac">
-                                <option value="0"<?php if (isset($this->aRatings['grade_sfac']) && 0 == $this->aRatings['grade_sfac']) : ?> selected="selected"<?php endif; ?>>N/A</option>
+                            <select name="ratings[grade_euler_hermes]" id="grade_euler_hermes">
+                                <option value="0"<?php if (isset($this->aRatings['grade_euler_hermes']) && 0 == $this->aRatings['grade_euler_hermes']) : ?> selected="selected"<?php endif; ?>>N/A</option>
                                 <?php for ($iCounter = 1; $iCounter <= 9; $iCounter++) : ?>
-                                <option value="<?= $iCounter ?>"<?php if (isset($this->aRatings['grade_sfac']) && $iCounter == $this->aRatings['grade_sfac']) : ?> selected="selected"<?php endif; ?>><?= $iCounter ?></option>
+                                <option value="<?= $iCounter ?>"<?php if (isset($this->aRatings['grade_euler_hermes']) && $iCounter == $this->aRatings['grade_euler_hermes']) : ?> selected="selected"<?php endif; ?>><?= $iCounter ?></option>
                                 <?php endfor; ?>
                             </select>
                         </td>

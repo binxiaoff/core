@@ -8,7 +8,7 @@
 "Notation externe"
 <?php if ($this->bIsProblematicCompany) : ?>"Cette société a déjà eu des problèmes"<?php endif; ?>
 "Notes externes";"";"Déclaration client"
-"Grade SFAC";"<?= empty($this->aRatings['grade_sfac']) ? 'N/A' : $this->aRatings['grade_sfac'] ?>";"Chiffe d'affaires declaré par client";"<?= $this->iDeclaredRevenue ?>"
+"Grade Euler-Hermes";"<?= empty($this->aRatings['grade_euler_hermes']) ? 'N/A' : $this->aRatings['grade_euler_hermes'] ?>";"Chiffe d'affaires declaré par client";"<?= $this->iDeclaredRevenue ?>"
 "Score Altares";"<?php if (isset($this->aRatings['score_altares'])) : ?><?= $this->aRatings['score_altares'] ?> / 20<?php else : ?>N/A<?php endif; ?>";"Résultat d'exploitation declaré par client";"<?= $this->iDeclaredOperatingIncome ?>"
 "Score sectoriel Altares";"<?php if (isset($this->aRatings['score_sectoriel_altares'])) : ?><?= round($this->aRatings['score_sectoriel_altares'] / 5) ?> / 20<?php else : ?>N/A<?php endif; ?>";"Fonds propres declarés par client";"<?= $this->iDeclaredCapitalStock ?>"
 "Note Infolegale";"<?= empty($this->aRatings['note_infolegale']) ? 'N/A' : $this->aRatings['note_infolegale'] ?>"
