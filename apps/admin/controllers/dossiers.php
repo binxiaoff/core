@@ -1043,7 +1043,7 @@ class dossiersController extends bootstrap
                                     $virements->id_project     = $this->projects->id_project;
                                     $virements->id_transaction = $this->transactions->id_transaction;
                                     $virements->montant        = $montant * 100;
-                                    $virements->motif          = $this->ficelle->getBorrowerBankTransferLabel($companies->siren, $this->projects->id_project);
+                                    $virements->motif          = $this->projects->getBorrowerBankTransferLabel($this->projects->id_project);
                                     $virements->type           = 2;
                                     $virements->create();
                                     // mail emprunteur facture a la fin

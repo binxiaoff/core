@@ -416,17 +416,6 @@ class ficelle
     }
 
     /**
-     * @param string $sSiren
-     * @param string $sIdProject
-     * @return string
-     */
-    public function getBorrowerBankTransferLabel($sSiren, $sIdProject)
-    {
-        $sIdProject = str_pad($sIdProject, 6, 0, STR_PAD_LEFT);
-        return $sBankTransferLabel = mb_strtoupper('UNILEND' . $sIdProject . 'E' . trim($sSiren), 'UTF-8');
-    }
-
-    /**
      * Format numbers to make them readable
      * @todo intl
      * @param float $fNumber

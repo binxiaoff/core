@@ -285,7 +285,7 @@ class projects extends projects_crud
             LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
             LEFT JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
             WHERE projects_status.status IN (' . $status . ')' . $where;
-        
+
         $aCount = $this->bdd->fetch_assoc($this->bdd->query($sql));
 
         if (is_array($aCount)) {
@@ -809,5 +809,17 @@ class projects extends projects_crud
     {
         //F, G, H are not used today.
         return array('A', 'B', 'C', 'D', 'E');
+    }
+
+    public function getBorrowerBankTransferLabel($iProjectId)
+    {
+        $oCompanies = new \companies($this->bdd);
+
+        $this->get($iProjectId);
+        $oCompanies->get($this->id_company);
+
+        $sIdProject         = str_pad($iProjectId, 6, 0, STR_PAD_LEFT);
+        $sBankTransferLabel = mb_strtoupper('UNILEND' . $sIdProject . 'E' . trim($oCompanies->siren), 'UTF-8');
+        return $sBankTransferLabel;
     }
 }

@@ -82,17 +82,19 @@ class prelevements extends prelevements_crud
         return (int) $this->bdd->result($result, 0, 0);
     }
 
-    public function updateIbanBic($sProjectId, $sBic, $sIban)
+    public function updateIbanBic($iProjectId, $sBic, $sIban)
     {
-        $sql = 'UPDATE prelevements SET bic = "' . $sBic . '", iban = "' . $sIban . '" WHERE id_project = ' . $sProjectId . ' AND status = ' . \prelevements::STATUS_PENDING;
+        $sql = 'UPDATE prelevements SET bic = ' . $sBic . ', iban = ' . $sIban . ' WHERE id_project = ' . $iProjectId . ' AND status = ' . \prelevements::STATUS_PENDING;
 
-        return $this->bdd->query($sql);
+        $rResult = $this->bdd->query($sql);
+        return $rResult;
     }
 
-    public function updateBankTransferLabel($sIdProject, $sBankTransferLabel)
+    public function updateBankTransferLabel($iProjectId, $sBankTransferLabel)
     {
-        $sql = 'UPDATE prelevements SET motif = "' . $sBankTransferLabel . '" WHERE id_project = ' . $sIdProject . ' AND status = ' . \prelevements::STATUS_PENDING;
+        $sql = 'UPDATE prelevements SET motif = "' . $sBankTransferLabel . '" WHERE id_project = ' . $iProjectId . ' AND status = ' . \prelevements::STATUS_PENDING;
 
-        return $this->bdd->query($sql);
+        $rResult = $this->bdd->query($sql);
+        return $rResult;
     }
 }
