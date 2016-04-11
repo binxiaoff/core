@@ -2,12 +2,33 @@
 <?php
 set_time_limit(0);
 
-require __DIR__ . '/../Autoloader.php';
+require_once __DIR__ . '/../Autoloader.php';
 
-use Unilend\apps\Console;
+\Autoloader::register();
+
+use Unilend\apps\Command;
 use Unilend\core\Console\Application;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\Config\FileLocator;
+
+$container = new ContainerBuilder();
+$loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Config'));
+$loader->load('events.xml');
+
+$dispatcher = new ContainerAwareEventDispatcher($container);
+$eventListeners = $container->findTaggedServiceIds(
+    'console.event_listener'
+);
+
+if ($eventListeners) {
+    foreach ($eventListeners as $service => $attributes) {
+        $dispatcher->addListenerService($attributes[0]['event'], array($service, $attributes[0]['method']));
+    }
+}
 
 $application = new Application('Unilend console', '1.0');
-$cron = new Console\ExampleCron();
-$application->add($cron);
+
+$application->setDispatcher($dispatcher);
 $application->run();

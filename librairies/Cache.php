@@ -2,9 +2,6 @@
 
 namespace Unilend\librairies;
 
-use Memcache;
-use Unilend\librairies\ULogger;
-
 class Cache
 {
     const SHORT_TIME  = 300;
@@ -50,7 +47,7 @@ class Cache
         /* @var array $config */
         include __DIR__ . '/../config.php';
 
-        $this->oMemcache = new Memcache();
+        $this->oMemcache = new \Memcache();
         $this->oMemcache->connect($config['cache'][$config['env']]['serverAddress'], $config['cache'][$config['env']]['serverPort']);
 
         $this->oLogger = new ULogger('Cache', $config['log_path'][$config['env']], 'error.' . date('Ymd') . '.log');

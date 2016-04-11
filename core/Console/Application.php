@@ -1,58 +1,18 @@
 <?php
-
-/*
- * This file is part of the Symfony package.
- *
- * (c) Fabien Potencier <fabien@symfony.com>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace Unilend\core\Console;
 
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\Console\Application as BaseApplication;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\DependencyInjection\ContainerBuilder;
+use Symfony\Component\Config\FileLocator;
+use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\Filesystem\LockHandler;
+use Symfony\Component\Console\Input\InputOption;
 
-/**
- * Application.
- *
- * @author Fabien Potencier <fabien@symfony.com>
- */
 class Application extends BaseApplication
 {
-    private $kernel;
     private $commandsRegistered = false;
-
-    /**
-     * Constructor.
-     *
-     * @param KernelInterface $kernel A KernelInterface instance
-     */
-    public function __construct(KernelInterface $kernel)
-    {
-        $this->kernel = $kernel;
-
-        parent::__construct('Symfony', Kernel::VERSION.' - '.$kernel->getName().'/'.$kernel->getEnvironment().($kernel->isDebug() ? '/debug' : ''));
-
-        $this->getDefinition()->addOption(new InputOption('--shell', '-s', InputOption::VALUE_NONE, 'Launch the shell.'));
-        $this->getDefinition()->addOption(new InputOption('--process-isolation', null, InputOption::VALUE_NONE, 'Launch commands from shell as a separate process.'));
-        $this->getDefinition()->addOption(new InputOption('--env', '-e', InputOption::VALUE_REQUIRED, 'The Environment name.', $kernel->getEnvironment()));
-        $this->getDefinition()->addOption(new InputOption('--no-debug', null, InputOption::VALUE_NONE, 'Switches off debug mode.'));
-    }
-
-    /**
-     * Gets the Kernel associated with this Console.
-     *
-     * @return KernelInterface A KernelInterface instance
-     */
-    public function getKernel()
-    {
-        return $this->kernel;
-    }
 
     /**
      * Runs the current application.
@@ -64,49 +24,58 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
-        $this->kernel->boot();
-
-        if (!$this->commandsRegistered) {
+        if (! $this->commandsRegistered) {
             $this->registerCommands();
 
             $this->commandsRegistered = true;
         }
 
-        $container = $this->kernel->getContainer();
+        //$this->addEventComsumer();
 
-        foreach ($this->all() as $command) {
-            if ($command instanceof ContainerAwareInterface) {
-                $command->setContainer($container);
+        if (! $input->hasParameterOption(array('--multi-process', '-m'), false)) {
+            $lock = new LockHandler($this->getName());
+            if (! $lock->lock()) {
+                $output->writeln('The command is already running in another process.');
+
+                return 0;
             }
         }
 
-        $this->setDispatcher($container->get('event_dispatcher'));
+        $return = parent::doRun($input, $output);
 
-        if (true === $input->hasParameterOption(array('--shell', '-s'))) {
-            $shell = new Shell($this);
-            $shell->setProcessIsolation($input->hasParameterOption(array('--process-isolation')));
-            $shell->run();
-
-            return 0;
+        if (isset($lock) && $lock instanceof LockHandler) {
+            $lock->release();
         }
 
-        return parent::doRun($input, $output);
+        return $return;
     }
 
+    /**
+     * Register all the commands declared as a service (that has the unilend.command tag.
+     */
     protected function registerCommands()
     {
-        $container = $this->kernel->getContainer();
+        $container = new ContainerBuilder();
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
+        $loader->load('commands.xml');
 
-        foreach ($this->kernel->getBundles() as $bundle) {
-            if ($bundle instanceof Bundle) {
-                $bundle->registerCommands($this);
+        $commandServices = $container->findTaggedServiceIds(
+            'unilend.command'
+        );
+
+        if ($commandServices) {
+            foreach ($commandServices as $service => $attributes) {
+                $this->add($container->get($service));
             }
         }
+    }
 
-        if ($container->hasParameter('console.command.ids')) {
-            foreach ($container->getParameter('console.command.ids') as $id) {
-                $this->add($container->get($id));
-            }
-        }
+    public function getDefinition()
+    {
+        $inputDefinition =  parent::getDefinition();
+        $inputDefinition->addOptions(
+            [new InputOption('--multi-process', '-m', InputOption::VALUE_NONE, 'This is a multi process or a single process.')]
+        );
+        return $inputDefinition;
     }
 }

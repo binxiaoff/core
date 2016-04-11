@@ -9,7 +9,9 @@
     "doctrine/dbal": "^2.5",
     "symfony/dependency-injection": "^3.0",
     "symfony/console": "^3.0",
-    "symfony/config": "^3.0"
+    "symfony/config": "^3.0",
+    "symfony/filesystem": "^3.0",
+    "symfony/event-dispatcher": "^3.0"
   },
 
   "autoload": {

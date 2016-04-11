@@ -15,20 +15,12 @@ use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 class ContainerAware implements ContainerAwareInterface
 {
     /**
-     * @var ContainerBuilder
+     * @var ContainerInterface
      *
      * @api
      */
-    protected $container;
-
-    public function __construct()
-    {
-        $container = new ContainerBuilder();
-        $this->setContainer($container);
-        $loader = new XmlFileLoader($this->container, new FileLocator(__DIR__ . '/../../Config'));
-        $loader->load('services.xml');
-    }
-
+    private $container;
+    
     /**
      * Sets the Container associated with this Controller.
      *
@@ -39,5 +31,16 @@ class ContainerAware implements ContainerAwareInterface
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
+    }
+
+    public function getContainer()
+    {
+        if (false === $this->container instanceof ContainerInterface) {
+            $container = new ContainerBuilder();
+            $this->setContainer($container);
+            $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
+            $loader->load('services.xml');
+        }
+        return $this->container;
     }
 }

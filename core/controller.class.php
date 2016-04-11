@@ -3,7 +3,6 @@ require_once __DIR__ . '/../Autoloader.php';
 
 use Unilend\librairies\Cache;
 use Unilend\core\DependencyInjection\ContainerAware;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 class Controller extends ContainerAware
 {
@@ -33,9 +32,7 @@ class Controller extends ContainerAware
     public function __construct(&$command, $config, $app)
     {
         Autoloader::register();
-
-        parent::__construct();
-
+        
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
@@ -454,7 +451,7 @@ class Controller extends ContainerAware
 
     public function get($sServiceId)
     {
-        return $this->container->get($sServiceId);
+        return $this->getContainer()->get($sServiceId);
     }
 
     //Charge un fichier js dans le tableau des js
