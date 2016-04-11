@@ -139,16 +139,14 @@ class lenders_account_stats extends lenders_account_stats_crud
     /**
      * @param $iLendersAccountId
      * @param ULogger $oLoggerIRR
-     * @return float
+     * @param float $fGuess
+     * @return string
      * @throws Exception
      */
-    public function calculateIRR($iLendersAccountId, ULogger $oLoggerIRR)
+    public function calculateIRR($iLendersAccountId, ULogger $oLoggerIRR, $fGuess = 0.1)
     {
         /* @var array $config */
         include __DIR__ . '/../config.php';
-
-        $fGuess     = 0.1;
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Guess : ' . $fGuess . ' MAX_INTERATIONS : '. 100);
 
         $fStartSQL  = microtime(true);
         $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
@@ -163,8 +161,8 @@ class lenders_account_stats extends lenders_account_stats_crud
 
         $fStartXIRR = microtime(true);
         $oFinancial = new \PHPExcel_Calculation_Financial();
-        $fXIRR      = round($oFinancial->XIRR($aSums, $aDates, $fGuess) * 100, 2);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)));
+        $fXIRR      = bcmul($oFinancial->XIRR($aSums, $aDates, $fGuess), 100, 2);
+        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . $fGuess . ' MAX_INTERATIONS : '. 100);
 
         if (abs($fXIRR) > 100) {
             throw new Exception('IRR not in range for id_lender ' . $iLendersAccountId . ' IRR : ' . $fXIRR);
@@ -213,12 +211,12 @@ class lenders_account_stats extends lenders_account_stats_crud
 
     /**
      * @param array|null $aProjectStatus
-     * @return array
+     * @return array of LenderIDs
      */
-    public function getLendersWithLatePaymentsForProjectStatus(array $aProjectStatus = null)
+    public function getLendersWithLatePaymentsForIRR(array $aProjectStatus = null)
     {
         $sProjectStatus = '';
-        if (false === empty($aProjectStatus)) {
+        if (false === is_null($aProjectStatus)) {
             $sProjectStatus = 'AND ps.status IN (' . implode(',', $aProjectStatus) . ')';
         }
 
@@ -231,6 +229,14 @@ class lenders_account_stats extends lenders_account_stats_crud
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         e.date_echeance < NOW()
+                        AND (
+                            SELECT
+                                MAX(las1.tri_date)
+                            FROM
+                                lenders_account_stats las1
+                            WHERE
+                                e.id_lender = las1.id_lender_account
+                        ) < e.date_echeance
                         AND e.status = 0 ' . $sProjectStatus . '
                     GROUP BY
                         id_lender';

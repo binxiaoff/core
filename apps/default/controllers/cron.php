@@ -6428,9 +6428,7 @@ class cronController extends bootstrap
     }
 
     /**
-     * Function to calculate the IRR (Internal Rate of Return) for each lender on a regular basis
-     * Given the amount of lenders and the time and resources needed for calculation
-     * it does four iterations per day on 800 accounts if not specified otherwise
+     * Documentation of IRR confluence (https://unilend.atlassian.net/wiki/display/DF/IRR)
      */
     public function _calculateIRRForAllLenders()
     {
@@ -6444,28 +6442,31 @@ class cronController extends bootstrap
             $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
 
             /** @var \Unilend\Service\LenderManager $oLenderManager */
-            $oLenderManager = $this->get('LenderManager');
-            $oLenderManager->addLendersWithLatePaymentsToLendersAccountsStatQueue();
+            $oLenderManager        = $this->get('LenderManager');
+            /** @var \lenders_account_stats $oLendersAccountsStats */
+            $oLendersAccountsStats = $this->loadData('lenders_account_stats');
+            $oLenderManager->addLendersToLendersAccountsStatQueue($oLendersAccountsStats->getLendersWithLatePaymentsForIRR(array(
+                    \projects_status::PROBLEME,
+                    \projects_status::PROBLEME_J_X,
+                    \projects_status::RECOUVREMENT
+                )));
 
-            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 200;
-            $oDateTime               = new DateTime('NOW');
+            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 300;
             $fTimeStart              = microtime(true);
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
 
-            /** @var lenders_accounts $oLendersAccountStats */
-            $oLendersAccountStats       = $this->loadData('lenders_account_stats');
             /** @var lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
             $oLendersAccountsStatsQueue = $this->loadData('lenders_accounts_stats_queue');
             $aIRRsCalculated            = 0;
 
-            foreach ($oLendersAccountsStatsQueue->select(null, null, null, $iAmountOfLenderAccounts) as $aLender) {
+            foreach ($oLendersAccountsStatsQueue->select(null, 'added DESC', null, $iAmountOfLenderAccounts) as $aLender) {
                 try {
-                    $oLendersAccountStats->id_lender_account = $aLender['id_lender_account'];
-                    $oLendersAccountStats->tri_date          = $oDateTime->format('Y-m-d H:i:s');
-                    $oLendersAccountStats->tri_value         = $oLendersAccountStats->calculateIRR($aLender['id_lender_account'], $oLoggerIRR);
-                    $oLendersAccountStats->create();
+                    $oLendersAccountsStats->id_lender_account = $aLender['id_lender_account'];
+                    $oLendersAccountsStats->tri_date          = date('Y-m-d H:i:s');
+                    $oLendersAccountsStats->tri_value         = $oLendersAccountsStats->calculateIRR($aLender['id_lender_account'], $oLoggerIRR);
+                    $oLendersAccountsStats->create();
 
-                    $oLendersAccountsStatsQueue->delete($aLender['id_lender_accont'], 'id_lender_account');
+                    $oLendersAccountsStatsQueue->delete($aLender['id_lender_account'], 'id_lender_account');
                     $aIRRsCalculated += 1;
 
                 } catch (Exception $e) {
@@ -6473,7 +6474,7 @@ class cronController extends bootstrap
                 }
             }
             $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
-            $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for ' . count($aIRRsCalculated) . ' lenders : ' . round(microtime(true) - $fTimeStart, 2));
+            $oLoggerIRR->addRecord(ULogger::INFO, 'Calculation time for ' . $aIRRsCalculated . ' lenders : ' . round((microtime(true) - $fTimeStart)/60, 2) . ' minutes');
             $this->stopCron();
         }
     }
