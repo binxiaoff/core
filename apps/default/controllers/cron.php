@@ -5156,10 +5156,10 @@ class cronController extends bootstrap
                         } else {
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
-                            $fRepaymentAmount               = $oLenderRepayment->montant / 100;
                             $fRepaymentCapital              = $oLenderRepayment->capital / 100;
                             $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
                             $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
+                            $fRepaymentAmount               = $fRepaymentCapital + $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
                         }
 
                         $fTotalAmount += $fRepaymentAmount;
