@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\core\Loader;
+
 class companies_bilans extends companies_bilans_crud
 {
     public function __construct($bdd, $params = '')
@@ -69,7 +71,8 @@ class companies_bilans extends companies_bilans_crud
 
     public function calcultateFromBalance()
     {
-        $oCompanyBalance = new company_balance($this->bdd);
+        /** @var \company_balance $oCompanyBalance */
+        $oCompanyBalance = Loader::loadData('company_balance');
         $aBalances       = $oCompanyBalance->getBalanceSheetsByAnnualAccount(array($this->id_bilan));
 
         $this->ca                          = $aBalances[$this->id_bilan]['FL'];
@@ -80,6 +83,7 @@ class companies_bilans extends companies_bilans_crud
         $this->charges_exceptionnelles     = $aBalances[$this->id_bilan]['HE'] + $aBalances[$this->id_bilan]['HF'] + $aBalances[$this->id_bilan]['HG'];
         $this->resultat_exceptionnel       = $this->produit_exceptionnel - $this->charges_exceptionnelles;
         $this->resultat_net                = $aBalances[$this->id_bilan]['HN'];
+        $this->investissements             = $aBalances[$this->id_bilan]['0J'];
         $this->update();
     }
 }

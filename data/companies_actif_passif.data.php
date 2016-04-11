@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\core\Loader;
+
 class companies_actif_passif extends companies_actif_passif_crud
 {
     public function __construct($bdd, $params = '')
@@ -69,7 +71,8 @@ class companies_actif_passif extends companies_actif_passif_crud
 
     public function calcultateFromBalance()
     {
-        $oCompanyBalance = new company_balance($this->bdd);
+        /** @var \company_balance $oCompanyBalance */
+        $oCompanyBalance = Loader::loadData('company_balance');
         $aBalances       = $oCompanyBalance->getBalanceSheetsByAnnualAccount(array($this->id_bilan));
 
         $this->immobilisations_corporelles        = $aBalances[$this->id_bilan]['AN'] + $aBalances[$this->id_bilan]['AP'] + $aBalances[$this->id_bilan]['AR'] + $aBalances[$this->id_bilan]['AT'] + $aBalances[$this->id_bilan]['AV'] + $aBalances[$this->id_bilan]['AX'];
