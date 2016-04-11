@@ -25,6 +25,18 @@
         }).on('blur', function() {
             $(this).closest('tr').removeClass('highlighted');
         });
+
+        $('.collapse_expand').on('click', function() {
+            if ($(this).hasClass('expanded')) {
+                $(this).attr('src', '<?= $this->surl ?>/images/admin/down.png');
+                $(this).closest('table').children('tbody').hide();
+                $(this).removeClass('expanded').addClass('collapsed');
+            } else {
+                $(this).attr('src', '<?= $this->surl ?>/images/admin/up.png');
+                $(this).closest('table').children('tbody').show();
+                $(this).removeClass('collapsed').addClass('expanded');
+            }
+        });
     });
 </script>
 <style type="text/css">
@@ -33,6 +45,11 @@
         padding: 20px;
         border: 2px solid #E3E4E5;
         border-radius: 10px;
+    }
+
+    .collapse_expand {
+        cursor: pointer;
+        float: left;
     }
 </style>
 
@@ -69,7 +86,10 @@
         <table class="tablesorter annual-accounts" style="text-align:center;">
             <thead>
                 <tr>
-                    <th colspan="2">Actif</th>
+                    <th colspan="2">
+                        <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
+                        Actif
+                    </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200" class="annual_accounts_dates" data-closing="<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>" data-duration="<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>" data-annual-account="<?= $aAnnualAccounts['id_bilan'] ?>"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
@@ -973,7 +993,10 @@
         <table class="tablesorter annual-accounts" style="text-align:center;">
             <thead>
                 <tr>
-                    <th colspan="2">Passif</th>
+                    <th colspan="2">
+                        <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
+                        Passif
+                    </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
@@ -1454,7 +1477,10 @@
         <table class="tablesorter annual-accounts" style="text-align:center;">
             <thead>
                 <tr>
-                    <th colspan="2">Autres infos</th>
+                    <th colspan="2">
+                        <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
+                        Autres infos
+                    </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
@@ -1628,7 +1654,10 @@
         <table class="tablesorter annual-accounts" style="text-align:center;">
             <thead>
                 <tr>
-                    <th colspan="2">Compte de résultat</th>
+                    <th colspan="2">
+                        <img class="collapse_expand expanded" src="<?= $this->surl ?>/images/admin/up.png" alt="Déplier/replier"/>
+                        Compte de résultat
+                    </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
                         <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
