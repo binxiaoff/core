@@ -146,16 +146,20 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     break;
                 }
                 ?>
-                <?= str_repeat('<td></td>', 2 * ($iBalanceSheetsCount - 1)) ?>
+                <?php if ($iBalanceSheetsCount > 1) : ?>
+                    <?= str_repeat('<td></td>', 2 * ($iBalanceSheetsCount - 1)) ?>
+                <?php endif; ?>
             </tr>
             <tr>
                 <td>CAF moyenne pondérée sur 3 ans</td>
                 <?php if (3 === $iBalanceSheetsCount) : ?>
                     <?php list($iSecondToLastOperationalCashFlow, $iPreviousOperationalCashFlow, $iLastOperationalCashFlow) = array_values($aOperationalCashFlow); ?>
                     <td><?= $this->ficelle->formatNumber((2 * $iLastOperationalCashFlow + $iPreviousOperationalCashFlow + 0.5 * $iSecondToLastOperationalCashFlow) / 3.5, 0) ?>&nbsp;€</td>
+                <?php elseif ($iBalanceSheetsCount > 0) : ?>
+                    <td>N/A</td>
+                <?php endif; ?>
+                <?php if ($iBalanceSheetsCount > 1) : ?>
                     <?= str_repeat('<td></td>', 2 * ($iBalanceSheetsCount - 1)) ?>
-                <?php else : ?>
-                    N/A
                 <?php endif; ?>
             </tr>
             <tr>
@@ -537,7 +541,9 @@ foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                     }
                 }
                 ?>
-                <?= str_repeat('<td></td>', 2 * ($iBalanceSheetsCount - 1)) ?>
+                <?php if ($iBalanceSheetsCount > 1) : ?>
+                    <?= str_repeat('<td></td>', 2 * ($iBalanceSheetsCount - 1)) ?>
+                <?php endif; ?>
             </tr>
         </tbody>
     </table>
