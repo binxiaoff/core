@@ -117,466 +117,7 @@ class devboxController extends bootstrap
         echo $iUpdatedProjects . ' rows updated';
     }
 
-    // Ressort un csv avec les process des usersw≤
-    public function _etape_inscription()
-    {
-        // récup de tous les clients crée depuis le 1 aout
-        $this->clients = $this->loadData('clients');
-        $l_clients     = $this->clients->select();
-    }
-
-
-    public function _listes_repartitions()
-    {
-        // recupération des comptes bloques avant le 31/07/14
-        $this->clients                = $this->loadData('clients');
-        $this->prospects              = $this->loadData('prospects');
-        $this->lenders_accounts       = $this->loadData('lenders_accounts');
-        $this->clients_status_history = $this->loadData('clients_status_history');
-
-
-        // 1 preteurs offline
-        $this->countPreteursOffline = $this->clients->counter_de_test('status = 0 AND status_inscription_preteur = 1 AND EXISTS (SELECT * FROM lenders_accounts WHERE clients.id_client = lenders_accounts.id_client_owner) AND LEFT(added,10) < "2014-07-31"');
-        echo '<br>';
-        echo '<br>';
-
-
-        // 2 preteurs avec nom/prenom/email
-        echo $sql = '
-            SELECT
-                c.*
-                FROM clients c
-                LEFT JOIN prospects p ON c.email = p.email
-                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-                WHERE c.nom != ""
-                AND c.prenom != ""
-                AND c.status = 0
-                AND status_inscription_preteur = 0
-                AND LEFT(c.added,10) < "2014-07-31"
-                AND c.email != ""
-                AND c.type IN (1,2,3,4)
-                AND p.email IS NULL
-                AND la.id_lender_account != ""';
-        $this->Preteurs2      = $this->clients->get_preteurs_restriction($sql);
-        $this->countPreteurs2 = count($this->Preteurs2);
-
-        echo '<br>';
-        echo '<br>';
-
-        // 3 preteurs avec nom/prenom/email/tel/adresse
-        echo $sql = '
-            SELECT
-                c.id_client,
-                c.email,
-                ad.id_client,
-                ad.ville,
-                c.etape_inscription_preteur
-                FROM clients c
-                LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
-                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-                WHERE c.telephone != ""
-                AND c.nom != ""
-                AND c.prenom != ""
-                AND c.status = 0
-                AND LEFT(c.added,10) < "2014-07-31"
-                AND c.email != ""
-                AND c.type IN (1,2,3,4)
-                AND ad.adresse1 != ""
-                AND la.id_lender_account != ""
-                AND c.status_inscription_preteur = 0';
-        $this->Preteurs3      = $this->clients->get_preteurs_restriction($sql);
-        $this->countPreteurs3 = count($this->Preteurs3);
-        echo '<br>';
-        echo '<br>';
-
-        // 4 preteurs avec nom/prenom/email/tel/adresse / info bancaire
-        echo $sql = '
-            SELECT
-                c.id_client,
-                c.email,
-                ad.id_client,
-                ad.ville,
-                c.etape_inscription_preteur,
-                c.status_inscription_preteur,
-                c.id_nationalite,
-                c.type,
-                c.status
-                FROM clients c
-                LEFT JOIN clients_adresses ad ON c.id_client = ad.id_client
-                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-                WHERE c.telephone != ""
-                AND c.nom != ""
-                AND c.prenom != ""
-                AND c.status = 0
-                AND LEFT(c.added,10) < "2014-07-31"
-                AND c.email != ""
-                AND c.type IN (1,2,3,4)
-                AND ad.adresse1 != ""
-                AND la.id_lender_account != ""
-                AND c.status_inscription_preteur = 0
-                AND la.iban != ""';
-        $this->Preteurs4      = $this->clients->get_preteurs_restriction($sql);
-        $this->countPreteurs4 = count($this->Preteurs4);
-
-
-
-        echo '<br>';
-        echo '<br>';
-        echo '1 preteurs offline : ' . $this->countPreteursOffline;
-        echo '<br>';
-        echo '2 preteurs avec nom/prenom/email : ' . $this->countPreteurs2;
-        echo '<br>';
-        echo '3 preteurs avec nom/prenom/email/tel/adresse : ' . $this->countPreteurs3;
-        echo '<br>';
-        echo '4 preteurs avec nom/prenom/email/tel/adresse/ info bancaire : ' . $this->countPreteurs4;
-        echo '<br>';
-
-        die;
-    }
-
-    public function _nettoyage()
-    {
-        // recupération des comptes bloques avant le 31/07/14
-        $this->clients                = $this->loadData('clients');
-        $this->prospects              = $this->loadData('prospects');
-        $this->lenders_accounts       = $this->loadData('lenders_accounts');
-        $this->clients_status_history = $this->loadData('clients_status_history');
-
-        echo $sql = "
-        SELECT
-                c.id_client,c.email,p.id_prospect,p.email as email_prospect
-                FROM clients c
-                LEFT JOIN prospects p ON c.email = p.email
-                LEFT JOIN lenders_accounts la ON c.id_client = la.id_client_owner
-                WHERE p.email IS NOT NULL
-                AND la.id_lender_account != ''
-                AND c.status_inscription_preteur = 1
-                AND p.email != ''";
-        $this->inscripts = $this->clients->get_preteurs_restriction($sql);
-        die;
-    }
-
-    public function _regule_doublons()
-    {
-        die;
-        $this->clients = $this->loadData('clients');
-        //$lesIdClient = array(4517,2802,4370,2081,3302,2487,4428,3688,1234,2693,1546,1337,2130,2080,2665,4603,1714,4046,1281,3223,1303,2121,3184,3309,2140,2320,2924,2639,3403,1938,2358);
-
-        foreach ($lesIdClient as $id_client) {
-
-            if ($this->clients->get($id_client, 'id_client')) {
-                echo $id_client . '<br>';
-                // clients
-                $sql = 'DELETE FROM clients WHERE id_client = ' . $id_client;
-                //$this->bdd->query($sql);
-                // clients adresses
-                $sql = 'DELETE FROM clients_adresses WHERE id_client = ' . $id_client;
-                //$this->bdd->query($sql);
-                // lenders_accounts
-                $sql = 'DELETE FROM lenders_accounts WHERE id_client_owner = ' . $id_client;
-                //$this->bdd->query($sql);
-                // companies
-                $sql = 'DELETE FROM companies WHERE id_client_owner = ' . $id_client;
-                //$this->bdd->query($sql);
-                // clients_status_history
-                $sql = 'DELETE FROM clients_status_history WHERE id_client = ' . $id_client;
-                //$this->bdd->query($sql);
-            }
-        }
-        die;
-    }
-
-    public function _doublons()
-    {
-        $this->clients = $this->loadData('clients');
-
-        $sql = "
-        SELECT c.id_client,c.email,c.added,c.updated,c.lastlogin,c.status
-        FROM clients c
-        WHERE (SELECT csh.id_client_status FROM clients_status_history csh WHERE csh.id_client = c.id_client ORDER BY csh.added LIMIT 1) IN(1,2) ";
-
-        $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            echo '<pre>';
-            print_r($record);
-            echo '</pre>';
-        }
-        die;
-    }
-
-    // on veut les preteurs qui ont changé de pays dans le mois choisi en params
-    public function _get_preteur_changement_pays()
-    {
-        $date_debut = "2015-05-01 00:00:00";
-        $date_fin   = "2015-05-31 00:00:00";
-
-        //recupération des lenders qui ont changé de pays dans la periode
-        $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-
-        $sql      = '
-        SELECT lih1.id_lender,
-                    (
-                        SELECT lih2.id_pays
-                        FROM `lenders_imposition_history` lih2
-                        WHERE lih2.`added` BETWEEN "2015-05-01 00:00:00" AND "2015-05-31 00:00:00"
-                        AND lih2.id_lender = lih1.id_lender
-                        ORDER BY lih2.id_lenders_imposition_history DESC
-                        LIMIT 1
-
-                    ) as id_pays
-
-                FROM `lenders_imposition_history` lih1
-                WHERE lih1.`added` BETWEEN "2015-05-01 00:00:00" AND "2015-05-31 00:00:00"
-                GROUP BY lih1.id_lender';
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-
-        $L_lender_changed = $result;
-
-        $tab_liste_lender_changement_periode = array();
-        $compteur                            = 0;
-
-        foreach ($L_lender_changed as $lender) {
-            //récuperation de l'id_pays juste avant le debut de la periode
-            $sql      = '
-                        SELECT lih.id_pays
-                        FROM `lenders_imposition_history` lih
-                        WHERE lih.`added` < "2015-05-01 00:00:00"
-                        AND lih.id_lender = ' . $lender['id_lender'] . '
-                        ORDER BY lih.id_lenders_imposition_history DESC
-                        LIMIT 1';
-            $resultat = $this->bdd->query($sql);
-            $result   = array();
-            while ($record = $this->bdd->fetch_array($resultat)) {
-                $result[] = $record;
-            }
-
-            $last_id_pays_before_periode = $result[0]['id_pays'];
-
-            // on enregistre tous les lenders qui ont changé de pays dans la période
-            if ($lender['id_pays'] != $last_id_pays_before_periode && $last_id_pays_before_periode != "") {
-                $tab_liste_lender_changement_periode[$compteur]['id_lender']     = $lender['id_lender'];
-                $tab_liste_lender_changement_periode[$compteur]['id_pays_avant'] = $last_id_pays_before_periode;
-                $tab_liste_lender_changement_periode[$compteur]['id_pays_apres'] = $lender['id_pays'];
-                $compteur++;
-            }
-
-        }
-
-        print_r($tab_liste_lender_changement_periode);
-        die;
-
-    }
-
-    /**
-     *  Fonction qui permet de faire un rollback sur un remboursement fait
-     */
-    public function _retour_arriere_echeance()
-    {
-        // Variables
-        $id_projet = 7727;
-        $ordre     = 4;
-
-        $this->echeanciers = $this->loadData('echeanciers');
-        $lEcheances        = $this->echeanciers->select('id_project = ' . $id_projet . ' AND status_emprunteur = 1 AND ordre = ' . $ordre);
-
-        // passer toutes les echeances à status 0 et date reelle à 0000  ===> deja fait à la main
-
-        $cpt = 1;
-        foreach ($lEcheances as $e) {
-            // on met l'écheance à 0
-            $this->echeanciers = $this->loadData('echeanciers');
-            $this->echeanciers->get($e['id_echeancier']);
-            $this->echeanciers->status             = 0;
-            $this->echeanciers->date_echeance_reel = "0000-00-00 00:00:00";
-            $this->echeanciers->update();
-
-
-            //recup des transactions faites liées
-            $this->transactions = $this->loadData('transactions');
-            if ($this->transactions->get($e['id_echeancier'], 'id_echeancier')) {
-
-                // supp la walletline
-                $this->wallets_lines = $this->loadData('wallets_lines');
-                $this->wallets_lines->delete($this->transactions->id_transaction, 'id_transaction');
-
-                // delete la notif
-                $this->clients_gestion_mails_notif = $this->loadData('clients_gestion_mails_notif');
-                $this->clients_gestion_mails_notif->delete($this->transactions->id_transaction, 'id_transaction');
-
-                //DELETE A FAIRE A LA FIN
-                $this->transactions->delete($e['id_echeancier'], 'id_echeancier');
-
-                // supp les indexations des transactions
-                $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-                $this->indexage_vos_operations->delete($e['id_echeancier'], 'id_echeancier');
-
-                echo "<br /> Supp transaction id : " . $this->transactions->id_transaction;
-                echo "<br /><br />";
-
-                // on annule les notifs a la main
-                //UPDATE `unilend`.`notifications` SET `status` = '1' WHERE `type` = 2 AND `id_project` = 3013 AND `status` = 0 AND added LIKE "2015-06-10 %"
-
-                // DELETE FROM `unilend`.`notifications` WHERE `id_project` = 1614 AND `added` LIKE '%2015-07-08%'
-
-                $cpt++;
-            }
-        }
-
-        echo "<br /><br />";
-        echo "<br /><br />";
-        echo "Nb ligne supp :" . $cpt;
-
-        // on supprime aussi la transaction et le bank unilend vers unilend (remb total)
-
-        // TRANSACTION  qui déduit à unilend la redistribution
-        // On cherche la transaction avec l'id_echeancier_emprunteur
-
-        // Bank_unilend
-        //idem sur l'id_echeancier_emprunteur
-    }
-
-    // on veut les preteurs qui ont changé de pays dans le mois choisi en params
-    public function _get_selection_op()
-    {
-        $sql      = '
-
-                SET SQL_BIG_SELECTS=1;
-
-        ( SELECT t.*,
-
-            CASE
-                            WHEN t.type_transaction = 1 THEN "Dépôt de fonds" WHEN t.type_transaction = 2 AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NULL THEN "Offre proposée" WHEN t.type_transaction = 2 AND t.montant > 0 THEN "Offre rejetée" WHEN t.type_transaction = 2 AND t.montant <= 0 AND (SELECT lo.id_loan FROM loans lo WHERE lo.id_bid = b.id_bid AND lo.status = 0) IS NOT NULL THEN "Offre proposée"
-                            WHEN t.type_transaction = 3 THEN "Dépôt de fonds"
-                            WHEN t.type_transaction = 4 THEN "Dépôt de fonds"
-                            WHEN t.type_transaction = 5 THEN "Remboursement"
-                            WHEN t.type_transaction = 7 THEN "Dépôt de fonds"
-                            WHEN t.type_transaction = 8 THEN "Retrait d argent"
-                            WHEN t.type_transaction = 16 THEN "Offre de bienvenue"
-                            WHEN t.type_transaction = 17 THEN "Retrait offre"
-                            WHEN t.type_transaction = 19 THEN "Gain filleul"
-                            WHEN t.type_transaction = 20 THEN "Gain parrain"
-                            WHEN t.type_transaction = 22 THEN "Remboursement anticipé"
-                            WHEN t.type_transaction = 23 THEN "Remboursement anticipé"
-                ELSE ""
-            END as type_transaction_alpha,
-
-            CASE
-                WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
-                WHEN b.id_project IS NULL THEN b2.id_project
-                ELSE b.id_project
-            END as le_id_project,
-
-
-            date_transaction as date_tri,
-
-            (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction ) as solde,
-
-            CASE t.type_transaction
-                WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-                WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                                WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                ELSE ""
-            END as title,
-
-            CASE t.type_transaction
-                WHEN 2 THEN (SELECT loa.id_loan FROM loans loa WHERE loa.id_bid = b.id_bid AND loa.status = 0)
-                WHEN 5 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
-                                WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
-                ELSE ""
-            END as bdc
-
-
-
-            FROM transactions t
-            LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
-            LEFT JOIN bids b ON w.id_wallet_line = b.id_lender_wallet_line
-            LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-            WHERE 1=1
-                        AND t.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
-                        AND t.status = 1
-                        AND t.etat = 1
-                        AND t.display = 0
-                        AND t.id_client = 1
-                        AND LEFT(t.date_transaction,10) >= "2015-06-22" ORDER BY id_transaction DESC
-        )
-
-        UNION ALL
-
-        (
-            SELECT t.*,  "Offre acceptée" as type_transaction_alpha,
-                CASE
-                    WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
-                    WHEN b.id_project IS NULL THEN b2.id_project
-                    ELSE b.id_project
-                END as le_id_project,
-
-                (SELECT psh.added FROM projects_status_history psh WHERE psh.id_project = le_id_project AND id_project_status = 8 ORDER BY id_project_status_history ASC LIMIT 1) as date_tri,
-
-                (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
-
-                CASE t.type_transaction
-                    WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-                    WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                                        WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                    ELSE ""
-                END as title,
-
-                lo.id_loan as bdc
-
-            FROM loans lo
-            LEFT JOIN bids b ON lo.id_bid = b.id_bid
-            LEFT JOIN wallets_lines w ON w.id_wallet_line = b.id_lender_wallet_line
-            LEFT JOIN transactions t ON t.id_transaction = w.id_transaction
-            LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-            WHERE 1=1
-            AND lo.status = 0
-             AND t.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23)
-                        AND t.status = 1
-                        AND t.etat = 1
-                        AND t.display = 0
-                        AND t.id_client = 1
-                        AND LEFT(t.date_transaction,10) >= "2015-06-22"
-
-
-             ORDER BY id_transaction DESC
-
-        )
-         ORDER BY id_transaction DESC
-        ';
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-
-        print_r($result);
-        die;
-    }
-
-    // BT 18600
-    // Correction transaction de degel du projet 13996
-    public function _recuperation_projet_refuse_transaction()
-    {
-        die; //secu
-        $sql = "
-            UPDATE `unilend`.`indexage_vos_operations`
-            SET libelle_projet = 'Brunet Tente' ,
-                id_projet = 13996
-            WHERE date_operation > '2015-08-15 00:00:00'
-            AND libelle_operation = 'Offre rejetée'
-            AND id_projet = 0
-            AND bdc = 0
-            AND `libelle_projet` = ''
-        ";
-        $this->bdd->query($sql);
-    }
-
-
-    public function _import_file_cp()
+    public function _importINSEEPostalCodes()
     {
         $this->autoFireView   = false;
         $this->autoFireHeader = false;
@@ -598,14 +139,14 @@ class devboxController extends bootstrap
 
             $sql = 'INSERT INTO villes (ville, insee, cp, num_departement, active, added, updated)
                     VALUES("' . $aRow[1] . '", "' . $aRow[0] . '", "' . $aRow[2] . '", "' . $departement . '", 1, NOW(), NOW())';
-            $oVille->bdd->query($sql);
+            $this->bdd->query($sql);
             unset($aRow);
         }
 
         fclose($rHandle);
     }
 
-    public function _import_file_insee()
+    public function _importINSEECities()
     {
         $this->autoFireView   = false;
         $this->autoFireHeader = false;
@@ -627,16 +168,16 @@ class devboxController extends bootstrap
             $sInsee = $oVille->generateCodeInsee($aRow[5], $aRow[6]);
             if (in_array($aRow[0], array(3, 4))) {
                 if ($oVille->exist($sInsee, 'insee')) {
-                    $oVille->bdd->query('UPDATE `villes` SET active = 0, ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
+                    $this->bdd->query('UPDATE `villes` SET active = 0, ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
                 } else {
                     $departement = str_pad($aRow[5], 2, 0, STR_PAD_LEFT);
                     $sql = '
                         INSERT INTO `villes`(`ville`,`insee`,`cp`,`num_departement`,`active`,`added`,`updated`)
                         VALUES("' . $aRow[13] . '","' . $sInsee . '","","' . $departement . '", 0,NOW(),NOW())';
-                    $oVille->bdd->query($sql);
+                    $this->bdd->query($sql);
                 }
             } else {
-                $oVille->bdd->query('UPDATE `villes` SET ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
+                $this->bdd->query('UPDATE `villes` SET ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
             }
             unset($aRow);
             $i++;
@@ -646,7 +187,7 @@ class devboxController extends bootstrap
         fclose($rHandle);
     }
 
-    public function _import_old_cities_insee()
+    public function _importINSEEOldCities()
     {
         $this->autoFireView   = false;
         $this->autoFireHeader = false;
@@ -668,13 +209,13 @@ class devboxController extends bootstrap
             $sInsee = $oVille->generateCodeInsee($aRow[5], $aRow[6]);
             if (in_array($aRow[0], array(2, 9))) {
                 if ($oVille->exist($sInsee, 'insee')) {
-                    $oVille->bdd->query('UPDATE `villes` SET active = 0, ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
+                    $this->bdd->query('UPDATE `villes` SET active = 0, ville = "' . $aRow[13] . '" WHERE insee = "' . $sInsee . '"');
                 } else {
                     $departement = str_pad($aRow[5], 2, 0, STR_PAD_LEFT);
                     $sql = '
                         INSERT INTO `villes`(`ville`,`insee`,`cp`,`num_departement`,`active`,`added`,`updated`)
                         VALUES("' . $aRow[13] . '","' . $sInsee . '","","' . $departement . '", 0,NOW(),NOW())';
-                    $oVille->bdd->query($sql);
+                    $this->bdd->query($sql);
                 }
                 echo 'done: ' . $i . PHP_EOL;
                 $i++;
@@ -698,13 +239,13 @@ class devboxController extends bootstrap
             return;
         }
 
-        /** @var villes $oVille */
+        /** @var insee_pays $oPays */
         $oPays = $this->loadData('insee_pays');
 
         while (($aRow = fgetcsv($rHandle, 0, "\t")) !== false) {
             $sql = 'INSERT INTO insee_pays (CODEISO2, COG, ACTUAL, CAPAY, CRPAY, ANI, LIBCOG, LIBENR, ANCNOM)
                     VALUES("' . $aRow[8] . '","' . $aRow[0] . '","' . $aRow[1] . '","' . $aRow[2] . '","' . $aRow[3] . '","' . $aRow[4] . '","' . $aRow[5] . '","' . $aRow[6] . '","' . $aRow[7] . '")';
-            $oPays->bdd->query($sql);
+            $this->bdd->query($sql);
             unset($aRow);
         }
 
@@ -724,12 +265,12 @@ class devboxController extends bootstrap
             return;
         }
 
-        /** @var villes $oVille */
+        /** @var clients $oClient */
         $oClient = $this->loadData('clients');
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
-            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+            $aRow = array_map(array($this->bdd, 'escape_string'), $aRow);
 
             preg_match('/^\d+/s', $aRow[0], $matches);
             if (false === isset($matches[0])) {
@@ -741,7 +282,7 @@ class devboxController extends bootstrap
             } else {
                 $sql = "UPDATE clients set insee_birth = '{$aRow[1]}', ville_naissance = '{$aRow[2]}' WHERE id_client = {$iClientId}";
             }
-            $oClient->bdd->query($sql);
+            $this->bdd->query($sql);
             unset($aRow);
         }
 
@@ -762,12 +303,12 @@ class devboxController extends bootstrap
             return;
         }
 
-        /** @var villes $oVille */
+        /** @var clients_adresses $oClient */
         $oClient = $this->loadData('clients_adresses');
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
-            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+            $aRow = array_map(array($this->bdd, 'escape_string'), $aRow);
 
             preg_match('/^\d+/s', $aRow[0], $matches);
             if (false === isset($matches[0])) {
@@ -786,24 +327,23 @@ class devboxController extends bootstrap
                 $sFieldCountry  = 'id_pays';
 
                 $sql = "SELECT meme_adresse_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
-                $oQuery = $oClient->bdd->query($sql);
+                $oQuery = $this->bdd->query($sql);
                 $aClient = $this->bdd->fetch_array($oQuery);
 
-                if($aClient[meme_adresse_fiscal] === '0') {
+                if($aClient['meme_adresse_fiscal'] === '0') {
                     $sFieldPostCode = 'cp_fiscal';
                     $sFieldCity     = 'ville_fiscal';
                     $sFieldCountry  = 'id_pays_fiscal';
                 }
 
-
                 if ('99' === substr($aRow[2], 0, 2)) {
                     $sql = "SELECT id_pays_fiscal FROM clients_adresses WHERE id_client = {$iClientId}";
-                    $oQuery = $oClient->bdd->query($sql);
+                    $oQuery = $this->bdd->query($sql);
                     $aClient = $this->bdd->fetch_array($oQuery);
 
-                    if(isset($aClient[id_pays_fiscal]) && false === empty($aClient[id_pays_fiscal]) &&  $aClient[id_pays_fiscal] <= 1) {
+                    if(isset($aClient['id_pays_fiscal']) && false === empty($aClient['id_pays_fiscal']) &&  $aClient['id_pays_fiscal'] <= 1) {
                         $sql = "SELECT p.id_pays FROM pays_v2 p INNER JOIN insee_pays ip ON ip.CODEISO2 = p.iso WHERE ip.COG = {$aRow[2]}";
-                        $oQuery = $oClient->bdd->query($sql);
+                        $oQuery = $this->bdd->query($sql);
                         $aClient = $this->bdd->fetch_array($oQuery);
 
                         if(isset($aClient[id_pays]) && false === empty($aClient[id_pays])) {
@@ -814,7 +354,7 @@ class devboxController extends bootstrap
                     $sql = "UPDATE clients_adresses SET $sFieldPostCode = '{$aRow[2]}', $sFieldCity = '{$aRow[3]}' WHERE id_client = {$iClientId}";
                 }
             }
-            $oClient->bdd->query($sql);
+            $this->bdd->query($sql);
             unset($aRow);
         }
 
@@ -840,7 +380,7 @@ class devboxController extends bootstrap
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $aRow = array_map('trim', $aRow);
-            $aRow = array_map(array($oClient->bdd, 'escape_string'), $aRow);
+            $aRow = array_map(array($this->bdd, 'escape_string'), $aRow);
 
             preg_match('/^\d+/s', $aRow[0], $matches);
             if (false === isset($matches[0])) {
@@ -858,7 +398,7 @@ class devboxController extends bootstrap
                             ORDER BY lih.added DESC LIMIT 1
                         ) t
                     )";
-            $oClient->bdd->query($sql);
+            $this->bdd->query($sql);
             unset($aRow);
         }
 
@@ -887,7 +427,7 @@ class devboxController extends bootstrap
             if (false === $oOffre->exist($iClientId, 'id_client')) {
                 $sql = "INSERT INTO `offres_bienvenues_details` (`id_offre_bienvenue`, `motif`, `id_client`, `id_bid`, `id_bid_remb`, `montant`, `status`, `type`, `added`, `updated`)
                         VALUES (1, 'Offre de bienvenue', $iClientId, 0, 0, 2000, 0, 0, now(), now())";
-                $oOffre->bdd->query($sql);
+                $this->bdd->query($sql);
             }
         }
         fclose($rHandle);
@@ -946,59 +486,5 @@ class devboxController extends bootstrap
         }
         fclose($rHandle);
         echo 'done';
-    }
-
-    public function _createMissingLinesForWelcomeOffer()
-    {
-        $this->autoFireView   = false;
-        $this->hideDecoration();
-
-        $oWelcomeOfferDetails    = $this->loadData('offres_bienvenues_details');
-        $oTransactions           = $this->loadData('transactions');
-        $oWalletsLines           = $this->loadData('wallets_lines');
-        $oBankUnilend            = $this->loadData('bank_unilend');
-        $oLendersAccounts        = $this->loadData('lenders_accounts');
-        //load for use of constants
-        $this->loadData('transactions_types');
-
-        $aClients = array(4040,7323,8769,8870,10064,10309,12115,12491,13327,22466,23235,23355,23774,24062,26163,26542,26921,29450,29517,29529,30214,34783,34878,35127,35156,35387,35420,35519,35625,35645,36022,36587,37048,37476,37542,39050,39559,40983,42381,43531,44146,44264,44390,44549,44605,45016,45217,45370,45928,46213,46278,46570,46763,46855,46891,47068,47088,47116,47195,47213,47216,47220,47280,47301,47382,47398,47445,47464,47525,47535,47555,47573,47594,47777,47782,47809,47815,47824,47881,48018,48057,48110,48125,48126,48141,48157,48173,48180,48199,48227,48231,48302,48320,48323,48409,48417,48421,48450,48481,48514,48531,48535,48536,48543,48581,48596,48608,48617,48620,48632,49156,49160,49181,49194,49378,49589,49836,50027,50244,50333,50378,50379,50392,50416,50432,50490,50522,50534,50541,50556,50570,50581,50584,50600,50640,50670,50748,50750);
-
-        $iNumberOfCreatedTransactions = 0;
-
-        foreach ($aClients as $iClientId) {
-            if ($oWelcomeOfferDetails->get('1" AND id_client = "' . $iClientId, 'id_offre_bienvenue')) {
-                $oLendersAccounts->get($iClientId, 'id_client_owner');
-
-                if (false === $oTransactions->exist($iClientId . '" AND type_transaction = "' . \transactions_types::TYPE_WELCOME_OFFER, 'id_client' )) {
-                    $oTransactions->id_client                        = $iClientId;
-                    $oTransactions->montant                          = $oWelcomeOfferDetails->montant;
-                    $oTransactions->id_offre_bienvenue_detail        = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
-                    $oTransactions->id_langue                        = 'fr';
-                    $oTransactions->date_transaction                 = $oWelcomeOfferDetails->added;
-                    $oTransactions->status                           = '1';
-                    $oTransactions->etat                             = '1';
-                    $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
-                    $oTransactions->transaction                      = 2;
-                    $oTransactions->create();
-
-                    $oWalletsLines->id_lender                        = $oLendersAccounts->id_lender_account;
-                    $oWalletsLines->type_financial_operation         = \wallets_lines::TYPE_MONEY_SUPPLY;
-                    $oWalletsLines->id_transaction                   = $oTransactions->id_transaction;
-                    $oWalletsLines->status                           = 1;
-                    $oWalletsLines->type                             = 1;
-                    $oWalletsLines->amount                           = $oWelcomeOfferDetails->montant;
-                    $oWalletsLines->create();
-
-                    $oBankUnilend->id_transaction                    = $oTransactions->id_transaction;
-                    $oBankUnilend->montant                           = -$oWelcomeOfferDetails->montant;
-                    $oBankUnilend->type                              = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
-                    $oBankUnilend->create();
-
-                    $iNumberOfCreatedTransactions += 1;
-                    echo 'Missing lines created for client ' . $iClientId . '<br/>';
-                }
-            }
-        }
-        echo $iNumberOfCreatedTransactions . ' transactions created';
     }
 }
