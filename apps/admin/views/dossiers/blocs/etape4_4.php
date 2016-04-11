@@ -78,7 +78,7 @@
                                 $iTotal += $aAssetsDebts[$sKey];
                             }
                         ?>
-                        <td id="total_actif_<?= $iIndex ?>" class="grisfonceBG" data-total="<?= $iTotal ?>"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
+                        <td class="grisfonceBG"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
                     <?php endforeach; ?>
                 </tr>
             </tbody>
@@ -125,7 +125,7 @@
                                 $iTotal += $aAssetsDebts[$sKey];
                             }
                         ?>
-                        <td id="total_passif_<?= $iIndex ?>" class="grisfonceBG" data-total="<?= $iTotal ?>"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
+                        <td class="grisfonceBG"><?= $this->ficelle->formatNumber($iTotal, 0) ?> €</td>
                     <?php endforeach; ?>
                 </tr>
             </tbody>

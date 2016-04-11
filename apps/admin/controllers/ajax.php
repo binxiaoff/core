@@ -385,15 +385,15 @@ class ajaxController extends bootstrap
                 }
             } elseif ($_POST['etape'] == 4.2) {
                 /** @var projects $oProject */
-                $oProject               = $this->loadData('projects');
+                $oProject = $this->loadData('projects');
                 /** @var companies_actif_passif $oCompanyDebtsAssets */
-                $oCompanyDebtsAssets    = $this->loadData('companies_actif_passif');
+                $oCompanyDebtsAssets = $this->loadData('companies_actif_passif');
                 /** @var companies_bilans $oCompanyAnnualAccounts */
                 $oCompanyAnnualAccounts = $this->loadData('companies_bilans');
                 /** @var company_balance $oCompanyBalance */
-                $oCompanyBalance        = $this->loadData('company_balance');
+                $oCompanyBalance = $this->loadData('company_balance');
                 /** @var company_balance_type $oCompanyBalanceType */
-                $oCompanyBalanceType    = $this->loadData('company_balance_type');
+                $oCompanyBalanceType = $this->loadData('company_balance_type');
 
                 if ($oProject->get($_POST['id_project'], 'id_project')) {
                     $aAnnualAccounts    = $oCompanyAnnualAccounts->select('id_company = ' . $oProject->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
@@ -434,15 +434,8 @@ class ajaxController extends bootstrap
                         $oCompanyAnnualAccounts->calcultateFromBalance();
                     }
                 }
-            } elseif ($_POST['etape'] == 5) {
-            } elseif ($_POST['etape'] == 6) {
-                /** @var projects $oProject */
-                $oProject = $this->loadData('projects');
-                $oProject->get($_POST['id_project'], 'id_project');
-                $oProject->question1 = $_POST['question1'];
-                $oProject->question2 = $_POST['question2'];
-                $oProject->question3 = $_POST['question3'];
-                $oProject->update();
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $oProject->id_project);
+                die;
             }
         }
     }

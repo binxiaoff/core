@@ -410,38 +410,6 @@ function valid_etape4_1(id_project) {
     });
 }
 
-function valid_etape4_2(id_project) {
-    var val = 'id_project=' + id_project + '&etape=4.2&' + $('#dossier_etape4_2').serialize();
-
-    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
-        $("#valid_etape4_2").slideDown();
-
-        setTimeout(function () {
-            $("#valid_etape4_2").slideUp();
-        }, 3000);
-    });
-    return false;
-}
-
-function valid_etape6(id_project) {
-    var val = {
-        question1:  $("#question1").val(),
-        question2:  $("#question2").val(),
-        question3:  $("#question3").val(),
-        id_project: id_project,
-        etape:      6
-    };
-
-    $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
-        $("#valid_etape6").slideDown();
-
-        setTimeout(function () {
-            $("#valid_etape6").slideUp();
-        }, 3000);
-    });
-}
-
-
 function generer_le_mdp(id_client) {
 
     var val = {
@@ -478,13 +446,32 @@ function send_email_borrower_area(id_client, type) {
 }
 
 function check_status_dossier(status, id_project) {
-    if (
-        $('#total_actif_0').data('total') != $('#total_passif_0').data('total')
-        || $('#total_actif_1').data('total') != $('#total_passif_1').data('total')
-        || $('#total_actif_2').data('total') != $('#total_passif_2').data('total')
-    ) {
-        alert('Certains comptes ne sont pas équilibrés');
-        return;
+    if (status == 25) {
+        var isNotBalanced = false;
+
+        if ($('#total_actif_0').data('total') != $('#total_passif_0').data('total')) {
+            $('#total_actif_0').css('background-color', '#f00');
+            $('#total_passif_0').css('background-color', '#f00');
+            isNotBalanced = true;
+        }
+
+        if ($('#total_actif_1').data('total') != $('#total_passif_1').data('total')) {
+            $('#total_actif_1').css('background-color', '#f00');
+            $('#total_passif_1').css('background-color', '#f00');
+            isNotBalanced = true;
+        }
+
+        if ($('#total_actif_2').data('total') != $('#total_passif_2').data('total')) {
+            $('#total_actif_2').css('background-color', '#f00');
+            $('#total_passif_2').css('background-color', '#f00');
+            isNotBalanced = true;
+        }
+
+        if (isNotBalanced) {
+            alert('Certains comptes ne sont pas équilibrés');
+            $('#status option[value="' + previous_status + '"]').prop('selected', true);
+            return;
+        }
     }
 
     if (status == 25) {

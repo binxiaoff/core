@@ -82,7 +82,9 @@
         </select>
     </form>
     <br/>
-    <form id="dossier_etape4_2" action="/dossiers/edit/<?= $this->projects->id_project ?>" method="post" onsubmit="return valid_etape4_2(<?= $this->projects->id_project ?>);">
+    <form id="dossier_etape4_2" action="/ajax/valid_etapes" method="post">
+        <input type="hidden" name="id_project" value="<?= $this->projects->id_project ?>"/>
+        <input type="hidden" name="etape" value="4.2"/>
         <table class="tablesorter annual-accounts" style="text-align:center;">
             <thead>
                 <tr>
@@ -970,6 +972,7 @@
                 <tr>
                     <th colspan="2">Total actif</th>
                     <?php
+                    $iIndex         = 0;
                     $iPreviousTotal = null;
 
                     foreach ($this->aBalanceSheets as $aBalanceSheet) {
@@ -981,7 +984,7 @@
                             <?php
                         }
                         ?>
-                        <th><?= $this->ficelle->formatNumber($iTotal, 0) ?>&nbsp;€</th>
+                        <th id="total_actif_<?= $iIndex++ ?>" data-total="<?= $iTotal ?>"><?= $this->ficelle->formatNumber($iTotal, 0) ?>&nbsp;€</th>
                         <?php
                         $iPreviousTotal = $iTotal;
                     }
@@ -1454,6 +1457,7 @@
                 <tr>
                     <th colspan="2">Total passif</th>
                     <?php
+                    $iIndex         = 0;
                     $iPreviousTotal = null;
 
                     foreach ($this->aBalanceSheets as $aBalanceSheet) {
@@ -1465,7 +1469,7 @@
                             <?php
                         }
                         ?>
-                        <th><?= $this->ficelle->formatNumber($iTotal, 0) ?>&nbsp;€</th>
+                        <th id="total_passif_<?= $iIndex++ ?>" data-total="<?= $iTotal ?>"><?= $this->ficelle->formatNumber($iTotal, 0) ?>&nbsp;€</th>
                         <?php
                         $iPreviousTotal = $iTotal;
                     }
@@ -2307,7 +2311,6 @@
                 </tr>
             </tbody>
         </table>
-        <div id="valid_etape4_2" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
             <input type="submit" class="btn_link" value="Sauvegarder les bilans">
         </div>

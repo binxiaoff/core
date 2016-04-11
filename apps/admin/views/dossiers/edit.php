@@ -723,17 +723,32 @@
                     }).change(function() {
                         var status = $('#status').val();
 
-                        if (
-                            status == <?= \projects_status::ATTENTE_ANALYSTE ?>
-                            && (
-                                $('#total_actif_0').data('total') != $('#total_passif_0').data('total')
-                                || $('#total_actif_1').data('total') != $('#total_passif_1').data('total')
-                                || $('#total_actif_2').data('total') != $('#total_passif_2').data('total')
-                            )
-                        ) {
-                            alert('Certains comptes ne sont pas équilibrés');
-                            $('#status option[value="' + previous_status + '"]').prop('selected', true);
-                            return;
+                        if (status == <?= \projects_status::ATTENTE_ANALYSTE ?>) {
+                            var isNotBalanced = false;
+
+                            if ($('#total_actif_0').data('total') != $('#total_passif_0').data('total')) {
+                                $('#total_actif_0').css('background-color', '#f00');
+                                $('#total_passif_0').css('background-color', '#f00');
+                                isNotBalanced = true;
+                            }
+
+                            if ($('#total_actif_1').data('total') != $('#total_passif_1').data('total')) {
+                                $('#total_actif_1').css('background-color', '#f00');
+                                $('#total_passif_1').css('background-color', '#f00');
+                                isNotBalanced = true;
+                            }
+
+                            if ($('#total_actif_2').data('total') != $('#total_passif_2').data('total')) {
+                                $('#total_actif_2').css('background-color', '#f00');
+                                $('#total_passif_2').css('background-color', '#f00');
+                                isNotBalanced = true;
+                            }
+
+                            if (isNotBalanced) {
+                                alert('Certains comptes ne sont pas équilibrés');
+                                $('#status option[value="' + previous_status + '"]').prop('selected', true);
+                                return;
+                            }
                         }
 
                         $('.hidden_table').hide();
