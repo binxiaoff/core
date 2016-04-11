@@ -221,6 +221,7 @@ class cronController extends bootstrap
                     $this->zippage($oProject->id_project);
 
                     $this->sendNewProjectEmail($oProject->id_project);
+                    $this->sendProjectOnlineEmailBorrower($oProject->id_project);
                 }
             }
             if ($bHasProjectPublished) {
@@ -2373,7 +2374,7 @@ class cronController extends bootstrap
 
                     $sommePrelev = $sommePrelev / 100;
 
-                    $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant']; // update le 22/01/2015
+                    $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant'] + $virementRecouv[$date]['montant'];
 
                     $totalAlimCB += $alimCB[$date]['montant'];
                     $totalAlimVirement += $alimVirement[$date]['montant'];
@@ -4094,7 +4095,7 @@ class cronController extends bootstrap
     }
 
     // Une fois par jour (crée le 27/04/2015)
-    private function check_prelevements_emprunteurs()
+    public function _check_prelevements_emprunteurs()
     {
         $echeanciers = $this->loadData('echeanciers');
         $projects    = $this->loadData('projects');
@@ -5585,9 +5586,7 @@ class cronController extends bootstrap
             $timeDebut = strtotime(date('Y-m-d') . ' ' . $paramDebut . ':00'); // on commence le traitement du cron a l'heure demandé
             $timeFin   = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
 
-            if (date('H:i') == $paramDebut) {
-                $this->check_prelevements_emprunteurs();
-            } elseif ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
+            if ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
                 $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
                 if ($lProjetsAremb != false) {
                     foreach ($lProjetsAremb as $r) {

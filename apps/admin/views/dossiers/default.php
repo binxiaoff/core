@@ -28,10 +28,12 @@
             $("#siren").val('');
             $("#datepik_1").val('');
             $("#datepik_2").val('');
-            $('#montant option[value="0"]').attr('selected', true);
-            $('#duree option[value=""]').attr('selected', true);
-            $('#status option[value=""]').attr('selected', true);
-            $('#analyste option[value="0"]').attr('selected', true);
+            $("#raison-sociale").val('');
+            $('#montant option[value="0"]').prop('selected', true);
+            $('#duree option[value=""]').prop('selected', true);
+            $('#status option[value=""]').prop('selected', true);
+            $('#analyste option[value="0"]').prop('selected', true);
+            $('#commercial option[value="0"]').prop('selected', true);
         });
 
         $(".tablesorter").tablesorter({headers: {9: {sorter: false}, 5: {sorter: 'digit'}}});
