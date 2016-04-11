@@ -6734,7 +6734,7 @@ class cronController extends bootstrap
             return isset($array[$key]) ? $array[$key] : null;
         };
 
-        $fFormateDate = function ($sDate)
+        $fFormatDate = function ($sDate)
         {
             $oDate = DateTime::createFromFormat('d/m/Y', $sDate);
             if(is_object($oDate)){
@@ -6746,7 +6746,6 @@ class cronController extends bootstrap
 
         foreach ($aResponseKeys as $iQRID => $iAttachmentTypeId) {
             if (! isset($aResponseDetail[$iQRID])) {
-                var_dump('no data for QRID = ' . $iQRID);
                 continue;
             }
             $oGreenPointAttachment->id_client     = $iClientId;
@@ -6755,6 +6754,12 @@ class cronController extends bootstrap
             $iAttachmentId                        = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
             $aResponse                            = json_decode($aResponseDetail[$iQRID]['RESPONSE'], 1);
             $oGreenPointAttachment->id_attachment = $iAttachmentId;
+
+            if (isset($aResponse['resource']) && is_array($aResponse['resource'])) {
+                $aResource = $aResponse['resource'];
+            } else {
+                $aResource = array();
+            }
 
             $oGreenPointAttachment->validation_code = $fGetColumnValue($aResponse, 'code');
 
@@ -6765,7 +6770,7 @@ class cronController extends bootstrap
                     case attachment_type::CNI_PASSPORTE_VERSO:
                     case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
                     case attachment_type::CNI_PASSPORTE_DIRIGEANT:
-                        $oGreenPointAttachment->validation_status_label = $fGetColumnValue(greenPointStatus::$aAddressControlStatusLabel, (int) $oGreenPointAttachment->validation_status);
+                        $oGreenPointAttachment->validation_status_label = $fGetColumnValue(greenPointStatus::$aIdControlStatusLabel, (int) $oGreenPointAttachment->validation_status);
                         break;
                     case attachment_type::RIB:
                         $oGreenPointAttachment->validation_status_label = $fGetColumnValue(greenPointStatus::$aIbanFlashStatusLabel, (int) $oGreenPointAttachment->validation_status);
@@ -6777,13 +6782,13 @@ class cronController extends bootstrap
                 }
                 $oGreenPointAttachment->agency = null;
 
-                $oGreenPointAttachmentDetail->document_type              = $fGetColumnValue($aResponse['resource'], 'type_id');
+                $oGreenPointAttachmentDetail->document_type              = $fGetColumnValue($aResponse['resource'], 'type');
                 $oGreenPointAttachmentDetail->identity_civility          = $fGetColumnValue($aResponse['resource'], 'sexe');
                 $oGreenPointAttachmentDetail->identity_name              = $fGetColumnValue($aResponse['resource'], 'prenom');
                 $oGreenPointAttachmentDetail->identity_surname           = $fGetColumnValue($aResponse['resource'], 'nom');
                 $oGreenPointAttachmentDetail->identity_civility          = $fGetColumnValue($aResponse['resource'], 'sexe');
-                $oGreenPointAttachmentDetail->identity_expiration_date   = $fFormateDate($fGetColumnValue($aResponse['resource'], 'expirationdate'));
-                $oGreenPointAttachmentDetail->identity_birthdate         = $fFormateDate($fGetColumnValue($aResponse['resource'], 'date_naissance'));
+                $oGreenPointAttachmentDetail->identity_expiration_date   = $fFormatDate($fGetColumnValue($aResponse['resource'], 'expirationdate'));
+                $oGreenPointAttachmentDetail->identity_birthdate         = $fFormatDate($fGetColumnValue($aResponse['resource'], 'date_naissance'));
                 $oGreenPointAttachmentDetail->identity_mrz1              = $fGetColumnValue($aResponse['resource'], 'mrz1');
                 $oGreenPointAttachmentDetail->identity_mrz2              = $fGetColumnValue($aResponse['resource'], 'mrz2');
                 $oGreenPointAttachmentDetail->identity_mrz3              = $fGetColumnValue($aResponse['resource'], 'mrz3');
@@ -6791,6 +6796,7 @@ class cronController extends bootstrap
                 $oGreenPointAttachmentDetail->identity_issuing_country   = $fGetColumnValue($aResponse['resource'], 'pays_emetteur');
                 $oGreenPointAttachmentDetail->identity_issuing_authority = $fGetColumnValue($aResponse['resource'], 'autorite_emettrice');
                 $oGreenPointAttachmentDetail->identity_document_number   = $fGetColumnValue($aResponse['resource'], 'numero');
+                $oGreenPointAttachmentDetail->identity_document_type_id  = $fGetColumnValue($aResponse, 'type_id');
                 $oGreenPointAttachmentDetail->bank_details_iban          = $fGetColumnValue($aResponse['resource'], 'iban');
                 $oGreenPointAttachmentDetail->bank_details_bic           = $fGetColumnValue($aResponse['resource'], 'bic');
                 $oGreenPointAttachmentDetail->bank_details_url           = $fGetColumnValue($aResponse['resource'], 'url');
