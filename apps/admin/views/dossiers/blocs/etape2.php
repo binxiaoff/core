@@ -17,7 +17,7 @@
             yearRange: '<?= (date('Y') - 100) ?>:<?= (date('Y')) ?>'
         });
         $('#same_address_etape2').click(function () {
-            if ($(this).attr('checked') == true) {
+            if ($(this).prop('checked')) {
                 $('.same_adresse').hide('slow');
             }
             else {
@@ -25,13 +25,13 @@
             }
         });
         $('#enterprise1_etape2').click(function () {
-            if ($(this).attr('checked') == true) {
+            if ($(this).prop('checked')) {
                 $('.statut_dirigeant_etape2').hide('slow');
                 $('.identification_prescripteur').hide('slow');
             }
         });
         $('#enterprise3_etape2').click(function () {
-            if ($(this).attr('checked') == true) {
+            if ($(this).prop('checked')) {
                 $('.statut_dirigeant_etape2').show('slow');
                 $('.identification_prescripteur').show('slow');
             }
