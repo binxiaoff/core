@@ -1,11 +1,11 @@
 <?php if (! isset($this->params[0]) || $this->params[0] == '') : ?>
     <script>
-        parent.$.fn.colorbox.close();
+        parent.$.colorbox.close();
     </script>
 <?php endif; ?>
 
 <div id="popup">
-    <a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
+    <a onclick="parent.$.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Fermer"/></a>
     <h1>Recherche : <?= $this->params['0'] ?></h1>
     <?php if ($this->lClients != false) : ?>
         <table style="margin-bottom:15px;">
@@ -38,7 +38,9 @@
 
         $("#id_client").val(id);
         $("#id_clientHtml").html(id);
+        $("#prenom").val(prenom);
         $("#prenomHtml").html(prenom);
+        $("#nom").val(nom);
         $("#nomHtml").html(nom);
     });
 </script>

@@ -1879,6 +1879,7 @@ class profileController extends bootstrap
 
         $oLenderAccount         = $this->loadData('lenders_accounts');
         $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+        $oClientStatus->getLastStatut($this->clients->id_client);
 
         $sSerialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
         $oClientHistoryActions->histo(12, 'upload doc profile', $this->clients->id_client, $sSerialize);
@@ -1896,7 +1897,7 @@ class profileController extends bootstrap
         if (false !== strpos($sContentForHistory, '<li>')) {
             $sClientStatus = (in_array($oClientStatus->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) ? \clients_status::COMPLETENESS_REPLY : \clients_status::MODIFICATION ;
 
-            $oClientStatusHistory->addStatus('-2', $sClientStatus, $this->clients->id_client, $sContentForHistory);
+            $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, $sClientStatus, $this->clients->id_client, $sContentForHistory);
             $this->sendAccountModificationEmail($this->clients);
             $_SESSION['form_profile_doc']['answer_upload'] = $this->lng['profile']['message-completness-document-upload'];
         }

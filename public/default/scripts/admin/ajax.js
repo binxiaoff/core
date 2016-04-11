@@ -273,10 +273,10 @@ function valid_etape1(id_project) {
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#siren").val($("#siren_etape1").val());
         $("#montant").val($("#montant_etape1").val());
-        $('#duree option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
+        $('#duree option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
 
         $("#montant_etape3").val($("#montant_etape1").val());
-        $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
+        $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
 
         $("#valid_etape1").slideDown();
 
@@ -334,7 +334,7 @@ function create_client(id_project) {
 }
 
 function valid_etape2(id_project) {
-    var has_prescripteur = $('#enterprise3_etape2').attr('checked'),
+    var has_prescripteur = $('#enterprise3_etape2').prop('checked'),
         val = 'id_project=' + id_project + '&etape=2&has_prescripteur=' + has_prescripteur + '&' + $('#dossier_etape2').serialize();
 
     if (false === has_prescripteur) {
@@ -350,7 +350,7 @@ function valid_etape2(id_project) {
         $("#prenom").val($("#prenom_etape2").val());
         $("#nom").val($("#nom_etape2").val());
 
-        if ($("#same_address_etape2").attr('checked') == 1) {
+        if ($("#same_address_etape2").prop('checked')) {
             $("#adresse").val($("#address_etape2").val());
             $("#city").val($("#ville_etape2").val());
             $("#zip").val($("#postal_etape2").val());
@@ -386,8 +386,8 @@ function valid_etape3(id_project) {
     $.post(add_url + '/ajax/valid_etapes', val).done(function(data) {
         $("#montant").val($("#montant_etape3").val());
         $("#montant_etape1").val($("#montant_etape3").val());
-        $('#duree option[value="' + $("#duree_etape3").val() + '"]').attr('selected', true);
-        $('#duree_etape1 option[value="' + $("#duree_etape3").val() + '"]').attr('selected', true);
+        $('#duree option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
+        $('#duree_etape1 option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
         $("#title").val($("#titre_etape3").val());
         $("#valid_etape3").slideDown();
 
@@ -720,7 +720,7 @@ function valid_rejete_etape7(status, id_project) {
                         $('.recharge').html(recharge);
                     }
                     else if (status == 2) {
-                        parent.$.fn.colorbox.close();
+                        parent.$.colorbox.close();
                     }
                 }
             });
