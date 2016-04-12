@@ -27,38 +27,36 @@
         }
     </script>
     <form method="post" name="dossier_etape5" id="dossier_etape5" enctype="multipart/form-data" action="<?= $this->lurl ?>/dossiers/file/<?= $this->params[0] ?>" target="upload_target">
-        <?php if (count($this->lbilans) > 0): ?>
-            <table class="tablesorter">
-                <thead>
+        <table class="tablesorter">
+            <thead>
+                <tr>
+                    <th width="20"></th>
+                    <th width="250">Nom</th>
+                    <th>Fichier</th>
+                    <th width="100">Statut</th>
+                    <th width="300"></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
                     <tr>
-                        <th width="20"></th>
-                        <th width="250">Nom</th>
-                        <th>Fichier</th>
-                        <th width="100">Statut</th>
-                        <th width="300"></th>
+                        <td class="remove_col">
+                            <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
+                                <a href="#" data-id="<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>" data-label="<?= $sAttachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
+                            <?php endif; ?>
+                        </td>
+                        <td class="type_col"><?= $sAttachmentType['label'] ?></td>
+                        <td class="label_col">
+                            <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
+                                <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
+                            <?php endif; ?>
+                        </td>
+                        <td class="statut_fichier_<?= $sAttachmentType['id'] ?>" id="statut_fichier_id_<?= $sAttachmentType['id'] ?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
+                        <td><input type="file" name="<?= $sAttachmentType['id'] ?>" id="fichier_project_<?= $sAttachmentType['id'] ?>"/></td>
                     </tr>
-                </thead>
-                <tbody>
-                    <?php foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
-                        <tr>
-                            <td class="remove_col">
-                                <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
-                                    <a href="#" data-id="<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>" data-label="<?= $sAttachmentType['label'] ?>" class="icon_remove_attachment"><img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer" title="Supprimer"></a>
-                                <?php endif; ?>
-                            </td>
-                            <td class="type_col"><?= $sAttachmentType['label'] ?></td>
-                            <td class="label_col">
-                                <?php if (isset($this->aAttachments[$sAttachmentType['id']]['path'])): ?>
-                                    <a href="<?= $this->url ?>/attachment/download/id/<?= $this->aAttachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->aAttachments[$sAttachmentType['id']]['path']) ?>"><?= $this->aAttachments[$sAttachmentType['id']]['path'] ?></a>
-                                <?php endif; ?>
-                            </td>
-                            <td class="statut_fichier_<?= $sAttachmentType['id'] ?>" id="statut_fichier_id_<?= $sAttachmentType['id'] ?>"><?= isset($this->aAttachments[$sAttachmentType['id']]) === true ? 'Enregistré' : '' ?></td>
-                            <td><input type="file" name="<?= $sAttachmentType['id'] ?>" id="fichier_project_<?= $sAttachmentType['id'] ?>"/></td>
-                        </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        <?php endif; ?>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
         <div id="valid_etape5" class="valid_etape"><br/>Données sauvegardées</div>
         <div class="btnDroite">
             <input type="hidden" name="send_etape5"/>
