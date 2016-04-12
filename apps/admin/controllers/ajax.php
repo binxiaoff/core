@@ -1025,14 +1025,25 @@ class ajaxController extends bootstrap
                 $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
                 $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
                 $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
+                $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
                 $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
                 $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
-                $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
                 $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
                 $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
                 $this->projects_notes->note                            = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1);
                 $this->projects_notes->avis                            = $_POST['avis'];
+
+                $this->projects_notes->structure_comite                       = empty($this->projects_notes->structure_comite) ? $this->projects_notes->structure : $this->projects_notes->structure_comite;
+                $this->projects_notes->rentabilite_comite                     = empty($this->projects_notes->rentabilite_comite) ? $this->projects_notes->rentabilite : $this->projects_notes->rentabilite_comite;
+                $this->projects_notes->tresorerie_comite                      = empty($this->projects_notes->tresorerie_comite) ? $this->projects_notes->tresorerie : $this->projects_notes->tresorerie_comite;
+                $this->projects_notes->performance_fianciere_comite           = empty($this->projects_notes->performance_fianciere_comite) ? $this->projects_notes->performance_fianciere : $this->projects_notes->performance_fianciere_comite;
+                $this->projects_notes->individuel_comite                      = empty($this->projects_notes->individuel_comite) ? $this->projects_notes->individuel : $this->projects_notes->individuel_comite;
+                $this->projects_notes->global_comite                          = empty($this->projects_notes->global_comite) ? $this->projects_notes->global : $this->projects_notes->global_comite;
+                $this->projects_notes->marche_opere_comite                    = empty($this->projects_notes->marche_opere_comite) ? $this->projects_notes->marche_opere : $this->projects_notes->marche_opere_comite;
+                $this->projects_notes->qualite_moyen_infos_financieres_comite = empty($this->projects_notes->qualite_moyen_infos_financieres_comite) ? $this->projects_notes->qualite_moyen_infos_financieres : $this->projects_notes->qualite_moyen_infos_financieres_comite;
+                $this->projects_notes->notation_externe_comite                = empty($this->projects_notes->notation_externe_comite) ? $this->projects_notes->notation_externe : $this->projects_notes->notation_externe_comite;
+                $this->projects_notes->note_comite                            = empty($this->projects_notes->note_comite) ? $this->projects_notes->note : $this->projects_notes->note_comite;
 
                 if ($update == true) {
                     $this->projects_notes->update();
@@ -1248,45 +1259,45 @@ class ajaxController extends bootstrap
             $form_ok = true;
 
             if ($_POST['status'] == 1) {
-                if (! isset($_POST['structure']) || $_POST['structure'] == 0 || $_POST['structure'] > 10) {
+                if (false === isset($_POST['structure_comite']) || $_POST['structure_comite'] == 0 || $_POST['structure_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['rentabilite']) || $_POST['rentabilite'] == 0 || $_POST['rentabilite'] > 10) {
+                if (false === isset($_POST['rentabilite_comite']) || $_POST['rentabilite_comite'] == 0 || $_POST['rentabilite_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['tresorerie']) || $_POST['tresorerie'] == 0 || $_POST['tresorerie'] > 10) {
-                    $form_ok = false;
-                }
-
-                if (! isset($_POST['performance_fianciere']) || $_POST['performance_fianciere'] == 0 || $_POST['performance_fianciere'] > 10) {
+                if (false === isset($_POST['tresorerie_comite']) || $_POST['tresorerie_comite'] == 0 || $_POST['tresorerie_comite'] > 10) {
                     $form_ok = false;
                 }
 
-                if (! isset($_POST['individuel']) || $_POST['individuel'] == 0 || $_POST['individuel'] > 10) {
+                if (false === isset($_POST['performance_fianciere_comite']) || $_POST['performance_fianciere_comite'] == 0 || $_POST['performance_fianciere_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['global']) || $_POST['global'] == 0 || $_POST['global'] > 10) {
+
+                if (false === isset($_POST['individuel_comite']) || $_POST['individuel_comite'] == 0 || $_POST['individuel_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['marche_opere']) || $_POST['marche_opere'] == 0 || $_POST['marche_opere'] > 10) {
+                if (false === isset($_POST['global_comite']) || $_POST['global_comite'] == 0 || $_POST['global_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['qualite_moyen_infos_financieres']) || $_POST['qualite_moyen_infos_financieres'] == 0 || $_POST['qualite_moyen_infos_financieres'] > 10) {
+                if (false === isset($_POST['marche_opere_comite']) || $_POST['marche_opere_comite'] == 0 || $_POST['marche_opere_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['notation_externe']) || $_POST['notation_externe'] == 0 || $_POST['notation_externe'] > 10) {
+                if (false === isset($_POST['qualite_moyen_infos_financieres_comite']) || $_POST['qualite_moyen_infos_financieres_comite'] == 0 || $_POST['qualite_moyen_infos_financieres_comite'] > 10) {
+                    $form_ok = false;
+                }
+                if (false === isset($_POST['notation_externe_comite']) || $_POST['notation_externe_comite'] == 0 || $_POST['notation_externe_comite'] > 10) {
                     $form_ok = false;
                 }
             }
 
-            if (! isset($_POST['avis_comite']) && $_POST['status'] == 1 || strlen($_POST['avis_comite']) < 50 && $_POST['status'] == 1) {
+            if (false === isset($_POST['avis_comite']) && $_POST['status'] == 1 || strlen($_POST['avis_comite']) < 50 && $_POST['status'] == 1) {
                 $form_ok = false;
             }
 
-            if (! $this->companies->get($this->projects->id_company, 'id_company')) {
+            if (false === $this->companies->get($this->projects->id_company, 'id_company')) {
                 $form_ok = false;
             }
-            if (! $this->clients->get($this->companies->id_client_owner, 'id_client')) {
+            if (false === $this->clients->get($this->companies->id_client_owner, 'id_client')) {
                 $form_ok = false;
             }
 
@@ -1301,9 +1312,9 @@ class ajaxController extends bootstrap
                 $this->projects_notes->structure_comite                       = number_format($_POST['structure_comite'], 1, '.', '');
                 $this->projects_notes->rentabilite_comite                     = number_format($_POST['rentabilite_comite'], 1, '.', '');
                 $this->projects_notes->tresorerie_comite                      = number_format($_POST['tresorerie_comite'], 1, '.', '');
+                $this->projects_notes->performance_fianciere_comite           = number_format($_POST['performance_fianciere_comite'], 1, '.', '');
                 $this->projects_notes->individuel_comite                      = number_format($_POST['individuel_comite'], 1, '.', '');
                 $this->projects_notes->global_comite                          = number_format($_POST['global_comite'], 1, '.', '');
-                $this->projects_notes->performance_fianciere_comite           = number_format($_POST['performance_fianciere_comite'], 1, '.', '');
                 $this->projects_notes->marche_opere_comite                    = number_format($_POST['marche_opere_comite'], 1, '.', '');
                 $this->projects_notes->qualite_moyen_infos_financieres_comite = number_format($_POST['qualite_moyen_infos_financieres_comite'], 1, '.', '');
                 $this->projects_notes->notation_externe_comite                = number_format($_POST['notation_externe_comite'], 1, '.', '');
