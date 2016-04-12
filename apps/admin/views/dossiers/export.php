@@ -27,13 +27,6 @@
 "Capital restant dû à date";"<?= $this->fCompanyOwedCapital ?>"
 <?php if (false === empty($this->aCompanyProjects)) : ?>
 ""
-"Projets de cette société (SIREN identique)"
-"ID";"Nom";"Date demande";"Date modification";"Montant";"Durée";"Statut";"Commercial";"Analyste"
-<?php foreach ($this->aCompanyProjects as $iIndex => $aProject) : ?>
-"<?= $aProject['id_project'] ?>";"<?= $aProject['title'] ?>";"<?= $this->dates->formatDate($aProject['added'], 'd/m/Y') ?>";"<?= $this->dates->formatDate($aProject['updated'], 'd/m/Y') ?>";"<?= $aProject['amount'] ?>";"<?= $aProject['period'] ?> mois";"<?= $aProject['status_label'] ?>";"<?= $aProject['sales_person'] ?>";"<?= $aProject['analyst'] ?>";
-<?php endforeach; ?>
-<?php endif; ?>
-""
 "Bilans"
 "Actif";<?php foreach ($this->aAnnualAccounts as $aAnnualAccounts): ?>"<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>";"<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>";<?php endforeach; ?>
 
