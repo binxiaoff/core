@@ -1614,7 +1614,7 @@
                 </tr>
                 <tr>
                     <td>A8 : Dettes à rembourser ds l'année (à plus de 1 an à l'origine)</td>
-                    <td>VH</td>
+                    <td>VH&nbsp;(2)</td>
                     <?php
                     $iColumn = 0;
                     $iPreviousBalanceSheetId = null;
@@ -1622,11 +1622,11 @@
                     foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
                         if (false === is_null($iPreviousBalanceSheetId)) {
                             ?>
-                            <td><?= empty($aBalanceSheet['VH']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['VH'] - $aBalanceSheet['VH']) / abs($aBalanceSheet['VH']) * 100) . '&nbsp;%' ?></td>
+                            <td><?= empty($aBalanceSheet['VH2']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['VH2'] - $aBalanceSheet['VH2']) / abs($aBalanceSheet['VH2']) * 100) . '&nbsp;%' ?></td>
                             <?php
                         }
                         ?>
-                        <td><input type="text" class="numbers" name="VH[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet['VH'], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <td><input type="text" class="numbers" name="VH2[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet['VH2'], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
