@@ -41,4 +41,28 @@ class ClientManager
         $oAcceptationLegalDocs = Loader::loadData('acceptations_legal_docs');
         return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
     }
+
+    public function changeClientStatusFollowingClientAction(\clients $oClient, $sContent)
+    {
+        /** @var \clients_status_history $oClientStatusHistory */
+        $oClientStatusHistory = Loader::loadData('clients_status_history');
+        /** @var \clients_status $oLastClientStatus */
+        $oLastClientStatus = Loader::loadData('clients_status');
+        $oLastClientStatus->getLastStatut($oClient->id_client);
+
+        switch ($oLastClientStatus->status) {
+            case \clients_status::COMPLETENESS:
+            case \clients_status::COMPLETENESS_REMINDER:
+            case \clients_status::COMPLETENESS_REPLY:
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $oClient->id_client, $sContent);
+                break;
+            case \clients_status::VALIDATED:
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $oClient->id_client, $sContent);
+                break;
+            case \clients_status::TO_BE_CHECKED:
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $oClient->id_client, $sContent);
+                break;
+        }
+    }
+
 }

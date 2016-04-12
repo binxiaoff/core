@@ -634,11 +634,10 @@ class profileController extends bootstrap
                     }
                     $contenu .= '</ul>';
 
-                    if (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) {
-                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
-                    } else {
-                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
-                    }
+                    /** @var \Unilend\Service\ClientManager $oClientManager */
+                    $oClientManager = $this->get('ClientManager');
+                    $oClientManager->changeClientStatusFollowingClientAction($this->clients, $contenu);
+
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
                     $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
@@ -1454,11 +1453,9 @@ class profileController extends bootstrap
                     }
                     $contenu .= '</ul>';
 
-                    if (in_array($this->clients_status->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REPLY, \clients_status::COMPLETENESS_REMINDER))) {
-                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $this->clients->id_client, $contenu);
-                    } else {
-                        $this->clients_status_history->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $this->clients->id_client, $contenu);
-                    }
+                    /** @var \Unilend\Service\ClientManager $oClientManager */
+                    $oClientManager = $this->get('ClientManager');
+                    $oClientManager->changeClientStatusFollowingClientAction($this->clients, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
@@ -1871,8 +1868,6 @@ class profileController extends bootstrap
         $oClientHistoryActions  = $this->loadData('clients_history_actions');
         /** @var \clients_status $oClientStatus */
         $oClientStatus          = $this->loadData('clients_status');
-        /** @var \clients_status_history $oClientStatusHistory */
-        $oClientStatusHistory   = $this->loadData('clients_status_history');
         /** @var \textes $oTextes */
         $oTextes                = new \textes($this->bdd);
         $aTranslations          = $oTextes->selectFront('projet', $this->language);
@@ -1895,9 +1890,9 @@ class profileController extends bootstrap
         }
 
         if (false !== strpos($sContentForHistory, '<li>')) {
-            $sClientStatus = (in_array($oClientStatus->status, array(\clients_status::COMPLETENESS, \clients_status::COMPLETENESS_REMINDER, \clients_status::COMPLETENESS_REPLY))) ? \clients_status::COMPLETENESS_REPLY : \clients_status::MODIFICATION ;
-
-            $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, $sClientStatus, $this->clients->id_client, $sContentForHistory);
+            /** @var \Unilend\Service\ClientManager $oClientManager */
+            $oClientManager = $this->get('ClientManager');
+            $oClientManager->changeClientStatusFollowingClientAction($this->clients, $sContentForHistory);
             $this->sendAccountModificationEmail($this->clients);
             $_SESSION['form_profile_doc']['answer_upload'] = $this->lng['profile']['message-completness-document-upload'];
         }
