@@ -1,6 +1,6 @@
 <div id="content_etape6">
     <?php if ($this->current_projects_status->status >= \projects_status::REVUE_ANALYSTE) : ?>
-        <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1); ?>
+        <?php $moyenne  = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1); ?>
         <div class="tab_title" id="title_etape6">Etape 6</div>
         <div class="tab_content" id="etape6">
             <table class="form tableNotes" style="width: 100%;">
@@ -9,10 +9,10 @@
                     <td><span id="performance_fianciere"><?= $this->projects_notes->performance_fianciere ?></span> / 10</td>
                     <th><label for="marche_opere">Marché opéré</label></th>
                     <td><span id="marche_opere"><?= $this->projects_notes->marche_opere ?></span> / 10</td>
-                    <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
-                    <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres ?>" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                    <th><label for="notation_externe">Notation externe</label></th>
-                    <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe ?>" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : ''; ?> /> / 10</td>
+                    <th><label for="dirigeance">Dirigeance</label></th>
+                    <td><input tabindex="6" id="dirigeance" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->dirigeance ?>" name="dirigeance" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                    <th><label for="indicateur_risque_dynamique">Indicateur de risque dynamique</label></th>
+                    <td><input tabindex="7" id="indicateur_risque_dynamique" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->indicateur_risque_dynamique ?>" name="indicateur_risque_dynamique" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : ''; ?> /> / 10</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="vertical-align:top;">
@@ -52,7 +52,7 @@
                     <td colspan="8" style="text-align:center;">
                         <?php if (false === $this->bReadonlyRiskNote): ?>
                             <label for="avis" style="text-align:left;display: block;">Avis :</label><br/>
-                            <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"/><?= $this->projects_notes->avis ?></textarea>
+                            <textarea tabindex="8" name="avis" style="height:700px;" id="avis" class="textarea_large avis"><?= $this->projects_notes->avis ?></textarea>
                             <script type="text/javascript">var ckedAvis = CKEDITOR.replace('avis', {height: 700});</script>
                         <?php else: ?>
                             <div style="color:black;"><?= $this->projects_notes->avis ?></div>
@@ -92,13 +92,13 @@
                 var marche_opere = (global + individuel) / 2;
                 marche_opere = Math.round(marche_opere * 10) / 10;
 
-                var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres").val().replace(",", "."));
-                var notation_externe = parseFloat($("#notation_externe").val().replace(",", "."));
+                var dirigeance = parseFloat($("#dirigeance").val().replace(",", "."));
+                var indicateur_risque_dynamique = parseFloat($("#indicateur_risque_dynamique").val().replace(",", "."));
 
-                qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
-                notation_externe = Math.round(notation_externe * 10) / 10;
+                dirigeance = Math.round(dirigeance * 10) / 10;
+                indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
+                moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
                 $("#marche_opere").html(marche_opere);
                 $("#performance_fianciere").html(performance_fianciere);

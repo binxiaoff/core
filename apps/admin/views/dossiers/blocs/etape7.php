@@ -1,6 +1,5 @@
-<div id="content_etape7">
-    <?php if ($this->current_projects_status->status >= \projects_status::COMITE) : ?>
-        <?php $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres_comite * 0.2 + $this->projects_notes->notation_externe_comite * 0.4, 1); ?>
+<div id="content_etape7"><?php if ($this->current_projects_status->status >= \projects_status::COMITE) : ?>
+        <?php $moyenne  = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1); ?>
         <div class="tab_title" id="title_etape7">Etape 7</div>
         <div class="tab_content" id="etape7">
             <table class="form tableNotes" style="width: 100%;">
@@ -9,10 +8,10 @@
                     <td><span id="performance_fianciere_comite"><?= $this->projects_notes->performance_fianciere_comite ?></span> / 10</td>
                     <th style="vertical-align:top;"><label for="marche_opere_comite">Marché opéré</label></th>
                     <td style="vertical-align:top;"><span id="marche_opere_comite"><?= $this->projects_notes->marche_opere_comite ?></span> / 10</td>
-                    <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
-                    <td><input tabindex="14" id="qualite_moyen_infos_financieres_comite" name="qualite_moyen_infos_financieres_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->qualite_moyen_infos_financieres_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
-                    <th><label for="notation_externe2">Notation externe</label></th>
-                    <td><input tabindex="15" id="notation_externe_comite" name="notation_externe_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->notation_externe_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                    <th><label for="dirigeance_comite">Dirigeance</label></th>
+                    <td><input tabindex="14" id="dirigeance_comite" name="dirigeance_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->dirigeance_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
+                    <th><label for="indicateur_risque_dynamique_comite">Indicateur de risque dynamique</label></th>
+                    <td><input tabindex="15" id="indicateur_risque_dynamique_comite" name="indicateur_risque_dynamique_comite" class="input_court cal_moyen" type="text" value="<?= $this->projects_notes->indicateur_risque_dynamique_comite ?>" maxlength="4" onkeyup="nodizaines(this.value, this.id);"<?= $this->bReadonlyRiskNote ? ' readonly' : '' ?> /> / 10</td>
                 </tr>
                 <tr>
                     <td colspan="2" style="vertical-align:top;">
@@ -82,13 +81,13 @@
                     var marche_opere = (global + individuel) / 2;
                     marche_opere = Math.round(marche_opere * 10) / 10;
 
-                    var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres_comite").val().replace(",", "."));
-                    var notation_externe = parseFloat($("#notation_externe_comite").val().replace(",", "."));
+                    var dirigeance = parseFloat($("#dirigeance_comite").val().replace(",", "."));
+                    var indicateur_risque_dynamique = parseFloat($("#indicateur_risque_dynamique_comite").val().replace(",", "."));
 
-                    qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
-                    notation_externe = Math.round(notation_externe * 10) / 10;
+                    dirigeance = Math.round(dirigeance * 10) / 10;
+                    indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                    moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
+                    moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
                     $("#marche_opere_comite").html(marche_opere);
                     $("#performance_fianciere_comite").html(performance_fianciere);
@@ -109,5 +108,4 @@
                 <?php endif; ?>
             </div>
         </div>
-    <?php endif; ?>
-</div>
+<?php endif; ?></div>

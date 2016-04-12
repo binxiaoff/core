@@ -800,10 +800,10 @@ class ajaxController extends bootstrap
                                     <td style="vertical-align:top;">
                                         <span id="marche_opere"></span> / 10
                                     </td>
-                                    <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
-                                    <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
-                                    <th><label for="notation_externe">Notation externe</label></th>
-                                    <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                    <th><label for="dirigeance">Dirigeance</label></th>
+                                    <td><input tabindex="6" id="dirigeance" class="input_court cal_moyen" type="text" name="dirigeance" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                    <th><label for="indicateur_risque_dynamique">Indicateur de risque dynamique</label></th>
+                                    <td><input tabindex="7" id="indicateur_risque_dynamique" class="input_court cal_moyen" type="text" name="indicateur_risque_dynamique" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="vertical-align:top;">
@@ -883,13 +883,13 @@ class ajaxController extends bootstrap
                         var marche_opere = (global + individuel) / 2;
                         marche_opere = Math.round(marche_opere * 10) / 10;
 
-                        var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres").val().replace(",","."));
-                        var notation_externe = parseFloat($("#notation_externe").val().replace(",","."));
+                        var dirigeance = parseFloat($("#dirigeance").val().replace(",","."));
+                        var indicateur_risque_dynamique = parseFloat($("#indicateur_risque_dynamique").val().replace(",","."));
 
-                        qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
-                        notation_externe = Math.round(notation_externe * 10) / 10;
+                        dirigeance = Math.round(dirigeance * 10) / 10;
+                        indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                        moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
+                        moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
                         $("#marche_opere").html(marche_opere);
                         $("#performance_fianciere").html(performance_fianciere);
@@ -997,10 +997,10 @@ class ajaxController extends bootstrap
                 if (! isset($_POST['marche_opere']) || $_POST['marche_opere'] == 0 || $_POST['marche_opere'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['qualite_moyen_infos_financieres']) || $_POST['qualite_moyen_infos_financieres'] == 0 || $_POST['qualite_moyen_infos_financieres'] > 10) {
+                if (! isset($_POST['dirigeance']) || $_POST['dirigeance'] == 0 || $_POST['dirigeance'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['notation_externe']) || $_POST['notation_externe'] == 0 || $_POST['notation_externe'] > 10) {
+                if (! isset($_POST['indicateur_risque_dynamique']) || $_POST['indicateur_risque_dynamique'] == 0 || $_POST['indicateur_risque_dynamique'] > 10) {
                     $form_ok = false;
                 }
             }
@@ -1022,28 +1022,28 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
-                $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
-                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
-                $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
-                $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
-                $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
-                $this->projects_notes->note                            = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres * 0.2 + $this->projects_notes->notation_externe * 0.4, 1);
-                $this->projects_notes->avis                            = $_POST['avis'];
+                $this->projects_notes->structure                   = number_format($_POST['structure'], 1, '.', '');
+                $this->projects_notes->rentabilite                 = number_format($_POST['rentabilite'], 1, '.', '');
+                $this->projects_notes->tresorerie                  = number_format($_POST['tresorerie'], 1, '.', '');
+                $this->projects_notes->performance_fianciere       = number_format($_POST['performance_fianciere'], 1, '.', '');
+                $this->projects_notes->individuel                  = number_format($_POST['individuel'], 1, '.', '');
+                $this->projects_notes->global                      = number_format($_POST['global'], 1, '.', '');
+                $this->projects_notes->marche_opere                = number_format($_POST['marche_opere'], 1, '.', '');
+                $this->projects_notes->dirigeance                  = number_format($_POST['dirigeance'], 1, '.', '');
+                $this->projects_notes->indicateur_risque_dynamique = number_format($_POST['indicateur_risque_dynamique'], 1, '.', '');
+                $this->projects_notes->note                        = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1);
+                $this->projects_notes->avis                        = $_POST['avis'];
 
-                $this->projects_notes->structure_comite                       = empty($this->projects_notes->structure_comite) ? $this->projects_notes->structure : $this->projects_notes->structure_comite;
-                $this->projects_notes->rentabilite_comite                     = empty($this->projects_notes->rentabilite_comite) ? $this->projects_notes->rentabilite : $this->projects_notes->rentabilite_comite;
-                $this->projects_notes->tresorerie_comite                      = empty($this->projects_notes->tresorerie_comite) ? $this->projects_notes->tresorerie : $this->projects_notes->tresorerie_comite;
-                $this->projects_notes->performance_fianciere_comite           = empty($this->projects_notes->performance_fianciere_comite) ? $this->projects_notes->performance_fianciere : $this->projects_notes->performance_fianciere_comite;
-                $this->projects_notes->individuel_comite                      = empty($this->projects_notes->individuel_comite) ? $this->projects_notes->individuel : $this->projects_notes->individuel_comite;
-                $this->projects_notes->global_comite                          = empty($this->projects_notes->global_comite) ? $this->projects_notes->global : $this->projects_notes->global_comite;
-                $this->projects_notes->marche_opere_comite                    = empty($this->projects_notes->marche_opere_comite) ? $this->projects_notes->marche_opere : $this->projects_notes->marche_opere_comite;
-                $this->projects_notes->qualite_moyen_infos_financieres_comite = empty($this->projects_notes->qualite_moyen_infos_financieres_comite) ? $this->projects_notes->qualite_moyen_infos_financieres : $this->projects_notes->qualite_moyen_infos_financieres_comite;
-                $this->projects_notes->notation_externe_comite                = empty($this->projects_notes->notation_externe_comite) ? $this->projects_notes->notation_externe : $this->projects_notes->notation_externe_comite;
-                $this->projects_notes->note_comite                            = empty($this->projects_notes->note_comite) ? $this->projects_notes->note : $this->projects_notes->note_comite;
+                $this->projects_notes->structure_comite                   = empty($this->projects_notes->structure_comite) ? $this->projects_notes->structure : $this->projects_notes->structure_comite;
+                $this->projects_notes->rentabilite_comite                 = empty($this->projects_notes->rentabilite_comite) ? $this->projects_notes->rentabilite : $this->projects_notes->rentabilite_comite;
+                $this->projects_notes->tresorerie_comite                  = empty($this->projects_notes->tresorerie_comite) ? $this->projects_notes->tresorerie : $this->projects_notes->tresorerie_comite;
+                $this->projects_notes->performance_fianciere_comite       = empty($this->projects_notes->performance_fianciere_comite) ? $this->projects_notes->performance_fianciere : $this->projects_notes->performance_fianciere_comite;
+                $this->projects_notes->individuel_comite                  = empty($this->projects_notes->individuel_comite) ? $this->projects_notes->individuel : $this->projects_notes->individuel_comite;
+                $this->projects_notes->global_comite                      = empty($this->projects_notes->global_comite) ? $this->projects_notes->global : $this->projects_notes->global_comite;
+                $this->projects_notes->marche_opere_comite                = empty($this->projects_notes->marche_opere_comite) ? $this->projects_notes->marche_opere : $this->projects_notes->marche_opere_comite;
+                $this->projects_notes->dirigeance_comite                  = empty($this->projects_notes->dirigeance_comite) ? $this->projects_notes->dirigeance : $this->projects_notes->dirigeance_comite;
+                $this->projects_notes->indicateur_risque_dynamique_comite = empty($this->projects_notes->indicateur_risque_dynamique_comite) ? $this->projects_notes->indicateur_risque_dynamique : $this->projects_notes->indicateur_risque_dynamique_comite;
+                $this->projects_notes->note_comite                        = empty($this->projects_notes->note_comite) ? $this->projects_notes->note : $this->projects_notes->note_comite;
 
                 if ($update == true) {
                     $this->projects_notes->update();
@@ -1121,31 +1121,30 @@ class ajaxController extends bootstrap
                     <div class="tab_content" id="etape7">
                         <table class="form tableNotes" style="width: 100%;">
                             <tr>
-                                <th><label for="performance_fianciere2">Performance financière</label></th>
-                                <td><span id="performance_fianciere2">' . $this->projects_notes->performance_fianciere . '</span> / 10</td>
-                                <th><label for="marche_opere">Marché opéré</label></th>
-                                <td><span id="marche_opere2">' . $this->projects_notes->marche_opere . '</span> / 10</td>
-
-                                <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
-                                <td><input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
-                                <th><label for="notation_externe2">Notation externe</label></th>
-                                <td><input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
+                                <th><label for="performance_fianciere_comite">Performance financière</label></th>
+                                <td><span id="performance_fianciere_comite">' . $this->projects_notes->performance_fianciere_comite . '</span> / 10</td>
+                                <th><label for="marche_opere_comite">Marché opéré</label></th>
+                                <td><span id="marche_opere_comite">' . $this->projects_notes->marche_opere_comite . '</span> / 10</td>
+                                <th><label for="dirigeance_comite">Dirigeance</label></th>
+                                <td><input tabindex="14" id="dirigeance_comite" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->dirigeance_comite . '" name="dirigeance_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
+                                <th><label for="indicateur_risque_dynamique_comite">Indicateur de risque dynamique</label></th>
+                                <td><input tabindex="15" id="indicateur_risque_dynamique_comite" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->indicateur_risque_dynamique_comite . '" name="indicateur_risque_dynamique" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
                             </tr>
 
                             <tr>
                                 <td colspan="2" style="vertical-align:top;">
                                     <table>
                                         <tr>
-                                            <th><label for="structure2">Structure</label></th>
-                                            <td><input tabindex="9" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                            <th><label for="structure_comite">Structure</label></th>
+                                            <td><input tabindex="9" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure_comite . '" name="structure2" id="structure_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
-                                            <th><label for="rentabilite2">Rentabilité</label></th>
-                                            <td><input tabindex="10" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                            <th><label for="rentabilite_comite">Rentabilité</label></th>
+                                            <td><input tabindex="10" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite_comite . '" name="rentabilite_comite" id="rentabilite_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
-                                            <th><label for="tresorerie2">Trésorerie</label></th>
-                                            <td><input tabindex="11" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                            <th><label for="tresorerie_comite">Trésorerie</label></th>
+                                            <td><input tabindex="11" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie_comite . '" name="tresorerie_comite" id="tresorerie_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
 
                                     </table>
@@ -1153,12 +1152,12 @@ class ajaxController extends bootstrap
                                 <td colspan="2" style="vertical-align:top;">
                                     <table>
                                         <tr>
-                                            <th><label for="global2">Global</label></th>
-                                            <td><input tabindex="12" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                            <th><label for="global_comite">Global</label></th>
+                                            <td><input tabindex="12" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global_comite . '" name="global_comite" id="global_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
-                                            <th><label for="individuel">Individuel</label></th>
-                                            <td><input tabindex="13" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                            <th><label for="individuel_comite">Individuel</label></th>
+                                            <td><input tabindex="13" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel_comite . '" name="individuel_comite" id="individuel_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
 
                                     </table>
@@ -1167,7 +1166,7 @@ class ajaxController extends bootstrap
                             </tr>
 
                             <tr class="lanote">
-                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note . '/ 10</span></th>
+                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . '/ 10</span></th>
                             </tr>
 
                             <tr>
@@ -1215,13 +1214,13 @@ class ajaxController extends bootstrap
                             var marche_opere = (global + individuel) / 2;
                             marche_opere = Math.round(marche_opere * 10) / 10;
 
-                            var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres_comite").val().replace(",","."));
-                            var notation_externe = parseFloat($("#notation_externe_comite").val().replace(",","."));
+                            var dirigeance = parseFloat($("#dirigeance_comite").val().replace(",","."));
+                            var indicateur_risque_dynamique = parseFloat($("#indicateur_risque_dynamique_comite").val().replace(",","."));
 
-                            qualite_moyen_infos_financieres = Math.round(qualite_moyen_infos_financieres * 10) / 10;
-                            notation_externe = Math.round(notation_externe * 10) / 10;
+                            dirigeance = Math.round(dirigeance * 10) / 10;
+                            indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                            moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + qualite_moyen_infos_financieres * 0.2 + notation_externe * 0.4) * 10) / 10;
+                            moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
                             $("#marche_opere_comite").html(marche_opere);
                             $("#performance_fianciere_comite").html(performance_fianciere);
@@ -1282,10 +1281,10 @@ class ajaxController extends bootstrap
                 if (false === isset($_POST['marche_opere_comite']) || $_POST['marche_opere_comite'] == 0 || $_POST['marche_opere_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (false === isset($_POST['qualite_moyen_infos_financieres_comite']) || $_POST['qualite_moyen_infos_financieres_comite'] == 0 || $_POST['qualite_moyen_infos_financieres_comite'] > 10) {
+                if (false === isset($_POST['dirigeance_comite']) || $_POST['dirigeance_comite'] == 0 || $_POST['dirigeance_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (false === isset($_POST['notation_externe_comite']) || $_POST['notation_externe_comite'] == 0 || $_POST['notation_externe_comite'] > 10) {
+                if (false === isset($_POST['indicateur_risque_dynamique_comite']) || $_POST['indicateur_risque_dynamique_comite'] == 0 || $_POST['indicateur_risque_dynamique_comite'] > 10) {
                     $form_ok = false;
                 }
             }
@@ -1309,17 +1308,17 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure_comite                       = number_format($_POST['structure_comite'], 1, '.', '');
-                $this->projects_notes->rentabilite_comite                     = number_format($_POST['rentabilite_comite'], 1, '.', '');
-                $this->projects_notes->tresorerie_comite                      = number_format($_POST['tresorerie_comite'], 1, '.', '');
-                $this->projects_notes->performance_fianciere_comite           = number_format($_POST['performance_fianciere_comite'], 1, '.', '');
-                $this->projects_notes->individuel_comite                      = number_format($_POST['individuel_comite'], 1, '.', '');
-                $this->projects_notes->global_comite                          = number_format($_POST['global_comite'], 1, '.', '');
-                $this->projects_notes->marche_opere_comite                    = number_format($_POST['marche_opere_comite'], 1, '.', '');
-                $this->projects_notes->qualite_moyen_infos_financieres_comite = number_format($_POST['qualite_moyen_infos_financieres_comite'], 1, '.', '');
-                $this->projects_notes->notation_externe_comite                = number_format($_POST['notation_externe_comite'], 1, '.', '');
-                $this->projects_notes->note_comite                            = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->qualite_moyen_infos_financieres_comite * 0.2 + $this->projects_notes->notation_externe_comite * 0.4, 1);
-                $this->projects_notes->avis_comite                            = $_POST['avis_comite'];
+                $this->projects_notes->structure_comite                   = number_format($_POST['structure_comite'], 1, '.', '');
+                $this->projects_notes->rentabilite_comite                 = number_format($_POST['rentabilite_comite'], 1, '.', '');
+                $this->projects_notes->tresorerie_comite                  = number_format($_POST['tresorerie_comite'], 1, '.', '');
+                $this->projects_notes->performance_fianciere_comite       = number_format($_POST['performance_fianciere_comite'], 1, '.', '');
+                $this->projects_notes->individuel_comite                  = number_format($_POST['individuel_comite'], 1, '.', '');
+                $this->projects_notes->global_comite                      = number_format($_POST['global_comite'], 1, '.', '');
+                $this->projects_notes->marche_opere_comite                = number_format($_POST['marche_opere_comite'], 1, '.', '');
+                $this->projects_notes->dirigeance_comite                  = number_format($_POST['dirigeance_comite'], 1, '.', '');
+                $this->projects_notes->indicateur_risque_dynamique_comite = number_format($_POST['indicateur_risque_dynamique_comite'], 1, '.', '');
+                $this->projects_notes->note_comite                        = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
+                $this->projects_notes->avis_comite                        = $_POST['avis_comite'];
 
                 // on enregistre
                 if ($update == true) {

@@ -529,18 +529,18 @@ function valid_rejete_etape6(status, id_project) {
             global                          = parseFloat($('#global').val().replace(',', '.')),
             performance_fianciere           = parseFloat($('#performance_fianciere').html().replace(',', '.')),
             marche_opere                    = parseFloat($('#marche_opere').html().replace(',', '.')),
-            qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres').val().replace(',', '.')),
-            notation_externe                = parseFloat($('#notation_externe').val().replace(',', '.')),
+            dirigeance                      = parseFloat($('#dirigeance').val().replace(',', '.')),
+            indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique').val().replace(',', '.')),
             avis                            = ckedAvis.getData(),
             rejection_reason                = $('#rejection_reason option:selected').val(),
             form_ok = true;
 
 
-        if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(qualite_moyen_infos_financieres) != false || isNaN(notation_externe) != false) {
+        if (isNaN(structure) != false && structure || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
             form_ok = false;
             alert('Vous devez renseigner un chiffre infèrieur ou égale à 10 dans les 7 premiers champs');
         }
-        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || qualite_moyen_infos_financieres > 10 || notation_externe > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || qualite_moyen_infos_financieres == 0 || notation_externe == 0) {
+        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || dirigeance > 10 || indicateur_risque_dynamique > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || dirigeance == 0 || indicateur_risque_dynamique == 0) {
             if (status == 1) {
                 form_ok = false;
                 alert('Vous devez renseigner un chiffre infèrieur ou égale à 10');
@@ -566,8 +566,8 @@ function valid_rejete_etape6(status, id_project) {
                 global: global,
                 individuel: individuel,
                 marche_opere: marche_opere,
-                qualite_moyen_infos_financieres: qualite_moyen_infos_financieres,
-                notation_externe: notation_externe,
+                dirigeance: dirigeance,
+                indicateur_risque_dynamique: indicateur_risque_dynamique,
                 avis: avis,
                 rejection_reason: rejection_reason
             }).done(function (data) {
@@ -579,8 +579,8 @@ function valid_rejete_etape6(status, id_project) {
                     $('#individuel').val(Math.round(individuel * 10) / 10);
                     $('#performance_fianciere').html(Math.round(performance_fianciere * 10) / 10);
                     $('#marche_opere').html(Math.round(marche_opere * 10) / 10);
-                    $('#qualite_moyen_infos_financieres').val(Math.round(qualite_moyen_infos_financieres * 10) / 10);
-                    $('#notation_externe').val(Math.round(notation_externe * 10) / 10);
+                    $('#dirigeance').val(Math.round(dirigeance * 10) / 10);
+                    $('#indicateur_risque_dynamique').val(Math.round(indicateur_risque_dynamique * 10) / 10);
 
                     var obj     = jQuery.parseJSON(data),
                         liste   = obj.liste,
@@ -600,13 +600,11 @@ function valid_rejete_etape6(status, id_project) {
                         if (status == 1) {
                             if ($('#content_etape7').html() == '') {
                                 $('#content_etape7').html(etape_7);
-                            }
-                            else {
+                            } else {
                                 $('#content_etape7').show();
                                 $('.btnValid_rejet_etape7').show();
                             }
-                        }
-                        else if (status == 2) {
+                        } else if (status == 2) {
                             parent.$.fn.colorbox.close();
                         }
                     }
@@ -630,17 +628,17 @@ function valid_rejete_etape7(status, id_project) {
             individuel                      = parseFloat($('#individuel_comite').val().replace(',', '.')),
             performance_fianciere           = parseFloat($('#performance_fianciere_comite').html().replace(',', '.')),
             marche_opere                    = parseFloat($('#marche_opere_comite').html().replace(',', '.')),
-            qualite_moyen_infos_financieres = parseFloat($('#qualite_moyen_infos_financieres_comite').val().replace(',', '.')),
-            notation_externe                = parseFloat($('#notation_externe_comite').val().replace(',', '.')),
+            dirigeance                      = parseFloat($('#dirigeance_comite').val().replace(',', '.')),
+            indicateur_risque_dynamique     = parseFloat($('#indicateur_risque_dynamique_comite').val().replace(',', '.')),
             avis_comite                     = ckedAvis_comite.getData(),
             rejection_reason                = $('#rejection_reason option:selected').val(),
             form_ok = true;
 
-        if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(qualite_moyen_infos_financieres) != false || isNaN(notation_externe) != false) {
+        if (isNaN(structure) != false || isNaN(rentabilite) != false || isNaN(tresorerie) != false || isNaN(performance_fianciere) != false || isNaN(individuel) != false || isNaN(global) != false || isNaN(marche_opere) != false || isNaN(dirigeance) != false || isNaN(indicateur_risque_dynamique) != false) {
             form_ok = false;
             alert('Vous devez renseigner un chiffre infèrieur ou égale à 10 dans les 7 premiers champs');
         }
-        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || qualite_moyen_infos_financieres > 10 || notation_externe > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || qualite_moyen_infos_financieres == 0 || notation_externe == 0) {
+        else if (structure > 10 || rentabilite > 10 || tresorerie > 10 || performance_fianciere > 10 || individuel > 10 || global > 10 || marche_opere > 10 || dirigeance > 10 || indicateur_risque_dynamique > 10 || structure == 0 || rentabilite == 0 || tresorerie == 0 || performance_fianciere == 0 || individuel == 0 || global == 0 || marche_opere == 0 || dirigeance == 0 || indicateur_risque_dynamique == 0) {
             if (status == 1) {
                 form_ok = false;
                 alert('Vous devez renseigner un chiffre infèrieur ou égale à 10');
@@ -667,8 +665,8 @@ function valid_rejete_etape7(status, id_project) {
                 global_comite: global,
                 individuel_comite: individuel,
                 marche_opere_comite: marche_opere,
-                qualite_moyen_infos_financieres_comite: qualite_moyen_infos_financieres,
-                notation_externe_comite: notation_externe,
+                dirigeance_comite: dirigeance,
+                indicateur_risque_dynamique_comite: indicateur_risque_dynamique,
                 rejection_reason: rejection_reason
             }).done(function (data) {
                 if (data != 'nok') {
