@@ -11,7 +11,7 @@
             $("#email").val('');
             $("#siren").val('');
             $("#company_name").val('');
-            $('#status option[value="choisir"]').attr('selected', true);
+            $('#status option[value="choisir"]').prop('selected', true);
         });
     });
 

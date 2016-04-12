@@ -309,10 +309,10 @@ function valid_etape1(id_project) {
     $.post(add_url + '/ajax/valid_etapes', val).done(function (data) {
         $("#siren").val($("#siren_etape1").val());
         $("#montant").val($("#montant_etape1").val());
-        $('#duree option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
+        $('#duree option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
 
         $("#montant_etape3").val($("#montant_etape1").val());
-        $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').attr('selected', true);
+        $('#duree_etape3 option[value="' + $("#duree_etape1").val() + '"]').prop('selected', true);
 
         $("#valid_etape1").slideDown();
 
@@ -379,7 +379,7 @@ function valid_create(id_project) {
 
 function valid_etape2(id_project) {
 
-    if ($("#same_address_etape2").attr('checked') == true) var same_address_etape2 = 1;
+    if ($("#same_address_etape2").prop('checked') == true) var same_address_etape2 = 1;
     else  var same_address_etape2 = 0;
 
     var enterprise_etape2 = $('input[name=enterprise_etape2]:checked', '#dossier_etape2').val();
@@ -419,7 +419,7 @@ function valid_etape2(id_project) {
         enterprise_etape2: enterprise_etape2,
         id_project: id_project,
         id_prescripteur: $("#id_prescripteur").val(),
-        has_prescripteur: $('#enterprise3_etape2').attr('checked'),
+        has_prescripteur: $('#enterprise3_etape2').prop('checked'),
         etape: 2
     };
 
@@ -448,7 +448,6 @@ function valid_etape2(id_project) {
             $("#phone").val($("#phone_correspondance_etape2").val());
         }
 
-
         $("#valid_etape2").slideDown();
 
         setTimeout(function () {
@@ -474,8 +473,8 @@ function valid_etape3(id_project) {
         $("#montant").val($("#montant_etape3").val());
         $("#montant_etape1").val($("#montant_etape3").val());
 
-        $('#duree option[value="' + $("#duree_etape3").val() + '"]').attr('selected', true);
-        $('#duree_etape1 option[value="' + $("#duree_etape3").val() + '"]').attr('selected', true);
+        $('#duree option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
+        $('#duree_etape1 option[value="' + $("#duree_etape3").val() + '"]').prop('selected', true);
 
         $("#title").val($("#titre_etape3").val());
 
