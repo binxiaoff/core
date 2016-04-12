@@ -293,7 +293,7 @@ class emprunteursController extends bootstrap
                     $prelevements->updateIbanBic($aProject['id_project'], $this->companies->bic, $this->companies->iban);
 
                     if (true === $edited_rib) {
-                        $sBankTransferLabel = $this->ficelle->getBorrowerBankTransferLabel($this->companies->siren, $aProject['id_project']);
+                        $sBankTransferLabel = $this->projects->getBorrowerBankTransferLabel($this->companies->siren, $aProject['id_project']);
                         $prelevements->updateBankTransferLabel($aProject['id_project'], $sBankTransferLabel);
                     }
                 }

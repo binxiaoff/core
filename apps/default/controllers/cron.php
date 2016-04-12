@@ -1621,7 +1621,8 @@ class cronController extends bootstrap
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
                                 preg_match('#[0-9]+#', $motif, $extract);
-                                $listPrel = $prelevements->select('id_project = ' . $extract[0] . ' AND status = 0');
+                                $iProjectId = (int) ltrim($extract[0], '0');
+                                $listPrel   = $prelevements->select('id_project = ' . $iProjectId . ' AND status = 0');
 
                                 $sMotifPrelevement = 'UNILEND' . $extract[0] . 'E';
                                 if (
@@ -1629,7 +1630,7 @@ class cronController extends bootstrap
                                     && false !== strpos($motif, $sMotifPrelevement)
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
                                 ) {
-                                    $projects->get(ltrim($extract[0], '0'), 'id_project');
+                                    $projects->get($iProjectId, 'id_project');
                                     $companies->get($projects->id_company, 'id_company');
                                     $clients->get($companies->id_client_owner, 'id_client');
 
