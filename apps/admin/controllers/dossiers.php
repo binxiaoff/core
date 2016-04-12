@@ -415,15 +415,16 @@ class dossiersController extends bootstrap
                         $_POST['status'] = \projects_status::REVUE_ANALYSTE;
                     }
 
-                    $this->projects->title          = $_POST['title'];
-                    $this->projects->title_bo       = $_POST['title_bo'];
-                    $this->projects->period         = $_POST['duree'];
-                    $this->projects->nature_project = $_POST['nature_project'];
-                    $this->projects->amount         = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
-                    $this->projects->target_rate    = '-';
-                    $this->projects->id_analyste    = $_POST['analyste'];
-                    $this->projects->id_commercial  = $_POST['commercial'];
-                    $this->projects->display        = $_POST['display_project'];
+                    $this->projects->title           = $_POST['title'];
+                    $this->projects->title_bo        = $_POST['title_bo'];
+                    $this->projects->period          = $_POST['duree'];
+                    $this->projects->nature_project  = $_POST['nature_project'];
+                    $this->projects->amount          = str_replace(' ', '', str_replace(',', '.', $_POST['montant']));
+                    $this->projects->target_rate     = '-';
+                    $this->projects->id_analyste     = $_POST['analyste'];
+                    $this->projects->id_commercial   = $_POST['commercial'];
+                    $this->projects->display         = $_POST['display_project'];
+                    $this->projects->id_project_need = $_POST['need'];
 
                     if ($this->current_projects_status->status >= \projects_status::PREP_FUNDING) {
                         $this->projects->risk = $_POST['risk'];

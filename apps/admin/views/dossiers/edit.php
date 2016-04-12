@@ -338,7 +338,7 @@
                     <?php endif; ?>
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
-                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount) ?>"/> €</td>
+                        <td><input style="background-color:#AAACAC;" type="text" name="montant" id="montant" class="input_moy" value="<?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>"/> €</td>
                     </tr>
                     <tr>
                         <th><label for="duree">Durée du prêt* :</label></th>
@@ -359,7 +359,7 @@
                                 <?php foreach ($this->aNeeds as $aNeed) : ?>
                                     <optgroup label="<?= $aNeed['label'] ?>">
                                     <?php foreach ($aNeed['children'] as $aNeedChild) : ?>
-                                        <option<?= ($this->projects->id_project_need == $aNeedChild['id_project_need'] ? ' selected' : '') ?>><?= $aNeedChild['label'] ?></option>
+                                        <option value="<?= $aNeedChild['id_project_need'] ?>"<?= ($this->projects->id_project_need == $aNeedChild['id_project_need'] ? ' selected' : '') ?>><?= $aNeedChild['label'] ?></option>
                                     <?php endforeach; ?>
                                     </optgroup>
                                 <?php endforeach; ?>
