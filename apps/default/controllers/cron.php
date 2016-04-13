@@ -832,7 +832,7 @@ class cronController extends bootstrap
                 $this->prelevements->update();
 
                 // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
+                $id_lot = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                 $montant = round($p['montant'] / 100, 2);
 
                 // Date execution
@@ -885,7 +885,7 @@ class cronController extends bootstrap
                 $this->lenders_accounts->get($p['id_client'], 'id_client_owner');
 
                 // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
+                $id_lot  = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                 $montant = round($p['montant'] / 100, 2);
 
                 // Date execution
@@ -977,7 +977,7 @@ class cronController extends bootstrap
                 }
 
                 // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
+                $id_lot  = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                 $montant = round($p['montant'] / 100, 2);
 
                 // On recup le mandat
@@ -1051,6 +1051,17 @@ class cronController extends bootstrap
 
             $this->stopCron();
         }
+    }
+
+    /**
+     * @param string $titulaire
+     * @param string $dateColle date format : Ymd
+     * @param int $iId id prelevement
+     * @return string
+     */
+    private function getIdLot($titulaire, $dateColle, $iId)
+    {
+        return $titulaire . '/' . $dateColle . '/' . $iId;
     }
 
     private function xmPrelevement($table)
@@ -1623,7 +1634,7 @@ class cronController extends bootstrap
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
                                 preg_match_all('#[0-9]+#', $motif, $extract);
                                 $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
-                                $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
+                                $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND "' . $motif . '" LIKE CONCAT("%", motif, "%")');
 
                                 if (
                                     count($listPrel) > 0
@@ -1870,7 +1881,7 @@ class cronController extends bootstrap
                                 $oTransactions          = $this->loadData('transactions');
 
                                 if (
-                                    1 === preg_match('#^RUMUNILEND([0-9]+)#', $r['libelleOpe3'], $aMatches)
+                                    1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $r['libelleOpe3'], $aMatches1)
                                     && $this->projects->get((int) $aMatches[1])
                                     && 1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $r['libelleOpe4'], $aMatches)
                                     && $oPrelevements->get((int) $aMatches[2])
