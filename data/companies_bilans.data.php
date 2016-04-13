@@ -71,6 +71,15 @@ class companies_bilans extends companies_bilans_crud
 
     public function calcultateFromBalance()
     {
+        /** @var \settings $oSetting */
+        $oSetting = Loader::loadData('settings');
+        $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
+        $aFundedCompanies = explode(',', $oSetting->value);
+
+        if (in_array($this->id_company, $aFundedCompanies)) {
+            return;
+        }
+
         /** @var \company_balance $oCompanyBalance */
         $oCompanyBalance = Loader::loadData('company_balance');
         $aBalances       = $oCompanyBalance->getBalanceSheetsByAnnualAccount(array($this->id_bilan));

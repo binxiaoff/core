@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\core\Loader;
 use Unilend\librairies\Cache;
 
 class projectsController extends bootstrap
@@ -571,6 +572,13 @@ class projectsController extends bootstrap
 
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
             }
+
+            /** @var \settings $oSetting */
+            $oSetting = Loader::loadData('settings');
+            $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
+            $aFundedCompanies = explode(',', $oSetting->value);
+
+            $this->bPreviousRiskProject = in_array($this->companies->id_company, $aFundedCompanies);
         } else {
             header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
             $this->setView('../root/404');

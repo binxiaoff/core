@@ -71,6 +71,19 @@ class companies_actif_passif extends companies_actif_passif_crud
 
     public function calcultateFromBalance()
     {
+        /** @var \settings $oSetting */
+        $oSetting = Loader::loadData('settings');
+        $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
+        $aFundedCompanies = explode(',', $oSetting->value);
+
+        /** @var \companies_bilans $oCompanyAnnualAccounts */
+        $oCompanyAnnualAccounts = Loader::loadData('companies_bilans');
+        $oCompanyAnnualAccounts->get($this->id_bilan);
+
+        if (in_array($oCompanyAnnualAccounts->id_company, $aFundedCompanies)) {
+            return;
+        }
+
         /** @var \company_balance $oCompanyBalance */
         $oCompanyBalance = Loader::loadData('company_balance');
         $aBalances       = $oCompanyBalance->getBalanceSheetsByAnnualAccount(array($this->id_bilan));
