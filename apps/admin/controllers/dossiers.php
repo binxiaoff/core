@@ -1149,23 +1149,19 @@ class dossiersController extends bootstrap
             $oProjectNeed = $this->loadData('project_need');
             $this->aNeeds = $oProjectNeed->getTree();
 
-            if (
-                $this->current_projects_status->status == \projects_status::REJET_ANALYSTE
-                || $this->current_projects_status->status == \projects_status::REJET_COMITE
-            ) {
-                /** @var \projects_status_history_details $oProjectStatusHistoryDetails */
-                $oStatusHistoryDetails = $this->loadData('projects_status_history_details');
+            /** @var \projects_status_history_details $oProjectStatusHistoryDetails */
+            $oStatusHistoryDetails = $this->loadData('projects_status_history_details');
 
-                if ($oStatusHistoryDetails->get($this->current_projects_status_history->id_project_status_history, 'id_project_status_history')) {
-                    /** @var \project_rejection_reason $oRejectionReason */
-                    $oRejectionReason = $this->loadData('project_rejection_reason');
+            if ($oStatusHistoryDetails->get($this->current_projects_status_history->id_project_status_history, 'id_project_status_history')) {
+                /** @var \project_rejection_reason $oRejectionReason */
+                $oRejectionReason = $this->loadData('project_rejection_reason');
 
-                    if (
-                        $this->current_projects_status->status == \projects_status::REJET_ANALYSTE && $oRejectionReason->get($oStatusHistoryDetails->analyst_rejection_reason)
-                        || $this->current_projects_status->status == \projects_status::REJET_COMITE && $oRejectionReason->get($oStatusHistoryDetails->comity_rejection_reason)
-                    ) {
-                        $this->sRejectionReason = $oRejectionReason->label;
-                    }
+                if (
+                    $oStatusHistoryDetails->commercial_rejection_reason > 0 && $oRejectionReason->get($oStatusHistoryDetails->commercial_rejection_reason)
+                    || $oStatusHistoryDetails->analyst_rejection_reason > 0 && $oRejectionReason->get($oStatusHistoryDetails->analyst_rejection_reason)
+                    || $oStatusHistoryDetails->comity_rejection_reason > 0 && $oRejectionReason->get($oStatusHistoryDetails->comity_rejection_reason)
+                ) {
+                    $this->sRejectionReason = $oRejectionReason->label;
                 }
             }
 
