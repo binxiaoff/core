@@ -1188,6 +1188,17 @@
             ?>"<?= empty($aBalanceSheet['HN']) ? '' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['HN'] - $aBalanceSheet['HN']) / $aBalanceSheet['HN'] * 100) . ' %' ?>";<?php } ?>"<?= $aBalanceSheet['HN'] ?>";<?php
         $iPreviousBalanceSheetId = $iBalanceSheetId;
     }
+    ?>
+
+"Nombre d'employés";"YP";<?php
+    $iColumn = 0;
+    $iPreviousBalanceSheetId = null;
+
+    foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
+        if (false === is_null($iPreviousBalanceSheetId)) {
+            ?>"<?= empty($aBalanceSheet['YP']) ? '' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['YP'] - $aBalanceSheet['YP']) / $aBalanceSheet['YP'] * 100) . ' %' ?>";<?php } ?>"<?= $aBalanceSheet['YP'] ?>";<?php
+        $iPreviousBalanceSheetId = $iBalanceSheetId;
+    }
 
 $iBalanceSheetsCount     = count($this->aBalanceSheets);
 $aOperationalCashFlow    = array();

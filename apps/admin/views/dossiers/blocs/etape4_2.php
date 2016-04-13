@@ -93,7 +93,7 @@
                         Actif
                     </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
-                        <th width="200" class="annual_accounts_dates" data-closing="<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>" data-duration="<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>" data-annual-account="<?= $aAnnualAccounts['id_bilan'] ?>"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <th width="180" class="annual_accounts_dates" data-closing="<?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?>" data-duration="<?= $aAnnualAccounts['duree_exercice_fiscal'] ?>" data-annual-account="<?= $aAnnualAccounts['id_bilan'] ?>"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
@@ -102,7 +102,7 @@
                 <!-- Immobilisations incorporelles -->
                 <tr>
                     <td>Capital souscrit non appelé</td>
-                    <td>AA</td>
+                    <td width="45">AA</td>
                     <?php
                     $iColumn = 0;
                     $iPreviousBalanceSheetId = null;
@@ -1001,7 +1001,7 @@
                         Passif
                     </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
-                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <th width="180"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
@@ -1010,7 +1010,7 @@
                 <!-- Total fonds propres -->
                 <tr>
                     <td>Capital social</td>
-                    <td width="20">DA</td>
+                    <td width="45">DA</td>
                     <?php
                     $iColumn = 0;
                     $iPreviousBalanceSheetId = null;
@@ -1486,7 +1486,7 @@
                         Autres infos
                     </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
-                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <th width="180"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
@@ -1494,7 +1494,7 @@
             <tbody>
                 <tr>
                     <td>2 : CBC, et soldes créditeurs de banques et CCP</td>
-                    <td width="20">EH</td>
+                    <td width="45">EH</td>
                     <?php
                     $iColumn = 0;
                     $iPreviousBalanceSheetId = null;
@@ -1663,7 +1663,7 @@
                         Compte de résultat
                     </th>
                     <?php foreach ($this->lbilans as $aAnnualAccounts): ?>
-                        <th width="200"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
+                        <th width="180"><?= $this->dates->formatDate($aAnnualAccounts['cloture_exercice_fiscal'], 'd/m/Y') ?> (<?= $aAnnualAccounts['duree_exercice_fiscal'] ?> mois)</th>
                         <?php if ($aAnnualAccounts['id_bilan'] != $iOldestAnnualAccountsId) { ?><th width="50"></th><?php } ?>
                     <?php endforeach; ?>
                 </tr>
@@ -1671,7 +1671,7 @@
             <tbody>
                 <tr>
                     <td><strong>Chiffre d'Affaires nets</strong></td>
-                    <td width="20">FL</td>
+                    <td width="45">FL</td>
                     <?php
                     $iColumn = 0;
                     $iPreviousBalanceSheetId = null;
@@ -2304,6 +2304,26 @@
                         }
                         ?>
                         <td><input type="text" class="numbers" name="HN[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet['HN'], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/>&nbsp;€</td>
+                        <?php
+                        $iPreviousBalanceSheetId = $iBalanceSheetId;
+                    }
+                    ?>
+                </tr>
+                <tr>
+                    <td><strong>Nombre d'employés</strong></td>
+                    <td>YP</td>
+                    <?php
+                    $iColumn = 0;
+                    $iPreviousBalanceSheetId = null;
+
+                    foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
+                        if (false === is_null($iPreviousBalanceSheetId)) {
+                            ?>
+                            <td><?= empty($aBalanceSheet['YP']) ? 'N/A' : round(($this->aBalanceSheets[$iPreviousBalanceSheetId]['YP'] - $aBalanceSheet['YP']) / abs($aBalanceSheet['YP']) * 100) . '&nbsp;%' ?></td>
+                            <?php
+                        }
+                        ?>
+                        <td><input type="text" class="numbers" name="YP[<?= $iBalanceSheetId ?>]" value="<?= $this->ficelle->formatNumber($aBalanceSheet['YP'], 0) ?>" tabindex="<?= 420 + ++$iColumn ?>"/></td>
                         <?php
                         $iPreviousBalanceSheetId = $iBalanceSheetId;
                     }
