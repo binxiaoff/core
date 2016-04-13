@@ -1,6 +1,6 @@
 <table class="table orders-table">
     <tr>
-        <th width="15%"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
+        <th width="18%"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
         <th width="25%">
             <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?> <i class="icon-arrows"></i></span>
             <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</small>
@@ -9,7 +9,7 @@
             <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?> <i class="icon-arrows"></i></span>
             <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?> €</small>
         </th>
-        <th width="25%"><span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?><i class="icon-arrows"></i></span>
+        <th width="22%"><span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?><i class="icon-arrows"></i></span>
         </th>
     </tr>
     <?php foreach ($this->aBidsOnProject as $iKey => $aBid) : ?>

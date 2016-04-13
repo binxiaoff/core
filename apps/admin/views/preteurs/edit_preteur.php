@@ -733,8 +733,8 @@
         $('.statut_dirigeant_e3').show('slow');
     <?php endif; ?>
 
-    $('#meme-adresse').click(function() {
-        if ($(this).is(':checked') == true) {
+    $('#meme-adresse').click(function () {
+        if ($(this).prop('checked')) {
             $('.meme-adresse').hide();
         } else {
             $('.meme-adresse').show();
@@ -755,19 +755,19 @@
     });
 
     $('#enterprise1').click(function() {
-        if ($(this).attr('checked') == true) {
+        if ($(this).prop('checked')) {
             $('.statut_dirigeant_e').hide('slow');
             $('.statut_dirigeant_e3').hide('slow');
         }
     });
     $('#enterprise2').click(function() {
-        if ($(this).attr('checked') == true) {
+        if ($(this).prop('checked')) {
             $('.statut_dirigeant_e').show('slow');
             $('.statut_dirigeant_e3').hide('slow');
         }
     });
     $('#enterprise3').click(function() {
-        if ($(this).attr('checked') == true) {
+        if ($(this).prop('checked')) {
             $('.statut_dirigeant_e').show('slow');
             $('.statut_dirigeant_e3').show('slow');
         }
