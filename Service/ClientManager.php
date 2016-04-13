@@ -8,7 +8,7 @@ use Unilend\core\Loader;
  * @package Unilend\Service
  */
 
-class ClientManager
+class ClientManager extends Service
 {
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
@@ -38,7 +38,7 @@ class ClientManager
     public function isAcceptedCGV(\clients $oClient, $iLegalDocId)
     {
         /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
-        $oAcceptationLegalDocs = Loader::loadData('acceptations_legal_docs');
+        $oAcceptationLegalDocs = $this->loadData('acceptations_legal_docs');
         return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
     }
 }

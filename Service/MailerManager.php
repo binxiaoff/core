@@ -4,7 +4,7 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
 
-class MailerManager
+class MailerManager extends Service
 {
     /** @var \settings */
     private $oSettings;
@@ -43,12 +43,12 @@ class MailerManager
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oSettings  = Loader::loadData('settings');
-        $this->oMailFiler = Loader::loadData('mails_filer');
-        $this->oMailText  = Loader::loadData('mails_text');
+        $this->oSettings  = $this->loadData('settings');
+        $this->oMailFiler = $this->loadData('mails_filer');
+        $this->oMailText  = $this->loadData('mails_text');
 
-        $this->oNMP       = Loader::loadData('nmp');
-        $this->oNMPDesabo = Loader::loadData('nmp_desabo');
+        $this->oNMP       = $this->loadData('nmp');
+        $this->oNMPDesabo = $this->loadData('nmp_desabo');
 
         $this->oTNMP       = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail      = Loader::loadLib('email');
@@ -75,17 +75,17 @@ class MailerManager
     public function sendBidConfirmation(\notifications $oNotification)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \projects $oProject */
-        $oProject = Loader::loadData('projects');
+        $oProject = $this->loadData('projects');
         /** @var \tree $oTree */
-        $oTree = Loader::loadData('tree');
+        $oTree = $this->loadData('tree');
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
 
         if ($oLenderAccount->get($oNotification->id_lender) && $oBid->get($oNotification->id_bid) && $oClient->get($oLenderAccount->id_client_owner)) {
             if (empty($oBid->id_autobid)) {
@@ -146,15 +146,15 @@ class MailerManager
     public function sendFundFailedToLender(\projects $oProject)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
+        $oTransaction = $this->loadData('transactions');
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
 
         $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC, added ASC');
         foreach ($aBidList as $aBid) {
@@ -216,11 +216,11 @@ class MailerManager
     public function sendFundedToBorrower(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \clients $oBorrower */
-        $oBorrower = Loader::loadData('clients');
+        $oBorrower = $this->loadData('clients');
 
         // EMAIL EMPRUNTEUR FUNDE //
         if ($this->oLogger instanceof ULogger) {
@@ -335,11 +335,11 @@ class MailerManager
     public function sendFundedAndFinishedToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \clients $oBorrower */
-        $oBorrower = Loader::loadData('clients');
+        $oBorrower = $this->loadData('clients');
         /** @var \echeanciers_emprunteur $oBorrowerPaymentSchedule */
-        $oBorrowerPaymentSchedule = Loader::loadData('echeanciers_emprunteur');
+        $oBorrowerPaymentSchedule = $this->loadData('echeanciers_emprunteur');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
@@ -398,11 +398,11 @@ class MailerManager
     public function sendFundedToStaff(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
         /** @var \loans $oLoan */
-        $oLoan = Loader::loadData('loans');
+        $oLoan = $this->loadData('loans');
 
         $oCompany->get($oProject->id_company, 'id_company');
 
@@ -453,17 +453,17 @@ class MailerManager
     public function sendBidAccepted(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan = Loader::loadData('loans');
+        $oLoan = $this->loadData('loans');
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \echeanciers $oPaymentSchedule */
-        $oPaymentSchedule = Loader::loadData('echeanciers');
+        $oPaymentSchedule = $this->loadData('echeanciers');
         /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = Loader::loadData('accepted_bids');
+        $oAcceptedBid = $this->loadData('accepted_bids');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
 
         $aLendersIds       = $oLoan->getProjectLoansByLender($oProject->id_project);
         $iNbLenders        = count($aLendersIds);
@@ -587,17 +587,17 @@ class MailerManager
     public function sendBidRejected(\notifications $oNotification)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \projects $oProject */
-        $oProject = Loader::loadData('projects');
+        $oProject = $this->loadData('projects');
         /** @var \autobid $oAutoBid */
-        $oAutoBid = Loader::loadData('autobid');
+        $oAutoBid = $this->loadData('autobid');
 
         $oBid->get($oNotification->id_bid);
         $oLenderAccount->get($oBid->id_lender_account);
@@ -680,9 +680,9 @@ class MailerManager
     public function sendFundFailedToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
@@ -725,13 +725,13 @@ class MailerManager
     public function sendProjectFinishedToStaff(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan = Loader::loadData('loans');
+        $oLoan = $this->loadData('loans');
         /** @var \companies $oCompany */
-        $oCompany = Loader::loadData('companies');
+        $oCompany = $this->loadData('companies');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
@@ -781,9 +781,9 @@ class MailerManager
     public function sendAutoBidBalanceInsufficient(\notifications $oNotification)
     {
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
 
         $oLenderAccount->get($oNotification->id_lender);
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
@@ -841,11 +841,11 @@ class MailerManager
     public function sendAutoBidBalanceLow(\notifications $oNotification)
     {
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
+        $oTransaction = $this->loadData('transactions');
 
         $oLenderAccount->get($oNotification->id_lender);
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
@@ -905,9 +905,9 @@ class MailerManager
     public function sendFirstAutoBidActivation(\notifications $oNotification)
     {
         /** @var \clients $oClient */
-        $oClient                = Loader::loadData('clients');
+        $oClient                = $this->loadData('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount         = Loader::loadData('lenders_accounts');
+        $oLenderAccount         = $this->loadData('lenders_accounts');
         /** @var \AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
 

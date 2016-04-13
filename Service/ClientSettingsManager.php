@@ -8,7 +8,7 @@ use Unilend\librairies\Cache;
  * Class ClientSettingsManager
  * @package Unilend\Service
  */
-class ClientSettingsManager
+class ClientSettingsManager extends Service
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 
@@ -17,8 +17,8 @@ class ClientSettingsManager
 
     public function __construct()
     {
-        $this->oClientSettings = Loader::loadData('client_settings');
-        Loader::loadData('client_setting_type'); //load for use of constants
+        $this->oClientSettings = $this->loadData('client_settings');
+        $this->loadData('client_setting_type'); //load for use of constants
     }
 
     /**
@@ -31,7 +31,7 @@ class ClientSettingsManager
     public function saveClientSetting(\clients $oClient, $iSettingType, $sValue)
     {
         /** @var \client_settings $oClientSettings */
-        $oClientSettings = Loader::loadData('client_settings');
+        $oClientSettings = $this->loadData('client_settings');
 
         if ($oClientSettings->get($oClient->id_client, 'id_type = ' . $iSettingType . ' AND id_client')) {
             if ($sValue != $oClientSettings->value) {

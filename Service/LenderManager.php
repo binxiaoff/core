@@ -7,7 +7,7 @@ use Unilend\core\Loader;
  * Class LenderManager
  * @package Unilend\Service
  */
-class LenderManager
+class LenderManager extends Service
 {
 
     /**
@@ -18,9 +18,9 @@ class LenderManager
     public function canBid(\lenders_accounts $oLenderAccount)
     {
         /** @var \clients_status $oClientStatus */
-        $oClientStatus = Loader::loadData('clients_status');
+        $oClientStatus = $this->loadData('clients_status');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
 
         if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
              && $oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == \clients_status::VALIDATED) {

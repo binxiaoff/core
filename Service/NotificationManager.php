@@ -10,7 +10,7 @@ namespace Unilend\Service;
 
 use Unilend\core\Loader;
 
-class NotificationManager
+class NotificationManager extends Service
 {
     /** @var MailerManager */
     private $oMailerManager;
@@ -23,13 +23,13 @@ class NotificationManager
     public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \notifications $oNotification */
-        $oNotification = Loader::loadData('notifications');
+        $oNotification = $this->loadData('notifications');
         /** @var \clients_gestion_notifications $oNotificationSettings */
-        $oNotificationSettings = Loader::loadData('clients_gestion_notifications');
+        $oNotificationSettings = $this->loadData('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
+        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
 
         $iLenderId = '';
         if ($oLenderAccount->get($iClientId, 'id_client_owner')) {

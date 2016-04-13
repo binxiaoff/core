@@ -7,6 +7,9 @@
         <service id="unilend.command.example" class="Unilend\apps\Command\example">
             <tag name="unilend.command"/>
             <argument>Bin</argument>
+            <call method="setDbConn">
+                <argument type="service" id="unilend.database.cron" />
+            </call>
         </service>
     </services>
 </container>

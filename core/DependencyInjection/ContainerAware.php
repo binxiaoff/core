@@ -7,6 +7,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
  * A simple implementation of ContainerAwareInterface.
@@ -20,7 +21,7 @@ class ContainerAware implements ContainerAwareInterface
      * @api
      */
     private $container;
-    
+
     /**
      * Sets the Container associated with this Controller.
      *
@@ -33,13 +34,20 @@ class ContainerAware implements ContainerAwareInterface
         $this->container = $container;
     }
 
+    /**
+     * @return ContainerInterface
+     */
     public function getContainer()
     {
         if (false === $this->container instanceof ContainerInterface) {
             $container = new ContainerBuilder();
             $this->setContainer($container);
+            $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
+            $loader->load('config.yml');
+            
             $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
             $loader->load('services.xml');
+            $loader->load('databases.xml');
         }
         return $this->container;
     }

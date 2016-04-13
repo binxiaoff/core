@@ -49,19 +49,6 @@ class Controller extends ContainerAware
         $this->included_js  = array();
         $this->included_css = array();
 
-        if (false === \Unilend\core\DataBase::isConnected()) {
-            $dbParams = [
-                'dbname'   => $this->Config['bdd_config'][$this->Config['env']]['BDD'],
-                'user'     => $this->Config['bdd_config'][$this->Config['env']]['USER'],
-                'password' => $this->Config['bdd_config'][$this->Config['env']]['PASSWORD'],
-                'host'     => $this->Config['bdd_config'][$this->Config['env']]['HOST'],
-                'driver'   => $this->Config['bdd_config'][$this->Config['env']]['DRIVER'],
-                'charset'  => $this->Config['bdd_config'][$this->Config['env']]['CHARSET'],
-            ];
-            \Unilend\core\DataBase::connect($dbParams);
-        }
-        $this->bdd = \Unilend\core\DataBase::instance();
-
         // Initialisation des propriétés nécessaires au cache
         $this->enableCache      = false;
         $this->cacheDuration    = $this->Config['cacheDuration'][$this->Config['env']];
@@ -437,10 +424,9 @@ class Controller extends ContainerAware
         $this->footer = $footer;
     }
 
-    //Cree une nouvelle instance d'un objet
     public function loadData($object, $params = array())
     {
-        return \Unilend\core\Loader::loadData($object, $params);
+        return \Unilend\core\Loader::loadData($object, $params, $this->bdd);
     }
 
     //Cree une nouvelle instance d'une librairie
@@ -449,9 +435,14 @@ class Controller extends ContainerAware
         return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
     }
 
-    public function get($sServiceId)
+    public function get($service)
     {
-        return $this->getContainer()->get($sServiceId);
+        /** @var \Symfony\Component\DependencyInjection\Definition $definition */
+        $definition = $this->getContainer()->findDefinition($service);
+        if (is_subclass_of($definition->getClass(), '\Unilend\Service\Service')) {
+            $definition->addMethodCall('setDBConn', array($this->bdd));
+        }
+        return $this->getContainer()->get($service);
     }
 
     //Charge un fichier js dans le tableau des js

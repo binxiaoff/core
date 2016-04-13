@@ -8,7 +8,7 @@ use Unilend\librairies\ULogger;
  * Class BidManager
  * @package Unilend\Service
  */
-class BidManager
+class BidManager extends Service
 {
     const MODE_REBID_AUTO_BID_CREATE = 1;
     const MODE_REBID_AUTO_BID_UPDATE = 2;
@@ -47,8 +47,8 @@ class BidManager
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oNMP       = Loader::loadData('nmp');
-        $this->oNMPDesabo = Loader::loadData('nmp_desabo');
+        $this->oNMP       = $this->loadData('nmp');
+        $this->oNMPDesabo = $this->loadData('nmp_desabo');
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
@@ -75,17 +75,17 @@ class BidManager
     public function bid(\bids $oBid)
     {
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->loadData('settings');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
+        $oTransaction = $this->loadData('transactions');
         /** @var \wallets_lines $oWalletsLine */
-        $oWalletsLine = Loader::loadData('wallets_lines');
+        $oWalletsLine = $this->loadData('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = Loader::loadData('offres_bienvenues_details');
+        $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
 
-        Loader::loadData('transactions_types'); //load for constant use
+        $this->loadData('transactions_types'); //load for constant use
 
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
@@ -201,9 +201,9 @@ class BidManager
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
-            $oBid = Loader::loadData('bids');
+            $oBid = $this->loadData('bids');
             /** @var \lenders_accounts $LenderAccount */
-            $oLenderAccount = Loader::loadData('lenders_accounts');
+            $oLenderAccount = $this->loadData('lenders_accounts');
 
             if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
                 $oBid->id_autobid        = $oAutoBid->id_autobid;
@@ -250,11 +250,11 @@ class BidManager
     public function reBidAutoBidOrReject(\bids $oBid, $fCurrentRate, $iMode)
     {
         /** @var \autobid $oAutoBid */
-        $oAutoBid = Loader::loadData('autobid');
+        $oAutoBid = $this->loadData('autobid');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
             if ($oAutoBid->rate_min <= $fCurrentRate
@@ -292,13 +292,13 @@ class BidManager
     private function creditRejectedBid($oBid, $fAmount)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
+        $oTransaction = $this->loadData('transactions');
         /** @var \wallets_lines $oWalletsLine */
-        $oWalletsLine = Loader::loadData('wallets_lines');
+        $oWalletsLine = $this->loadData('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = Loader::loadData('offres_bienvenues_details');
+        $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
 
         $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
         $fAmountX100 = $fAmount * 100;
@@ -358,7 +358,7 @@ class BidManager
     private function notificationRejection(\bids $oBid, \transactions $oTransaction)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         if ($oLenderAccount->get($oBid->id_lender_account)) {
             $this->oNotificationManager->create(
                 \notifications::TYPE_BID_REJECTED,

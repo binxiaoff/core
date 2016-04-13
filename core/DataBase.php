@@ -7,23 +7,33 @@ use Doctrine\DBAL\Driver\Statement;
 
 class DataBase
 {
-    /** @var Connection[] Connection registry storage for DibiConnection objects */
-    private static $registry = [];
-
     /** @var Connection Current connection */
     private static $connection;
-
-    /** @var DataBase self instant*/
-    private static $instance;
 
     /** @var string Last SQL command */
     public static $sql;
 
     /**
-     * Static class - cannot be instantiated.
+     * DataBase constructor.
+     *
+     * @param $driver
+     * @param $host
+     * @param $dbname
+     * @param $user
+     * @param $password
+     * @param $charset
      */
-    private function __construct()
+    public function __construct($driver, $host, $dbname, $user, $password, $charset)
     {
+        $config = [
+            'driver'   => $driver,
+            'host'     => $host,
+            'dbname'   => $dbname,
+            'user'     => $user,
+            'password' => $password,
+            'charset'  => $charset,
+        ];
+        self::connect($config);
     }
 
     /********************* Connections handling *********************/
@@ -31,31 +41,13 @@ class DataBase
      * Creates a new Connection object and connects it to specified database.
      *
      * @param array $config
-     * @param mixed $name
      *
      * @return Connection
      * @throws \Doctrine\DBAL\DBALException
      */
-    public static function connect($config = [], $name = 0)
+    public static function connect($config = [])
     {
-        self::$connection = DriverManager::getConnection($config);
-        return self::$registry[$name] = self::$connection;
-    }
-
-    /**
-     * Returns an instance of self
-     *
-     *
-     * @return DataBase
-     *
-     */
-    public static function instance()
-    {
-        if (true === is_null(self::$instance)) {
-            self::$instance = new self();
-        }
-
-        return self::$instance;
+        return self::$connection = DriverManager::getConnection($config);
     }
 
     /**
@@ -82,22 +74,19 @@ class DataBase
         return $connected;
     }
 
-
-    public static function getConnection($name = null)
+    /**
+     *
+     * @return Connection
+     * @throws \Exception
+     */
+    public static function getConnection()
     {
-        if ($name === null) {
-            if (self::$connection === null) {
-                throw new \Exception('Not connected to database.');
-            }
-
-            return self::$connection;
+        if (self::$connection === null) {
+            throw new \Exception('Not connected to database.');
         }
 
-        if (! isset(self::$registry[$name])) {
-            throw new \Exception("There is no connection named '$name'.");
-        }
+        return self::$connection;
 
-        return self::$registry[$name];
     }
 
     /**
@@ -180,8 +169,8 @@ class DataBase
      */
     public static function escape_string($string)
     {
-        $search = array("\\",  "\x00", "\n",  "\r",  "'",  '"', "\x1a");
-        $replace = array("\\\\","\\0","\\n", "\\r", "\'", '\"', "\\Z");
+        $search  = array("\\", "\x00", "\n", "\r", "'", '"', "\x1a");
+        $replace = array("\\\\", "\\0", "\\n", "\\r", "\'", '\"', "\\Z");
 
         return str_replace($search, $replace, $string);
     }
@@ -205,8 +194,8 @@ class DataBase
      * @deprecated for backwards compatibility only.
      *
      * @param Statement $statement
-     * @param int $row not used, for backwards compatibility only.
-     * @param int $column
+     * @param int       $row not used, for backwards compatibility only.
+     * @param int       $column
      *
      * @return mixed
      */
@@ -217,7 +206,7 @@ class DataBase
 
     public static function controlSlug($table, $slug, $id_name, $id_value)
     {
-        $params = [
+        $params    = [
             'table' => $table,
             'slug'  => $slug,
             'colum' => $id_name,

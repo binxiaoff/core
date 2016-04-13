@@ -4,6 +4,8 @@ class bootstrap extends Controller
 {
     public function __construct($command, $config, $app)
     {
+        $this->bdd = $this->get('unilend.database.back');
+
         parent::__construct($command, $config, $app);
 
         if ($this->current_function != 'login') {

@@ -7,29 +7,28 @@ namespace Unilend\core;
  */
 class Loader
 {
+    /**
+     * @param       $object
+     * @param array $params
+     * @param null  $db
+     *
+     * @internal You cannot call this method directly.
+     *
+     * @return bool
+     */
     public static function loadData($object, array $params = array(), $db = null)
     {
         $config = self::loadConfig();
 
         if (null === $db) {
-            if (false === DataBase::isConnected()) {
-                $dbParams = [
-                    'dbname'   => $config['bdd_config'][$config['env']]['BDD'],
-                    'user'     => $config['bdd_config'][$config['env']]['USER'],
-                    'password' => $config['bdd_config'][$config['env']]['PASSWORD'],
-                    'host'     => $config['bdd_config'][$config['env']]['HOST'],
-                    'driver'   => $config['bdd_config'][$config['env']]['DRIVER'],
-                    'charset'  => $config['bdd_config'][$config['env']]['CHARSET'],
-                ];
-                DataBase::connect($dbParams);
-            }
-            $db = DataBase::instance();
+            return false;
         }
 
         $path = $config['path'][$config['env']];
 
         if (false === file_exists($path . 'data/crud/' . $object . '.crud.php') && false === self::generateCRUD($object, $db, $path)
-            || false === file_exists($path . 'data/' . $object . '.data.php') && false === self::generateDATA($object, $db, $path)) {
+            || false === file_exists($path . 'data/' . $object . '.data.php') && false === self::generateDATA($object, $db, $path)
+        ) {
             return false;
         }
 
@@ -192,6 +191,13 @@ class Loader
         return false;
     }
 
+    /**
+     * @internal You cannot call this method directly.
+     * @param       $sService
+     * @param array $aParams
+     *
+     * @return bool
+     */
     public static function loadService($sService, array $aParams = array())
     {
         $config = self::loadConfig();

@@ -1,0 +1,33 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <service id="unilend.database.front" class="Unilend\core\DataBase">
+            <argument>%front.database_driver%</argument>
+            <argument>%front.database_host%</argument>
+            <argument>%front.database_name%</argument>
+            <argument>%front.database_user%</argument>
+            <argument>%front.database_password%</argument>
+            <argument>utf8</argument>
+        </service>
+        <service id="unilend.database.back" class="Unilend\core\DataBase">
+            <argument>%back.database_driver%</argument>
+            <argument>%back.database_host%</argument>
+            <argument>%back.database_name%</argument>
+            <argument>%back.database_user%</argument>
+            <argument>%back.database_password%</argument>
+            <argument>utf8</argument>
+        </service>
+        <service id="unilend.database.cron" class="Unilend\core\DataBase">
+            <argument>%cron.database_driver%</argument>
+            <argument>%cron.database_host%</argument>
+            <argument>%cron.database_name%</argument>
+            <argument>%cron.database_user%</argument>
+            <argument>%cron.database_password%</argument>
+            <argument>utf8</argument>
+        </service>
+    </services>
+</container>

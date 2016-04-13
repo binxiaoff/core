@@ -7,6 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
+use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 use Symfony\Component\Filesystem\LockHandler;
 use Symfony\Component\Console\Input\InputOption;
 
@@ -56,7 +57,12 @@ class Application extends BaseApplication
     protected function registerCommands()
     {
         $container = new ContainerBuilder();
+
+        $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
+        $loader->load('config.yml');
+
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
+        $loader->load('databases.xml');
         $loader->load('commands.xml');
 
         $commandServices = $container->findTaggedServiceIds(

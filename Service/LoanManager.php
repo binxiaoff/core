@@ -8,7 +8,7 @@ use Unilend\librairies\ULogger;
  * Class LoanManager
  * @package Unilend\Service
  */
-class LoanManager
+class LoanManager extends Service
 {
     /** @var  ULogger */
     private $oLogger;
@@ -33,7 +33,7 @@ class LoanManager
             return false;
         }
         /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = Loader::loadData('accepted_bids');
+        $oAcceptedBid = $this->loadData('accepted_bids');
         foreach ($oLoan->getAcceptedBids() as $aAcceptedBid) {
             $oAcceptedBid->unsetData();
             $oAcceptedBid->id_bid  = $aAcceptedBid['bid_id'];

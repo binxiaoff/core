@@ -11,7 +11,7 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
 
-class ProjectManager
+class ProjectManager extends Service
 {
     /** @var NotificationManager */
     private $oNotificationManager;
@@ -50,13 +50,13 @@ class ProjectManager
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oBidManager             = Loader::loadService('BidManager');
+        $this->oBidManager             = $this->loadData('BidManager');
         $this->oLoanManager            = Loader::loadService('LoanManager');
         $this->oNotificationManager    = Loader::loadService('NotificationManager');
         $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
 
-        $this->oNMP       = Loader::loadData('nmp');
-        $this->oNMPDesabo = Loader::loadData('nmp_desabo');
+        $this->oNMP       = $this->loadData('nmp');
+        $this->oNMPDesabo = $this->loadData('nmp_desabo');
 
         $this->oTNMP       = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail      = Loader::loadLib('email');
@@ -78,7 +78,7 @@ class ProjectManager
     public function prePublish(\projects $oProject)
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = Loader::loadData('projects_status_history');
+        $oProjectsStatusHistory = $this->loadData('projects_status_history');
         $this->checkAutoBidBalance($oProject);
         $this->autoBid($oProject);
         $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject->id_project);
@@ -87,16 +87,16 @@ class ProjectManager
     public function publish(\projects $oProjects)
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = Loader::loadData('projects_status_history');
+        $oProjectsStatusHistory = $this->loadData('projects_status_history');
         $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $oProjects->id_project);
     }
 
     public function checkBids(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
         /** @var \bids_logs $oBidLog */
-        $oBidLog = Loader::loadData('bids_logs');
+        $oBidLog = $this->loadData('bids_logs');
 
         $aLogContext      = array();
         $bBidsLogs        = false;
@@ -164,7 +164,7 @@ class ProjectManager
     public function autoBid(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus = $this->loadData('projects_status');
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
             if ($oProjectStatus->status == \projects_status::A_FUNDER) {
                 $this->bidAllAutoBid($oProject);
@@ -177,7 +177,7 @@ class ProjectManager
     private function bidAllAutoBid(\projects $oProject)
     {
         /** @var \autobid $oAutoBid */
-        $oAutoBid = Loader::loadData('autobid');
+        $oAutoBid = $this->loadData('autobid');
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
@@ -193,7 +193,7 @@ class ProjectManager
             }
 
             /** @var \bids $oBid */
-            $oBid = Loader::loadData('bids');
+            $oBid = $this->loadData('bids');
             $oBid->shuffleAutoBidOrder($oProject->id_project);
         }
     }
@@ -201,11 +201,11 @@ class ProjectManager
     public function checkAutoBidBalance(\projects $oProject)
     {
         /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
+        $oTransaction = $this->loadData('transactions');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
@@ -247,9 +247,9 @@ class ProjectManager
     private function reBidAutoBid(\projects $oProject, $iMode)
     {
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->loadData('settings');
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
 
         $oSettings->get('Auto-bid step', 'type');
         $fStep        = (float)$oSettings->value;
@@ -267,7 +267,7 @@ class ProjectManager
     private function reBidAutoBidDeeply(\projects $oProject, $iMode)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
         $this->checkBids($oProject);
         $aRefusedAutoBid = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY, 1);
         if (false === empty($aRefusedAutoBid)) {
@@ -279,13 +279,13 @@ class ProjectManager
     public function buildLoans(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
         /** @var \loans $oLoan */
-        $oLoan = Loader::loadData('loans');
+        $oLoan = $this->loadData('loans');
         /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = Loader::loadData('projects_status_history');
+        $oProjectStatusHistory = $this->loadData('projects_status_history');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
 
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
 
@@ -407,9 +407,9 @@ class ProjectManager
     public function treatFundFailed(\projects $oProject)
     {
         /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = Loader::loadData('projects_status_history');
+        $oProjectStatusHistory = $this->loadData('projects_status_history');
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->loadData('bids');
 
         // On passe le projet en funding ko
         $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject->id_project);
@@ -438,19 +438,19 @@ class ProjectManager
         ini_set('memory_limit', '512M');
 
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->loadData('settings');
         /** @var \loans $oLoan */
-        $oLoan = Loader::loadData('loans');
+        $oLoan = $this->loadData('loans');
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus = $this->loadData('projects_status');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->loadData('lenders_accounts');
         /** @var \echeanciers $oRepaymentSchedule */
-        $oRepaymentSchedule = Loader::loadData('echeanciers');
+        $oRepaymentSchedule = $this->loadData('echeanciers');
         /** @var \clients_adresses $oClientAdresse */
-        $oClientAdresse = Loader::loadData('clients_adresses');
+        $oClientAdresse = $this->loadData('clients_adresses');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->loadData('clients');
 
         $oSettings->get('Commission remboursement', 'type');
         $commission = $oSettings->value;
@@ -633,11 +633,11 @@ class ProjectManager
         ini_set('memory_limit', '512M');
 
         /** @var \echeanciers_emprunteur $oPaymentSchedule */
-        $oPaymentSchedule = Loader::loadData('echeanciers_emprunteur');
+        $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
         /** @var \echeanciers $oRepaymentSchedule */
-        $oRepaymentSchedule = Loader::loadData('echeanciers');
+        $oRepaymentSchedule = $this->loadData('echeanciers');
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->loadData('settings');
 
         $oSettings->get('Commission remboursement', 'type');
         $fCommissionRate = $oSettings->value;
@@ -688,7 +688,7 @@ class ProjectManager
     public static function getWeightedAvgRate(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus = $this->loadData('projects_status');
         $oProjectStatus->getLastStatut($oProject->id_project);
         if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
             return self::getWeightedAvgRateFromBid($oProject);
@@ -702,7 +702,7 @@ class ProjectManager
     private static function getWeightedAvgRateFromLoan(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan          = Loader::loadData('loans');
+        $oLoan          = $this->loadData('loans');
         $iInterestTotal = 0;
         $iCapitalTotal  = 0;
         foreach ($oLoan->select('id_project = ' . $oProject->id_project) as $aLoan) {
@@ -715,7 +715,7 @@ class ProjectManager
     private static function getWeightedAvgRateFromBid(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid           = Loader::loadData('bids');
+        $oBid           = $this->loadData('bids');
         $iInterestTotal = 0;
         $iCapitalTotal  = 0;
         foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aLoan) {
@@ -728,7 +728,7 @@ class ProjectManager
     public static function getProjectEndDate(\projects $oProject)
     {
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->loadData('settings');
         $oEndDate  = new \DateTime($oProject->date_retrait_full);
         if ($oProject->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($oProject->date_fin);
