@@ -33,10 +33,10 @@
             $("#siren").val('');
             $("#datepik_1").val('');
             $("#datepik_2").val('');
-            $('#montant option[value="0"]').attr('selected', true);
-            $('#duree option[value="0"]').attr('selected', true);
-            $('#status option[value="0"]').attr('selected', true);
-            $('#analyste option[value="0"]').attr('selected', true);
+            $('#montant option[value="0"]').prop('selected', true);
+            $('#duree option[value="0"]').prop('selected', true);
+            $('#status option[value="0"]').prop('selected', true);
+            $('#analyste option[value="0"]').prop('selected', true);
         });
 
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
