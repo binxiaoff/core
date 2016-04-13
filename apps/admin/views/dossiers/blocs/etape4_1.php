@@ -198,16 +198,14 @@
                 </table>
                 <?php if ($this->iCompanyProjectsCount > 8) : ?>
                     <div id="projectsPager" class="pager" style="text-align: center;">
-                        <form>
-                            <img src="<?= $this->surl ?>/images/admin/first.png" class="first"/>
-                            <img src="<?= $this->surl ?>/images/admin/prev.png" class="prev"/>
-                            <span class="pagedisplay"></span>
-                            <img src="<?= $this->surl ?>/images/admin/next.png" class="next"/>
-                            <img src="<?= $this->surl ?>/images/admin/last.png" class="last"/>
-                            <select class="pagesize" style="display: none;">
-                                <option value="8">8</option>
-                            </select>
-                        </form>
+                        <img src="<?= $this->surl ?>/images/admin/first.png" class="first"/>
+                        <img src="<?= $this->surl ?>/images/admin/prev.png" class="prev"/>
+                        <span class="pagedisplay"></span>
+                        <img src="<?= $this->surl ?>/images/admin/next.png" class="next"/>
+                        <img src="<?= $this->surl ?>/images/admin/last.png" class="last"/>
+                        <select class="pagesize" style="display: none;">
+                            <option value="8">8</option>
+                        </select>
                     </div>
                 <?php endif; ?>
             <?php endif; ?>
