@@ -687,7 +687,7 @@ class inscription_preteurController extends bootstrap
                         // mise en session
                         $client             = $this->clients->select('id_client = ' . $this->clients->id_client);
                         $_SESSION['auth']   = true;
-                        $_SESSION['token']  = md5(md5(mktime() . $this->clients->securityKey));
+                        $_SESSION['token']  = md5(md5(time() . $this->clients->securityKey));
                         $_SESSION['client'] = $client[0];
                         // fin mise en session
                         header('location:' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/cb/' . $this->transactions->id_transaction);

@@ -105,7 +105,7 @@ class clients extends clients_crud
 
             if ($client != false) {
                 $_SESSION['auth']   = true;
-                $_SESSION['token']  = md5(md5(mktime() . $this->securityKey));
+                $_SESSION['token']  = md5(md5(time() . $this->securityKey));
                 $_SESSION['client'] = $client;
 
                 // Mise à jour pour la derniere connexion du user

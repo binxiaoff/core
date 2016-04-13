@@ -154,7 +154,7 @@
                             <?php if (count($this->aBidsOnProject) > 0) : ?>
                             <table class="table orders-table">
                                 <tr>
-                                    <th width="15%">
+                                    <th width="18%">
                                         <span id="triNum">N°<i class="icon-arrows"></i></span>
                                     </th>
                                     <th width="25%">
@@ -169,7 +169,7 @@
                                         </span>
                                         <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?> €</small>
                                     </th>
-                                    <th width="25%">
+                                    <th width="22%">
                                         <span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?>
                                             <i class="icon-arrows"></i>
                                         </span>
