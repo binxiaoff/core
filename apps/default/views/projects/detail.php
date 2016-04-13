@@ -43,7 +43,7 @@
                     <ul>
                         <?php if ($this->positionProject['previous'] != '') : ?>
                             <li>
-                            <a class="prev notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['previous'] ?>">arrpw</a>
+                                <a class="prev notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['previous'] ?>">arrpw</a>
                             </li>
                         <?php endif; ?>
                             <li <?= ($this->positionProject['previous'] == '' || $this->positionProject['next'] == '' ? 'class="listpro"' : '') ?> >
@@ -51,7 +51,7 @@
                             </li>
                         <?php if ($this->positionProject['next'] != '') : ?>
                             <li>
-                            <a class="next notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['next'] ?>">arrow</a>
+                                <a class="next notext" href="<?= $this->lurl ?>/projects/detail/<?= $this->positionProject['next'] ?>">arrow</a>
                             </li>
                         <?php endif; ?>
                     </ul>
@@ -111,17 +111,19 @@
                                 <?= ($this->companies->sector != '' ? '<p>' . $this->lng['preteur-projets']['secteur'] . ' : ' . $this->lSecteurs[$this->companies->sector] . '</p>' : '') ?>
                             <ul class="stat-list">
                                 <li>
-                                    <span class="i-holder"><i class="icon-calendar tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-periode'] ?>"></i></span>
+                                    <span class="i-holder">
+                                        <i class="icon-calendar tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-periode'] ?>"></i>
+                                    </span>
                                     <?= ($this->projects->period == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : '<span>' . $this->projects->period . '</span> <br />' . $this->lng['preteur-projets']['mois']) ?>
                                 </li>
                                 <li>
-                                    <span class="i-holder"><i class="icon-gauge tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-note'] ?>"></i></span>
-
+                                    <span class="i-holder">
+                                        <i class="icon-gauge tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-note'] ?>"></i>
+                                    </span>
                                     <div class="cadreEtoiles">
                                         <div class="etoile <?= $this->lNotes[$this->projects->risk] ?>"></div>
                                     </div>
                                 </li>
-
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
                                     <?php if ($this->CountEnchere > 0) : ?>
@@ -152,45 +154,89 @@
                     <div class="tabs">
                         <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                         <div class="tab tc" id="bids">
-                            <?php if (count($this->lEnchere) > 0) : ?>
+                            <?php if (count($this->aBidsOnProject) > 0) : ?>
                             <table class="table orders-table">
                                 <tr>
-                                    <th width="125"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
-                                    <th width="180">
+                                    <th width="15%">
+                                        <span id="triNum">N°<i class="icon-arrows"></i></span>
+                                    </th>
+                                    <th width="25%">
                                         <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?>
-                                            <i class="icon-arrows"></i></span>
+                                            <i class="icon-arrows"></i>
+                                        </span>
                                         <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</small>
                                     </th>
-                                    <th width="214">
+                                    <th width="35%">
                                         <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?>
-                                            <i class="icon-arrows"></i></span>
+                                            <i class="icon-arrows"></i>
+                                        </span>
                                         <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?> €</small>
                                     </th>
-                                    <th width="101">
+                                    <th width="25%">
                                         <span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?>
-                                            <i class="icon-arrows"></i></span></th>
+                                            <i class="icon-arrows"></i>
+                                        </span>
+                                    </th>
                                 </tr>
-                                <?php foreach ($this->lEnchere as $key => $e) : ?>
-                                    <?php $vous = ($this->lenders_accounts->id_lender_account == $e['id_lender_account']) ?>
+                                <?php foreach ($this->aBidsOnProject as $iKey => $aBid) : ?>
                                     <?php if ($this->CountEnchere >= 12) : ?>
-                                        <?php if ($e['ordre'] <= 5 || $e['ordre'] > $this->CountEnchere - 5) : ?>
-                                            <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
-                                                <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
-                                                <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                                                <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
-                                                <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
+                                        <?php if ($aBid['ordre'] <= 5 || $aBid['ordre'] > $this->CountEnchere - 5) : ?>
+                                            <tr <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' class="enchereVousColor"' : '') ?>>
+                                                <td>
+                                                    <div style="position: relative">
+                                                    <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
+                                                        <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
+                                                        <span style="position: relative; left: -12px;">
+                                                        <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                        <?= $aBid['ordre'] ?>
+                                                        </span>
+                                                    <?php else : ?>
+                                                        <span style="position: relative; left: -12px;">
+                                                        <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                        <?= $aBid['ordre'] ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                    </div>
+                                                </td>
+                                                <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
+                                                <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?> €</td>
+                                                <td>
+                                                    <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span>
+                                                    <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'green-span' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'red-span' : '')) ?>">
+                                                        <?= $this->status[$aBid['status']] ?>
+                                                    </span>
+                                                </td>
                                             </tr>
-                                        <?php elseif ($e['ordre'] == 6) : ?>
+                                        <?php elseif ($aBid['ordre'] == 6) : ?>
                                         <tr>
                                             <td colspan="4" class="nth-table-row displayAll" style="cursor:pointer;">...</td>
                                         </tr>
-                                    <?php endif; ?>
+                                        <?php endif; ?>
                                     <?php else : ?>
-                                        <tr <?= ($vous == true ? ' class="enchereVousColor"' : '') ?>>
-                                            <td><?= ($vous == true ? '<span class="enchereVous">' . $this->lng['preteur-projets']['vous'] . ' : &nbsp;&nbsp;&nbsp;' . $e['ordre'] . '</span>' : $e['ordre']) ?></td>
-                                            <td><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
-                                            <td><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?> €</td>
-                                            <td class="<?= ($e['status'] == 1 ? 'green-span' : ($e['status'] == 2 ? 'red-span' : '')) ?>"><?= $this->status[$e['status']] ?></td>
+                                        <tr <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' class="enchereVousColor"' : '' )?>>
+                                            <td>
+                                                <div style="position: relative">
+                                                <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
+                                                    <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
+                                                    <span style="position: relative; left: -12px;">
+                                                    <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                    <?= $aBid['ordre'] ?>
+                                                    </span>
+                                                    <?php else : ?>
+                                                    <span style="position: relative; left: -12px;">
+                                                    <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
+                                                    <?= $aBid['ordre'] ?>
+                                                    </span>
+                                                <?php endif; ?>
+                                                </div>
+                                            </td>
+                                            <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
+                                            <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
+                                            </td>
+                                            <td>
+                                                <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span>
+                                                <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'green-span' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'red-span' : '')) ?>"><?= $this->status[$aBid['status']] ?></span>
+                                            </td>
                                         </tr>
                                     <?php endif; ?>
                                 <?php endforeach; ?>
@@ -199,7 +245,7 @@
                             <a class="btn btn-large displayAll"><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a>
                             <?php else: ?>
                             <div class="displayAll"></div>
-                            <?php endif; ?>
+                            <?php endif ?>
                             <script>
                                 $("#triNum").click(function () {
                                     $("#tri").html('ordre');
@@ -332,73 +378,73 @@
                                 </table>
                             </div>
 
-                            <div class="statistic-table">
-                                <table>
-                                    <tr>
-                                        <th><?= $this->lng['preteur-projets']['bilan'] ?></th>
-                                    </tr>
-                                    <tr>
-                                        <td class="inner-table" colspan="4">
-                                            <table>
-                                                <tr>
-                                                    <th colspan="4"><?= $this->lng['preteur-projets']['actif'] ?></th>
-                                                </tr>
-                                                <tr>
-                                                    <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-corporelles'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
-                                                </tr>
-                                                <tr>
-                                                    <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-incorporelles'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
-                                                </tr>
-                                                <tr>
-                                                    <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-financieres'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
-                                                </tr>
-                                                <tr>
-                                                    <td class="intitule"><?= $this->lng['preteur-projets']['stocks'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
-                                                </tr>
-                                                <tr>
-                                                    <td class="intitule"><?= $this->lng['preteur-projets']['creances-clients'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
-                                                </tr>
-                                                <tr>
-                                                    <td class="intitule"><?= $this->lng['preteur-projets']['disponibilites'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
-                                                </tr>
-                                                <tr>
-                                                    <td class="intitule"><?= $this->lng['preteur-projets']['valeurs-mobilieres-de-placement'] ?></td>
-                                                    <?php
-                                                    for ($i = 0; $i < 3; $i++) {
-                                                        echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) . ' €</td>';
-                                                    }
-                                                    ?>
-                                                </tr>
+                                <div class="statistic-table">
+                                    <table>
+                                        <tr>
+                                            <th><?= $this->lng['preteur-projets']['bilan'] ?></th>
+                                        </tr>
+                                        <tr>
+                                            <td class="inner-table" colspan="4">
+                                                <table>
+                                                    <tr>
+                                                        <th colspan="4"><?= $this->lng['preteur-projets']['actif'] ?></th>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-corporelles'] ?></td>
+                                                        <?php
+                                                        for ($i = 0; $i < 3; $i++) {
+                                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_corporelles'], 0) . ' €</td>';
+                                                        }
+                                                        ?>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-incorporelles'] ?></td>
+                                                        <?php
+                                                        for ($i = 0; $i < 3; $i++) {
+                                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_incorporelles'], 0) . ' €</td>';
+                                                        }
+                                                        ?>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['immobilisations-financieres'] ?></td>
+                                                        <?php
+                                                        for ($i = 0; $i < 3; $i++) {
+                                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['immobilisations_financieres'], 0) . ' €</td>';
+                                                        }
+                                                        ?>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['stocks'] ?></td>
+                                                        <?php
+                                                        for ($i = 0; $i < 3; $i++) {
+                                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['stocks'], 0) . ' €</td>';
+                                                        }
+                                                        ?>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['creances-clients'] ?></td>
+                                                        <?php
+                                                        for ($i = 0; $i < 3; $i++) {
+                                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['creances_clients'], 0) . ' €</td>';
+                                                        }
+                                                        ?>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['disponibilites'] ?></td>
+                                                        <?php
+                                                        for ($i = 0; $i < 3; $i++) {
+                                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['disponibilites'], 0) . ' €</td>';
+                                                        }
+                                                        ?>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="intitule"><?= $this->lng['preteur-projets']['valeurs-mobilieres-de-placement'] ?></td>
+                                                        <?php
+                                                        for ($i = 0; $i < 3; $i++) {
+                                                            echo '<td class="sameSize" style="text-align:right;">' . $this->ficelle->formatNumber($this->listAP[$i]['valeurs_mobilieres_de_placement'], 0) . ' €</td>';
+                                                        }
+                                                        ?>
+                                                    </tr>
 
                                                 <tr class="total-row">
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['total-bilan-actifs'] ?></td>
@@ -485,12 +531,15 @@
                                 <div class="article">
                                     <p>
                                         <?= $this->lng['preteur-projets']['vous-avez-prete'] ?>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde']) ?>&nbsp;€</strong>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde']) ?>
+                                            &nbsp;€</strong>
                                     </p>
                                     <p>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?>&nbsp;€</strong>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRemb) ?>
+                                            &nbsp;€</strong>
                                         <?= $this->lng['preteur-projets']['vous-ont-ete-rembourses-il-vous-reste'] ?>
-                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?>&nbsp;€</strong>
+                                        <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->sumRestanteARemb) ?>
+                                            &nbsp;€</strong>
                                         <?= $this->lng['preteur-projets']['a-percevoir-sur-une-periode-de'] ?>
                                         <strong class="pinky-span"><?= $this->nbPeriod ?> <?= $this->lng['preteur-projets']['mois'] ?></strong>
                                     </p>
@@ -545,7 +594,9 @@
             <?php endif; ?>
             <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                 <article class="ex-article">
-                    <h3><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a><i class="icon-arrow-down up"></i></h3>
+                    <h3>
+                        <a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a><i class="icon-arrow-down up"></i>
+                    </h3>
                     <div class="article-entry" style="display: none;">
                         <div id="bids_mobile"><?= $this->fireView('../ajax/displayAll_mobile') ?></div>
                         <div id="tri_mobile" style="display:none;">ordre</div>
@@ -566,14 +617,17 @@
                     <div class="article-entry">
                         <p><?= $this->projects->objectif_loan ?></p>
                     </div>
-                    <h5><a href="#"><?= $this->lng['preteur-projets']['pourquoi-pouvez-vous-nous-faire-confiance'] ?></a></h5>
+                    <h5>
+                        <a href="#"><?= $this->lng['preteur-projets']['pourquoi-pouvez-vous-nous-faire-confiance'] ?></a>
+                    </h5>
                     <div class="article-entry">
                         <p><?= $this->projects->means_repayment ?></p>
                     </div>
                 </div>
             </article>
             <article class="ex-article">
-                <h3><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a><i class="icon-arrow-down up"></i></h3>
+                <h3><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a><i class="icon-arrow-down up"></i>
+                </h3>
                 <div class="article-entry" style="display: none;">
                     <p>
                         <div class="tab">

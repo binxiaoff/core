@@ -351,6 +351,11 @@ class dossiersController extends bootstrap
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
+            if ($this->projects_status->status == projects_status::PREP_FUNDING) {
+                $fPredictAmountAutoBid = $this->get('AutoBidSettingsManager')->predictAmount($this->projects->risk, $this->projects->period);
+                $this->fPredictAutoBid = round(($fPredictAmountAutoBid / $this->projects->amount) * 100, 1);
+            }
+
             if (isset($this->params[1]) && $this->params[1] == 'altares') {
                 $oAltares = new Altares($this->bdd);
                 $result   = $oAltares->getEligibility($this->companies->siren);

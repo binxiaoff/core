@@ -265,6 +265,12 @@
             <div class="droite">
                 <h2>Montant</h2>
                 <table class="form" style="width: 575px;">
+                    <?php if (isset($this->fPredictAutoBid) && false === empty($this->fPredictAutoBid)) : ?>
+                    <tr>
+                        <th><label for="autobid_statistic"> AutoLend funding statistic  :</label></th>
+                        <td><?= $this->fPredictAutoBid ?> % </td>
+                    </tr>
+                    <?php endif; ?>
                     <tr>
                         <th><label for="montant">Montant du prêt* :</label></th>
                         <td>
