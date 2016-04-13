@@ -352,7 +352,7 @@ class AutoBidSettingsManager
         if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner)) {
             return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
         }
-        
+
         return false;
     }
 
