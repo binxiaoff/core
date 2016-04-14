@@ -73,7 +73,7 @@ class Controller
         $this->App          = $app;
         $this->included_js  = array();
         $this->included_css = array();
-        $this->bdd          = new bdd($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
+        $this->bdd          = \bdd::instance($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
 
         // Initialisation des propriétés nécessaires au cache
         $this->enableCache      = false;
