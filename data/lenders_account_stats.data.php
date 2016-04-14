@@ -21,10 +21,11 @@ class lenders_account_stats extends lenders_account_stats_crud
     }
 
     /**
-     * @param int $iLendersAccountId unique identifier of the lender
+     * @param int $iLendersAccount
+     *
      * @return array with dates and values of loans and dues sorted by date (impacts result of calculation)
      */
-    private function getValuesForIRR($iLendersAccountId)
+    public function getValuesForIRR($iLendersAccountId)
     {
         $aValuesIRR      = array();
         $aDatesTimeStamp = array();
@@ -136,41 +137,7 @@ class lenders_account_stats extends lenders_account_stats_crud
         return $aValuesIRR;
     }
 
-    /**
-     * @param $iLendersAccountId
-     * @param ULogger $oLoggerIRR
-     * @param float $fGuess
-     * @return string
-     * @throws Exception
-     */
-    public function calculateIRR($iLendersAccountId, ULogger $oLoggerIRR, $fGuess = 0.1)
-    {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
 
-        $fStartSQL  = microtime(true);
-        $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
-
-        foreach ($aValuesIRR as $aValues) {
-            foreach ($aValues as $date => $value) {
-                $aDates[] = $date;
-                $aSums[]  = $value;
-            }
-        }
-
-        $fStartXIRR = microtime(true);
-        $oFinancial = new \PHPExcel_Calculation_Financial();
-        $fXIRR      = bcmul($oFinancial->XIRR($aSums, $aDates, $fGuess), 100, 2);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . $fGuess . ' MAX_INTERATIONS : '. 100);
-
-        if (abs($fXIRR) > 100) {
-            throw new Exception('IRR not in range for id_lender ' . $iLendersAccountId . ' IRR : ' . $fXIRR);
-        }
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
-
-        return $fXIRR;
-    }
 
     public function getLossRate($iLendersAccountId, lenders_accounts $oLendersAccounts)
     {

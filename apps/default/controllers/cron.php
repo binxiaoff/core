@@ -6300,6 +6300,8 @@ class cronController extends bootstrap
             $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 300;
             $fTimeStart              = microtime(true);
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
+            /** @var \Unilend\Service\IRRManager $oIRRManager */
+            $oIRRManager             = $this->get('IRRManager');
 
             /** @var lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
             $oLendersAccountsStatsQueue = $this->loadData('lenders_accounts_stats_queue');
@@ -6309,7 +6311,7 @@ class cronController extends bootstrap
                 try {
                     $oLendersAccountsStats->id_lender_account = $aLender['id_lender_account'];
                     $oLendersAccountsStats->tri_date          = date('Y-m-d H:i:s');
-                    $oLendersAccountsStats->tri_value         = $oLendersAccountsStats->calculateIRR($aLender['id_lender_account'], $oLoggerIRR);
+                    $oLendersAccountsStats->tri_value         = $oIRRManager->calculateIRR($aLender['id_lender_account'], $oLoggerIRR);
                     $oLendersAccountsStats->create();
 
                     $oLendersAccountsStatsQueue->delete($aLender['id_lender_account'], 'id_lender_account');
