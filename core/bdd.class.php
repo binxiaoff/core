@@ -36,7 +36,8 @@ class bdd
     public $ressource; // Contient la ressource si succès ou FALSE
     public $num_rows;
     public $affected_rows;
-    public static $instance;
+    
+    private static $instance;
 
     public function __construct($bdd_config, $bdd_option, $auto_connect = true)
     {
