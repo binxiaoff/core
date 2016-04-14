@@ -36,6 +36,7 @@ class bdd
     public $ressource; // Contient la ressource si succès ou FALSE
     public $num_rows;
     public $affected_rows;
+    public static $instance;
 
     public function __construct($bdd_config, $bdd_option, $auto_connect = true)
     {
@@ -45,6 +46,14 @@ class bdd
         if ($auto_connect == true) {
             $this->connect();
         }
+    }
+
+    public static function instance($config, $option)
+    {
+        if (true === is_null(self::$instance)) {
+            self::$instance = new self($config, $option);
+        }
+        return self::$instance;
     }
 
     public function error($msg = null)
