@@ -26,7 +26,6 @@ class depot_de_dossierController extends bootstrap
 
         $this->companies                     = $this->loadData('companies');
         $this->companies_bilans              = $this->loadData('companies_bilans');
-        $this->companies_details             = $this->loadData('companies_details');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
         $this->projects                      = $this->loadData('projects');
         $this->projects_status               = $this->loadData('projects_status');
@@ -113,9 +112,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies->email_dirigeant               = $_SESSION['forms']['depot-de-dossier']['email'];
         $this->companies->create();
 
-        $this->companies_details->id_company = $this->companies->id_company;
-        $this->companies_details->create();
-
         $this->projects->id_company                           = $this->companies->id_company;
         $this->projects->amount                               = $iAmount;
         $this->projects->ca_declara_client                    = 0;
@@ -127,7 +123,7 @@ class depot_de_dossierController extends bootstrap
         $sAlertEmail = $this->settings->value;
 
         try {
-            $oAltares = new Altares($this->bdd);
+            $oAltares = new Altares();
             $oResult  = $oAltares->getEligibility($iSIREN);
         } catch (\Exception $oException) {
             $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
@@ -146,120 +142,21 @@ class depot_de_dossierController extends bootstrap
         }
 
         $this->projects->retour_altares = $oResult->myInfo->codeRetour;
-        $this->projects->update();
 
-        $this->companies->altares_eligibility = $oResult->myInfo->eligibility;
-        $this->companies->altares_codeRetour  = $oResult->myInfo->codeRetour;
-        $this->companies->altares_motif       = $oResult->myInfo->motif;
-        $this->companies->phone               = isset($oResult->myInfo->siege->telephone) ? str_replace(' ', '', $oResult->myInfo->siege->telephone) : '';
-
-        if (isset($oResult->myInfo->identite) && is_object($oResult->myInfo->identite)) {
-            $oIdentity                 = $oResult->myInfo->identite;
-            $sLastAccountStatementDate = isset($oIdentity->dateDernierBilan) && strlen($oIdentity->dateDernierBilan) > 0 ? substr($oIdentity->dateDernierBilan, 0, 10) : (date('Y') - 1) . '-12-31';
-            $aLastAccountStatementDate = explode('-', $sLastAccountStatementDate);
-
-            $this->companies->name                              = $oIdentity->raisonSociale;
-            $this->companies->forme                             = $oIdentity->formeJuridique;
-            $this->companies->capital                           = $oIdentity->capital;
-            $this->companies->code_naf                          = $oIdentity->naf5EntreCode;
-            $this->companies->libelle_naf                       = $oIdentity->naf5EntreLibelle;
-            $this->companies->adresse1                          = $oIdentity->rue;
-            $this->companies->city                              = $oIdentity->ville;
-            $this->companies->zip                               = $oIdentity->codePostal;
-            $this->companies->siret                             = $oIdentity->siret;
-            $this->companies->date_creation                     = substr($oIdentity->dateCreation, 0, 10);
-
-            $this->companies_details->date_dernier_bilan        = $sLastAccountStatementDate;
-            $this->companies_details->date_dernier_bilan_mois   = $aLastAccountStatementDate[1];
-            $this->companies_details->date_dernier_bilan_annee  = $aLastAccountStatementDate[0];
-            $this->companies_details->date_dernier_bilan_publie = $sLastAccountStatementDate;
-            $this->companies_details->update();
-        }
-
-        if (isset($oResult->myInfo->score) && is_object($oResult->myInfo->score)) {
-            $oScore = $oResult->myInfo->score;
-
-            $this->companies->altares_niveauRisque       = $oScore->niveauRisque;
-            $this->companies->altares_scoreVingt         = $oScore->scoreVingt;
-            $this->companies->altares_scoreSectorielCent = $oScore->scoreSectorielCent;
-            $this->companies->altares_dateValeur         = substr($oScore->dateValeur, 0, 10);
-        }
-
-        $this->companies->update();
+        $oAltares->setCompanyData($this->companies, $oResult->myInfo);
 
         switch ($oResult->myInfo->eligibility) {
             case 'Oui':
-                /**
-                 * We only keep N to N - 4 annual accounts
-                 * If N to N - 2 are not created, we create them (empty)
-                 * Annual accounts are sorted by year
-                 */
-                $iCurrentYear    = (int) date('Y');
-                $aAnnualAccounts = array();
-                if (isset($oResult->myInfo->bilans) && is_array($oResult->myInfo->bilans)) {
-                    foreach ($oResult->myInfo->bilans as $iIndex => $oAccounts) {
-                        $iYear = (int) substr($oAccounts->bilan->dateClotureN, 0, 4);
-
-                        if ($iYear >= $iCurrentYear - 4 && $iYear <= $iCurrentYear) {
-                            $aAnnualAccounts[$iYear] = $iIndex;
-                        }
-                    }
-                }
-
-                for ($iYear = $iCurrentYear; $iYear >= $iCurrentYear - 2; $iYear--) {
-                    if (false === isset($aAnnualAccounts[$iYear])) {
-                        $aAnnualAccounts[$iYear] = null;
-                    }
-                }
-
-                krsort($aAnnualAccounts);
-
-                $iOrder = 1;
-                foreach ($aAnnualAccounts as $iYear => $iBalanceSheetIndex) {
-                    $this->companies_bilans->id_company = $this->companies->id_company;
-                    $this->companies_bilans->date       = $iYear;
-
-                    $this->companies_actif_passif->annee      = $iYear;
-                    $this->companies_actif_passif->ordre      = $iOrder;
-                    $this->companies_actif_passif->id_company = $this->companies->id_company;
-
-                    if (false === is_null($iBalanceSheetIndex)) {
-                        $oBalanceSheet        = $oResult->myInfo->bilans[$iBalanceSheetIndex];
-                        $aFormattedAssetsDebt = array();
-                        $aAssetsDebt          = array_merge($oBalanceSheet->bilanRetraiteInfo->posteActifList, $oBalanceSheet->bilanRetraiteInfo->postePassifList);
-
-                        $this->companies_bilans->ca                          = $oBalanceSheet->syntheseFinanciereInfo->syntheseFinanciereList[0]->montantN;
-                        $this->companies_bilans->resultat_exploitation       = $oBalanceSheet->syntheseFinanciereInfo->syntheseFinanciereList[1]->montantN;
-                        $this->companies_bilans->resultat_brute_exploitation = $oBalanceSheet->soldeIntermediaireGestionInfo->SIGList[9]->montantN;
-                        $this->companies_bilans->investissements             = $oBalanceSheet->bilan->posteList[0]->valeur;
-
-                        foreach ($aAssetsDebt as $oAssetsDebtLine) {
-                            $aFormattedAssetsDebt[$oAssetsDebtLine->posteCle] = $oAssetsDebtLine->montant;
-                        }
-
-                        $this->companies_actif_passif->immobilisations_corporelles        = $aFormattedAssetsDebt['posteBR_IMCOR'];
-                        $this->companies_actif_passif->immobilisations_incorporelles      = $aFormattedAssetsDebt['posteBR_IMMINC'];
-                        $this->companies_actif_passif->immobilisations_financieres        = $aFormattedAssetsDebt['posteBR_IMFI'];
-                        $this->companies_actif_passif->stocks                             = $aFormattedAssetsDebt['posteBR_STO'];
-                        $this->companies_actif_passif->creances_clients                   = $aFormattedAssetsDebt['posteBR_BV'] + $aFormattedAssetsDebt['posteBR_BX'] + $aFormattedAssetsDebt['posteBR_ACCCA'] + $aFormattedAssetsDebt['posteBR_ACHE_']; // Créances_clients = avances et acomptes + créances clients + autres créances et cca + autres créances hors exploitation
-                        $this->companies_actif_passif->disponibilites                     = $aFormattedAssetsDebt['posteBR_CF'];
-                        $this->companies_actif_passif->valeurs_mobilieres_de_placement    = $aFormattedAssetsDebt['posteBR_CD'];
-                        $this->companies_actif_passif->capitaux_propres                   = $aFormattedAssetsDebt['posteBR_CPRO'] + $aFormattedAssetsDebt['posteBR_NONVAL']; // capitaux propres = capitaux propres + non valeurs
-                        $this->companies_actif_passif->provisions_pour_risques_et_charges = $aFormattedAssetsDebt['posteBR_PROVRC'] + $aFormattedAssetsDebt['posteBR_PROAC']; // provisions pour risques et charges = provisions pour risques et charges + provisions actif circulant
-                        $this->companies_actif_passif->amortissement_sur_immo             = $aFormattedAssetsDebt['posteBR_AMPROVIMMO'];
-                        $this->companies_actif_passif->dettes_financieres                 = $aFormattedAssetsDebt['posteBR_EMP'] + $aFormattedAssetsDebt['posteBR_VI'] + $aFormattedAssetsDebt['posteBR_EH']; // dettes financières = emprunts + dettes groupe et associés + concours bancaires courants
-                        $this->companies_actif_passif->dettes_fournisseurs                = $aFormattedAssetsDebt['posteBR_DW'] + $aFormattedAssetsDebt['posteBR_DX']; // dettes fournisseurs = avances et acomptes clients + dettes fournisseurs
-                        $this->companies_actif_passif->autres_dettes                      = $aFormattedAssetsDebt['posteBR_AUTDETTEXPL'] + $aFormattedAssetsDebt['posteBR_DZ'] + $aFormattedAssetsDebt['posteBR_AUTDETTHEXPL']; // autres dettes = autres dettes exploitation + dettes sur immos et comptes rattachés + autres dettes hors exploitation
-                    }
-
-                    $this->companies_bilans->create();
-                    $this->companies_actif_passif->create();
-
-                    ++$iOrder;
-                }
+                $oAltares->setProjectData($this->projects, $oResult->myInfo);
+                $oAltares->setCompanyBalance($this->companies);
 
                 $oCompanyCreationDate = new \DateTime($this->companies->date_creation);
                 $oInterval            = $oCompanyCreationDate->diff(new \DateTime());
+
+                $aAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+                $this->projects->id_dernier_bilan = $aAnnualAccounts[0]['id_bilan'];
+                $this->projects->update();
 
                 if ($oInterval->days < \projects::MINIMUM_CREATION_DAYS_PROSPECT) {
                     $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::PAS_3_BILANS);
@@ -269,9 +166,12 @@ class depot_de_dossierController extends bootstrap
                 break;
             case 'Non':
             default:
+                $this->projects->update();
+
                 if (in_array($oResult->myInfo->codeRetour, array(Altares::RESPONSE_CODE_NEGATIVE_CAPITAL_STOCK, Altares::RESPONSE_CODE_NEGATIVE_RAW_OPERATING_INCOMES))) {
                     $this->redirect(self::PAGE_NAME_PROSPECT, \projects_status::NOTE_EXTERNE_FAIBLE, $oResult->myInfo->motif);
                 }
+
                 $this->redirect(self::PAGE_NAME_END, \projects_status::NOTE_EXTERNE_FAIBLE, $oResult->myInfo->motif);
                 break;
         }
@@ -309,7 +209,7 @@ class depot_de_dossierController extends bootstrap
         $this->lienConditionsGenerales = $this->settings->value;
 
         $this->settings->get('Durée des prêts autorisées', 'type');
-        $this->dureePossible = empty($this->settings->value) ? array(24, 36, 48, 60) : explode(',', $this->settings->value);
+        $this->dureePossible = explode(',', $this->settings->value);
 
         $aForm = isset($_SESSION['forms']['depot-de-dossier-2']['values']) ? $_SESSION['forms']['depot-de-dossier-2']['values'] : array();
 
@@ -424,8 +324,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies->email_facture = $_POST['email'];
         $this->companies->update();
 
-        $this->companies_details->update();
-
         if ('non' === $_POST['gerant']) {
             if (true === $this->clients_prescripteur->existEmail($_POST['email_prescripteur'])) { // Email does not exist in DB
                 $this->clients_prescripteur->email = $_POST['email_prescripteur'];
@@ -511,13 +409,15 @@ class depot_de_dossierController extends bootstrap
         $this->iMinimumMonthlyPayment = round($oFinancial->PMT($aMinimumRateInterval[0] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
         $this->iMaximumMonthlyPayment = round($oFinancial->PMT($aMaximumRateInterval[1] / 100 / 12, $this->projects->period, - $this->projects->amount) + $fCommission);
 
-        // year considered for "latest liasse fiscal" necessary to get the information from bilans and actif_passif
-        $iLastAnnualAccountsYear  = date('Y') - 1;
-        $aAnnualAccounts          = $this->companies_bilans->select('id_company = ' . $this->companies->id_company . ' AND date = ' . $iLastAnnualAccountsYear);
-        $aAssetsDebts             = $this->companies_actif_passif->select('id_company = ' . $this->companies->id_company . ' AND annee = ' . $iLastAnnualAccountsYear);
-        $iAltaresCapitalStock     = $aAssetsDebts[0]['capitaux_propres'];
-        $iAltaresOperationIncomes = $aAnnualAccounts[0]['resultat_exploitation'];
-        $iAltaresRevenue          = $aAnnualAccounts[0]['ca'];
+        $aAnnualAccounts = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC', 0, 1);
+
+        if (false === empty($aAnnualAccounts)) {
+            $this->companies_actif_passif->get($aAnnualAccounts[0]['id_bilan'], 'id_bilan');
+        }
+
+        $iAltaresCapitalStock     = empty($this->companies_actif_passif->capitaux_propres) ? 0 : $this->companies_actif_passif->capitaux_propres;
+        $iAltaresOperationIncomes = empty($aAnnualAccounts[0]['resultat_exploitation']) ? 0 : $aAnnualAccounts[0]['resultat_exploitation'];
+        $iAltaresRevenue          = empty($aAnnualAccounts[0]['ca']) ? 0 : $aAnnualAccounts[0]['ca'];
 
         $this->iCapitalStock     = isset($_SESSION['forms']['depot-de-dossier-3']['values']['fonds_propres']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['fonds_propres'] : (empty($this->projects->fonds_propres_declara_client) ? $iAltaresCapitalStock : $this->projects->fonds_propres_declara_client);
         $this->iOperatingIncomes = isset($_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation']) ? $_SESSION['forms']['depot-de-dossier-3']['values']['resultat_brute_exploitation'] : (empty($this->projects->resultat_exploitation_declara_client) ? $iAltaresOperationIncomes : $this->projects->resultat_exploitation_declara_client);
@@ -553,9 +453,9 @@ class depot_de_dossierController extends bootstrap
             }
 
             $bUpdateDeclaration                   = false;
-            $_POST['fonds_propres']               = str_replace(array(' ', ','), array('', '.'), $_POST['fonds_propres']);
-            $_POST['resultat_brute_exploitation'] = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_brute_exploitation']);
-            $_POST['ca']                          = str_replace(array(' ', ','), array('', '.'), $_POST['ca']);
+            $_POST['fonds_propres']               = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres']);
+            $_POST['resultat_brute_exploitation'] = $this->ficelle->cleanFormatedNumber($_POST['resultat_brute_exploitation']);
+            $_POST['ca']                          = $this->ficelle->cleanFormatedNumber($_POST['ca']);
 
             if ($iAltaresCapitalStock != $_POST['fonds_propres']) {
                 $this->projects->fonds_propres_declara_client = $_POST['fonds_propres'];
@@ -740,8 +640,6 @@ class depot_de_dossierController extends bootstrap
         $this->companies->name          = $_POST['raison_sociale'];
         $this->companies->email_facture = $_POST['email'];
         $this->companies->update();
-
-        $this->companies_details->update();
 
         $this->projects->id_prescripteur = 0;
 

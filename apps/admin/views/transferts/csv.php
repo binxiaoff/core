@@ -35,6 +35,7 @@ foreach ($this->aOperations as $iRowIndex => $aRow) {
     $oActiveSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, date('d/m/Y', strtotime($aRow['added'])));
 }
 
+/** @var \PHPExcel_Writer_CSV $oWriter */
 $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
 $oWriter->setDelimiter(';');
 $oWriter->save('php://output');

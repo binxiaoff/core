@@ -854,6 +854,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .project-c h3 { font: bold 18px/22px Arial; letter-spacing: 0; text-transform: capitalize;}
 .project-c .info p { padding-bottom: 10px; }
 
+
 .stat-list { padding: 0; }
 .stat-list li { float:left; width: 75px; height: 83px; padding-bottom: 10px; margin-right: 25px; list-style-type: none; background: #e6e6e6; text-align:center; color: #4d4d4d; font-weight:bold; font-size: 14px; line-height: 18px; }
 .stat-list li .i-holder { display:block; height: 33px; line-height: 33px; margin-bottom: 10px; background: #b10366; text-align:center; }
@@ -906,7 +907,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 /* ===========================
     Statistic Table
 ============================ */
-.statistic-table { margin-bottom: 60px; }
+.statistic-table { margin-bottom: 10px; }
 .statistic-table table { width: 100%; }
 .statistic-table table table { margin: 1px 0; }
 .statistic-table th { background:#b10366; height: 28px; line-height: 28px; font-size: 13px; font-weight:bold; text-transform: uppercase; }
@@ -915,9 +916,13 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .statistic-table td.inner-table:first-child { padding: 0; }
 .statistic-table table table th { background: #f7e5ef; height: 28px; font-size: 13px; color: #919396; text-transform: capitalize;}
 .statistic-table table table td:first-child { padding-left: 35px; }
-.statistic-table tr.total-row td { background: #e5e5e5; font-weight:bold; color: #a1a5a7; }
+.statistic-table tr.total-row td { background: #e5e5e5; font-weight:bold; color: #a1a5a7; line-height: 30px; }
 .statistic-table tr.total-row td:first-child { padding-left: 18px; }
+.statistic-tables .csv-extract { float: left; text-align: center; }
+.statistic-tables .csv-extract > a { padding: 0; }
+.statistic-tables .csv-extract img { width: 50px; }
 .statistic-tables.year-nav a { height: 41px; padding: 0 15px; line-height: 41px; font-size: 14px; font-weight:bold; }
+.statistic-tables.year-nav ul { padding: 0; }
 
 /* ===========================
     Ex article
