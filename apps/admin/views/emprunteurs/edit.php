@@ -249,7 +249,6 @@
         $.colorbox({href: '<?= $this->lurl ?>/emprunteurs/RIBlightbox/<?= $this->clients->id_client ?>'});
         return false;
     };;
-
     function verif(id, champ) {
         // Bic
         if (champ == 1) {

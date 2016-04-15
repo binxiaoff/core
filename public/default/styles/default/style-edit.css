@@ -56,21 +56,20 @@ form .row input.field ~ input.field, form .row input.field ~ .c2-sb-wrap, form .
 
 .stat-list li .i-holder{height:25px;padding-top:9px;}
 
-.statistic-tables.year-nav .annee{ height: 41px; padding: 0 15px; line-height: 41px; font-size: 14px; font-weight:bold; }
-.year-nav li .annee{ display:block; width: 60px; height: 22px; border-radius: 3px; background: #a1a5a7; box-shadow: 0 0 1px #c7c9ca; font-size: 11px; line-height: 22px; color: #fff; text-align:center; font-weight:bold; }
+.statistic-tables.year-nav .annee {height:auto; width:90px; padding:4px 0; line-height:18px; font-size:14px; font-weight:bold; text-align:center;}
+.year-nav li .annee{display:block; width: 60px; height: 22px; border-radius: 3px; background: #a1a5a7; box-shadow: 0 0 1px #c7c9ca; font-size: 11px; line-height: 22px; color: #fff; text-align:center; font-weight:bold; }
 
 .sidebar{width:285px;}
 
-.sidebar-fixed{ position:fixed;z-index:9998;top:60px;margin-left:45px; left: 50%; margin-left: 195px; }
+.sidebar-fixed{ position:fixed;z-index:9998;top:60px; left: 50%; margin-left: 195px; }
 
 .sidebar-fixed2{position:absolute;z-index:9997;margin-left:45px; bottom:590px;}
 .widget-price .widget-cat{padding:20px;}
 
 #triNum,#triTx,#triAmount,#triStatuts{cursor:pointer;}
 
-.info-table .btnAlimentation{font-size: 18px;height: 47px;display:block;margin:auto;}
-/*.year-place-holder{overflow: hidden;height: 252px;min-height:inherit;}*/
-.error_login{font-size:10px;color: #C84747; font-size: 12px;text-align: right;height:4px;}
+.info-table .btnAlimentation{font-size:18px; height:47px; display:block; margin:auto;}
+.error_login{color:#C84747; font-size:12px; text-align:right; height:4px;}
 .login-panel{padding-top:0}
 
 .navigation .shell > ul.styled-nav > li{padding: 0 25px;}

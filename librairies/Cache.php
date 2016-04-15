@@ -3,7 +3,6 @@
 namespace Unilend\librairies;
 
 use Memcache;
-use Unilend\librairies\ULogger;
 
 class Cache
 {

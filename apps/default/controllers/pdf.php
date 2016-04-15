@@ -475,6 +475,7 @@ class pdfController extends bootstrap
         }
 
         header('Location: ' . $this->url . '/universign/pouvoir/' . $this->oProjectsPouvoir->id_pouvoir . $regenerationUniversign);
+        exit;
     }
 
     private function GenerateAuthorityHtml()
@@ -489,19 +490,12 @@ class pdfController extends bootstrap
             $this->bloc_pouvoirComplement[$this->elements->slug] = $b_elt['complement'];
         }
 
-        $this->companies_details      = $this->loadData('companies_details');
-        $this->oLoans                 = $this->loadData('loans');
+        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
+        $this->companies_bilans       = $this->loadData('companies_bilans');
         $this->echeanciers            = $this->loadData('echeanciers');
         $this->oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
         $this->oLendersAccounts       = $this->loadData('lenders_accounts');
-        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
-
-        $this->companies_details->get($this->companies->id_company, 'id_company');
-
-        $date_dernier_bilan             = explode('-', $this->companies_details->date_dernier_bilan);
-        $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
-        $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
-        $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
+        $this->oLoans                 = $this->loadData('loans');
 
         $this->montantPrete = $this->projects->amount;
 
@@ -517,7 +511,7 @@ class pdfController extends bootstrap
         $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = 2 AND id_project = ' . $this->projects->id_project);
         $this->echeanceEmprun   = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
         $this->rembByMonth      = $this->echeanciers->getMontantRembEmprunteur($this->echeanceEmprun[0]['montant'], $this->echeanceEmprun[0]['commission'], $this->echeanceEmprun[0]['tva']);
-        $this->rembByMonth      = ($this->rembByMonth / 100);
+        $this->rembByMonth      = $this->rembByMonth / 100;
         $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
         $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
 
@@ -526,11 +520,13 @@ class pdfController extends bootstrap
             $this->capital += $r['capital'];
         }
 
-        $this->l_AP        = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
-        $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
-        $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
-        $this->lLenders    = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
-        $this->dateRemb    = date('d/m/Y');
+        $this->companies_bilans->get($this->projects->id_dernier_bilan, 'id_bilan');
+        $this->l_AP             = $this->companies_actif_passif->select('id_bilan = ' . $this->projects->id_dernier_bilan);
+        $this->totalActif       = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
+        $this->totalPassif      = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
+        $this->lLenders         = $this->oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
+        $this->dateRemb         = date('d/m/Y');
+        $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
         $this->setDisplay('pouvoir_html');
     }
@@ -581,35 +577,34 @@ class pdfController extends bootstrap
 
     private function GenerateContractHtml($oClients, $oLoans, $oProjects)
     {
-        $this->echeanciers                 = $this->loadData('echeanciers');
-        $this->companiesEmprunteur         = $this->loadData('companies');
-        $this->companies_detailsEmprunteur = $this->loadData('companies_details');
-        $this->companiesPreteur            = $this->loadData('companies');
-        $this->emprunteur                  = $this->loadData('clients');
-        $this->companies_actif_passif      = $this->loadData('companies_actif_passif');
-        $this->projects_status_history     = $this->loadData('projects_status_history');
-        $this->oProjectsPouvoir            = $this->loadData('projects_pouvoir');
-        $this->clients_adresses            = $this->loadData('clients_adresses');
-        $this->oLoans                      = $oLoans;
-        $this->clients                     = $oClients;
-        $this->projects                    = $oProjects;
+        $this->emprunteur              = $this->loadData('clients');
+        $this->companiesEmprunteur     = $this->loadData('companies');
+        $this->companiesPreteur        = $this->loadData('companies');
+        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
+        $this->companies_bilans        = $this->loadData('companies_bilans');
+        $this->echeanciers             = $this->loadData('echeanciers');
+        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->oProjectsPouvoir        = $this->loadData('projects_pouvoir');
+        $this->clients_adresses        = $this->loadData('clients_adresses');
+        $this->oLoans                  = $oLoans;
+        $this->clients                 = $oClients;
+        $this->projects                = $oProjects;
 
-        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+        $this->clients_adresses->get($oClients->id_client, 'id_client');
         $this->companiesEmprunteur->get($oProjects->id_company, 'id_company');
-        $this->companies_detailsEmprunteur->get($oProjects->id_company, 'id_company');
         $this->emprunteur->get($this->companiesEmprunteur->id_client_owner, 'id_client');
+
         // Si preteur morale
-        if ($this->clients->type == 2) {
-            $this->companiesPreteur->get($this->clients->id_client, 'id_client_owner');
+        if ($oClients->type == 2) {
+            $this->companiesPreteur->get($oClients->id_client, 'id_client_owner');
         }
+
+        $this->companies_bilans->get($this->projects->id_dernier_bilan, 'id_bilan');
+
         $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($oProjects->id_project);
+        $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
-        $date_dernier_bilan             = explode('-', $this->companies_detailsEmprunteur->date_dernier_bilan);
-        $this->date_dernier_bilan_annee = $date_dernier_bilan[0];
-        $this->date_dernier_bilan_mois  = $date_dernier_bilan[1];
-        $this->date_dernier_bilan_jour  = $date_dernier_bilan[2];
-
-        $this->l_AP        = $this->companies_actif_passif->select('id_company = "' . $this->companiesEmprunteur->id_company . '" AND annee = ' . $this->date_dernier_bilan_annee, 'annee DESC');
+        $this->l_AP        = $this->companies_actif_passif->select('id_bilan = ' . $oProjects->id_dernier_bilan);
         $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
         $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
         $this->lRemb       = $this->echeanciers->select('id_loan = ' . $oLoans->id_loan, 'ordre ASC');
@@ -639,8 +634,10 @@ class pdfController extends bootstrap
 
         $this->settings->get('Commission remboursement', 'type');
         $fCommissionRate = $this->settings->value;
+
         $this->settings->get('TVA', 'type');
         $fVat = $this->settings->value;
+
         $this->settings->get('Part unilend', 'type');
         $fProjectCommisionRate = $this->settings->value;
 
