@@ -57,9 +57,23 @@
             <tbody>
             <?
 			$i = 1;
+			$sStyle = 'border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; ';
 			foreach($this->lPreteurs as $c)
 			{
-				//print_r($c);
+				if (isset($this->aGreenPointStatus[$c['id_client']])){
+					$sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
+					if (preg_match('/^[8-9]{3}$/', $sGreenPointStatus)){
+						$sStyle .='background-color: #14892c;'; //Green
+					} else if (preg_match('/[1-7]+/', $sGreenPointStatus)) {
+						$sStyle .= 'background-color: #f79232;'; //Orange
+					} else {
+						$sStyle .= 'background-color: #ff0100;'; //Red
+					}
+				} else {
+					$sGreenPointStatus = 'Non contrôlé';
+					$sStyle .= 'background-color: #ff0100;'; //Red
+				}
+
 				// Solde du compte preteur
 				$solde = $this->transactions->getSolde($c['id_client']);
 
@@ -82,7 +96,7 @@
 				?>
 
             	<tr class="<?=($i%2 == 1?'':'odd')?> " >
-                    <td align="center"><?=$c['id_client']?></td>
+                    <td align="center" style="<?=$sStyle?>" title="Statut Green Point : <?=$sGreenPointStatus?>"><?=$c['id_client']?></td>
                     <td><?=$nom?></td>
                     <td><?=$prenom?></td>
                     <td align="center"><?=date('d/m/Y',strtotime($c['added']))?></td>

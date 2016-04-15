@@ -6558,8 +6558,7 @@ class cronController extends bootstrap
         );
 
         $aQueryID = array();
-
-        $aClientsToCheck = $oClients->selectLendersByLastStatus(implode(', ', $aStatusToCheck), ' id_client_owner in (4278, 4856) ');
+        $aClientsToCheck = $oClients->selectLendersByLastStatus(implode(', ', $aStatusToCheck));
 
         if (false === empty($aClientsToCheck)) {
 
@@ -6612,11 +6611,11 @@ class cronController extends bootstrap
                     }
                     if ( false === empty($aQueryID) && is_array($aQueryID)) {
                         $aResult = $oGreenPoint->sendRequests();
-                        var_dump('***************************************',$aResult, $aQueryID);
+//var_dump('***************************************',$aResult, $aQueryID);
                         $this->processGreenPointResponse($iClientId,$aResult, $aQueryID, $oGreenPointAttachment, $oGreenPointAttachmentDetail);
                         unset($aResult, $aQueryID);
                     } else {
-                        var_dump("Client : $iLenderId has no attachements to validate");
+//var_dump("Client : $iLenderId has no attachements to validate");
                     }
                 }
             }
@@ -6759,7 +6758,8 @@ class cronController extends bootstrap
             } else {
                 $aResource = array();
             }
-
+//    $aGreenPointData = greenPointStatus::getGreenPointData($aResource, $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
+//    var_export($aGreenPointData);
             $oGreenPointAttachment->validation_code = $fGetColumnValue($aResponse, 'code');
 
             if (isset($aResponse['resource']) && is_array($aResponse['resource'])) {

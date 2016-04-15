@@ -219,6 +219,7 @@ class preteursController extends bootstrap
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lNatio                  = $this->nationalites->select();
         $this->lPays                   = $this->pays->select('', 'ordre ASC');
+        $this->greenpoint_attachment   = $this->loadData('greenpoint_attachment');
 
         $lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -319,6 +320,14 @@ class preteursController extends bootstrap
         $this->attachment_type  = $this->loadData('attachment_type');
         $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
+
+        $this->aGreenpointAttachmentStatus = array();
+        $aTmp = $this->greenpoint_attachment->select( 'id_client = ' . $this->lenders_accounts->id_lender_account);
+        if (false === empty($aTmp)){
+            foreach($aTmp as $aGPAS){
+                $this->aGreenpointAttachmentStatus[$aGPAS['id_attachment']] = $aGPAS;
+            }
+        }
 
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
@@ -890,6 +899,7 @@ class preteursController extends bootstrap
         $this->clients      = $this->loadData('clients');
         $this->transactions = $this->loadData('transactions');
         $this->companies    = $this->loadData('companies');
+        $this->greenpoint_kyc = $this->loadData('greenpoint_kyc');
 
         $aStatusNotValidated = array(
             \clients_status::TO_BE_CHECKED,
@@ -910,6 +920,16 @@ class preteursController extends bootstrap
             WHEN ' . \clients_status::COMPLETENESS_REPLY . ' THEN 5
             WHEN ' . \clients_status::COMPLETENESS_REMINDER . ' THEN 6
             END ASC, c.added DESC');
+        if (false === empty($this->lPreteurs)){
+            $this->aGreenPointStatus = array();
+            foreach($this->lPreteurs as $aLpreteur){
+                $bKyc = $this->greenpoint_kyc->get($aLpreteur['id_client'], 'id_client');
+                if (false === empty($bKyc)){
+                    $this->aGreenPointStatus[$aLpreteur['id_client']] = $this->greenpoint_kyc->status;
+                    $this->greenpoint_kyc->unsetData();
+                }
+            }
+        }
     }
 
     public function _completude()

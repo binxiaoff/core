@@ -38,6 +38,18 @@ class greenPoint
      * @var \settings
      */
     private $oSettings;
+    /**
+     * @var int
+     */
+    private $iCurlOptPost;
+    /**
+     * @var string
+     */
+    private $sRequestMethod;
+    /**
+     * @var
+     */
+    private $iCustomerId;
 
     /**
      * greenPoint constructor.
@@ -46,6 +58,10 @@ class greenPoint
      */
     public function __construct(\bdd $oDB, $sEnv)
     {
+        $this->iCurlOptPost = CURLOPT_POST;
+        $this->sRequestMethod = null;
+        $this->iCustomerId = '';
+
         require_once __DIR__ . '/../../data/settings.data.php';
 
         $this->oDB       = $oDB;
@@ -100,12 +116,18 @@ class greenPoint
             $aCurlHandlers = array();
 
             foreach ($this->aRequests as $i => $aRequest) {
-                $aCurlHandlers[$i] = curl_init($this->sUrl . $aRequest['REQUEST_METHOD']);
+
+                $sUrl = $this->sUrl . $aRequest['REQUEST_METHOD'];
+                if (false === empty($this->iCustomerId)) {
+                    $sUrl .= '/' . $this->iCustomerId;
+                }
+                $aCurlHandlers[$i] = curl_init($sUrl);
                 curl_setopt($aCurlHandlers[$i], CURLOPT_HTTPHEADER, array('Accept: application/json'));
                 curl_setopt($aCurlHandlers[$i], CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($aCurlHandlers[$i], CURLOPT_USERPWD, $this->sLogin . ':' . $this->sPassWord);
-                curl_setopt($aCurlHandlers[$i], CURLOPT_POST, true);
+
                 curl_setopt($aCurlHandlers[$i], CURLOPT_POSTFIELDS, $aRequest['REQUEST_PARAMS']);
+                curl_setopt($aCurlHandlers[$i], CURLOPT_CUSTOMREQUEST, $this->sRequestMethod);
 
                 curl_setopt($aCurlHandlers[$i], CURLOPT_CONNECTTIMEOUT, 0);
 
@@ -147,6 +169,7 @@ class greenPoint
         if(false === array_key_exists('files', $aData)){
             throw new \InvalidArgumentException('no files to submit');
         }
+        $this->setCustomOptions('POST');
         $aResult = $this->addRequest('idcontrol', $aData, !$bExecute);
 
         if(true == $bExecute){
@@ -166,6 +189,7 @@ class greenPoint
         if(false === array_key_exists('files', $aData)){
             throw new \InvalidArgumentException('no files to submit');
         }
+        $this->setCustomOptions('POST');
         $aResult = $this->addRequest('ibanflash', $aData, !$bExecute);
 
         if(true == $bExecute){
@@ -186,25 +210,97 @@ class greenPoint
             throw new \InvalidArgumentException('no files to submit');
         }
         $aResult = $this->addRequest('addresscontrol', $aData, !$bExecute);
-
+        $this->setCustomOptions('POST');
         if(true == $bExecute){
             $aResult = $this->sendRequests();
         }
         return $aResult;
     }
 
-    public function kyc($sMethod)
+    /**
+     * @param array $aData
+     * @param bool $bExecute
+     * @throws \Exception
+     * @return $this|int|mixed|greenPoint
+     */
+    public function createCustomer($aData, $bExecute = true)
     {
-
+        if (empty($aData['dossier'])){
+            throw new \InvalidArgumentException('Missing Mandatory parameter');
+        }
+        $this->setCustomOptions('POST');
+        $aResult = $this->addRequest('kyc', $aData, !$bExecute);
+        if(true == $bExecute){
+            $aResult = $this->sendRequests();
+        }
+        return $aResult;
     }
 
-    private function updateCustomer()
+    /**
+     * @param $aData
+     * @throws \Exception
+     * @return $this|int|mixed|greenPoint
+     */
+    public function updateCustomer($aData)
     {
+        if (empty($aData['dossier'])){
+            throw new \InvalidArgumentException('Missing Mandatory parameter');
+        }
+        $this->setCustomOptions('PUT', $aData['dossier']);
 
+        $aResult = $this->addRequest('kyc', $aData, false)->sendRequests();
+        return $aResult;
     }
 
-    private function deleteCustomer()
+    /**
+     * @param int $iCustomerId
+     * @return mixed
+     */
+    public function deleteCustomer($iCustomerId)
     {
+        if (empty($aData['dossier'])){
+            throw new \InvalidArgumentException('Missing Mandatory parameter');
+        }
+        $this->setCustomOptions('DELETE', $iCustomerId);
 
+        $aResult = $this->addRequest('kyc', array(), false)->sendRequests();
+        return $aResult;
+    }
+
+    /**
+     * @param int $iCustomerId
+     * @return mixed
+     */
+    public function getCustomer($iCustomerId)
+    {
+        if(empty($iCustomerId)){
+            throw new \InvalidArgumentException('Missing Mandatory parameter');
+        }
+        $this->setCustomOptions('GET', $iCustomerId);
+        $aResult = $this->addRequest('kyc', array(), false)->sendRequests();
+        return $aResult;
+    }
+
+    /**
+     * @param string $sMethod
+     * @param int $iCustomerId
+     */
+    private function setCustomOptions($sMethod, $iCustomerId = null)
+    {
+        $this->sRequestMethod = $sMethod;
+        $this->iCustomerId = $iCustomerId;
+//        switch($sMethod){
+//            case 'POST':
+//                $this->iCurlOptPost = CURLOPT_POST;
+//                $this->sRequestMethod = null;
+//                $this->iCustomerId = null;
+//                break;
+//            case 'PUT':
+//            case 'GET':
+//            case 'DELETE':
+//                $this->iCurlOptPost = null;
+//                $this->sRequestMethod = $sMethod;
+//                $this->iCustomerId = $iCustomerId;
+//        }
     }
 }
