@@ -85,8 +85,10 @@ class Bootstrap
 
     public function setDatabase()
     {
-        $this->oDatabase = new \bdd(self::$aConfig['bdd_config'][self::$aConfig['env']],
-            self::$aConfig['bdd_option'][self::$aConfig['env']]);
+        $this->oDatabase = \bdd::instance(
+            self::$aConfig['bdd_config'][self::$aConfig['env']],
+            self::$aConfig['bdd_option'][self::$aConfig['env']]
+        );
 
         return $this;
     }

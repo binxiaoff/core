@@ -225,8 +225,6 @@ class BidManager extends Service
             $oTransaction = $this->creditRejectedBid($oBid, $oBid->amount / 100);
             $this->notificationRejection($oBid, $oTransaction);
             $oBid->status = \bids::STATUS_BID_REJECTED;
-            //todo : do a hotfix to remove status_email_bid_ko when all the old ko mail are sent.
-            $oBid->status_email_bid_ko = 1;
             $oBid->update();
         }
     }
@@ -269,8 +267,6 @@ class BidManager extends Service
                     $oNewBid->create();
 
                     $oBid->status = \bids::STATUS_BID_REJECTED;
-                    //todo : do a hotfix to remove status_email_bid_ko when all the old ko mail are sent.
-                    $oBid->status_email_bid_ko = 1;
                     $oBid->update();
                 } else {
                     $oBid->rate   = $fCurrentRate;

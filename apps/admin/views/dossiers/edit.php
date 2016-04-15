@@ -145,6 +145,10 @@
                         <td><?= $this->clients->source ?></td>
                     </tr>
                     <tr>
+                        <th>Slug origine :</th>
+                        <td><?= $this->clients->slug_origine ?></td>
+                    </tr>
+                    <tr>
                         <th><label for="siren">SIREN :</label></th>
                         <td>
 

@@ -23,6 +23,7 @@
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+                <entry key="process.useEuropeanDates" value="true"/>
             </map>
         </property>
     </bean>
@@ -49,6 +50,7 @@
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+                <entry key="process.useEuropeanDates" value="true"/>
             </map>
         </property>
     </bean>
@@ -75,6 +77,7 @@
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+                <entry key="process.useEuropeanDates" value="true"/>
             </map>
         </property>
     </bean>
@@ -101,6 +104,7 @@
                 <entry key="dataAccess.type" value="csvRead" />
                 <entry key="dataAccess.readUTF8" value="true" />
                 <entry key="process.initialLastRunDate" value="2015-09-17T00:00:00.000-0800"/>
+                <entry key="process.useEuropeanDates" value="true"/>
             </map>
         </property>
     </bean>

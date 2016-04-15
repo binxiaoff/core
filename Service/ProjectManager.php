@@ -103,11 +103,7 @@ class ProjectManager extends Service
         $nb_bids_ko       = 0;
         $iBidsAccumulated = 0;
         $iBorrowAmount    = $oProject->amount;
-
-
-        $iBidsNbPending = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 0');
-        $iBidsNbTotal   = $oBid->counter('id_project = ' . $oProject->id_project);
-        $iBidTotal      = $oBid->getSoldeBid($oProject->id_project);
+        $iBidTotal        = $oBid->getSoldeBid($oProject->id_project);
 
         $oBidLog->debut = date('Y-m-d H:i:s');
 
@@ -143,9 +139,9 @@ class ProjectManager extends Service
 
         if ($bBidsLogs == true) {
             $oBidLog->id_project      = $oProject->id_project;
-            $oBidLog->nb_bids_encours = $iBidsNbPending;
+            $oBidLog->nb_bids_encours = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 0');
             $oBidLog->nb_bids_ko      = $nb_bids_ko;
-            $oBidLog->total_bids      = $iBidsNbTotal;
+            $oBidLog->total_bids      = $oBid->counter('id_project = ' . $oProject->id_project);
             $oBidLog->total_bids_ko   = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 2');
             $oBidLog->rate_max        = $oBid->getProjectMaxRate($oProject->id_project);
             $oBidLog->fin             = date('Y-m-d H:i:s');
