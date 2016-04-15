@@ -635,14 +635,8 @@ class transactions extends transactions_crud
         return $solde;
     }
 
-    public function selectTransactionsOp($array_type_transactions, $where = '', $order = '', $start = '', $nb = '')
+    public function selectTransactionsOp($array_type_transactions, $sIndexationDateStart, $iClientId)
     {
-        if ($where != '') {
-            $where = ' AND ' . $where;
-        }
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
         $sql = '
         ( SELECT t.*,
 
@@ -689,7 +683,7 @@ class transactions extends transactions_crud
 
             date_transaction as date_tri,
 
-            (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction ) as solde,
+            (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction) as solde,
 
             CASE t.type_transaction
                 WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
@@ -712,19 +706,21 @@ class transactions extends transactions_crud
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
             LEFT JOIN bids b ON w.id_wallet_line = b.id_lender_wallet_line
             LEFT JOIN bids b2 ON t.id_bid_remb = b2.id_bid
-            WHERE 1=1
-            ' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')) . '
+            WHERE DATE(t.date_transaction) >= "' . $sIndexationDateStart . '"
+                AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
+                AND t.status = 1
+                AND t.etat = 1
+                AND t.display = 0
+                AND t.id_client = ' . $iClientId . '
         )
-
         UNION ALL
-
         (
             SELECT
               t.*,
               "' . $array_type_transactions[2][3] . '" as type_transaction_alpha,
               lo.id_project as le_id_project,
               psh.added as date_tri,
-              (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri ) as solde,
+              (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri) as solde,
               p.title as title,
               lo.id_loan as bdc,
               lo.amount as amount_operation
@@ -736,15 +732,15 @@ class transactions extends transactions_crud
               INNER JOIN projects p ON p.id_project = lo.id_project
               INNER JOIN projects_status_history psh ON psh.id_project = lo.id_project
             WHERE lo.status = 0
-            AND psh.id_project_status_history = (
-              SELECT MIN(id_project_status_history) FROM projects_status_history psh1 WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8
-            )
-            ' . $where . '
-            ' . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : '')) . '
-        )
-        ' . $order . '
-        ';
-        $this->bdd->query("SET SQL_BIG_SELECTS=1");  //Set it before your main query
+                AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
+                AND t.status = 1
+                AND t.etat = 1
+                AND t.display = 0
+                AND t.id_client = ' . $iClientId . '
+                AND psh.id_project_status_history = (SELECT MIN(id_project_status_history) FROM projects_status_history psh1 WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8)
+        )';
+
+        $this->bdd->query('SET SQL_BIG_SELECTS = 1');  //Set it before your main query
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
