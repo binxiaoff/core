@@ -24,12 +24,12 @@ class AutoBidSettingsManager extends DataService
     /** @var LenderManager */
     private $oLenderManager;
 
-    public function __construct()
+    public function __construct(ClientSettingsManager $oClientSettingsManager, ClientManager $oClientManager, NotificationManager $oNotificationManager, LenderManager $oLenderManager)
     {
-        $this->oClientSettingsManager = Loader::loadService('ClientSettingsManager');
-        $this->oClientManager         = Loader::loadService('ClientManager');
-        $this->oNotificationManager   = Loader::loadService('NotificationManager');
-        $this->oLenderManager         = Loader::loadService('LenderManager');
+        $this->oClientSettingsManager = $oClientSettingsManager;
+        $this->oClientManager         = $oClientManager;
+        $this->oNotificationManager   = $oNotificationManager;
+        $this->oLenderManager         = $oLenderManager;
     }
 
     /**

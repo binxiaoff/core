@@ -46,14 +46,14 @@ class ProjectManager extends DataService
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
-    public function __construct()
+    public function __construct(BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager)
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oBidManager             = Loader::loadService('BidManager');
-        $this->oLoanManager            = Loader::loadService('LoanManager');
-        $this->oNotificationManager    = Loader::loadService('NotificationManager');
-        $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
+        $this->oBidManager             = $oBidManager;
+        $this->oLoanManager            = $oLoanManager;
+        $this->oNotificationManager    = $oNotificationManager;
+        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
 
         $this->oNMP       = $this->loadData('nmp');
         $this->oNMPDesabo = $this->loadData('nmp_desabo');
@@ -63,8 +63,6 @@ class ProjectManager extends DataService
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
         $this->oWorkingDay = Loader::loadLib('jours_ouvres');
-
-        $this->sLanguage = 'fr';
     }
 
     /**

@@ -13,9 +13,9 @@ class ClientManager extends DataService
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
 
-    public function __construct()
+    public function __construct(ClientSettingsManager $oClientSettingsManager)
     {
-        $this->oClientSettingsManager = Loader::loadService('ClientSettingsManager');
+        $this->oClientSettingsManager = $oClientSettingsManager;
     }
 
 

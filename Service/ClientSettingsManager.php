@@ -12,12 +12,8 @@ class ClientSettingsManager extends DataService
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 
-    /** @var \client_settings ClientSettings */
-    private $oClientSettings;
-
     public function __construct()
     {
-        $this->oClientSettings = $this->loadData('client_settings');
         $this->loadData('client_setting_type'); //load for use of constants
     }
 
@@ -61,12 +57,15 @@ class ClientSettingsManager extends DataService
      */
     public function getSetting(\clients $oClient, $iSettingType)
     {
+        /** @var \client_settings $oClientSettings */
+        $oClientSettings = $this->loadData('client_settings');
+        
         $oCache = Cache::getInstance();
         $sKey   = $oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
         $mValue = $oCache->get($sKey);
 
         if (false === $mValue) {
-            $mValue = $this->oClientSettings->getSetting($oClient->id_client, $iSettingType);
+            $mValue = $oClientSettings->getSetting($oClient->id_client, $iSettingType);
             $oCache->set($sKey, $mValue);
         }
 

@@ -202,7 +202,7 @@ class Loader
     }
 
     /**
-     * @internal You cannot call this method directly.
+     * @deprecated
      * @param       $sService
      * @param array $aParams
      *

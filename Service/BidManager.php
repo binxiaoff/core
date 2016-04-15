@@ -13,9 +13,6 @@ class BidManager extends DataService
     const MODE_REBID_AUTO_BID_CREATE = 1;
     const MODE_REBID_AUTO_BID_UPDATE = 2;
 
-    /** @var string */
-    private $sLanguage;
-
     /** @var \dates */
     private $oDate;
 
@@ -43,7 +40,7 @@ class BidManager extends DataService
     /** @var LenderManager */
     private $oLenderManager;
 
-    public function __construct()
+    public function __construct(NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager)
     {
         $this->aConfig = Loader::loadConfig();
 
@@ -56,12 +53,9 @@ class BidManager extends DataService
         $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail = Loader::loadLib('email');
 
-        $this->oNotificationManager    = Loader::loadService('NotificationManager');
-        $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
-        $this->oLenderManager          = Loader::loadService('LenderManager');
-
-
-        $this->sLanguage = 'fr';
+        $this->oNotificationManager    = $oNotificationManager;
+        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
+        $this->oLenderManager          = $oLenderManager;
     }
 
     /**

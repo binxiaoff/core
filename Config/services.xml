@@ -5,12 +5,20 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <service id="unilend.service.autobid_settings_manager" class="Unilend\Service\AutoBidSettingsManager">
+            <argument type="service" id="unilend.service.client_settings_manager"/>
+            <argument type="service" id="unilend.service.client_manager"/>
+            <argument type="service" id="unilend.service.notification_manager"/>
+            <argument type="service" id="unilend.service.lender_manager"/>
         </service>
 
         <service id="unilend.service.bid_manager" class="Unilend\Service\BidManager">
+            <argument type="service" id="unilend.service.notification_manager"/>
+            <argument type="service" id="unilend.service.autobid_settings_manager"/>
+            <argument type="service" id="unilend.service.lender_manager"/>
         </service>
 
         <service id="unilend.service.client_manager" class="Unilend\Service\ClientManager">
+            <argument type="service" id="unilend.service.client_settings_manager"/>
         </service>
 
         <service id="unilend.service.client_settings_manager" class="Unilend\Service\ClientSettingsManager">
@@ -29,6 +37,10 @@
         </service>
 
         <service id="unilend.service.project_manager" class="Unilend\Service\ProjectManager">
+            <argument type="service" id="unilend.service.bid_manager"/>
+            <argument type="service" id="unilend.service.loan_manager"/>
+            <argument type="service" id="unilend.service.notification_manager"/>
+            <argument type="service" id="unilend.service.autobid_settings_manager"/>
         </service>
     </services>
 </container>
