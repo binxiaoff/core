@@ -41,4 +41,32 @@ class ClientManager extends Service
         $oAcceptationLegalDocs = $this->loadData('acceptations_legal_docs');
         return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
     }
+
+    /**
+     * @param \clients $oClient
+     *
+     * @return bool
+     */
+    public function isLender(\clients $oClient)
+    {
+        if (empty($oClient->id_client)) {
+            return false;
+        } else {
+            return $oClient->isLender();
+        }
+    }
+
+    /**
+     * @param \clients $oClient
+     *
+     * @return bool
+     */
+    public function isBorrower(\clients $oClient)
+    {
+        if (empty($oClient->id_client)) {
+            return false;
+        } else {
+            return $oClient->isBorrower();
+        }
+    }
 }

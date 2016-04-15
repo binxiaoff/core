@@ -152,7 +152,7 @@
                     <span class="global-rate"></span>
                     <p class="indice-rate"></p>
                     <div class="medium-rate-note">
-                        <span><?=$this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
+                        <span><?=$this->lng['autobid']['apply-average-rate'] ?></span>
                         <div class="medium-rate-buttons">
                             <button class="btn btn-small btn-apply-avg-rate" type="button"><?=$this->lng['autobid']['yes'] ?></button>
                             <button class="btn btn-small grise1 btn-close-widget" type="button"><?=$this->lng['autobid']['no'] ?></button>

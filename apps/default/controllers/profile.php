@@ -1946,7 +1946,7 @@ class profileController extends bootstrap
         $this->sAcceptationRate    = json_encode($oBid->getAcceptationPossibilityRounded());
 
         $this->aAutoBidSettings = array();
-        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->oLendersAccounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
         foreach ($aAutoBidSettings as $aSetting) {
             $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
             if ($aPeriod) {
