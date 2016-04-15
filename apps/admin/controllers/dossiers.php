@@ -1574,6 +1574,10 @@ class dossiersController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->fVATRate = $this->settings->value;
 
+        /** @var company_rating $oCompanyRating */
+        $oCompanyRating = $this->loadData('company_rating');
+
+        $this->aRatings                 = $oCompanyRating->getHistoryRatingsByType($this->oProject->id_company_rating_history);
         $this->aAnnualAccounts          = $oAnnualAccounts->select('id_company = ' . $this->oCompany->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
         $aAnnualAccountsIds             = array_column($this->aAnnualAccounts, 'id_bilan');
         $this->aBalanceSheets           = $oCompanyBalance->getBalanceSheetsByAnnualAccount($aAnnualAccountsIds);
@@ -1584,14 +1588,16 @@ class dossiersController extends bootstrap
         $this->aCompanyProjects         = $this->oCompany->getProjectsBySIREN();
         $this->fCompanyOwedCapital      = $this->oCompany->getOwedCapitalBySIREN();
 
-        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Type: application/csv;charset=UTF-8');
         header('Content-Disposition: attachment;filename=risque-' . $this->oProject->id_project . '.csv');
 
         ob_start();
         $this->fireView();
         $sCSV = ob_get_contents();
         ob_end_clean();
-        print mb_convert_encoding($sCSV, 'UTF-16LE', 'UTF-8');
+
+        echo "\xEF\xBB\xBF";
+        echo $sCSV;die;
     }
 
     public function _ajax_rejection()
