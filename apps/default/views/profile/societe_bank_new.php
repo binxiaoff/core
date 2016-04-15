@@ -321,7 +321,7 @@
         // fichiers
         // ci_dirigeant
         if ($('#txt_ci_dirigeant').val() == '') {
-            form_ok = false
+            form_ok = false;
             $("#txt_ci_dirigeant").removeClass("LV_valid_field");
             $("#txt_ci_dirigeant").addClass("LV_invalid_field");
         }
@@ -341,7 +341,7 @@
         }
         // txt_kbis
         if ($('#txt_kbis').val() == '<?=$this->lng['etape2']['aucun-fichier-selectionne']?>') {
-            form_ok = false
+            form_ok = false;
             $("#txt_kbis").removeClass("LV_valid_field");
             $("#txt_kbis").addClass("LV_invalid_field");
         }

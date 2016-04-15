@@ -7,37 +7,34 @@
                 <div class="row">
                     <div class="form-choose fixed">
                         <span class="title"><?= $this->lng['etape1']['vous-etes'] ?></span>
-
                         <div class="radio-holder" id="lab_radio1">
                             <label for="typePersonne-1">
                                 <?= $this->lng['etape1']['particulier'] ?>
                             </label>
-                            <input <?= ($this->modif == false ? 'checked' : ($this->modif == true && in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER)) ? 'checked' : '')) ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-1" value="1">
+                            <input <?= (isset($this->aForm['particulier']) && $this->aForm['particulier']['bIsPhysicalPerson'] ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-1" value="1">
                         </div>
                         <div class="radio-holder" id="lab_radio2">
                             <label for="typePersonne-2">
                                 <?= $this->lng['etape1']['societe'] ?>
                             </label>
-                            <input <?= ($this->modif == true && in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER)) ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-2" value="2">
+                            <input <?= (isset($this->aForm['societe']) && $this->aForm['societe']['bIsLegalEntity'] ? 'checked' : '') ?> type="radio" class="custom-input" name="typePersonne" id="typePersonne-2" value="2">
                         </div>
                     </div>
                 </div>
             </div>
         <?php endif; ?>
-        <span style="text-align:center; color:#C84747;"><?= $this->messageDeuxiemeCompte ?></span>
-        <span style="text-align:center; color:#C84747;"><?= $this->reponse_email ?></span>
-        <span style="text-align:center; color:#C84747;"><?= $this->reponse_age ?></span>
-
+        <div style="text-align:center; color:#C84747;">
+            <span><?= isset($this->aErrors['email']) ? $this->aErrors['email'] : '' ?></span>
+            <span><?= isset($this->aErrors['age']) ? $this->aErrors['age'] : '' ?></span>
+        </div>
         <div class="register-form">
-            <?php if ($this->emprunteurCreatePreteur == false) : ?>
-                <div class="particulier">
-                    <?= $this->fireView('particulier_etape_1') ?>
-                </div>
-            <?php endif; ?>
+            <div class="particulier">
+                <?= $this->fireView('particulier_etape_1') ?>
+            </div>
             <div class="societe">
                 <?= $this->fireView('societe_etape_1') ?>
             </div>
-            <?php if ($this->modif == true && in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) : ?>
+            <?php if (isset($this->aForm['societe']) && $this->aForm['societe']['bIsLegalEntity']) : ?>
             <script>
                 $(".particulier").hide();
                 $(".societe").show();
@@ -47,7 +44,7 @@
     </div>
 </div>
 <script>
-    <?php if ($this->emprunteurCreatePreteur == false && $this->modif == false || $this->modif == true && in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) { ?>
+    <?php if (false === $this->emprunteurCreatePreteur || isset($this->aForm['particulier']) && $this->aForm['particulier']['bIsPhysicalPerson']) { ?>
     $(window).load(function() {
         $(".societe").hide();
     });

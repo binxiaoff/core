@@ -2,8 +2,7 @@
 
 class syntheseController extends bootstrap
 {
-
-    function syntheseController($command, $config, $app)
+    public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
@@ -26,7 +25,7 @@ class syntheseController extends bootstrap
         $this->page            = 'synthese';
     }
 
-    function _default()
+    public function _default()
     {
         $this->loadCss('default/synthese1');
 
@@ -37,7 +36,6 @@ class syntheseController extends bootstrap
         $this->projects                = $this->loadData('projects');
         $this->favoris                 = $this->loadData('favoris');
         $this->companies               = $this->loadData('companies');
-        $this->companies_details       = $this->loadData('companies_details');
         $this->favoris                 = $this->loadData('favoris');
         $this->bids                    = $this->loadData('bids');
         $this->wallets_lines           = $this->loadData('wallets_lines');
