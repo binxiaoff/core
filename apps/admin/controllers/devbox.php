@@ -88,7 +88,8 @@ class devboxController extends bootstrap
             INNER JOIN projects_last_status_history USING (id_project)
             INNER JOIN projects_status_history USING (id_project_status_history)
             INNER JOIN projects_status ps USING (id_project_status)
-            WHERE ps.status >= 9');
+            WHERE ps.status >= ' . \projects_status::ABANDON
+        );
 
         while ($aRow = $this->bdd->fetch_assoc($rResult)) {
             $oProjects->get($aRow['id_project']);
@@ -117,6 +118,41 @@ class devboxController extends bootstrap
         echo $iUpdatedProjects . ' rows updated';
     }
 
+    public function _catchUpAltaresAnnualAccounts()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        set_time_limit(0);
+        ini_set('memory_limit', '4G');
+
+        /** @var \companies $oCompany */
+        $oCompany = $this->loadData('companies');
+        $oAltares = new \Unilend\librairies\Altares();
+        $rResult  = $this->bdd->query('
+            SELECT DISTINCT p.id_company, p.id_project, c.siren
+            FROM projects p
+            LEFT JOIN altares_project ap USING (id_project)
+            INNER JOIN companies c USING (id_company)
+            INNER JOIN projects_last_status_history USING (id_project)
+            INNER JOIN projects_status_history USING (id_project_status_history)
+            INNER JOIN projects_status ps USING (id_project_status)
+            WHERE (ps.status <= ' . \projects_status::PREP_FUNDING . ' OR ps.status IN (' . \projects_status::FUNDING_KO . ', ' . \projects_status::PRET_REFUSE . '))
+              AND ap.id_project IS NULL
+            LIMIT 500'
+        );
+
+        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
+            $oCompany->id_company = $aRow['id_company'];
+            $oCompany->siren      = $aRow['siren'];
+
+            $oAltares->setCompanyBalance($oCompany, false);
+
+            $this->bdd->query('INSERT INTO altares_project VALUES (' . $aRow['id_project'] . ')');
+            sleep(5);
+        }
+    }
+
     public function _importINSEEPostalCodes()
     {
         $this->autoFireView   = false;
@@ -130,9 +166,6 @@ class devboxController extends bootstrap
         if (($rHandle = fopen($this->path . '/protected/import/' . 'codes_postaux.csv', 'r')) === false) {
             return;
         }
-
-        /** @var villes $oVille */
-        $oVille = $this->loadData('villes');
 
         while (($aRow = fgetcsv($rHandle, 0, ';')) !== false) {
             $departement    = substr($aRow[0], 0, 2) !== '97' ? substr($aRow[0], 0, 2) : substr($aRow[0], 0, 3);

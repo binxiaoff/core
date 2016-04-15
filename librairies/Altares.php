@@ -174,8 +174,9 @@ class Altares
     /**
      * Set company balance sheets
      * @param \companies $oCompany
+     * @param bool $bRecalculate
      */
-    public function setCompanyBalance(\companies &$oCompany)
+    public function setCompanyBalance(\companies &$oCompany, $bRecalculate = true)
     {
         $oBalanceSheets = $this->getBalanceSheets($oCompany->siren);
 
@@ -225,10 +226,12 @@ class Altares
                     }
                 }
 
-                $oCompanyAnnualAccounts->calcultateFromBalance();
+                if ($bRecalculate) {
+                    $oCompanyAnnualAccounts->calcultateFromBalance();
 
-                $oCompanyAssetsDebts->get($oCompanyAnnualAccounts->id_bilan, 'id_bilan');
-                $oCompanyAssetsDebts->calcultateFromBalance();
+                    $oCompanyAssetsDebts->get($oCompanyAnnualAccounts->id_bilan, 'id_bilan');
+                    $oCompanyAssetsDebts->calcultateFromBalance();
+                }
             }
         }
     }
