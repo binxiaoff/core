@@ -2,7 +2,7 @@
 
 namespace Unilend\librairies;
 
-class Cache
+class Cache extends \Memcache
 {
     const SHORT_TIME  = 300;
     const MEDIUM_TIME = 1800;
@@ -20,17 +20,19 @@ class Cache
      */
     private static $oInstance;
 
-    /**
-     * @var Memcache
-     */
-    private $oMemcache;
+    public function __construct()
+    {
+        /* @var array $config */
+        include __DIR__ . '/../config.php';
+        $this->connect($config['cache'][$config['env']]['serverAddress'], $config['cache'][$config['env']]['serverPort']);
+
+        if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
+            $this->flush();
+        }
+    }
 
     /**
-     * @var ULogger
-     */
-    private $oLogger;
-
-    /**
+     * @deprecated
      * @return Cache
      */
     public static function getInstance()
@@ -40,21 +42,6 @@ class Cache
         }
 
         return self::$oInstance;
-    }
-
-    private function __construct()
-    {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
-
-        $this->oMemcache = new \Memcache();
-        $this->oMemcache->connect($config['cache'][$config['env']]['serverAddress'], $config['cache'][$config['env']]['serverPort']);
-
-        $this->oLogger = new ULogger('Cache', $config['log_path'][$config['env']], 'error.' . date('Ymd') . '.log');
-
-        if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
-            $this->flush();
-        }
     }
 
     public function makeKey()
@@ -67,7 +54,7 @@ class Cache
             if (is_scalar($mParameters)) {
                 $aKey[] = $mParameters;
             } else {
-                $this->oLogger->addRecord(ULogger::ERROR, 'Parameter : ' . $mParameters . ' not a scalar variable.');
+                trigger_error('Parameter : ' . serialize($mParameters) . ' not a scalar variable.', E_USER_WARNING);
             }
         }
 
@@ -84,8 +71,8 @@ class Cache
      */
     public function set($sKey, $mValue, $iTime = self::SHORT_TIME)
     {
-        if (false === $this->oMemcache->set($sKey, $mValue, false, $iTime)) {
-            $this->oLogger->addRecord(ULogger::ERROR, 'Cache impossible for Key : ' . $sKey);
+        if (false === parent::set($sKey, $mValue, false, $iTime)) {
+            trigger_error('Cache impossible for Key : ' . $sKey, E_USER_WARNING);
 
             return false;
         }
@@ -107,45 +94,6 @@ class Cache
             $this->delete($mKey);
         }
 
-        return $this->oMemcache->get($mKey);
-    }
-
-    public function delete($mKey)
-    {
-        $this->oMemcache->delete($mKey);
-    }
-
-    public function flush()
-    {
-        return $this->oMemcache->flush();
-    }
-
-    public function close()
-    {
-        return $this->oMemcache->close();
-    }
-
-    /**
-     * Return server stats
-     * @return array|bool
-     */
-    public function getStats()
-    {
-        return $this->oMemcache->getStats();
-    }
-
-    /**
-     * return if server is online or offline
-     * @return bool
-     */
-    public function getServerStatus()
-    {
-        if (0 === $this->oMemcache->getServerStatus()) {
-            $this->oLogger->addRecord(ULogger::CRITICAL, 'Server Memcache inactive');
-
-            return false;
-        }
-
-        return true;
+        return parent::get($mKey);
     }
 }

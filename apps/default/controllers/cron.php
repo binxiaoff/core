@@ -303,7 +303,7 @@ class cronController extends bootstrap
             }
 
             if ($bHasProjectFinished) {
-                $oCache = \Unilend\librairies\Cache::getInstance();
+                $oCache = $this->get('cache');
                 $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
                 $oCache->delete($sKey);
             }

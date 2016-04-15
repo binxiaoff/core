@@ -21,7 +21,7 @@ class bootstrap extends Controller
 
     public function __construct($command, $config, $app)
     {
-        $this->bdd = $this->get('unilend.database.front');
+        $this->bdd = $this->get('database.front');
 
         parent::__construct($command, $config, $app);
 

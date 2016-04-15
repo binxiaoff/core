@@ -36,7 +36,7 @@ class Controller extends ContainerAware
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
-        $this->oCache = Cache::getInstance();
+        $this->oCache = $this->get('cache');
 
         //Variables de session pour la fenetre de debug
         unset($_SESSION['error']);

@@ -42,5 +42,8 @@
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.autobid_settings_manager"/>
         </service>
+
+        <service id="cache" class="Unilend\librairies\Cache">
+        </service>
     </services>
 </container>

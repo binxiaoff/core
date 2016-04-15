@@ -4,7 +4,7 @@ class bootstrap extends Controller
 {
     public function __construct($command, $config, $app)
     {
-        $this->bdd = $this->get('unilend.database.back');
+        $this->bdd = $this->get('database.back');
 
         parent::__construct($command, $config, $app);
 
