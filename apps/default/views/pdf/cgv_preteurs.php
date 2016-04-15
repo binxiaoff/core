@@ -12,7 +12,10 @@
             <?= $this->content['contenu-cgu']?>
             <div style="page-break-after: always;"></div>
             <?= utf8_decode($this->content['mandatRecouvrement']) ?>
-            <?= utf8_decode($this->content['mandatRecouvrementAvecPret']) ?>
+            <?php if (false === empty($this->content['mandatRecouvrementAvecPret'])) : ?>
+                <div style="page-break-after: always;"></div>
+                <?= utf8_decode($this->content['mandatRecouvrementAvecPret']) ?>
+            <?php endif; ?>
         </div>
     </div>
 </div>
