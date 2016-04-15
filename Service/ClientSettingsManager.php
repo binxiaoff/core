@@ -8,7 +8,7 @@ use Unilend\librairies\Cache;
  * Class ClientSettingsManager
  * @package Unilend\Service
  */
-class ClientSettingsManager extends Service
+class ClientSettingsManager extends DataService
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 

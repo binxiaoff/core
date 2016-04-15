@@ -8,7 +8,7 @@ use Unilend\librairies\ULogger;
  * Class BidManager
  * @package Unilend\Service
  */
-class BidManager extends Service
+class BidManager extends DataService
 {
     const MODE_REBID_AUTO_BID_CREATE = 1;
     const MODE_REBID_AUTO_BID_UPDATE = 2;

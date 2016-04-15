@@ -8,7 +8,7 @@ use Unilend\librairies\ULogger;
  * Class LoanManager
  * @package Unilend\Service
  */
-class LoanManager extends Service
+class LoanManager extends DataService
 {
     /** @var  ULogger */
     private $oLogger;

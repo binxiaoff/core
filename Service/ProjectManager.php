@@ -11,7 +11,7 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
 
-class ProjectManager extends Service
+class ProjectManager extends DataService
 {
     /** @var NotificationManager */
     private $oNotificationManager;
@@ -50,7 +50,7 @@ class ProjectManager extends Service
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oBidManager             = $this->loadData('BidManager');
+        $this->oBidManager             = Loader::loadService('BidManager');
         $this->oLoanManager            = Loader::loadService('LoanManager');
         $this->oNotificationManager    = Loader::loadService('NotificationManager');
         $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
@@ -681,7 +681,7 @@ class ProjectManager extends Service
 
     }
 
-    public static function getWeightedAvgRate(\projects $oProject)
+    public function getWeightedAvgRate(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = $this->loadData('projects_status');
@@ -695,7 +695,7 @@ class ProjectManager extends Service
         }
     }
 
-    private static function getWeightedAvgRateFromLoan(\projects $oProject)
+    private function getWeightedAvgRateFromLoan(\projects $oProject)
     {
         /** @var \loans $oLoan */
         $oLoan          = $this->loadData('loans');
@@ -708,20 +708,20 @@ class ProjectManager extends Service
         return ($iInterestTotal / $iCapitalTotal);
     }
 
-    private static function getWeightedAvgRateFromBid(\projects $oProject)
+    private function getWeightedAvgRateFromBid(\projects $oProject)
     {
         /** @var \bids $oBid */
         $oBid           = $this->loadData('bids');
         $iInterestTotal = 0;
         $iCapitalTotal  = 0;
-        foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aLoan) {
-            $iInterestTotal += $aLoan['rate'] * $aLoan['amount'];
-            $iCapitalTotal += $aLoan['amount'];
+        foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aBid) {
+            $iInterestTotal += $aBid['rate'] * $aBid['amount'];
+            $iCapitalTotal += $aBid['amount'];
         }
         return ($iInterestTotal / $iCapitalTotal);
     }
 
-    public static function getProjectEndDate(\projects $oProject)
+    public function getProjectEndDate(\projects $oProject)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->loadData('settings');

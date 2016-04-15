@@ -7,7 +7,7 @@ use Unilend\core\Loader;
  * Class LenderManager
  * @package Unilend\Service
  */
-class LenderManager extends Service
+class LenderManager extends DataService
 {
 
     /**

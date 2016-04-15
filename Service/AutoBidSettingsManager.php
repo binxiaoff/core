@@ -7,7 +7,7 @@ use Unilend\core\Loader;
  * Class AutoBidSettingsManager
  * @package Unilend\Service
  */
-class AutoBidSettingsManager extends Service
+class AutoBidSettingsManager extends DataService
 {
     //todo: To be defined
     const CGV_AUTOBID = 456;

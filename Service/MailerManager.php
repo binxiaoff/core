@@ -4,7 +4,7 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
 
-class MailerManager extends Service
+class MailerManager extends DataService
 {
     /** @var \settings */
     private $oSettings;
@@ -256,7 +256,7 @@ class MailerManager extends Service
         }
 
         // Taux moyen pondéré
-        $fWeightedAvgRate = $this->oFicelle->formatNumber(ProjectManager::getWeightedAvgRate($oProject));
+        $fWeightedAvgRate = $this->oFicelle->formatNumber($this->getWeightedAvgRate($oProject));
 
         // Pas de mail si le compte est desactivé
         if ($oBorrower->status == 1) {
@@ -346,7 +346,7 @@ class MailerManager extends Service
 
         if ($oBorrower->status == 1) {
             $this->oMailText->get('emprunteur-dossier-funde-et-termine', 'lang = "' . $this->sLanguage . '" AND type');
-            $fWeightedAvgRate = $this->oFicelle->formatNumber((float) ProjectManager::getWeightedAvgRate($oProject));
+            $fWeightedAvgRate = $this->oFicelle->formatNumber((float) $this->getWeightedAvgRate($oProject));
 
             $oBorrowerPaymentSchedule->get($oProject->id_project, 'ordre = 1 AND id_project');
             $fMonthlyPayment = $oBorrowerPaymentSchedule->montant + $oBorrowerPaymentSchedule->commission + $oBorrowerPaymentSchedule->tva;
@@ -409,7 +409,7 @@ class MailerManager extends Service
         $this->oSettings->get('Adresse notification projet funde a 100', 'type');
         $sRecipient = $this->oSettings->value;
 
-        $fWeightedAvgRate = $this->oFicelle->formatNumber((float) ProjectManager::getWeightedAvgRate($oProject));
+        $fWeightedAvgRate = $this->oFicelle->formatNumber((float) $this->getWeightedAvgRate($oProject));
 
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
         // si le solde des enchere est supperieur au montant du pret on affiche le montant du pret
@@ -607,7 +607,18 @@ class MailerManager extends Service
             $oProject->get($oBid->id_project);
             $oCompany->get($oProject->id_company);
 
-            $oEndDate   = ProjectManager::getProjectEndDate($oProject);
+            /** @var \settings $oSettings */
+            $oSettings = $this->loadData('settings');
+            $oEndDate  = new \DateTime($oProject->date_retrait_full);
+            if ($oProject->date_fin != '0000-00-00 00:00:00') {
+                $oEndDate = new \DateTime($oProject->date_fin);
+            }
+            if ($oEndDate->format('H') === '00') {
+                $oSettings->get('Heure fin periode funding', 'type');
+                $iEndHour = (int)$oSettings->value;
+                $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
+            }
+            
             $oNow       = new \DateTime();
             $sInterval  = $this->formatDateDiff($oNow, $oEndDate);
             $bIsAutoBid = false === empty($oBid->id_autobid);
@@ -1012,5 +1023,45 @@ class MailerManager extends Service
             return $sTerm;
         }
         return $iNumber > 1 ? $sTerm . 's' : $sTerm;
+    }
+
+    private function getWeightedAvgRate(\projects $oProject)
+    {
+        /** @var \projects_status $oProjectStatus */
+        $oProjectStatus = $this->loadData('projects_status');
+        $oProjectStatus->getLastStatut($oProject->id_project);
+        if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
+            return self::getWeightedAvgRateFromBid($oProject);
+        } elseif ($oProjectStatus->status == \projects_status::FUNDE) {
+            return self::getWeightedAvgRateFromLoan($oProject);
+        } else {
+            return false;
+        }
+    }
+
+    private function getWeightedAvgRateFromLoan(\projects $oProject)
+    {
+        /** @var \loans $oLoan */
+        $oLoan          = $this->loadData('loans');
+        $iInterestTotal = 0;
+        $iCapitalTotal  = 0;
+        foreach ($oLoan->select('id_project = ' . $oProject->id_project) as $aLoan) {
+            $iInterestTotal += $aLoan['rate'] * $aLoan['amount'];
+            $iCapitalTotal += $aLoan['amount'];
+        }
+        return ($iInterestTotal / $iCapitalTotal);
+    }
+
+    private function getWeightedAvgRateFromBid(\projects $oProject)
+    {
+        /** @var \bids $oBid */
+        $oBid           = $this->loadData('bids');
+        $iInterestTotal = 0;
+        $iCapitalTotal  = 0;
+        foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aBid) {
+            $iInterestTotal += $aBid['rate'] * $aBid['amount'];
+            $iCapitalTotal += $aBid['amount'];
+        }
+        return ($iInterestTotal / $iCapitalTotal);
     }
 }

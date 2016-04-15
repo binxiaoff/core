@@ -8,7 +8,7 @@ use Unilend\core\Loader;
  * @package Unilend\Service
  */
 
-class ClientManager extends Service
+class ClientManager extends DataService
 {
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;

@@ -4,7 +4,7 @@ namespace Unilend\Service;
 use Unilend\core\DataBase;
 use Unilend\core\Loader;
 
-class Service
+class DataService
 {
     /** @var  DataBase */
     private $oDBConn;

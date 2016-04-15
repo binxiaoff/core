@@ -32,7 +32,7 @@ class Controller extends ContainerAware
     public function __construct(&$command, $config, $app)
     {
         Autoloader::register();
-        
+
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
@@ -439,7 +439,7 @@ class Controller extends ContainerAware
     {
         /** @var \Symfony\Component\DependencyInjection\Definition $definition */
         $definition = $this->getContainer()->findDefinition($service);
-        if (is_subclass_of($definition->getClass(), '\Unilend\Service\Service')) {
+        if (is_subclass_of($definition->getClass(), '\Unilend\Service\DataService')) {
             $definition->addMethodCall('setDBConn', array($this->bdd));
         }
         return $this->getContainer()->get($service);

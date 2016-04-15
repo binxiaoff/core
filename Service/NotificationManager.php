@@ -10,7 +10,7 @@ namespace Unilend\Service;
 
 use Unilend\core\Loader;
 
-class NotificationManager extends Service
+class NotificationManager extends DataService
 {
     /** @var MailerManager */
     private $oMailerManager;
