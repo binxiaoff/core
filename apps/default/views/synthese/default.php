@@ -28,7 +28,7 @@
                             <form action="" method="post">
                                 <div class="checkbox">
                                     <input type="checkbox" name="terms" id="terms"/>
-                                    <label for="terms"><a target="_blank" href="<?= $this->lurl ?>/cgv_preteurs/nosign"><?= $this->bloc_cgv['checkbox-cgv'] ?></a></label>
+                                    <label for="terms"><?= str_replace(array('[', ']'), array('<a target="_blank" href="' . $this->lurl . '/cgv_preteurs/nosign">', '</a>'), $this->bloc_cgv['checkbox-cgv']) ?></label>
                                 </div>
                                 <div class="form-actions">
                                     <button type="button" id="cta_cgv" class="btn form-btn">
