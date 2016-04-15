@@ -1,4 +1,4 @@
-<script type="text/javascript">
+<script type="text/javascript" xmlns="http://www.w3.org/1999/html">
     $(function() {
         $(".histo_status_client").tablesorter({headers: {8: {sorter: false}}});
 
@@ -432,37 +432,306 @@
             <?php endif; ?>
         </table>
         <br/><br/>
-        <div class="gauche">
-            <h2>Pièces jointes :</h2>
-            <table class="form" style="width: auto;">
-                <tr>
-                    <th>Type de fichier</th>
-                    <th>Nom <br> (cliquer pour télécharger)</th>
-                    <th>Uploader un autre fichier</th>
-                </tr>
-                <?php foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
-                    <tr>
-                        <th><?= $sAttachmentType['label'] ?></th>
-                        <td>
-                            <?php if (isset($this->attachments[$sAttachmentType['id']]['path'])): ?>
-                                <a href="<?= $this->url ?>/attachment/download/id/<?= $this->attachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->attachments[$sAttachmentType['id']]['path']) ?>">
-                                    <?= $this->attachments[$sAttachmentType['id']]['path'] ?>
+
+        <style type="text/css">
+            .form-style-10{
+                /*width:450px;*/
+                padding:20px;
+                /*margin:20px;*/
+                background: #FFF;
+                border-radius: 10px;
+                -webkit-border-radius:10px;
+                -moz-border-radius: 10px;
+                box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
+                -moz-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
+                -webkit-box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.13);
+            }
+            .form-style-10 .inner-wrap{
+                padding: 10px;
+                background: #F8F8F8;
+                border-radius: 6px;
+                margin-bottom: 15px;
+            }
+            /*.form-style-10 input[type="text"],*/
+            /*.form-style-10 input[type="date"],*/
+            /*.form-style-10 input[type="datetime"],*/
+            /*.form-style-10 input[type="email"],*/
+            /*.form-style-10 input[type="number"],*/
+            /*.form-style-10 input[type="search"],*/
+            /*.form-style-10 input[type="time"],*/
+            /*.form-style-10 input[type="url"],*/
+            /*.form-style-10 input[type="password"],*/
+            /*.form-style-10 textarea,*/
+            /*.form-style-10 select {*/
+                /*display: block;*/
+                /*box-sizing: border-box;*/
+                /*-webkit-box-sizing: border-box;*/
+                /*-moz-box-sizing: border-box;*/
+                /*width: 100%;*/
+                /*padding: 8px;*/
+                /*border-radius: 6px;*/
+                /*-webkit-border-radius:6px;*/
+                /*-moz-border-radius:6px;*/
+                /*border: 2px solid #fff;*/
+                /*box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);*/
+                /*-moz-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);*/
+                /*-webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);*/
+            /*}*/
+
+            .form-style-10 .section{
+                font: normal 20px 'Bitter', serif;
+                color: #B20066;
+                margin-bottom: 5px;
+            }
+            .form-style-10 .section span {
+                background: #B20066;
+                padding: 5px 10px 5px 10px;
+                position: absolute;
+                border-radius: 50%;
+                -webkit-border-radius: 50%;
+                -moz-border-radius: 50%;
+                border: 4px solid #fff;
+                font-size: 14px;
+                margin-left: -45px;
+                color: #fff;
+                margin-top: -3px;
+            }
+            /*.form-style-10 input[type="button"],*/
+            /*.form-style-10 input[type="submit"]{*/
+                /*background: #B20066;*/
+                /*padding: 8px 20px 8px 20px;*/
+                /*border-radius: 5px;*/
+                /*-webkit-border-radius: 5px;*/
+                /*-moz-border-radius: 5px;*/
+                /*color: #fff;*/
+                /*text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.12);*/
+                /*font: normal 30px 'Bitter', serif;*/
+                /*-moz-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.17);*/
+                /*-webkit-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.17);*/
+                /*box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.17);*/
+                /*border: 1px solid #257C9E;*/
+                /*font-size: 15px;*/
+            /*}*/
+            /*.form-style-10 input[type="button"]:hover,*/
+            /*.form-style-10 input[type="submit"]:hover{*/
+                /*background: #2A6881;*/
+                /*-moz-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.28);*/
+                /*-webkit-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.28);*/
+                /*box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.28);*/
+            /*}*/
+            span.st {
+                width: 25%;
+            }
+            .form-style-10 .add-attachment td{
+                padding: 5px;
+            }
+        </style>
+        <h2>Pièces jointes<span></span></h2>
+        <div class="form-style-10">
+            <div class="section"><span>1</span>Identité</div>
+            <div class="inner-wrap">
+                <table id="identity-attachments" class="add-attachment">
+                    <?php foreach ($this->aIdentity as $iIdType => $sAttachmentType): ?>
+                        <tr>
+                            <th><?= $sAttachmentType['label'] ?></th>
+
+                            <td>
+                                <a href="<?= $this->url ?>/attachment/download/id/<?= $sAttachmentType['id'] ?>/file/<?= urlencode($sAttachmentType['path']) ?>">
+                                    <?= $sAttachmentType['path'] ?>
                                 </a>
-                            <?php endif; ?>
+                            </td>
+                            <td>
+                                <span style="padding: 5px; border-radius: 5px; background-color: #00A000; color: white;"> Statut GreenPoint</span>
+                            </td>
+                            <td>
+                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                    <tr class="row row-upload">
+                        <td>
+                            <select class="select">
+                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <?php foreach ($this->aIdentityToAdd as $iIdType => $sAttachmentType): ?>
+                                    <option value="<?= $iIdType ?>"><?= $sAttachmentType['label'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
                         </td>
-                        <td><input type="file" name="<?= $sAttachmentType['id'] ?>" id="fichier_project_<?= $sAttachmentType['id'] ?>"/></td>
+                        <td>
+                            <input type="file" class="file-field">
+                        </td>
                     </tr>
-                <?php endforeach; ?>
-                <tr>
-                    <th>Mandat</th>
-                    <td>
-                        <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
-                            <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
-                        <?php endif; ?>
-                    </td>
-                    <td><input type="file" name="mandat"></td>
-                </tr>
-            </table>
+                    <tr>
+                        <td>
+                            <span class="btn btn-small btn-add-row">+</span>
+                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section"><span>2</span>Justificatif de domicile</div>
+            <div class="inner-wrap">
+                <table id="domicile-attachments" class="add-attachment">
+                    <?php foreach ($this->aDomicile as $iIdType => $sAttachmentType): ?>
+                        <tr>
+                            <th><?= $sAttachmentType['label'] ?></th>
+
+                            <td>
+                                <a href="<?= $this->url ?>/attachment/download/id/<?= $sAttachmentType['id'] ?>/file/<?= urlencode($sAttachmentType['path']) ?>">
+                                    <?= $sAttachmentType['path'] ?>
+                                </a>
+                            </td>
+                            <td>
+                                <span style="padding: 5px; border-radius: 5px; background-color: #00A000; color: white;">Statut GreenPoint </span>
+                            </td>
+                            <td>
+                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+
+                    <tr class="row row-upload">
+                        <td>
+                            <select class="select">
+                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <?php foreach ($this->aDomicileToAdd as $iIdType => $sAttachmentType): ?>
+                                    <option value="<?= $iIdType ?>"><?= $sAttachmentType['label'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="file" class="file-field">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="btn btn-small btn-add-row">+</span>
+                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section"><span>3</span>RIB et Jsutificatif fiscal</div>
+            <div class="inner-wrap">
+                <table id="rib-attachments" class="add-attachment">
+                    <?php foreach ($this->aRibAndFiscale as $iIdType => $sAttachmentType): ?>
+                        <tr>
+                            <th><?= $sAttachmentType['label'] ?></th>
+
+                            <td>
+                                <a href="<?= $this->url ?>/attachment/download/id/<?= $sAttachmentType['id'] ?>/file/<?= urlencode($sAttachmentType['path']) ?>">
+                                    <?= $sAttachmentType['path'] ?>
+                                </a>
+                            </td>
+                            <td>
+                                <span style="padding: 5px; border-radius: 5px; background-color: #00A000; color: white;"> Statut GreenPoint </span>
+                            </td>
+                            <td>
+                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+
+                    <tr class="row row-upload">
+                        <td>
+                            <select class="select">
+                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $sAttachmentType): ?>
+                                    <option value="<?= $iIdType ?>"><?= $sAttachmentType['label'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="file" class="file-field">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="btn btn-small btn-add-row">+</span>
+                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section"><span>4</span>Autre</div>
+            <div class="inner-wrap">
+                <table id="other-attachments" class="add-attachment">
+                    <?php foreach ($this->aOther as $iIdType => $sAttachmentType): ?>
+                        <tr>
+                            <th><?= $sAttachmentType['label'] ?></th>
+
+                            <td>
+                                <a href="<?= $this->url ?>/attachment/download/id/<?= $sAttachmentType['id'] ?>/file/<?= urlencode($sAttachmentType['path']) ?>">
+                                    <?= $sAttachmentType['path'] ?>
+                                </a>
+                            </td>
+                            <td>
+                                <span style="padding: 5px; border-radius: 5px; background-color: #00A000; color: white;"> StatutGreenPoint </span>
+                            </td>
+                            <td>
+                                <input type="file" name="<?= $iIdType ?>" id="fichier_project_<?= $iIdType ?>"/>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+
+                    <tr class="row row-upload">
+                        <td>
+                            <select class="select">
+                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <?php foreach ($this->aOtherToAdd as $iIdType => $sAttachmentType): ?>
+                                    <option value="<?= $iIdType ?>"><?= $sAttachmentType['label'] ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="file" class="file-field">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="btn btn-small btn-add-row">+</span>
+                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+        </div>
+        </br></br>
+        <div class="gauche">
+<!--            <h2>Pièces jointes :</h2>-->
+<!--            <table class="form" style="width: auto;">-->
+<!--                <tr>-->
+<!--                    <th>Type de fichier</th>-->
+<!--                    <th>Nom <br> (cliquer pour télécharger)</th>-->
+<!--                    <th>Uploader un autre fichier</th>-->
+<!--                </tr>-->
+<!--                --><?php //foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
+<!--                    <tr>-->
+<!--                        <th>--><?//= $sAttachmentType['label'] ?><!--</th>-->
+<!--                        <td>-->
+<!--                            --><?php //if (isset($this->attachments[$sAttachmentType['id']]['path'])): ?>
+<!--                                <a href="--><?//= $this->url ?><!--/attachment/download/id/--><?//= $this->attachments[$sAttachmentType['id']]['id'] ?><!--/file/--><?//= urlencode($this->attachments[$sAttachmentType['id']]['path']) ?><!--">-->
+<!--                                    --><?//= $this->attachments[$sAttachmentType['id']]['path'] ?>
+<!--                                </a>-->
+<!--                            --><?php //endif; ?>
+<!--                        </td>-->
+<!--                        <td><input type="file" name="--><?//= $sAttachmentType['id'] ?><!--" id="fichier_project_--><?//= $sAttachmentType['id'] ?><!--"/></td>-->
+<!--                    </tr>-->
+<!--                --><?php //endforeach; ?>
+<!--                <tr>-->
+<!--                    <th>Mandat</th>-->
+<!--                    <td>-->
+<!--                        --><?php //if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
+<!--                            <a href="--><?//= $this->lurl ?><!--/protected/mandat_preteur/--><?//= $this->clients_mandats->name ?><!--">--><?//= $this->clients_mandats->name ?><!--</a>-->
+<!--                        --><?php //endif; ?>
+<!--                    </td>-->
+<!--                    <td><input type="file" name="mandat"></td>-->
+<!--                </tr>-->
+<!--            </table>-->
             <br/><br/>
             <h2>Historique :</h2>
             <?php if (false === empty($this->lActions)) : ?>

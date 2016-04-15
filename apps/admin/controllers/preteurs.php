@@ -329,6 +329,38 @@ class preteursController extends bootstrap
             }
         }
 
+        foreach($this->aAttachmentTypes as  $aAttachmentType){
+            $iType = (int)$aAttachmentType['id'];
+            switch( $iType ){
+                case attachment_type::CNI_PASSPORTE:
+                case attachment_type::CNI_PASSPORTE_VERSO:
+                case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
+                case attachment_type::CNI_PASSPORTE_DIRIGEANT:
+                    $this->organizeAttachments($this->aIdentity, $this->aIdentityToAdd, $iType, $aAttachmentType);
+                    break;
+                case attachment_type::RIB:
+                case attachment_type::JUSTIFICATIF_FISCAL:
+                    $this->organizeAttachments($this->aRibAndFiscale, $this->aRibAndFiscaleToAdd, $iType, $aAttachmentType);
+                    break;
+                case attachment_type::JUSTIFICATIF_DOMICILE:
+                case attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
+                    $this->organizeAttachments($this->aDomicile, $this->aDomicileToAdd, $iType, $aAttachmentType);
+                    break;
+//                case attachment_type::DISPENSE_PRELEVEMENT_2014:
+//                case attachment_type::DISPENSE_PRELEVEMENT_2015:
+//                case attachment_type::DISPENSE_PRELEVEMENT_2016:
+//                case attachment_type::DISPENSE_PRELEVEMENT_2017:
+//                    $this->organizeAttachments($this->aLevyExemption, $this->aLevyExemptionToAdd, $iType, $aAttachmentType);
+//                    break;
+                default:
+                    $this->organizeAttachments($this->aOther, $this->aOtherToAdd, $iType, $aAttachmentType);
+            }
+        }
+        $this->loadJs('default/component/add-file-input');
+        $this->lng['etape1']  = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
+        $this->lng['etape2']  = $this->ln->selectFront('inscription-preteur-etape-2', $this->language, $this->App);
+        $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
@@ -856,6 +888,21 @@ class preteursController extends bootstrap
                 header('Location: ' . $this->lurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account);
                 die;
             }
+        }
+    }
+
+    private function organizeAttachments(&$oDataToDisplay, &$oDataToAdd, $iType, $aAttachmentType)
+    {
+        if (false === isset($oDataToDisplay, $oDataToAdd)) {
+            $oDataToDisplay = array();
+            $oDataToAdd = array();
+        }
+        if( isset($this->attachments[$iType]['path']) ){
+            $oDataToDisplay[$iType]['label'] = $aAttachmentType['label'];
+            $oDataToDisplay[$iType]['path'] = $this->attachments[$iType]['path'];
+            $oDataToDisplay[$iType]['id'] = $this->attachments[$iType]['id'];
+        } else {
+            $oDataToAdd[$iType]['label'] = $aAttachmentType['label'];
         }
     }
 
