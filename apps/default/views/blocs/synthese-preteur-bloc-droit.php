@@ -20,7 +20,7 @@
 
     var change_rd = function(lvl) {
         $('.rd-box').removeClass('lvl0 lvl1 lvl2 lvl3 lvl4 lvl5').addClass('lvl'+lvl);
-    }
+    };
 
     setTimeout(function() {
         change_rd(<?= $this->iDiversificationLevel ?>);

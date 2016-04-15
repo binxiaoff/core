@@ -243,7 +243,7 @@
             var id = $(this).attr('id');
 
             $.post(add_url + '/ajax/triProject', {val: val, id: id}).done(function (data) {
-                $('#table_tri').html(data)
+                $('#table_tri').html(data);
                 $(window).off().scroll(appendProjects);
             });
         });

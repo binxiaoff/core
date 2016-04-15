@@ -10,7 +10,6 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        // Activation du cache
         $this->fireCache();
 
         // ajout du slash car capital rajout un Get
@@ -278,11 +277,10 @@ class rootController extends bootstrap
                 $this->settings->get('Heure fin periode funding', 'type');
                 $this->heureFinFunding = $this->settings->value;
 
-                $this->projects          = $this->loadData('projects');
-                $this->projects_status   = $this->loadData('projects_status');
-                $this->companies         = $this->loadData('companies');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->favoris           = $this->loadData('favoris');
+                $this->projects        = $this->loadData('projects');
+                $this->projects_status = $this->loadData('projects_status');
+                $this->companies       = $this->loadData('companies');
+                $this->favoris         = $this->loadData('favoris');
 
                 // tri par taux
                 $this->settings->get('Tri par taux', 'type');
@@ -412,12 +410,10 @@ class rootController extends bootstrap
 
                 $this->loadCss('default/compteur_home/style');
 
-                // Chargement des datas
-                $this->projects          = $this->loadData('projects');
-                $this->projects_status   = $this->loadData('projects_status');
-                $this->companies         = $this->loadData('companies');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->bids              = $this->loadData('bids');
+                $this->projects        = $this->loadData('projects');
+                $this->projects_status = $this->loadData('projects_status');
+                $this->companies       = $this->loadData('companies');
+                $this->bids            = $this->loadData('bids');
 
                 // Heure fin periode funding
                 $this->settings->get('Heure fin periode funding', 'type');
@@ -896,25 +892,18 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
@@ -957,25 +946,18 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
@@ -1018,25 +1000,18 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
