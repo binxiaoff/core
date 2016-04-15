@@ -49,9 +49,6 @@ class ProjectManager
     /** @var LenderManager */
     private $oLenderManager;
 
-    /** @var  IRRManager */
-    private $oIRRManager;
-
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
@@ -65,7 +62,6 @@ class ProjectManager
         $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
         $this->oMailerManager          = Loader::loadService('MailerManager');
         $this->oLenderManager          = Loader::loadService('LenderManager');
-        $this->oIRRManager             = Loader::loadService('IRRManger');
 
         $this->oNMP       = Loader::loadData('nmp');
         $this->oNMPDesabo = Loader::loadData('nmp_desabo');
@@ -778,7 +774,6 @@ class ProjectManager
             case \projects_status::REDRESSEMENT_JUDICIAIRE:
             case \projects_status::LIQUIDATION_JUDICIAIRE:
                 $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
-                $this->oIRRManager->updateIRRUnilend();
                 break;
         }
     }

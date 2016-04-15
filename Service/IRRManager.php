@@ -19,24 +19,48 @@ class IRRManager
 {
     const IRR_GUESS = 0.1;
 
-    public function updateIRRUnilend()
+    /** @var  ULogger */
+    private $oLogger;
+
+    /** @var array */
+    private $aConfig;
+
+    public function __construct()
+    {
+        $this->aConfig = Loader::loadConfig();
+
+    }
+
+    /**
+     * @param ULogger $oLogger
+     */
+    public function setLogger(ULogger $oLogger)
+    {
+        $this->oLogger = $oLogger;
+    }
+
+    /**
+     * @param $bUseProjectLastStatusMaterialized
+     */
+    public function updateIRRUnilend($bUseProjectLastStatusMaterialized)
     {
         /** @var \unilend_stats $oUnilendStats */
         $oUnilendStats = Loader::loadData('unilend_stats');
 
-        $aLastUnilendIRR = $oUnilendStats->select('type_stat = "IRR"', 'added DESC', '1');
+        $aLastUnilendIRR = $this->getLastUnilendIRR();
         $oLastIRRDate    = new \DateTime($aLastUnilendIRR['added']);
         $oNow            = new \DateTime('NOW');
         $oDateDifference = $oNow->diff($oLastIRRDate);
 
-        $fIRRUnilend = $this->calculateIRRUnilend();
+        $fIRRUnilend = $this->calculateIRRUnilend($bUseProjectLastStatusMaterialized);
 
-        if ($oDateDifference->d = 0) {
+        if ($oDateDifference->d == 0) {
             $oUnilendStats->get($aLastUnilendIRR['id_unilend_stat'], 'id_unilend_stat');
             $oUnilendStats->value = $fIRRUnilend;
             $oUnilendStats->update();
         } else {
             $oUnilendStats->value = $fIRRUnilend;
+            $oUnilendStats->type_stat = 'IRR';
             $oUnilendStats->create();
         }
     }
@@ -44,11 +68,10 @@ class IRRManager
 
     /**
      * @param $aValuesIRR
-     * @param float $fGuess
      * @return string
      * @throws \Exception
      */
-    public function calculateIRR($aValuesIRR)
+    private function calculateIRR($aValuesIRR)
     {
         $aSums = array();
         $aDates = array();
@@ -71,47 +94,82 @@ class IRRManager
 
     /**
      * @param $iLenderId
-     * @param ULogger $oLoggerIRR
-     * @param float $fGuess
+     * @param $bUseProjectLastStatusMaterialized
      * @return string
      * @throws \Exception
      */
-    public function calculateIRRForLender($iLenderId, ULogger $oLoggerIRR)
+    public function calculateIRRForLender($iLenderId, $bUseProjectLastStatusMaterialized)
     {
-        /** @var \lenders_account_stats $aLendersAccountStats */
+        /** @var \lenders_account_stats $oLendersAccountStats */
         $oLendersAccountStats = Loader::loadData('lenders_account_stats');
 
         $fStartSQL  = microtime(true);
-        $aValuesIRR = $oLendersAccountStats->getValuesForIRR($iLenderId);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
+        $aValuesIRR = $oLendersAccountStats->getValuesForIRR($iLenderId, $bUseProjectLastStatusMaterialized);
+        $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);
         $fXIRR = $this->calculateIRR($aValuesIRR);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+        $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
+        $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
         return $fXIRR;
     }
 
-    public function calculateIRRUnilend(ULogger $oLoggerIRR = null)
+    /**
+     * @param $bUseProjectLastStatusMaterialized
+     * @return string
+     * @throws \Exception
+     */
+    public function calculateIRRUnilend($bUseProjectLastStatusMaterialized)
     {
+        set_time_limit(1000);
         /** @var \unilend_stats $oUnilendStats */
         $oUnilendStats = Loader::loadData('unilend_stats');
 
+        $this->setLogger(new ULogger('Calculate IRR', $this->aConfig['log_path'][$this->aConfig['env']], 'IRR.' . date('Ymd') . '.log'));
+
         $fStartSQL  = microtime(true);
-        $aValuesIRR = $oUnilendStats->getValuesForIRR();
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Unilend - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
+        $aValuesIRR = $oUnilendStats->getDataForUnilendIRR($bUseProjectLastStatusMaterialized);
+        $this->oLogger->addRecord(ULogger::INFO, 'Unilend - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);
-        $fXIRR = $this->calculateIRR($aValuesIRR);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Unilend - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Unilend - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+        $fXIRR      = $this->calculateIRR($aValuesIRR);
+        $this->oLogger->addRecord(ULogger::INFO, 'Unilend - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
+        $this->oLogger->addRecord(ULogger::INFO, 'Unilend - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
         return $fXIRR;
     }
 
+    /**
+     * @param $sDate
+     * @return bool
+     */
+    public function IRRUnilendNeedsToBeRecalculated($sDate)
+    {
+        /** @var \lenders_account_stats $oLendersAccountsStats */
+        $oLendersAccountsStats = Loader::loadData('lenders_account_stats');
+        /** @var \projects_status_history $oProjectStatusHistory */
+        $oProjectStatusHistory = Loader::loadData('projects_status_history');
+        $aProjectStatusTriggeringChange = array(
+            \projects_status::REMBOURSEMENT,
+            \projects_status::PROBLEME,
+            \projects_status::PROBLEME_J_X,
+            \projects_status::RECOUVREMENT,
+            \projects_status::PROCEDURE_SAUVEGARDE,
+            \projects_status::REDRESSEMENT_JUDICIAIRE,
+            \projects_status::LIQUIDATION_JUDICIAIRE,
+            \projects_status::DEFAUT
+        );
+        return count($oProjectStatusHistory->countProjectStatusChangesOnDate($sDate, $aProjectStatusTriggeringChange)) > 0
+                || count($oLendersAccountsStats->getLendersWithLatePaymentsForIRR($aProjectStatusTriggeringChange, $bUseProjectLastStatusMaterialized = false)) > 0 ;
+    }
 
+    public function getLastUnilendIRR()
+    {
+        /** @var \unilend_stats $oUnilendStats */
+        $oUnilendStats = Loader::loadData('unilend_stats');
+        return array_shift($oUnilendStats->select('type_stat = "IRR"', 'added DESC', null, '1'));
 
-
+    }
 
 }

@@ -68,8 +68,21 @@ class unilend_stats extends unilend_stats_crud
         return ($this->bdd->fetch_assoc($result) > 0);
     }
 
-    public function getDataForUnilendIRR()
+    /**
+     * @param bool $bUseProjectLastStatusMaterialized
+     * @return array
+     */
+    public function getDataForUnilendIRR($bUseProjectLastStatusMaterialized = false)
     {
+
+        if ($bUseProjectLastStatusMaterialized) {
+            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
+                                                     INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history ';
+        } else {
+            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history plsh ON ee.id_project = plsh.id_project
+                                                     INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history ';
+        }
+
         $sQuery =   'SELECT
                         montant - `montant_unilend` AS montant,
                         date_transaction AS date
@@ -90,13 +103,10 @@ class unilend_stats extends unilend_stats_crud
                                 AND ee.id_project = e.id_project
                             LIMIT
                                 1
-                        ) AS date,
-                        ee.id_project,
-                        ee.ordre
+                        ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history plsh ON ee.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        ' . $sJoinStatementProjectHistoryTables . '
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -126,8 +136,7 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history plsh ON ee.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        ' . $sJoinStatementProjectHistoryTables . '
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -156,13 +165,10 @@ class unilend_stats extends unilend_stats_crud
                                 AND ee.id_project = e.id_project
                             LIMIT
                                 1
-                        ) AS date,
-                        ee.id_project,
-                        ee.ordre
+                        ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history plsh ON ee.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        ' . $sJoinStatementProjectHistoryTables . '
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -210,8 +216,7 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history plsh ON ee.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        ' . $sJoinStatementProjectHistoryTables . '
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -243,8 +248,7 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        INNER JOIN projects_last_status_history plsh ON ee.id_project = plsh.id_project
-                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        ' . $sJoinStatementProjectHistoryTables . '
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -258,15 +262,15 @@ class unilend_stats extends unilend_stats_crud
                             LIMIT
                                 1
                         ) = 0
-                        AND ps.status IN (' .implode(',', array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
+                        AND ps.status IN (' . implode(',', array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE, \projects_status::DEFAUT)) . ')
                         AND ee.id_project > 0';
 
+        $aValuesIRR = array();
         $oQuery  = $this->bdd->query($sQuery);
         while ($aRecord = $this->bdd->fetch_array($oQuery)) {
             $aValuesIRR[]      = array($aRecord['date'] => $aRecord['montant']);
-            $aDatesTimeStamp[] = strtotime($aRecord['date']);
         }
-        array_multisort($aDatesTimeStamp, SORT_ASC, SORT_NUMERIC, $aValuesIRR);
+
         return $aValuesIRR;
     }
 

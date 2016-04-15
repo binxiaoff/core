@@ -244,8 +244,10 @@ class syntheseController extends bootstrap
         // statut client
         $this->clients_status->getLastStatut($this->clients->id_client);
 
-        $this->settings->get('TRI Unilend', 'type');
-        $this->sIRRUnilend           = $this->ficelle->formatNumber((float)$this->settings->value);
+        /** @var \Unilend\Service\IRRManager $oIRRManager */
+        $oIRRManager                 = $this->get('IRRManager');
+        $aLastUnilendIRR             = $oIRRManager->getLastUnilendIRR();
+        $this->sIRRUnilend           = $this->ficelle->formatNumber((float) $aLastUnilendIRR['value']);
         $this->iDiversificationLevel = '';
         $this->sDisplayedValue       = '';
         $this->sTypeMessageTooltip   = '';
