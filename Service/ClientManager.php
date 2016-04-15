@@ -65,4 +65,32 @@ class ClientManager
         }
     }
 
+
+    /**
+     * @param \clients $oClient
+     *
+     * @return bool
+     */
+    public function isLender(\clients $oClient)
+    {
+        if (empty($oClient->id_client)) {
+            return false;
+        } else {
+            return $oClient->isLender();
+        }
+    }
+
+    /**
+     * @param \clients $oClient
+     *
+     * @return bool
+     */
+    public function isBorrower(\clients $oClient)
+    {
+        if (empty($oClient->id_client)) {
+            return false;
+        } else {
+            return $oClient->isBorrower();
+        }
+    }
 }

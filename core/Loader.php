@@ -12,7 +12,7 @@ class Loader
         $config = self::loadConfig();
 
         if (null === $db) {
-            $db = new \bdd($config['bdd_config'][$config['env']], $config['bdd_option'][$config['env']]);
+            $db = \bdd::instance($config['bdd_config'][$config['env']], $config['bdd_option'][$config['env']]);
         }
 
         $path = $config['path'][$config['env']];

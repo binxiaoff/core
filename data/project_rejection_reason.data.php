@@ -25,70 +25,44 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
-class companies_details extends companies_details_crud
+class project_rejection_reason extends project_rejection_reason_crud
 {
-
-    function companies_details($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::companies_details($bdd, $params);
+        parent::project_rejection_reason($bdd, $params);
     }
 
-    function get($id, $field = 'id_company_detail')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_company_detail')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `companies_details`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
+        $sql = 'SELECT * FROM project_rejection_reason' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `companies_details` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM project_rejection_reason' . $where), 0, 0);
     }
 
-    function exist($id, $field = 'id_company_detail')
+    public function exist($id, $field = 'id_rejection')
     {
-        $sql    = 'SELECT * FROM `companies_details` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM project_rejection_reason WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
     }
 }

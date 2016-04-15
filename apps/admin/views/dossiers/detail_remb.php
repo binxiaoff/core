@@ -2,30 +2,25 @@
     $(function () {
         $(".tablesorter").tablesorter({headers: {6: {sorter: false}}});
 
-        <?php
-        if ($this->nb_lignes != '') : ?>
+        <?php if ($this->nb_lignes != '') : ?>
         $(".tablesorter").tablesorterPager({
             container: $("#pager"),
             positionFixed: false,
             size: <?= $this->nb_lignes ?>
         });
-        <?php
-        endif; ?>
-    });
+        <?php endif; ?>
 
-    <?php
-    if (isset($_SESSION['freeow'])) : ?>
-    $(document).ready(function () {
-        var title, message, opts, container;
-        title = "<?= $_SESSION['freeow']['title'] ?>";
-        message = "<?= $_SESSION['freeow']['message'] ?>";
-        opts = {};
-        opts.classes = ['smokey'];
-        $('#freeow-tr').freeow(title, message, opts);
+        <?php if (isset($_SESSION['freeow'])) : ?>
+            var title = "<?= $_SESSION['freeow']['title'] ?>",
+                message = "<?= $_SESSION['freeow']['message'] ?>",
+                opts = {},
+                container;
+
+            opts.classes = ['smokey'];
+            $('#freeow-tr').freeow(title, message, opts);
+            <?php unset($_SESSION['freeow']); ?>
+        <?php endif; ?>
     });
-    <?php
-    unset($_SESSION['freeow']);
-    endif; ?>
 </script>
 
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
@@ -37,8 +32,7 @@
     </ul>
     <h1>Remboursement <?= $this->companies->name ?> - <?= $this->projects->title_bo ?></h1>
     <div class="btnDroite">
-        <a style="margin-right:10px;" target="_blank"
-           href="<?= $this->lurl ?>/dossiers/echeancier_emprunteur/<?= $this->projects->id_project ?>" class="btn_link">Echeancier Emprunteur</a>
+        <a style="margin-right:10px;" target="_blank" href="<?= $this->lurl ?>/dossiers/echeancier_emprunteur/<?= $this->projects->id_project ?>" class="btn_link">Echeancier Emprunteur</a>
         <a target="_blank" href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>" class="btn_link">Voir le dossier</a>
     </div>
 
@@ -75,7 +69,7 @@
             <td></td>
             <td></td>
             <th>Statut :</th>
-            <td><?= $this->projects_status->label ?></td>
+            <td><?= $this->current_projects_status->label ?></td>
         </tr>
         <tr>
             <th>Commission Unilend :</th>

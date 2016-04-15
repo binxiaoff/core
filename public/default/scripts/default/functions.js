@@ -19,15 +19,10 @@
             if (this.title == this.value) {
                 this.value = '';
             }
-            $(this).siblings('.fake-field').hide();
         }).on('focusout', '.field, textarea', function () {
             if (this.value == '') {
                 $(this).removeClass('populated');
-                if ($(this).is('[type="password"]')) {
-                    $(this).siblings('.fake-field').show();
-                } else {
-                    this.value = this.title;
-                }
+                this.value = this.title;
             } else {
                 $(this).addClass('populated');
             }
@@ -99,26 +94,6 @@
 
                     $(this).find('span').html(percent.toString().replace('.', ',') + "%&nbsp;").css('left', leftP);
                 })
-            }
-        });
-
-        // Pass fields
-        $('.pass-field-holder').each(function () {
-            var $self = $(this),
-                $input = $self.find('input');
-
-            if ($input.attr('title').length > 0) {
-                $fake = $('<span class="fake-field">' + $input.attr('title') + '</span>');
-
-                $self.append($fake);
-                $fake.on('click', function () {
-                    $fake.hide();
-                    $input.trigger('focus');
-                });
-
-                if ($input[0].value.length) {
-                    $fake.hide();
-                }
             }
         });
 
