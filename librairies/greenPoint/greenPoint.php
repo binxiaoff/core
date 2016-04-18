@@ -139,6 +139,13 @@ class greenPoint
             } while ($iMrc == CURLM_CALL_MULTI_PERFORM);
 
             while ($iStillRunning && $iMrc == CURLM_OK) {
+                /**
+                 * When curl_multi_select() returns -1, then halt the script for a little while berfore running curl_multi_exec()
+                 * https://bugs.php.net/bug.php?id=61141
+                 */
+                if (curl_multi_select($rMultiCurl) != -1) {
+                    usleep(100);
+                }
                 do {
                     $iMrc = curl_multi_exec($rMultiCurl, $iStillRunning);
                 } while ($iMrc == CURLM_CALL_MULTI_PERFORM);
@@ -289,18 +296,5 @@ class greenPoint
     {
         $this->sRequestMethod = $sMethod;
         $this->iCustomerId = $iCustomerId;
-//        switch($sMethod){
-//            case 'POST':
-//                $this->iCurlOptPost = CURLOPT_POST;
-//                $this->sRequestMethod = null;
-//                $this->iCustomerId = null;
-//                break;
-//            case 'PUT':
-//            case 'GET':
-//            case 'DELETE':
-//                $this->iCurlOptPost = null;
-//                $this->sRequestMethod = $sMethod;
-//                $this->iCustomerId = $iCustomerId;
-//        }
     }
 }

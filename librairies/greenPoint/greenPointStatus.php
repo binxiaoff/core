@@ -24,7 +24,7 @@ class greenPointStatus
 
     public static $aIdControlStatusLabel = array(
         self::NOT_VERIFIED                   => 'Non vérifié',
-        self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un RIB)',
+        self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un document d\'identité)',
         self::FALSIFIED_OR_MINOR             => 'Falsifiée ou mineur',
         self::ILLEGIBLE                      => 'Illisible / coupée',
         self::VERSO_MISSING                  => 'Verso seul : recto manquant',
@@ -36,9 +36,9 @@ class greenPointStatus
     );
     public static $aIbanFlashStatusLabel = array(
         self::NOT_VERIFIED                   => 'Non vérifié',
-        self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un document d\'identité)',
-        self::FALSIFIED_OR_MINOR             => 'Falsifiée ou mineur',
-        self::ILLEGIBLE                      => 'Illisible / coupée',
+        self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un RIB)',
+        self::FALSIFIED_OR_MINOR             => 'Falsifié',
+        self::ILLEGIBLE                      => 'Illisible / coupé',
         self::VERSO_MISSING                  => 'Banque hors périmètre',
         self::NAME_SURNAME_INVERSION         => 'Non cohérent / données : inversion nom - prénom',
         self::INCOHERENT_OTHER_ERROR         => 'Non cohérent / données : autre erreur',
@@ -49,8 +49,8 @@ class greenPointStatus
     public static $aAddressControlStatusLabel = array(
         self::NOT_VERIFIED                   => 'Non vérifié',
         self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un justificatif de domicile)',
-        self::FALSIFIED_OR_MINOR             => 'Falsifiée ou mineur',
-        self::ILLEGIBLE                      => 'Illisible / coupée',
+        self::FALSIFIED_OR_MINOR             => 'Falsifié',
+        self::ILLEGIBLE                      => 'Illisible / coupé',
         self::VERSO_MISSING                  => 'Fournisseur hors périmètre',
         self::NAME_SURNAME_INVERSION         => 'Non cohérent / données : erreur sur le titulaire',
         self::INCOHERENT_OTHER_ERROR         => 'Non cohérent / données : erreur sur l\'adresse',
@@ -113,7 +113,6 @@ class greenPointStatus
         $aAttachmentDetail['identity_civility']          = $fGetColumnValue($aResponse, 'sexe');
         $aAttachmentDetail['identity_name']              = $fGetColumnValue($aResponse, 'prenom');
         $aAttachmentDetail['identity_surname']           = $fGetColumnValue($aResponse, 'nom');
-        $aAttachmentDetail['identity_civility']          = $fGetColumnValue($aResponse, 'sexe');
         $aAttachmentDetail['identity_expiration_date']   = $fFormatDate($fGetColumnValue($aResponse, 'expirationdate'));
         $aAttachmentDetail['identity_birthdate']         = $fFormatDate($fGetColumnValue($aResponse, 'date_naissance'));
         $aAttachmentDetail['identity_mrz1']              = $fGetColumnValue($aResponse, 'mrz1');

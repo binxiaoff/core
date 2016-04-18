@@ -16,13 +16,11 @@ class apiController extends Controller
 
         $this->catchAll = true;
 
-//        $this->checkIp();
+        $this->checkIp();
 
         $this->oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
         $this->oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
         $this->init();
-        var_export($this->oGreenPointAttachment);
-        var_export($this->oGreenPointAttachmentDetail);
     }
 
     public function __destruct()

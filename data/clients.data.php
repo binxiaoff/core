@@ -512,7 +512,7 @@ class clients extends clients_crud
         $sSql = '
             SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
                    ca.adresse1, ca.adresse2, ca.adresse3, ca.ville, ca.cp, p.iso, p.fr,
-                   la.id_client_owner, la.iban, la.bic,
+                   la.id_lender_account, la.iban, la.bic,
                    csh.added,
                    cs.status, cs.label
             FROM clients_status_history csh
