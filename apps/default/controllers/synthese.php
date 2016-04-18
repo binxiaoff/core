@@ -80,7 +80,8 @@ class syntheseController extends bootstrap
             }
         }
 
-        // cgu societe
+        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
+
         if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales = $this->settings->value;
@@ -91,22 +92,28 @@ class syntheseController extends bootstrap
 
         $listeAccept = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
 
-        $this->update_accept = false;
-
-        // cherche si on a déjà le cgv
         if (in_array($this->lienConditionsGenerales, $listeAccept)) {
-            $this->accept_ok = true;
+            $this->accept_ok     = true;
+            $this->update_accept = false;
         } else {
-            $this->accept_ok = false;
-            // Si on a deja des cgv d'accepté
+            $this->accept_ok     = false;
+            $this->update_accept = false;
+
             if ($listeAccept != false) {
                 $this->update_accept = true;
+                $this->iLoansCount   = 0;
+
+                $this->settings->get('Date nouvelles CGV avec 2 mandats', 'type');
+                $sNewTermsOfServiceDate = $this->settings->value;
+
+                /** @var \loans $oLoans */
+                $oLoans            = $this->loadData('loans');
+                $this->iLoansCount = $oLoans->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
             }
         }
 
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
-        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
         // On recupere les projets favoris
         $lesFav = $this->favoris->projetsFavorisPreteur($this->clients->id_client);
