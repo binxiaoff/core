@@ -42,7 +42,7 @@ class ClientManager
         return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
     }
 
-    public function changeClientStatusFollowingClientAction(\clients $oClient, $sContent)
+    public function changeClientStatusTriggeredByClientAction(\clients $oClient, $sContent)
     {
         /** @var \clients_status_history $oClientStatusHistory */
         $oClientStatusHistory = Loader::loadData('clients_status_history');

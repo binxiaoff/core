@@ -636,7 +636,7 @@ class profileController extends bootstrap
 
                     /** @var \Unilend\Service\ClientManager $oClientManager */
                     $oClientManager = $this->get('ClientManager');
-                    $oClientManager->changeClientStatusFollowingClientAction($this->clients, $contenu);
+                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
@@ -1455,7 +1455,7 @@ class profileController extends bootstrap
 
                     /** @var \Unilend\Service\ClientManager $oClientManager */
                     $oClientManager = $this->get('ClientManager');
-                    $oClientManager->changeClientStatusFollowingClientAction($this->clients, $contenu);
+                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
@@ -1878,6 +1878,7 @@ class profileController extends bootstrap
 
         $sSerialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
         $oClientHistoryActions->histo(12, 'upload doc profile', $this->clients->id_client, $sSerialize);
+        $sContentForHistory = '';
 
         if (false === empty($_POST) || false === empty($_FILES)) {
             $sContentForHistory = '<ul>';
@@ -1892,7 +1893,7 @@ class profileController extends bootstrap
         if (false !== strpos($sContentForHistory, '<li>')) {
             /** @var \Unilend\Service\ClientManager $oClientManager */
             $oClientManager = $this->get('ClientManager');
-            $oClientManager->changeClientStatusFollowingClientAction($this->clients, $sContentForHistory);
+            $oClientManager->changeClientStatusTriggeredByClientAction($this->clients, $sContentForHistory);
             $this->sendAccountModificationEmail($this->clients);
             $_SESSION['form_profile_doc']['answer_upload'] = $this->lng['profile']['message-completness-document-upload'];
         }
