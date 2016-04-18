@@ -436,16 +436,10 @@ class emprunteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $prelevements       = $this->loadData('prelevements');
-        $this->nextEcheance = $prelevements->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]));
-        $this->nextEcheance = $this->nextEcheance[0]['date_echeance_emprunteur'];
-
-        $this->sentEcheance = $prelevements->select('status = 1 AND date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]));
-        $this->alreadySent  = count($this->sentEcheance);
-
-        if ($this->alreadySent > 0) {
-            $this->sentEcheance = $this->sentEcheance[0]['date_echeance_emprunteur'];
-        }
+        $oCompanies = $this->loadData('companies');
+        $oProjects = $this->loadData('projects');
+        $oCompanies->get($this->params[0], 'id_client_owner');
+        $this->aProjects = $oProjects->select('id_company = "' . $oCompanies->id_company . '"');
     }
 
     public function _RIBlightbox_no_prelev()
