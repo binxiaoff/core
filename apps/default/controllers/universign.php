@@ -312,6 +312,7 @@ class universignController extends bootstrap
     {
         $clients         = $this->loadData('clients');
         $clients_mandats = $this->loadData('clients_mandats');
+        $companies       = $this->loadData('companies');
 
         if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != \clients_mandats::STATUS_SIGNED) {
             if ($clients_mandats->url_universign != '' && $clients_mandats->status == \clients_mandats::STATUS_PENDING) {
@@ -336,6 +337,7 @@ class universignController extends bootstrap
                 }
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
+                $companies->get($clients_mandats->id_client, 'id_client_owner');
 
                 $uni_url     = $this->uni_url; // address of the universign server with basic authentication
                 $firstname   = $clients->prenom; // the signatory first name
@@ -411,6 +413,8 @@ class universignController extends bootstrap
                     $clients_mandats->id_universign  = $id;
                     $clients_mandats->url_universign = $url;
                     $clients_mandats->status         = \clients_mandats::STATUS_PENDING;
+                    $clients_mandats->bic            = $companies->bic;
+                    $clients_mandats->iban           = $companies->iban;
                     $clients_mandats->update();
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat response generation from universign : OK. Redirection to universign to sign.', array($clients_mandats->id_project));
                     header('Location: ' . $url);
