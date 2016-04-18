@@ -76,7 +76,7 @@ class pdfController extends bootstrap
     public function setDisplay($sView = '', $sContent = null)
     {
         $this->content = (false === is_null($sContent)) ? $sContent : '';
-        $this->view    = $sView;
+        $this->setView($sView);
 
         ob_start();
         if ($this->autoFireHead) {
