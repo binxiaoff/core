@@ -11,26 +11,24 @@
                 <h1 class="left"><?= $this->lng['preteur-synthese']['votre-tableau-de-bord'] ?></h1>
                 <strong class="right">au <?= $this->dates->formatDateComplete(date('Y-m-d H:i:s')) ?> à <?= date('H\hi') ?></strong>
             </div>
-            <?php // LE TEMPS QU'ON AIT LA POPUP CGV ON MASQUE CE BLOC ?>
             <?php if ($this->accept_ok == false) { ?>
                 <div class="notification-primary">
                     <div class="notification-head">
                         <h3 class="notification-title"><?= $this->bloc_cgv['titre-242'] ?></h3>
                     </div>
                     <div class="notification-body">
-                        <?php
-                        // mise a jour cgv
-                        if ($this->update_accept == true) {
-                            echo $this->bloc_cgv['content-2'];
-                        } else {
-                            echo $this->bloc_cgv['content-1'];
-                        }
-                        ?>
+                        <?php if ($this->update_accept && 0 === $this->iLoansCount) : ?>
+                            <?= $this->bloc_cgv['content-2'] ?>
+                        <?php elseif ($this->update_accept && 0 < $this->iLoansCount) : ?>
+                            <?= $this->bloc_cgv['content-3'] ?>
+                        <?php else : ?>
+                            <?= $this->bloc_cgv['content-1'] ?>
+                        <?php endif; ?>
                         <div class="form-terms">
                             <form action="" method="post">
                                 <div class="checkbox">
                                     <input type="checkbox" name="terms" id="terms"/>
-                                    <label for="terms"><a target="_blank" href="<?= $this->lurl . '/cgv_preteurs/nosign' ?>"><?= $this->bloc_cgv['checkbox-cgv'] ?></a></label>
+                                    <label for="terms"><?= str_replace(array('[', ']'), array('<a target="_blank" href="' . $this->lurl . '/cgv_preteurs/nosign">', '</a>'), $this->bloc_cgv['checkbox-cgv']) ?></label>
                                 </div>
                                 <div class="form-actions">
                                     <button type="button" id="cta_cgv" class="btn form-btn">
@@ -47,15 +45,14 @@
                         if ($("#terms").is(':checked') == true) {
                             $.post(add_url + "/ajax/accept_cgv", {
                                 terms: $("#terms").val(),
-                                id_legal_doc: "<?=$this->lienConditionsGenerales?>"
-                            }).done(function (data) {
+                                id_legal_doc: "<?= $this->lienConditionsGenerales ?>"
+                            }).done(function(data) {
                                 $(".notification-primary").fadeOut();
                                 setTimeout(function () {
                                     $(".notification-primary").remove();
                                 }, 1000);
                             });
-                        }
-                        else {
+                        } else {
                             $(".checkbox a").css('color', '#c84747');
                         }
                     });
