@@ -162,7 +162,6 @@
             <?php foreach ($this->lProjetsFunding as $project) :
                 $this->projects_status->getLastStatut($project['id_project']);
                 $this->companies->get($project['id_company'], 'id_company');
-                $this->companies_details->get($project['id_company'], 'id_company');
 
                 // date fin 21h a chaque fois
                 $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $project['date_retrait_full']);
@@ -243,7 +242,7 @@
             var id = $(this).attr('id');
 
             $.post(add_url + '/ajax/triProject', {val: val, id: id}).done(function (data) {
-                $('#table_tri').html(data)
+                $('#table_tri').html(data);
                 $(window).off().scroll(appendProjects);
             });
         });

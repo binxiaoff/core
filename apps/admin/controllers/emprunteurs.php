@@ -46,11 +46,10 @@ class emprunteursController extends bootstrap
 
     public function _gestion()
     {
-        $this->clients           = $this->loadData('clients');
-        $this->clients_adresses  = $this->loadData('clients_adresses');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_details = $this->loadData('companies_details');
-        $this->companies_bilans  = $this->loadData('companies_bilans');
+        $this->clients          = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+        $this->companies        = $this->loadData('companies');
+        $this->companies_bilans = $this->loadData('companies_bilans');
 
         if ($this->clients->telephone != '') {
             $this->clients->telephone = trim(chunk_split($this->clients->telephone, 2, ' '));
@@ -71,20 +70,12 @@ class emprunteursController extends bootstrap
         }
 
         if (isset($_POST['form_add_emprunteur'])) {
-
-
             $this->clients->nom             = $this->ficelle->majNom($_POST['nom']);
             $this->clients->prenom          = $this->ficelle->majNom($_POST['prenom']);
             $this->clients->email           = trim($_POST['email']);
             $this->companies->email_facture = trim($_POST['email']);
             $this->clients->telephone       = str_replace(' ', '', $_POST['telephone']);
-
-            $this->companies->name   = $_POST['societe'];
-            $this->companies->sector = $_POST['secteur'];
-
-            $this->clients_adresses->adresse1 = $_POST['adresse'];
-            $this->clients_adresses->ville    = $_POST['ville'];
-            $this->clients_adresses->cp       = $_POST['cp'];
+            $this->clients->id_langue       = 'fr';
 
             // cni/passeport
             if (isset($_FILES['cni_passeport']) && $_FILES['cni_passeport']['name'] != '') {
@@ -107,35 +98,22 @@ class emprunteursController extends bootstrap
                 }
             }
 
-            $this->clients->id_langue = 'fr';
-
-            // On crée le client
             $this->clients->id_client = $this->clients->create();
 
+            $this->clients_adresses->adresse1 = $_POST['adresse'];
+            $this->clients_adresses->ville    = $_POST['ville'];
+            $this->clients_adresses->cp       = $_POST['cp'];
             $this->clients_adresses->id_client = $this->clients->id_client;
             $this->clients_adresses->create();
 
+            $this->companies->name   = $_POST['societe'];
+            $this->companies->sector = $_POST['secteur'];
             $this->companies->id_client_owner = $this->clients->id_client;
-
-            // On crée l'entreprise
             $this->companies->id_company = $this->companies->create();
 
-            $this->companies_details->id_company = $this->companies->id_company;
-            $this->companies_details->create();
-
-            // Creation companie bilans
-            $tablAnneesBilans = array(date('Y') - 3, date('Y') - 2, date('Y') - 1, date('Y'), date('Y') + 1);
-            foreach ($tablAnneesBilans as $a) {
-                $this->companies_bilans->id_company = $this->companies->id_company;
-                $this->companies_bilans->date       = $a;
-                $this->companies_bilans->create();
-            }
-
-            // Histo user //
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
             $this->users_history->histo(5, 'add emprunteur', $_SESSION['user']['id_user'], $serialize);
-            ////////////////
-            // Mise en session du message
+
             $_SESSION['freeow']['title']   = 'emprunteur crt&eacute;t&eacute;';
             $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; crt&eacute;t&eacute; !';
 
@@ -215,7 +193,6 @@ class emprunteursController extends bootstrap
         $this->clients_adresses  = $this->loadData('clients_adresses');
         $this->companies         = $this->loadData('companies');
         $this->companies_bilans  = $this->loadData('companies_bilans');
-        $this->companies_details = $this->loadData('companies_details');
         $this->projects          = $this->loadData('projects');
         $this->projects_status   = $this->loadData('projects_status');
         $this->clients_mandats   = $this->loadData('clients_mandats');

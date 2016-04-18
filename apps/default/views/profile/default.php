@@ -54,7 +54,13 @@
 
 <script type="text/javascript">
 
-    $( window ).load(function() {
+    $(document).ready(function() {
+        $('#auto').click(function() {
+            window.location.replace("<?= $this->lurl ?>/profile/autolend");
+        });
+    });
+
+    $(window).load(function() {
         $('#notif').click(function() {
             location.hash = "notification";
         });
@@ -63,9 +69,6 @@
         });
         $('#info').click(function() {
             location.hash = "info_perso";
-        });
-        $('#auto').click(function() {
-            window.location.replace("<?= $this->lurl ?>/profile/autolend");
         });
 
         var tab;

@@ -97,7 +97,6 @@
                     <li><a href="<?= $this->lurl ?>/stats/tous_echeanciers_pour_projet" title="Echeanciers projet">Echeanciers projet</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/infos_preteurs" title="Requete Infos preteurs">Requete infos preteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/requete_donnees_financieres" title="Requete Données financières emprunteurs">Requete Données financières emprunteurs</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/requete_etude_base_preteurs" title="Requête étude de la base des prêteurs">Requête étude de la base des prêteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/autobid_statistic" title="Statistiques Autolend">Statistiques Autolend</a></li>
                 </ul>
             </li>
@@ -128,6 +127,7 @@
                     <li><a href="<?= $this->lurl ?>/dossiers/funding" title="Dossiers en funding">Dossiers en funding</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/remboursements" title="Remboursements">Remboursements</a></li>
                     <li><a href="<?= $this->lurl ?>/dossiers/no_remb" title="Erreurs remboursements">Erreurs remboursements</a></li>
+                    <li><a href="<?= $this->lurl ?>/dossiers/status" title="Suivi statuts projets">Suivi statuts projets</a></li>
                 </ul>
             </li>
         <?php endif; ?>

@@ -111,7 +111,7 @@
                     <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
                     <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
                     <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
-                    <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
+                    <td><?= (in_array($p['period'], array(0, 1000000))) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
                     <td><?= $p['label'] ?></td>
                     <td><?= $this->users->firstname ?> <?= $this->users->name ?></td>
                     <td align="center">

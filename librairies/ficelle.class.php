@@ -431,6 +431,18 @@ class ficelle
     }
 
     /**
+     * Clean formated number
+     * May come from an input field formated using ficelle::formatNumber method
+     * @todo intl
+     * @param string $sFormatedNumber
+     * @return float
+     */
+    public function cleanFormatedNumber($sFormatedNumber)
+    {
+        return (float) str_replace(array(' ', ','), array('', '.'), $sFormatedNumber);
+    }
+
+    /**
      * Check whether given mobile phone number is a mobile phone for given country or not
      * @todo intl
      * @param string $sPhoneNumber
