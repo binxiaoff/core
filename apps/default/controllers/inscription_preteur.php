@@ -331,7 +331,8 @@ class inscription_preteurController extends bootstrap
 
             // paiement CB
             if (isset($_POST['send_form_preteur_cb'])) {
-                $amount = str_replace(array(',', ' '), array('.', ''), $_POST['amount']);
+                $amount = $this->ficelle->cleanFormatedNumber($_POST['amount']);
+
                 if (is_numeric($amount) && $amount >= 20 && $amount <= 10000) {
                     $amount                                 = (number_format($amount, 2, '.', '') * 100);
                     $this->lenders_accounts->fonds          = $amount;

@@ -203,7 +203,6 @@ class thickboxController extends bootstrap
 
     public function _pop_up_cgv()
     {
-        // Recuperation du bloc nos-partenaires
         $this->blocs->get('cgv', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -214,28 +213,37 @@ class thickboxController extends bootstrap
 
         $this->lng['preteur-profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
-        //Affichage de la popup de CGV si on a pas encore valide
-
-        // cgu societe
-        if (in_array($this->clients->type, array(2, 4))) {
+        if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
             $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
-        } // cgu particulier
-        else {
+        } else {
             $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
             $this->lienConditionsGenerales_header = $this->settings->value;
         }
 
         $listeAccept_header = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
-        $this->update_accept_header = false;
 
-        if (in_array($this->lienConditionsGenerales, $listeAccept_header)) {
-            $this->accept_ok_header = true;
+        if (in_array($this->lienConditionsGenerales_header, $listeAccept_header)) {
+            $this->accept_ok_header     = true;
+            $this->update_accept_header = false;
         } else {
-            $this->accept_ok_header = false;
-            // Si on a deja des cgv d'accepté
+            $this->accept_ok_header     = false;
+            $this->update_accept_header = false;
+
             if ($listeAccept_header != false) {
                 $this->update_accept_header = true;
+                $this->iLoansCount          = 0;
+
+                $this->settings->get('Date nouvelles CGV avec 2 mandats', 'type');
+                $sNewTermsOfServiceDate = $this->settings->value;
+
+                /** @var \lenders_accounts $oLenderAccount */
+                $oLenderAccount = $this->loadData('lenders_accounts');
+                $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+
+                /** @var \loans $oLoans */
+                $oLoans            = $this->loadData('loans');
+                $this->iLoansCount = $oLoans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
             }
         }
     }

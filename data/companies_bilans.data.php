@@ -26,36 +26,16 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\core\Loader;
+
 class companies_bilans extends companies_bilans_crud
 {
-
-    function companies_bilans($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::companies_bilans($bdd, $params);
     }
 
-    function get($id, $field = 'id_bilan')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_bilan')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -63,32 +43,56 @@ class companies_bilans extends companies_bilans_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `companies_bilans`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM companies_bilans' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `companies_bilans` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM companies_bilans' . $where);
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
-    function exist($id, $field = 'id_bilan')
+    public function exist($id, $field = 'id_bilan')
     {
-        $sql    = 'SELECT * FROM `companies_bilans` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM companies_bilans WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
+    }
+
+    public function calcultateFromBalance()
+    {
+        /** @var \settings $oSetting */
+        $oSetting = Loader::loadData('settings');
+        $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
+        $aFundedCompanies = explode(',', $oSetting->value);
+
+        if (in_array($this->id_company, $aFundedCompanies)) {
+            return;
+        }
+
+        /** @var \company_balance $oCompanyBalance */
+        $oCompanyBalance = Loader::loadData('company_balance');
+        $aBalances       = $oCompanyBalance->getBalanceSheetsByAnnualAccount(array($this->id_bilan));
+
+        $this->ca                          = $aBalances[$this->id_bilan]['FL'];
+        $this->resultat_brute_exploitation = $aBalances[$this->id_bilan]['GG'] + $aBalances[$this->id_bilan]['GA'] + $aBalances[$this->id_bilan]['GB'] + $aBalances[$this->id_bilan]['GC'] + $aBalances[$this->id_bilan]['GD'] - $aBalances[$this->id_bilan]['FP'] - $aBalances[$this->id_bilan]['FQ'] + $aBalances[$this->id_bilan]['GE'];
+        $this->resultat_exploitation       = $aBalances[$this->id_bilan]['GG'];
+        $this->resultat_financier          = $aBalances[$this->id_bilan]['GV'];
+        $this->produit_exceptionnel        = $aBalances[$this->id_bilan]['HA'] + $aBalances[$this->id_bilan]['HB'] + $aBalances[$this->id_bilan]['HC'];
+        $this->charges_exceptionnelles     = $aBalances[$this->id_bilan]['HE'] + $aBalances[$this->id_bilan]['HF'] + $aBalances[$this->id_bilan]['HG'];
+        $this->resultat_exceptionnel       = $this->produit_exceptionnel - $this->charges_exceptionnelles;
+        $this->resultat_net                = $aBalances[$this->id_bilan]['HN'];
+        $this->investissements             = $aBalances[$this->id_bilan]['0J'];
+        $this->update();
     }
 }

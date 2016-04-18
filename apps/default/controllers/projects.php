@@ -1,5 +1,6 @@
 <?php
 
+use Unilend\core\Loader;
 use Unilend\librairies\Cache;
 
 class projectsController extends bootstrap
@@ -10,10 +11,8 @@ class projectsController extends bootstrap
 
         $this->catchAll = true;
 
-        //Recuperation des element de traductions
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
-        // Heure fin periode funding
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
 
@@ -22,32 +21,27 @@ class projectsController extends bootstrap
 
     public function _default()
     {
-        // On prend le header account
         $this->setHeader('header_account');
 
         $_SESSION['page_projet'] = $this->page;
 
-        // On check si y a un compte
-        if (!$this->clients->checkAccess()) {
+        if (! $this->clients->checkAccess()) {
             header('Location: ' . $this->lurl);
             die;
         }
         $this->clients->checkAccessLender();
 
-        $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_details = $this->loadData('companies_details');
-        $this->favoris           = $this->loadData('favoris');
-        $this->bids              = $this->loadData('bids');
-        $this->loans             = $this->loadData('loans');
+        $this->projects        = $this->loadData('projects');
+        $this->projects_status = $this->loadData('projects_status');
+        $this->companies       = $this->loadData('companies');
+        $this->favoris         = $this->loadData('favoris');
+        $this->bids            = $this->loadData('bids');
+        $this->loans           = $this->loadData('loans');
 
-        // tri par taux
         $this->settings->get('Tri par taux', 'type');
         $this->triPartx = $this->settings->value;
         $this->triPartx = explode(';', $this->triPartx);
 
-        // tri par taux intervalles
         $this->settings->get('Tri par taux intervalles', 'type');
         $this->triPartxInt = $this->settings->value;
         $this->triPartxInt = explode(';', $this->triPartxInt);
@@ -56,10 +50,10 @@ class projectsController extends bootstrap
         // 1 : terminé bientot
         // 2 : nouveauté
         $this->ordreProject = 1;
-        $this->type = 0;
+        $this->type         = 0;
 
         $_SESSION['ordreProject'] = $this->ordreProject;
-        $aElementsProjects = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10);
+        $aElementsProjects        = $this->projects->getProjectsStatusAndCount($this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject], 0, 10);
 
         $this->lProjetsFunding = $aElementsProjects['lProjectsFunding'];
         $this->nbProjects = $aElementsProjects['nbProjects'];
@@ -69,8 +63,8 @@ class projectsController extends bootstrap
     {
         if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' || $this->lurl == 'http://partenaire.unilend.challenges.fr') {
             $this->autoFireHeader = true;
-            $this->autoFireDebug = false;
-            $this->autoFireHead = true;
+            $this->autoFireDebug  = false;
+            $this->autoFireHead   = true;
             $this->autoFireFooter = true;
 
             $this->url_form = $this->Config['url'][$this->Config['env']]['default'];
@@ -81,13 +75,12 @@ class projectsController extends bootstrap
                 $this->utm_source = '/?utm_source=challenge';
             }
         } else {
-            $this->url_form = $this->lurl;
+            $this->url_form   = $this->lurl;
             $this->utm_source = '';
         }
 
         $this->projects                      = $this->loadData('projects');
         $this->companies                     = $this->loadData('companies');
-        $this->companies_details             = $this->loadData('companies_details');
         $this->favoris                       = $this->loadData('favoris');
         $this->projects_status               = $this->loadData('projects_status');
         $this->companies_actif_passif        = $this->loadData('companies_actif_passif');
@@ -130,17 +123,14 @@ class projectsController extends bootstrap
 
             $this->settings->get('Liste deroulante secteurs', 'type');
             $lSecteurs = explode(';', $this->settings->value);
-            $i = 1;
+            $i         = 1;
             foreach ($lSecteurs as $s) {
                 $this->lSecteurs[$i] = $s;
                 $i++;
             }
 
             $this->companies->get($this->projects->id_company, 'id_company');
-            $this->companies_details->get($this->companies->id_company, 'id_company');
             $this->projects_status->getLastStatut($this->projects->id_project);
-
-
 
             $this->lastStatushisto = $this->projects_status_history->select('id_project = ' . $this->projects->id_project, 'id_project_status_history DESC', 0, 1);
             $this->lastStatushisto = $this->lastStatushisto[0];
@@ -151,16 +141,16 @@ class projectsController extends bootstrap
                 die;
             }
 
-            // On récupère desormais la date full et pas la date avec l'heure en params
             $tabdateretrait = explode(':', $this->projects->date_retrait_full);
-            $dateRetrait = $tabdateretrait[0] . ':' . $tabdateretrait[1];
-            $today = date('Y-m-d H:i');
+            $dateRetrait    = $tabdateretrait[0] . ':' . $tabdateretrait[1];
+            $today          = date('Y-m-d H:i');
 
             // pour fin projet manuel
-            if ($this->projects->date_fin != '0000-00-00 00:00:00')
+            if ($this->projects->date_fin != '0000-00-00 00:00:00') {
                 $dateRetrait = $this->projects->date_fin;
+            }
 
-            $today = strtotime($today);
+            $today       = strtotime($today);
             $dateRetrait = strtotime($dateRetrait);
 
             // page d'attente entre la cloture du projet et le traitement de cloture du projet
@@ -208,9 +198,9 @@ class projectsController extends bootstrap
 
                 if ($this->soldeBid >= $this->projects->amount && $_POST['taux_pret'] >= $fMaxCurrentRate) {
                     $this->form_ok = false;
-                } elseif (!isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
+                } elseif (! isset($_POST['montant_pret']) || $_POST['montant_pret'] == '' || $_POST['montant_pret'] == '0') {
                     $this->form_ok = false;
-                } elseif (!is_numeric($montant_p)) {
+                } elseif (! is_numeric($montant_p)) {
                     $this->form_ok = false;
                 } elseif ($montant_p < $this->pretMin) {
                     $this->form_ok = false;
@@ -271,7 +261,7 @@ class projectsController extends bootstrap
                     $lOffres = $offres_bienvenues_details->select('id_client = ' . $this->clients->id_client . ' AND status = 0');
                     if ($lOffres != false) {
                         $totaux_restant = $montant_p;
-                        $totaux_offres = 0;
+                        $totaux_offres  = 0;
                         foreach ($lOffres as $o) {
 
                             // Tant que le total des offres est infèrieur
@@ -287,14 +277,14 @@ class projectsController extends bootstrap
                                 // Apres addition de la derniere offre on se rend compte que le total depasse
                                 if ($totaux_offres > $montant_p) {
                                     // On fait la diff et on créer un remb du trop plein d'offres
-                                    $montant_coupe_a_remb = $totaux_offres - $montant_p;
+                                    $montant_coupe_a_remb                          = $totaux_offres - $montant_p;
                                     $offres_bienvenues_details->id_offre_bienvenue = 0;
-                                    $offres_bienvenues_details->id_client = $this->lenders_accounts->id_client_owner;
-                                    $offres_bienvenues_details->id_bid = 0;
-                                    $offres_bienvenues_details->id_bid_remb = $this->bids->id_bid;
-                                    $offres_bienvenues_details->status = 0;
-                                    $offres_bienvenues_details->type = 1;
-                                    $offres_bienvenues_details->montant = ($montant_coupe_a_remb * 100);
+                                    $offres_bienvenues_details->id_client          = $this->lenders_accounts->id_client_owner;
+                                    $offres_bienvenues_details->id_bid             = 0;
+                                    $offres_bienvenues_details->id_bid_remb        = $this->bids->id_bid;
+                                    $offres_bienvenues_details->status             = 0;
+                                    $offres_bienvenues_details->type               = 1;
+                                    $offres_bienvenues_details->montant            = ($montant_coupe_a_remb * 100);
                                     $offres_bienvenues_details->create();
                                 }
                             } else {
@@ -341,7 +331,7 @@ class projectsController extends bootstrap
 
                         $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
                         $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
                         $this->email = $this->loadLib('email');
                         $this->email->setFrom($this->mails_text->exp_email, $exp_name);
@@ -370,55 +360,54 @@ class projectsController extends bootstrap
 
                     $_SESSION['messPretOK'] = $this->lng['preteur-projets']['mess-pret-conf'];
 
-
                     header('Location: ' . $this->lurl . '/projects/detail/' . $this->projects->slug);
                     die;
                 }
             } elseif (isset($_POST['send_inscription_project_detail'])) {
                 // INSCRIPTION PRETEUR //
-                $nom = $_POST['nom'];
+                $nom    = $_POST['nom'];
                 $prenom = $_POST['prenom'];
-                $email = $_POST['email'];
+                $email  = $_POST['email'];
                 $email2 = $_POST['conf_email'];
 
                 $form_valid = true;
 
-                if (!isset($nom) or $nom == $this->lng['landing-page']['nom']) {
-                    $form_valid = false;
+                if (! isset($nom) or $nom == $this->lng['landing-page']['nom']) {
+                    $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
                 }
 
-                if (!isset($prenom) or $prenom == $this->lng['landing-page']['prenom']) {
-                    $form_valid = false;
+                if (! isset($prenom) or $prenom == $this->lng['landing-page']['prenom']) {
+                    $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
                 }
 
-                if (!isset($email) || $email == '' || $email == $this->lng['landing-page']['email']) {
-                    $form_valid = false;
+                if (! isset($email) || $email == '' || $email == $this->lng['landing-page']['email']) {
+                    $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['champs-obligatoires'];
-                } elseif (!$this->ficelle->isEmail($email)) {// verif format mail
-                    $form_valid = false;
+                } elseif (! $this->ficelle->isEmail($email)) {// verif format mail
+                    $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['email-erreur-format'];
                 } elseif ($email != $email2) {// conf email good/pas
-                    $form_valid = false;
+                    $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['confirmation-email-erreur'];
                 } elseif ($this->clients->existEmail($email) == false) {// si exite ou pas
-                    $form_valid = false;
+                    $form_valid        = false;
                     $this->retour_form = $this->lng['landing-page']['email-existe-deja'];
                 }
 
                 if ($form_valid) {
                     $_SESSION['landing_client']['prenom'] = $prenom;
-                    $_SESSION['landing_client']['nom'] = $nom;
-                    $_SESSION['landing_client']['email'] = $email;
+                    $_SESSION['landing_client']['nom']    = $nom;
+                    $_SESSION['landing_client']['email']  = $email;
 
-                    $this->prospects = $this->loadData('prospects');
+                    $this->prospects            = $this->loadData('prospects');
                     $this->prospects->id_langue = 'fr';
-                    $this->prospects->prenom = $prenom;
-                    $this->prospects->nom = $nom;
-                    $this->prospects->email = $email;
-                    $this->prospects->source = $_SESSION['utm_source'];
-                    $this->prospects->source2 = $_SESSION['utm_source2'];
+                    $this->prospects->prenom    = $prenom;
+                    $this->prospects->nom       = $nom;
+                    $this->prospects->email     = $email;
+                    $this->prospects->source    = $_SESSION['utm_source'];
+                    $this->prospects->source2   = $_SESSION['utm_source2'];
                     $this->prospects->create();
 
                     $_SESSION['landing_page'] = true;
@@ -428,14 +417,11 @@ class projectsController extends bootstrap
                 }
             }
             // FIN INSCRIPTION PRETEUR //
-            // Nb projets en funding
-            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = '. \projects::DISPLAY_PROJECT_ON);
 
-            // dates pour le js
-            $this->mois_jour = $this->dates->formatDate($this->projects->date_retrait, 'F d');
-            $this->annee = $this->dates->formatDate($this->projects->date_retrait, 'Y');
+            $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
+            $this->mois_jour  = $this->dates->formatDate($this->projects->date_retrait, 'F d');
+            $this->annee      = $this->dates->formatDate($this->projects->date_retrait, 'Y');
 
-            // intervalle aujourd'hui et retrait
             $inter = $this->dates->intervalDates(date('Y-m-d H:i:s'), $this->projects->date_retrait . ' ' . $this->heureFinFunding . ':00');
             if ($inter['mois'] > 0) {
                 $this->dateRest = $inter['mois'] . ' mois';
@@ -443,12 +429,11 @@ class projectsController extends bootstrap
                 $this->dateRest = '';
             }
 
-            // Date de retrait complete
             if ($this->projects_status->status == \projects_status::EN_FUNDING) {
-                $this->date_retrait = $this->dates->formatDateComplete($this->projects->date_retrait);
+                $this->date_retrait  = $this->dates->formatDateComplete($this->projects->date_retrait);
                 $this->heure_retrait = substr($this->heureFinFunding, 0, 2);
             } else {
-                $this->date_retrait = $this->dates->formatDateComplete($this->projects->date_fin);
+                $this->date_retrait  = $this->dates->formatDateComplete($this->projects->date_fin);
                 $this->heure_retrait = $this->dates->formatDate($this->projects->date_fin, 'G');
             }
 
@@ -460,39 +445,67 @@ class projectsController extends bootstrap
             // id_project avant et apres
             $this->positionProject = $this->projects->positionProject($this->projects->id_project, $this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject]);
 
-            // favori
             if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $this->projects->id_project . ' AND id_client')) {
                 $this->favori = 'active';
             } else {
                 $this->favori = '';
             }
 
-            $dateDernierBilan = explode('-', $this->companies_details->date_dernier_bilan);
-            $dateDernierBilan = $dateDernierBilan[0];
+            $this->lBilans            = array();
+            $this->aAnnualAccountsIds = array();
 
-            // Liste des actif passif
-            $this->listAP = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '" AND annee <= ' . $dateDernierBilan, 'annee DESC');
+            foreach ($this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $this->projects->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3) as $aAnnualAccounts) {
+                $this->lBilans[]            = $aAnnualAccounts;
+                $this->aAnnualAccountsIds[] = $aAnnualAccounts['id_bilan'];
+            }
 
-            // Totaux actif/passif
-            $this->totalAnneeActif = array();
+            $this->totalAnneeActif  = array();
             $this->totalAnneePassif = array();
-            $i = 1;
+            $this->listAP           = $this->companies_actif_passif->select('id_bilan IN (' . implode(', ', $this->aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $this->aAnnualAccountsIds) . ') ASC');
+
+            if (count($this->listAP) < count($this->aAnnualAccountsIds)) {
+                foreach (array_diff($this->aAnnualAccountsIds, array_column($this->listAP, 'id_bilan')) as $iAnnualAccountsId) {
+                    $oAssetsDebts                                     = new \companies_actif_passif($this->bdd);
+                    $oAssetsDebts->id_bilan                           = $iAnnualAccountsId;
+                    $oAssetsDebts->immobilisations_corporelles        = 0;
+                    $oAssetsDebts->immobilisations_incorporelles      = 0;
+                    $oAssetsDebts->immobilisations_financieres        = 0;
+                    $oAssetsDebts->stocks                             = 0;
+                    $oAssetsDebts->creances_clients                   = 0;
+                    $oAssetsDebts->disponibilites                     = 0;
+                    $oAssetsDebts->valeurs_mobilieres_de_placement    = 0;
+                    $oAssetsDebts->comptes_regularisation_actif       = 0;
+                    $oAssetsDebts->capitaux_propres                   = 0;
+                    $oAssetsDebts->provisions_pour_risques_et_charges = 0;
+                    $oAssetsDebts->amortissement_sur_immo             = 0;
+                    $oAssetsDebts->depreciation_actif_circulant       = 0;
+                    $oAssetsDebts->dettes_financieres                 = 0;
+                    $oAssetsDebts->dettes_fournisseurs                = 0;
+                    $oAssetsDebts->autres_dettes                      = 0;
+                    $oAssetsDebts->comptes_regularisation_passif      = 0;
+                    $oAssetsDebts->create();
+                }
+                $this->listAP = $this->companies_actif_passif->select('id_bilan IN (' . implode(', ', $this->aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $this->aAnnualAccountsIds) . ') ASC');
+            }
+
             foreach ($this->listAP as $ap) {
-                $this->totalAnneeActif[$i] = ($ap['immobilisations_corporelles'] + $ap['immobilisations_incorporelles'] + $ap['immobilisations_financieres'] + $ap['stocks'] + $ap['creances_clients'] + $ap['disponibilites'] + $ap['valeurs_mobilieres_de_placement']);
-                $this->totalAnneePassif[$i] = ($ap['capitaux_propres'] + $ap['provisions_pour_risques_et_charges'] + $ap['dettes_financieres'] + $ap['dettes_fournisseurs'] + $ap['autres_dettes'] + $ap['amortissement_sur_immo']);
-                $i++;
+                $this->totalAnneeActif[]  = $ap['immobilisations_corporelles']
+                    + $ap['immobilisations_incorporelles']
+                    + $ap['immobilisations_financieres']
+                    + $ap['stocks']
+                    + $ap['creances_clients']
+                    + $ap['disponibilites']
+                    + $ap['valeurs_mobilieres_de_placement']
+                    + $ap['comptes_regularisation_actif'];
+                $this->totalAnneePassif[] = $ap['capitaux_propres']
+                    + $ap['provisions_pour_risques_et_charges']
+                    + $ap['amortissement_sur_immo']
+                    + $ap['depreciation_actif_circulant']
+                    + $ap['dettes_financieres']
+                    + $ap['dettes_fournisseurs']
+                    + $ap['autres_dettes']
+                    + $ap['comptes_regularisation_passif'];
             }
-
-            $lBilans = $this->companies_bilans->select('id_company = "' . $this->companies->id_company . '" AND date <= ' . $dateDernierBilan, 'date DESC', 0, 3);
-            foreach ($lBilans as $b) {
-                $this->lBilans[$b['date']] = $b;
-            }
-
-            $dateBilan = $lBilans[0]['date'];
-
-            $this->anneeToday[1] = ($dateBilan);
-            $this->anneeToday[2] = ($dateBilan - 1);
-            $this->anneeToday[3] = ($dateBilan - 2);
 
             if ($this->soldeBid >= $this->projects->amount) {
                 $this->payer                = $this->projects->amount;
@@ -559,9 +572,190 @@ class projectsController extends bootstrap
 
                 $this->interDebutFin = $this->dates->dateDiff($date1, $date2);
             }
+
+            /** @var \settings $oSetting */
+            $oSetting = Loader::loadData('settings');
+            $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
+            $aFundedCompanies = explode(',', $oSetting->value);
+
+            $this->bPreviousRiskProject = in_array($this->companies->id_company, $aFundedCompanies);
         } else {
             header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
             $this->setView('../root/404');
         }
+    }
+
+    public function _csv()
+    {
+        /** @var \projects $oProject */
+        $oProject = $this->loadData('projects');
+
+        if (
+            false === isset($this->params[0])
+            || false === $oProject->get($this->params[0], 'id_project')
+            || $oProject->status != 0
+            || $oProject->display != \projects::DISPLAY_PROJECT_ON
+            || false === $this->clients->checkAccess()
+        ) {
+            header($_SERVER['SERVER_PROTOCOL'] . ' 404 Not Found');
+            $this->setView('../root/404');
+            return;
+        }
+
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        /** @var \companies $oCompany */
+        $oCompany = $this->loadData('companies');
+        $oCompany->get($oProject->id_company, 'id_company');
+
+        /** @var \companies_bilans $oAnnualAccounts */
+        $oAnnualAccounts = $this->loadData('companies_bilans');
+        $aAnnualAccounts = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+
+        $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
+
+        /** @var \companies_actif_passif $oAssetsDebts */
+        $oAssetsDebts = $this->loadData('companies_actif_passif');
+        $aAssetsDebts = $oAssetsDebts->select('id_bilan IN (' . implode(', ', $aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $aAnnualAccountsIds) . ') ASC');
+
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=' . $oProject->slug . '.csv');
+        header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+        header('Expires: 0');
+
+        $iRow         = 1;
+        $oDocument    = new PHPExcel();
+        $oActiveSheet = $oDocument->setActiveSheetIndex(0);
+        $oActiveSheet->setCellValueByColumnAndRow(0, $iRow, 'Date de clôture');
+        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, $this->dates->formatDate($aAnnualAccounts[0]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, $this->dates->formatDate($aAnnualAccounts[1]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, $this->dates->formatDate($aAnnualAccounts[2]['cloture_exercice_fiscal'], 'd/m/Y'));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, 'Durée de l\'exercice');
+        $oActiveSheet->setCellValueByColumnAndRow(1, $iRow, str_replace('[DURATION]', $aAnnualAccounts[0]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(2, $iRow, str_replace('[DURATION]', $aAnnualAccounts[1]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(3, $iRow, str_replace('[DURATION]', $aAnnualAccounts[2]['duree_exercice_fiscal'], $this->lng['preteur-projets']['annual-accounts-duration-months']));
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['compte-de-resultats']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['chiffe-daffaires']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['ca']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-brut-dexploitation']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_brute_exploitation']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-dexploitation']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exploitation']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-financier']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_financier']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['produit-exceptionnel']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['produit_exceptionnel']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['charges-exceptionnelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['charges_exceptionnelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-exceptionnel']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_exceptionnel']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['resultat-net']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['resultat_net']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['investissements']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAnnualAccounts[$i]['investissements']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['bilan']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['actif']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['immobilisations-corporelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['immobilisations-incorporelles']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_incorporelles']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['immobilisations-financieres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_financieres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['stocks']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['stocks']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['creances-clients']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['creances_clients']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['disponibilites']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['disponibilites']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['valeurs-mobilieres-de-placement']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['valeurs_mobilieres_de_placement']);
+        }
+        if ($aAssetsDebts[0]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_actif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_actif'] != 0) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['comptes-regularisation']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_actif']);
+            }
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-actifs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['immobilisations_corporelles'] + $aAssetsDebts[$i]['immobilisations_incorporelles'] + $aAssetsDebts[$i]['immobilisations_financieres'] + $aAssetsDebts[$i]['stocks'] + $aAssetsDebts[$i]['creances_clients'] + $aAssetsDebts[$i]['disponibilites'] + $aAssetsDebts[$i]['valeurs_mobilieres_de_placement'] + $aAssetsDebts[$i]['comptes_regularisation_actif']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['passif']);
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['capitaux-propres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['provisions-pour-risques-charges']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['provisions_pour_risques_et_charges']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['amortissement-sur-immo']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['amortissement_sur_immo']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['depreciation-actif-circulant']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['depreciation_actif_circulant']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['dettes-financieres']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_financieres']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['dettes-fournisseurs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_fournisseurs']);
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['autres-dettes']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['autres_dettes']);
+        }
+        if ($aAssetsDebts[0]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[1]['comptes_regularisation_passif'] != 0 || $aAssetsDebts[2]['comptes_regularisation_passif'] != 0) {
+            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['comptes-regularisation']);
+            for ($i = 0; $i < 3; $i++) {
+                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['comptes_regularisation_passif']);
+            }
+        }
+        $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-passifs']);
+        for ($i = 0; $i < 3; $i++) {
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['depreciation_actif_circulant'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
+        }
+
+        /** @var \PHPExcel_Writer_CSV $oWriter */
+        $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
+        $oWriter->setDelimiter(';');
+        $oWriter->save('php://output');
     }
 }

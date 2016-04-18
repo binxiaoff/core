@@ -287,7 +287,7 @@ $(window).load(function(){
 
     if ($('.param-advanced-button').length) {
         $('.param-advanced-button').on('click', function () {
-            var cell = $(this).parents('.cell-inner')
+            var cell = $(this).parents('.cell-inner');
             var inputRate = cell.find('.param-advanced-value');
             var labelRate = cell.find('.param-advanced-label');
             var AvgRateUnilend = parseFloat(cell.find('input[name=param-advanced-unilend-rate]').val().replace(",", "."));
@@ -319,8 +319,9 @@ $(window).load(function(){
     $('#global-rate-Unilend').click(function() {
         $('.param-advanced-value').each(function () {
             $(this).val(<?= $this->fAverageRateUnilend ?>);
-            $(this).parents('.param-advanced-bottom').find('.param-advanced-label').html(<?= $this->fAverageRateUnilend ?>.toString().replace(".", ",")+'%');
-        })
+            $(this).parents('.param-advanced-bottom').find('.param-advanced-label').html(<?= $this->fAverageRateUnilend ?>.toString().replace(".", ",") + '%'
+            )
+        });;
     });
 
     function drawPercentage(rate){
