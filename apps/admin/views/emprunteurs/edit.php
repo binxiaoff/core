@@ -218,8 +218,9 @@
                 <th>ID Project</th>
                 <th>IBAN</th>
                 <th>BIC</th>
+                <th>PDF</th>
                 <th>Status</th>
-                <th>Date dernière modif.</th>
+                <th>Date d'ajout</th>
             </tr>
         </thead>
         <tbody>
@@ -228,8 +229,9 @@
                     <td><?= $aMoneyOrder['id_project'] ?></td>
                     <td><?= isset($aMoneyOrder['iban']) ? $aMoneyOrder['iban'] : $this->companies->iban ?></td>
                     <td><?= isset($aMoneyOrder['bic']) ? $aMoneyOrder['bic'] : $this->companies->bic ?></td>
+                    <td><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
                     <td><?= $this->aStatusMandat[$aMoneyOrder['status']] ?></td>
-                    <td><?= $aMoneyOrder['updated'] ?></td>
+                    <td><?= $aMoneyOrder['added'] ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>
