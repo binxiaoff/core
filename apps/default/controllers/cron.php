@@ -6283,16 +6283,11 @@ class cronController extends bootstrap
             $this->fillProjectLastStatusMaterialized();
 
             /** @var \Unilend\Service\LenderManager $oLenderManager */
-            $oLenderManager        = $this->get('LenderManager');
+            $oLenderManager           = $this->get('LenderManager');
             /** @var \lenders_account_stats $oLendersAccountsStats */
-            $oLendersAccountsStats = $this->loadData('lenders_account_stats');
-            $oLenderManager->addLendersToLendersAccountsStatQueue(
-                $oLendersAccountsStats->getLendersWithLatePaymentsForIRR(array(
-                    \projects_status::PROBLEME,
-                    \projects_status::PROBLEME_J_X,
-                    \projects_status::RECOUVREMENT
-                ), true)
-            );
+            $oLendersAccountsStats    = $this->loadData('lenders_account_stats');
+            $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
+            $oLenderManager->addLendersToLendersAccountsStatQueue($aLendersWithLatePayments);
 
             $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 300;
             $fTimeStart              = microtime(true);
@@ -6411,7 +6406,7 @@ class cronController extends bootstrap
 
             if ($oIRRManager->IRRUnilendNeedsToBeRecalculated($sYesterday)) {
                 try {
-                    $oIRRManager->updateIRRUnilend($bUseProjectLastStatusMaterialized = true);
+                    $oIRRManager->updateIRRUnilend();
                 } catch (Exception $e) {
                     $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage());
                 }
@@ -6435,8 +6430,5 @@ class cronController extends bootstrap
     {
         $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
     }
-
-
-
 
 }

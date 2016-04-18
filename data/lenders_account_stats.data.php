@@ -24,18 +24,10 @@ class lenders_account_stats extends lenders_account_stats_crud
      * @param $iLendersAccountId
      * @return array
      */
-    public function getValuesForIRR($iLendersAccountId, $bUseProjectLastStatusMaterialized = false)
+    public function getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLendersAccountId)
     {
         $aValuesIRR      = array();
         $aDatesTimeStamp = array();
-
-        if ($bUseProjectLastStatusMaterialized) {
-            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
-                                                     INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history ';
-        } else {
-            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history plsh ON e.id_project = plsh.id_project
-                                                     INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history ';
-        }
 
         $sql = 'SELECT psh.added AS date,
                        -l.amount AS montant
@@ -53,7 +45,8 @@ class lenders_account_stats extends lenders_account_stats_crud
                     CASE WHEN e.status_ra = 1 THEN e.capital ELSE e.capital + e.interets END AS montant
                 FROM
                     echeanciers e
-                    ' . $sJoinStatementProjectHistoryTables . '
+                    INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                    INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '
@@ -66,7 +59,8 @@ class lenders_account_stats extends lenders_account_stats_crud
                     e.capital + e.interets AS montant
                 FROM
                     echeanciers e
-                    ' . $sJoinStatementProjectHistoryTables . '
+                    INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                    INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '
@@ -80,7 +74,8 @@ class lenders_account_stats extends lenders_account_stats_crud
                     CASE WHEN e.date_echeance < NOW() THEN "0" ELSE e.capital + e.interets END AS montant
                 FROM
                     echeanciers e
-                    ' . $sJoinStatementProjectHistoryTables . '
+                    INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                    INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '
@@ -105,7 +100,8 @@ class lenders_account_stats extends lenders_account_stats_crud
                     END AS montant
                 FROM
                     echeanciers e
-                    ' . $sJoinStatementProjectHistoryTables . '
+                    INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                    INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '
@@ -119,7 +115,8 @@ class lenders_account_stats extends lenders_account_stats_crud
                     "0" AS montant
                 FROM
                     echeanciers e
-                    ' . $sJoinStatementProjectHistoryTables . '
+                    INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                    INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                     INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                 WHERE
                     e.id_lender = ' . $iLendersAccountId . '
@@ -178,32 +175,14 @@ class lenders_account_stats extends lenders_account_stats_crud
         return $fLossRate;
     }
 
-    /**
-     * @param array $aProjectStatus
-     * @param bool $bUseProjectLastStatusMaterialized (only to be used for crons)
-     *
-     * @return array
-     */
-    public function getLendersWithLatePaymentsForIRR($aProjectStatus, $bUseProjectLastStatusMaterialized = true)
+    public function getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized()
     {
-        $sProjectStatus = '';
-        if (false === is_null($aProjectStatus)) {
-            $sProjectStatus = 'AND ps.status IN (' . implode(',', $aProjectStatus) . ')';
-        }
-
-        if ($bUseProjectLastStatusMaterialized) {
-            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
-                                                     INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history ';
-        } else {
-            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history plsh ON e.id_project = plsh.id_project
-                                                     INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history ';
-        }
-
         $sQuery =   'SELECT
                         e.id_lender
                     FROM
                         echeanciers e
-                        ' . $sJoinStatementProjectHistoryTables . '
+                        INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         e.date_echeance < NOW()
@@ -215,7 +194,8 @@ class lenders_account_stats extends lenders_account_stats_crud
                             WHERE
                                 e.id_lender = las1.id_lender_account
                         ) < e.date_echeance
-                        AND e.status = 0 ' . $sProjectStatus . '
+                        AND e.status = 0
+                        AND ps.status IN (' . implode(',', array(\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT)) . ')
                     GROUP BY
                         id_lender';
 

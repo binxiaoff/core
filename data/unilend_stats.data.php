@@ -72,16 +72,8 @@ class unilend_stats extends unilend_stats_crud
      * @param bool $bUseProjectLastStatusMaterialized
      * @return array
      */
-    public function getDataForUnilendIRR($bUseProjectLastStatusMaterialized = false)
+    public function getDataForUnilendIRRUsingProjectsLastStatusMaterialized()
     {
-
-        if ($bUseProjectLastStatusMaterialized) {
-            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
-                                                     INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history ';
-        } else {
-            $sJoinStatementProjectHistoryTables =   'INNER JOIN projects_last_status_history plsh ON ee.id_project = plsh.id_project
-                                                     INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history ';
-        }
 
         $sQuery =   'SELECT
                         montant - `montant_unilend` AS montant,
@@ -106,7 +98,8 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        ' . $sJoinStatementProjectHistoryTables . '
+                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -136,7 +129,8 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        ' . $sJoinStatementProjectHistoryTables . '
+                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -168,7 +162,8 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        ' . $sJoinStatementProjectHistoryTables . '
+                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -216,7 +211,8 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        ' . $sJoinStatementProjectHistoryTables . '
+                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
@@ -248,7 +244,8 @@ class unilend_stats extends unilend_stats_crud
                         ) AS date
                     FROM
                         echeanciers_emprunteur ee
-                        ' . $sJoinStatementProjectHistoryTables . '
+                        INNER JOIN projects_last_status_history_materialized plshm ON ee.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         (
