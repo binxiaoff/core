@@ -563,16 +563,20 @@ class universignController extends bootstrap
         $companies        = $this->loadData('companies');
         $projects_pouvoir = $this->loadData('projects_pouvoir');
         $projects         = $this->loadData('projects');
+        $prelevements     = $this->loadData('prelevements');
 
         // Si on a 2 parmas
         if (isset($this->params[0]) && isset($this->params[1])) {
             // si on a le mandat
             if ($this->params[0] == 'mandat' && $clients_mandats->get($this->params[1], 'id_mandat')) {
                 $clients->get($clients_mandats->id_client, 'id_client');
+                $companies->get($clients->id_client, 'id_client_owner');
 
                 $this->lien_pdf = $this->lurl . $clients_mandats->url_pdf;
 
                 if ($clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
+                    $sBankTransferLabel = $projects->getBorrowerBankTransferLabel($clients_mandats->id_project);
+                    $prelevements->updateBankTransferLabel($clients_mandats->id_project, $sBankTransferLabel);
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été signé';
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : signed.', array($clients_mandats->id_project));

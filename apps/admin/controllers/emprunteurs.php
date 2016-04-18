@@ -222,6 +222,14 @@ class emprunteursController extends bootstrap
         $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
         $prelevements            = $this->loadData('prelevements');
         $this->clients->history  = '';
+        $this->aMoneyOrders      = '';
+        $this->aStatusMandat     = array(
+            \clients_mandats::STATUS_PENDING  => 'En attente de signature',
+            \clients_mandats::STATUS_SIGNED   => 'Signé',
+            \clients_mandats::STATUS_CANCELED => 'Annulé',
+            \clients_mandats::STATUS_FAILED   => 'Echec',
+            \clients_mandats::STATUS_ARCHIVED => 'Archivé'
+        );
 
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
@@ -288,12 +296,22 @@ class emprunteursController extends bootstrap
                     die;
                 }
 
+                $oMoneyOrders = $this->loadData('clients_mandats');
+
                 // on met a jour les prelevement en cours si y en a.
                 foreach ($this->lprojects as $aProject) {
                     $prelevements->updateIbanBic($aProject['id_project'], $this->companies->bic, $this->companies->iban);
 
-                    if (true === $edited_rib) {
-                        $sBankTransferLabel = $this->projects->getBorrowerBankTransferLabel($this->companies->siren, $aProject['id_project']);
+                    $aMoneyOrders = $oMoneyOrders->select(
+                        'id_project = ' . $aProject['id_project'] . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_SIGNED . ')',
+                        'id_mandat DESC'
+                    );
+                    $aMoneyOrder = array_shift($aMoneyOrders);
+
+                    if ($aMoneyOrder['status'] == \clients_mandats::STATUS_SIGNED
+                        && $aMoneyOrder['iban'] == str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']))
+                        && $aMoneyOrder['bic'] == str_replace(' ', '', strtoupper($_POST['bic']))) {
+                        $sBankTransferLabel = $this->projects->getBorrowerBankTransferLabel($aProject['id_project']);
                         $prelevements->updateBankTransferLabel($aProject['id_project'], $sBankTransferLabel);
                     }
                 }
@@ -345,7 +363,7 @@ class emprunteursController extends bootstrap
                             if (false === empty($aMandats)) {
                                 foreach ($aMandats as $aMandatToArchive) {
                                     $this->clients_mandats->get($aMandatToArchive['id_mandat']);
-                                    if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status || \clients_mandats::STATUS_PENDING == $this->clients_mandats->status) {
+                                    if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status) {
                                         $nouveauNom    = str_replace('mandat', 'mandat-' . $this->clients_mandats->id_mandat, $this->clients_mandats->name);
                                         $chemin        = $this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name;
                                         $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
@@ -425,6 +443,7 @@ class emprunteursController extends bootstrap
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 die;
             }
+            $this->aMoneyOrders = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;
