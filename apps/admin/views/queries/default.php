@@ -23,8 +23,12 @@
         <li>Requêtes</li>
     </ul>
     <h1>Liste des requêtes</h1>
-    <div class="btnDroite"><a href="<?= $this->lurl ?>/queries/add" class="btn_link thickbox">Ajouter une requête</a>
-    </div>
+    <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
+        <div class="btnDroite">
+            <a href="<?= $this->lurl ?>/queries/add" class="btn_link thickbox">Ajouter une requête</a>
+        </div>
+    <?php endif; ?>
+
     <?php if (count($this->lRequetes) > 0) : ?>
         <table class="tablesorter">
             <thead>
@@ -53,12 +57,14 @@
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir le résultat"/>
                             </a>
                         <?php endif; ?>
+                        <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
                         <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
                             <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $r['name'] ?>"/>
                         </a>
                         <a href="<?= $this->lurl ?>/queries/delete/<?= $r['id_query'] ?>" title="Supprimer <?= $r['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $r['name'] ?> ?')">
                             <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
                         </a>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php $i++;
