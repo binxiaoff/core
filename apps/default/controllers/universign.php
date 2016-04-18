@@ -575,8 +575,12 @@ class universignController extends bootstrap
                 $this->lien_pdf = $this->lurl . $clients_mandats->url_pdf;
 
                 if ($clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
-                    $sBankTransferLabel = $projects->getBorrowerBankTransferLabel($clients_mandats->id_project);
-                    $prelevements->updateBankTransferLabel($clients_mandats->id_project, $sBankTransferLabel);
+                    $aProjects = $this->projects->select('id_company = "' . $companies->id_company . '"');
+                    foreach ($aProjects as $aProject) {
+                        $sBankTransferLabel = $projects->getBorrowerBankTransferLabel($aProject['id_project']);
+                        $prelevements->updateBankTransferLabel($aProject['id_project'], $sBankTransferLabel);
+                        $prelevements->updateIbanBic($aProject['id_project'], $this->companies->bic, $this->companies->iban);
+                    }
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été signé';
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : signed.', array($clients_mandats->id_project));
