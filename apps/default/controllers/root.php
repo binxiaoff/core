@@ -10,7 +10,6 @@ class rootController extends bootstrap
 
     public function _default()
     {
-        // Activation du cache
         $this->fireCache();
 
         // ajout du slash car capital rajout un Get
@@ -278,11 +277,10 @@ class rootController extends bootstrap
                 $this->settings->get('Heure fin periode funding', 'type');
                 $this->heureFinFunding = $this->settings->value;
 
-                $this->projects          = $this->loadData('projects');
-                $this->projects_status   = $this->loadData('projects_status');
-                $this->companies         = $this->loadData('companies');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->favoris           = $this->loadData('favoris');
+                $this->projects        = $this->loadData('projects');
+                $this->projects_status = $this->loadData('projects_status');
+                $this->companies       = $this->loadData('companies');
+                $this->favoris         = $this->loadData('favoris');
 
                 // tri par taux
                 $this->settings->get('Tri par taux', 'type');
@@ -412,12 +410,10 @@ class rootController extends bootstrap
 
                 $this->loadCss('default/compteur_home/style');
 
-                // Chargement des datas
-                $this->projects          = $this->loadData('projects');
-                $this->projects_status   = $this->loadData('projects_status');
-                $this->companies         = $this->loadData('companies');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->bids              = $this->loadData('bids');
+                $this->projects        = $this->loadData('projects');
+                $this->projects_status = $this->loadData('projects_status');
+                $this->companies       = $this->loadData('companies');
+                $this->bids            = $this->loadData('bids');
 
                 // Heure fin periode funding
                 $this->settings->get('Heure fin periode funding', 'type');
@@ -896,25 +892,18 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
@@ -957,25 +946,18 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
@@ -1018,25 +1000,18 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des datas
         $this->projects                = $this->loadData('projects');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->companies               = $this->loadData('companies');
-        $this->companies_bilans        = $this->loadData('companies_bilans');
-        $this->companies_details       = $this->loadData('companies_details');
-        $this->companies_actif_passif  = $this->loadData('companies_actif_passif');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->projects                = $this->loadData('projects');
 
-        //traduction
         $this->lng['landing-page'] = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
-        // Somme à emprunter min
         $this->settings->get('Somme à emprunter min', 'type');
         $this->sommeMin = $this->settings->value;
 
-        // Somme à emprunter max
         $this->settings->get('Somme à emprunter max', 'type');
         $this->sommeMax = $this->settings->value;
 
@@ -1075,17 +1050,15 @@ class rootController extends bootstrap
     // Enregistrement et lecture du pdf cgv
     public function _pdf_cgv_preteurs()
     {
+        $this->autoFireView = false;
+
         include_once $this->path . '/apps/default/controllers/pdf.php';
 
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $this->clients->checkAccessLender();
 
-            $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
-            $id_tree_cgu = $this->settings->value;
-
-            // liste des cgv accpeté
-            $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
-            $id_tree_cgu = $listeAccept[0]['id_legal_doc'];
+            $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+            $id_tree_cgu = $listeAccept['id_legal_doc'];
 
             $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
             foreach ($contenu as $elt) {
@@ -1106,7 +1079,7 @@ class rootController extends bootstrap
                 $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
                 $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
 
-                if (false === file_exists($path . $sNamePdf)) {
+                if (false  === file_exists($path . $sNamePdf)) {
                     $this->_cgv_preteurs(true, $oPdf, array($this->clients->hash));
                     $oPdf->WritePdf($path . $sNamePdf, 'cgv_preteurs');
                 }
@@ -1114,7 +1087,6 @@ class rootController extends bootstrap
                 $oPdf->ReadPdf($path . $sNamePdf, $sNamePdfClient);
             }
         }
-        die;
     }
 
     // lecture page du cgv en html
@@ -1129,16 +1101,13 @@ class rootController extends bootstrap
         $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
         $id_tree_cgu = $this->settings->value;
 
-        $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
-        foreach ($contenu as $elt) {
+        foreach ($this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"') as $elt) {
             $this->elements->get($elt['id_element']);
             $this->content[$this->elements->slug]    = $elt['value'];
             $this->complement[$this->elements->slug] = $elt['complement'];
         }
 
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
-            $this->clients_adresses->get($this->clients->id_client, 'id_client');
-
             if (isset($this->params[0]) && $this->params[0] != 'morale' && $this->params[0] != 'nosign') {
                 $this->autoFireHeader = false;
                 $this->autoFireHead   = true;
@@ -1146,53 +1115,51 @@ class rootController extends bootstrap
                 $this->autoFireDebug  = false;
             }
 
-            // Particulier
-            if (in_array($this->clients->type, array(1, 3))) {
-                $naissance = date('d/m/Y', strtotime($this->clients->naissance));
+            if (isset($this->params[0]) && $this->params[0] == 'nosign') {
+                $dateAccept = '';
+            } else {
+                $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+                $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept['added']));
+            }
 
-                // Pays fiscal
+            $this->settings->get('Date nouvelles CGV avec 2 mandats', 'type');
+            $sNewTermsOfServiceDate = $this->settings->value;
+
+            /** @var \lenders_accounts $oLenderAccount */
+            $oLenderAccount = $this->loadData('lenders_accounts');
+            $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
+
+            /** @var \loans $oLoans */
+            $oLoans      = $this->loadData('loans');
+            $iLoansCount = $oLoans->counter('id_lender = ' . $oLenderAccount->id_lender_account . ' AND added < "' . $sNewTermsOfServiceDate . '"');
+
+            if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
+                $this->clients_adresses->get($this->clients->id_client, 'id_client');
+
                 if ($this->clients_adresses->id_pays_fiscal == 0) {
                     $this->clients_adresses->id_pays_fiscal = 1;
                 }
                 $this->pays->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
-                $pays_fiscal = $this->pays->fr;
-
-                if (isset($this->params[0]) && $this->params[0] == 'nosign') {
-                    $dateAccept = '';
-                } else {
-                    // liste des cgv accpeté
-                    $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
-                    $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
-                }
 
                 $aReplacements = array(
                     '[Civilite]'            => $this->clients->civilite,
                     '[Prenom]'              => utf8_encode($this->clients->prenom),
                     '[Nom]'                 => utf8_encode($this->clients->nom),
-                    '[date]'                => $naissance,
+                    '[date]'                => date('d/m/Y', strtotime($this->clients->naissance)),
                     '[ville_naissance]'     => utf8_encode($this->clients->ville_naissance),
-                    '[adresse_fiscale]'     => utf8_encode($this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $pays_fiscal),
+                    '[adresse_fiscale]'     => utf8_encode($this->clients_adresses->adresse_fiscal . ', ' . $this->clients_adresses->ville_fiscal . ', ' . $this->clients_adresses->cp_fiscal . ', ' . $this->pays->fr),
                     '[date_validation_cgv]' => $dateAccept
                 );
 
-                $this->mandat_de_recouvrement = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement']);
-            } else { // Entreprise
+                $this->mandat_de_recouvrement           = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement']);
+                $this->mandat_de_recouvrement_avec_pret = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-avec-pret']) : '';
+            } else {
                 $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-                // Pays fiscal
                 if ($this->companies->id_pays == 0) {
                     $this->companies->id_pays = 1;
                 }
                 $this->pays->get($this->companies->id_pays, 'id_pays');
-                $pays_fiscal = $this->pays->fr;
-
-                if (isset($this->params[0]) && $this->params[0] == 'nosign') {
-                    $dateAccept = '';
-                } else {
-                    // liste des cgv accpeté
-                    $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC');
-                    $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept[0]['added'])); // date dernier CGV
-                }
 
                 $aReplacements = array(
                     '[Civilite]'            => $this->clients->civilite,
@@ -1200,27 +1167,31 @@ class rootController extends bootstrap
                     '[Nom]'                 => utf8_encode($this->clients->nom),
                     '[Fonction]'            => utf8_encode($this->clients->fonction),
                     '[Raison_sociale]'      => utf8_encode($this->companies->name),
-                    '[adresse_fiscale]'     => utf8_encode($this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $pays_fiscal),
+                    '[SIREN]'               => $this->companies->siren,
+                    '[adresse_fiscale]'     => utf8_encode($this->companies->adresse1 . ', ' . $this->companies->zip . ', ' . $this->companies->city . ', ' . $this->pays->fr),
                     '[date_validation_cgv]' => $dateAccept
                 );
 
-                $this->mandat_de_recouvrement = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-personne-morale']);
+                $this->mandat_de_recouvrement           = str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-personne-morale']);
+                $this->mandat_de_recouvrement_avec_pret = $iLoansCount > 0 ? str_replace(array_keys($aReplacements), $aReplacements, $this->content['mandat-de-recouvrement-avec-pret-personne-morale']) : '';
             }
         } elseif (isset($this->params[0]) && $this->params[0] == 'morale') {
-            $variables                    = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[adresse_fiscale]', '[date_validation_cgv]');
-            $tabVariables                 = explode(';', $this->content['contenu-variables-par-defaut-morale']);
-            $contentVariables             = $tabVariables;
-            $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
+            $variables                              = array('[Civilite]', '[Prenom]', '[Nom]', '[Fonction]', '[Raison_sociale]', '[SIREN]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $tabVariables                           = explode(';', $this->content['contenu-variables-par-defaut-morale']);
+            $contentVariables                       = $tabVariables;
+            $this->mandat_de_recouvrement           = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement-personne-morale']);
+            $this->mandat_de_recouvrement_avec_pret = '';
         } else {
-            $variables    = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
-            $tabVariables = explode(';', $this->content['contenu-variables-par-defaut']);
-
-            $contentVariables             = $tabVariables;
-            $this->mandat_de_recouvrement = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
+            $variables                              = array('[Civilite]', '[Prenom]', '[Nom]', '[date]', '[ville_naissance]', '[adresse_fiscale]', '[date_validation_cgv]');
+            $tabVariables                           = explode(';', $this->content['contenu-variables-par-defaut']);
+            $contentVariables                       = $tabVariables;
+            $this->mandat_de_recouvrement           = str_replace($variables, $contentVariables, $this->content['mandat-de-recouvrement']);
+            $this->mandat_de_recouvrement_avec_pret = '';
         }
 
         if (true === $bPdf && false === is_null($oPdf)) {
-            $this->content['mandatRecouvrement'] = $this->mandat_de_recouvrement;
+            $this->content['mandatRecouvrement']         = $this->mandat_de_recouvrement;
+            $this->content['mandatRecouvrementAvecPret'] = $this->mandat_de_recouvrement_avec_pret;
             $oPdf->setDisplay('cgv_preteurs', $this->content);
         }
     }

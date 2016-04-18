@@ -58,13 +58,11 @@ class --classe-- extends --classe--_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM `--table--` ' . $where);
-        return (int) $this->bdd->result($result, 0, 0);
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `--table--` ' . $where), 0, 0);
     }
 
     public function exist($id, $field = '--id--')
     {
-        $result = $this->bdd->query('SELECT * FROM `--table--` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_assoc($result) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `--table--` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }

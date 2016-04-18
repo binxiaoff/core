@@ -222,7 +222,6 @@ class loans extends loans_crud
     // sum prêtée d'un du projet
     public function sumPretsProjet($id_project)
     {
-
         $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_project = ' . $id_project;
 
         $result  = $this->bdd->query($sql);
