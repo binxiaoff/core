@@ -34,7 +34,7 @@
         <li><a href="<?=$this->lurl?>/settings" title="Configuration">Configuration</a> -</li>
         <li>Administrateurs</li>
     </ul>
-	<h1>Requete dossiers</h1>
+	<h1>Requete infosben</h1>
 
     <div style="margin-bottom:20px; float:right;"><a href="<?=$this->lurl?>/stats/requete_infosben_csv" class="btn_link">Recuperation du CSV</a></div>
     <?php
