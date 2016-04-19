@@ -2,6 +2,7 @@
 namespace Unilend\core;
 
 use Symfony\Component\Yaml\Yaml;
+use Unilend\Libraries\Doctrine\DBAL\ConnectionFactory;
 
 /**
  * Class Loader
@@ -24,7 +25,8 @@ class Loader
 
         if (null === $db) {
             $params = Yaml::parse(file_get_contents(__DIR__ . '/../Config/parameters.yml'));
-            $db = new \Unilend\Libraries\Doctrine\DBAL\DataBase(
+            $connectionFactory = new ConnectionFactory();
+            $db = $connectionFactory->createConnection(
                 [
                     $params['parameters']['front.database_driver'],
                     $params['parameters']['front.database_host'],
@@ -201,27 +203,6 @@ class Loader
             return true;
         }
         return false;
-    }
-
-    /**
-     * @deprecated
-     * @param       $sService
-     * @param array $aParams
-     *
-     * @return bool
-     */
-    public static function loadService($sService, array $aParams = array())
-    {
-        $config = self::loadConfig();
-        $sPath  = $config['path'][$config['env']];
-
-        $sService = trim($sService, "/ \t\n\r\0\x0B");
-        if (false === file_exists($sPath . 'Service/' . $sService . '.php')) {
-            return false;
-        }
-        $sService   = str_replace('/', '\\', $sService);
-        $sClassName = 'Unilend\Service\\' . $sService;
-        return new $sClassName($aParams);
     }
 
     public static function loadLib($sLibrary, array $aParams = array(), $bInstancing = true)

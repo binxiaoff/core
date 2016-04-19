@@ -618,7 +618,7 @@ class MailerManager extends DataService
                 $iEndHour = (int)$oSettings->value;
                 $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
             }
-            
+
             $oNow       = new \DateTime();
             $sInterval  = $this->formatDateDiff($oNow, $oEndDate);
             $bIsAutoBid = false === empty($oBid->id_autobid);
@@ -919,8 +919,6 @@ class MailerManager extends DataService
         $oClient                = $this->loadData('clients');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount         = $this->loadData('lenders_accounts');
-        /** @var \AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
 
         $oLenderAccount->get($oNotification->id_lender);
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
@@ -935,7 +933,7 @@ class MailerManager extends DataService
                 'surl'             => $sSUrl,
                 'url'              => $sLUrl,
                 'prenom_p'         => $oClient->prenom,
-                'heure_activation' => $oAutoBidSettingsManager->getActivationTime($oClient)->format('G\hi'),
+                'heure_activation' => $this->getActivationTime($oClient)->format('G\hi'),
                 'motif_virement'   => $oClient->getLenderPattern($oClient->id_client),
                 'lien_fb'          => $this->getFacebookLink(),
                 'lien_tw'          => $this->getTwitterLink(),
@@ -1063,5 +1061,18 @@ class MailerManager extends DataService
             $iCapitalTotal += $aBid['amount'];
         }
         return ($iInterestTotal / $iCapitalTotal);
+    }
+
+    private function getActivationTime(\clients $oClient)
+    {
+        /** @var \client_settings $oClientSettings */
+        $oClientSettings = $this->loadData('client_settings');
+
+        if ($oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
+            $oActivationTime = new \DateTime($oClientSettings->added);
+        } else {
+            $oActivationTime = new \DateTime();
+        }
+        return $oActivationTime;
     }
 }

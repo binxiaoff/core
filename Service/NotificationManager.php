@@ -15,9 +15,9 @@ class NotificationManager extends DataService
     /** @var MailerManager */
     private $oMailerManager;
 
-    public function __construct()
+    public function __construct(MailerManager $oMailerManager)
     {
-        $this->oMailerManager = Loader::loadService('MailerManager');
+        $this->oMailerManager = $oMailerManager;
     }
 
     public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null)

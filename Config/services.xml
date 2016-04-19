@@ -31,6 +31,7 @@
         </service>
 
         <service id="unilend.service.notification_manager" class="Unilend\Service\NotificationManager">
+            <argument type="service" id="unilend.service.email_manager"/>
         </service>
 
         <service id="unilend.service.email_manager" class="Unilend\Service\MailerManager">
