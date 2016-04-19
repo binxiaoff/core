@@ -7,6 +7,9 @@ namespace Unilend\core;
  */
 class Loader
 {
+    /**
+     * @internal You should not call this method directly.
+     */
     public static function loadData($object, array $params = array(), $db = null)
     {
         $config = self::loadConfig();
@@ -181,6 +184,9 @@ class Loader
         return false;
     }
 
+    /**
+     * @deprecated Limit its usage (Use it only in Services). Use Controller::get() instead. It will be removed with the project new infrastructure.
+     */
     public static function loadService($sService, array $aParams = array())
     {
         $config = self::loadConfig();
@@ -215,6 +221,10 @@ class Loader
         }
     }
 
+    /**
+     * @deprecated It will be removed with the project new infrastructure.
+     * @return array
+     */
     public static function loadConfig()
     {
         /* @var array $config */
