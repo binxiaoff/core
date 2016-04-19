@@ -1,13 +1,9 @@
 <?php
 
-namespace Unilend\core\DependencyInjection;
+namespace Unilend\core;
 
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\Config\FileLocator;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
 /**
  * A simple implementation of ContainerAwareInterface.

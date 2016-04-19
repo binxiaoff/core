@@ -1,8 +1,7 @@
 <?php
 require_once __DIR__ . '/../Autoloader.php';
 
-use Unilend\librairies\Cache;
-use Unilend\core\DependencyInjection\ContainerAware;
+use Unilend\core\ContainerAware;
 
 abstract class Controller extends ContainerAware
 {
@@ -440,7 +439,6 @@ abstract class Controller extends ContainerAware
 
     public function get($service)
     {
-        /** @var \Symfony\Component\DependencyInjection\Definition $definition */
         $service = $this->getContainer()->get($service);
         if (is_subclass_of($service, '\Unilend\Service\DataService')) {
             $service->setDBConn($this->bdd);
