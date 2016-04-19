@@ -3,14 +3,14 @@
 class blocsController extends bootstrap
 {
 	var $Command;
-	
-	function blocsController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('edition');
 		
 		// Activation du menu
@@ -83,7 +83,7 @@ class blocsController extends bootstrap
 			$this->blocs->status = $_POST['status'];
 			$this->blocs->id_bloc = $this->blocs->create();
 			
-			// Si le fichier n'existe pas on le créé
+			// Si le fichier n'existe pas on le crï¿½ï¿½
 			if(!file_exists($this->path.'apps/default/views/blocs/'.$this->blocs->slug.'.php'))
 			{
 				// Remplissage du bloc				
@@ -133,7 +133,7 @@ class blocsController extends bootstrap
 					// On supprime le fichier
 					@unlink($this->path.'apps/default/views/blocs/'.$this->blocs->slug.'.php');
 					
-					// On supprime les données
+					// On supprime les donnï¿½es
 					$this->blocs_templates->delete($this->params[1],'id_bloc');
 					$this->blocs_elements->delete($this->params[1],'id_bloc');
 					$this->elements->delete($this->params[1],'id_bloc');

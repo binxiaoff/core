@@ -2,9 +2,9 @@
 
 class settingsController extends bootstrap
 {
-    public function settingsController(&$command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
     }

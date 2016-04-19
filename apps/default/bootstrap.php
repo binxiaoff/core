@@ -19,11 +19,9 @@ class bootstrap extends Controller
      */
     public $aDataLayer = array();
 
-    public function __construct($command, $config, $app)
+    protected function initialize()
     {
-        $this->bdd = $this->get('database.front');
-
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
@@ -123,8 +121,9 @@ class bootstrap extends Controller
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
         $this->handlePartenaire($urlParams);
 
-        $sKey      = $this->oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
-        $aElements = $this->oCache->get($sKey);
+        $oCache    = $this->get('cache');
+        $sKey      = $oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
+        $aElements = $oCache->get($sKey);
         if (false === $aElements) {
             $this->settings->get('Google Webmaster Tools', 'type');
             $this->google_webmaster_tools = $this->settings->value;
@@ -153,7 +152,7 @@ class bootstrap extends Controller
                 'TreeCookies'     => $this->id_tree_cookies
             );
 
-            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+            $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
         } else {
             $this->google_webmaster_tools = $aElements['GoogleTools'];
             $this->google_analytics       = $aElements['GoogleAnalytics'];
@@ -183,8 +182,8 @@ class bootstrap extends Controller
         );
 
         // Recuperation du bloc nos-partenaires
-        $sKey      = $this->oCache->makeKey('Blocs_Partenaires', $this->blocs->id_bloc, $this->language);
-        $aElements = $this->oCache->get($sKey);
+        $sKey      = $oCache->makeKey('Blocs_Partenaires', $this->blocs->id_bloc, $this->language);
+        $aElements = $oCache->get($sKey);
         if (false === $aElements) {
             $this->blocs->get('nos-partenaires', 'slug');
             $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
@@ -199,15 +198,15 @@ class bootstrap extends Controller
                 'blocPartenairesComplement' => $this->bloc_partenairesComplement
             );
 
-            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
+            $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
         }
 
         $this->bloc_partenaires           = $aElements['blocPartenaires'];
         $this->bloc_partenairesComplement = $aElements['blocPartenairesComplement'];
 
         //Recuperation des element de traductions
-        $sKey      = $this->oCache->makeKey('Trad_Header_Footer_home');
-        $aElements = $this->oCache->get($sKey);
+        $sKey      = $oCache->makeKey('Trad_Header_Footer_home');
+        $aElements = $oCache->get($sKey);
         if (false === $aElements) {
             $aElements = array(
                 'TradHeader' => $this->ln->selectFront('header', $this->language, $this->App),
@@ -215,7 +214,7 @@ class bootstrap extends Controller
                 'TradHome'   => $this->ln->selectFront('home', $this->language, $this->App)
             );
 
-            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+            $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
         }
 
         $this->lng['header'] = $aElements['TradHeader'];
@@ -292,7 +291,7 @@ class bootstrap extends Controller
                             die;
                         }
                     } else {
-                       $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
+                        $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
                 } elseif ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0')) {
                     $this->error_login = $this->lng['header']['message-login-compte-ferme'];
@@ -460,6 +459,15 @@ class bootstrap extends Controller
                 die;
             }
         }
+    }
+
+    public function setDatabase()
+    {
+        $this->bdd = $this->get('unilend.dbal.default_connection');
+    }
+    public function execute()
+    {
+        parent::execute();
     }
 
     public function handlePartenaire($params)

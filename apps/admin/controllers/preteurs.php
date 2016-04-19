@@ -7,9 +7,9 @@ class preteursController extends bootstrap
      */
     private $attachmentHelper;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         include $this->path . '/apps/default/controllers/pdf.php';
 

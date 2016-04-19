@@ -1,18 +1,21 @@
 parameters:
-    front.database_driver:   pdo_mysql
-    front.database_host:     localhost
-    front.database_name:     unilend
-    front.database_user:     front
-    front.database_password: front
+    database_driver:   pdo_mysql
+    database_host:     localhost
+    database_port:     ~
+    database_name:     unilend
+    database_user:     front
+    database_password: front
 
-    back.database_driver:   pdo_mysql
-    back.database_host:     localhost
-    back.database_name:     unilend
-    back.database_user:     back
-    back.database_password: back
+    admin.database_driver:   pdo_mysql
+    admin.database_host:     localhost
+    admin.database_port:          ~
+    admin.database_name:     unilend
+    admin.database_user:     back
+    admin.database_password: back
 
     cron.database_driver:   pdo_mysql
     cron.database_host:     localhost
+    cron.database_port:          ~
     cron.database_name:     unilend
     cron.database_user:     cron
     cron.database_password: cron

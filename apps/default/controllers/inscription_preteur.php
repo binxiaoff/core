@@ -7,9 +7,9 @@ class inscription_preteurController extends bootstrap
      */
     private $attachmentHelper;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
         $this->lng['inscription-preteur-etape-header'] = $this->ln->selectFront('inscription-preteur-etape-header', $this->language, $this->App);

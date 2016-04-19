@@ -1,9 +1,9 @@
 <?php
 class binController extends bootstrap
 {
-    function binController($command, $config)
+    public function initialize()
     {
-        parent::__construct($command, $config, 'default');
+        parent::initialize();
 
         $this->autoFireHeader = false;
         $this->autoFireHead = false;

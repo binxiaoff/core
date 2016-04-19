@@ -223,8 +223,9 @@ class cronController extends bootstrap
                 }
             }
             if ($bHasProjectPublished) {
-                $sKey = $this->oCache->makeKey(Cache::LIST_PROJECTS, $this->tabProjectDisplay);
-                $this->oCache->delete($sKey);
+                $oCache    = $this->get('cache');
+                $sKey = $oCache->makeKey(Cache::LIST_PROJECTS, $this->tabProjectDisplay);
+                $oCache->delete($sKey);
             }
 
             $this->stopCron();

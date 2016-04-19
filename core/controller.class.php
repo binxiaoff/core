@@ -4,7 +4,7 @@ require_once __DIR__ . '/../Autoloader.php';
 use Unilend\librairies\Cache;
 use Unilend\core\DependencyInjection\ContainerAware;
 
-class Controller extends ContainerAware
+abstract class Controller extends ContainerAware
 {
     var $Command;
     var $Config;
@@ -24,19 +24,12 @@ class Controller extends ContainerAware
 
     public $current_template = '';
 
-    /**
-     * @var Cache
-     */
-    public $oCache;
-
     public function __construct(&$command, $config, $app)
     {
         Autoloader::register();
 
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
-
-        $this->oCache = $this->get('cache');
 
         //Variables de session pour la fenetre de debug
         unset($_SESSION['error']);
@@ -46,6 +39,12 @@ class Controller extends ContainerAware
         $this->Command      = $command;
         $this->Config       = $config;
         $this->App          = $app;
+    }
+
+    protected function initialize()
+    {
+        $this->setDataBase();
+
         $this->included_js  = array();
         $this->included_css = array();
 
@@ -60,7 +59,7 @@ class Controller extends ContainerAware
         $this->current_function   = $this->Command->getfunction();
 
         // Mise en place des chemins
-        $this->path       = $this->Config['path'][$this->Config['env']];
+        $this->path       = $this->get('kernel')->getPath();
         $this->spath      = $this->Config['user_path'][$this->Config['env']];
         $this->staticPath = $this->Config['static_path'][$this->Config['env']];
         $this->logPath    = $this->Config['log_path'][$this->Config['env']];
@@ -85,6 +84,8 @@ class Controller extends ContainerAware
             $_SESSION = array();
         }
     }
+
+    abstract public function setDatabase();
 
     public function _default()
     {
@@ -118,6 +119,8 @@ class Controller extends ContainerAware
 
     public function execute()
     {
+        $this->initialize();
+
         $FunctionToCall = $this->Command->getFunction();
         if ($FunctionToCall == '') {
             $FunctionToCall = 'default';
@@ -438,11 +441,11 @@ class Controller extends ContainerAware
     public function get($service)
     {
         /** @var \Symfony\Component\DependencyInjection\Definition $definition */
-        $definition = $this->getContainer()->findDefinition($service);
-        if (is_subclass_of($definition->getClass(), '\Unilend\Service\DataService')) {
-            $definition->addMethodCall('setDBConn', array($this->bdd));
+        $service = $this->getContainer()->get($service);
+        if (is_subclass_of($service, '\Unilend\Service\DataService')) {
+            $service->setDBConn($this->bdd);
         }
-        return $this->getContainer()->get($service);
+        return $service;
     }
 
     //Charge un fichier js dans le tableau des js

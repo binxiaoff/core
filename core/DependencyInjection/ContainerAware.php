@@ -39,16 +39,6 @@ class ContainerAware implements ContainerAwareInterface
      */
     public function getContainer()
     {
-        if (false === $this->container instanceof ContainerInterface) {
-            $container = new ContainerBuilder();
-            $this->setContainer($container);
-            $loader = new YamlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
-            $loader->load('config.yml');
-            
-            $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../../Config'));
-            $loader->load('services.xml');
-            $loader->load('databases.xml');
-        }
         return $this->container;
     }
 }

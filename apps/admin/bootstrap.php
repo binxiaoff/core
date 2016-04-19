@@ -2,11 +2,13 @@
 
 class bootstrap extends Controller
 {
-    public function __construct($command, $config, $app)
+    public function setDatabase()
     {
-        $this->bdd = $this->get('database.back');
-
-        parent::__construct($command, $config, $app);
+        $this->bdd = $this->get('unilend.dbal.admin_connection');
+    }
+    public function initialize()
+    {
+        parent::initialize();
 
         if ($this->current_function != 'login') {
             $_SESSION['request_url'] = $_SERVER['REQUEST_URI'];

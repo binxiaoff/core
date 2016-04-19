@@ -2,9 +2,9 @@
 
 class ajaxController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $_SESSION['request_url'] = $this->url;
 

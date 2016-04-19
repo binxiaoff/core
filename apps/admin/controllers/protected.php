@@ -3,10 +3,10 @@
 class protectedController extends bootstrap
 {
 	var $Command;
-	
-	function protectedController($command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->autoFireHeader = false;
 		$this->autoFireHead = false;

@@ -51,9 +51,9 @@ class pdfController extends bootstrap
      */
     public $sDisplay;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         if (false === isset($this->params)) {
             $this->params = $command->getParameters();

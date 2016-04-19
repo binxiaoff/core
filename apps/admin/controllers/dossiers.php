@@ -17,9 +17,9 @@ class dossiersController extends bootstrap
      */
     public $bReadonlyRiskNote;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 

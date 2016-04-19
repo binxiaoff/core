@@ -5,10 +5,9 @@ use Unilend\librairies\Cache;
 
 class projectsController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
-
+        parent::initialize();
         $this->catchAll = true;
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
@@ -254,7 +253,8 @@ class projectsController extends bootstrap
                     $this->bids->ordre                 = $numBid;
                     $this->bids->create();
 
-                    $this->oCache->delete($this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project));
+                    $oCache = $this->get('cache');
+                    $oCache->delete($this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project));
 
                     $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
 
@@ -522,11 +522,11 @@ class projectsController extends bootstrap
                 $this->decimalesPourcentage = 1;
                 $this->txLenderMax          = '10.0';
             }
-
-            $sCacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
-            if (false === ($this->aBidsOnProject = $this->oCache->get($sCacheKey))) {
+            $oCache = $this->get('cache');
+            $sCacheKey = $oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
+            if (false === ($this->aBidsOnProject = $oCache->get($sCacheKey))) {
                 $this->aBidsOnProject  = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-                $this->oCache->set($sCacheKey, $this->aBidsOnProject, Cache::SHORT_TIME);
+                $oCache->set($sCacheKey, $this->aBidsOnProject, Cache::SHORT_TIME);
             }
             $this->CountEnchere = count($this->aBidsOnProject );
             $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');

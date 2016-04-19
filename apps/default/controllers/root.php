@@ -2,9 +2,9 @@
 
 class rootController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
         $this->catchAll = true;
     }
 
@@ -103,8 +103,9 @@ class rootController extends bootstrap
             }
 
             // Recuperation du contenu de la page
-            $sKey      = $this->oCache->makeKey('Home_Tree_Childs_Elements', $this->tree->id_tree, $this->language);
-            $aElements = $this->oCache->get($sKey);
+            $oCache    = $this->get('cache');
+            $sKey      = $oCache->makeKey('Home_Tree_Childs_Elements', $this->tree->id_tree, $this->language);
+            $aElements = $oCache->get($sKey);
             if (false === $aElements) {
                 $this->content          = array();
                 $this->complement       = array();
@@ -135,7 +136,7 @@ class rootController extends bootstrap
                 );
 
 
-                $this->oCache->set($sKey, $aElements);
+                $oCache->set($sKey, $aElements);
             }
 
             $this->content          = $aElements['content'];
@@ -152,8 +153,9 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $sKey      = $this->oCache->makeKey('Home_Blocs_Elements', $this->tree->id_template, $this->language);
-            $aElements = $this->oCache->get($sKey);
+            $oCache    = $this->get('cache');
+            $sKey      = $oCache->makeKey('Home_Blocs_Elements', $this->tree->id_template, $this->language);
+            $aElements = $oCache->get($sKey);
             if (false === $aElements) {
                 $this->bloc_content    = array();
                 $this->bloc_complement = array();
@@ -175,7 +177,7 @@ class rootController extends bootstrap
                     'bloc_complement' => $this->bloc_complement
                 );
 
-                $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
+                $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
             }
 
             $this->bloc_content    = $aElements['bloc_content'];

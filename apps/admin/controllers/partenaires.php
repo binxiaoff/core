@@ -3,10 +3,10 @@
 class partenairesController extends bootstrap
 {
 	var $Command;
-	
-	function partenairesController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 		
@@ -18,7 +18,7 @@ class partenairesController extends bootstrap
 			die;
 		}
 		
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('configuration');
 		
 		// Activation du menu

@@ -3,10 +3,10 @@
 class panierController extends bootstrap
 {
 	var $Command;
-	
-	function panierController($command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 	}

@@ -12,9 +12,9 @@ class universignController extends bootstrap
      */
     private $oLogger;
 
-    public function universignController($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
         // On masque les Head, header et footer originaux plus le debug

@@ -24,13 +24,15 @@ class Loader
 
         if (null === $db) {
             $params = Yaml::parse(file_get_contents(__DIR__ . '/../Config/parameters.yml'));
-            $db = new DataBase(
-                $params['parameters']['front.database_driver'],
-                $params['parameters']['front.database_host'],
-                $params['parameters']['front.database_name'],
-                $params['parameters']['front.database_user'],
-                $params['parameters']['front.database_password'],
-                'utf8'
+            $db = new \Unilend\Libraries\Doctrine\DBAL\DataBase(
+                [
+                    $params['parameters']['front.database_driver'],
+                    $params['parameters']['front.database_host'],
+                    $params['parameters']['front.database_name'],
+                    $params['parameters']['front.database_user'],
+                    $params['parameters']['front.database_password'],
+                    'utf8'
+                ]
             );
         }
 
