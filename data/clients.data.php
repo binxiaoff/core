@@ -970,26 +970,4 @@ class clients extends clients_crud
 
         return $aClientsWithoutWelcomeOffer;
     }
-
-    public function getBorrowers($sWhere = null)
-    {
-        if (false === is_null($sWhere)) {
-            $sWhere = ' WHERE ' . $sWhere;
-        }
-
-        $sql = 'SELECT *
-                FROM `clients`
-                INNER JOIN companies ON companies.id_client_owner = clients.id_client
-                INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
-
-        $aClientsBorrower = array();
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aClientsBorrower[] = $record;
-        }
-
-        return $aClientsBorrower;
-    }
-
 }
