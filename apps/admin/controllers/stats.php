@@ -1368,4 +1368,41 @@ class statsController extends bootstrap
             }
         }
     }
+
+    public function _requete_source_emprunteurs()
+    {
+        unset($_SESSION['forms']['stats']['requete_source_emprunteurs']);
+
+        /** @var \clients $oClient */
+        $oClient = $this->loadData('clients');
+        $this->aBorrowers = array();
+
+        if (isset($_POST['spy_search'])) {
+            if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
+                $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
+                $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
+
+                if (false === isset($_POST['groupBySiren'])) {
+                    $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'));
+                }
+            } else {
+                $_SESSION['freeow']['title']   = 'Recherche non abouti';
+                $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin';
+            }
+            $_SESSION['forms']['stats']['requete_source_emprunteurs']['aBorrowers'] = $this->aBorrowers;
+        }
+    }
+
+    public function _csv_requete_source_emprunteurs()
+    {
+        $this->autoFireView = false;
+        $this->hideDecoration();
+        $aBorrowers = array();
+
+        if (isset($_SESSION['forms']['stats']['requete_source_emprunteurs']['aBorrowers'])) {
+            $aBorrowers = $_SESSION['forms']['stats']['requete_source_emprunteurs']['aBorrowers'];
+        }
+        $aHeader = array_keys(array_shift($aBorrowers));
+        $this->exportCSV($aBorrowers, 'requete_source_emprunteurs' . date('Ymd'), $aHeader);
+    }
 }
