@@ -9,7 +9,7 @@
     <div class="col-right">
         <div class="switch-notice">
             <p id="switch-notice-active" style="display: none"><?= str_replace('[#LULR#]', $this->lurl, $this->lng['autobid']['overview-text-active']) ?></p>
-            <p id="switch-notice-first-active" style="display: none"><?= str_replace('[#LULR#]', $this->lurl,$this->lng['autobid']['overview-text-first-activation']) ?></p>
+            <p id="switch-notice-first-active" style="display: none"><?= str_replace('[#LULR#]', $this->lurl, $this->lng['autobid']['overview-text-first-activation']) ?></p>
             <p id="switch-notice-nth-active" style="display: none"><?= str_replace('[#LULR#]', $this->lurl, $this->lng['autobid']['overview-text-nth-activation']) ?></p>
             <p id="switch-notice-lender-inactive" style="display: none"><?= str_replace('[#LULR#]', $this->lurl, $this->lng['autobid']['overview-text-completeness']) ?></p>
         </div>

@@ -148,18 +148,6 @@ class bids extends bids_crud
         return array('solde' => $solde, 'nbEncours' => $nbEncours);
     }
 
-    public function projetsBidsEnCoursPreteur($id_lender)
-    {
-        $lBisd   = $this->select('id_lender_account = ' . $id_lender . ' AND status = 0');
-        $lesBids = '';
-        $i       = 0;
-        foreach ($lBisd as $b) {
-            $lesBids .= ($i > 0 ? ',' : '') . $b['id_project'];
-            $i++;
-        }
-        return $lesBids;
-    }
-
     public function sumBidsEncours($id_lender)
     {
         $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = 0';
@@ -167,39 +155,6 @@ class bids extends bids_crud
         $result  = $this->bdd->query($sql);
         $montant = (int)($this->bdd->result($result, 0, 0));
         return $montant / 100;
-    }
-
-    public function sumBidsMonth($month, $year)
-    {
-        $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year;
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        return $montant / 100;
-    }
-
-    public function sumBidsMonthEncours($month, $year)
-    {
-        $sql = 'SELECT SUM(amount) FROM `bids` WHERE MONTH(added) = ' . $month . ' AND YEAR(added) = ' . $year . ' AND status = 0';
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        return $montant / 100;
-    }
-
-    // sum prêtée d'un lender sur un mois
-    public function sumPretsByMonths($id_lender, $month, $year)
-    {
-        $sql = 'SELECT SUM(amount) FROM `bids` WHERE id_lender_account = ' . $id_lender . ' AND status = "1" AND LEFT(added,7) = "' . $year . '-' . $month . '"';
-
-        $result  = $this->bdd->query($sql);
-        $montant = (int)($this->bdd->result($result, 0, 0));
-        if ($montant > 0) {
-            $montant = $montant / 100;
-        } else {
-            $montant = 0;
-        }
-        return $montant;
     }
 
     public function sum($where = '', $champ)

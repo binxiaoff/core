@@ -101,7 +101,7 @@
                             <tr>
                                 <td>
 									<img onclick="reloadCaptcha();" class="reloadCaptcha" src="<?=$this->surl?>/images/default/Captcha-icon-reload.gif" alt="Reload captcha"/>
-                                    <img id="phoca-captcha" src="<?=$this->url?>/captcha/<?=mktime()?>.jpg" alt="captcha" />
+                                    <img id="phoca-captcha" src="<?=$this->url?>/captcha/<?=time()?>.jpg" alt="captcha" />
                                 </td>
                                 <td><input type="text" name="captcha" id="captcha" class="input_login" /></td>
                             </tr>
