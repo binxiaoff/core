@@ -970,4 +970,39 @@ class clients extends clients_crud
 
         return $aClientsWithoutWelcomeOffer;
     }
+
+    public function getBorrowersContactDetailsAndSource($sStartDate, $sEndDate)
+    {
+        $sQuery = 'SELECT
+                        p.id_project,
+                        com.siren,
+                        c.nom,
+                        c.prenom,
+                        c.email,
+                        c.mobile,
+                        c.telephone,
+                        c.source,
+                        c.source2,
+                        p.added,
+                        ps.label
+                    FROM
+                        projects p
+                        INNER JOIN companies com ON p.id_company = com.id_company
+                        INNER JOIN clients c ON com.id_client_owner = c.id_client
+                        INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE
+                        DATE(p.added) BETWEEN "'. $sStartDate . '"
+                        AND "'. $sEndDate . '"
+                    ORDER BY com.siren DESC, p.added DESC';
+
+        $rQuery = $this->bdd->query($sQuery);
+        $aResult = array();
+        while ($record = $this->bdd->fetch_assoc($rQuery)) {
+            $aResult[] = $record;
+        }
+
+        return $aResult;
+    }
 }
