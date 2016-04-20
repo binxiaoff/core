@@ -195,7 +195,7 @@ class statsController extends bootstrap
     public function _etape_inscription()
     {
         // Récup des dates
-        if ($_POST['date1'] != '') {
+        if (isset($_POST['date1']) && $_POST['date1'] != '') {
             $d1    = explode('/', $_POST['date1']);
             $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
         } else {
@@ -204,7 +204,7 @@ class statsController extends bootstrap
 
         }
 
-        if ($_POST['date2'] != '') {
+        if (isset($_POST['date2']) && $_POST['date2'] != '') {
             $d2    = explode('/', $_POST['date2']);
             $date2 = $d2[2] . '-' . $d2[1] . '-' . $d2[0];
         } else {
@@ -220,6 +220,7 @@ class statsController extends bootstrap
                         c.prenom,
                         c.email,
                         c.telephone,
+                        c.mobile,
                         c.added,
                             IF (
                                 c.etape_inscription_preteur = 3,
@@ -228,8 +229,7 @@ class statsController extends bootstrap
                                     c.etape_inscription_preteur
                                     ) as etape_inscription_preteur2,
                         c.source,
-                        c.source2,
-                        c.source3
+                        c.source2
                             FROM clients c
                             LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
                             WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "' . $date1 . ' 00:00:00' . '" AND c.added <= "' . $date2 . ' 23:59:59";';
@@ -269,6 +269,7 @@ class statsController extends bootstrap
                         c.prenom,
                         c.email,
                         c.telephone,
+                        c.mobile,
                         c.added,
                             IF (
                                 c.etape_inscription_preteur = 3,
@@ -277,8 +278,7 @@ class statsController extends bootstrap
                                     c.etape_inscription_preteur
                                     ) as etape_inscription_preteur2,
                         c.source,
-                        c.source2,
-                        c.source3
+                        c.source2
                             FROM clients c
                             LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
                             WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "' . $date1 . ' 00:00:00' . '" AND c.added <= "' . $date2 . ' 23:59:59";';
@@ -290,11 +290,11 @@ class statsController extends bootstrap
                 $this->L_clients[] = $record;
             }
 
-            $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2; Source 3\n";
+            $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2;\n";
             // construction de chaque ligne
             foreach ($this->L_clients as $u) {
                 // on concatene a $csv
-                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'], 'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur2']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . $u['slug_origine'] . "\n"; // le \n final entre " "
+                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'], 'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur2']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . "\n";
             }
 
             print($csv);
