@@ -1,4 +1,5 @@
 <?php
+use Unilend\Bundle\Memcache\Cache\MemcacheInterface;
 
 class bootstrap extends Controller
 {
@@ -121,7 +122,7 @@ class bootstrap extends Controller
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
         $this->handlePartenaire($urlParams);
 
-        $oCache    = $this->get('cache');
+        $oCache    = $this->get('memcache.default');
         $sKey      = $oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
         $aElements = $oCache->get($sKey);
         if (false === $aElements) {
@@ -152,7 +153,7 @@ class bootstrap extends Controller
                 'TreeCookies'     => $this->id_tree_cookies
             );
 
-            $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+            $oCache->set($sKey, $aElements, 0, MemcacheInterface::LONG_TIME);
         } else {
             $this->google_webmaster_tools = $aElements['GoogleTools'];
             $this->google_analytics       = $aElements['GoogleAnalytics'];
@@ -198,7 +199,7 @@ class bootstrap extends Controller
                 'blocPartenairesComplement' => $this->bloc_partenairesComplement
             );
 
-            $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
+            $oCache->set($sKey, $aElements);
         }
 
         $this->bloc_partenaires           = $aElements['blocPartenaires'];
@@ -214,7 +215,7 @@ class bootstrap extends Controller
                 'TradHome'   => $this->ln->selectFront('home', $this->language, $this->App)
             );
 
-            $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+            $oCache->set($sKey, $aElements, 0, MemcacheInterface::LONG_TIME);
         }
 
         $this->lng['header'] = $aElements['TradHeader'];

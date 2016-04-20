@@ -16,7 +16,7 @@ class ContainerAware implements ContainerAwareInterface
      *
      * @api
      */
-    private $container;
+    protected $container;
 
     /**
      * Sets the Container associated with this Controller.
@@ -28,13 +28,5 @@ class ContainerAware implements ContainerAwareInterface
     public function setContainer(ContainerInterface $container = null)
     {
         $this->container = $container;
-    }
-
-    /**
-     * @return ContainerInterface
-     */
-    public function getContainer()
-    {
-        return $this->container;
     }
 }

@@ -1,0 +1,3 @@
+parameters:
+    memcache.doctrine_cache.class: Unilend\Libraries\Memcache\Doctrine\Cache\MemcacheCache
+    memcache.session_handler.class: Unilend\Libraries\Memcache\Session\Storage\LockingSessionHandler

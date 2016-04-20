@@ -103,7 +103,7 @@ class rootController extends bootstrap
             }
 
             // Recuperation du contenu de la page
-            $oCache    = $this->get('cache');
+            $oCache    = $this->get('memcache.default');
             $sKey      = $oCache->makeKey('Home_Tree_Childs_Elements', $this->tree->id_tree, $this->language);
             $aElements = $oCache->get($sKey);
             if (false === $aElements) {
@@ -153,7 +153,7 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $oCache    = $this->get('cache');
+            $oCache    = $this->get('memcache.default');
             $sKey      = $oCache->makeKey('Home_Blocs_Elements', $this->tree->id_template, $this->language);
             $aElements = $oCache->get($sKey);
             if (false === $aElements) {
@@ -177,7 +177,7 @@ class rootController extends bootstrap
                     'bloc_complement' => $this->bloc_complement
                 );
 
-                $oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
+                $oCache->set($sKey, $aElements);
             }
 
             $this->bloc_content    = $aElements['bloc_content'];

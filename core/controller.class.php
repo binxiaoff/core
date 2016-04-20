@@ -34,7 +34,7 @@ abstract class Controller extends ContainerAware
         unset($_SESSION['error']);
         unset($_SESSION['debug']);
         unset($_SESSION['msg']);
-
+        
         $this->Command      = $command;
         $this->Config       = $config;
         $this->App          = $app;
@@ -367,7 +367,7 @@ abstract class Controller extends ContainerAware
                     <fieldset style="border:1px solid #0096ff; padding:5px; background-color:white;">
                         <legend style="border:1px solid #0096ff; padding:2px; background-color:white;"><strong>BDD:</strong></legend>
             ';
-        if (count($_SESSION['debug']) > 0) {
+        if (isset($_SESSION['debug']) && count($_SESSION['debug']) > 0) {
             foreach ($_SESSION['debug'] as $i => $sQuery) {
                 echo '<span>' . ($i == 0 ? '' : '<hr>') . ' ' . $sQuery . '</span>';
             }
@@ -439,7 +439,7 @@ abstract class Controller extends ContainerAware
 
     public function get($service)
     {
-        $service = $this->getContainer()->get($service);
+        $service = $this->container->get($service);
         if (is_subclass_of($service, '\Unilend\Service\DataService')) {
             $service->setDBConn($this->bdd);
         }

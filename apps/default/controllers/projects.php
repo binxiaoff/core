@@ -1,7 +1,6 @@
 <?php
 
-use Unilend\core\Loader;
-use Unilend\librairies\Cache;
+use Unilend\Bundle\Memcache\Cache\MemcacheInterface;
 
 class projectsController extends bootstrap
 {
@@ -253,7 +252,7 @@ class projectsController extends bootstrap
                     $this->bids->ordre                 = $numBid;
                     $this->bids->create();
 
-                    $oCache = $this->get('cache');
+                    $oCache = $this->get('memcache.default');
                     $oCache->delete($this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project));
 
                     $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
@@ -522,13 +521,13 @@ class projectsController extends bootstrap
                 $this->decimalesPourcentage = 1;
                 $this->txLenderMax          = '10.0';
             }
-            $oCache = $this->get('cache');
+            $oCache = $this->get('memcache.default');
             $sCacheKey = $oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
             if (false === ($this->aBidsOnProject = $oCache->get($sCacheKey))) {
                 $this->aBidsOnProject  = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-                $oCache->set($sCacheKey, $this->aBidsOnProject, Cache::SHORT_TIME);
+                $oCache->set($sCacheKey, $this->aBidsOnProject, 0, MemcacheInterface::SHORT_TIME);
             }
-            $this->CountEnchere = count($this->aBidsOnProject );
+            $this->CountEnchere = count($this->aBidsOnProject);
             $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
             $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
@@ -574,7 +573,7 @@ class projectsController extends bootstrap
             }
 
             /** @var \settings $oSetting */
-            $oSetting = Loader::loadData('settings');
+            $oSetting = $this->loadData('settings');
             $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
             $aFundedCompanies = explode(',', $oSetting->value);
 

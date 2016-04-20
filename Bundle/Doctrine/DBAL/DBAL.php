@@ -1,12 +1,12 @@
 <?php
-namespace Unilend\Libraries\Doctrine\DBAL;
+namespace Unilend\Bundle\Doctrine\DBAL;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\PDOException;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Driver\Statement;
 
-class DataBase
+class DBAL
 {
     /** @var Connection Current connection */
     private static $connection;
@@ -17,12 +17,7 @@ class DataBase
     /**
      * DataBase constructor.
      *
-     * @param $driver
-     * @param $host
-     * @param $dbname
-     * @param $user
-     * @param $password
-     * @param $charset
+     * @param $config
      */
     public function __construct($config)
     {
@@ -203,15 +198,18 @@ class DataBase
      *
      * @deprecated for backwards compatibility only.
      *
-     * @param Statement $statement
+     * @param Statement|null|boolean $statement
      * @param int       $row not used, for backwards compatibility only.
      * @param int       $column
      *
      * @return mixed
      */
-    public static function result(Statement $statement, $row = 0, $column = 0)
+    public static function result($statement, $row = 0, $column = 0)
     {
-        return $statement->fetchColumn($column);
+        if ($statement instanceof Statement) {
+            return $statement->fetchColumn($column);
+        }
+        return null;
     }
 
     public static function controlSlug($table, $slug, $id_name, $id_value)

@@ -10,7 +10,9 @@ use Symfony\Component\Config\Loader\LoaderResolver;
 use Symfony\Component\Config\Loader\DelegatingLoader;
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\FileLocator;
-use Unilend\Libraries;
+use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
+use Symfony\Component\HttpKernel\Bundle\BundleInterface;
+use Unilend\Bundle;
 
 class Dispatcher
 {
@@ -22,8 +24,13 @@ class Dispatcher
     private $debug;
     private $container;
     private $rootDir;
+    /**
+     * @var BundleInterface[]
+     */
+    private $bundles = [];
+    private $bundleMap;
 
-    function __construct($config, $app, $route = array(), $environment = 'prod')
+    public function __construct($config, $app, $route = array(), $environment = 'prod')
     {
         $this->App         = $app;
         $this->Config      = $config;
@@ -32,6 +39,7 @@ class Dispatcher
         $this->environment = $environment;
         $this->debug       = false;
 
+        $this->initializeBundles();
         $this->initializeContainer();
         $this->handleUrl();
         $this->dispatch();
@@ -244,7 +252,7 @@ class Dispatcher
     public function getPath()
     {
         if (null === $this->rootDir) {
-            $r = new \ReflectionObject($this);
+            $r             = new \ReflectionObject($this);
             $this->rootDir = realpath(dirname($r->getFileName()) . '/..') . '/';
         }
 
@@ -262,6 +270,59 @@ class Dispatcher
             call_user_func(array($this, '_error'), 'bootstrap not found : ' . $this->App . '/' . $bootstrap . '.php');
         } else {
             include($this->path . 'apps/' . $this->App . '/' . $bootstrap . '.php');
+        }
+    }
+
+    protected function initializeBundles()
+    {
+        // init bundles
+        $this->bundles  = array();
+        $topMostBundles = array();
+        $directChildren = array();
+
+        foreach ($this->registerBundles() as $bundle) {
+            $name = $bundle->getName();
+            if (isset($this->bundles[$name])) {
+                throw new \LogicException(sprintf('Trying to register two bundles with the same name "%s"', $name));
+            }
+            $this->bundles[$name] = $bundle;
+
+            if ($parentName = $bundle->getParent()) {
+                if (isset($directChildren[$parentName])) {
+                    throw new \LogicException(sprintf('Bundle "%s" is directly extended by two bundles "%s" and "%s".', $parentName, $name, $directChildren[$parentName]));
+                }
+                if ($parentName == $name) {
+                    throw new \LogicException(sprintf('Bundle "%s" can not extend itself.', $name));
+                }
+                $directChildren[$parentName] = $name;
+            } else {
+                $topMostBundles[$name] = $bundle;
+            }
+        }
+
+        // look for orphans
+        if (! empty($directChildren) && count($diff = array_diff_key($directChildren, $this->bundles))) {
+            $diff = array_keys($diff);
+
+            throw new \LogicException(sprintf('Bundle "%s" extends bundle "%s", which is not registered.', $directChildren[$diff[0]], $diff[0]));
+        }
+
+        // inheritance
+        $this->bundleMap = array();
+        foreach ($topMostBundles as $name => $bundle) {
+            $bundleMap = array($bundle);
+            $hierarchy = array($name);
+
+            while (isset($directChildren[$name])) {
+                $name = $directChildren[$name];
+                array_unshift($bundleMap, $this->bundles[$name]);
+                $hierarchy[] = $name;
+            }
+
+            foreach ($hierarchy as $bundle) {
+                $this->bundleMap[$bundle] = $bundleMap;
+                array_pop($bundleMap);
+            }
         }
     }
 
@@ -388,6 +449,11 @@ class Dispatcher
      */
     private function getKernelParameters()
     {
+        $bundles = array();
+        foreach ($this->bundles as $name => $bundle) {
+            $bundles[$name] = get_class($bundle);
+        }
+
         return array_merge(
             array(
                 'kernel.root_dir'        => $this->path,
@@ -396,6 +462,7 @@ class Dispatcher
                 'kernel.name'            => $this->App,
                 'kernel.cache_dir'       => realpath($this->getCacheDir()) ? : $this->getCacheDir(),
                 'kernel.logs_dir'        => realpath($this->getLogDir()) ? : $this->getLogDir(),
+                'kernel.bundles'         => $bundles,
                 'kernel.charset'         => $this->getCharset(),
                 'kernel.container_class' => $this->getContainerClass(),
             ),
@@ -429,11 +496,23 @@ class Dispatcher
      */
     private function prepareContainer(ContainerBuilder $container)
     {
-        $extensions = $this->getExtensions();
-        foreach ($extensions as $extension) {
-            $container->registerExtension($extension);
+        $extensions = array();
+        foreach ($this->bundles as $bundle) {
+            if ($extension = $bundle->getContainerExtension()) {
+                $container->registerExtension($extension);
+                $extensions[] = $extension->getAlias();
+            }
+
+            if ($this->debug) {
+                $container->addObjectResource($bundle);
+            }
         }
-        $container->getCompilerPassConfig()->setMergePass(new \Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass($extension));
+        
+        foreach ($this->bundles as $bundle) {
+            $bundle->build($container);
+        }
+        
+        $container->getCompilerPassConfig()->setMergePass(new MergeExtensionConfigurationPass($extension));
     }
 
     private function registerContainerConfiguration(LoaderInterface $loader)
@@ -450,14 +529,11 @@ class Dispatcher
      */
     private function getContainerLoader(ContainerInterface $container)
     {
-        $locator = new FileLocator($this->getConfigDir());
+        $locator  = new FileLocator($this->getConfigDir());
         $resolver = new LoaderResolver(array(
             new XmlFileLoader($container, $locator),
             new YamlFileLoader($container, $locator),
-            // Not used for now
-            //new IniFileLoader($container, $locator),
-            //new PhpFileLoader($container, $locator),
-            //new ClosureLoader($container),
+            // We can also add ini, php and closure configuration file support.
         ));
 
         return new DelegatingLoader($resolver);
@@ -477,7 +553,7 @@ class Dispatcher
         $dumper = new PhpDumper($container);
 
         $content = $dumper->dump(array('class' => $class, 'base_class' => $baseClass, 'file' => $cache->getPath()));
-        if (!$this->debug) {
+        if (! $this->debug) {
             $content = static::stripComments($content);
         }
 
@@ -496,19 +572,19 @@ class Dispatcher
      */
     public static function stripComments($source)
     {
-        if (!function_exists('token_get_all')) {
+        if (! function_exists('token_get_all')) {
             return $source;
         }
 
-        $rawChunk = '';
-        $output = '';
-        $tokens = token_get_all($source);
+        $rawChunk    = '';
+        $output      = '';
+        $tokens      = token_get_all($source);
         $ignoreSpace = false;
         for (reset($tokens); false !== $token = current($tokens); next($tokens)) {
             if (is_string($token)) {
                 $rawChunk .= $token;
             } elseif (T_START_HEREDOC === $token[0]) {
-                $output .= $rawChunk.$token[1];
+                $output .= $rawChunk . $token[1];
                 do {
                     $token = next($tokens);
                     $output .= $token[1];
@@ -540,10 +616,43 @@ class Dispatcher
         return $output;
     }
 
-    private function getExtensions()
+    public function registerBundles()
     {
-        return [
-            new Libraries\Doctrine\DBAL\DependencyInjection\DoctrineExtension(),
+        $bundles = [
+            new Bundle\Doctrine\DBAL\DoctrineBundle(),
+            new Bundle\Memcache\MemcacheBundle(),
+            new Bundle\Monolog\MonologBundle(),
         ];
+
+        return $bundles;
+    }
+
+    public function getBundle($name, $first = true)
+    {
+        if (! isset($this->bundleMap[$name])) {
+            throw new \InvalidArgumentException(
+                sprintf(
+                    'Bundle "%s" does not exist or it is not enabled. Maybe you forgot to add it in the registerBundles() method of your %s.php file?',
+                    $name,
+                    get_class($this)
+                )
+            );
+        }
+
+        if (true === $first) {
+            return $this->bundleMap[$name][0];
+        }
+
+        return $this->bundleMap[$name];
+    }
+
+    /**
+     * {@inheritdoc}
+     *
+     * @api
+     */
+    public function getBundles()
+    {
+        return $this->bundles;
     }
 }

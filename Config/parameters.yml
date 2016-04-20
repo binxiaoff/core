@@ -19,3 +19,6 @@ parameters:
     cron.database_name:     unilend
     cron.database_user:     cron
     cron.database_password: cron
+
+    server1.memcache_host:   127.0.0.1
+    server1.memcache_port:   11211

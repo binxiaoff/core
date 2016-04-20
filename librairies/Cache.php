@@ -2,6 +2,11 @@
 
 namespace Unilend\librairies;
 
+/**
+ * Class Cache
+ * @package Unilend\librairies
+ * @deprecated
+ */
 class Cache extends \Memcache
 {
     const SHORT_TIME  = 300;
@@ -32,7 +37,6 @@ class Cache extends \Memcache
     }
 
     /**
-     * @deprecated
      * @return Cache
      */
     public static function getInstance()

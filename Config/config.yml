@@ -30,3 +30,29 @@ doctrine:
                 user:     "%cron.database_user%"
                 password: "%cron.database_password%"
                 charset:  "UTF8"
+
+memcache:
+    pools:
+        default:
+            servers:
+                - { host: "%server1.memcache_host%", tcp_port: "%server1.memcache_port%", weight: 15 }
+            options:
+                allow_failover: true
+                max_failover_attempts: 20
+                default_port: 11211
+                chunk_size: 32768
+                protocol: ascii
+                hash_strategy: consistent
+                hash_function: crc32
+                redundancy: true
+                session_redundancy: 2
+                compress_threshold: 20000
+                lock_timeout: 15
+
+monolog:
+    handlers:
+        main:
+            type: rotating_file
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: info
+            max_files: 10

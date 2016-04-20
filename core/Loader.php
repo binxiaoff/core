@@ -2,7 +2,8 @@
 namespace Unilend\core;
 
 use Symfony\Component\Yaml\Yaml;
-use Unilend\Libraries\Doctrine\DBAL\ConnectionFactory;
+use Unilend\Bundle\Doctrine\DBAL\ConnectionFactory;
+use Unilend\librairies\Cache;
 
 /**
  * Class Loader
@@ -24,16 +25,16 @@ class Loader
         $config = self::loadConfig();
 
         if (null === $db) {
-            $params = Yaml::parse(file_get_contents(__DIR__ . '/../Config/parameters.yml'));
+            $params            = Yaml::parse(file_get_contents(__DIR__ . '/../Config/parameters.yml'));
             $connectionFactory = new ConnectionFactory();
-            $db = $connectionFactory->createConnection(
+            $db                = $connectionFactory->createConnection(
                 [
-                    $params['parameters']['front.database_driver'],
-                    $params['parameters']['front.database_host'],
-                    $params['parameters']['front.database_name'],
-                    $params['parameters']['front.database_user'],
-                    $params['parameters']['front.database_password'],
-                    'utf8'
+                    'driver'   => $params['parameters']['database_driver'],
+                    'host'     => $params['parameters']['database_host'],
+                    'name'     => $params['parameters']['database_name'],
+                    'user'     => $params['parameters']['database_user'],
+                    'password' => $params['parameters']['database_password'],
+                    'charset'  => 'utf8'
                 ]
             );
         }

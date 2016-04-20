@@ -223,7 +223,7 @@ class cronController extends bootstrap
                 }
             }
             if ($bHasProjectPublished) {
-                $oCache    = $this->get('cache');
+                $oCache    = $this->get('memcache.default');
                 $sKey = $oCache->makeKey(Cache::LIST_PROJECTS, $this->tabProjectDisplay);
                 $oCache->delete($sKey);
             }
@@ -304,7 +304,7 @@ class cronController extends bootstrap
             }
 
             if ($bHasProjectFinished) {
-                $oCache = $this->get('cache');
+                $oCache = $this->get('memcache.default');
                 $sKey   = $oCache->makeKey(\Unilend\librairies\Cache::LIST_PROJECTS, $this->tabProjectDisplay);
                 $oCache->delete($sKey);
             }

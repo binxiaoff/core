@@ -230,7 +230,7 @@ class projects extends projects_crud
                 $aResult[] = $record;
             }
 
-            $oCache->set($sCacheKey, $aResult, 60);
+            $oCache->set($sCacheKey, $aResult);
         }
         return $aResult;
     }
@@ -322,7 +322,7 @@ class projects extends projects_crud
         }
 
             $aSiblings = array('previous' => $previous, 'next' => $next);
-            $oCache->set($sKey, $aSiblings, Cache::SHORT_TIME);
+            $oCache->set($sKey, $aSiblings);
         }
 
         return $aSiblings;
@@ -719,7 +719,7 @@ class projects extends projects_crud
 
             $rQuery   = $this->bdd->query($sQuery);
             $mAvgRate = $this->bdd->result($rQuery, 0, 0);
-            $oCache->set($sKey, $mAvgRate, Cache::MEDIUM_TIME);
+            $oCache->set($sKey, $mAvgRate);
         }
 
         return $mAvgRate;

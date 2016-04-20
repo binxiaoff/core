@@ -1,8 +1,7 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\core\Loader;
-use Unilend\librairies\Cache;
+use Unilend\Bundle\Memcache\Cache\MemcacheInterface;
 
 /**
  * Class ClientSettingsManager
@@ -12,8 +11,11 @@ class ClientSettingsManager extends DataService
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 
-    public function __construct()
+    private $oCache;
+
+    public function __construct(MemcacheInterface $oCache)
     {
+        $this->oCache = $oCache;
         $this->loadData('client_setting_type'); //load for use of constants
     }
 
@@ -59,14 +61,12 @@ class ClientSettingsManager extends DataService
     {
         /** @var \client_settings $oClientSettings */
         $oClientSettings = $this->loadData('client_settings');
-        
-        $oCache = Cache::getInstance();
-        $sKey   = $oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
-        $mValue = $oCache->get($sKey);
+        $sKey            = $this->oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
+        $mValue          = $this->oCache->get($sKey);
 
         if (false === $mValue) {
             $mValue = $oClientSettings->getSetting($oClient->id_client, $iSettingType);
-            $oCache->set($sKey, $mValue);
+            $this->oCache->set($sKey, $mValue);
         }
 
         return $mValue;
@@ -74,8 +74,8 @@ class ClientSettingsManager extends DataService
 
     private function flushSettingCache(\clients $oClient, $iSettingType)
     {
-        $oCache = Cache::getInstance();
-        $sKey   = $oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
-        $oCache->delete($sKey);
+        $this->oCache = $this->getCache();
+        $sKey         = $this->oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
+        $this->oCache->delete($sKey);
     }
 }

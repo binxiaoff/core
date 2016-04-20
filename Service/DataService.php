@@ -1,15 +1,15 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\core\DataBase;
+use Unilend\Bundle\Doctrine\DBAL\DBAL;
 use Unilend\core\Loader;
 
 class DataService
 {
-    /** @var  DataBase */
+    /** @var DBAL */
     private $oDBConn;
 
-    public function setDBConn(DataBase $oDBConn)
+    public function setDBConn(DBAL $oDBConn)
     {
         $this->oDBConn = $oDBConn;
     }

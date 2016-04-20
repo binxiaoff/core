@@ -265,7 +265,7 @@ class bids extends bids_crud
                     $mPercentage[$sRate] = (int) $mPercentage[$sRate];
                 }
             }
-            $oCache->set($sKey, $mPercentage, Cache::MEDIUM_TIME);
+            $oCache->set($sKey, $mPercentage);
         }
 
         return $mPercentage;

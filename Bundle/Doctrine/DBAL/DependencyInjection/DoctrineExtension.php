@@ -1,13 +1,12 @@
 <?php
-namespace Unilend\Libraries\Doctrine\DBAL\DependencyInjection;
+namespace Unilend\Bundle\Doctrine\DBAL\DependencyInjection;
 
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\DefinitionDecorator;
-use Symfony\Component\DependencyInjection\Exception\InvalidArgumentException;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Reference;
+use Unilend\core\Extension;
 
 /**
  * This is the class that loads and manages the configuration
@@ -26,22 +25,21 @@ class DoctrineExtension extends Extension
     public function load(array $configs, ContainerBuilder $container)
     {
         $configuration = $this->getConfiguration($configs, $container);
-        $config = $this->processConfiguration($configuration, $configs);
+        $config        = $this->processConfiguration($configuration, $configs);
 
-        if (!empty($config['dbal'])) {
+        if (! empty($config['dbal'])) {
             $this->dbalLoad($config['dbal'], $container);
         }
     }
 
 
-
     public function dbalLoad(array $config, ContainerBuilder $container)
     {
-        $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources//config'));
+        $loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources//config'));
         $loader->load('dbal.xml');
 
         if (empty($config['default_connection'])) {
-            $keys = array_keys($config['connections']);
+            $keys                         = array_keys($config['connections']);
             $config['default_connection'] = reset($keys);
         }
 
@@ -76,6 +74,7 @@ class DoctrineExtension extends Extension
             ->setDefinition(sprintf('unilend.dbal.%s_connection', $name), new DefinitionDecorator('unilend.dbal.connection'))
             ->setArguments(array($connection));
     }
+
     /**
      * {@inheritDoc}
      */

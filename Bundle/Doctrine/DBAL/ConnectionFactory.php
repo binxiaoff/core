@@ -12,7 +12,7 @@
  * file that was distributed with this source code.
  */
 
-namespace Unilend\Libraries\Doctrine\DBAL;
+namespace Unilend\Bundle\Doctrine\DBAL;
 
 /**
  * Connection
@@ -28,7 +28,7 @@ class ConnectionFactory
      */
     public function createConnection(array $params)
     {
-        $connection = new DataBase($params);
+        $connection = new DBAL($params);
 
         return $connection;
     }
