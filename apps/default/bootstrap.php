@@ -339,7 +339,7 @@ class bootstrap extends Controller
             $this->bDisplayHeaderBorrower      = false;
             $this->bShowChoiceBorrowerOrLender = $this->bIsBorrowerAndLender;
 
-            $this->addDataLayer('uid', $this->clients->hash);
+            $this->addDataLayer('uid', md5($this->clients->email));
 
             if ($this->bIsBorrowerAndLender) {
                 $this->getDataBorrower();
