@@ -69,7 +69,7 @@
             <td></td>
             <td></td>
             <th>Statut :</th>
-            <td><?= $this->current_projects_status->label ?></td>
+            <td><?= $this->projects_status->label ?></td>
         </tr>
         <tr>
             <th>Commission Unilend :</th>

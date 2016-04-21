@@ -742,7 +742,7 @@ class bootstrap extends Controller
     }
 
     /**
-     * Set the source details in session
+     * Set the source details in session and push into dataLayer
      */
     private function setSessionSource()
     {
@@ -756,6 +756,10 @@ class bootstrap extends Controller
                 'utm_source'   => 'Directe',
                 'slug_origine' => $this->getSlug()
             );
+        }
+
+        foreach ($_SESSION['source'] as $mKey => $mValue) {
+            $this->addDataLayer($mKey, $mValue);
         }
     }
 

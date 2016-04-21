@@ -1430,7 +1430,6 @@ class cronController extends bootstrap
             $bank                                = $this->loadData('bank_lines');
             $projects                            = $this->loadData('projects');
             $companies                           = $this->loadData('companies');
-            $prelevements                        = $this->loadData('prelevements');
             $bank_unilend                        = $this->loadData('bank_unilend');
             $this->notifications                 = $this->loadData('notifications');
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
@@ -1620,15 +1619,22 @@ class cronController extends bootstrap
                             $receptions->create();
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
-                                preg_match('#[0-9]+#', $motif, $extract);
-                                $iProjectId = (int) ltrim($extract[0], '0');
-                                $listPrel   = $prelevements->select('id_project = ' . $iProjectId . ' AND status = 0');
+                                preg_match_all('#[0-9]+#', $motif, $extract);
+                                $iProjectId = (int) $extract[0][0];
 
-                                $sMotifPrelevement = 'UNILEND' . $extract[0] . 'E';
+                                /** @var \echeanciers_emprunteur $oRepaymentSchedule */
+                                $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                                $aNextRepayment = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+
+                                /** @var \prelevements $oBankDirectDebit */
+                                $oBankDirectDebit = $this->loadData('prelevements');
+
+                                $sMotifPrelevement = 'UNILEND' . $iProjectId . 'E';
                                 if (
-                                    count($listPrel) > 0
+                                    count($aNextRepayment) > 0
+                                    && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
                                     && false !== strpos($motif, $sMotifPrelevement)
-                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
+                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
                                 ) {
                                     $projects->get($iProjectId, 'id_project');
                                     $companies->get($projects->id_company, 'id_company');
@@ -4297,7 +4303,7 @@ class cronController extends bootstrap
         }
     }
 
-        /**
+    /**
      * Send new projects summary email
      * @param array $aCustomerId
      * @param string $sFrequency (quotidienne/hebdomadaire)
@@ -4964,6 +4970,7 @@ class cronController extends bootstrap
                     $sRepaymentsListHTML        = '';
                     $fTotalInterestsTaxFree     = 0;
                     $fTotalInterestsTaxIncluded = 0;
+                    $fTotalAmount               = 0;
                     $fTotalCapital              = 0;
                     $iRepaymentsCount           = count($aMailNotifications);
 
@@ -5001,11 +5008,13 @@ class cronController extends bootstrap
                         } else {
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
-                            $fRepaymentCapital              = $oLenderRepayment->montant / 100;
+                            $fRepaymentCapital              = $oLenderRepayment->capital / 100;
                             $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
                             $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
+                            $fRepaymentAmount               = $fRepaymentCapital + $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
                         }
 
+                        $fTotalAmount += $fRepaymentAmount;
                         $fTotalCapital += $fRepaymentCapital;
                         $fTotalInterestsTaxIncluded += $fRepaymentInterestsTaxIncluded;
                         $fTotalInterestsTaxFree += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
@@ -5013,6 +5022,7 @@ class cronController extends bootstrap
                         $sRepaymentsListHTML .= '
                             <tr style="color:#b20066;">
                                 <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentAmount) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentCapital) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;&euro;</td>
@@ -5022,6 +5032,7 @@ class cronController extends bootstrap
                     $sRepaymentsListHTML .= '
                         <tr>
                             <td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalAmount) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalCapital) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxIncluded) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxFree) . '&nbsp;&euro;</td>
@@ -5068,7 +5079,8 @@ class cronController extends bootstrap
                         'contenu'                => $sContent,
                         'sujet'                  => $sSubject,
                         'lien_fb'                => $this->like_fb,
-                        'lien_tw'                => $this->twitter
+                        'lien_tw'                => $this->twitter,
+                        'annee'                  => date('Y')
                     );
 
                     $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
@@ -5990,7 +6002,8 @@ class cronController extends bootstrap
                                 'solde_p'              => $this->ficelle->formatNumber($getsolde) . (($getsolde >= 2) ? ' euros' : ' euro'),
                                 'motif_virement'       => $this->clients->getLenderPattern($this->clients->id_client),
                                 'lien_fb'              => $this->like_fb,
-                                'lien_tw'              => $this->twitter
+                                'lien_tw'              => $this->twitter,
+                                'annee'                => date('Y')
                             );
                             $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
 
