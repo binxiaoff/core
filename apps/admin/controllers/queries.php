@@ -168,6 +168,7 @@ class queriesController extends bootstrap
 
         /** @var \PHPExcel_Writer_CSV $oWriter */
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
     }
