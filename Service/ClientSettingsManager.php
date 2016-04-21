@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\Bundle\Memcache\Cache\MemcacheInterface;
+use Psr\Cache\CacheItemPoolInterface;
 
 /**
  * Class ClientSettingsManager
@@ -11,11 +11,11 @@ class ClientSettingsManager extends DataService
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 
-    private $oCache;
+    private $oCachePool;
 
-    public function __construct(MemcacheInterface $oCache)
+    public function __construct(CacheItemPoolInterface $oCachePool)
     {
-        $this->oCache = $oCache;
+        $this->oCachePool = $oCachePool;
         $this->loadData('client_setting_type'); //load for use of constants
     }
 
@@ -61,12 +61,15 @@ class ClientSettingsManager extends DataService
     {
         /** @var \client_settings $oClientSettings */
         $oClientSettings = $this->loadData('client_settings');
-        $sKey            = $this->oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
-        $mValue          = $this->oCache->get($sKey);
+        $oCachedItem     = $this->oCachePool->get(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
 
-        if (false === $mValue) {
+        if (false === $oCachedItem->isHit()) {
             $mValue = $oClientSettings->getSetting($oClient->id_client, $iSettingType);
-            $this->oCache->set($sKey, $mValue);
+            $oCachedItem->set($mValue)
+                        ->expiresAfter(1800);
+            $this->oCachePool->save($oCachedItem);
+        } else {
+            $mValue = $oCachedItem->get();
         }
 
         return $mValue;
@@ -74,8 +77,6 @@ class ClientSettingsManager extends DataService
 
     private function flushSettingCache(\clients $oClient, $iSettingType)
     {
-        $this->oCache = $this->getCache();
-        $sKey         = $this->oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
-        $this->oCache->delete($sKey);
+        $this->oCachePool->deleteItem(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
     }
 }

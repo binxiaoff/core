@@ -21,8 +21,6 @@ $bCacheFullPage = ($_SERVER['SERVER_NAME'] === 'www.unilend.fr');
 
 if ($bCacheFullPage) {
     include_once __DIR__ . '/../../Autoloader.php';
-    Autoloader::register();
-
     require __DIR__ . '/prepend.php';
 }
 

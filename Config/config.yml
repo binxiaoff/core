@@ -31,23 +31,14 @@ doctrine:
                 password: "%cron.database_password%"
                 charset:  "UTF8"
 
-memcache:
-    pools:
-        default:
-            servers:
-                - { host: "%server1.memcache_host%", tcp_port: "%server1.memcache_port%", weight: 15 }
+cache_adapter:
+    providers:
+        default_memcache_adapter:
+            factory: 'cache.factory.memcache'
             options:
-                allow_failover: true
-                max_failover_attempts: 20
-                default_port: 11211
-                chunk_size: 32768
-                protocol: ascii
-                hash_strategy: consistent
-                hash_function: crc32
-                redundancy: true
-                session_redundancy: 2
-                compress_threshold: 20000
-                lock_timeout: 15
+                host: "%server1.memcache_host%"
+                port: "%server1.memcache_port%"
+            aliases: ['memcache.default']
 
 monolog:
     handlers:
@@ -56,3 +47,9 @@ monolog:
             path: "%kernel.logs_dir%/%kernel.environment%.log"
             level: info
             max_files: 10
+
+swiftmailer:
+    transport: '%mailer_transport%'
+    host:      '%mailer_host%'
+    username:  '%mailer_user%'
+    password:  '%mailer_password%'

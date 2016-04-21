@@ -103,10 +103,10 @@ class rootController extends bootstrap
             }
 
             // Recuperation du contenu de la page
-            $oCache    = $this->get('memcache.default');
-            $sKey      = $oCache->makeKey('Home_Tree_Childs_Elements', $this->tree->id_tree, $this->language);
-            $aElements = $oCache->get($sKey);
-            if (false === $aElements) {
+            $oCachePool = $this->get('memcache.default');
+
+            $oCachedItem  = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            if (false === $oCachedItem->isHit()) {
                 $this->content          = array();
                 $this->complement       = array();
                 $this->childsContent    = array();
@@ -135,8 +135,11 @@ class rootController extends bootstrap
                     'childsComplement' => $this->childsComplement
                 );
 
-
-                $oCache->set($sKey, $aElements);
+                $oCachedItem->set($aElements)
+                            ->expiresAfter(3600);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $aElements    = $oCachedItem->get();
             }
 
             $this->content          = $aElements['content'];
@@ -153,10 +156,9 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $oCache    = $this->get('memcache.default');
-            $sKey      = $oCache->makeKey('Home_Blocs_Elements', $this->tree->id_template, $this->language);
-            $aElements = $oCache->get($sKey);
-            if (false === $aElements) {
+            $oCachedItem  = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            
+            if (false === $oCachedItem->isHit()) {
                 $this->bloc_content    = array();
                 $this->bloc_complement = array();
                 // Recuperation des blocs pour chaque position
@@ -177,7 +179,11 @@ class rootController extends bootstrap
                     'bloc_complement' => $this->bloc_complement
                 );
 
-                $oCache->set($sKey, $aElements);
+                $oCachedItem->set($aElements)
+                            ->expiresAfter(3600);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $aElements    = $oCachedItem->get();
             }
 
             $this->bloc_content    = $aElements['bloc_content'];

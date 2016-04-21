@@ -4,8 +4,6 @@ set_time_limit(0);
 
 require_once __DIR__ . '/../Autoloader.php';
 
-\Autoloader::register();
-
 use Unilend\apps\Command;
 use Unilend\core\Console\Application;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

@@ -12,7 +12,6 @@ use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\Compiler\MergeExtensionConfigurationPass;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
-use Unilend\Bundle;
 
 class Dispatcher
 {
@@ -507,11 +506,11 @@ class Dispatcher
                 $container->addObjectResource($bundle);
             }
         }
-        
+
         foreach ($this->bundles as $bundle) {
             $bundle->build($container);
         }
-        
+
         $container->getCompilerPassConfig()->setMergePass(new MergeExtensionConfigurationPass($extension));
     }
 
@@ -619,9 +618,10 @@ class Dispatcher
     public function registerBundles()
     {
         $bundles = [
-            new Bundle\Doctrine\DBAL\DoctrineBundle(),
-            new Bundle\Memcache\MemcacheBundle(),
-            new Bundle\Monolog\MonologBundle(),
+            new Unilend\Bundle\Doctrine\DBAL\DoctrineBundle(),
+            new Unilend\Bundle\Monolog\MonologBundle(),
+            new \Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle(),
+            new Cache\AdapterBundle\CacheAdapterBundle(),
         ];
 
         return $bundles;

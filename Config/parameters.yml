@@ -22,3 +22,8 @@ parameters:
 
     server1.memcache_host:   127.0.0.1
     server1.memcache_port:   11211
+
+    mailer_transport: mail
+    mailer_host: ~
+    mailer_user: ~
+    mailer_password: ~

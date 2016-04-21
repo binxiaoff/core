@@ -25,8 +25,6 @@ abstract class Controller extends ContainerAware
 
     public function __construct(&$command, $config, $app)
     {
-        Autoloader::register();
-
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
@@ -34,7 +32,7 @@ abstract class Controller extends ContainerAware
         unset($_SESSION['error']);
         unset($_SESSION['debug']);
         unset($_SESSION['msg']);
-        
+
         $this->Command      = $command;
         $this->Config       = $config;
         $this->App          = $app;

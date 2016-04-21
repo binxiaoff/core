@@ -13,8 +13,6 @@ use Unilend\core\Bootstrap;
 use Unilend\core\Cron;
 use Unilend\librairies\ULogger;
 
-Autoloader::register();
-
 $oBootstrap = Bootstrap::getInstance($config);
 $oCron      = new Cron($oBootstrap);
 $oCron->setOptions(

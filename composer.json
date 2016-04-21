@@ -13,7 +13,11 @@
     "symfony/event-dispatcher": "^3.0",
     "symfony/yaml": "^3.0",
     "symfony/monolog-bridge": "^3.0",
-    "symfony/http-kernel": "~3.0"
+    "symfony/http-kernel": "~3.0",
+    "symfony/swiftmailer-bundle": "^2.3",
+    "symfony/monolog-bundle": "^2.11",
+    "cache/adapter-bundle": "^0.3.3",
+    "cache/memcache-adapter": "^0.2.1"
   },
   "autoload": {
     "psr-4": {

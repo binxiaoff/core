@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\Bundle\Memcache\Cache\MemcacheInterface;
-
 class projectsController extends bootstrap
 {
     public function initialize()
@@ -521,12 +519,19 @@ class projectsController extends bootstrap
                 $this->decimalesPourcentage = 1;
                 $this->txLenderMax          = '10.0';
             }
-            $oCache = $this->get('memcache.default');
-            $sCacheKey = $oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
-            if (false === ($this->aBidsOnProject = $oCache->get($sCacheKey))) {
-                $this->aBidsOnProject  = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-                $oCache->set($sCacheKey, $this->aBidsOnProject, 0, MemcacheInterface::SHORT_TIME);
+            $oCachePool           = $this->get('memcache.default');
+            $oCachedItem          = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $this->projects->id_project);
+
+
+            if (false === $oCachedItem->isHit()) {
+                $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+                $oCachedItem->set($this->aBidsOnProject)
+                            ->expiresAfter(300);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $this->aBidsOnProject = $oCachedItem->get();
             }
+
             $this->CountEnchere = count($this->aBidsOnProject);
             $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
             $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
