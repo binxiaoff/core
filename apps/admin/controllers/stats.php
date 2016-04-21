@@ -1371,38 +1371,43 @@ class statsController extends bootstrap
 
     public function _requete_source_emprunteurs()
     {
-        unset($_SESSION['forms']['stats']['requete_source_emprunteurs']);
-
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient          = $this->loadData('clients');
         $this->aBorrowers = array();
 
-        if (isset($_POST['spy_search'])) {
-            if (false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
-                $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
-                $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
+        if (isset($_POST['dateStart'], $_POST['dateEnd']) && false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
+            $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
+            $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
 
-                if (false === isset($_POST['groupBySiren'])) {
-                    $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'));
-                }
-            } else {
-                $_SESSION['freeow']['title']   = 'Recherche non abouti';
-                $_SESSION['freeow']['message'] = 'Il faut une date de d&eacutebut et de fin';
+            if (isset($_POST['queryOptions']) && 'allLines' == $_POST['queryOptions']) {
+                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'), $bGroupBySiren = false);
             }
-            $_SESSION['forms']['stats']['requete_source_emprunteurs']['aBorrowers'] = $this->aBorrowers;
-        }
-    }
+            if (isset($_POST['queryOptions']) && in_array($_POST['queryOptions'], array(
+                    'groupBySirenWithDetails',
+                    'groupBySiren'
+                ))
+            ) {
+                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'), $bGroupBySiren = true);
 
-    public function _csv_requete_source_emprunteurs()
-    {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-        $aBorrowers = array();
+                if ('groupBySirenWithDetails' == $_POST['queryOptions']) {
+                    foreach ($this->aBorrowers as $iKey => $aBorrower) {
+                        if ($aBorrower['countSiren'] > 1) {
+                            $this->aBorrowers[$iKey]['firstEntrySource'] = $oClient->getFirstSourceForSiren($aBorrower['siren'], $oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'));
+                            $this->aBorrowers[$iKey]['lastEntrySource']  = $oClient->getLastSourceForSiren($aBorrower['siren'], $oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'));
+                            /** @var \projects_status $oProjectStatus */
+                            $oProjectStatus = $this->loadData('projects_status');
+                            $oProjectStatus->getLastStatut($aBorrower['id_project']);
+                            $this->aBorrowers[$iKey]['lastLabel'] = $oProjectStatus->label;
+                            $aHeaderExtended = array_keys(($this->aBorrowers[$iKey]));
+                        }
+                    }
+                }
+            }
 
-        if (isset($_SESSION['forms']['stats']['requete_source_emprunteurs']['aBorrowers'])) {
-            $aBorrowers = $_SESSION['forms']['stats']['requete_source_emprunteurs']['aBorrowers'];
+            if (isset($_POST['extraction_csv'])) {
+                $aHeader = isset($aHeaderExtended) ? $aHeaderExtended : array_keys(array_shift($this->aBorrowers));
+                $this->exportCSV($this->aBorrowers, 'requete_source_emprunteurs' . date('Ymd'), $aHeader);
+            }
         }
-        $aHeader = array_keys(array_shift($aBorrowers));
-        $this->exportCSV($aBorrowers, 'requete_source_emprunteurs' . date('Ymd'), $aHeader);
     }
 }
