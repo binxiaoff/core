@@ -636,7 +636,7 @@ class profileController extends bootstrap
 
                     /** @var \Unilend\Service\ClientManager $oClientManager */
                     $oClientManager = $this->get('ClientManager');
-                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients, $contenu);
+                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
@@ -1455,7 +1455,7 @@ class profileController extends bootstrap
 
                     /** @var \Unilend\Service\ClientManager $oClientManager */
                     $oClientManager = $this->get('ClientManager');
-                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients, $contenu);
+                    $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
                     $destinataire = $this->settings->value;
@@ -1893,7 +1893,7 @@ class profileController extends bootstrap
         if (false !== strpos($sContentForHistory, '<li>')) {
             /** @var \Unilend\Service\ClientManager $oClientManager */
             $oClientManager = $this->get('ClientManager');
-            $oClientManager->changeClientStatusTriggeredByClientAction($this->clients, $sContentForHistory);
+            $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $sContentForHistory);
             $this->sendAccountModificationEmail($this->clients);
             $_SESSION['form_profile_doc']['answer_upload'] = $this->lng['profile']['message-completness-document-upload'];
         }
