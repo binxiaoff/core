@@ -1619,22 +1619,19 @@ class cronController extends bootstrap
                             $receptions->create();
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
-                                preg_match_all('#[0-9]+#', $motif, $extract);
-                                $sPattern = $extract[0][0];
-                                $iProjectId = (int) $sPattern;
+                                preg_match('#[0-9]+#', $motif, $extract);
+                                $iProjectId = (int) $extract[0];
 
                                 /** @var \echeanciers_emprunteur $oRepaymentSchedule */
                                 $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-                                $aNextRepayment = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+                                $aNextRepayment     = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
 
                                 /** @var \prelevements $oBankDirectDebit */
                                 $oBankDirectDebit = $this->loadData('prelevements');
-
-                                $sMotifPrelevement = 'UNILEND' . $sPattern . 'E';
                                 if (
                                     count($aNextRepayment) > 0
                                     && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
-                                    && false !== strpos($motif, $sMotifPrelevement)
+                                    && false !== strpos($motif, $oBankDirectDebit->motif)
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
                                 ) {
                                     $projects->get($iProjectId, 'id_project');
