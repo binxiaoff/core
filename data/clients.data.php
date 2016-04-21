@@ -971,10 +971,14 @@ class clients extends clients_crud
         return $aClientsWithoutWelcomeOffer;
     }
 
-    public function getBorrowersContactDetailsAndSource($sStartDate, $sEndDate)
+    public function getBorrowersContactDetailsAndSource($sStartDate, $sEndDate, $bGroupBySiren)
     {
+        $sGroupBy    = ($bGroupBySiren) ? 'GROUP BY com.siren ' : '';
+        $sCountSiren = ($bGroupBySiren) ? 'count(com.siren) AS "countSiren", ' : '';
+
         $sQuery = 'SELECT
-                        p.id_project,
+                        p.id_project,'
+                        . $sCountSiren . '
                         com.siren,
                         c.nom,
                         c.prenom,
@@ -983,7 +987,7 @@ class clients extends clients_crud
                         c.telephone,
                         c.source,
                         c.source2,
-                        p.added,
+                        c.added,
                         ps.label
                     FROM
                         projects p
@@ -994,9 +998,10 @@ class clients extends clients_crud
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         DATE(p.added) BETWEEN "'. $sStartDate . '"
-                        AND "'. $sEndDate . '"
-                    ORDER BY com.siren DESC, p.added DESC';
-
+                        AND "'. $sEndDate . '" '
+                    . $sGroupBy . '
+                    ORDER BY com.siren DESC, c.added DESC';
+//var_dump($sQuery);die;
         $rQuery = $this->bdd->query($sQuery);
         $aResult = array();
         while ($record = $this->bdd->fetch_assoc($rQuery)) {
@@ -1004,5 +1009,47 @@ class clients extends clients_crud
         }
 
         return $aResult;
+    }
+
+    public function getFirstSourceForSiren($sSiren, $sStartDate = null, $sEndDate = null)
+    {
+        if (false === is_null($sStartDate) && false === is_null($sEndDate)) {
+            $sStartDate = '2013-01-01';
+            $sEndDate = date('Y-m-d');
+        }
+
+        $sQuery = 'SELECT
+                        c.source
+                    FROM
+                        clients c
+                        INNER JOIN companies com on c.id_client = com.id_client_owner
+                    WHERE
+                    com.siren = ' . $sSiren . '
+                    AND DATE(c.added) BETWEEN "'. $sStartDate . '" AND "'. $sEndDate . '"
+                    ORDER BY c.added ASC LIMIT 1';
+
+        $rQuery = $this->bdd->query($sQuery);
+        return ($this->bdd->result($rQuery, 0, 0));
+    }
+
+    public function getLastSourceForSiren($sSiren, $sStartDate = null, $sEndDate = null)
+    {
+        if (false === is_null($sStartDate) && false === is_null($sEndDate)) {
+            $sStartDate = '2013-01-01';
+            $sEndDate = date('Y-m-d');
+        }
+
+        $sQuery = 'SELECT
+                        c.source
+                    FROM
+                        clients c
+                        INNER JOIN companies com on c.id_client = com.id_client_owner
+                    WHERE
+                    com.siren = ' . $sSiren . '
+                    AND DATE(c.added) BETWEEN "'. $sStartDate . '" AND "'. $sEndDate . '"
+                    ORDER BY c.added DESC LIMIT 1';
+
+        $rQuery = $this->bdd->query($sQuery);
+        return ($this->bdd->result($rQuery, 0, 0));
     }
 }
