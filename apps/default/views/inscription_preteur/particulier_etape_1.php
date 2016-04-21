@@ -45,7 +45,7 @@
                     <option value=""><?= $this->lng['etape1']['mois'] ?></option>
                     <?php foreach ($this->dates->tableauMois['fr'] as $k => $mois) : ?>
                         <?php if ($k > 0) : ?>
-                            <option <?= $this->aForm['particulier']['mois_naissance'] == $k ? "selected" : '' ?> value="'<?= $k  ?>"> <?= $mois ?></option>;
+                            <option <?= $this->aForm['particulier']['mois_naissance'] == $k ? "selected" : '' ?> value="<?= $k  ?>"> <?= $mois ?></option>;
                         <?php endif; ?>
                     <?php endforeach;?>
                 </select>
