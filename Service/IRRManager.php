@@ -107,10 +107,8 @@ class IRRManager
         $fStartXIRR = microtime(true);
         $fXIRR = $this->calculateIRR($aValuesIRR);
 
-        if ($this->oLogger instanceof ULogger) {
-            $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : ' . 100);
-            $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
-        }
+        $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : ' . 100);
+        $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
         return $fXIRR;
     }
