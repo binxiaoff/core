@@ -520,4 +520,25 @@ class devboxController extends bootstrap
         fclose($rHandle);
         echo 'done';
     }
+
+    public function _countInsert()
+    {
+        $this->autoFireView   = false;
+        $this->autoFireHeader = false;
+        $this->autoFireHead   = false;
+        $this->autoFireFooter = false;
+        $this->autoFireDebug  = false;
+        $aTables = array('accept_cookies','acceptations_legal_docs');
+        foreach ($aTables as $table) {
+            $query = $this->bdd->query('
+            SELECT count(*) AS inserted
+                FROM ' . $table . '
+                WHERE unix_timestamp(added) BETWEEN unix_timestamp()-1800 AND unix_timestamp()
+            ');
+            if ($query) {
+                $result = $this->bdd->fetch_assoc($query);
+                echo $table . ' : ' . $result['inserted'] . '<br>';
+            }
+        }
+    }
 }
