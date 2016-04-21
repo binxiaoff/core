@@ -191,7 +191,7 @@ class users extends users_crud
 
                 if ($this->bdd->num_rows($res) == 1) {
                     $_SESSION['auth']  = true;
-                    $_SESSION['token'] = md5(md5(mktime() . $this->securityKey));
+                    $_SESSION['token'] = md5(md5(time() . $this->securityKey));
                     $_SESSION['user']  = $this->bdd->fetch_array($res);
                 } else {
                     $_SESSION['msgErreur'] = 'loginError';

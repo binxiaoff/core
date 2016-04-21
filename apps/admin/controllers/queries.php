@@ -151,6 +151,7 @@ class queriesController extends bootstrap
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
 
+        /** @var \PHPExcel_Writer_Excel5 $oWriter */
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
         $oWriter->save('php://output');
     }
@@ -165,6 +166,7 @@ class queriesController extends bootstrap
         header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
         header('Expires: 0');
 
+        /** @var \PHPExcel_Writer_CSV $oWriter */
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');

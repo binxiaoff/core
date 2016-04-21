@@ -54,51 +54,10 @@ class projects extends projects_crud
 
     public function create($cs = '')
     {
-        $this->id_project            = $this->bdd->escape_string($this->id_project);
-        $this->hash                  = $this->bdd->escape_string($this->hash);
-        $this->slug                  = $this->bdd->escape_string($this->slug);
-        $this->id_company            = $this->bdd->escape_string($this->id_company);
-        $this->id_partenaire         = $this->bdd->escape_string($this->id_partenaire);
-        $this->id_partenaire_subcode = $this->bdd->escape_string($this->id_partenaire_subcode);
-        $this->id_prescripteur       = $this->bdd->escape_string($this->id_prescripteur);
-        $this->amount                = $this->bdd->escape_string($this->amount);
-        $this->status_solde          = $this->bdd->escape_string($this->status_solde);
-        $this->period                = $this->bdd->escape_string($this->period);
-        $this->title                 = $this->bdd->escape_string($this->title);
-        $this->title_bo              = $this->bdd->escape_string($this->title_bo);
-        $this->photo_projet          = $this->bdd->escape_string($this->photo_projet);
-        $this->lien_video            = $this->bdd->escape_string($this->lien_video);
-        $this->comments              = $this->bdd->escape_string($this->comments);
-        $this->nature_project        = $this->bdd->escape_string($this->nature_project);
-        $this->objectif_loan         = $this->bdd->escape_string($this->objectif_loan);
-        $this->presentation_company  = $this->bdd->escape_string($this->presentation_company);
-        $this->means_repayment       = $this->bdd->escape_string($this->means_repayment);
-        $this->type                  = $this->bdd->escape_string($this->type);
-        $this->target_rate           = $this->bdd->escape_string($this->target_rate);
-        $this->stand_by              = $this->bdd->escape_string($this->stand_by);
-        $this->id_analyste           = $this->bdd->escape_string($this->id_analyste);
-        $this->date_publication      = $this->bdd->escape_string($this->date_publication);
-        $this->date_publication_full = $this->bdd->escape_string($this->date_publication_full);
-        $this->date_funded           = $this->bdd->escape_string($this->date_funded);
-        $this->date_retrait          = $this->bdd->escape_string($this->date_retrait);
-        $this->date_retrait_full     = $this->bdd->escape_string($this->date_retrait_full);
-        $this->date_fin              = $this->bdd->escape_string($this->date_fin);
-        $this->create_bo             = $this->bdd->escape_string($this->create_bo);
-        $this->risk                  = $this->bdd->escape_string($this->risk);
-        $this->retour_altares        = $this->bdd->escape_string($this->retour_altares);
-        $this->process_fast          = $this->bdd->escape_string($this->process_fast);
-        $this->remb_auto             = $this->bdd->escape_string($this->remb_auto);
-        $this->status                = $this->bdd->escape_string($this->status);
-        $this->stop_relances         = $this->bdd->escape_string($this->stop_relances);
-        $this->display               = $this->bdd->escape_string($this->display);
-        $this->added                 = $this->bdd->escape_string($this->added);
-        $this->updated               = $this->bdd->escape_string($this->updated);
+        parent::create($cs);
 
-        $this->bdd->query('INSERT INTO `projects` (`hash`,`slug`,`id_company`,`id_partenaire`,`id_partenaire_subcode`,`id_prescripteur`,`amount`,`status_solde`,`period`,`title`,`title_bo`,`photo_projet`,`lien_video`,`comments`,`nature_project`,`objectif_loan`,`presentation_company`,`means_repayment`,`type`,`target_rate`,`stand_by`,`id_analyste`,`date_publication`,`date_publication_full`,`date_funded`,`date_retrait`,`date_retrait_full`,`date_fin`,`create_bo`,`risk`,`retour_altares`,`process_fast`,`remb_auto`,`status`,`stop_relances`,`display`,`added`,`updated`) VALUES(MD5(CONCAT(UUID(), NOW())),"' . $this->slug . '","' . $this->id_company . '","' . $this->id_partenaire . '","' . $this->id_partenaire_subcode . '","' . $this->id_prescripteur . '","' . $this->amount . '","' . $this->status_solde . '","' . $this->period . '","' . $this->title . '","' . $this->title_bo . '","' . $this->photo_projet . '","' . $this->lien_video . '","' . $this->comments . '","' . $this->nature_project . '","' . $this->objectif_loan . '","' . $this->presentation_company . '","' . $this->means_repayment . '","' . $this->type . '","' . $this->target_rate . '","' . $this->stand_by . '","' . $this->id_analyste . '","' . $this->date_publication . '","' . $this->date_publication_full . '","' . $this->date_funded . '","' . $this->date_retrait . '","' . $this->date_retrait_full . '","' . $this->date_fin . '","' . $this->create_bo . '","' . $this->risk . '","' . $this->retour_altares . '","' . $this->process_fast . '","' . $this->remb_auto . '","' . $this->status . '","' . $this->stop_relances . '","' . $this->display . '",NOW(),NOW())');
-
-        $this->get($this->bdd->insert_id(), 'id_project');
-
-        $this->bdd->controlSlug('projects', $this->slug, 'id_project', $this->id_project);
+        $this->hash = md5($this->id_project . $this->added);
+        $this->update();
 
         return $this->id_project;
     }
@@ -285,7 +244,7 @@ class projects extends projects_crud
             LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
             LEFT JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
             WHERE projects_status.status IN (' . $status . ')' . $where;
-        
+
         $aCount = $this->bdd->fetch_assoc($this->bdd->query($sql));
 
         if (is_array($aCount)) {
@@ -354,13 +313,13 @@ class projects extends projects_crud
         if (false === ($aSiblings = $oCache->get($sKey))) {
             $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', $order);
 
-            foreach ($lProjets as $k => $p) {
-                if ($p['id_project'] == $id_project) {
-                    $previous = isset($lProjets[$k - 1]) ? $lProjets[$k - 1]['slug'] : null;
-                    $next     = isset($lProjets[$k + 1]) ? $lProjets[$k + 1]['slug'] : null;
-                    break;
-                }
+        foreach ($lProjets as $k => $p) {
+            if ($p['id_project'] == $id_project) {
+                $previous = isset($lProjets[$k - 1]) ? $lProjets[$k - 1]['slug'] : null;
+                $next     = isset($lProjets[$k + 1]) ? $lProjets[$k + 1]['slug'] : null;
+                break;
             }
+        }
 
             $aSiblings = array('previous' => $previous, 'next' => $next);
             $oCache->set($sKey, $aSiblings, Cache::SHORT_TIME);

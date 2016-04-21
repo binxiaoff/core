@@ -324,16 +324,16 @@ if($asterix_on) {
         $(".load_table_vos_operations").fadeIn();
 
         var val = {
-            debut               : $("#debut").val(),
-            fin                 : $("#fin").val(),
-            nbMois              : $("#nbMois").val(),
-            annee               : $("#annee").val(),
-            tri_type_transac    : $("#tri_type_transac").val(),
-            tri_projects        : $("#tri_projects").val(),
-            id_last_action      : $(this).attr('id'),
-            order               : order,
-            type                : type
-        }
+            debut            : $("#debut").val(),
+            fin              : $("#fin").val(),
+            nbMois           : $("#nbMois").val(),
+            annee            : $("#annee").val(),
+            tri_type_transac : $("#tri_type_transac").val(),
+            tri_projects     : $("#tri_projects").val(),
+            id_last_action   : $(this).attr('id'),
+            order            : order,
+            type             : type
+        };
 
         $.post(add_url + "/ajax/vos_operations", val).done(function (data) {
 
