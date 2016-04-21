@@ -2,19 +2,16 @@
 
 class alimentationController extends bootstrap
 {
-
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
 
         $this->catchAll = true;
 
-        // On prend le header account
         $this->setHeader('header_account');
 
-        // On check si y a un compte
-        if ( ! $this->clients->checkAccess()) {
-            header('Location:' . $this->lurl);
+        if (! $this->clients->checkAccess()) {
+            header('Location: ' . $this->lurl);
             die;
         } else {
             $this->clients->checkAccessLender();
@@ -22,10 +19,8 @@ class alimentationController extends bootstrap
 
         $this->page = 'alimentation';
 
-        //Recuperation des element de traductions
         $this->lng['preteur-alimentation'] = $this->ln->selectFront('preteur-alimentation', $this->language, $this->App);
         $this->lng['etape3']               = $this->ln->selectFront('inscription-preteur-etape-3', $this->language, $this->App);
-
     }
 
     public function _default()
@@ -33,7 +28,6 @@ class alimentationController extends bootstrap
         require_once $this->path . 'protected/payline/include.php';
 
         $this->companies               = $this->loadData('companies');
-        $this->companies_details       = $this->loadData('companies_details');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
@@ -83,7 +77,6 @@ class alimentationController extends bootstrap
             $this->retrait_ok = true;
         }
 
-
         if ($iban != '') {
             $this->iban[1] = substr($iban, 0, 4);
             $this->iban[2] = substr($iban, 4, 4);
@@ -110,10 +103,8 @@ class alimentationController extends bootstrap
             $this->cle           = '';
         }
 
-        // Motif virement
         $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
-        // Prelevement
         if (isset($_POST['sendPrelevement'])) {
             $montant = str_replace(array(' ', '€'), '', $_POST['montant_prelevement']);
             $montant = str_replace(',', '.', $montant);
@@ -212,7 +203,7 @@ class alimentationController extends bootstrap
                 $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                 $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                $this->email = $this->loadLib('email', array());
+                $this->email = $this->loadLib('email');
                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
@@ -224,21 +215,21 @@ class alimentationController extends bootstrap
                     $this->email->addRecipient(trim($this->clients->email));
                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                 }
-                header('location:' . $this->lurl . '/alimentation/confirmation/p');
+                header('Location: ' . $this->lurl . '/alimentation/confirmation/p');
                 die;
             }
-
         }
+
         if (isset($_POST['sendVirement'])) {
             $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST));
             $this->clients_history_actions->histo(1, 'alim virement', $this->clients->id_client, $serialize);
 
-            header('location:' . $this->lurl . '/alimentation/confirmation/v');
+            header('Location: ' . $this->lurl . '/alimentation/confirmation/v');
             die;
         }
 
         if (isset($_POST['sendPaymentCb'])) {
-            $amount = str_replace(array(',', ' '), array('.', ''), $_POST['amount']);
+            $amount = $this->ficelle->cleanFormatedNumber($_POST['amount']);
 
             if (is_numeric($amount) && $amount >= 20 && $amount <= 10000) {
                 $amount = (number_format($amount, 2, '.', '') * 100);
@@ -268,7 +259,6 @@ class alimentationController extends bootstrap
                 //***************//
                 //*** PAYLINE ***//
                 //***************//
-
                 $array                    = array();
                 $payline                  = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
                 $payline->returnURL       = $this->lurl . '/alimentation/payment/' . $this->clients->hash . '/';
@@ -294,7 +284,6 @@ class alimentationController extends bootstrap
                 $this->transactions->serialize_payline = serialize($result);
                 $this->transactions->update();
 
-                // si on retourne quelque chose
                 if (isset($result)) {
                     if ($result['result']['code'] == '00000') {
                         header('Location: ' . $result['redirectURL']);
@@ -319,49 +308,45 @@ class alimentationController extends bootstrap
 
         require_once $this->path . 'protected/payline/include.php';
 
-        $this->transactions     = $this->loadData('transactions');
-        $this->backpayline      = $this->loadData('backpayline');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->bank_lines       = $this->loadData('bank_lines');
-        $this->wallets_lines    = $this->loadData('wallets_lines');
-        $this->notifications    = $this->loadData('notifications');
+        $this->transactions                  = $this->loadData('transactions');
+        $this->backpayline                   = $this->loadData('backpayline');
+        $this->lenders_accounts              = $this->loadData('lenders_accounts');
+        $this->bank_lines                    = $this->loadData('bank_lines');
+        $this->wallets_lines                 = $this->loadData('wallets_lines');
+        $this->notifications                 = $this->loadData('notifications');
+        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
 
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications'); // add gestion alertes
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif'); // add gestion alertes
 
-        // On recupere le client
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $array   = array();
             $payline = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
 
-            // GET TOKEN
             if (isset($_POST['token'])) {
                 $array['token'] = $_POST['token'];
             } elseif (isset($_GET['token'])) {
                 $array['token'] = $_GET['token'];
             } else {
-                header('location:' . $this->lurl . '/alimentation');
+                header('Location: ' . $this->lurl . '/alimentation');
                 die;
             }
 
-            // VERSION
             if (isset($_POST['version'])) {
                 $array['version'] = $_POST['version'];
             } else {
                 $array['version'] = '3';
             }
 
-            // RESPONSE FORMAT
             $response = $payline->getWebPaymentDetails($array);
+
             if (isset($response)) {
-                // On enregistre le resultat payline
-                $this->backpayline->code           = $response['result']['code'];
-                $this->backpayline->token          = $array['token'];
-                $this->backpayline->id             = $response['transaction']['id'];
-                $this->backpayline->date           = $response['transaction']['date'];
-                $this->backpayline->amount         = $response['payment']['amount'];
-                $this->backpayline->serialize      = serialize($response);
-                $this->backpayline->id_backpayline = $this->backpayline->create();
+                $this->backpayline->code      = $response['result']['code'];
+                $this->backpayline->token     = $array['token'];
+                $this->backpayline->id        = $response['transaction']['id'];
+                $this->backpayline->date      = $response['transaction']['date'];
+                $this->backpayline->amount    = $response['payment']['amount'];
+                $this->backpayline->serialize = serialize($response);
+                $this->backpayline->create();
 
                 // Paiement approuvé
                 if ($response['result']['code'] == '00000') {
@@ -448,7 +433,7 @@ class alimentationController extends bootstrap
                             $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
                             $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                            $this->email = $this->loadLib('email', array());
+                            $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
@@ -461,13 +446,15 @@ class alimentationController extends bootstrap
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                             }
                         }
+
                         header('Location: ' . $this->lurl . '/alimentation/confirmation/cb/' . $this->transactions->id_transaction);
                         die;
                     } else {
                         header('Location: ' . $this->lurl . '/alimentation');
                         die;
                     }
-                } elseif ($response['result']['code'] == '02319') { // Paiement annulé
+                } // Paiement annulé
+                elseif ($response['result']['code'] == '02319') {
                     $this->transactions->get($response['order']['ref'], 'id_transaction');
                     $this->transactions->id_backpayline = $this->backpayline->id_backpayline;
                     $this->transactions->statut         = 0;
@@ -476,7 +463,8 @@ class alimentationController extends bootstrap
 
                     header('Location: ' . $this->lurl . '/alimentation');
                     die;
-                } else {
+                } // Si erreur
+                else {
                     mail('alertesit@unilend.fr', 'unilend payline erreur', 'erreur sur page payment alimentation preteur (client : ' . $this->clients->id_client . ') : ' . serialize($response));
 
                     header('Location: ' . $this->lurl . '/alimentation/erreur/');
@@ -489,20 +477,18 @@ class alimentationController extends bootstrap
     public function _confirmation()
     {
         if (isset($this->params[0]) && $this->params[0] == 'v') {
-            header('location:' . $this->lurl . '/' . $this->tree->getSlug(138, $this->language));
+            header('Location: ' . $this->lurl . '/' . $this->tree->getSlug(138, $this->language));
         } elseif (isset($this->params[0]) && $this->params[0] == 'cb') {
-            header('location:' . $this->lurl . '/' . $this->tree->getSlug(139, $this->language) . '/' . $this->params[1]);
+            header('Location: ' . $this->lurl . '/' . $this->tree->getSlug(139, $this->language) . '/' . $this->params[1]);
         } elseif (isset($this->params[0]) && $this->params[0] == 'p') {
-            header('location:' . $this->lurl . '/' . $this->tree->getSlug(140, $this->language));
+            header('Location: ' . $this->lurl . '/' . $this->tree->getSlug(140, $this->language));
         } else {
-            header('location:' . $this->lurl . '/alimentation');
+            header('Location: ' . $this->lurl . '/alimentation');
             die;
         }
     }
 
     public function _erreur()
     {
-
     }
 }
-

@@ -417,15 +417,18 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .single-project-mobile .statistic-table th,
     .single-project-mobile .statistic-table td { font-size: 10px; }
     .single-project-mobile .statistic-table td { height: auto; padding: 5px 0 !important; }
-    .single-project-mobile .statistic-table th { padding: 0 0 0 5px; line-height: 28px; }
+    .single-project-mobile .statistic-table th { padding: 3px; line-height: 14px; }
     .single-project-mobile .statistic-table td:first-child { padding-left: 0; }
     .single-project-mobile .statistic-table td:last-child { padding-right: 0; }
     .single-project-mobile .statistic-table td:not(:first-child) { white-space: nowrap; }
-    .single-project-mobile .statistic-table .year-nav th { background-color: #a1a5a7; text-align: center; font-size: 12px; }
+    .single-project-mobile .statistic-table .year-nav th { background-color: #a1a5a7; text-align: center; font-size: 10px; text-transform: none;}
     .single-project-mobile .statistic-table .year-nav th:first-child { background-color: #fff; }
     .single-project-mobile .statistic-table td.intitule { width: auto; }
     .single-project-mobile .statistic-table td.sameSize { width: 60px; }
     .single-project-mobile .statistic-table td.inner-table { padding: 0 !important; }
+    .single-project-mobile .csv-extract { display: block; text-align: center; }
+    .single-project-mobile .csv-extract > a { padding: 0; }
+    .single-project-mobile .csv-extract img { display: inline-block; width: 50px; }
 
     .tab .table-filter .period,
     .tab .table-filter .export,

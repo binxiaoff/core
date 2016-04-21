@@ -118,14 +118,13 @@ class ajaxController extends bootstrap
         $this->triPartxInt = $this->settings->value;
         $this->triPartxInt = explode(';', $this->triPartxInt);
 
-        $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_details = $this->loadData('companies_details');
-        $this->favoris           = $this->loadData('favoris');
-        $this->bids              = $this->loadData('bids');
-        $this->loans             = $this->loadData('loans');
-        $this->lenders_accounts  = $this->loadData('lenders_accounts');
+        $this->projects         = $this->loadData('projects');
+        $this->projects_status  = $this->loadData('projects_status');
+        $this->companies        = $this->loadData('companies');
+        $this->favoris          = $this->loadData('favoris');
+        $this->bids             = $this->loadData('bids');
+        $this->loans            = $this->loadData('loans');
+        $this->lenders_accounts = $this->loadData('lenders_accounts');
 
         $where = '';
         $ordre = $this->tabOrdreProject[$_GET['ordreProject']];
@@ -276,9 +275,9 @@ class ajaxController extends bootstrap
 
         $this->projects          = $this->loadData('projects');
         $this->companies         = $this->loadData('companies');
-        $this->companies_details = $this->loadData('companies_details');
         $this->favoris           = $this->loadData('favoris');
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
+        $this->loadData('projects_status'); // Loaded for class constants
 
         if (isset($_POST['val']) && isset($_POST['id'])) {
             $val = $_POST['val'];
@@ -373,7 +372,6 @@ class ajaxController extends bootstrap
 
         $this->projects          = $this->loadData('projects');
         $this->companies         = $this->loadData('companies');
-        $this->companies_details = $this->loadData('companies_details');
         $this->favoris           = $this->loadData('favoris');
 
         if (isset($_POST['id_project']) && isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client') && $this->projects->get($_POST['id_project'], 'id_project')) {

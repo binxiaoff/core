@@ -46,6 +46,9 @@ if (false === ($source = filter_input(INPUT_GET, 'utm_source', FILTER_SANITIZE_S
 if (false === ($source2 = filter_input(INPUT_GET, 'utm_source2', FILTER_SANITIZE_STRING))) {
     $source2 = '';
 }
+if (false === ($utm_medium = filter_input(INPUT_GET, 'utm_medium', FILTER_SANITIZE_STRING))) {
+    $utm_medium = '';
+}
 if (false === ($nom = filter_input(INPUT_GET, 'nom', FILTER_SANITIZE_STRING))) {
     $nom = '';
 }
@@ -1080,6 +1083,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
             var inscription_cgv = $('#inscription_cgv');
             var utm_source = '<?php echo $source; ?>';
             var utm_source2 = '<?php echo $source2; ?>';
+            var utm_medium = '<?php echo $utm_medium; ?>';
             var slug_origine = '<?php echo $slug_origine; ?>';
 
             if ($('#form_inscription').hasClass('etape1')) {
@@ -1149,7 +1153,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     prenom = inscription_prenom;
                     civilite = inscription_civilite;
 
-                    var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
+                    var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&utm_medium=' + utm_medium + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
 
                     $.ajax({
                         type: "POST",
@@ -1455,6 +1459,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         data: 'token=' + token
                         + '&utm_source=' + utm_source
                         + '&utm_source2=' + utm_source2
+                        + '&utm_medium=' + utm_medium
                         + '&slug_origine=' + slug_origine
                         + '&date=' + annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes
                         + '&email=' + inscription_email
@@ -1491,6 +1496,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                     'unique_id': parsedData.uniqueid,
                                     'source1_lead': utm_source,
                                     'source2_lead': utm_source2,
+                                    'utm_medium': utm_medium,
                                     'event': 'signupPreteurStep2OK'
                                 });
 

@@ -106,9 +106,9 @@
             <?php } ?>
             <div class="widget-cat" style="padding-top:25px;">
                 <i class="plusmoins" id="close-sinscrire"></i>
-                <div class="sinscrire"<?= ($this->retour_form != false ? 'style="display:block;"' : '') ?> >
+                <div class="sinscrire"<?= (empty($this->retour_form) ? '' : 'style="display:block;"') ?> >
                     <form target="_parent" method="post" action="<?= $this->url_form ?>/projects/detail/<?= $this->params[0] ?><?= $this->utm_source ?>" name="projectsinscrire" id="projectsinscrire">
-                        <div style="display:none" class="sinscrireopen"><?= ($this->retour_form != false ? 'true' : 'false') ?></div>
+                        <div style="display:none" class="sinscrireopen"><?= (empty($this->retour_form) ? 'false' : 'true') ?></div>
                         <div class="row">
                             <input class="field field-medium required" type="text" value="<?= (isset($_POST['nom']) ? $_POST['nom'] : '') ?>" placeholder="<?= $this->lng['landing-page']['nom'] ?>" name="nom" id="signup-first-name" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
                         </div>

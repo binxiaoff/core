@@ -52,17 +52,13 @@ class settingsController extends bootstrap
                 $preteur     = $this->loadData('clients');
                 $lender      = $this->loadData('lenders_accounts');
 
-                $lecheances = $echeanciers->select();
-
-                foreach ($lecheances as $e) {
+                foreach ($echeanciers->select() as $e) {
                     $lender->get($e['id_lender'], 'id_lender_account');
                     $preteur->get($lender->id_client_owner, 'id_client');
 
                     if ($preteur->type == 1) {
-                        $montant_crds = ($e['interets'] / 100) * $this->settings->value;
-
                         $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                        $echeanciers->crds = round($montant_crds, 2);
+                        $echeanciers->crds = round($e['interets'] / 100 * $this->settings->value, 2);
                         $echeanciers->update();
                     }
                 }
@@ -137,27 +133,12 @@ class settingsController extends bootstrap
         $_SESSION['request_url'] = $this->url;
     }
 
-    public function _cache()
-    {
-        $this->users->checkAccess('edition');
-
-        $this->menu_admin = 'edition';
-
-        $this->clearCache();
-
-        $_SESSION['freeow']['title']   = 'Vider le cache';
-        $_SESSION['freeow']['message'] = 'Le cache du site a bien &eacute;t&eacute; vid&eacute; !';
-
-        header('Location:' . $this->lurl . '/tree');
-        die;
-    }
-
     public function _crud()
     {
         $handle = opendir($this->path . 'data/crud/');
 
         while (false !== ($fichier = readdir($handle))) {
-            if ($fichier != "." && $fichier != "..") {
+            if ($fichier != '.' && $fichier != '..') {
                 unlink($this->path . 'data/crud/' . $fichier);
             }
         }

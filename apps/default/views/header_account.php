@@ -41,7 +41,8 @@
                     $.colorbox({
                         href: "<?= $this->lurl ?>/thickbox/pop_up_cgv",
                         fixed: true,
-                        maxWidth: '90%'
+                        maxWidth: '90%',
+                        maxHeight: '95%'
                     });
                 });
             </script>

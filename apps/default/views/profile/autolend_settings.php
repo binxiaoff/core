@@ -152,7 +152,7 @@
                     <span class="global-rate"></span>
                     <p class="indice-rate"></p>
                     <div class="medium-rate-note">
-                        <span><?=$this->lng['autobid']['expert-settings-legend-superior-rate'] ?></span>
+                        <span><?=$this->lng['autobid']['apply-average-rate'] ?></span>
                         <div class="medium-rate-buttons">
                             <button class="btn btn-small btn-apply-avg-rate" type="button"><?=$this->lng['autobid']['yes'] ?></button>
                             <button class="btn btn-small grise1 btn-close-widget" type="button"><?=$this->lng['autobid']['no'] ?></button>
@@ -259,6 +259,11 @@ $(window).load(function(){
                 cell.find('.param-advanced-label').html(avg_rate+'%');
                 cell.find('.param-advanced-value').val(avg_rate.replace(",", "."));
                 var rate = cell.find('.param-advanced-value').val();
+                $('.cell-inner').each(function() {
+                    var AvgRateUnilend = parseFloat($(this).find('input[name=param-advanced-unilend-rate]').val().replace(",", "."));
+                    var currentValue = $(this).find('.param-advanced-value').val().replace(",", ".");
+                    changeCellColor($(this), AvgRateUnilend, currentValue);
+                });
                 drawPercentage(rate);
             });
 
@@ -272,6 +277,16 @@ $(window).load(function(){
             widget.show();
         }
     });
+
+    function changeCellColor(oThis, AvgRateUnilend, currentValue){
+        if (isNaN(AvgRateUnilend) === false) {
+            if (currentValue <= AvgRateUnilend) {
+                oThis.closest('td').removeClass('param-over');
+            } else {
+                oThis.closest('td').addClass('param-over');
+            }
+        }
+    }
 // Block advanced params
     if($('.param-advanced-switch-input').length){
         $('.param-advanced-switch-input').on('change', function() {
@@ -287,7 +302,7 @@ $(window).load(function(){
 
     if ($('.param-advanced-button').length) {
         $('.param-advanced-button').on('click', function () {
-            var cell = $(this).parents('.cell-inner')
+            var cell = $(this).parents('.cell-inner');
             var inputRate = cell.find('.param-advanced-value');
             var labelRate = cell.find('.param-advanced-label');
             var AvgRateUnilend = parseFloat(cell.find('input[name=param-advanced-unilend-rate]').val().replace(",", "."));
@@ -305,22 +320,16 @@ $(window).load(function(){
             labelRate.html(newVal.toString().replace(".", ",") + '%');
             parseFloat(newVal).toFixed(1);
             drawPercentage(newVal);
-
-            if (isNaN(AvgRateUnilend) === false) {
-                if (newVal <= AvgRateUnilend) {
-                    $(this).closest('td').removeClass('param-over');
-                } else {
-                    $(this).closest('td').addClass('param-over');
-                }
-            }
+            changeCellColor($(this), AvgRateUnilend, newVal);
         });
     }
 
     $('#global-rate-Unilend').click(function() {
         $('.param-advanced-value').each(function () {
             $(this).val(<?= $this->fAverageRateUnilend ?>);
-            $(this).parents('.param-advanced-bottom').find('.param-advanced-label').html(<?= $this->fAverageRateUnilend ?>.toString().replace(".", ",")+'%');
-        })
+            $(this).parents('.param-advanced-bottom').find('.param-advanced-label').html(<?= $this->fAverageRateUnilend ?>.toString().replace(".", ",") + '%'
+            )
+        });;
     });
 
     function drawPercentage(rate){

@@ -144,32 +144,6 @@ class clients extends clients_crud
         }
     }
 
-    public function loginSuperCB($email, $pass)
-    {
-        $email = $this->bdd->escape_string($email);
-
-        $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE ' . $this->userMail . ' = "' . $email . '" AND ' . $this->userPass . ' = "' . $pass . '"';
-        $res = $this->bdd->query($sql);
-
-        if ($this->bdd->num_rows($res) == 1) {
-            return $this->bdd->fetch_array($res);
-        } else {
-            return false;
-        }
-    }
-
-    public function loginUpdate()
-    {
-        $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE id_client = "' . $_SESSION['client']['id_client'] . '" AND hash = "' . $_SESSION['client']['hash'] . '"';
-        $res = $this->bdd->query($sql);
-
-        if ($this->bdd->num_rows($res) == 1) {
-            return $this->bdd->fetch_array($res);
-        } else {
-            return false;
-        }
-    }
-
     public function changePassword($email, $pass)
     {
         $sql = 'UPDATE ' . $this->userTable . ' SET ' . $this->userPass . ' = "' . md5($pass) . '" WHERE ' . $this->userMail . ' = "' . $email . '"';
@@ -257,34 +231,6 @@ class clients extends clients_crud
         if (false === $this->isBorrower()) {
             $this->handleLogout();
         }
-    }
-
-
-    public function searchClients($ref = '', $nom = '', $email = '', $prenom = '')
-    {
-        $where = 'WHERE 1 = 1';
-
-        if ($ref != '') {
-            $where .= ' AND t.id_transaction LIKE "%' . $ref . '%"';
-        }
-        if ($nom != '') {
-            $where .= ' AND c.nom LIKE "%' . $nom . '%"';
-        }
-        if ($email != '') {
-            $where .= ' AND c.email LIKE "%' . $email . '%"';
-        }
-        if ($prenom != '') {
-            $where .= ' AND c.prenom LIKE "%' . $prenom . '%"';
-        }
-
-        $sql      = 'SELECT c.* FROM clients c LEFT JOIN transactions t ON t.id_client = c.id_client ' . $where . ' GROUP BY c.id_client ORDER BY c.added DESC';
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
     }
 
     public function searchEmprunteurs($ref = '', $nom = '', $email = '', $prenom = '', $societe = '', $siret = '', $status = '', $start = '', $nb = '')
@@ -460,81 +406,10 @@ class clients extends clients_crud
         return $result;
     }
 
-    // presteurs by status
-    public function selectPreteursByStatusSlim($status = '', $where = '', $order = '', $start = '', $nb = '')
-    {
-        if ($where != '') {
-            $where = ' AND ' . $where;
-        }
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = '
-            SELECT
-                c.id_client,
-                l.id_lender_account as id_lender
-            FROM clients c
-            LEFT JOIN lenders_accounts l ON c.id_client = l.id_client_owner
-            WHERE (SELECT cs.status FROM clients_status cs LEFT JOIN clients_status_history csh ON (cs.id_client_status = csh.id_client_status) WHERE csh.id_client = c.id_client ORDER BY csh.added DESC LIMIT 1) IN (' . $status . ')' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     public function update_added($date, $id_client)
     {
         $sql = "UPDATE clients SET added = '" . $date . "' WHERE id_client = " . $id_client;
         $this->bdd->query($sql);
-    }
-
-    public function get_prospects()
-    {
-        $sql = '
-            SELECT *
-            FROM clients c
-            LEFT JOIN clients_adresses ca ON (ca.id_client = c.id_client)
-            WHERE c.added < "2014-07-31 00:00:00"
-                AND c.status = 0
-                AND c.telephone = ""
-                AND c.mobile = ""
-                AND ca.    adresse1 = ""
-                AND ca.cp = ""
-                AND ca.ville = ""
-                AND c.email != ""';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    public function get_preteurs_restriction($sql)
-    {
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    public function counter_de_test($where = '')
-    {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-
-        echo $sql = 'SELECT count(*) FROM `clients` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
     }
 
     public function searchPrescripteur($iAdvisorId = '', $nom = '', $prenom = '', $email = '', $sCompanyName = '', $sSiren = '', $offset = '', $limit = 100, $sOperation = 'AND')
@@ -622,7 +497,6 @@ class clients extends clients_crud
             return false;
         }
     }
-
 
     public function getDataForBorrowerOperations(array $aProjects, DateTime $oStartDate, DateTime $oEndDate, $iOperation = null, $iClientId = null)
     {
@@ -1053,26 +927,6 @@ class clients extends clients_crud
         }
 
         return $aClientsWithoutWelcomeOffer;
-    }
-
-    public function getLenders($sWhere = null)
-    {
-        if (false === is_null($sWhere)) {
-            $sWhere = ' WHERE ' . $sWhere;
-        }
-
-        $sql = 'SELECT *
-                FROM `clients`
-                INNER JOIN lenders_accounts la ON clients.id_client = la.id_client_owner'. $sWhere;
-
-        $aClientsLender = array();
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aClientsLender[] = $record;
-        }
-
-        return $aClientsLender;
     }
 
     public function getBorrowers($sWhere = null)
