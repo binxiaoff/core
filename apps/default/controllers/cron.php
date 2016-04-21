@@ -1620,7 +1620,8 @@ class cronController extends bootstrap
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
                                 preg_match_all('#[0-9]+#', $motif, $extract);
-                                $iProjectId = (int) $extract[0][0];
+                                $sPattern = $extract[0][0];
+                                $iProjectId = (int) $sPattern;
 
                                 /** @var \echeanciers_emprunteur $oRepaymentSchedule */
                                 $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
@@ -1629,7 +1630,7 @@ class cronController extends bootstrap
                                 /** @var \prelevements $oBankDirectDebit */
                                 $oBankDirectDebit = $this->loadData('prelevements');
 
-                                $sMotifPrelevement = 'UNILEND' . $iProjectId . 'E';
+                                $sMotifPrelevement = 'UNILEND' . $sPattern . 'E';
                                 if (
                                     count($aNextRepayment) > 0
                                     && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
@@ -1668,7 +1669,8 @@ class cronController extends bootstrap
                                 }
                             } elseif ($type === 2 && $status_virement === 1) { // Virements reçus
                                 if (
-                                    1 === preg_match('/RA-?([0-9]+)/', $r['libelleOpe3'], $aMatches)
+                                    isset($r['libelleOpe3'])
+                                    && 1 === preg_match('/RA-?([0-9]+)/', $r['libelleOpe3'], $aMatches)
                                     && $this->projects->get((int) $aMatches[1])
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                 ) {
@@ -1720,7 +1722,8 @@ class cronController extends bootstrap
                                     $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                                     $this->email->setHTMLBody($texteMail);
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                } elseif (strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
+                                } elseif (
+                                    isset($r['libelleOpe3']) && strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
                                     preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extract);
 
                                     foreach ($extract[0] as $nombre) {
