@@ -81,6 +81,92 @@ class projects_status_history extends projects_status_history_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
+    public function addStatus($sUserId, $iStatus, $iProjectId, $sReminderId = 0, $sComment = '')
+    {
+        $rQuery = $this->bdd->query('SELECT id_project_status FROM projects_status WHERE status = ' . $iStatus);
+
+        if (in_array($iStatus, array(\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE))) {
+            $oCompanies = new \companies($this->bdd);
+            $oProjects  = new \projects($this->bdd);
+
+            $oProjects->get($iProjectId);
+            $oCompanies->get($oProjects->id_company);
+
+            $oProjectCreationDate = new \datetime($oProjects->added);
+            $aCompanies           = $oCompanies->select('siren = ' . $oCompanies->siren);
+
+            foreach ($aCompanies as $aCompany) {
+                $aProjects = $oCompanies->getProjectsForCompany($aCompany['id_company']);
+
+                foreach ($aProjects as $aProject) {
+                    $oOldProjectCreationDate = new \datetime($aProject['added']);
+                    if ($oOldProjectCreationDate->format('Y-m-d H:i:s') < $oProjectCreationDate->format('Y-m-d H:i:s')) {
+                        $oProjects->get($aProject['id_project'], 'id_project');
+                        $oProjects->stop_relances = '1';
+                        $oProjects->update();
+                    }
+                }
+            }
+        }
+
+        $this->id_project        = $iProjectId;
+        $this->id_project_status = (int) $this->bdd->result($rQuery, 0, 0);
+        $this->id_user           = $sUserId;
+        $this->numero_relance    = $sReminderId;
+        $this->content           = $sComment;
+        $this->create();
+
+        $this->statusUpdateTrigger($iStatus, $iProjectId);
+    }
+
+    private function statusUpdateTrigger($iStatus, $iProjectId)
+    {
+        switch ($iStatus) {
+            case \projects_status::A_TRAITER:
+                $oSettings = new \settings($this->bdd);
+                $oSettings->get('Adresse notification inscription emprunteur', 'type');
+
+                $this->sendNotification('notification-depot-de-dossier', $iProjectId, trim($oSettings->value));
+                break;
+            case \projects_status::ATTENTE_ANALYSTE:
+                $this->sendNotification('notification-projet-a-traiter', $iProjectId, \email::EMAIL_ADDRESS_ANALYSTS);
+                break;
+        }
+    }
+
+    private function sendNotification($sNotificationType, $iProjectId, $sRecipient)
+    {
+        /* @var array $config */
+        include __DIR__ . '/../config.php';
+
+        // @todo intl
+        $oMailsText = new \mails_text($this->bdd);
+        $oMailsText->get($sNotificationType, 'lang = "fr" AND type');
+
+        $oProjects = new \projects($this->bdd);
+        $oProjects->get($iProjectId, 'id_project');
+
+        $oCompanies = new \companies($this->bdd);
+        $oCompanies->get($oProjects->id_company, 'id_company');
+
+        $aReplacements = array(
+            '[SURL]'           => $config['static_url'][ENVIRONMENT],
+            '[ID_PROJET]'      => $iProjectId,
+            '[MONTANT]'        => $oProjects->amount,
+            '[RAISON_SOCIALE]' => utf8_decode($oCompanies->name),
+            '[LIEN_REPRISE]'   => $config['url'][ENVIRONMENT]['admin'] . '/depot_de_dossier/reprise/' . $oProjects->hash,
+            '[LIEN_BO_PROJET]' => $config['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $iProjectId
+        );
+
+        $oEmail = new \email();
+        $oEmail->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
+        $oEmail->setSubject(utf8_decode($oMailsText->subject));
+        $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $oMailsText->content));
+        $oEmail->addRecipient($sRecipient);
+
+        Mailer::send($oEmail, new \mails_filer($this->bdd), $oMailsText->id_textemail);
+    }
+
     public function getBeforeLastStatus($iProjectId)
     {
         $result = $this->select('id_project=' . $iProjectId, 'added DESC', 1, 1);
