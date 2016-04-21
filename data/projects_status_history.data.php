@@ -89,7 +89,9 @@ class projects_status_history extends projects_status_history_crud
             $oCompanies = new \companies($this->bdd);
             $oProjects = new \projects($this->bdd);
 
-            $aProjects = $oCompanies->getProjectsForCompany($iProjectId);
+            $oProjects->get($iProjectId);
+
+            $aProjects = $oCompanies->getProjectsForCompany($oProjects->id_company);
             foreach ($aProjects as $aProject) {
                 $oProjects->get($aProject['id_project'], 'id_project');
                 $oProjects->stop_relances = '1';
