@@ -296,7 +296,7 @@ class profileController extends bootstrap
             $this->form_ok = true;
             $this->reponse_email = '';
 
-            $this->clients_adresses->meme_adresse_fiscal = (empty($_POST['mon-addresse'])) ? 1 : 0;
+            $this->clients_adresses->meme_adresse_fiscal = (empty($_POST['mon-addresse'])) ? 0 : 1;
             $this->clients_adresses->adresse_fiscal      = $_POST['adresse_inscription'];
             $this->clients_adresses->ville_fiscal        = $_POST['ville_inscription'];
             $this->clients_adresses->cp_fiscal           = $_POST['postal'];
@@ -307,7 +307,7 @@ class profileController extends bootstrap
             $this->clients_adresses->id_pays             = (empty($_POST['mon-addresse'])) ? $_POST['pays2'] : $_POST['pays1'];
 
             $this->clients->civilite = $_POST['sex'];
-            $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] == $this->lng['etape1']['nom-dusage']) ? '' : $this->ficelle->majNom($_POST['nom-dusage']);
+            $this->clients->nom_usage = (isset($_POST['nom-dusage']) && $_POST['nom-dusage'] != $this->lng['etape1']['nom-dusage']) ? $this->ficelle->majNom($_POST['nom-dusage']) : '';
 
             //Get the insee code for birth place: if in France, city insee code; if overseas, country insee code
             $sCodeInsee = '';
