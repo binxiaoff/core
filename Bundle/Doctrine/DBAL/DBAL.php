@@ -57,6 +57,7 @@ class DBAL
         try {
             $connected = self::getConnection()->isConnected();
         } catch (\Exception $exception) {
+            trigger_error($exception->getMessage(), E_USER_WARNING);
             $connected = false;
         }
         return $connected;
@@ -104,6 +105,7 @@ class DBAL
         try {
             return self::getConnection()->executeQuery($statement);
         } catch (\Exception $exception) {
+            trigger_error($exception->getMessage(), E_USER_WARNING);
             return false;
         }
 

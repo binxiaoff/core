@@ -31,7 +31,7 @@ class Loader
                 [
                     'driver'   => $params['parameters']['database_driver'],
                     'host'     => $params['parameters']['database_host'],
-                    'name'     => $params['parameters']['database_name'],
+                    'dbname'     => $params['parameters']['database_name'],
                     'user'     => $params['parameters']['database_user'],
                     'password' => $params['parameters']['database_password'],
                     'charset'  => 'utf8'

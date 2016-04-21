@@ -4,9 +4,9 @@ namespace Unilend\Bundle\Doctrine\DBAL\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\DefinitionDecorator;
+use Symfony\Component\DependencyInjection\Extension\Extension;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\DependencyInjection\Reference;
-use Unilend\core\Extension;
 
 /**
  * This is the class that loads and manages the configuration

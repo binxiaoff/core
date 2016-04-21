@@ -250,8 +250,8 @@ class projectsController extends bootstrap
                     $this->bids->ordre                 = $numBid;
                     $this->bids->create();
 
-                    $oCache = $this->get('memcache.default');
-                    $oCache->delete($this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project));
+                    $oCachePool = $this->get('memcache.default');
+                    $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $this->projects->id_project);
 
                     $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
 
