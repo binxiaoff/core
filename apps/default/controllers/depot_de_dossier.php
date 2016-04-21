@@ -1087,7 +1087,7 @@ class depot_de_dossierController extends bootstrap
         $oProjectManager = $this->get('ProjectManager');
 
         if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
-            $oProjectManager->addProjectStatus(-2, $iProjectStatus, $this->projects, 0, $sRejectionMessage);
+            $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $iProjectStatus, $this->projects, 0, $sRejectionMessage);
         }
 
         header('Location: ' . $this->lurl . '/depot_de_dossier/' . $sPage . '/' . $this->projects->hash);

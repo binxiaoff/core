@@ -767,7 +767,7 @@ class ajaxController extends bootstrap
             }
 
             if ($form_ok == true) {
-                                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
                 $oProjectManager               = $this->get('ProjectManager');
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 

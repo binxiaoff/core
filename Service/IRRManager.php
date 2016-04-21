@@ -28,6 +28,7 @@ class IRRManager
     public function __construct()
     {
         $this->aConfig = Loader::loadConfig();
+        $this->oLogger = new ULogger('Calculate IRR', $this->aConfig['log_path'][$this->aConfig['env']], 'IRR.' . date('Ymd') . '.log');
 
     }
 
@@ -105,8 +106,11 @@ class IRRManager
 
         $fStartXIRR = microtime(true);
         $fXIRR = $this->calculateIRR($aValuesIRR);
-        $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
-        $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+
+        if ($this->oLogger instanceof ULogger) {
+            $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : ' . 100);
+            $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+        }
 
         return $fXIRR;
     }
@@ -120,9 +124,6 @@ class IRRManager
         set_time_limit(1000);
         /** @var \unilend_stats $oUnilendStats */
         $oUnilendStats = Loader::loadData('unilend_stats');
-
-        $this->setLogger(new ULogger('Calculate IRR', $this->aConfig['log_path'][$this->aConfig['env']], 'IRR.' . date('Ymd') . '.log'));
-
         $fStartSQL  = microtime(true);
         $aValuesIRR = $oUnilendStats->getDataForUnilendIRRUsingProjectsLastStatusMaterialized();
         $this->oLogger->addRecord(ULogger::INFO, 'Unilend - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');

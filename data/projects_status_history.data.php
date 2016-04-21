@@ -189,10 +189,18 @@ class projects_status_history extends projects_status_history_crud
     /**
      * @param string $sDateAdded
      * @param array $aProjectStatus
-     * @return array
+     * @return array|bool
      */
     public function countProjectStatusChangesOnDate($sDateAdded, $aProjectStatus)
     {
+        if (empty($sDateAdded)) {
+            return false;
+        }
+
+        if (empty($aProjectStatus) || false === is_array($aProjectStatus)) {
+            return false;
+        }
+
         $sQuery = 'SELECT
                         COUNT(*),
                         ps.status,

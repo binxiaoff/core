@@ -9,13 +9,6 @@ use Unilend\core\Loader;
  */
 class LenderManager
 {
-    /** @var array */
-    private $aConfig;
-
-    public function __construct()
-    {
-        $this->aConfig = Loader::loadConfig();
-    }
 
     /**
      * @param \lenders_accounts $oLenderAccount
