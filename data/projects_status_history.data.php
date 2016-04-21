@@ -87,15 +87,25 @@ class projects_status_history extends projects_status_history_crud
 
         if (in_array($iStatus, array(\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE))) {
             $oCompanies = new \companies($this->bdd);
-            $oProjects = new \projects($this->bdd);
+            $oProjects  = new \projects($this->bdd);
 
             $oProjects->get($iProjectId);
+            $oCompanies->get($oProjects->id_company);
 
-            $aProjects = $oCompanies->getProjectsForCompany($oProjects->id_company);
-            foreach ($aProjects as $aProject) {
-                $oProjects->get($aProject['id_project'], 'id_project');
-                $oProjects->stop_relances = '1';
-                $oProjects->update();
+            $oProjectCreationDate = new \datetime($oProjects->added);
+            $aCompanies           = $oCompanies->select('siren = ' . $oCompanies->siren);
+
+            foreach ($aCompanies as $aCompany) {
+                $aProjects = $oCompanies->getProjectsForCompany($aCompany['id_company']);
+
+                foreach ($aProjects as $aProject) {
+                    $oOldProjectCreationDate = new \datetime($aProject['added']);
+                    if ($oOldProjectCreationDate->format('Y-m-d H:i:s') < $oProjectCreationDate->format('Y-m-d H:i:s')) {
+                        $oProjects->get($aProject['id_project'], 'id_project');
+                        $oProjects->stop_relances = '1';
+                        $oProjects->update();
+                    }
+                }
             }
         }
 
