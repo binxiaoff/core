@@ -176,7 +176,7 @@ $(function(){
             $('html, body').animate({
                 scrollTop: $('#recu').offset().top + 40
             }, 700, 'swing');
-        };
+        }
     });
 
     /**** custon checkbox & select ****/
@@ -195,7 +195,7 @@ $(function(){
             if($input.is('[type="checkbox"]')){
                 if(!$parent.is('.disabled')){
                     if($parent.is('.checked')){
-                        $parent.removeClass('checked')
+                        $parent.removeClass('checked');
                         $input.prop('checked', false);
                         $('#inscription_correspondance').slideDown();
                     }else{
@@ -218,7 +218,7 @@ $(function(){
             if($input.is('[type="checkbox"]')){
                 if(!$parent.is('.disabled')){
                     if($parent.is('.checked')){
-                        $parent.removeClass('checked')
+                        $parent.removeClass('checked');
                         $input.prop('checked', false);
                     }else{
                         $parent.addClass('checked');

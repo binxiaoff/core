@@ -12,6 +12,7 @@
                     <strong class="pinky-span"> <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</strong>
                     <br/><?= $this->lng['preteur-projets']['en'] ?> <?= ($this->interDebutFin['day'] > 0 ? $this->interDebutFin['day'] . ' jours ' : '') ?><?= ($this->interDebutFin['hour'] > 0 ? $this->interDebutFin['hour'] . ' heures ' : '') ?> <?= $this->lng['preteur-projets']['et'] ?> <?= $this->interDebutFin['minute'] ?> <?= $this->lng['preteur-projets']['minutes'] ?>
                 </p>
+                <?php if (isset($this->bidsvalid['solde'])): ?>
                 <p>
                     <?= $this->lng['preteur-projets']['vous-lui-avez-prete'] ?>
                     <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->bidsvalid['solde'], 0) ?> €</strong>
@@ -20,6 +21,7 @@
                         <strong class="pinky-span"><?= $this->ficelle->formatNumber($this->AvgLoansPreteur, 1) ?> %</strong>
                     <?php } ?>
                 </p>
+                <?php endif; ?>
                 <p><?= $this->lng['preteur-projets']['merci-a-tous'] ?></p>
             </div>
         </div>

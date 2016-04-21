@@ -6,14 +6,9 @@
     <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/pdf/style.css" type="text/css" media="all"/>
 </head>
 <body>
-<!-- Doc Wrapper -->
 <div class="doc-wrapper">
-    <!-- Shell -->
     <div class="shell">
-        <!-- Page Break -->
         <div class="page-break">
-            <h5><?= $this->bloc_pouvoir['document-confidentiel'] ?></h5>
-            <br>
             <h3 class="pink"><?= $this->bloc_pouvoir['pouvoir'] ?></h3>
             <h5><?= $this->bloc_pouvoir['je-soussigne'] ?></h5>
             <div class="list">
@@ -116,7 +111,6 @@
                     </li>
                     <li>
                         <div class="col-long">
-
                             <?= $this->bloc_pouvoir['taux-i-annuel'] ?>
                         </div>
                         <div class="col-small">
@@ -124,9 +118,7 @@
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
-                    <?php
-                    if ($this->nbLoansBDC > 0) :
-                    ?>
+                    <?php if ($this->nbLoansBDC > 0) : ?>
                     <li>
                         <div class="col-long">
                             <?= $this->bloc_pouvoir['nombre-de-bons'] ?>
@@ -136,12 +128,8 @@
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
-                    <?php
-                    endif;
-                    ?>
-                    <?php
-                    if ($this->nbLoansIFP > 0) :
-                    ?>
+                    <?php endif; ?>
+                    <?php if ($this->nbLoansIFP > 0) : ?>
                     <li>
                         <div class="col-long">
                             <?= $this->bloc_pouvoir['nombre-de-contrat'] ?>
@@ -151,9 +139,7 @@
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
-                    <?php
-                    endif;
-                    ?>
+                    <?php endif; ?>
                     <li>
                         <div class="col-long">
                             <?= $this->bloc_pouvoir['date-de-creation-148'] ?>
@@ -246,7 +232,7 @@
             <div class="list">
                 <ul>
                     <li>
-                        Au <?= $this->date_dernier_bilan_jour ?>/<?= $this->date_dernier_bilan_mois ?>/<?= $this->date_dernier_bilan_annee ?>
+                        Au <?= $this->dateDernierBilan ?>
                     </li>
                 </ul>
                 <h5>ACTIF</h5>
@@ -309,12 +295,7 @@
                 </div>
             </div>
         </div>
-        <!-- End Page Break -->
-
-        <?
-        if ($this->projects->period > 48) {
-            ?>
-            <!-- Page Break -->
+        <?php if ($this->projects->period > 48): ?>
             <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
                 <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
                 <div class="dates-table">
@@ -328,10 +309,7 @@
                             <th valign="bottom">TOTAL</th>
                             <th valign="bottom">CAPITAL RESTANT DÛ</th>
                         </tr>
-
-                        <?
-
-
+                        <?php
                         $capRestant = $this->capital;
                         foreach ($this->lRemb as $r) {
                             if ($r['ordre'] <= 48) {
@@ -355,20 +333,17 @@
                                         class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($capRestant / 100) ?> &euro;</td>
                                 </tr>
-                                <?
+                                <?php
                             }
                         }
                         ?>
                     </table>
                 </div>
             </div>
-            <!-- End Page Break -->
-
-            <!-- Page Break -->
             <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
-                        <?
+                        <?php
                         foreach ($this->lRemb as $r) {
                             if ($r['ordre'] > 48) {
                                 $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
@@ -391,20 +366,16 @@
                                         class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($capRestant / 100) ?> &euro;</td>
                                 </tr>
-                                <?
+                                <?php
                             }
                         }
                         ?>
                     </table>
                 </div>
             </div>
-            <!-- End Page Break -->
-            <?
-        } else {
-            ?>
-            <!-- Page Break -->
-            <div class="pageBreakBefore" style="margin-top: 40px;padding-top: 20px;">
-                <h3 class="pink">ECHEANCIER DES REMBOURSEMENTS</h3>
+        <?php else: ?>
+            <div class="page-break">
+                <h3 class="pink"><?= $this->bloc_pdf_contrat['echeancier-remboursements'] ?></h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                         <tr>
@@ -444,10 +415,8 @@
                     </table>
                 </div>
             </div>
-            <!-- End Page Break -->
-            <?
-        }
-
+        <?php endif; ?>
+        <?php
         $var = 0;
         $nb  = intval((count($this->lLenders) / 26));
         for ($a = 0; $a <= $nb; $a++) {
@@ -455,14 +424,10 @@
                 break;
             }
             ?>
-            <!-- Page Break -->
             <div class="pageBreakBefore" style="padding-top: 30px;">
-                <?
-                if ($var == 0) {
-                    ?><h3><?= $this->bloc_pouvoir['liste-caracteristiques'] ?></h3><?
-                }
-                ?>
-
+                <?php if ($var == 0): ?>
+                    <h3><?= $this->bloc_pouvoir['liste-caracteristiques'] ?></h3>
+                <?php endif; ?>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-3">
                         <?php if ($var == 0) : ?>
@@ -516,13 +481,10 @@
                     </table>
                 </div>
             </div>
-            <!-- End Page Break -->
-            <?
+            <?php
         }
         ?>
     </div>
-    <!-- End Shell -->
 </div>
-<!-- End Doc Wrapper -->
 </body>
 </html>

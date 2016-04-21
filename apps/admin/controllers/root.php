@@ -2,8 +2,6 @@
 
 class rootController extends bootstrap
 {
-    var $Command;
-
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
