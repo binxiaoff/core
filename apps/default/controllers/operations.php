@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class operationsController extends bootstrap
 {
     const LAST_OPERATION_DATE = '2013-01-01';
@@ -36,6 +34,7 @@ class operationsController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->ifu                     = $this->loadData('ifu');
+        $this->loadData('transactions_types'); // @todo included for class constants
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -143,6 +142,7 @@ class operationsController extends bootstrap
             $oActiveSheet->setCellValue('L' . ($iRowIndex + 2), $sNote);
         }
 
+        /** @var \PHPExcel_Writer_Excel5 $oWriter */
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'Excel5');
         $oWriter->save('php://output');
     }
@@ -760,12 +760,7 @@ class operationsController extends bootstrap
             $date_debut_a_indexer = substr($sLastOperation, 0, 10);
         }
 
-        $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,23,26)
-            AND t.status = 1
-            AND t.etat = 1
-            AND t.display = 0
-            AND t.id_client = ' . $clients->id_client . '
-            AND DATE(t.date_transaction) >= "' . $date_debut_a_indexer . '"', 'id_transaction DESC');
+        $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, $date_debut_a_indexer, $clients->id_client);
 
         foreach ($this->lTrans as $t) {
             if (0 == $this->indexage_vos_operations->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {

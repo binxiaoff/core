@@ -101,7 +101,6 @@
                         $this->projects_status->getLastStatut($pf['id_project']);
 
                         $this->companies->get($pf['id_company'], 'id_company');
-                        $this->companies_details->get($pf['id_company'], 'id_company');
 
                         $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait'] . ' 23:59:59');
                         if ($inter['mois'] > 0)
@@ -210,7 +209,6 @@
                 $this->projects_status->getLastStatut($pf['id_project']);
 
                 $this->companies->get($pf['id_company'], 'id_company');
-                $this->companies_details->get($pf['id_company'], 'id_company');
 
                 $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait'] . ' 23:59:59');
                 if ($inter['mois'] > 0)

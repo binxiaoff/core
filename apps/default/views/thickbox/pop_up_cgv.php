@@ -1,65 +1,52 @@
-<link media ="all" href="<?=$this->lurl?>/styles/default/synthese1.css" type="text/css" rel="stylesheet" />
+<link media ="all" href="<?= $this->lurl ?>/styles/default/synthese1.css" type="text/css" rel="stylesheet" />
 <div class="popup" style="background-color: #E3E4E5;">
-	<a href="#" class="popup-close">close</a>
-	<div class="popup-head">
-		<h2><?=$this->lng['preteur-profile']['pop-up-cgv-titre']?></h2>
-	</div>
-
-	<div class="popup-cnt">
-    	<p>
-        	<div class="notification-primary">
+    <a href="#" class="popup-close">close</a>
+    <div class="popup-head">
+        <h2><?= $this->lng['preteur-profile']['pop-up-cgv-titre'] ?></h2>
+    </div>
+    <div class="popup-cnt">
+        <p>
+            <div class="notification-primary">
                 <div class="notification-body">
-                    <?
-
-                    // mise a jour cgv
-                    if($this->update_accept_header == true)
-                        echo $this->bloc_cgv['content-2'];
-                    else
-                        echo $this->bloc_cgv['content-1'];
-                    ?>
+                    <?php if ($this->update_accept_header && 0 === $this->iLoansCount) : ?>
+                        <?= $this->bloc_cgv['content-2'] ?>
+                    <?php elseif ($this->update_accept_header && 0 < $this->iLoansCount) : ?>
+                        <?= $this->bloc_cgv['content-3'] ?>
+                    <?php else : ?>
+                        <?= $this->bloc_cgv['content-1'] ?>
+                    <?php endif; ?>
                     <div class="form-terms">
                         <form action="" method="post">
                             <div class="checkbox checkbox_pop" >
                                 <input type="checkbox" name="terms_pop" id="terms_pop"/>
-                                <?
-                                //if($_SERVER['REMOTE_ADDR'] == '93.26.42.99'){
-                                    ?><label for="terms_pop"><a target="_blank" href="<?=$this->lurl.'/cgv_preteurs/nosign'?>"><?=$this->bloc_cgv['checkbox-cgv']?></a></label><?
-                                /*}
-                                else
-                                {
-                                    ?><label for="terms"><a target="_blank" href="<?=$this->lurl.'/'.$this->tree->getSlug($this->lienConditionsGenerales,$this->language)?>"><?=$this->bloc_cgv['checkbox-cgv']?></a></label><?
-                                }*/
-                                ?>
-
-                            </div><!-- /.checkbox -->
-
+                                <label for="terms_pop"><?= str_replace(array('[', ']'), array('<a target="_blank" href="' . $this->lurl . '/cgv_preteurs/nosign">', '</a>'), $this->bloc_cgv['checkbox-cgv']) ?></label>
+                            </div>
                             <div class="form-actions">
-
                                 <button type="button" id="cta_cgv_pop" class="btn form-btn">
-                                    <?=$this->bloc_cgv['cta-valider']?>
-
+                                    <?= $this->bloc_cgv['cta-valider'] ?>
                                     <i class="ico-arrow"></i>
                                 </button>
-                            </div><!-- /.form-actions -->
+                            </div>
                         </form>
-                    </div><!-- /.form-terms -->
-                </div><!-- /.notification-body -->
-            </div><!-- /.notification-primary -->
+                    </div>
+                </div>
+            </div>
             <script type="text/javascript">
-				$( "#cta_cgv_pop" ).click(function() {
-					if($("#terms_pop").is(':checked') == true){
-						$.post( add_url+"/ajax/accept_cgv", { terms: $("#terms_pop").val(), id_legal_doc: "<?=$this->lienConditionsGenerales_header?>" }).done(function( data ) {
-							location.reload();
-						});
-					}
-					else{ $(".checkbox_pop a").css('color','#c84747'); }
-				});
-				$( "#terms_pop" ).change(function() {if($(this).is(':checked') == true){ $(".checkbox_pop a").css('color','#727272');} });
-
+                $( "#cta_cgv_pop" ).click(function() {
+                    if ($("#terms_pop").prop('checked')) {
+                        $.post( add_url+"/ajax/accept_cgv", { terms: $("#terms_pop").val(), id_legal_doc: "<?= $this->lienConditionsGenerales_header ?>" }).done(function(data) {
+                            location.reload();
+                        });
+                    } else{
+                        $(".checkbox_pop a").css('color','#c84747');
+                    }
+                });
+                $( "#terms_pop" ).change(function() {
+                    if ($(this).prop('checked')) {
+                        $(".checkbox_pop a").css('color','#727272');
+                    }
+                });
             </script>
         </p>
-
-
-	</div>
-	<!-- /popup-cnt -->
+    </div>
 </div>

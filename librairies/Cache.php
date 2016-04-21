@@ -3,7 +3,6 @@
 namespace Unilend\librairies;
 
 use Memcache;
-use Unilend\librairies\ULogger;
 
 class Cache
 {
@@ -64,6 +63,9 @@ class Cache
     {
         $aKey = array();
         foreach (func_get_args() as $mParameters) {
+            if (null === $mParameters) {
+                $mParameters = '';
+            }
             if (is_scalar($mParameters)) {
                 $aKey[] = $mParameters;
             } else {

@@ -137,6 +137,7 @@ chsh -s /bin/zsh vagrant
 apt-get install -y software-properties-common
 apt-get remove -y ruby1.8
 apt-get install -y ruby1.9.3 libsqlite3-dev
+gem install mime-types --version "< 3"
 gem install mailcatcher
 sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env catchmail' /etc/php5/apache2/php.ini
 a2enmod proxy proxy_http

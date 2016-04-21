@@ -9,8 +9,7 @@ use Unilend\core\Loader;
  */
 class AutoBidSettingsManager
 {
-    //todo: To be defined
-    const CGV_AUTOBID = 456;
+    const CGV_AUTOBID = 474;
 
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
@@ -352,7 +351,7 @@ class AutoBidSettingsManager
         if (false === empty($oLenderAccount->id_client_owner) && $oClient->get($oLenderAccount->id_client_owner)) {
             return (bool)$this->oClientSettingsManager->getSetting($oClient, \client_setting_type::TYPE_AUTO_BID_SWITCH);
         }
-        
+
         return false;
     }
 

@@ -205,19 +205,6 @@ class ajaxController extends bootstrap
     }
 
     /* Fonction AJAX change le statut d'un dossier*/
-    public function _status_dossier()
-    {
-        $this->autoFireView = true;
-
-        $this->projects                = $this->loadData('projects');
-        $this->current_projects_status = $this->loadData('projects_status');
-
-
-        $this->projects->get($this->params[0], 'id_project');
-        $this->current_projects_status->getLastStatut($this->projects->id_project);
-    }
-
-    /* Fonction AJAX change le statut d'un dossier*/
     public function _date_publication()
     {
         $this->autoFireView = true;
@@ -228,253 +215,6 @@ class ajaxController extends bootstrap
 
         $this->projects->get($this->params[0], 'id_project');
         $this->current_projects_status->getLastStatut($this->projects->id_project);
-    }
-
-    /* Fonction AJAX change le statut d'un dossier*/
-    public function _check_status_dossier()
-    {
-        $this->autoFireView = true;
-
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->companies               = $this->loadData('companies');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_history         = $this->loadData('clients_history');
-
-        if (isset($this->params[0]) && isset($this->params[1])) {
-            if ($this->projects->get($this->params[1], 'id_project') &&
-                $this->projects->amount > 0 &&
-                $this->projects->target_rate != '0' &&
-                $this->companies->get($this->projects->id_company, 'id_company') &&
-                $this->companies->risk != '' && $this->projects->period > 0 &&
-                $this->params[2] != '' &&
-                $this->projects->date_publication != '0000-00-00' &&
-                $this->projects->date_retrait != '0000-00-00'
-                ||
-                $this->projects->get($this->params[1], 'id_project') &&
-                $this->companies->get($this->projects->id_company, 'id_company') &&
-                $this->params[0] == 30
-            ) {
-                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $this->params[0], $this->projects->id_project);
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-                //*****************************************//
-                //*** ENVOI DU MAIL Validation ou rejet ***//
-                //*****************************************//
-
-                // Recuperation du modele de mail
-                // validé
-                if ($this->params[0] == 40) {
-
-                    // Si statut a funder, en funding ou fundé
-                    if (in_array($this->params[0], array(40, 50, 60))) {
-                        /////////////////////////////////////
-                        // Partie check données manquantes //
-                        /////////////////////////////////////
-
-                        $companies        = $this->loadData('companies');
-                        $clients          = $this->loadData('clients');
-                        $clients_adresses = $this->loadData('clients_adresses');
-
-                        // on recup la companie
-                        $companies->get($this->projects->id_company, 'id_company');
-                        // et l'emprunteur
-                        $clients->get($companies->id_client_owner, 'id_client');
-                        // son adresse
-                        $clients_adresses->get($companies->id_client_owner, 'id_client');
-
-
-                        $mess = '<ul>';
-
-                        if ($this->projects->title == '') {
-                            $mess .= '<li>Titre projet</li>';
-                        }
-                        if ($this->projects->title_bo == '') {
-                            $mess .= '<li>Titre projet BO</li>';
-                        }
-                        if ($this->projects->period == '0') {
-                            $mess .= '<li>Periode projet</li>';
-                        }
-                        if ($this->projects->amount == '0') {
-                            $mess .= '<li>Montant projet</li>';
-                        }
-
-                        if ($companies->name == '') {
-                            $mess .= '<li>Nom entreprise</li>';
-                        }
-                        if ($companies->forme == '') {
-                            $mess .= '<li>Forme juridique</li>';
-                        }
-                        if ($companies->siren == '') {
-                            $mess .= '<li>SIREN entreprise</li>';
-                        }
-                        if ($companies->iban == '') {
-                            $mess .= '<li>IBAN entreprise</li>';
-                        }
-                        if ($companies->bic == '') {
-                            $mess .= '<li>BIC entreprise</li>';
-                        }
-                        if ($companies->tribunal_com == '') {
-                            $mess .= '<li>Tribunal de commerce entreprise</li>';
-                        }
-                        if ($companies->capital == '0') {
-                            $mess .= '<li>Capital entreprise</li>';
-                        }
-                        if ($companies->date_creation == '0000-00-00') {
-                            $mess .= '<li>Date creation entreprise</li>';
-                        }
-                        if ($companies->sector == 0) {
-                            $mess .= '<li>Secteur entreprise</li>';
-                        }
-
-                        if ($clients->nom == '') {
-                            $mess .= '<li>Nom emprunteur</li>';
-                        }
-                        if ($clients->prenom == '') {
-                            $mess .= '<li>Prenom emprunteur</li>';
-                        }
-                        if ($clients->fonction == '') {
-                            $mess .= '<li>Fonction emprunteur</li>';
-                        }
-                        if ($clients->telephone == '') {
-                            $mess .= '<li>Telephone emprunteur</li>';
-                        }
-                        if ($clients->email == '') {
-                            $mess .= '<li>Email emprunteur</li>';
-                        }
-
-                        if ($clients_adresses->adresse1 == '') {
-                            $mess .= '<li>Adresse emprunteur</li>';
-                        }
-                        if ($clients_adresses->cp == '') {
-                            $mess .= '<li>CP emprunteur</li>';
-                        }
-                        if ($clients_adresses->ville == '') {
-                            $mess .= '<li>Ville emprunteur</li>';
-                        }
-
-                        $mess .= '</ul>';
-
-                        if (strlen($mess) > 9) {
-                            $to = implode(',', $this->Config['DebugAlertesBusiness']);
-                            $to .= ($this->Config['env'] == 'prod') ? ', nicolas.lesur@unilend.fr' : '';
-                            // subject
-                            $subject = '[Rappel] Donnees projet manquantes';
-                            // message
-                            $message = '
-                            <html>
-                            <head>
-                              <title>[Rappel] Donnees projet manquantes</title>
-                            </head>
-                            <body>
-                                <p>Un projet qui vient d\'etre publie ne dispose pas de toutes les donnees necessaires</p>
-                                <p>Listes des informations manquantes sur le projet ' . $this->projects->id_project . ' : </p>
-                                ' . $mess . '
-                            </body>
-                            </html>
-                            ';
-
-                            // To send HTML mail, the Content-type header must be set
-                            $headers = 'MIME-Version: 1.0' . "\r\n";
-                            $headers .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-
-                            // Additional headers
-
-                            $headers .= 'From: Unilend <equipeit@unilend.fr>' . "\r\n";
-                            //$headers .= 'From: Unilend <courtier.damien@gmail.com>' . "\r\n";
-
-                            // Mail it
-                            mail($to, $subject, $message, $headers);
-                        }
-                    }
-                    // si inscription
-                    if ($this->clients->status_transition == 1) {
-                        $this->clients_history->id_client = $this->clients->id_client;
-                        $this->clients_history->status    = 2; // statut inscription
-                        $this->clients_history->create();
-                    }
-
-                    $this->clients_history->id_client = $this->clients->id_client;
-                    $this->clients_history->status    = 3; // statut depot de dossier validé
-                    $this->clients_history->create();
-
-                    $this->clients->status            = 1;
-                    $this->clients->status_transition = 0;
-                    $this->clients->update();
-
-                    $this->mails_text->get('emprunteur-dossier-valide', 'lang = "' . $this->language . '" AND type');
-                } elseif ($this->params[0] == 30) {
-                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
-                }
-
-                // FB
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
-
-                // Twitter
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
-
-                $timeDatedebut  = strtotime($this->projects->date_publication);
-                $monthDatedebut = $this->dates->tableauMois['fr'][date('n', $timeDatedebut)];
-                $datedebut      = date('d', $timeDatedebut) . ' ' . $monthDatedebut . ' ' . date('Y', $timeDatedebut);
-
-                $timeDateretrait  = strtotime($this->projects->date_retrait);
-                $monthDateretrait = $this->dates->tableauMois['fr'][date('n', $timeDateretrait)];
-                $date_retrait     = date('d', $timeDateretrait) . ' ' . $monthDateretrait . ' ' . date('Y', $timeDateretrait);
-
-                $varMail = array(
-                    'surl'                             => $this->surl,
-                    'url'                              => $this->furl,
-                    'prenom_e'                         => $this->clients->prenom,
-                    'link_compte_emprunteur'           => $this->furl . '/synthese_emprunteur',
-                    'date_presentation_dossier_debut'  => $datedebut,
-                    'heure_presentation_dossier_debut' => date('H', $timeDatedebut),
-                    'date_presentation_dossier_fin'    => $date_retrait,
-                    'heure_presentation_dossier_fin'   => date('H', $timeDateretrait),
-                    'lien_fb'                          => $lien_fb,
-                    'lien_tw'                          => $lien_tw
-                );
-
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
-
-                //on recup le statut courant
-                $this->current_projects_status = $this->loadData('projects_status');
-                $this->current_projects_status->getLastStatut($this->projects->id_project);
-
-                //on charge la liste des statut dispo
-                if ($this->current_projects_status->status == \projects_status::EN_ATTENTE_PIECES) {
-                    $this->lProjects_status = $this->projects_status->select(' status <= ' . \projects_status::EN_ATTENTE_PIECES, ' status ASC ');
-                } elseif ($this->current_projects_status->status >= \projects_status::REMBOURSEMENT) {
-                    $this->lProjects_status = $this->projects_status->select(' status >= ' . \projects_status::REMBOURSEMENT, ' status ASC ');
-                } else {
-                    $this->lProjects_status = array();
-                }
-                $this->bloc_statut = 'ok';
-            } else {
-                echo 'nok';
-            }
-        } else {
-            echo 'nok';
-        }
     }
 
     public function _addMemo()
@@ -496,9 +236,7 @@ class ajaxController extends bootstrap
                 $this->projects_comments->create();
                 $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $_POST['id'], 'added ASC');
             }
-
         }
-
     }
 
     public function _deleteMemo()
@@ -507,12 +245,8 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['id_project_comment']) && isset($_POST['id_project'])) {
             $this->projects_comments = $this->loadData('projects_comments');
-
-            // on supprime le memo
             $this->projects_comments->delete($_POST['id_project_comment'], 'id_project_comment');
 
-
-            // On raffiche le tableau
             $this->lProjects_comments = $this->projects_comments->select('id_project = ' . $_POST['id_project'], 'added ASC');
         }
     }
@@ -527,248 +261,183 @@ class ajaxController extends bootstrap
             $this->clients          = $this->loadData('clients');
             $this->clients_adresses = $this->loadData('clients_adresses');
 
-            // Histo user //
             $serialize = serialize($_POST);
             $this->users_history->histo(8, 'dossier edit etapes', $_SESSION['user']['id_user'], $serialize);
-            ////////////////
 
             if ($_POST['etape'] == 1) {
-                // on recup le projet
                 $this->projects->get($_POST['id_project'], 'id_project');
-
-                // on recup l'entreprise
-                $this->companies->get($this->projects->id_company, 'id_company');
-
-                $this->projects->amount = str_replace(' ', '', str_replace(',', '.', $_POST['montant_etape1']));
+                $this->projects->amount = $this->ficelle->cleanFormatedNumber($_POST['montant_etape1']);
                 $this->projects->period = (0 < (int) $_POST['duree_etape1']) ? (int) $_POST['duree_etape1'] : $this->projects->period;
-                $this->companies->siren = $_POST['siren_etape1'];
-
-                // on enregistre les modifs
                 $this->projects->update();
+
+                $this->companies->get($this->projects->id_company, 'id_company');
+                $this->companies->siren = $_POST['siren_etape1'];
+                $this->companies->update();
+            } elseif ($_POST['etape'] == 2) {
+                $this->projects->get($_POST['id_project'], 'id_project');
+                $this->projects->id_prescripteur = ('true' === $_POST['has_prescripteur']) ? $_POST['id_prescripteur'] : 0;
+                $this->projects->update();
+
+                $this->companies->get($this->projects->id_company, 'id_company');
+                $this->companies->name                          = $_POST['raison_sociale_etape2'];
+                $this->companies->forme                         = $_POST['forme_juridique_etape2'];
+                $this->companies->capital                       = $this->ficelle->cleanFormatedNumber($_POST['capital_social_etape2']);
+                $this->companies->date_creation                 = date('Y-m-d', strtotime(str_replace('/', '-', $_POST['creation_date_etape2'])));
+                $this->companies->adresse1                      = $_POST['address_etape2'];
+                $this->companies->city                          = $_POST['ville_etape2'];
+                $this->companies->zip                           = $_POST['postal_etape2'];
+                $this->companies->phone                         = $_POST['phone_etape2'];
+                $this->companies->status_adresse_correspondance = isset($_POST['same_address_etape2']) && 'on' === $_POST['same_address_etape2'] ? 1 : 0;
+                $this->companies->status_client                 = $_POST['enterprise_etape2'];
                 $this->companies->update();
 
-            } elseif ($_POST['etape'] == 2) {
-                // on recup le projet
-                $this->projects->get($_POST['id_project'], 'id_project');
-
-                // on recup l'entreprise
-                $this->companies->get($this->projects->id_company, 'id_company');
-
-                // on recup le client
-                $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-                // on recup le client
                 $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
-
-                $iIdPrescripteur = 'true' === $_POST['has_prescripteur'] ? $_POST['id_prescripteur'] : 0;
-
-                $this->projects->id_prescripteur = $iIdPrescripteur;
-                $this->projects->update();
-
-                $this->companies->name    = $_POST['raison_sociale_etape2'];
-                $this->companies->forme   = $_POST['forme_juridique_etape2'];
-                $this->companies->capital = str_replace(' ', '', str_replace(',', '.', $_POST['capital_social_etape2']));
-
-                $creation_date_etape2           = explode('/', $_POST['creation_date_etape2']);
-                $this->companies->date_creation = $creation_date_etape2[2] . '-' . $creation_date_etape2[1] . '-' . $creation_date_etape2[0];
-                $this->companies->adresse1      = $_POST['address_etape2'];
-                $this->companies->city          = $_POST['ville_etape2'];
-                $this->companies->zip           = $_POST['postal_etape2'];
-                $this->companies->phone         = $_POST['phone_etape2'];
-
-                $this->companies->status_adresse_correspondance = $_POST['same_address_etape2'];
                 if ($this->companies->status_adresse_correspondance == 0) {
-                    // adresse client
                     $this->clients_adresses->adresse1  = $_POST['adresse_correspondance_etape2'];
                     $this->clients_adresses->ville     = $_POST['city_correspondance_etape2'];
                     $this->clients_adresses->cp        = $_POST['zip_correspondance_etape2'];
                     $this->clients_adresses->telephone = $_POST['phone_correspondance_etape2'];
                 } else {
-                    // adresse client
                     $this->clients_adresses->adresse1  = $_POST['address_etape2'];
                     $this->clients_adresses->ville     = $_POST['ville_etape2'];
                     $this->clients_adresses->cp        = $_POST['postal_etape2'];
                     $this->clients_adresses->telephone = $_POST['phone_etape2'];
                 }
+                $this->clients_adresses->update();
 
-
-                $this->companies->status_client = $_POST['enterprise_etape2'];
-
-                $this->clients->civilite = $_POST['civilite_etape2'];
-                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_etape2']);
-                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_etape2']);
-                $this->clients->fonction = $_POST['fonction_etape2'];
-
-                ///////// on check si mail existe deja si c'est le cas on rajoute l'id projet
-                //$clients = $this->loadData('clients');
-                /* if($clients->get($_POST['email_etape2'],'email') && strpos($_POST['email_etape2'], $this->projects->id_project) === false){ */
-
+                $this->clients->get($this->companies->id_client_owner, 'id_client');
                 if ($this->clients->counter('email = "' . $_POST['email_etape2'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
-
                     $this->clients->email = $_POST['email_etape2'];
                     $this->clients->email .= '-' . $this->projects->id_project;
                 } elseif ($this->clients->email != $_POST['email_etape2']) {
                     $this->clients->email = $_POST['email_etape2'];
                 }
-                //////////
-
+                $this->clients->civilite = $_POST['civilite_etape2'];
+                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_etape2']);
+                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_etape2']);
+                $this->clients->fonction = $_POST['fonction_etape2'];
                 $this->clients->telephone = $_POST['phone_new_etape2'];
-
-                if ($this->companies->status_client == 2 || $this->companies->status_client == 3) {
-                    $this->companies->civilite_dirigeant = $_POST['civilite2_etape2'];
-                    $this->companies->nom_dirigeant      = $this->ficelle->majNom($_POST['nom2_etape2']);
-                    $this->companies->prenom_dirigeant   = $this->ficelle->majNom($_POST['prenom2_etape2']);
-                    $this->companies->fonction_dirigeant = $_POST['fonction2_etape2'];
-                    $this->companies->email_dirigeant    = $_POST['email2_etape2'];
-                    $this->companies->phone_dirigeant    = $_POST['phone_new2_etape2'];
-
-                    if ($this->companies->status_client == 3) {
-                        $this->companies->status_conseil_externe_entreprise   = $_POST['status_conseil_externe_entreprise_etape2'];
-                        $this->companies->preciser_conseil_externe_entreprise = $_POST['preciser_conseil_externe_entreprise_etape2'];
-                    } else {
-                        $this->companies->status_conseil_externe_entreprise   = '';
-                        $this->companies->preciser_conseil_externe_entreprise = '';
-                    }
-                } else {
-                    $this->companies->civilite_dirigeant                  = '';
-                    $this->companies->nom_dirigeant                       = '';
-                    $this->companies->prenom_dirigeant                    = '';
-                    $this->companies->fonction_dirigeant                  = '';
-                    $this->companies->email_dirigeant                     = '';
-                    $this->companies->phone_dirigeant                     = '';
-                    $this->companies->status_conseil_externe_entreprise   = '';
-                    $this->companies->preciser_conseil_externe_entreprise = '';
-                }
-
-                // on enregistre les modifs
-                $this->companies->update();
+                $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
                 $this->clients->update();
-                $this->clients_adresses->update();
             } elseif ($_POST['etape'] == 3) {
-                $this->projects = $this->loadData('projects');
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->amount               = str_replace(array(' ', ','), array('', '.'), $_POST['montant_etape3']);
-                $this->projects->period               = $_POST['duree_etape3'];
-                $this->projects->title                = $_POST['titre_etape3'];
-                $this->projects->objectif_loan        = $_POST['objectif_etape3'];
-                $this->projects->presentation_company = $_POST['presentation_etape3'];
-                $this->projects->means_repayment      = $_POST['moyen_etape3'];
-                $this->projects->comments             = $_POST['comments_etape3'];
-                $this->projects->update();
-            } elseif ($_POST['etape'] == 4) {
-                $this->projects          = $this->loadData('projects');
-                $this->companies_bilans  = $this->loadData('companies_bilans');
-                $this->companies_details = $this->loadData('companies_details');
-                $this->companies_ap      = $this->loadData('companies_actif_passif');
+                /** @var projects $oProject */
+                $oProject = $this->loadData('projects');
+                $oProject->get($_POST['id_project'], 'id_project');
+                $oProject->amount               = $this->ficelle->cleanFormatedNumber($_POST['montant_etape3']);
+                $oProject->period               = $_POST['duree_etape3'];
+                $oProject->title                = $_POST['titre_etape3'];
+                $oProject->objectif_loan        = $_POST['objectif_etape3'];
+                $oProject->presentation_company = $_POST['presentation_etape3'];
+                $oProject->means_repayment      = $_POST['moyen_etape3'];
+                $oProject->comments             = $_POST['comments_etape3'];
+                $oProject->update();
+            } elseif ($_POST['etape'] == 4.1) {
+                /** @var projects $oProject */
+                $oProject = $this->loadData('projects');
 
-                for ($i = 0; $i < 5; $i++) {
-                    $this->companies_bilans->get($_POST['ca_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->ca = str_replace(array(' ', ','), array('', '.'), $_POST['ca_' . $i]);
-                    $this->companies_bilans->update();
+                if ($oProject->get($_POST['id_project'], 'id_project')) {
+                    /** @var company_rating $oCompanyRating */
+                    $oCompanyRating = $this->loadData('company_rating');
+                    $aRatings       = $oCompanyRating->getHistoryRatingsByType($oProject->id_company_rating_history);
+                    $bAddHistory    = false;
 
-                    $this->companies_bilans->get($_POST['resultat_brute_exploitation_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->resultat_brute_exploitation = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_brute_exploitation_' . $i]);
-                    $this->companies_bilans->update();
-
-                    $this->companies_bilans->get($_POST['resultat_exploitation_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->resultat_exploitation = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_exploitation_' . $i]);
-                    $this->companies_bilans->update();
-
-                    $this->companies_bilans->get($_POST['investissements_id_' . $i], 'id_bilan');
-                    $this->companies_bilans->investissements = str_replace(array(' ', ','), array('', '.'), $_POST['investissements_' . $i]);
-                    $this->companies_bilans->update();
-                }
-
-                // On recup le projet
-                $this->projects->get($_POST['id_project'], 'id_project');
-                $this->projects->ca_declara_client                    = str_replace(array(' ', ','), array('', '.'), $_POST['ca_declara_client']);
-                $this->projects->resultat_exploitation_declara_client = str_replace(array(' ', ','), array('', '.'), $_POST['resultat_exploitation_declara_client']);
-                $this->projects->fonds_propres_declara_client         = str_replace(array(' ', ','), array('', '.'), $_POST['fonds_propres_declara_client']);
-                $this->projects->update();
-
-                // On recup le detail de l'entreprise
-                $this->companies_details->get($this->projects->id_company, 'id_company');
-
-                $old_date_dernier_bilan                                               = $this->companies_details->date_dernier_bilan;
-                $this->companies_details->date_dernier_bilan                          = $_POST['annee_etape4'] . '-' . $_POST['mois_etape4'] . '-' . $_POST['jour_etape4'];
-                $this->companies_details->encours_actuel_dette_fianciere              = $_POST['encours_actuel_dette_fianciere'];
-                $this->companies_details->remb_a_venir_cette_annee                    = $_POST['remb_a_venir_cette_annee'];
-                $this->companies_details->remb_a_venir_annee_prochaine                = $_POST['remb_a_venir_annee_prochaine'];
-                $this->companies_details->tresorie_dispo_actuellement                 = $_POST['tresorie_dispo_actuellement'];
-                $this->companies_details->autre_demandes_financements_prevues         = $_POST['autre_demandes_financements_prevues'];
-                $this->companies_details->precisions                                  = $_POST['precisions'];
-                $this->companies_details->decouverts_bancaires                        = $_POST['decouverts_bancaires'];
-                $this->companies_details->lignes_de_tresorerie                        = $_POST['lignes_de_tresorerie'];
-                $this->companies_details->affacturage                                 = $_POST['affacturage'];
-                $this->companies_details->escompte                                    = $_POST['escompte'];
-                $this->companies_details->financement_dailly                          = $_POST['financement_dailly'];
-                $this->companies_details->credit_de_tresorerie                        = $_POST['credit_de_tresorerie'];
-                $this->companies_details->credit_bancaire_investissements_materiels   = $_POST['credit_bancaire_investissements_materiels'];
-                $this->companies_details->credit_bancaire_investissements_immateriels = $_POST['credit_bancaire_investissements_immateriels'];
-                $this->companies_details->rachat_entreprise_ou_titres                 = $_POST['rachat_entreprise_ou_titres'];
-                $this->companies_details->credit_immobilier                           = $_POST['credit_immobilier'];
-                $this->companies_details->credit_bail_immobilier                      = $_POST['credit_bail_immobilier'];
-                $this->companies_details->credit_bail                                 = $_POST['credit_bail'];
-                $this->companies_details->location_avec_option_achat                  = $_POST['location_avec_option_achat'];
-                $this->companies_details->location_financiere                         = $_POST['location_financiere'];
-                $this->companies_details->location_longue_duree                       = $_POST['location_longue_duree'];
-                $this->companies_details->pret_oseo                                   = $_POST['pret_oseo'];
-                $this->companies_details->pret_participatif                           = $_POST['pret_participatif'];
-                $this->companies_details->update();
-
-                if ($old_date_dernier_bilan != '0000-00-00') {
-                    $dernierBilan = explode('-', $old_date_dernier_bilan);
-                    $dernierBilan = $dernierBilan[0];
-                } else {
-                    $dernierBilan = date('Y');
-                }
-
-                // On recup les actif passif
-                $this->lCompanies_actif_passif = $this->companies_ap->select('id_company = "' . $this->projects->id_company . '" AND annee <= "' . $dernierBilan . '"', 'annee DESC');
-                if ($this->lCompanies_actif_passif != false) {
-                    $i = 1;
-                    foreach ($this->lCompanies_actif_passif as $ap) {
-                        if ($i <= 3) {
-                            $this->companies_ap->get($ap['id_actif_passif'], 'ordre = ' . $ap['ordre'] . ' AND id_actif_passif');
-
-                            $this->companies_ap->immobilisations_corporelles        = $_POST['immobilisations_corporelles_' . $ap['ordre']];
-                            $this->companies_ap->immobilisations_incorporelles      = $_POST['immobilisations_incorporelles_' . $ap['ordre']];
-                            $this->companies_ap->immobilisations_financieres        = $_POST['immobilisations_financieres_' . $ap['ordre']];
-                            $this->companies_ap->stocks                             = $_POST['stocks_' . $ap['ordre']];
-                            $this->companies_ap->creances_clients                   = $_POST['creances_clients_' . $ap['ordre']];
-                            $this->companies_ap->disponibilites                     = $_POST['disponibilites_' . $ap['ordre']];
-                            $this->companies_ap->valeurs_mobilieres_de_placement    = $_POST['valeurs_mobilieres_de_placement_' . $ap['ordre']];
-                            $this->companies_ap->capitaux_propres                   = $_POST['capitaux_propres_' . $ap['ordre']];
-                            $this->companies_ap->provisions_pour_risques_et_charges = $_POST['provisions_pour_risques_et_charges_' . $ap['ordre']];
-                            $this->companies_ap->amortissement_sur_immo             = $_POST['amortissement_sur_immo_' . $ap['ordre']];
-                            $this->companies_ap->dettes_financieres                 = $_POST['dettes_financieres_' . $ap['ordre']];
-                            $this->companies_ap->dettes_fournisseurs                = $_POST['dettes_fournisseurs_' . $ap['ordre']];
-                            $this->companies_ap->autres_dettes                      = $_POST['autres_dettes_' . $ap['ordre']];
-
-                            $this->companies_ap->update();
+                    foreach ($_POST['ratings'] as $sRating => $mValue) {
+                        switch ($sRating) {
+                            case 'date_dernier_privilege':
+                            case 'date_tresorerie':
+                                if (false === empty($mValue)) {
+                                    $mValue = date('Y-m-d', strtotime(str_replace('/', '-', $mValue)));
+                                }
+                                break;
+                            case 'montant_tresorerie':
+                                $mValue = $this->ficelle->cleanFormatedNumber($mValue);
+                                break;
                         }
-                        $i++;
+
+                        if (false === isset($aRatings[$sRating]) || $aRatings[$sRating] != $mValue) {
+                            $bAddHistory = true;
+                            $aRatings[$sRating] = $mValue;
+                        }
+                    }
+
+                    if ($bAddHistory) {
+                        /** @var company_rating_history $oCompanyRatingHistory */
+                        $oCompanyRatingHistory = $this->loadData('company_rating_history');
+                        $oCompanyRatingHistory->id_company = $oProject->id_company;
+                        $oCompanyRatingHistory->id_user    = $_SESSION['user']['id_user'];
+                        $oCompanyRatingHistory->action     = \company_rating_history::ACTION_USER;
+                        $oCompanyRatingHistory->create();
+
+                        $oProject->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+
+                        foreach ($aRatings as $sRating => $mValue) {
+                            $oCompanyRating->id_company_rating_history = $oCompanyRatingHistory->id_company_rating_history;
+                            $oCompanyRating->type                      = $sRating;
+                            $oCompanyRating->value                     = $mValue;
+                            $oCompanyRating->create();
+                        }
+                    }
+
+                    $oProject->ca_declara_client                    = $this->ficelle->cleanFormatedNumber($_POST['ca_declara_client']);
+                    $oProject->resultat_exploitation_declara_client = $this->ficelle->cleanFormatedNumber($_POST['resultat_exploitation_declara_client']);
+                    $oProject->fonds_propres_declara_client         = $this->ficelle->cleanFormatedNumber($_POST['fonds_propres_declara_client']);
+                    $oProject->update();
+                }
+            } elseif ($_POST['etape'] == 4.2) {
+                /** @var projects $oProject */
+                $oProject = $this->loadData('projects');
+                /** @var companies_actif_passif $oCompanyDebtsAssets */
+                $oCompanyDebtsAssets = $this->loadData('companies_actif_passif');
+                /** @var companies_bilans $oCompanyAnnualAccounts */
+                $oCompanyAnnualAccounts = $this->loadData('companies_bilans');
+                /** @var company_balance $oCompanyBalance */
+                $oCompanyBalance = $this->loadData('company_balance');
+                /** @var company_balance_type $oCompanyBalanceType */
+                $oCompanyBalanceType = $this->loadData('company_balance_type');
+
+                if ($oProject->get($_POST['id_project'], 'id_project')) {
+                    $aAnnualAccounts    = $oCompanyAnnualAccounts->select('id_company = ' . $oProject->id_company . ' AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
+                    $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
+                    $sAnnualAccountsIds = implode(', ', $aAnnualAccountsIds);
+                    $aBalanceSheets     = array();
+
+                    foreach ($oCompanyBalance->select('id_bilan IN (' . $sAnnualAccountsIds . ')', 'FIELD(id_bilan, ' . $sAnnualAccountsIds . ') ASC') as $aAnnualAccount) {
+                        $aBalanceSheets[$aAnnualAccount['id_bilan']][$aAnnualAccount['id_balance_type']] = $aAnnualAccount;
+                    }
+
+                    foreach ($oCompanyBalanceType->getAllByCode() as $sCode => $aBalanceType) {
+                        if (isset($_POST[$sCode])) {
+                            $iBalanceTypeId = $aBalanceType['id_balance_type'];
+
+                            foreach ($_POST[$sCode] as $iAnnualAccountsId => $sValue) {
+                                $iValue = $this->ficelle->cleanFormatedNumber($sValue);
+
+                                if (isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]) && $aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['value'] != $iValue) {
+                                    $oCompanyBalance->get($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId]['id_balance']);
+                                    $oCompanyBalance->value = $iValue;
+                                    $oCompanyBalance->update();
+                                } elseif (false === isset($aBalanceSheets[$iAnnualAccountsId][$iBalanceTypeId])) {
+                                    $oCompanyBalance->id_bilan        = $iAnnualAccountsId;
+                                    $oCompanyBalance->id_balance_type = $iBalanceTypeId;
+                                    $oCompanyBalance->value           = $iValue;
+                                    $oCompanyBalance->create();
+                                }
+                            }
+                        }
+                    }
+
+                    foreach ($aAnnualAccountsIds as $iAnnualAccountId) {
+                        $oCompanyDebtsAssets->get($iAnnualAccountId, 'id_bilan');
+                        $oCompanyDebtsAssets->calcultateFromBalance();
+
+                        $oCompanyAnnualAccounts->get($iAnnualAccountId, 'id_bilan');
+                        $oCompanyAnnualAccounts->calcultateFromBalance();
                     }
                 }
-
-
-            } elseif ($_POST['etape'] == 5) {
-
-            } elseif ($_POST['etape'] == 6) {
-                $this->projects = $this->loadData('projects');
-
-                // On recup le projet
-                $this->projects->get($_POST['id_project'], 'id_project');
-
-                $this->projects->question1 = $_POST['question1'];
-                $this->projects->question2 = $_POST['question2'];
-                $this->projects->question3 = $_POST['question3'];
-
-                $this->projects->update();
+                header('Location: ' . $this->lurl . '/dossiers/edit/' . $oProject->id_project);
+                die;
             }
-
         }
-
     }
 
     public function _create_client()
@@ -782,9 +451,7 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             // On verifie que ce soit bien un mail
-            if ($_POST['email'] != '') //if($this->ficelle->isEmail($_POST['email']))
-            {
-
+            if ($_POST['email'] != '') {
                 // si client existe deja
                 if ($this->clients->get($_POST['id_client'], 'id_client')) {
                     if ($this->clients->counter('email = "' . $_POST['email'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
@@ -830,10 +497,8 @@ class ajaxController extends bootstrap
                     $this->companies->id_client_owner = $this->clients->id_client;
                     $this->companies->email_facture   = $this->clients->email;
                     $this->companies->update();
-                    //}
                 }
-                //echo ($error == true?'nok':'ok');
-                //echo $this->clients->id_client;
+
                 echo json_encode(array(
                     'id_client' => $this->clients->id_client,
                     'error'     => ($error == true ? 'nok' : 'ok')
@@ -844,25 +509,17 @@ class ajaxController extends bootstrap
         }
     }
 
-
     public function _valid_create()
     {
         $this->autoFireView = false;
 
-        $this->projects                = $this->loadData('projects');
-        $this->companies               = $this->loadData('companies');
-        $this->clients                 = $this->loadData('clients');
-        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->projects  = $this->loadData('projects');
+        $this->companies = $this->loadData('companies');
+        $this->clients   = $this->loadData('clients');
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects->id_project);
-
-            //**********************************************//
-            //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION ***//
-            //**********************************************//
 
             $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
@@ -905,43 +562,6 @@ class ajaxController extends bootstrap
             $this->clients->password = md5($this->ficelle->generatePassword(8));
             $this->clients->status   = 1;
             $this->clients->update();
-
-            $this->users->get(1, 'default_analyst');
-            $this->projects->id_analyste = $this->users->id_user;
-            $this->projects->update();
-        }
-    }
-
-    public function _refeshEtape4()
-    {
-        $this->autoFireView = true;
-
-        $this->projects               = $this->loadData('projects');
-        $this->companies              = $this->loadData('companies');
-        $this->companies_bilans       = $this->loadData('companies_bilans');
-        $this->companies_details      = $this->loadData('companies_details');
-        $this->companies_actif_passif = $this->loadData('companies_actif_passif');
-        $this->clients                = $this->loadData('clients');
-
-        if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
-            $this->companies->get($this->projects->id_company, 'id_company');
-            $this->companies_details->get($this->projects->id_company, 'id_company');
-            $this->clients->get($this->companies->id_client_owner, 'id_client');
-
-            $this->lCompanies_actif_passif = $this->companies_actif_passif->select('id_company = "' . $this->companies->id_company . '"');
-
-            if ($this->lCompanies_actif_passif == false) {
-                for ($i = 1; $i <= 3; $i++) {
-                    $this->companies_actif_passif->ordre      = $i;
-                    $this->companies_actif_passif->id_company = $this->companies->id_company;
-                    $this->companies_actif_passif->create();
-                }
-
-                header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
-                die;
-            }
-
-            $this->lbilans = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'date ASC');
         }
     }
 
@@ -1126,45 +746,29 @@ class ajaxController extends bootstrap
         }
     }
 
-    public function _check_status_dossierV2()
+    public function _check_status_dossier()
     {
         $this->autoFireView = false;
 
         $this->projects                = $this->loadData('projects');
-        $this->projects_notes          = $this->loadData('projects_notes');
-        $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->companies               = $this->loadData('companies');
         $this->clients                 = $this->loadData('clients');
-        $this->clients_history         = $this->loadData('clients_history');
 
-        // on check si on a les posts
         if (isset($_POST['status'], $_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
 
-            // on verifie que les infos sont good
             if ($this->projects->amount <= 0 || $this->projects->period <= 0) {
                 $form_ok = false;
-            }
-            if (! $this->companies->get($this->projects->id_company, 'id_company')) {
+            } elseif (! $this->companies->get($this->projects->id_company, 'id_company')) {
                 $form_ok = false;
-            }
-            if (! $this->clients->get($this->companies->id_client_owner, 'id_client')) {
+            } elseif (! $this->clients->get($this->companies->id_client_owner, 'id_client')) {
                 $form_ok = false;
             }
 
             if ($form_ok == true) {
-                // on check si existe deja
-                if ($this->projects_notes->get($_POST['id_project'], 'id_project')) {
-                    $update = true;
-                } else {
-                    $update = false;
-                }
-
-                // on maj le statut
                 $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
 
-                //on recup le statut courant
                 $this->current_projects_status = $this->loadData('projects_status');
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
 
@@ -1182,41 +786,39 @@ class ajaxController extends bootstrap
                 }
 
                 if ($this->current_projects_status->status != \projects_status::REJETE) {
-                    $moyenne1 = (($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1));
-                    $moyenne  = round($moyenne1, 1);
                     $etape_6  = '
-                    <div id="title_etape6">Etape 6</div>
-                    <div id="etape6">
+                    <div class="tab_title" id="title_etape6">Etape 6</div>
+                    <div class="tab_content" id="etape6">
                         <form method="post" name="dossier_etape6" id="dossier_etape6" action="" target="_parent">
                             <table class="form tableNotes" style="width: 100%;">
                                 <tr>
                                     <th style="vertical-align:top;"><label for="performance_fianciere">Performance financière</label></th>
                                     <td>
-                                        <span id="performance_fianciere">' . $this->projects_notes->performance_fianciere . '</span> /10
+                                        <span id="performance_fianciere"></span> / 10
                                     </td>
                                     <th style="vertical-align:top;"><label for="marche_opere">Marché opéré</label></th>
                                     <td style="vertical-align:top;">
-                                        <span id="marche_opere">' . $this->projects_notes->marche_opere . '</span> /10
+                                        <span id="marche_opere"></span> / 10
                                     </td>
-                                    <th><label for="qualite_moyen_infos_financieres">Qualité des moyens & infos financières</label></th>
-                                    <td><input tabindex="6" id="qualite_moyen_infos_financieres" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
-                                    <th><label for="notation_externe">Notation externe</label></th>
-                                    <td><input tabindex="7" id="notation_externe" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
+                                    <th><label for="dirigeance">Dirigeance</label></th>
+                                    <td><input tabindex="6" id="dirigeance" class="input_court cal_moyen" type="text" name="dirigeance" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
+                                    <th><label for="indicateur_risque_dynamique">Indicateur de risque dynamique</label></th>
+                                    <td><input tabindex="7" id="indicateur_risque_dynamique" class="input_court cal_moyen" type="text" name="indicateur_risque_dynamique" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                 </tr>
                                 <tr>
                                     <td colspan="2" style="vertical-align:top;">
                                         <table>
                                             <tr>
                                                 <th><label for="structure">Structure</label></th>
-                                                <td><input tabindex="1" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="1" class="input_court cal_moyen" type="text" name="structure" id="structure" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="rentabilite">Rentabilité</label></th>
-                                                <td><input tabindex="2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="2" class="input_court cal_moyen" type="text" name="rentabilite" id="rentabilite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="tresorerie">Trésorerie</label></th>
-                                                <td><input tabindex="3" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="3" class="input_court cal_moyen" type="text" name="tresorerie" id="tresorerie" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                         </table>
                                     </td>
@@ -1224,36 +826,36 @@ class ajaxController extends bootstrap
                                         <table>
                                             <tr>
                                                 <th><label for="global">Global</label></th>
-                                                <td><input tabindex="4" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="4" class="input_court cal_moyen" type="text" name="global" id="global" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                             <tr>
                                                 <th><label for="individuel">Individuel</label></th>
-                                                <td><input tabindex="5" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                                <td><input tabindex="5" class="input_court cal_moyen" type="text" name="individuel" id="individuel" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                             </tr>
                                         </table>
                                     </td>
                                     <td colspan="4"></td>
                                 </tr>
                                 <tr class="lanote">
-                                    <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote" onkeyup="nodizaines(this.value,this.id);">' . $moyenne . '/10</span></th>
+                                    <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote" onkeyup="nodizaines(this.value,this.id);">N/A</span></th>
                                 </tr>
                                 <tr>
                                     <td colspan="8" style="text-align:center;">
                                         <label for="avis" style="text-align:left;display: block;">Avis :</label><br />
-                                        <textarea name="avis" tabindex="8" style="height:700px;" id="avis" class="textarea_large avis" />' . $this->projects_notes->avis . '</textarea>
+                                        <textarea name="avis" tabindex="8" style="height:700px;" id="avis" class="textarea_large avis" /></textarea>
                                         <script type="text/javascript">var ckedAvis = CKEDITOR.replace(\'avis\',{ height: 700});</script>
                                     </td>
                                 </tr>
                             </table>
                             <br /><br />
-                            <div id="valid_etape6">Données sauvegardées</div>';
+                            <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>';
 
                     if ($this->current_projects_status->status == \projects_status::REVUE_ANALYSTE) {
                         $etape_6 .= '
                             <div class="btnDroite listBtn_etape6">
                                 <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6"  value="Sauvegarder">
                                 <input type="button" onclick="valid_rejete_etape6(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
-                                <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
+                                <a href="' . $this->lurl . '/dossiers/ajax_rejection/6/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                             </div>';
                     }
 
@@ -1262,62 +864,56 @@ class ajaxController extends bootstrap
                     </div>
 
                     <script type="text/javascript">
-                    $("#title_etape6").click(function() {
-                        $("#etape6").slideToggle();
-                    });
-
                     $(".cal_moyen").keyup(function() {
-                        // --- Chiffre et marché ---
-                        var structure = parseFloat($("#structure").val().replace(",","."));
+                        var structure   = parseFloat($("#structure").val().replace(",","."));
                         var rentabilite = parseFloat($("#rentabilite").val().replace(",","."));
-                        var tresorerie = parseFloat($("#tresorerie").val().replace(",","."));
-                        var global = parseFloat($("#global").val().replace(",","."));
-                        var individuel = parseFloat($("#individuel").val().replace(",","."));
+                        var tresorerie  = parseFloat($("#tresorerie").val().replace(",","."));
+                        var global      = parseFloat($("#global").val().replace(",","."));
+                        var individuel  = parseFloat($("#individuel").val().replace(",","."));
 
-                        structure = (Math.round(structure*10)/10);
-                        rentabilite = (Math.round(rentabilite*10)/10);
-                        tresorerie = (Math.round(tresorerie*10)/10);
-                        global = (Math.round(global*10)/10);
-                        individuel = (Math.round(individuel*10)/10);
+                        structure   = Math.round(structure * 10) / 10;
+                        rentabilite = Math.round(rentabilite * 10) / 10;
+                        tresorerie  = Math.round(tresorerie * 10) / 10;
+                        global      = Math.round(global * 10) / 10;
+                        individuel  = Math.round(individuel * 10) / 10;
 
-                        var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
-                        performance_fianciere = (Math.round(performance_fianciere*10)/10);
+                        var performance_fianciere = (structure + rentabilite + tresorerie) / 3;
+                        performance_fianciere = Math.round(performance_fianciere * 10) / 10;
 
-                        var marche_opere = ((global+individuel)/2);
-                        marche_opere = (Math.round(marche_opere*10)/10);
+                        var marche_opere = (global + individuel) / 2;
+                        marche_opere = Math.round(marche_opere * 10) / 10;
 
-                        // --- Fin chiffre et marché ---
+                        var dirigeance = parseFloat($("#dirigeance").val().replace(",","."));
+                        var indicateur_risque_dynamique = parseFloat($("#indicateur_risque_dynamique").val().replace(",","."));
 
-                        var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres").val().replace(",","."));
-                        var notation_externe = parseFloat($("#notation_externe").val().replace(",","."));
+                        dirigeance = Math.round(dirigeance * 10) / 10;
+                        indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                        qualite_moyen_infos_financieres = (Math.round(qualite_moyen_infos_financieres*10)/10);
-                        notation_externe = (Math.round(notation_externe*10)/10);
-
-                        var moyenne1 = (((performance_fianciere*0.4)+(marche_opere*0.3)+(qualite_moyen_infos_financieres*0.2)+(notation_externe*0.1)));
-
-                        moyenne = (Math.round(moyenne1*10)/10);
+                        moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
                         $("#marche_opere").html(marche_opere);
                         $("#performance_fianciere").html(performance_fianciere);
-                        $(".moyenneNote").html(moyenne+"/10");
+                        $(".moyenneNote").html(moyenne + " / 10");
                     });
                     </script>';
                 } else {
                     $etape_6 = '';
 
-                    //////////////////////////////////////
-                    /// MAIL emprunteur-dossier-rejete ///
-                    //////////////////////////////////////
+                    /** @var \projects_status_history_details $oHistoryDetails */
+                    $oHistoryDetails                              = $this->loadData('projects_status_history_details');
+                    $oHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
+                    $oHistoryDetails->create();
+
+                    /** @var \project_rejection_reason $oRejectionReason */
+                    $oRejectionReason = $this->loadData('project_rejection_reason');
+                    $oRejectionReason->get($_POST['rejection_reason']);
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
-
-                    // FB
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
-                    // Twitter
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
@@ -1348,6 +944,10 @@ class ajaxController extends bootstrap
                         $this->email->addRecipient(trim($this->clients->email));
                         Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
+                }
+
+                if (isset($oRejectionReason)) {
+                    $select .= ' (' . $oRejectionReason->label . ')';
                 }
 
                 echo json_encode(array('liste' => $select, 'etape_6' => $etape_6));
@@ -1397,10 +997,10 @@ class ajaxController extends bootstrap
                 if (! isset($_POST['marche_opere']) || $_POST['marche_opere'] == 0 || $_POST['marche_opere'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['qualite_moyen_infos_financieres']) || $_POST['qualite_moyen_infos_financieres'] == 0 || $_POST['qualite_moyen_infos_financieres'] > 10) {
+                if (! isset($_POST['dirigeance']) || $_POST['dirigeance'] == 0 || $_POST['dirigeance'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['notation_externe']) || $_POST['notation_externe'] == 0 || $_POST['notation_externe'] > 10) {
+                if (! isset($_POST['indicateur_risque_dynamique']) || $_POST['indicateur_risque_dynamique'] == 0 || $_POST['indicateur_risque_dynamique'] > 10) {
                     $form_ok = false;
                 }
             }
@@ -1422,17 +1022,28 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
-                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
-                $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
-                $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
-                $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
-                $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
-                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
-                $this->projects_notes->avis                            = $_POST['avis'];
+                $this->projects_notes->structure                   = number_format($_POST['structure'], 1, '.', '');
+                $this->projects_notes->rentabilite                 = number_format($_POST['rentabilite'], 1, '.', '');
+                $this->projects_notes->tresorerie                  = number_format($_POST['tresorerie'], 1, '.', '');
+                $this->projects_notes->performance_fianciere       = number_format($_POST['performance_fianciere'], 1, '.', '');
+                $this->projects_notes->individuel                  = number_format($_POST['individuel'], 1, '.', '');
+                $this->projects_notes->global                      = number_format($_POST['global'], 1, '.', '');
+                $this->projects_notes->marche_opere                = number_format($_POST['marche_opere'], 1, '.', '');
+                $this->projects_notes->dirigeance                  = number_format($_POST['dirigeance'], 1, '.', '');
+                $this->projects_notes->indicateur_risque_dynamique = number_format($_POST['indicateur_risque_dynamique'], 1, '.', '');
+                $this->projects_notes->note                        = round($this->projects_notes->performance_fianciere * 0.2 + $this->projects_notes->marche_opere * 0.2 + $this->projects_notes->dirigeance * 0.2 + $this->projects_notes->indicateur_risque_dynamique * 0.4, 1);
+                $this->projects_notes->avis                        = $_POST['avis'];
+
+                $this->projects_notes->structure_comite                   = empty($this->projects_notes->structure_comite) ? $this->projects_notes->structure : $this->projects_notes->structure_comite;
+                $this->projects_notes->rentabilite_comite                 = empty($this->projects_notes->rentabilite_comite) ? $this->projects_notes->rentabilite : $this->projects_notes->rentabilite_comite;
+                $this->projects_notes->tresorerie_comite                  = empty($this->projects_notes->tresorerie_comite) ? $this->projects_notes->tresorerie : $this->projects_notes->tresorerie_comite;
+                $this->projects_notes->performance_fianciere_comite       = empty($this->projects_notes->performance_fianciere_comite) ? $this->projects_notes->performance_fianciere : $this->projects_notes->performance_fianciere_comite;
+                $this->projects_notes->individuel_comite                  = empty($this->projects_notes->individuel_comite) ? $this->projects_notes->individuel : $this->projects_notes->individuel_comite;
+                $this->projects_notes->global_comite                      = empty($this->projects_notes->global_comite) ? $this->projects_notes->global : $this->projects_notes->global_comite;
+                $this->projects_notes->marche_opere_comite                = empty($this->projects_notes->marche_opere_comite) ? $this->projects_notes->marche_opere : $this->projects_notes->marche_opere_comite;
+                $this->projects_notes->dirigeance_comite                  = empty($this->projects_notes->dirigeance_comite) ? $this->projects_notes->dirigeance : $this->projects_notes->dirigeance_comite;
+                $this->projects_notes->indicateur_risque_dynamique_comite = empty($this->projects_notes->indicateur_risque_dynamique_comite) ? $this->projects_notes->indicateur_risque_dynamique : $this->projects_notes->indicateur_risque_dynamique_comite;
+                $this->projects_notes->note_comite                        = empty($this->projects_notes->note_comite) ? $this->projects_notes->note : $this->projects_notes->note_comite;
 
                 if ($update == true) {
                     $this->projects_notes->update();
@@ -1446,9 +1057,15 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 2) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects->id_project);
 
-                    //////////////////////////////////////
-                    /// MAIL emprunteur-dossier-rejete ///
-                    //////////////////////////////////////
+                    /** @var \projects_status_history_details $oHistoryDetails */
+                    $oHistoryDetails                            = $this->loadData('projects_status_history_details');
+                    $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
+                    $oHistoryDetails->create();
+
+                    /** @var \project_rejection_reason $oRejectionReason */
+                    $oRejectionReason = $this->loadData('project_rejection_reason');
+                    $oRejectionReason->get($_POST['rejection_reason']);
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
@@ -1478,7 +1095,7 @@ class ajaxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
@@ -1494,38 +1111,40 @@ class ajaxController extends bootstrap
                 $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
                 $select .= $this->current_projects_status->label;
 
-                // pas encore fait
+                if (isset($oRejectionReason)) {
+                    $select .= ' (' . $oRejectionReason->label . ')';
+                }
+
                 if ($this->current_projects_status->status != \projects_status::REJET_ANALYSTE) {
                     $etape_7 = '
-                    <div id="title_etape7">Etape 7</div>
-                    <div id="etape7">
+                    <div class="tab_title" id="title_etape7">Etape 7</div>
+                    <div class="tab_content" id="etape7">
                         <table class="form tableNotes" style="width: 100%;">
                             <tr>
-                                <th><label for="performance_fianciere2">Performance financière</label></th>
-                                <td><span id="performance_fianciere2">' . $this->projects_notes->performance_fianciere . '</span> /10</td>
-                                <th><label for="marche_opere">Marché opéré</label></th>
-                                <td><span id="marche_opere2">' . $this->projects_notes->marche_opere . '</span> /10</td>
-
-                                <th><label for="qualite_moyen_infos_financieres2">Qualité des moyens & infos financières</label></th>
-                                <td><input tabindex="14" id="qualite_moyen_infos_financieres2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->qualite_moyen_infos_financieres . '" name="qualite_moyen_infos_financieres" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
-                                <th><label for="notation_externe2">Notation externe</label></th>
-                                <td><input tabindex="15" id="notation_externe2" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->notation_externe . '" name="notation_externe" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> /10</td>
+                                <th><label for="performance_fianciere_comite">Performance financière</label></th>
+                                <td><span id="performance_fianciere_comite">' . $this->projects_notes->performance_fianciere_comite . '</span> / 10</td>
+                                <th><label for="marche_opere_comite">Marché opéré</label></th>
+                                <td><span id="marche_opere_comite">' . $this->projects_notes->marche_opere_comite . '</span> / 10</td>
+                                <th><label for="dirigeance_comite">Dirigeance</label></th>
+                                <td><input tabindex="14" id="dirigeance_comite" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->dirigeance_comite . '" name="dirigeance_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
+                                <th><label for="indicateur_risque_dynamique_comite">Indicateur de risque dynamique</label></th>
+                                <td><input tabindex="15" id="indicateur_risque_dynamique_comite" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->indicateur_risque_dynamique_comite . '" name="indicateur_risque_dynamique" maxlength="4" onkeyup="nodizaines(this.value,this.id);"> / 10</td>
                             </tr>
 
                             <tr>
                                 <td colspan="2" style="vertical-align:top;">
                                     <table>
                                         <tr>
-                                            <th><label for="structure2">Structure</label></th>
-                                            <td><input tabindex="9" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure . '" name="structure2" id="structure2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <th><label for="structure_comite">Structure</label></th>
+                                            <td><input tabindex="9" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->structure_comite . '" name="structure2" id="structure_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
-                                            <th><label for="rentabilite2">Rentabilité</label></th>
-                                            <td><input tabindex="10" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite . '" name="rentabilite2" id="rentabilite2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <th><label for="rentabilite_comite">Rentabilité</label></th>
+                                            <td><input tabindex="10" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->rentabilite_comite . '" name="rentabilite_comite" id="rentabilite_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
-                                            <th><label for="tresorerie2">Trésorerie</label></th>
-                                            <td><input tabindex="11" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie . '" name="tresorerie2" id="tresorerie2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <th><label for="tresorerie_comite">Trésorerie</label></th>
+                                            <td><input tabindex="11" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->tresorerie_comite . '" name="tresorerie_comite" id="tresorerie_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
 
                                     </table>
@@ -1533,12 +1152,12 @@ class ajaxController extends bootstrap
                                 <td colspan="2" style="vertical-align:top;">
                                     <table>
                                         <tr>
-                                            <th><label for="global2">Global</label></th>
-                                            <td><input tabindex="12" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global . '" name="global2" id="global2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <th><label for="global_comite">Global</label></th>
+                                            <td><input tabindex="12" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->global_comite . '" name="global_comite" id="global_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
                                         <tr>
-                                            <th><label for="individuel">Individuel</label></th>
-                                            <td><input tabindex="13" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel . '" name="individuel2" id="individuel2" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> /10</td>
+                                            <th><label for="individuel_comite">Individuel</label></th>
+                                            <td><input tabindex="13" class="input_court cal_moyen" type="text" value="' . $this->projects_notes->individuel_comite . '" name="individuel_comite" id="individuel_comite" maxlength="4" onkeyup="nodizaines(this.value,this.id);"/> / 10</td>
                                         </tr>
 
                                     </table>
@@ -1547,7 +1166,7 @@ class ajaxController extends bootstrap
                             </tr>
 
                             <tr class="lanote">
-                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote2">' . $this->projects_notes->note . '/10</span></th>
+                                <th colspan="8" style="text-align:center;" >Note : <span class="moyenneNote_comite">' . $this->projects_notes->note_comite . '/ 10</span></th>
                             </tr>
 
                             <tr>
@@ -1560,14 +1179,14 @@ class ajaxController extends bootstrap
                         </table>
 
                         <br /><br />
-                        <div id="valid_etape7">Données sauvegardées</div>
+                        <div id="valid_etape7" class="valid_etape">Données sauvegardées</div>
                         <div class="btnDroite">
                             <input type="button" onclick="valid_rejete_etape7(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         ';
                     if ($this->current_projects_status->status == \projects_status::COMITE) {
                         $etape_7 .= '
                             <input type="button" onclick="valid_rejete_etape7(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#009933;border-color:#009933;" value="Valider">
-                            <input type="button" onclick="valid_rejete_etape7(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
+                            <a href="' . $this->lurl . '/dossiers/ajax_rejection/7/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape7 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                             <input type="button" onclick="valid_rejete_etape7(4,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape7" value="Plus d\'informations">';
                     }
 
@@ -1576,56 +1195,36 @@ class ajaxController extends bootstrap
 
                     </div>
                     <script type="text/javascript">
-                        $("#title_etape7").click(function() {
-                            $("#etape7").slideToggle();
-                        });
                         $(".cal_moyen").keyup(function() {
-                            // --- Chiffre et marché ---
+                            var structure   = parseFloat($("#structure_comite").val().replace(",","."));
+                            var rentabilite = parseFloat($("#rentabilite_comite").val().replace(",","."));
+                            var tresorerie  = parseFloat($("#tresorerie_comite").val().replace(",","."));
+                            var global      = parseFloat($("#global_comite").val().replace(",","."));
+                            var individuel  = parseFloat($("#individuel_comite").val().replace(",","."));
 
-                            // Variables
-                            var structure = parseFloat($("#structure2").val().replace(",","."));
-                            var rentabilite = parseFloat($("#rentabilite2").val().replace(",","."));
-                            var tresorerie = parseFloat($("#tresorerie2").val().replace(",","."));
+                            structure   = Math.round(structure * 10) / 10;
+                            rentabilite = Math.round(rentabilite * 10) / 10;
+                            tresorerie  = Math.round(tresorerie * 10) / 10;
+                            global      = Math.round(global * 10) / 10;
+                            individuel  = Math.round(individuel * 10) / 10;
 
-                            var global = parseFloat($("#global2").val().replace(",","."));
-                            var individuel = parseFloat($("#individuel2").val().replace(",","."));
+                            var performance_fianciere = (structure + rentabilite + tresorerie) / 3;
+                            performance_fianciere = Math.round(performance_fianciere * 10) / 10;
 
-                            // Arrondis
-                            structure = (Math.round(structure*10)/10);
-                            rentabilite = (Math.round(rentabilite*10)/10);
-                            tresorerie = (Math.round(tresorerie*10)/10);
+                            var marche_opere = (global + individuel) / 2;
+                            marche_opere = Math.round(marche_opere * 10) / 10;
 
-                            global = (Math.round(global*10)/10);
-                            individuel = (Math.round(individuel*10)/10);
+                            var dirigeance = parseFloat($("#dirigeance_comite").val().replace(",","."));
+                            var indicateur_risque_dynamique = parseFloat($("#indicateur_risque_dynamique_comite").val().replace(",","."));
 
-                            // Calcules
-                            var performance_fianciere = ((structure+rentabilite+tresorerie)/3);
-                            performance_fianciere = (Math.round(performance_fianciere*10)/10);
+                            dirigeance = Math.round(dirigeance * 10) / 10;
+                            indicateur_risque_dynamique = Math.round(indicateur_risque_dynamique * 10) / 10;
 
-                            // Arrondis
-                            var marche_opere = ((global+individuel)/2);
-                            marche_opere = (Math.round(marche_opere*10)/10);
+                            moyenne = Math.round((performance_fianciere * 0.2 + marche_opere * 0.2 + dirigeance * 0.2 + indicateur_risque_dynamique * 0.4) * 10) / 10;
 
-                            // --- Fin chiffre et marché ---
-
-                            // Variables
-                            var qualite_moyen_infos_financieres = parseFloat($("#qualite_moyen_infos_financieres2").val().replace(",","."));
-                            var notation_externe = parseFloat($("#notation_externe2").val().replace(",","."));
-
-                            // Arrondis
-                            qualite_moyen_infos_financieres = (Math.round(qualite_moyen_infos_financieres*10)/10);
-                            notation_externe = (Math.round(notation_externe*10)/10);
-
-                            // Calcules
-                            var moyenne1 = (((performance_fianciere*0.4)+(marche_opere*0.3)+(qualite_moyen_infos_financieres*0.2)+(notation_externe*0.1)));
-
-                            // Arrondis
-                            moyenne = (Math.round(moyenne1*10)/10);
-
-                            // Affichage
-                            $("#marche_opere2").html(marche_opere);
-                            $("#performance_fianciere2").html(performance_fianciere);
-                            $(".moyenneNote2").html(moyenne+"/10");
+                            $("#marche_opere_comite").html(marche_opere);
+                            $("#performance_fianciere_comite").html(performance_fianciere);
+                            $(".moyenneNote_comite").html(moyenne + " / 10");
                         });
                     </script>
                     ';
@@ -1659,45 +1258,45 @@ class ajaxController extends bootstrap
             $form_ok = true;
 
             if ($_POST['status'] == 1) {
-                if (! isset($_POST['structure']) || $_POST['structure'] == 0 || $_POST['structure'] > 10) {
+                if (false === isset($_POST['structure_comite']) || $_POST['structure_comite'] == 0 || $_POST['structure_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['rentabilite']) || $_POST['rentabilite'] == 0 || $_POST['rentabilite'] > 10) {
+                if (false === isset($_POST['rentabilite_comite']) || $_POST['rentabilite_comite'] == 0 || $_POST['rentabilite_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['tresorerie']) || $_POST['tresorerie'] == 0 || $_POST['tresorerie'] > 10) {
-                    $form_ok = false;
-                }
-
-                if (! isset($_POST['performance_fianciere']) || $_POST['performance_fianciere'] == 0 || $_POST['performance_fianciere'] > 10) {
+                if (false === isset($_POST['tresorerie_comite']) || $_POST['tresorerie_comite'] == 0 || $_POST['tresorerie_comite'] > 10) {
                     $form_ok = false;
                 }
 
-                if (! isset($_POST['individuel']) || $_POST['individuel'] == 0 || $_POST['individuel'] > 10) {
+                if (false === isset($_POST['performance_fianciere_comite']) || $_POST['performance_fianciere_comite'] == 0 || $_POST['performance_fianciere_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['global']) || $_POST['global'] == 0 || $_POST['global'] > 10) {
+
+                if (false === isset($_POST['individuel_comite']) || $_POST['individuel_comite'] == 0 || $_POST['individuel_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['marche_opere']) || $_POST['marche_opere'] == 0 || $_POST['marche_opere'] > 10) {
+                if (false === isset($_POST['global_comite']) || $_POST['global_comite'] == 0 || $_POST['global_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['qualite_moyen_infos_financieres']) || $_POST['qualite_moyen_infos_financieres'] == 0 || $_POST['qualite_moyen_infos_financieres'] > 10) {
+                if (false === isset($_POST['marche_opere_comite']) || $_POST['marche_opere_comite'] == 0 || $_POST['marche_opere_comite'] > 10) {
                     $form_ok = false;
                 }
-                if (! isset($_POST['notation_externe']) || $_POST['notation_externe'] == 0 || $_POST['notation_externe'] > 10) {
+                if (false === isset($_POST['dirigeance_comite']) || $_POST['dirigeance_comite'] == 0 || $_POST['dirigeance_comite'] > 10) {
+                    $form_ok = false;
+                }
+                if (false === isset($_POST['indicateur_risque_dynamique_comite']) || $_POST['indicateur_risque_dynamique_comite'] == 0 || $_POST['indicateur_risque_dynamique_comite'] > 10) {
                     $form_ok = false;
                 }
             }
 
-            if (! isset($_POST['avis_comite']) && $_POST['status'] == 1 || strlen($_POST['avis_comite']) < 50 && $_POST['status'] == 1) {
+            if (false === isset($_POST['avis_comite']) && $_POST['status'] == 1 || strlen($_POST['avis_comite']) < 50 && $_POST['status'] == 1) {
                 $form_ok = false;
             }
 
-            if (! $this->companies->get($this->projects->id_company, 'id_company')) {
+            if (false === $this->companies->get($this->projects->id_company, 'id_company')) {
                 $form_ok = false;
             }
-            if (! $this->clients->get($this->companies->id_client_owner, 'id_client')) {
+            if (false === $this->clients->get($this->companies->id_client_owner, 'id_client')) {
                 $form_ok = false;
             }
 
@@ -1709,17 +1308,17 @@ class ajaxController extends bootstrap
                     $update = false;
                 }
 
-                $this->projects_notes->structure                       = number_format($_POST['structure'], 1, '.', '');
-                $this->projects_notes->rentabilite                     = number_format($_POST['rentabilite'], 1, '.', '');
-                $this->projects_notes->tresorerie                      = number_format($_POST['tresorerie'], 1, '.', '');
-                $this->projects_notes->individuel                      = number_format($_POST['individuel'], 1, '.', '');
-                $this->projects_notes->global                          = number_format($_POST['global'], 1, '.', '');
-                $this->projects_notes->performance_fianciere           = number_format($_POST['performance_fianciere'], 1, '.', '');
-                $this->projects_notes->marche_opere                    = number_format($_POST['marche_opere'], 1, '.', '');
-                $this->projects_notes->qualite_moyen_infos_financieres = number_format($_POST['qualite_moyen_infos_financieres'], 1, '.', '');
-                $this->projects_notes->notation_externe                = number_format($_POST['notation_externe'], 1, '.', '');
-                $this->projects_notes->note                            = round(($this->projects_notes->performance_fianciere * 0.4) + ($this->projects_notes->marche_opere * 0.3) + ($this->projects_notes->qualite_moyen_infos_financieres * 0.2) + ($this->projects_notes->notation_externe * 0.1), 1);
-                $this->projects_notes->avis_comite                     = $_POST['avis_comite'];
+                $this->projects_notes->structure_comite                   = number_format($_POST['structure_comite'], 1, '.', '');
+                $this->projects_notes->rentabilite_comite                 = number_format($_POST['rentabilite_comite'], 1, '.', '');
+                $this->projects_notes->tresorerie_comite                  = number_format($_POST['tresorerie_comite'], 1, '.', '');
+                $this->projects_notes->performance_fianciere_comite       = number_format($_POST['performance_fianciere_comite'], 1, '.', '');
+                $this->projects_notes->individuel_comite                  = number_format($_POST['individuel_comite'], 1, '.', '');
+                $this->projects_notes->global_comite                      = number_format($_POST['global_comite'], 1, '.', '');
+                $this->projects_notes->marche_opere_comite                = number_format($_POST['marche_opere_comite'], 1, '.', '');
+                $this->projects_notes->dirigeance_comite                  = number_format($_POST['dirigeance_comite'], 1, '.', '');
+                $this->projects_notes->indicateur_risque_dynamique_comite = number_format($_POST['indicateur_risque_dynamique_comite'], 1, '.', '');
+                $this->projects_notes->note_comite                        = round($this->projects_notes->performance_fianciere_comite * 0.2 + $this->projects_notes->marche_opere_comite * 0.2 + $this->projects_notes->dirigeance_comite * 0.2 + $this->projects_notes->indicateur_risque_dynamique_comite * 0.4, 1);
+                $this->projects_notes->avis_comite                        = $_POST['avis_comite'];
 
                 // on enregistre
                 if ($update == true) {
@@ -1741,26 +1340,27 @@ class ajaxController extends bootstrap
                 // I = 1
                 // J = 0
 
-                if ($this->projects_notes->note >= 0 && $this->projects_notes->note < 2) {
+                if ($this->projects_notes->note_comite >= 0 && $this->projects_notes->note_comite < 2) {
                     $lettre = 'I';
-                } elseif ($this->projects_notes->note >= 2 && $this->projects_notes->note < 4) {
+                } elseif ($this->projects_notes->note_comite >= 2 && $this->projects_notes->note_comite < 4) {
                     $lettre = 'G';
-                } elseif ($this->projects_notes->note >= 4 && $this->projects_notes->note < 5.5) {
+                } elseif ($this->projects_notes->note_comite >= 4 && $this->projects_notes->note_comite < 5.5) {
                     $lettre = 'E';
-                } elseif ($this->projects_notes->note >= 5.5 && $this->projects_notes->note < 6.5) {
+                } elseif ($this->projects_notes->note_comite >= 5.5 && $this->projects_notes->note_comite < 6.5) {
                     $lettre = 'D';
-                } elseif ($this->projects_notes->note >= 6.5 && $this->projects_notes->note < 7.5) {
+                } elseif ($this->projects_notes->note_comite >= 6.5 && $this->projects_notes->note_comite < 7.5) {
                     $lettre = 'C';
-                } elseif ($this->projects_notes->note >= 7.5 && $this->projects_notes->note < 8.5) {
+                } elseif ($this->projects_notes->note_comite >= 7.5 && $this->projects_notes->note_comite < 8.5) {
                     $lettre = 'B';
-                } elseif ($this->projects_notes->note >= 8.5 && $this->projects_notes->note <= 10) {
+                } elseif ($this->projects_notes->note_comite >= 8.5 && $this->projects_notes->note_comite <= 10) {
                     $lettre = 'A';
                 }
 
                 $this->projects->risk = $lettre;
                 $this->projects->update();
 
-                $btn_etape6 = '';
+                $btn_etape7   = '';
+                $content_risk = '';
 
                 if ($_POST['status'] == 1) {
                     $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);
@@ -1797,9 +1397,15 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 2) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects->id_project);
 
-                    //////////////////////////////////////
-                    /// MAIL emprunteur-dossier-rejete ///
-                    //////////////////////////////////////
+                    /** @var \projects_status_history_details $oHistoryDetails */
+                    $oHistoryDetails                            = $this->loadData('projects_status_history_details');
+                    $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->comity_rejection_reason  = $_POST['rejection_reason'];
+                    $oHistoryDetails->create();
+
+                    /** @var \project_rejection_reason $oRejectionReason */
+                    $oRejectionReason = $this->loadData('project_rejection_reason');
+                    $oRejectionReason->get($_POST['rejection_reason']);
 
                     $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
 
@@ -1829,7 +1435,7 @@ class ajaxController extends bootstrap
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
-                    if ($this->Config['env'] == 'prod') {
+                    if ($this->Config['env'] === 'prod') {
                         Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
                         $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
                     } else {
@@ -1839,9 +1445,10 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 4) {
                     $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects->id_project);
 
-                    $btn_etape6 = '
+                    $btn_etape7 = '
                         <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn"  value="Sauvegarder">
                         <input type="button" onclick="valid_rejete_etape6(1,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#009933;border-color:#009933;" value="Valider">
+                        <a href="' . $this->lurl . '/dossiers/ajax_rejection/6/' . $this->projects->id_project . '" class="btn btnValid_rejet_etape6 btn_link thickbox" style="background:#CC0000;border-color:#CC0000;">Rejeter</a>
                         <input type="button" onclick="valid_rejete_etape6(2,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6" style="background:#CC0000;border-color:#CC0000;" value="Rejeter">
                     ';
                 }
@@ -1851,7 +1458,7 @@ class ajaxController extends bootstrap
                 $this->current_projects_status->getLastStatut($this->projects->id_project);
 
                 if ($this->current_projects_status->status == \projects_status::PREP_FUNDING) {
-                    $this->lProjects_status = $this->projects_status->select(' status IN (35,40) ', ' status ASC ');
+                    $this->lProjects_status = $this->projects_status->select(' status IN (' . \projects_status::PREP_FUNDING . ', ' . \projects_status::A_FUNDER . ') ', ' status ASC ');
                 } else {
                     $this->lProjects_status = array();
                 }
@@ -1862,13 +1469,16 @@ class ajaxController extends bootstrap
                         $select .= '<option ' . ($this->current_projects_status->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
                     }
                     $select .= '</select>';
-
                 } else {
                     $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
                     $select .= $this->current_projects_status->label;
+
+                    if (isset($oRejectionReason)) {
+                        $select .= ' (' . $oRejectionReason->label . ')';
+                    }
                 }
 
-                echo json_encode(array('liste' => $select, 'btn_etape6' => $btn_etape6, 'content_risk' => $content_risk));
+                echo json_encode(array('liste' => $select, 'btn_etape6' => $btn_etape7, 'content_risk' => $content_risk));
             } else {
                 echo 'nok';
             }
