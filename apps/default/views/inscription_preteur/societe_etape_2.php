@@ -16,7 +16,7 @@
         <div class="row row-bank">
             <label for="bic" class="inline-text"><?= $this->lng['etape2']['bic'] ?></label>
             <span class="field-holder">
-                <input type="text" id="bic" name="bic" title="<?= $this->lng['etape2']['bic-exemple'] ?>" value="<?= (empty($this->lenders_accounts->bic) ? $this->lng['etape2']['bic-exemple'] : $this->lenders_accounts->bic) ?>" class="field field-medium "><br />
+                <input type="text" id="bic" name="bic" title="<?= $this->lng['etape2']['bic-exemple'] ?>" value="<?= (false === empty($this->lenders_accounts->bic) ? $this->lenders_accounts->bic : '' )?>" class="field field-medium " placeholder="<?= $this->lng['etape2']['bic-exemple'] ?>"><br />
                 <em class="error_bic"><?= $this->lng['etape2']['bic-erreur'] ?></em>
             </span>
         </div><!-- /.row -->
@@ -24,19 +24,19 @@
         <div class="row row-bank">
             <label class="inline-text"><?= $this->lng['etape2']['iban'] ?></label>
             <span class="field-holder">
-                <input maxlength="4" type="text" name="iban-1" id="iban-1" value="<?= $this->iban1 ?>"
-                       title="<?= $this->iban1 ?>" class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,4);" onchange="check_ibanNB(this.id,this.value,4);">
-                <input maxlength="4" type="text" name="iban-2" id="iban-2" value="<?= $this->iban2 ?>"
+                <input maxlength="4" type="text" name="iban-1" id="iban-1" value="<?= false === empty($this->iban1) ? $this->iban1 : '' ?>"
+                       placeholder="<?= $this->ibanPlaceholder ?>" class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,4);" onchange="check_ibanNB(this.id,this.value,4);">
+                <input maxlength="4" type="text" name="iban-2" id="iban-2" value="<?= false === empty($this->iban2) ? $this->iban2 : '' ?>"
                        class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,4);" onchange="check_ibanNB(this.id,this.value,4);">
-                <input maxlength="4" type="text" name="iban-3" id="iban-3" value="<?= $this->iban3 ?>"
+                <input maxlength="4" type="text" name="iban-3" id="iban-3" value="<?= false === empty($this->iban3) ? $this->iban3 : '' ?>"
                        class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,4);" onchange="check_ibanNB(this.id,this.value,4);">
-                <input maxlength="4" type="text" name="iban-4" id="iban-4" value="<?= $this->iban4 ?>"
+                <input maxlength="4" type="text" name="iban-4" id="iban-4" value="<?= false === empty($this->iban4) ? $this->iban4 : '' ?> "
                        class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,4);" onchange="check_ibanNB(this.id,this.value,4);">
-                <input maxlength="4" type="text" name="iban-5" id="iban-5" value="<?= $this->iban5 ?>"
+                <input maxlength="4" type="text" name="iban-5" id="iban-5" value="<?= false === empty($this->iban5) ? $this->iban5 : '' ?>"
                        class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,4);" onchange="check_ibanNB(this.id,this.value,4);">
-                <input maxlength="4" type="text" name="iban-6" id="iban-6" value="<?= $this->iban6 ?>"
+                <input maxlength="4" type="text" name="iban-6" id="iban-6" value="<?= false === empty($this->iban6) ? $this->iban6 : '' ?>"
                        class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,4);" onchange="check_ibanNB(this.id,this.value,4);">
-                <input maxlength="3" type="text" name="iban-7" id="iban-7" value="<?= $this->iban7 ?>"
+                <input maxlength="3" type="text" name="iban-7" id="iban-7" value="<?= false === empty($this->iban7) ? $this->iban7 : '' ?>"
                        class="field field-extra-tiny" onkeyup="check_ibanNB(this.id,this.value,3);" onchange="check_ibanNB(this.id,this.value,3);">
                 <br />
                 <em class="error_iban"><?= $this->lng['etape2']['iban-erreur'] ?></em>
