@@ -4964,6 +4964,7 @@ class cronController extends bootstrap
                     $sRepaymentsListHTML        = '';
                     $fTotalInterestsTaxFree     = 0;
                     $fTotalInterestsTaxIncluded = 0;
+                    $fTotalAmount               = 0;
                     $fTotalCapital              = 0;
                     $iRepaymentsCount           = count($aMailNotifications);
 
@@ -5001,11 +5002,13 @@ class cronController extends bootstrap
                         } else {
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
-                            $fRepaymentCapital              = $oLenderRepayment->montant / 100;
+                            $fRepaymentCapital              = $oLenderRepayment->capital / 100;
                             $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
                             $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
+                            $fRepaymentAmount               = $fRepaymentCapital + $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
                         }
 
+                        $fTotalAmount += $fRepaymentAmount;
                         $fTotalCapital += $fRepaymentCapital;
                         $fTotalInterestsTaxIncluded += $fRepaymentInterestsTaxIncluded;
                         $fTotalInterestsTaxFree += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
@@ -5013,6 +5016,7 @@ class cronController extends bootstrap
                         $sRepaymentsListHTML .= '
                             <tr style="color:#b20066;">
                                 <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentAmount) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentCapital) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;&euro;</td>
@@ -5022,6 +5026,7 @@ class cronController extends bootstrap
                     $sRepaymentsListHTML .= '
                         <tr>
                             <td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalAmount) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalCapital) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxIncluded) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxFree) . '&nbsp;&euro;</td>
@@ -5068,7 +5073,8 @@ class cronController extends bootstrap
                         'contenu'                => $sContent,
                         'sujet'                  => $sSubject,
                         'lien_fb'                => $this->like_fb,
-                        'lien_tw'                => $this->twitter
+                        'lien_tw'                => $this->twitter,
+                        'annee'                  => date('Y')
                     );
 
                     $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
