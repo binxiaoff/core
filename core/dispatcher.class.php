@@ -618,10 +618,10 @@ class Dispatcher
     public function registerBundles()
     {
         $bundles = [
-            new Unilend\Bundle\Doctrine\DBAL\DoctrineBundle(),
-            new Unilend\Bundle\Monolog\MonologBundle(),
+            new \Unilend\Bundle\Doctrine\DBAL\DoctrineBundle(),
             new \Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle(),
-            new Cache\AdapterBundle\CacheAdapterBundle(),
+            new \Cache\AdapterBundle\CacheAdapterBundle(),
+            new \Symfony\Bundle\MonologBundle\MonologBundle()
         ];
 
         return $bundles;
