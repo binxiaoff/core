@@ -132,24 +132,6 @@
                 </div>
                 <?php
             }
-            if ($this->google_analytics != '') {
-                ?>
-                <script type="text/javascript">
-                    var _gaq = _gaq || [];
-                    _gaq.push(['_setAccount', '<?= $this->google_analytics ?>']);
-                    _gaq.push(['_trackPageview']);
-                    (function () {
-                        var ga = document.createElement('script');
-                        ga.type = 'text/javascript';
-                        ga.async = true;
-                        ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
-                        var s = document.getElementsByTagName('script')[0];
-                        s.parentNode.insertBefore(ga, s);
-                    })();
-                </script>
-                <?php
-            }
-
             //gestion du temps d'attente en cas d'echec successifs
             if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1) {
                 ?>
