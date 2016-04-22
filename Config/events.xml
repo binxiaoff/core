@@ -4,11 +4,11 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="unilend.event.console.listener.start" class="Unilend\Event\ConsoleEventListener">
+        <service id="unilend.event.console.listener.start" class="Unilend\Service\Event\ConsoleEventListener">
             <tag name="console.event_listener" event="console.command" method="onCommandStart"/>
         </service>
 
-        <service id="unilend.event.console.listener.end" class="Unilend\Event\ConsoleEventListener">
+        <service id="unilend.event.console.listener.end" class="Unilend\Service\Event\ConsoleEventListener">
             <tag name="console.event_listener" event="console.terminate" method="onCommandEnd"/>
         </service>
     </services>

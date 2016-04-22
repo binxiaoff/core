@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\Event;
+namespace Unilend\Service\Event;
 
 
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
