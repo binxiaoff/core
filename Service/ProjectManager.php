@@ -766,6 +766,18 @@ class ProjectManager
             case \projects_status::ATTENTE_ANALYSTE:
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, \email::EMAIL_ADDRESS_ANALYSTS);
                 break;
+            case \projects_status::REJETE:
+            case \projects_status::REJET_ANALYSTE:
+            case \projects_status::REJET_COMITE:
+                $oCompany = $this->loadData('companies');
+                $oCompany->get($oProject->id_company);
+                $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
+                foreach ($aPreviousProjectsWithSameSiren as $aProject) {
+                    $oProject->get($aProject['id_project'], 'id_project');
+                    $oProject->stop_relances = '1';
+                    $oProject->update();
+                }
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
