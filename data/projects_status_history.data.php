@@ -271,4 +271,39 @@ class projects_status_history extends projects_status_history_crud
 
         return $aResult;
     }
+
+    /**
+     * @param string $sDateAdded
+     * @param array $aProjectStatus
+     * @return array|bool
+     */
+    public function countProjectStatusChangesOnDate($sDateAdded, $aProjectStatus)
+    {
+        if (empty($sDateAdded)) {
+            return false;
+        }
+
+        if (empty($aProjectStatus) || false === is_array($aProjectStatus)) {
+            return false;
+        }
+
+        $sQuery = 'SELECT
+                        COUNT(*),
+                        ps.status,
+                        ps.label
+                    FROM
+                        projects_status_history psh
+                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE
+                        DATE(psh.added) = ' . $sDateAdded . '
+                        AND ps.status IN ' . implode(',', $aProjectStatus);
+
+        $aProjectStatusCount = array();
+        $oQuery              = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_array($oQuery)) {
+            $aProjectStatusCount[] = $aRecord;
+        }
+
+        return $aProjectStatusCount;
+    }
 }
