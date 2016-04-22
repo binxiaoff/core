@@ -777,6 +777,7 @@ class ProjectManager
                     $oProject->stop_relances = '1';
                     $oProject->update();
                 }
+                unset($oProject);
                 break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
