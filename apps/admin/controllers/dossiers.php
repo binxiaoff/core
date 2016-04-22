@@ -2749,52 +2749,48 @@ class dossiersController extends bootstrap
     }
 
     //utilisé pour récup les infos affichées dans le cadre
-    /**
-     * @todo Optimize: almost all loading time is here
-     */
     private function recup_info_remboursement_anticipe($id_project)
     {
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers            = $this->loadData('echeanciers');
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-        $L_echeance         = $this->echeanciers->getLastOrder($id_project);
-        $next_echeanche     = $L_echeance;
-        $ordre_echeance_ra  = isset($L_echeance['ordre']) ? $L_echeance['ordre'] + 1 : 1;
-        $date_next_echeance = $next_echeanche['date_echeance'];
+        $aLastOrder          = $this->echeanciers->getLastOrder($id_project);
+        $ordre_echeance_ra  = isset($aLastOrder['ordre']) ? $aLastOrder['ordre'] + 1 : 1;
+        $sLastOrderDate = $aLastOrder['date_echeance'];
 
         // Date 4 jours ouvrés avant date next echeance
         $jo = $this->loadLib('jours_ouvres');
 
-        $dateEcheance = strtotime($date_next_echeance);
+        $dateEcheance = strtotime($sLastOrderDate);
         $date_next_echeance_4jouvres_avant_stamp = "";
 
         if ($dateEcheance != "" && isset($dateEcheance)) {
             $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
         }
 
-        if (false === empty($next_echeanche)) {
+        if (false === empty($aLastOrder)) {
             // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
             if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
                 // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($next_echeanche['date_echeance']);
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aLastOrder['date_echeance']);
 
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . "
+                $aNextEcheance = $this->echeanciers->select(" id_project = " . $id_project . "
                     AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()
                     AND id_lender = (SELECT id_lender
                     FROM echeanciers where id_project = " . $id_project . " LIMIT 1)
                     AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
 
-                if (count($L_echeance) > 0) {
+                if (count($aNextEcheance) > 0) {
                     // on refait le meme process pour la nouvelle date
-                    $next_echeanche = $L_echeance[0];
-                    $date_next_echeance = $next_echeanche['date_echeance'];
+                    $aLastOrder = $aNextEcheance[0];
+                    $sLastOrderDate = $aLastOrder['date_echeance'];
 
                     // Date 4 jours ouvrés avant date next echeance
                     $jo = $this->loadLib('jours_ouvres');
 
-                    $dateEcheance                            = strtotime($date_next_echeance);
+                    $dateEcheance                            = strtotime($sLastOrderDate);
                     $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
 
                     //$ordre_echeance_ra = $ordre_echeance_ra + 1; // changement on n'ajoute plus un mois supp
@@ -2808,9 +2804,10 @@ class dossiersController extends bootstrap
             }
         }
 
+
         if (false === empty($date_next_echeance_4jouvres_avant_stamp)) {
             $this->date_next_echeance_4jouvres_avant = date('d/m/Y', $date_next_echeance_4jouvres_avant_stamp);
-            $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($date_next_echeance);
+            $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
         }
 
         $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $ordre_echeance_ra);
