@@ -1,4 +1,4 @@
-<script type="text/javascript" xmlns="http://www.w3.org/1999/html">
+<script type="text/javascript">
     $(function() {
         $(".histo_status_client").tablesorter({headers: {8: {sorter: false}}});
 
@@ -452,32 +452,6 @@
                 border-radius: 6px;
                 margin-bottom: 15px;
             }
-            /*.form-style-10 input[type="text"],*/
-            /*.form-style-10 input[type="date"],*/
-            /*.form-style-10 input[type="datetime"],*/
-            /*.form-style-10 input[type="email"],*/
-            /*.form-style-10 input[type="number"],*/
-            /*.form-style-10 input[type="search"],*/
-            /*.form-style-10 input[type="time"],*/
-            /*.form-style-10 input[type="url"],*/
-            /*.form-style-10 input[type="password"],*/
-            /*.form-style-10 textarea,*/
-            /*.form-style-10 select {*/
-                /*display: block;*/
-                /*box-sizing: border-box;*/
-                /*-webkit-box-sizing: border-box;*/
-                /*-moz-box-sizing: border-box;*/
-                /*width: 100%;*/
-                /*padding: 8px;*/
-                /*border-radius: 6px;*/
-                /*-webkit-border-radius:6px;*/
-                /*-moz-border-radius:6px;*/
-                /*border: 2px solid #fff;*/
-                /*box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);*/
-                /*-moz-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);*/
-                /*-webkit-box-shadow: inset 0px 1px 1px rgba(0, 0, 0, 0.33);*/
-            /*}*/
-
             .form-style-10 .section{
                 font: normal 20px 'Bitter', serif;
                 color: #B20066;
@@ -496,29 +470,6 @@
                 color: #fff;
                 margin-top: -3px;
             }
-            /*.form-style-10 input[type="button"],*/
-            /*.form-style-10 input[type="submit"]{*/
-                /*background: #B20066;*/
-                /*padding: 8px 20px 8px 20px;*/
-                /*border-radius: 5px;*/
-                /*-webkit-border-radius: 5px;*/
-                /*-moz-border-radius: 5px;*/
-                /*color: #fff;*/
-                /*text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.12);*/
-                /*font: normal 30px 'Bitter', serif;*/
-                /*-moz-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.17);*/
-                /*-webkit-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.17);*/
-                /*box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.17);*/
-                /*border: 1px solid #257C9E;*/
-                /*font-size: 15px;*/
-            /*}*/
-            /*.form-style-10 input[type="button"]:hover,*/
-            /*.form-style-10 input[type="submit"]:hover{*/
-                /*background: #2A6881;*/
-                /*-moz-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.28);*/
-                /*-webkit-box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.28);*/
-                /*box-shadow: inset 0px 2px 2px 0px rgba(255, 255, 255, 0.28);*/
-            /*}*/
             span.st {
                 width: 25%;
             }
@@ -565,7 +516,7 @@
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <option value="">Selectoinnez un documment</option>
                                 <?php foreach ($this->aIdentityToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -578,7 +529,7 @@
                     <tr>
                         <td>
                             <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
                         </td>
                     </tr>
                 </table>
@@ -608,7 +559,7 @@
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <option value="">Selectoinnez un documment</option>
                                 <?php foreach ($this->aDomicileToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -621,7 +572,7 @@
                     <tr>
                         <td>
                             <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
                         </td>
                     </tr>
                 </table>
@@ -651,7 +602,7 @@
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <option value="">Selectoinnez un documment</option>
                                 <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -664,7 +615,7 @@
                     <tr>
                         <td>
                             <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
                         </td>
                     </tr>
                 </table>
@@ -676,7 +627,6 @@
                     <?php foreach ($this->aOther as $iIdType => $aAttachmentType): ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
-
                             <td>
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
                                     <?= $aAttachmentType['path'] ?>
@@ -690,11 +640,20 @@
                             </td>
                         </tr>
                     <?php endforeach; ?>
+                    <tr>
+                        <th>Mandat</th>
+                        <td>
+                            <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
+                                <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>"><?= $this->clients_mandats->name ?></a>
+                            <?php endif; ?>
+                        </td>
+                        <td><input type="file" name="mandat"></td>
+                    </tr>
 
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value=""><?= $this->lng['profile']['select-placeholder'] ?></option>
+                                <option value="">Selectoinnez un documment</option>
                                 <?php foreach ($this->aOtherToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -707,7 +666,7 @@
                     <tr>
                         <td>
                             <span class="btn btn-small btn-add-row">+</span>
-                            <span style="margin-left: 5px;"><?= $this->lng['profile']['message-beside-plus-button'] ?></span>
+                            <span style="margin-left: 5px;">Cliquez pour ajouter</span>
                         </td>
                     </tr>
                 </table>
@@ -716,36 +675,6 @@
         </div>
         </br></br>
         <div class="gauche">
-<!--            <h2>Pièces jointes :</h2>-->
-<!--            <table class="form" style="width: auto;">-->
-<!--                <tr>-->
-<!--                    <th>Type de fichier</th>-->
-<!--                    <th>Nom <br> (cliquer pour télécharger)</th>-->
-<!--                    <th>Uploader un autre fichier</th>-->
-<!--                </tr>-->
-<!--                --><?php //foreach ($this->aAttachmentTypes as $sAttachmentType): ?>
-<!--                    <tr>-->
-<!--                        <th>--><?//= $sAttachmentType['label'] ?><!--</th>-->
-<!--                        <td>-->
-<!--                            --><?php //if (isset($this->attachments[$sAttachmentType['id']]['path'])): ?>
-<!--                                <a href="--><?//= $this->url ?><!--/attachment/download/id/--><?//= $this->attachments[$sAttachmentType['id']]['id'] ?><!--/file/--><?//= urlencode($this->attachments[$sAttachmentType['id']]['path']) ?><!--">-->
-<!--                                    --><?//= $this->attachments[$sAttachmentType['id']]['path'] ?>
-<!--                                </a>-->
-<!--                            --><?php //endif; ?>
-<!--                        </td>-->
-<!--                        <td><input type="file" name="--><?//= $sAttachmentType['id'] ?><!--" id="fichier_project_--><?//= $sAttachmentType['id'] ?><!--"/></td>-->
-<!--                    </tr>-->
-<!--                --><?php //endforeach; ?>
-<!--                <tr>-->
-<!--                    <th>Mandat</th>-->
-<!--                    <td>-->
-<!--                        --><?php //if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) : ?>
-<!--                            <a href="--><?//= $this->lurl ?><!--/protected/mandat_preteur/--><?//= $this->clients_mandats->name ?><!--">--><?//= $this->clients_mandats->name ?><!--</a>-->
-<!--                        --><?php //endif; ?>
-<!--                    </td>-->
-<!--                    <td><input type="file" name="mandat"></td>-->
-<!--                </tr>-->
-<!--            </table>-->
             <br/><br/>
             <h2>Historique :</h2>
             <?php if (false === empty($this->lActions)) : ?>

@@ -6401,8 +6401,6 @@ class cronController extends bootstrap
 
         $aStatusToCheck = array(
             \clients_status::TO_BE_CHECKED,
-            \clients_status::COMPLETENESS,
-            \clients_status::COMPLETENESS_REMINDER,
             \clients_status::COMPLETENESS_REPLY,
             \clients_status::MODIFICATION
         );
@@ -6411,20 +6409,18 @@ class cronController extends bootstrap
         $aClientsToCheck = $oClients->selectLendersByLastStatus(implode(', ', $aStatusToCheck));
 
         if (false === empty($aClientsToCheck)) {
-
             $oLendersAcount = $this->loadData('lenders_accounts');
 
             $oGreenPoint = new greenPoint($this->bdd, $this->Config['env']);
 
-            /** @var attachment $oAttachment */
+            /** @var \attachment $oAttachment */
             $oAttachment = $this->loadData('attachment');
-            /** @var attachment_type $oAttachmentType */
+            /** @var \attachment_type $oAttachmentType */
             $oAttachmentType = $this->loadData('attachment_type');
-            /** @var attachment_helper $oAttachmentHelper */
+            /** @var \attachment_helper $oAttachmentHelper */
             $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
 
             foreach ($aClientsToCheck as $iClientId => $aClient) {
-
                 $aAttachments = array();
                 $aAttachments = $oLendersAcount->getAttachments($aClient['id_lender_account']);
 
@@ -6436,8 +6432,7 @@ class cronController extends bootstrap
                             continue;
                         }
                         $sAttachmentPath = $oAttachmentHelper->getFullPath($aAttachment['type_owner'], $aAttachment['id_type']) . $aAttachment['path'];
-
-                        $sFullPath = realpath($sAttachmentPath);
+                        $sFullPath       = realpath($sAttachmentPath);
 
                         if (false == $sFullPath) {
                             if ($bDebug) {
@@ -6451,20 +6446,17 @@ class cronController extends bootstrap
                                 case attachment_type::CNI_PASSPORTE_VERSO:
                                 case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
                                 case attachment_type::CNI_PASSPORTE_DIRIGEANT:
-
                                     $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $sFullPath, $aClient, 'idcontrol');
                                     $iQRID            = $oGreenPoint->idControl($aData, false);
                                     $aQueryID[$iQRID] = $iAttachmentTypeId;
                                     break;
                                 case attachment_type::RIB:
-
                                     $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $sFullPath, $aClient, 'ibanflash');
                                     $iQRID            = $oGreenPoint->ibanFlash($aData, false);
                                     $aQueryID[$iQRID] = $iAttachmentTypeId;
                                     break;
                                 case attachment_type::JUSTIFICATIF_DOMICILE:
                                 case attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
-
                                     $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $sFullPath, $aClient, 'addresscontrol');
                                     $iQRID            = $oGreenPoint->addressControl($aData, false);
                                     $aQueryID[$iQRID] = $iAttachmentTypeId;
@@ -6497,18 +6489,20 @@ class cronController extends bootstrap
 
     /**
      * @param int $iClientId
-     * @param array $aAttachment
+     * @param int $iAttachmentId
+     * @param string $sPath
+     * @param array $aClient
      * @param string $sType
      * @return array
      */
-    private function getGreenPointData($iClientId, $iAttachmentId, $sPath, &$aClient, $sType)
+    private function getGreenPointData($iClientId, $iAttachmentId, $sPath, $aClient, $sType)
     {
         $aData = array(
             'files'    => '@' . $sPath,
             'dossier'  => $iClientId,
             'document' => $iAttachmentId,
             'detail'   => 1,
-            'nom'      => $this->getAllowedFirstNames($aClient['nom'], $aClient['nom_usage']),
+            'nom'      => $this->getFamilyNames($aClient['nom'], $aClient['nom_usage']),
             'prenom'   => $aClient['prenom']
         );
 
@@ -6528,15 +6522,15 @@ class cronController extends bootstrap
     }
 
     /**
-     * @param string $sNom
+     * @param string $sFamilyName
      * @param string $sNomUsage
      * @return string
      */
-    private function getAllowedFirstNames($sNom, $sNomUsage)
+    private function getFamilyNames($sFamilyName, $sUseName)
     {
-        $sAllowedNames = $sNom;
-        if (false === empty($sNomUsage)) {
-            $sAllowedNames .= '|' . $sNomUsage;
+        $sAllowedNames = $sFamilyName;
+        if (false === empty($sUseName)) {
+            $sAllowedNames .= '|' . $sUseName;
         }
         return $sAllowedNames;
     }
@@ -6592,7 +6586,6 @@ class cronController extends bootstrap
 
     /**
      * @param int $iClientId
-     * @param int $iAttachmentId
      * @param array $aResponseDetail
      * @param array $aResponseKeys
      * @param \greenpoint_attachment $oGreenPointAttachment

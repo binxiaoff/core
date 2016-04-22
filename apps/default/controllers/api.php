@@ -4,8 +4,9 @@ use Unilend\librairies\greenPoint\greenPointStatus;
 
 class apiController extends Controller
 {
-    private $oGreenPointAttachment;
-    private $oGreenPointAttachmentDetail;
+    /**
+     * @var array Posted data from GP systeme
+     */
     private $aData;
 
     public function __construct($command, $config, $app)
@@ -17,15 +18,7 @@ class apiController extends Controller
         $this->catchAll = true;
 
         $this->checkIp();
-
-        $this->oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
-        $this->oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
         $this->init();
-    }
-
-    public function __destruct()
-    {
-        unset($this->oGreenPointAttachment, $this->oGreenPointAttachmentDetail);
     }
 
     /**
@@ -48,7 +41,7 @@ class apiController extends Controller
         $aAllowedIPSettings = json_decode($sAllowedIPSettings, 1);
 
         if (false === isset($aAllowedIPSettings['root'])) {
-            header("HTTP/1.0 500 Internal Server Error");
+            header('HTTP/1.0 500 Internal Server Error');
             echo 'Internal Server Error';
             die;
         }
@@ -63,7 +56,7 @@ class apiController extends Controller
             }
         }
         if (false === in_array($_SERVER['REMOTE_ADDR'], $aAllowedIP)) {
-            header("HTTP/1.0 403 Forbidden");
+            header('HTTP/1.0 403 Forbidden');
             echo 'Forbidden';
             die;
         }
@@ -83,8 +76,6 @@ class apiController extends Controller
             echo 400;
             die;
         }
-        $this->oGreenPointAttachment->get($this->aData['document'], 'id_attachment');
-        $this->oGreenPointAttachmentDetail->get($this->oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
     }
 
     /**
@@ -92,6 +83,12 @@ class apiController extends Controller
      */
     public function _update_status()
     {
+        $oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
+        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
+
+        $oGreenPointAttachment->get($this->aData['document'], 'id_attachment');
+        $oGreenPointAttachmentDetail->get($oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
+
         switch ($this->aData['type']) {
             case '1':
                 $aGreenPointData = greenPointStatus::getGreenPointData($this->aData, attachment_type::CNI_PASSPORTE_DIRIGEANT);
@@ -104,23 +101,24 @@ class apiController extends Controller
                 break;
             default:
                 $aGreenPointData = array();
+                break;
         }
         if (empty($aGreenPointData)) {
             $this->_404();
         }
         foreach ($aGreenPointData['greenpoint_attachment'] as $sKey => $mValue) {
             if (false === is_null($mValue)) {
-                $this->oGreenPointAttachment->$sKey = $mValue;
+                $oGreenPointAttachment->$sKey = $mValue;
             }
         }
-        $this->oGreenPointAttachment->update();
+        $oGreenPointAttachment->update();
 
         foreach ($aGreenPointData['greenpoint_attachment_detail'] as $sKey => $mValue) {
             if (false === is_null($mValue)) {
-                $this->oGreenPointAttachmentDetail->$sKey = $mValue;
+                $oGreenPointAttachmentDetail->$sKey = $mValue;
             }
         }
-        $this->oGreenPointAttachmentDetail->update();
+        $oGreenPointAttachmentDetail->update();
 
         echo 1;
         exit;
