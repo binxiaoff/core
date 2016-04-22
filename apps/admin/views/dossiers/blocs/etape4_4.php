@@ -90,7 +90,6 @@
             'capitaux_propres'                   => 'Capitaux propres',
             'provisions_pour_risques_et_charges' => 'Provisions pour risques & charges',
             'amortissement_sur_immo'             => 'Amortissements sur immobilisations',
-            'depreciation_actif_circulant'       => 'Dépréciation de l\'actif circulant',
             'dettes_financieres'                 => 'Dettes financières',
             'dettes_fournisseurs'                => 'Dettes fournisseurs',
             'autres_dettes'                      => 'Autres dettes',
