@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\librairies\greenPoint\greenPointStatus;
+use Unilend\librairies\greenPoint\greenPoint;
 
 class apiController extends Controller
 {
@@ -119,9 +120,20 @@ class apiController extends Controller
             }
         }
         $oGreenPointAttachmentDetail->update();
+        $this->updateGreenPointKyc($this->aData['dossier']);
 
         echo 1;
         exit;
+    }
+
+    private function updateGreenPointKyc($iClientId)
+    {
+        /** @var \greenpoint_kyc $oGreenPointKyc */
+        $oGreenPointKyc = $this->loadData('greenpoint_kyc');
+        /** @var greenPoint $oGreenPoint */
+        $oGreenPoint    = new greenPoint($this->bdd, $this->Config['env']);
+
+        greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
     }
 
     public function _default()

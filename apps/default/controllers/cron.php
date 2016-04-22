@@ -6542,7 +6542,7 @@ class cronController extends bootstrap
                         }
                         $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $oGreenPointAttachment, $oGreenPointAttachmentDetail);
                         unset($aResult, $aQueryID);
-                        $this->addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
+                        greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
                     }
                 }
             }
@@ -6703,35 +6703,6 @@ class cronController extends bootstrap
             $oGreenPointAttachmentDetail->create();
             $oGreenPointAttachment->unsetData();
             $oGreenPointAttachmentDetail->unsetData();
-        }
-    }
-
-    /**
-     * @param int $iClientId
-     * @param \greenPoint $oGreenPoint
-     * @param \greenpoint_kyc $oGreenPointKyc
-     */
-    private function addCustomer($iClientId, &$oGreenPoint, &$oGreenPointKyc)
-    {
-
-        $aResult = $oGreenPoint->getCustomer($iClientId);
-        $aKyc    = json_decode($aResult[0]['RESPONSE'], 1);
-
-        if (isset($aKyc['resource']['statut_dossier'])) {
-            if (0 < $oGreenPointKyc->counter(' id_client = ' . $iClientId)) {
-                $oGreenPointKyc->get($iClientId, 'id_client');
-                $oGreenPointKyc->status      = $aKyc['resource']['statut_dossier'];
-                $oGreenPointKyc->last_update = $aKyc['resource']['modification'];
-                $oGreenPointKyc->update();
-                $oGreenPointKyc->unsetData();
-            } else {
-                $oGreenPointKyc->id_client     = $iClientId;
-                $oGreenPointKyc->status        = $aKyc['resource']['statut_dossier'];
-                $oGreenPointKyc->creation_date = $aKyc['resource']['creation'];
-                $oGreenPointKyc->last_update   = $aKyc['resource']['modification'];
-                $oGreenPointKyc->create();
-                $oGreenPointKyc->unsetData();
-            }
         }
     }
 }
