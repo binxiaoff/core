@@ -9,8 +9,7 @@ use Unilend\core\Loader;
  */
 class AutoBidSettingsManager
 {
-    //todo: To be defined
-    const CGV_AUTOBID = 456;
+    const CGV_AUTOBID = 474;
 
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;

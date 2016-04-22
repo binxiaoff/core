@@ -308,6 +308,7 @@ class ajaxController extends bootstrap
                 $aStatusproject = array(
                     \projects_status::FUNDE,
                     \projects_status::FUNDING_KO,
+                    \projects_status::PRET_REFUSE,
                     \projects_status::REMBOURSEMENT,
                     \projects_status::REMBOURSE,
                     \projects_status::PROBLEME,
@@ -341,7 +342,7 @@ class ajaxController extends bootstrap
             }
 
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($sStatusProject, ' AND p.status = 0 AND p.display = 0', $this->tabOrdreProject[$this->ordreProject], $aRateRange, 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ',' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($sStatusProject . ' AND p.status = 0 AND p.display = 0');
         } else {
             $this->ordreProject = 1;
             $this->type         = 0;
@@ -350,7 +351,7 @@ class ajaxController extends bootstrap
 
             $this->where           = '';
             $this->lProjetsFunding = $this->projects->selectProjectsByStatus($this->tabProjectDisplay, ' AND p.status = 0', $this->tabOrdreProject[$this->ordreProject], array(), 0, 10);
-            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ',' . \projects_status::PRET_REFUSE . ' AND p.status = 0');
+            $this->nbProjects      = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ' AND p.status = 0');
         }
         foreach ($this->lProjetsFunding as $iKey => $aProject) {
             $this->companies->get($aProject['id_company'], 'id_company');

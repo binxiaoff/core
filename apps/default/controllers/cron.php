@@ -1432,7 +1432,6 @@ class cronController extends bootstrap
             $bank                                = $this->loadData('bank_lines');
             $projects                            = $this->loadData('projects');
             $companies                           = $this->loadData('companies');
-            $prelevements                        = $this->loadData('prelevements');
             $bank_unilend                        = $this->loadData('bank_unilend');
             $this->notifications                 = $this->loadData('notifications');
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
@@ -1624,15 +1623,22 @@ class cronController extends bootstrap
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
                                 preg_match_all('#[0-9]+#', $motif, $extract);
-                                $nombre   = (int) $extract[0][0]; // on retourne un int pour retirer les zeros devant
-                                $listPrel = $prelevements->select('id_project = ' . $nombre . ' AND status = 0');
+                                $iProjectId = (int) $extract[0][0];
+
+                                /** @var \echeanciers_emprunteur $oRepaymentSchedule */
+                                $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                                $aNextRepayment = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+
+                                /** @var \prelevements $oBankDirectDebit */
+                                $oBankDirectDebit = $this->loadData('prelevements');
 
                                 if (
-                                    count($listPrel) > 0
-                                    && false !== strpos($motif, $listPrel[0]['motif'])
-                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
+                                    count($aNextRepayment) > 0
+                                    && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
+                                    && false !== strpos($motif, $oBankDirectDebit->motif)
+                                    && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
                                 ) {
-                                    $projects->get($nombre, 'id_project');
+                                    $projects->get($iProjectId, 'id_project');
                                     $companies->get($projects->id_company, 'id_company');
                                     $clients->get($companies->id_client_owner, 'id_client');
 
@@ -4299,7 +4305,7 @@ class cronController extends bootstrap
         }
     }
 
-        /**
+    /**
      * Send new projects summary email
      * @param array $aCustomerId
      * @param string $sFrequency (quotidienne/hebdomadaire)
@@ -4966,6 +4972,7 @@ class cronController extends bootstrap
                     $sRepaymentsListHTML        = '';
                     $fTotalInterestsTaxFree     = 0;
                     $fTotalInterestsTaxIncluded = 0;
+                    $fTotalAmount               = 0;
                     $fTotalCapital              = 0;
                     $iRepaymentsCount           = count($aMailNotifications);
 
@@ -5003,11 +5010,13 @@ class cronController extends bootstrap
                         } else {
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
-                            $fRepaymentCapital              = $oLenderRepayment->montant / 100;
+                            $fRepaymentCapital              = $oLenderRepayment->capital / 100;
                             $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
                             $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
+                            $fRepaymentAmount               = $fRepaymentCapital + $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
                         }
 
+                        $fTotalAmount += $fRepaymentAmount;
                         $fTotalCapital += $fRepaymentCapital;
                         $fTotalInterestsTaxIncluded += $fRepaymentInterestsTaxIncluded;
                         $fTotalInterestsTaxFree += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
@@ -5015,6 +5024,7 @@ class cronController extends bootstrap
                         $sRepaymentsListHTML .= '
                             <tr style="color:#b20066;">
                                 <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
+                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentAmount) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentCapital) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;&euro;</td>
                                 <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;&euro;</td>
@@ -5024,6 +5034,7 @@ class cronController extends bootstrap
                     $sRepaymentsListHTML .= '
                         <tr>
                             <td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
+                            <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalAmount) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalCapital) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxIncluded) . '&nbsp;&euro;</td>
                             <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxFree) . '&nbsp;&euro;</td>
@@ -5070,7 +5081,8 @@ class cronController extends bootstrap
                         'contenu'                => $sContent,
                         'sujet'                  => $sSubject,
                         'lien_fb'                => $this->like_fb,
-                        'lien_tw'                => $this->twitter
+                        'lien_tw'                => $this->twitter,
+                        'annee'                  => date('Y')
                     );
 
                     $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
@@ -5992,7 +6004,8 @@ class cronController extends bootstrap
                                 'solde_p'              => $this->ficelle->formatNumber($getsolde) . (($getsolde >= 2) ? ' euros' : ' euro'),
                                 'motif_virement'       => $this->clients->getLenderPattern($this->clients->id_client),
                                 'lien_fb'              => $this->like_fb,
-                                'lien_tw'              => $this->twitter
+                                'lien_tw'              => $this->twitter,
+                                'annee'                => date('Y')
                             );
                             $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
 
@@ -6132,13 +6145,16 @@ class cronController extends bootstrap
                                         }
                                     }
 
+                                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                                    $oProjectManager = $this->get('ProjectManager');
+
                                     /**
                                      * When project is pending documents, abort status is not automatic and must be set manually in BO
                                      */
                                     if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                        $this->projects_status_history->addStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
+                                        $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $this->projects, $iReminderIndex, $this->projects_status_history->content);
                                     } else {
-                                        $this->projects_status_history->addStatus(\users::USER_ID_CRON, $iStatus, $iProjectId, $iReminderIndex, $this->projects_status_history->content);
+                                        $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $this->projects, $iReminderIndex, $this->projects_status_history->content);
                                     }
                                 }
                             } catch (\Exception $oException) {
@@ -6162,12 +6178,12 @@ class cronController extends bootstrap
 
             /** @var \projects $oProject */
             $oProject = $this->loadData('projects');
-
-            /** @var \projects_status_history $oProjectStatusHistory */
-            $oProjectStatusHistory = $this->loadData('projects_status_history');
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
 
             foreach ($oProject->getFastProcessStep3() as $iProjectId) {
-                $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $iProjectId);
+                $oProject->get($iProjectId, 'id_project');
+                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $oProject);
             }
 
             $this->stopCron();
@@ -6273,42 +6289,48 @@ class cronController extends bootstrap
     }
 
     /**
-     * Function to calculate the IRR (Internal Rate of Return) for each lender on a regular basis
-     * Given the amount of lenders and the time and resources needed for calculation
-     * it does four iterations per day on 800 accounts if not specified otherwise
+     * Documentation of IRR confluence (https://unilend.atlassian.net/wiki/display/DF/IRR)
      */
     public function _calculateIRRForAllLenders()
     {
         if (true === $this->startCron('LendersStats', 30)) {
             set_time_limit(2000);
-            $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
-            $this->bdd->query('INSERT INTO projects_last_status_history_materialized
-                                    SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
-                                    FROM projects_status_history
-                                    GROUP BY id_project');
-            $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
+            $this->fillProjectLastStatusMaterialized();
 
-            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 400;
-            $oDateTime               = new DateTime('NOW');
+            /** @var \Unilend\Service\LenderManager $oLenderManager */
+            $oLenderManager           = $this->get('LenderManager');
+            /** @var \lenders_account_stats $oLendersAccountsStats */
+            $oLendersAccountsStats    = $this->loadData('lenders_account_stats');
+            $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
+            $oLenderManager->addLendersToLendersAccountsStatQueue($aLendersWithLatePayments);
+
+            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 300;
             $fTimeStart              = microtime(true);
-            $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.log');
-            $oLendersAccountStats    = $this->loadData('lenders_account_stats');
-            $aLendersAccounts        = $oLendersAccountStats->selectLendersForIRR($iAmountOfLenderAccounts);
+            $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
+            /** @var \Unilend\Service\IRRManager $oIRRManager */
+            $oIRRManager             = $this->get('IRRManager');
+            $oIRRManager->setLogger($oLoggerIRR);
 
-            foreach ($aLendersAccounts as $aLender) {
+            /** @var lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
+            $oLendersAccountsStatsQueue = $this->loadData('lenders_accounts_stats_queue');
+            $aIRRsCalculated            = 0;
+
+            foreach ($oLendersAccountsStatsQueue->select(null, 'added DESC', null, $iAmountOfLenderAccounts) as $aLender) {
                 try {
-                    $fXIRR                                   = $oLendersAccountStats->calculateIRR($aLender['id_lender']);
-                    $oLendersAccountStats->id_lender_account = $aLender['id_lender'];
-                    $oLendersAccountStats->tri_date          = $oDateTime->format('Y-m-d H:i:s');
-                    $oLendersAccountStats->tri_value         = $fXIRR;
-                    $oLendersAccountStats->create();
+                    $oLendersAccountsStats->id_lender_account = $aLender['id_lender_account'];
+                    $oLendersAccountsStats->tri_date          = date('Y-m-d H:i:s');
+                    $oLendersAccountsStats->tri_value         = $oIRRManager->calculateIRRForLender($aLender['id_lender_account'], $bUseProjectLastStatusMaterialized = true);
+                    $oLendersAccountsStats->create();
+
+                    $oLendersAccountsStatsQueue->delete($aLender['id_lender_account'], 'id_lender_account');
+                    $aIRRsCalculated += 1;
 
                 } catch (Exception $e) {
-                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: '.$e->getMessage());
+                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage());
                 }
             }
-            $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
-            $this->oLogger->addRecord(ULogger::INFO, 'Calculation time for '. count($aLendersAccounts) .' lenders : ' . round(microtime(true) - $fTimeStart, 2));
+            $this->emptyProjectLastStatusMaterialized();
+            $oLoggerIRR->addRecord(ULogger::INFO, 'Calculation time for ' . $aIRRsCalculated . ' lenders : ' . round((microtime(true) - $fTimeStart)/60, 2) . ' minutes');
             $this->stopCron();
         }
     }
@@ -6380,6 +6402,50 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
+
+    /**
+     * Documentation of IRR confluence (https://unilend.atlassian.net/wiki/display/DF/IRR)
+     */
+    public function _calculateIRRForUnilend()
+    {
+        if (true === $this->startCron('UnilendStats', 5)) {
+            set_time_limit(2000);
+            $oLoggerIRR = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
+
+            /** @var \Unilend\Service\IRRManager $oIRRManager */
+            $oIRRManager = $this->get('IRRManager');
+            $oIRRManager->setLogger($oLoggerIRR);
+            $sYesterday = date('Y-m-d', strtotime('-1 day'));
+
+            $this->fillProjectLastStatusMaterialized();
+
+            if ($oIRRManager->IRRUnilendNeedsToBeRecalculated($sYesterday)) {
+                try {
+                    $oIRRManager->updateIRRUnilend();
+                } catch (Exception $e) {
+                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage());
+                }
+            }
+            $this->emptyProjectLastStatusMaterialized();
+            $this->stopCron();
+        }
+    }
+
+    private function fillProjectLastStatusMaterialized()
+    {
+        $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
+        $this->bdd->query('INSERT INTO projects_last_status_history_materialized
+                                    SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
+                                    FROM projects_status_history
+                                    GROUP BY id_project');
+        $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
+    }
+
+    private function emptyProjectLastStatusMaterialized()
+    {
+        $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
+    }
+
 
     /**
      * @param null $sBeginDate
