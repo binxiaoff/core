@@ -2791,8 +2791,8 @@ class dossiersController extends bootstrap
                 }
             } else {
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $L_echeance_normale                   = $this->echeanciers->select(' id_project = ' . $id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($L_echeance_normale[0]['date_echeance']);
+                $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']);
             }
         }
 
@@ -2828,7 +2828,7 @@ class dossiersController extends bootstrap
             }
         }
 
-// on verifie si on a recu un virement anticipé pour ce projet
+        // on verifie si on a recu un virement anticipé pour ce projet
         $this->receptions = $this->loadData('receptions');
         $L_vrmt_anticipe  = $this->receptions->select('id_project = ' . $this->projects->id_project . ' AND status_bo IN(1, 2) AND type_remb = ' . \receptions::REPAYMENT_TYPE_EARLY . ' AND type = 2 AND status_virement = 1');
 
@@ -2848,7 +2848,7 @@ class dossiersController extends bootstrap
             }
         }
 
-// on check si les échéances avant le RA sont toutes payées - si on trouve quelque chose on bloque le RA
+        // on check si les échéances avant le RA sont toutes payées - si on trouve quelque chose on bloque le RA
         $L_echeance_avant            = $this->echeanciers->select(" id_project = " . $id_project . " AND status = 0 AND ordre < " . $this->ordre_echeance_ra);
         $this->ra_possible_all_payed = true;
         if (count($L_echeance_avant) > 0) {
