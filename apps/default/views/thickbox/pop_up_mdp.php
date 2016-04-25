@@ -1,6 +1,6 @@
 <div class="popup" style="width: 300px;height:300px;">
 	<a href="#" class="popup-close">close</a>
-	
+
 	<div class="popup-head">
 		<h2><?=$this->lng['pop-up-mdp']['mot-de-passe-oublie']?></h2>
 	</div>
@@ -26,33 +26,33 @@
 
 </div>
 <script>
-$(".mdp_lost").click(function() {
-	var email = $("#email_mdp").val();
-	
-	var val = {email: email}
-	$.post(add_url + '/ajax/mdp_lost', val).done(function(data) {
-		
-		
-		if(data == 'nok')
-		{
-			$(".reponse_mdp_nok").slideDown('slow');
-			
-			setTimeout(function() {
-				$(".reponse_mdp_nok").slideUp('slow');
-			}, 3000);
-		}
-		else
-		{
-			$(".reponse_mdp_ok").slideDown('slow');
-			$(".form_mdp_lost").hide();
-			setTimeout(function() {
-      			$(".popup-close").click();
-			}, 4000);
-		}
-		
-		
-		
-	});
-	
-});
+$('#email_mdp').keypress(function(e) {
+    if (e.keyCode == 13) {
+        e.preventDefault();
+        sendRequest();
+    }
+})
+
+$('.mdp_lost').click(sendRequest);
+
+var sendRequest = function() {
+    var email = $("#email_mdp").val();
+    var val = {
+        email: email
+    }
+    $.post(add_url + '/ajax/mdp_lost', val).done(function(data) {
+        if (data == 'nok') {
+            $(".reponse_mdp_nok").slideDown('slow');
+            setTimeout(function() {
+                $(".reponse_mdp_nok").slideUp('slow');
+            }, 3000);
+        } else {
+            $(".reponse_mdp_ok").slideDown('slow');
+            $(".form_mdp_lost").hide();
+            setTimeout(function() {
+                $(".popup-close").click();
+            }, 4000);
+        }
+    });
+}
 </script>
