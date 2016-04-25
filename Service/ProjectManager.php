@@ -769,7 +769,7 @@ class ProjectManager
             case \projects_status::REJETE:
             case \projects_status::REJET_ANALYSTE:
             case \projects_status::REJET_COMITE:
-                $this->stopRemindersOnProject($oProject);
+                $this->stopRemindersForOlderProjects($oProject);
                 break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
@@ -783,7 +783,7 @@ class ProjectManager
         }
     }
 
-    private function stopRemindersOnProject(\projects $oProject)
+    public function stopRemindersForOlderProjects(\projects $oProject)
     {
         /** @var \companies $oCompany */
         $oCompany = Loader::loadData('companies');
@@ -792,8 +792,13 @@ class ProjectManager
         $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
         foreach ($aPreviousProjectsWithSameSiren as $aProject) {
             $oProject->get($aProject['id_project'], 'id_project');
-            $oProject->stop_relances = '1';
-            $oProject->update();
+            $this->stopRemindersOnProject($oProject);
         }
+    }
+
+    private function stopRemindersOnProject(\projects $oProject)
+    {
+        $oProject->stop_relances = '1';
+        $oProject->update();
     }
 }
