@@ -43,6 +43,9 @@ class ProjectManager
     /** @var AutoBidSettingsManager */
     private $oAutoBidSettingsManager;
 
+    /** @var MailerManager */
+    private $oMailerManager;
+
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
@@ -54,7 +57,8 @@ class ProjectManager
         $this->oLoanManager            = Loader::loadService('LoanManager');
         $this->oNotificationManager    = Loader::loadService('NotificationManager');
         $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
-
+        $this->oMailerManager          = Loader::loadService('MailerManager');
+        
         $this->oNMP       = Loader::loadData('nmp');
         $this->oNMPDesabo = Loader::loadData('nmp_desabo');
 
@@ -81,6 +85,14 @@ class ProjectManager
         $oProjectsStatusHistory = Loader::loadData('projects_status_history');
         $this->checkAutoBidBalance($oProject);
         $this->autoBid($oProject);
+
+        $bFunded = $this->isFunded($oProject);
+
+        if ($bFunded) {
+            $this->markAsFunded($oProject);
+        }
+
+        $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
         $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject->id_project);
     }
 
@@ -735,5 +747,37 @@ class ProjectManager
             $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
         }
         return $oEndDate;
+    }
+
+    public function isFunded(\projects $oProject)
+    {
+        /** @var \bids $oBid */
+        $oBid = Loader::loadData('bids');
+
+        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
+
+        if ($iBidTotal >= $oProject->amount) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function markAsFunded(\projects $oProject)
+    {
+        if ($oProject->status_solde == 0) {
+            $oFunded = new \DateTime();
+            $oPublished = new \DateTime($oProject->date_publication_full);
+
+            if ($oFunded < $oPublished) {
+                $oFunded = $oPublished;
+            }
+
+            $oProject->date_funded  = $oFunded->format('Y-m-d H:i:s');
+            $oProject->status_solde = 1;
+            $oProject->update();
+
+            $this->oMailerManager->sendFundedToBorrower($oProject);
+        }
     }
 }
