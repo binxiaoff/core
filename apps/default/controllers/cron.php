@@ -538,7 +538,7 @@ class cronController extends bootstrap
 				</InitgPty>
 			</GrpHdr>
 			<PmtInf>
-				<PmtInfId>' . $titulaire . '/' . $dateColle . '/' . $id_compteur . '</PmtInfId>
+				<PmtInfId>' . $this->getIdLot($titulaire, $dateColle, $id_compteur) . '</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<NbOfTxs>' . $nbVirements . '</NbOfTxs>
 				<CtrlSum>' . $Totalmontants . '</CtrlSum>
@@ -603,8 +603,6 @@ class cronController extends bootstrap
                 $this->virements->added_xml = date('Y-m-d H:i') . ':00';
                 $this->virements->update();
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $v['id_virement'];
                 $montant = round($v['montant'] / 100, 2);
                 if (strncmp('FR', strtoupper(str_replace(' ', '', $ibanDestinataire)), 2) == 0) {
                     $bicFr = '';
@@ -619,7 +617,7 @@ class cronController extends bootstrap
                 $xml .= '
                 <CdtTrfTxInf>
                     <PmtId>
-                        <EndToEndId>' . $id_lot . '</EndToEndId>
+                        <EndToEndId>' . $this->getIdLot($titulaire, $dateColle, $v['id_virement']) . '</EndToEndId>
                     </PmtId>
                     <Amt>
                         <InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
@@ -833,8 +831,6 @@ class cronController extends bootstrap
                 $this->prelevements->added_xml = date('Y-m-d H:i') . ':00';
                 $this->prelevements->update();
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
                 $montant = round($p['montant'] / 100, 2);
 
                 // Date execution
@@ -860,7 +856,7 @@ class cronController extends bootstrap
                 //si jamais eu de prelevement avant
                 $val = 'FRST'; // prelevement ponctuel
 
-                $table['id_lot']         = $id_lot;
+                $table['id_lot']         = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                 $table['montant']        = $montant;
                 $table['val']            = $val;
                 $table['date_execution'] = date('Y-m-d', $date_execution);
@@ -886,8 +882,6 @@ class cronController extends bootstrap
                 $this->clients->get($p['id_client'], 'id_client');
                 $this->lenders_accounts->get($p['id_client'], 'id_client_owner');
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
                 $montant = round($p['montant'] / 100, 2);
 
                 // Date execution
@@ -934,7 +928,7 @@ class cronController extends bootstrap
                 // si status est a 0 (en cours) ou si le satut est supperieur et que la date du jour est égale a la date xml + 1 mois
                 // 2 cas possible = 1 : premier prelevement | 2 : prelevement recurrent
                 if ($p['status'] == 0 || $p['status'] > 0 && $dateXmlPlusUnMois == $today) {
-                    $table['id_lot']         = $id_lot;
+                    $table['id_lot']         = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                     $table['montant']        = $montant;
                     $table['val']            = $val;
                     $table['date_execution'] = date('Y-m-d', $date_execution);
@@ -978,8 +972,6 @@ class cronController extends bootstrap
                     }
                 }
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
                 $montant = round($p['montant'] / 100, 2);
 
                 // On recup le mandat
@@ -1007,7 +999,7 @@ class cronController extends bootstrap
 
                 $this->clients->get($p['id_client'], 'id_client');
 
-                $table['id_lot']         = $id_lot;
+                $table['id_lot']         = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                 $table['montant']        = $montant;
                 $table['val']            = $val;
                 $table['date_execution'] = $p['date_echeance_emprunteur'];
@@ -1053,6 +1045,17 @@ class cronController extends bootstrap
 
             $this->stopCron();
         }
+    }
+
+    /**
+     * @param string $titulaire
+     * @param string $dateColle date format : Ymd
+     * @param int $iId id prelevement
+     * @return string
+     */
+    private function getIdLot($titulaire, $dateColle, $iId)
+    {
+        return $titulaire . '/' . $dateColle . '/' . $iId;
     }
 
     private function xmPrelevement($table)
@@ -1878,7 +1881,7 @@ class cronController extends bootstrap
                                 $oTransactions          = $this->loadData('transactions');
 
                                 if (
-                                    1 === preg_match('#^RUMUNILEND([0-9]+)#', $r['libelleOpe3'], $aMatches)
+                                    1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $r['libelleOpe3'], $aMatches)
                                     && $this->projects->get((int) $aMatches[1])
                                     && 1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $r['libelleOpe4'], $aMatches)
                                     && $oPrelevements->get((int) $aMatches[2])
