@@ -80,19 +80,12 @@ class clients_mandats extends clients_mandats_crud
             $iCompanyId = $this->id_company;
         }
 
-        $sql = '
-            SELECT cm.*
-            FROM clients_mandats cm
-            INNER JOIN companies c ON cm.id_client = c.id_client_owner
-            WHERE
-                c.id_company = '. $iCompanyId .'
-            ORDER BY
-                cm.updated DESC';
+        $sQuery = 'SELECT cm.* FROM clients_mandats cm INNER JOIN companies c ON cm.id_client = c.id_client_owner WHERE c.id_company = ' . $iCompanyId . ' ORDER BY cm.updated DESC';
 
-        $resultat  = $this->bdd->query($sql);
+        $rQuery      = $this->bdd->query($sQuery);
         $aMoneyOrder = array();
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $aMoneyOrder[] = $record;
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
+            $aMoneyOrder[] = $aRow;
         }
         return $aMoneyOrder;
     }
