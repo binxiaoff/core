@@ -84,7 +84,7 @@
             ?>
             <script>var dataLayer = [<?= json_encode($this->aDataLayer) ?>];</script>
             <!-- Google Tag Manager -->
-            <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <noscript><iframe src="//www.googletagmanager.com/ns.html?id=<?= $this->google_tag_manager ?>" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <script>(function (w, d, s, l, i) {
                     w[l] = w[l] || [];
                     w[l].push({'gtm.start':
@@ -95,7 +95,7 @@
                     j.src =
                             '//www.googletagmanager.com/gtm.js?id=' + i + dl;
                     f.parentNode.insertBefore(j, f);
-                })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
+                })(window, document, 'script', 'dataLayer', '<?= $this->google_tag_manager ?>');</script>
             <!-- End Google Tag Manager -->
 
             <div id="fb-root"></div>
