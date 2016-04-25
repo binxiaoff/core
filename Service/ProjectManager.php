@@ -769,15 +769,7 @@ class ProjectManager
             case \projects_status::REJETE:
             case \projects_status::REJET_ANALYSTE:
             case \projects_status::REJET_COMITE:
-                $oCompany = $this->loadData('companies');
-                $oCompany->get($oProject->id_company);
-                $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
-                foreach ($aPreviousProjectsWithSameSiren as $aProject) {
-                    $oProject->get($aProject['id_project'], 'id_project');
-                    $oProject->stop_relances = '1';
-                    $oProject->update();
-                }
-                unset($oProject);
+                $this->stopRemindersOnProject($oProject);
                 break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
@@ -788,6 +780,20 @@ class ProjectManager
             case \projects_status::LIQUIDATION_JUDICIAIRE:
                 $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
                 break;
+        }
+    }
+
+    private function stopRemindersOnProject(\projects $oProject)
+    {
+        /** @var \companies $oCompany */
+        $oCompany = Loader::loadData('companies');
+
+        $oCompany->get($oProject->id_company);
+        $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
+        foreach ($aPreviousProjectsWithSameSiren as $aProject) {
+            $oProject->get($aProject['id_project'], 'id_project');
+            $oProject->stop_relances = '1';
+            $oProject->update();
         }
     }
 }
