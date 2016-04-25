@@ -1840,12 +1840,10 @@ class preteursController extends bootstrap
 
     private function getMessageAboutClientStatus()
     {
-        $oClientsStatus        = $this->loadData('clients_status');
-        $oClientsStatusHistory = $this->loadData('clients_status_history');
-        $aLastClientHistory    = $oClientsStatusHistory->select('id_client = ' . $this->clients->id_client, 'added DESC', 'LIMIT 1');
-        $sTimeCreate           = (false === is_null($aLastClientHistory[0]['added'])) ? strtotime($aLastClientHistory[0]['added']) : $timeCreate = strtotime($this->clients->added);
+        /** @var clients_status $oClientsStatus */
+        $oClientsStatus = $this->loadData('clients_status');
         $oClientsStatus->getLastStatut($this->clients->id_client);
-
+        $sTimeCreate                = strtotime($this->clients->added);
         $this->sClientStatusMessage = '';
 
         switch ($oClientsStatus->status) {
@@ -1864,7 +1862,7 @@ class preteursController extends bootstrap
                 $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) à la demande du prêteur</div>';
                 break;
             case \clients_status::CLOSED_BY_UNILEND:
-                $this->sClientStatusMessage = '<div class="attention">Attention : compte passé hors ligne par Unilend</div>';
+                $this->sClientStatusMessage = '<div class="attention">Attention : compte clôturé (mis hors ligne) par Unilend</div>';
                 break;
             case \clients_status::VALIDATED:
                 $this->sClientStatusMessage = '';
