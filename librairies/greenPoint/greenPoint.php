@@ -21,14 +21,11 @@ class greenPoint
     /** @var array */
     private $aRequests;
 
-    /** @var \bdd */
-    private $oDB;
-
     /** @var \settings settings */
     private $oSettings;
 
     /** @var string */
-    private $sRequestMethod = null;
+    private $sRequestMethod;
 
     /** @var int */
     private $iCustomerId;
@@ -200,7 +197,7 @@ class greenPoint
     /**
      * @param array $aData
      * @param bool $bExecute
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      * @return int|array|greenPoint
      */
     public function createCustomer(array $aData, $bExecute = true)
@@ -219,7 +216,7 @@ class greenPoint
 
     /**
      * @param array $aData
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      * @return array
      */
     public function updateCustomer(array $aData)
@@ -233,7 +230,7 @@ class greenPoint
 
     /**
      * @param $iCustomerId
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      * @return array
      */
     public function deleteCustomer($iCustomerId)
@@ -247,7 +244,7 @@ class greenPoint
 
     /**
      * @param int $iCustomerId
-     * @throws \Exception
+     * @throws \InvalidArgumentException
      * @return array
      */
     public function getCustomer($iCustomerId)
@@ -261,7 +258,7 @@ class greenPoint
 
     /**
      * @param string $sMethod
-     * @param int $iCustomerId
+     * @param int|null $iCustomerId
      */
     private function setCustomOptions($sMethod, $iCustomerId = null)
     {

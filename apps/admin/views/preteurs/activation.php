@@ -54,7 +54,7 @@
             </thead>
             <tbody>
             <?php
-            $i      = 1;
+            $iRow      = 1;
             foreach ($this->lPreteurs as $c) {
                 if (isset($this->aGreenPointStatus[$c['id_client']])) {
                     $sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
@@ -95,7 +95,7 @@
                 }
                 ?>
 
-                <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?> ">
+                <tr class="<?= ($iRow % 2 == 1 ? '' : 'odd') ?> ">
                     <td align="center" style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
                     <td><?= $nom ?></td>
                     <td><?= $prenom ?></td>
@@ -115,7 +115,7 @@
                     </td>
                 </tr>
                 <?
-                $i++;
+                $iRow++;
             }
             ?>
             </tbody>

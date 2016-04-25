@@ -60,10 +60,10 @@ class greenPointStatus
 
     /**
      * @param array $aResponse
-     * @param int $iAttachmentTypeId
-     * @param int $iAttachmentId
-     * @param int $iClientId
-     * @param int $iCode
+     * @param int|null $iAttachmentTypeId
+     * @param int|null $iAttachmentId
+     * @param int|null $iClientId
+     * @param int|null $iCode
      * @return array
      */
     public static function getGreenPointData(array $aResponse, $iAttachmentTypeId = null, $iAttachmentId = null, $iClientId = null, $iCode = null)
@@ -95,29 +95,27 @@ class greenPointStatus
             }
         };
 
-        $aAttachment['id_attachment']   = false === is_null($iAttachmentId) ? $iAttachmentId : $fGetColumnValue($aResponse, 'document');
-        $aAttachment['validation_code'] = false === is_null($iCode) ? $iCode : $fGetColumnValue($aResponse, 'code');
-        $aAttachment['id_client']       = false === is_null($iClientId) ? $iClientId : $fGetColumnValue($aResponse, 'dossier');
-
-        $aAttachment['validation_status'] = $fGetColumnValue($aResponse, 'statut_verification');
+        $aAttachment['id_attachment']     = false === is_null($iAttachmentId) ? $iAttachmentId : $fGetColumnValue($aResponse, 'document');
+        $aAttachment['validation_code']   = false === is_null($iCode) ? $iCode : $fGetColumnValue($aResponse, 'code');
+        $aAttachment['id_client']         = false === is_null($iClientId) ? $iClientId : $fGetColumnValue($aResponse, 'dossier');
+        $aAttachment['validation_status'] = (int) $fGetColumnValue($aResponse, 'statut_verification');
 
         switch ($iAttachmentTypeId) {
             case \attachment_type::CNI_PASSPORTE:
             case \attachment_type::CNI_PASSPORTE_VERSO:
             case \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
             case \attachment_type::CNI_PASSPORTE_DIRIGEANT:
-                $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aIdControlStatusLabel, (int) $aAttachment['validation_status']);
+                $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aIdControlStatusLabel, $aAttachment['validation_status']);
                 break;
             case \attachment_type::RIB:
-                $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aIbanFlashStatusLabel, (int) $aAttachment['validation_status']);
+                $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aIbanFlashStatusLabel, $aAttachment['validation_status']);
                 break;
             case \attachment_type::JUSTIFICATIF_DOMICILE:
             case \attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
-                $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aAddressControlStatusLabel, (int) $aAttachment['validation_status']);
+                $aAttachment['validation_status_label'] = $fGetColumnValue(self::$aAddressControlStatusLabel, $aAttachment['validation_status']);
                 break;
         }
         $aAttachment['agency'] = null;
-
         $aAttachmentDetail['document_type']              = $fGetColumnValue($aResponse, 'type');
         $aAttachmentDetail['identity_civility']          = $fGetColumnValue($aResponse, 'sexe');
         $aAttachmentDetail['identity_name']              = $fGetColumnValue($aResponse, 'prenom');
@@ -154,20 +152,17 @@ class greenPointStatus
         $aKyc    = json_decode($aResult[0]['RESPONSE'], true);
 
         if (isset($aKyc['resource']['statut_dossier'])) {
-
             if (0 < $oGreenPointKyc->counter('id_client = ' . $iClientId)) {
                 $oGreenPointKyc->get($iClientId, 'id_client');
                 $oGreenPointKyc->status      = $aKyc['resource']['statut_dossier'];
                 $oGreenPointKyc->last_update = $aKyc['resource']['modification'];
                 $oGreenPointKyc->update();
-                $oGreenPointKyc->unsetData();
             } else {
                 $oGreenPointKyc->id_client     = $iClientId;
                 $oGreenPointKyc->status        = $aKyc['resource']['statut_dossier'];
                 $oGreenPointKyc->creation_date = $aKyc['resource']['creation'];
                 $oGreenPointKyc->last_update   = $aKyc['resource']['modification'];
                 $oGreenPointKyc->create();
-                $oGreenPointKyc->unsetData();
             }
         }
     }

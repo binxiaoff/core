@@ -449,10 +449,10 @@ class clients extends clients_crud
     }
 
     /**
-     * @param string $sLastStatus list of last status to use separated by a column
+     * @param array $aLastStatus list of last status to use separated by a column
      * @return array
      */
-    public function selectLendersByLastStatus($sLastStatus = '')
+    public function selectLendersByLastStatus(array $aLastStatus = array())
     {
         $sSql = '
             SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
@@ -471,8 +471,8 @@ class clients extends clients_crud
                 FROM clients_status_history csh1
                 WHERE csh1.id_client = csh.id_client
             )';
-        if (false === empty($sLastStatus)) {
-            $sSql .= ' AND cs.status IN (' . $sLastStatus . ' ) ';
+        if (false === empty($aLastStatus)) {
+            $sSql .= ' AND cs.status IN (' . implode(', ', $aLastStatus) . ' ) ';
         }
         $oResult = $this->bdd->query($sSql);
         $aResult = array();

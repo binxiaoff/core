@@ -220,18 +220,14 @@ class preteursController extends bootstrap
     {
         /** @var \greenpoint_attachment $oGreenPointAttachment */
         $oGreenPointAttachment   = $this->loadData('greenpoint_attachment');
-
         $aGreenpointAttachmentStatus = array();
         $this->aIdentity             = array();
         $this->aDomicile             = array();
         $this->aRibAndFiscale        = array();
         $this->aOther                = array();
-        $aTmp                        = $oGreenPointAttachment->select('id_client = ' . $iIdClient);
 
-        if (false === empty($aTmp)) {
-            foreach ($aTmp as $aGPAS) {
-                $aGreenpointAttachmentStatus[$aGPAS['id_attachment']] = $aGPAS;
-            }
+        foreach ($oGreenPointAttachment->select('id_client = ' . $iIdClient) as $aGPAS) {
+            $aGreenpointAttachmentStatus[$aGPAS['id_attachment']] = $aGPAS;
         }
 
         foreach ($oAttachmentTypes as $aAttachmentType) {
@@ -991,14 +987,15 @@ class preteursController extends bootstrap
             END ASC, c.added DESC');
 
         if (false === empty($this->lPreteurs)) {
+            /** @var \greenpoint_kyc $oGreenPointKYC */
             $oGreenPointKYC = $this->loadData('greenpoint_kyc');
+
+            /** @var array aGreenPointStatus */
             $this->aGreenPointStatus = array();
 
             foreach ($this->lPreteurs as $aLender) {
-
                 if ($oGreenPointKYC->get($aLender['id_client'], 'id_client')) {
                     $this->aGreenPointStatus[$aLender['id_client']] = $oGreenPointKYC->status;
-                    $oGreenPointKYC->unsetData();
                 }
             }
         }

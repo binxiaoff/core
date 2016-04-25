@@ -6450,13 +6450,16 @@ class cronController extends bootstrap
     public function _greenPointValidation()
     {
         /** @var \clients $oClients */
-        $oClients                       = $this->loadData('clients');
+        $oClients = $this->loadData('clients');
+
         /** @var \greenpoint_attachment $oGreenPointAttachment */
-        $oGreenPointAttachment          = $this->loadData('greenpoint_attachment');
+        $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
         /** @var \greenpoint_attachment_detail $oGreenPointAttachmentDetail */
-        $oGreenPointAttachmentDetail    = $this->loadData('greenpoint_attachment_detail');
+        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
+
         /** @var \greenpoint_kyc $oGreenPointKyc */
-        $oGreenPointKyc                 = $this->loadData('greenpoint_kyc');
+        $oGreenPointKyc = $this->loadData('greenpoint_kyc');
 
         $bDebug = true === isset($_GET['bDebug']);
         if ($bDebug) {
@@ -6471,19 +6474,23 @@ class cronController extends bootstrap
         );
 
         $aQueryID        = array();
-        $aClientsToCheck = $oClients->selectLendersByLastStatus(implode(', ', $aStatusToCheck));
+        $aClientsToCheck = $oClients->selectLendersByLastStatus($aStatusToCheck);
 
         if (false === empty($aClientsToCheck)) {
             /** @var \lenders_accounts $oLendersAccount */
-            $oLendersAccount    = $this->loadData('lenders_accounts');
+            $oLendersAccount = $this->loadData('lenders_accounts');
+
             /** @var greenPoint $oGreenPoint */
-            $oGreenPoint        = new greenPoint();
+            $oGreenPoint = new greenPoint();
+
             /** @var \attachment $oAttachment */
-            $oAttachment        = $this->loadData('attachment');
+            $oAttachment = $this->loadData('attachment');
+
             /** @var \attachment_type $oAttachmentType */
-            $oAttachmentType    = $this->loadData('attachment_type');
+            $oAttachmentType = $this->loadData('attachment_type');
+
             /** @var \attachment_helper $oAttachmentHelper */
-            $oAttachmentHelper  = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
+            $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
 
             foreach ($aClientsToCheck as $iClientId => $aClient) {
                 $aAttachments = $oLendersAccount->getAttachments($aClient['id_lender_account']);
@@ -6525,7 +6532,7 @@ class cronController extends bootstrap
                                     $aQueryID[$iQRID] = $iAttachmentTypeId;
                                     break;
                             }
-                        } catch (Exception $oException) {
+                        } catch (\Exception $oException) {
                             $aError[$aAttachment['id']][$iAttachmentTypeId] = array('iErrorCode' => $oException->getCode(), 'sErrorMessage' => $oException->getMessage());
                             unset($oException);
                         }
@@ -6559,7 +6566,7 @@ class cronController extends bootstrap
      * @param string $sType
      * @return array
      */
-    private function getGreenPointData($iClientId, $iAttachmentId, $sPath, $aClient, $sType)
+    private function getGreenPointData($iClientId, $iAttachmentId, $sPath, array $aClient, $sType)
     {
         $aData = array(
             'files'    => '@' . $sPath,
@@ -6603,7 +6610,7 @@ class cronController extends bootstrap
      * @param array $aData
      * @param array $aClient
      */
-    private function addIdControlData(&$aData, $aClient)
+    private function addIdControlData(array &$aData, array $aClient)
     {
         $aData['date_naissance'] = $aClient['naissance'];
     }
@@ -6612,7 +6619,7 @@ class cronController extends bootstrap
      * @param array $aData
      * @param array $aClient
      */
-    private function addIbanData(&$aData, $aClient)
+    private function addIbanData(array &$aData, array $aClient)
     {
         $aData['iban'] = $aClient['iban'];
         $aData['bic']  = $aClient['bic'];
@@ -6622,7 +6629,7 @@ class cronController extends bootstrap
      * @param array $aData
      * @param array $aClient
      */
-    private function addAddressData(&$aData, $aClient)
+    private function addAddressData(array &$aData, array $aClient)
     {
         $aData['adresse']     = $this->getFullAddress($aClient['adresse1'], $aClient['adresse2'], $aClient['adresse3']);
         $aData['code_postal'] = $aClient['cp'];
@@ -6655,7 +6662,7 @@ class cronController extends bootstrap
      * @param \greenpoint_attachment $oGreenPointAttachment
      * @param \greenpoint_attachment_detail $oGreenPointAttachmentDetail
      */
-    private function processGreenPointResponse($iClientId, $aResponseDetail, $aResponseKeys, $oGreenPointAttachment, $oGreenPointAttachmentDetail)
+    private function processGreenPointResponse($iClientId, array $aResponseDetail, array $aResponseKeys, $oGreenPointAttachment, $oGreenPointAttachmentDetail)
     {
         foreach ($aResponseKeys as $iQRID => $iAttachmentTypeId) {
             if (false === isset($aResponseDetail[$iQRID])) {
@@ -6676,13 +6683,14 @@ class cronController extends bootstrap
                     $oGreenPointAttachment->$sKey = $mValue;
                 }
             }
-            $oGreenPointAttachmentDetail->id_greenpoint_attachment = $oGreenPointAttachment->create();
+            $oGreenPointAttachment->create();
 
             foreach ($aGreenPointData['greenpoint_attachment_detail'] as $sKey => $mValue) {
                 if (false === is_null($mValue)) {
                     $oGreenPointAttachmentDetail->$sKey = $mValue;
                 }
             }
+            $oGreenPointAttachmentDetail->id_greenpoint_attachment = $oGreenPointAttachment->id_greenpoint_attachment;
             $oGreenPointAttachmentDetail->create();
             $oGreenPointAttachment->unsetData();
             $oGreenPointAttachmentDetail->unsetData();

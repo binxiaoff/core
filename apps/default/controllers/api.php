@@ -37,6 +37,7 @@ class apiController extends Controller
             default:
                 $oSettings->get('green_point_ip_prod', 'type');
                 $sAllowedIPSettings = $oSettings->value;
+                break;
         }
 
         $aAllowedIPSettings = json_decode($sAllowedIPSettings, true);
@@ -85,7 +86,8 @@ class apiController extends Controller
     public function _update_status()
     {
         /** @var \greenpoint_attachment $oGreenPointAttachment */
-        $oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
+        $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
         /** @var \greenpoint_attachment $oGreenPointAttachmentDetail */
         $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment');
 
@@ -131,9 +133,9 @@ class apiController extends Controller
     {
         /** @var \greenpoint_kyc $oGreenPointKyc */
         $oGreenPointKyc = $this->loadData('greenpoint_kyc');
-        /** @var greenPoint $oGreenPoint */
-        $oGreenPoint    = new greenPoint();
 
+        /** @var greenPoint $oGreenPoint */
+        $oGreenPoint = new greenPoint();
         greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
     }
 
@@ -148,10 +150,8 @@ class apiController extends Controller
         foreach (array_keys($_POST) as $mKey) {
             if (strstr($mKey, 'mrz')) {
                 $aFilteredInput[$mKey] = trim($_POST[$mKey]);
-            } else {
-                if (false !== ($mValue = filter_input(INPUT_POST, $mKey, FILTER_SANITIZE_STRING))) {
-                    $aFilteredInput[$mKey] = trim($mValue);
-                }
+            } elseif (false !== ($mValue = filter_input(INPUT_POST, $mKey, FILTER_SANITIZE_STRING))) {
+                $aFilteredInput[$mKey] = trim($mValue);
             }
         }
         return $aFilteredInput;
