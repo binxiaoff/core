@@ -435,9 +435,7 @@
 
         <style type="text/css">
             .form-style-10{
-                /*width:450px;*/
                 padding:20px;
-                /*margin:20px;*/
                 background: #FFF;
                 border-radius: 10px;
                 -webkit-border-radius:10px;
@@ -499,7 +497,6 @@
                     <?php foreach ($this->aIdentity as $iIdType => $aAttachmentType): ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
-
                             <td>
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
                                     <?= $aAttachmentType['path'] ?>
@@ -516,7 +513,7 @@
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value="">Selectoinnez un documment</option>
+                                <option value="">Selectionnez un document</option>
                                 <?php foreach ($this->aIdentityToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -534,14 +531,12 @@
                     </tr>
                 </table>
             </div>
-
             <div class="section"><span>2</span>Justificatif de domicile</div>
             <div class="inner-wrap">
                 <table id="domicile-attachments" class="add-attachment">
                     <?php foreach ($this->aDomicile as $iIdType => $aAttachmentType): ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
-
                             <td>
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
                                     <?= $aAttachmentType['path'] ?>
@@ -559,7 +554,7 @@
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value="">Selectoinnez un documment</option>
+                                <option value="">Selectionnez un document</option>
                                 <?php foreach ($this->aDomicileToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -577,14 +572,12 @@
                     </tr>
                 </table>
             </div>
-
             <div class="section"><span>3</span>RIB et Jsutificatif fiscal</div>
             <div class="inner-wrap">
                 <table id="rib-attachments" class="add-attachment">
                     <?php foreach ($this->aRibAndFiscale as $iIdType => $aAttachmentType): ?>
                         <tr>
                             <th><?= $aAttachmentType['label'] ?></th>
-
                             <td>
                                 <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
                                     <?= $aAttachmentType['path'] ?>
@@ -602,7 +595,7 @@
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value="">Selectoinnez un documment</option>
+                                <option value="">Selectionnez un document</option>
                                 <?php foreach ($this->aRibAndFiscaleToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -620,7 +613,6 @@
                     </tr>
                 </table>
             </div>
-
             <div class="section"><span>4</span>Autre</div>
             <div class="inner-wrap">
                 <table id="other-attachments" class="add-attachment">
@@ -649,11 +641,10 @@
                         </td>
                         <td><input type="file" name="mandat"></td>
                     </tr>
-
                     <tr class="row row-upload">
                         <td>
                             <select class="select">
-                                <option value="">Selectoinnez un documment</option>
+                                <option value="">Selectionnez un document</option>
                                 <?php foreach ($this->aOtherToAdd as $iIdType => $aAttachmentType): ?>
                                     <option value="<?= $iIdType ?>"><?= $aAttachmentType['label'] ?></option>
                                 <?php endforeach; ?>
@@ -671,7 +662,6 @@
                     </tr>
                 </table>
             </div>
-
         </div>
         </br></br>
         <div class="gauche">

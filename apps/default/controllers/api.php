@@ -39,7 +39,7 @@ class apiController extends Controller
                 $sAllowedIPSettings = $oSettings->value;
         }
 
-        $aAllowedIPSettings = json_decode($sAllowedIPSettings, 1);
+        $aAllowedIPSettings = json_decode($sAllowedIPSettings, true);
 
         if (false === isset($aAllowedIPSettings['root'])) {
             header('HTTP/1.0 500 Internal Server Error');
@@ -84,8 +84,10 @@ class apiController extends Controller
      */
     public function _update_status()
     {
+        /** @var \greenpoint_attachment $oGreenPointAttachment */
         $oGreenPointAttachment       = $this->loadData('greenpoint_attachment');
-        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
+        /** @var \greenpoint_attachment $oGreenPointAttachmentDetail */
+        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment');
 
         $oGreenPointAttachment->get($this->aData['document'], 'id_attachment');
         $oGreenPointAttachmentDetail->get($oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
@@ -123,7 +125,6 @@ class apiController extends Controller
         $this->updateGreenPointKyc($this->aData['dossier']);
 
         echo 1;
-        exit;
     }
 
     private function updateGreenPointKyc($iClientId)
@@ -131,7 +132,7 @@ class apiController extends Controller
         /** @var \greenpoint_kyc $oGreenPointKyc */
         $oGreenPointKyc = $this->loadData('greenpoint_kyc');
         /** @var greenPoint $oGreenPoint */
-        $oGreenPoint    = new greenPoint($this->bdd, $this->Config['env']);
+        $oGreenPoint    = new greenPoint();
 
         greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
     }

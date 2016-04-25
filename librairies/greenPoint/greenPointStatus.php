@@ -21,7 +21,6 @@ class greenPointStatus
     CONST CONFORM_COHERENT_NOT_QUALIFIED = 8;
     CONST CONFORM_COHERENT_QUALIFIED     = 9;
 
-
     public static $aIdControlStatusLabel = array(
         self::NOT_VERIFIED                   => 'Non vérifié',
         self::OUT_OF_BOUNDS                  => 'Hors périmètre (pas un document d\'identité)',
@@ -60,23 +59,33 @@ class greenPointStatus
     );
 
     /**
-     * @param $aResponse
-     * @param null $iAttachmentTypeId
-     * @param null $iAttachmentId
-     * @param null $iClientId
-     * @param null $iCode
+     * @param array $aResponse
+     * @param int $iAttachmentTypeId
+     * @param int $iAttachmentId
+     * @param int $iClientId
+     * @param int $iCode
      * @return array
      */
-    public static function getGreenPointData($aResponse, $iAttachmentTypeId = null, $iAttachmentId = null, $iClientId = null, $iCode = null)
+    public static function getGreenPointData(array $aResponse, $iAttachmentTypeId = null, $iAttachmentId = null, $iClientId = null, $iCode = null)
     {
-        $fGetColumnValue = function ($array, $key, $mCurrentValue = null) {
-            if (empty($mCurrentValue)){
-                return isset($array[$key]) ? $array[$key] : null;
+        /**
+         * @param array $aData
+         * @param mixed $mKey
+         * @param mixed $mCurrentValue
+         * @return null|mixed
+         */
+        $fGetColumnValue = function (array $aData, $mKey, $mCurrentValue = null) {
+            if (empty($mCurrentValue)) {
+                return isset($aData[$mKey]) ? $aData[$mKey] : null;
             } else {
                 return $mCurrentValue;
             }
         };
 
+        /**
+         * @param string $sDate
+         * @return null|string
+         */
         $fFormatDate = function ($sDate) {
             $oDate = \DateTime::createFromFormat('d/m/Y', $sDate);
             if (is_object($oDate)) {
@@ -86,9 +95,9 @@ class greenPointStatus
             }
         };
 
-        $aAttachment['id_attachment']   = ! is_null($iAttachmentId) ? $iAttachmentId : $fGetColumnValue($aResponse, 'document');
-        $aAttachment['validation_code'] = ! is_null($iCode) ? $iCode : $fGetColumnValue($aResponse, 'code');
-        $aAttachment['id_client']       = ! is_null($iClientId) ? $iClientId : $fGetColumnValue($aResponse, 'dossier');
+        $aAttachment['id_attachment']   = false === is_null($iAttachmentId) ? $iAttachmentId : $fGetColumnValue($aResponse, 'document');
+        $aAttachment['validation_code'] = false === is_null($iCode) ? $iCode : $fGetColumnValue($aResponse, 'code');
+        $aAttachment['id_client']       = false === is_null($iClientId) ? $iClientId : $fGetColumnValue($aResponse, 'dossier');
 
         $aAttachment['validation_status'] = $fGetColumnValue($aResponse, 'statut_verification');
 
@@ -139,13 +148,14 @@ class greenPointStatus
      * @param greenPoint $oGreenPoint
      * @param \greenpoint_kyc $oGreenPointKyc
      */
-    public static function addCustomer($iClientId, &$oGreenPoint, &$oGreenPointKyc)
+    public static function addCustomer($iClientId, greenPoint $oGreenPoint, \greenpoint_kyc $oGreenPointKyc)
     {
         $aResult = $oGreenPoint->getCustomer($iClientId);
-        $aKyc    = json_decode($aResult[0]['RESPONSE'], 1);
+        $aKyc    = json_decode($aResult[0]['RESPONSE'], true);
 
         if (isset($aKyc['resource']['statut_dossier'])) {
-            if (0 < $oGreenPointKyc->counter(' id_client = ' . $iClientId)) {
+
+            if (0 < $oGreenPointKyc->counter('id_client = ' . $iClientId)) {
                 $oGreenPointKyc->get($iClientId, 'id_client');
                 $oGreenPointKyc->status      = $aKyc['resource']['statut_dossier'];
                 $oGreenPointKyc->last_update = $aKyc['resource']['modification'];

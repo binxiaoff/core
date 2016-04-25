@@ -218,6 +218,7 @@ class preteursController extends bootstrap
 
     private function setAttachments($iIdClient, $oAttachmentTypes)
     {
+        /** @var \greenpoint_attachment $oGreenPointAttachment */
         $oGreenPointAttachment   = $this->loadData('greenpoint_attachment');
 
         $aGreenpointAttachmentStatus = array();
@@ -903,24 +904,21 @@ class preteursController extends bootstrap
     private function organizeAttachments(&$oDataToDisplay, &$oDataToAdd, $aGPAttachmentStatus, $iType, $aAttachmentType)
     {
         if (isset($this->attachments[$iType]['path'])) {
-
             $oDataToDisplay[$iType] = array(
                 'label' => $aAttachmentType['label'],
                 'path'  => $this->attachments[$iType]['path'],
                 'id'    => $this->attachments[$iType]['id']
             );
-            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'])) {
 
+            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'])) {
                 $oDataToDisplay[$iType]['greenpoint_label'] = $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'];
 
                 if ('0' === $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
                     $oDataToDisplay[$iType]['color'] = 'error';
+                } elseif (8 > $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
+                    $oDataToDisplay[$iType]['color'] = 'warning';
                 } else {
-                    if (8 > (int) $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
-                        $oDataToDisplay[$iType]['color'] = 'warning';
-                    } else {
-                        $oDataToDisplay[$iType]['color'] = 'valid';
-                    }
+                    $oDataToDisplay[$iType]['color'] = 'valid';
                 }
             } else {
                 $oDataToDisplay[$iType]['greenpoint_label'] = 'Non Contrôlé par GreenPoint';
@@ -971,7 +969,6 @@ class preteursController extends bootstrap
         $this->clients      = $this->loadData('clients');
         $this->transactions = $this->loadData('transactions');
         $this->companies    = $this->loadData('companies');
-        $this->greenpoint_kyc = $this->loadData('greenpoint_kyc');
 
         $aStatusNotValidated = array(
             \clients_status::TO_BE_CHECKED,
@@ -994,14 +991,14 @@ class preteursController extends bootstrap
             END ASC, c.added DESC');
 
         if (false === empty($this->lPreteurs)) {
-
+            $oGreenPointKYC = $this->loadData('greenpoint_kyc');
             $this->aGreenPointStatus = array();
 
             foreach ($this->lPreteurs as $aLender) {
-                $bKyc = $this->greenpoint_kyc->get($aLender['id_client'], 'id_client');
-                if (false === empty($bKyc)) {
-                    $this->aGreenPointStatus[$aLender['id_client']] = $this->greenpoint_kyc->status;
-                    $this->greenpoint_kyc->unsetData();
+
+                if ($oGreenPointKYC->get($aLender['id_client'], 'id_client')) {
+                    $this->aGreenPointStatus[$aLender['id_client']] = $oGreenPointKYC->status;
+                    $oGreenPointKYC->unsetData();
                 }
             }
         }

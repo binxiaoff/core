@@ -450,10 +450,9 @@ class clients extends clients_crud
 
     /**
      * @param string $sLastStatus list of last status to use separated by a column
-     * @param string $sWhere additional condition to filter result lik: date
      * @return array
      */
-    public function selectLendersByLastStatus($sLastStatus = '', $sWhere = '')
+    public function selectLendersByLastStatus($sLastStatus = '')
     {
         $sSql = '
             SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
@@ -475,16 +474,11 @@ class clients extends clients_crud
         if (false === empty($sLastStatus)) {
             $sSql .= ' AND cs.status IN (' . $sLastStatus . ' ) ';
         }
-        if (false === empty($sWhere)) {
-            $sSql .= ' AND ' . $sWhere;
-        }
-
         $oResult = $this->bdd->query($sSql);
         $aResult = array();
         while ($aRecord = $this->bdd->fetch_assoc($oResult)) {
             $aResult[$aRecord['id_client']] = $aRecord;
         }
-        unset($oResult);
         return $aResult;
     }
 

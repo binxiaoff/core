@@ -55,22 +55,21 @@
             <tbody>
             <?php
             $i      = 1;
-            $sStyle = 'border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; ';
             foreach ($this->lPreteurs as $c) {
                 if (isset($this->aGreenPointStatus[$c['id_client']])) {
                     $sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
                     if (preg_match('/^[8-9]{3}$/', $sGreenPointStatus)) {
-                        $sStyle .= 'background-color: #14892c;';
+                        $sBGColor = '#14892c;';
                     } else {
                         if (preg_match('/[1-7]+/', $sGreenPointStatus)) {
-                            $sStyle .= 'background-color: #f79232;';
+                            $sBGColor = '#f79232;';
                         } else {
-                            $sStyle .= 'background-color: #ff0100;';
+                            $sBGColor = '#ff0100;';
                         }
                     }
                 } else {
                     $sGreenPointStatus = 'Non contrôlé';
-                    $sStyle .= 'background-color: #ff0100;'; //Red
+                    $sBGColor = '#ff0100;';
                 }
 
                 // Solde du compte preteur
@@ -91,12 +90,13 @@
 
                 if ($c['type_transfert'] == 1) {
                     $val = 'Virement';
-                } else $val = $this->ficelle->formatNumber($solde) . ' €'
-
+                } else {
+                    $val = $this->ficelle->formatNumber($solde) . ' €';
+                }
                 ?>
 
                 <tr class="<?= ($i % 2 == 1 ? '' : 'odd') ?> ">
-                    <td align="center" style="<?= $sStyle ?>" title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
+                    <td align="center" style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
                     <td><?= $nom ?></td>
                     <td><?= $prenom ?></td>
                     <td align="center"><?= date('d/m/Y', strtotime($c['added'])) ?></td>
@@ -104,7 +104,7 @@
                     <td align="center"><?= $c['label_status'] ?></td>
                     <td align="center">
                         <?
-                        if (in_array($c['status_client'], array(10, 40, 50))) {
+                        if (in_array($c['status_client'], array(clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION))) {
                             ?>
                             <a href="<?= $this->lurl ?>/preteurs/edit_preteur/<?= $c['id_lender'] ?>" class="btn_link" style="padding: 3px;">Contrôler</a><?
                         } else {
