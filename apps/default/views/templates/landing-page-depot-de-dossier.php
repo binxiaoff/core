@@ -33,9 +33,15 @@
     </style>
 </head>
 <body>
+<?php if (strstr($_SERVER['HTTP_HOST'], 'dev.corp') || strstr($_SERVER['HTTP_HOST'], 'demo.corp') || strstr($_SERVER['HTTP_HOST'], 'dev.www')) {
+    $sGTMEnv = 'GTM-W2WQKW';
+} else {
+    $sGTMEnv = 'GTM-MB66VL';
+}
+?>
     <!-- Google Tag Manager -->
     <noscript>
-        <iframe src="//www.googletagmanager.com/ns.html?id=<?= $this->google_tag_manager ?>" height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        <iframe src="//www.googletagmanager.com/ns.html?id=<?= $sGTMEnv ?>" height="0" width="0" style="display:none;visibility:hidden"></iframe>
     </noscript>
     <script>(function (w, d, s, l, i) {
             w[l] = w[l] || [];
@@ -47,7 +53,7 @@
             j.async = true;
             j.src = '//www.googletagmanager.com/gtm.js?id=' + i + dl;
             f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', '<?= $this->google_tag_manager ?>');</script>
+        })(window, document, 'script', 'dataLayer', '<?= $sGTMEnv ?>');</script>
     <!-- End Google Tag Manager -->
 <div class="shell page-landing">
     <div class="container cf">
