@@ -188,7 +188,7 @@ class cronController extends bootstrap
 
             foreach ($aProjectToFund as $aProject) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Do process pre-publish on project ID: ' . $oProject->id_project);
-                
+
                 if ($oProject->get($aProject['id_project'])) {
                     $oProjectManager->prePublish($oProject);
                 }
@@ -257,7 +257,7 @@ class cronController extends bootstrap
             foreach ($aProjectsList as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
                     $oEndDate = $oProjectManager->getProjectEndDate($oProject);
-                    $oNow = new \DateTime();
+                    $oNow     = new \DateTime();
 
                     $bFunded = $oProjectManager->isFunded($oProject);
 
@@ -268,7 +268,6 @@ class cronController extends bootstrap
                     if ($oEndDate > $oNow) {
                         $oProjectManager->setLogger($this->oLogger);
                         $oProjectManager->checkBids($oProject);
-
                         $oProjectManager->autoBid($oProject);
                     } else {
                         $oProjectManager->setLogger($oLoggerEndProject);
@@ -277,10 +276,8 @@ class cronController extends bootstrap
 
                         $bHasProjectFinished = true;
 
-                        // Fundé
                         if ($bFunded) {
                             $oProjectManager->buildLoans($oProject);
-
                             $oProjectManager->createRepaymentSchedule($oProject);
                             $oProjectManager->createPaymentSchedule($oProject);
 

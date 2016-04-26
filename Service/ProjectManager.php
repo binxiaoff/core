@@ -88,9 +88,7 @@ class ProjectManager
         $this->checkAutoBidBalance($oProject);
         $this->autoBid($oProject);
 
-        $bFunded = $this->isFunded($oProject);
-
-        if ($bFunded) {
+        if ($this->isFunded($oProject)) {
             $this->markAsFunded($oProject);
         }
 
@@ -789,10 +787,8 @@ class ProjectManager
     public function isFunded(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
-
+        $oBid      = Loader::loadData('bids');
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
-
         if ($iBidTotal >= $oProject->amount) {
             return true;
         }
@@ -803,13 +799,12 @@ class ProjectManager
     public function markAsFunded(\projects $oProject)
     {
         if ($oProject->status_solde == 0) {
-            $oFunded = new \DateTime();
+            $oFunded    = new \DateTime();
             $oPublished = new \DateTime($oProject->date_publication_full);
-
             if ($oFunded < $oPublished) {
                 $oFunded = $oPublished;
             }
-            
+
             $oProject->date_funded  = $oFunded->format('Y-m-d H:i:s');
             $oProject->status_solde = 1;
             $oProject->update();
