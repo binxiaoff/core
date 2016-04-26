@@ -187,6 +187,8 @@ class cronController extends bootstrap
             $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= (NOW() + INTERVAL 15 MINUTE)", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
+                $this->oLogger->addRecord(ULogger::INFO, 'Do process pre-publish on project ID: ' . $oProject->id_project);
+                
                 if ($oProject->get($aProject['id_project'])) {
                     $oProjectManager->prePublish($oProject);
                 }
