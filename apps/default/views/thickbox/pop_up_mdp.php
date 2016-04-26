@@ -33,7 +33,10 @@ $('#email_mdp').keypress(function(e) {
     }
 })
 
-$('.mdp_lost').click(sendRequest);
+$('.btn.btn-medium.mdp_lost').click(function() {
+		sendRequest();
+	}
+);
 
 var sendRequest = function() {
     var email = $("#email_mdp").val();
