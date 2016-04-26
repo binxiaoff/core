@@ -6556,7 +6556,6 @@ class cronController extends bootstrap
             }
         }
         if ($bDebug) {
-            $oLogger = new ULogger('Validate attachments', $this->logPath, 'greenPoint.log');
             $oLogger->addRecord(ULogger::DEBUG, '************************************* End GreenPoint Validation *************************************');
         }
     }
