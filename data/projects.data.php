@@ -772,7 +772,7 @@ class projects extends projects_crud
 
     public function getPreviousProjectsWithSameSiren($sSiren, $sAdded)
     {
-        $sQuery = 'SELECT projects.id_project FROM projects inner join companies on projects.id_company = companies.id_company where companies.siren = ' . $sSiren . ' AND projects.added <= "' . $sAdded . '"';
+        $sQuery = 'SELECT projects.id_project FROM projects INNER JOIN companies ON projects.id_company = companies.id_company WHERE companies.siren = ' . $sSiren . ' AND projects.added <= "' . $sAdded . '"';
 
         $aProjects = array();
         $rResult   = $this->bdd->query($sQuery);

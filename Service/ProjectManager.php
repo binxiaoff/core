@@ -796,7 +796,7 @@ class ProjectManager
         }
     }
 
-    private function stopRemindersOnProject(\projects $oProject)
+    public function stopRemindersOnProject(\projects $oProject)
     {
         $oProject->stop_relances = '1';
         $oProject->update();
