@@ -3400,6 +3400,14 @@ class dossiersController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        echo '["Company", "AbCompany", "cdCompany", "zacompany"]';
+        $aNames = array();
+
+        if ($sTerm = filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)) {
+            /** @var \companies $oCompanies */
+            $oCompanies = $this->loadData('companies');
+            $aNames = $oCompanies->searchByName($sTerm);
+        }
+
+        echo json_encode($aNames);
     }
 }
