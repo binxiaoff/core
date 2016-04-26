@@ -3393,6 +3393,13 @@ class dossiersController extends bootstrap
             $aStatus['avg_days'] = round($aStatus['total_days'] / $aStatus['count'], 1);
             return $aStatus;
         }, $aStatus);
+    }
 
+    public function _autocompleteCompanyName()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        echo '["Company", "AbCompany", "cdCompany", "zacompany"]';
     }
 }

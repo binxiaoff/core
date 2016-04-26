@@ -36,6 +36,13 @@
             $('#commercial option[value="0"]').prop('selected', true);
         });
 
+        $('#raison-sociale').autocomplete({
+          source: '<?= $this->url ?>/dossiers/autocompleteCompanyName/',
+          minLength: 2,
+          delay:100
+        })
+
+
         $(".tablesorter").tablesorter({headers: {9: {sorter: false}, 5: {sorter: 'digit'}}});
 
         $('#displayPager').html($('#pageActive').val() + '/' + nbPages);
@@ -266,4 +273,3 @@
     <?php } ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>
-
