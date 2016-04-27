@@ -7,16 +7,17 @@ use Psr\Cache\CacheItemPoolInterface;
  * Class ClientSettingsManager
  * @package Unilend\Service
  */
-class ClientSettingsManager extends DataService
+class ClientSettingsManager
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 
     private $oCachePool;
 
-    public function __construct(CacheItemPoolInterface $oCachePool)
+    public function __construct(EntityManager $oEntityManager, CacheItemPoolInterface $oCachePool)
     {
-        $this->oCachePool = $oCachePool;
-        $this->loadData('client_setting_type'); //load for use of constants
+        $this->oEntityManager = $oEntityManager;
+        $this->oCachePool     = $oCachePool;
+        $this->oEntityManager->getRepository('client_setting_type'); //load for use of constants
     }
 
     /**
@@ -29,7 +30,7 @@ class ClientSettingsManager extends DataService
     public function saveClientSetting(\clients $oClient, $iSettingType, $sValue)
     {
         /** @var \client_settings $oClientSettings */
-        $oClientSettings = $this->loadData('client_settings');
+        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
 
         if ($oClientSettings->get($oClient->id_client, 'id_type = ' . $iSettingType . ' AND id_client')) {
             if ($sValue != $oClientSettings->value) {
@@ -60,7 +61,7 @@ class ClientSettingsManager extends DataService
     public function getSetting(\clients $oClient, $iSettingType)
     {
         /** @var \client_settings $oClientSettings */
-        $oClientSettings = $this->loadData('client_settings');
+        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
         $oCachedItem     = $this->oCachePool->get(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
 
         if (false === $oCachedItem->isHit()) {

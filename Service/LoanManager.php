@@ -8,11 +8,17 @@ use Unilend\librairies\ULogger;
  * Class LoanManager
  * @package Unilend\Service
  */
-class LoanManager extends DataService
+class LoanManager
 {
     /** @var  ULogger */
     private $oLogger;
+    /** @var EntityManager  */
+    private $oEntityManager;
 
+    public function __construct(EntityManager $oEntityManager)
+    {
+        $this->oEntityManager = $oEntityManager;
+    }
     /**
      * @param ULogger $oLogger
      */
@@ -33,7 +39,7 @@ class LoanManager extends DataService
             return false;
         }
         /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = $this->loadData('accepted_bids');
+        $oAcceptedBid = $this->oEntityManager->getRepository('accepted_bids');
         foreach ($oLoan->getAcceptedBids() as $aAcceptedBid) {
             $oAcceptedBid->unsetData();
             $oAcceptedBid->id_bid  = $aAcceptedBid['bid_id'];

@@ -8,13 +8,14 @@ use Unilend\core\Loader;
  * @package Unilend\Service
  */
 
-class ClientManager extends DataService
+class ClientManager
 {
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
 
-    public function __construct(ClientSettingsManager $oClientSettingsManager)
+    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager)
     {
+        $this->oEntityManager         = $oEntityManager;
         $this->oClientSettingsManager = $oClientSettingsManager;
     }
 
@@ -38,7 +39,7 @@ class ClientManager extends DataService
     public function isAcceptedCGV(\clients $oClient, $iLegalDocId)
     {
         /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
-        $oAcceptationLegalDocs = $this->loadData('acceptations_legal_docs');
+        $oAcceptationLegalDocs = $this->oEntityManager->getRepository('acceptations_legal_docs');
         return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
     }
 

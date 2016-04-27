@@ -40,7 +40,7 @@ abstract class Controller extends ContainerAware
 
     protected function initialize()
     {
-        $this->setDataBase();
+        $this->bdd = $this->get('database_connection');
 
         $this->included_js  = array();
         $this->included_css = array();
@@ -81,8 +81,6 @@ abstract class Controller extends ContainerAware
             $_SESSION = array();
         }
     }
-
-    abstract public function setDatabase();
 
     public function _default()
     {
@@ -426,7 +424,7 @@ abstract class Controller extends ContainerAware
 
     public function loadData($object, $params = array())
     {
-        return \Unilend\core\Loader::loadData($object, $params, $this->bdd);
+        return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
     }
 
     //Cree une nouvelle instance d'une librairie
@@ -437,11 +435,7 @@ abstract class Controller extends ContainerAware
 
     public function get($service)
     {
-        $service = $this->container->get($service);
-        if (is_subclass_of($service, '\Unilend\Service\DataService')) {
-            $service->setDBConn($this->bdd);
-        }
-        return $service;
+        return $this->container->get($service);
     }
 
     //Charge un fichier js dans le tableau des js

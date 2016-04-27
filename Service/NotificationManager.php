@@ -10,26 +10,27 @@ namespace Unilend\Service;
 
 use Unilend\core\Loader;
 
-class NotificationManager extends DataService
+class NotificationManager
 {
     /** @var MailerManager */
     private $oMailerManager;
 
-    public function __construct(MailerManager $oMailerManager)
+    public function __construct(EntityManager $oEntityManager, MailerManager $oMailerManager)
     {
+        $this->oEntityManager = $oEntityManager;
         $this->oMailerManager = $oMailerManager;
     }
 
     public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \notifications $oNotification */
-        $oNotification = $this->loadData('notifications');
+        $oNotification = $this->oEntityManager->getRepository('notifications');
         /** @var \clients_gestion_notifications $oNotificationSettings */
-        $oNotificationSettings = $this->loadData('clients_gestion_notifications');
+        $oNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
+        $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
 
         $iLenderId = '';
         if ($oLenderAccount->get($iClientId, 'id_client_owner')) {

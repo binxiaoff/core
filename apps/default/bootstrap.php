@@ -471,15 +471,6 @@ class bootstrap extends Controller
         }
     }
 
-    public function setDatabase()
-    {
-        $this->bdd = $this->get('unilend.dbal.default_connection');
-    }
-    public function execute()
-    {
-        parent::execute();
-    }
-
     public function handlePartenaire($params)
     {
         // Chargement des datas

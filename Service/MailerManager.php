@@ -4,7 +4,7 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
 
-class MailerManager extends DataService
+class MailerManager
 {
     /** @var \settings */
     private $oSettings;
@@ -39,16 +39,21 @@ class MailerManager extends DataService
     private $sLUrl;
     private $sFUrl;
 
-    public function __construct()
+    /** @var EntityManager  */
+    private $oEntityManager;
+
+    public function __construct(EntityManager $oEntityManager)
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oSettings  = $this->loadData('settings');
-        $this->oMailFiler = $this->loadData('mails_filer');
-        $this->oMailText  = $this->loadData('mails_text');
+        $this->oEntityManager = $oEntityManager;
 
-        $this->oNMP       = $this->loadData('nmp');
-        $this->oNMPDesabo = $this->loadData('nmp_desabo');
+        $this->oSettings  = $this->oEntityManager->getRepository('settings');
+        $this->oMailFiler = $this->oEntityManager->getRepository('mails_filer');
+        $this->oMailText  = $this->oEntityManager->getRepository('mails_text');
+
+        $this->oNMP       = $this->oEntityManager->getRepository('nmp');
+        $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
 
         $this->oTNMP       = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail      = Loader::loadLib('email');
@@ -75,17 +80,17 @@ class MailerManager extends DataService
     public function sendBidConfirmation(\notifications $oNotification)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \projects $oProject */
-        $oProject = $this->loadData('projects');
+        $oProject = $this->oEntityManager->getRepository('projects');
         /** @var \tree $oTree */
-        $oTree = $this->loadData('tree');
+        $oTree = $this->oEntityManager->getRepository('tree');
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
 
         if ($oLenderAccount->get($oNotification->id_lender) && $oBid->get($oNotification->id_bid) && $oClient->get($oLenderAccount->id_client_owner)) {
             if (empty($oBid->id_autobid)) {
@@ -146,15 +151,15 @@ class MailerManager extends DataService
     public function sendFundFailedToLender(\projects $oProject)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \transactions $oTransaction */
-        $oTransaction = $this->loadData('transactions');
+        $oTransaction = $this->oEntityManager->getRepository('transactions');
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
 
         $aBidList = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC, added ASC');
         foreach ($aBidList as $aBid) {
@@ -216,11 +221,11 @@ class MailerManager extends DataService
     public function sendFundedToBorrower(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \clients $oBorrower */
-        $oBorrower = $this->loadData('clients');
+        $oBorrower = $this->oEntityManager->getRepository('clients');
 
         // EMAIL EMPRUNTEUR FUNDE //
         if ($this->oLogger instanceof ULogger) {
@@ -335,11 +340,11 @@ class MailerManager extends DataService
     public function sendFundedAndFinishedToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \clients $oBorrower */
-        $oBorrower = $this->loadData('clients');
+        $oBorrower = $this->oEntityManager->getRepository('clients');
         /** @var \echeanciers_emprunteur $oBorrowerPaymentSchedule */
-        $oBorrowerPaymentSchedule = $this->loadData('echeanciers_emprunteur');
+        $oBorrowerPaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
@@ -398,11 +403,11 @@ class MailerManager extends DataService
     public function sendFundedToStaff(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \loans $oLoan */
-        $oLoan = $this->loadData('loans');
+        $oLoan = $this->oEntityManager->getRepository('loans');
 
         $oCompany->get($oProject->id_company, 'id_company');
 
@@ -453,17 +458,17 @@ class MailerManager extends DataService
     public function sendBidAccepted(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan = $this->loadData('loans');
+        $oLoan = $this->oEntityManager->getRepository('loans');
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \echeanciers $oPaymentSchedule */
-        $oPaymentSchedule = $this->loadData('echeanciers');
+        $oPaymentSchedule = $this->oEntityManager->getRepository('echeanciers');
         /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = $this->loadData('accepted_bids');
+        $oAcceptedBid = $this->oEntityManager->getRepository('accepted_bids');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $aLendersIds       = $oLoan->getProjectLoansByLender($oProject->id_project);
         $iNbLenders        = count($aLendersIds);
@@ -587,17 +592,17 @@ class MailerManager extends DataService
     public function sendBidRejected(\notifications $oNotification)
     {
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \projects $oProject */
-        $oProject = $this->loadData('projects');
+        $oProject = $this->oEntityManager->getRepository('projects');
         /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->loadData('autobid');
+        $oAutoBid = $this->oEntityManager->getRepository('autobid');
 
         $oBid->get($oNotification->id_bid);
         $oLenderAccount->get($oBid->id_lender_account);
@@ -608,7 +613,7 @@ class MailerManager extends DataService
             $oCompany->get($oProject->id_company);
 
             /** @var \settings $oSettings */
-            $oSettings = $this->loadData('settings');
+            $oSettings = $this->oEntityManager->getRepository('settings');
             $oEndDate  = new \DateTime($oProject->date_retrait_full);
             if ($oProject->date_fin != '0000-00-00 00:00:00') {
                 $oEndDate = new \DateTime($oProject->date_fin);
@@ -691,9 +696,9 @@ class MailerManager extends DataService
     public function sendFundFailedToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
@@ -736,13 +741,13 @@ class MailerManager extends DataService
     public function sendProjectFinishedToStaff(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan = $this->loadData('loans');
+        $oLoan = $this->oEntityManager->getRepository('loans');
         /** @var \companies $oCompany */
-        $oCompany = $this->loadData('companies');
+        $oCompany = $this->oEntityManager->getRepository('companies');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
 
         $oCompany->get($oProject->id_company, 'id_company');
         $oClient->get($oCompany->id_client_owner, 'id_client');
@@ -792,9 +797,9 @@ class MailerManager extends DataService
     public function sendAutoBidBalanceInsufficient(\notifications $oNotification)
     {
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $oLenderAccount->get($oNotification->id_lender);
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
@@ -852,11 +857,11 @@ class MailerManager extends DataService
     public function sendAutoBidBalanceLow(\notifications $oNotification)
     {
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \transactions $oTransaction */
-        $oTransaction = $this->loadData('transactions');
+        $oTransaction = $this->oEntityManager->getRepository('transactions');
 
         $oLenderAccount->get($oNotification->id_lender);
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
@@ -916,9 +921,9 @@ class MailerManager extends DataService
     public function sendFirstAutoBidActivation(\notifications $oNotification)
     {
         /** @var \clients $oClient */
-        $oClient                = $this->loadData('clients');
+        $oClient                = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount         = $this->loadData('lenders_accounts');
+        $oLenderAccount         = $this->oEntityManager->getRepository('lenders_accounts');
 
         $oLenderAccount->get($oNotification->id_lender);
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
@@ -1026,7 +1031,7 @@ class MailerManager extends DataService
     private function getWeightedAvgRate(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         $oProjectStatus->getLastStatut($oProject->id_project);
         if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
             return self::getWeightedAvgRateFromBid($oProject);
@@ -1040,7 +1045,7 @@ class MailerManager extends DataService
     private function getWeightedAvgRateFromLoan(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan          = $this->loadData('loans');
+        $oLoan          = $this->oEntityManager->getRepository('loans');
         $iInterestTotal = 0;
         $iCapitalTotal  = 0;
         foreach ($oLoan->select('id_project = ' . $oProject->id_project) as $aLoan) {
@@ -1053,7 +1058,7 @@ class MailerManager extends DataService
     private function getWeightedAvgRateFromBid(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid           = $this->loadData('bids');
+        $oBid           = $this->oEntityManager->getRepository('bids');
         $iInterestTotal = 0;
         $iCapitalTotal  = 0;
         foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aBid) {
@@ -1066,7 +1071,7 @@ class MailerManager extends DataService
     private function getActivationTime(\clients $oClient)
     {
         /** @var \client_settings $oClientSettings */
-        $oClientSettings = $this->loadData('client_settings');
+        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
 
         if ($oClientSettings->get($oClient->id_client, 'id_type = ' . \client_setting_type::TYPE_AUTO_BID_SWITCH . ' AND id_client')) {
             $oActivationTime = new \DateTime($oClientSettings->added);

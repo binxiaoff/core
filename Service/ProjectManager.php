@@ -11,7 +11,7 @@ namespace Unilend\Service;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
 
-class ProjectManager extends DataService
+class ProjectManager
 {
     /** @var NotificationManager */
     private $oNotificationManager;
@@ -46,17 +46,18 @@ class ProjectManager extends DataService
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
-    public function __construct(BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager)
+    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager)
     {
         $this->aConfig = Loader::loadConfig();
 
+        $this->oEntityManager          = $oEntityManager;
         $this->oBidManager             = $oBidManager;
         $this->oLoanManager            = $oLoanManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
 
-        $this->oNMP       = $this->loadData('nmp');
-        $this->oNMPDesabo = $this->loadData('nmp_desabo');
+        $this->oNMP       = $this->oEntityManager->getRepository('nmp');
+        $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
 
         $this->oTNMP       = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail      = Loader::loadLib('email');
@@ -76,7 +77,7 @@ class ProjectManager extends DataService
     public function prePublish(\projects $oProject)
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = $this->loadData('projects_status_history');
+        $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         $this->checkAutoBidBalance($oProject);
         $this->autoBid($oProject);
         $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject->id_project);
@@ -85,16 +86,16 @@ class ProjectManager extends DataService
     public function publish(\projects $oProjects)
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = $this->loadData('projects_status_history');
+        $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $oProjects->id_project);
     }
 
     public function checkBids(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \bids_logs $oBidLog */
-        $oBidLog = $this->loadData('bids_logs');
+        $oBidLog = $this->oEntityManager->getRepository('bids_logs');
 
         $aLogContext      = array();
         $bBidsLogs        = false;
@@ -158,7 +159,7 @@ class ProjectManager extends DataService
     public function autoBid(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
             if ($oProjectStatus->status == \projects_status::A_FUNDER) {
                 $this->bidAllAutoBid($oProject);
@@ -171,7 +172,7 @@ class ProjectManager extends DataService
     private function bidAllAutoBid(\projects $oProject)
     {
         /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->loadData('autobid');
+        $oAutoBid = $this->oEntityManager->getRepository('autobid');
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
@@ -187,7 +188,7 @@ class ProjectManager extends DataService
             }
 
             /** @var \bids $oBid */
-            $oBid = $this->loadData('bids');
+            $oBid = $this->oEntityManager->getRepository('bids');
             $oBid->shuffleAutoBidOrder($oProject->id_project);
         }
     }
@@ -195,11 +196,11 @@ class ProjectManager extends DataService
     public function checkAutoBidBalance(\projects $oProject)
     {
         /** @var \transactions $oTransaction */
-        $oTransaction = $this->loadData('transactions');
+        $oTransaction = $this->oEntityManager->getRepository('transactions');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
@@ -241,9 +242,9 @@ class ProjectManager extends DataService
     private function reBidAutoBid(\projects $oProject, $iMode)
     {
         /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
 
         $oSettings->get('Auto-bid step', 'type');
         $fStep        = (float)$oSettings->value;
@@ -261,7 +262,7 @@ class ProjectManager extends DataService
     private function reBidAutoBidDeeply(\projects $oProject, $iMode)
     {
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         $this->checkBids($oProject);
         $aRefusedAutoBid = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY, 1);
         if (false === empty($aRefusedAutoBid)) {
@@ -273,13 +274,13 @@ class ProjectManager extends DataService
     public function buildLoans(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \loans $oLoan */
-        $oLoan = $this->loadData('loans');
+        $oLoan = $this->oEntityManager->getRepository('loans');
         /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = $this->loadData('projects_status_history');
+        $oProjectStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
 
@@ -401,9 +402,9 @@ class ProjectManager extends DataService
     public function treatFundFailed(\projects $oProject)
     {
         /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = $this->loadData('projects_status_history');
+        $oProjectStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         /** @var \bids $oBid */
-        $oBid = $this->loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
 
         // On passe le projet en funding ko
         $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject->id_project);
@@ -432,19 +433,19 @@ class ProjectManager extends DataService
         ini_set('memory_limit', '512M');
 
         /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
         /** @var \loans $oLoan */
-        $oLoan = $this->loadData('loans');
+        $oLoan = $this->oEntityManager->getRepository('loans');
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \echeanciers $oRepaymentSchedule */
-        $oRepaymentSchedule = $this->loadData('echeanciers');
+        $oRepaymentSchedule = $this->oEntityManager->getRepository('echeanciers');
         /** @var \clients_adresses $oClientAdresse */
-        $oClientAdresse = $this->loadData('clients_adresses');
+        $oClientAdresse = $this->oEntityManager->getRepository('clients_adresses');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
 
         $oSettings->get('Commission remboursement', 'type');
         $commission = $oSettings->value;
@@ -627,11 +628,11 @@ class ProjectManager extends DataService
         ini_set('memory_limit', '512M');
 
         /** @var \echeanciers_emprunteur $oPaymentSchedule */
-        $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
+        $oPaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $oRepaymentSchedule */
-        $oRepaymentSchedule = $this->loadData('echeanciers');
+        $oRepaymentSchedule = $this->oEntityManager->getRepository('echeanciers');
         /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
 
         $oSettings->get('Commission remboursement', 'type');
         $fCommissionRate = $oSettings->value;
@@ -682,7 +683,7 @@ class ProjectManager extends DataService
     public function getWeightedAvgRate(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         $oProjectStatus->getLastStatut($oProject->id_project);
         if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
             return self::getWeightedAvgRateFromBid($oProject);
@@ -696,7 +697,7 @@ class ProjectManager extends DataService
     private function getWeightedAvgRateFromLoan(\projects $oProject)
     {
         /** @var \loans $oLoan */
-        $oLoan          = $this->loadData('loans');
+        $oLoan          = $this->oEntityManager->getRepository('loans');
         $iInterestTotal = 0;
         $iCapitalTotal  = 0;
         foreach ($oLoan->select('id_project = ' . $oProject->id_project) as $aLoan) {
@@ -709,7 +710,7 @@ class ProjectManager extends DataService
     private function getWeightedAvgRateFromBid(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid           = $this->loadData('bids');
+        $oBid           = $this->oEntityManager->getRepository('bids');
         $iInterestTotal = 0;
         $iCapitalTotal  = 0;
         foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aBid) {
@@ -722,7 +723,7 @@ class ProjectManager extends DataService
     public function getProjectEndDate(\projects $oProject)
     {
         /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
         $oEndDate  = new \DateTime($oProject->date_retrait_full);
         if ($oProject->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($oProject->date_fin);

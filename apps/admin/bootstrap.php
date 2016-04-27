@@ -2,10 +2,7 @@
 
 class bootstrap extends Controller
 {
-    public function setDatabase()
-    {
-        $this->bdd = $this->get('unilend.dbal.admin_connection');
-    }
+
     public function initialize()
     {
         parent::initialize();

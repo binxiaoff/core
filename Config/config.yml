@@ -14,22 +14,7 @@ doctrine:
                 user:     "%database_user%"
                 password: "%database_password%"
                 charset:  "UTF8"
-            admin:
-                driver:   "%admin.database_driver%"
-                host:     "%admin.database_host%"
-                port:     "%admin.database_port%"
-                dbname:   "%admin.database_name%"
-                user:     "%admin.database_user%"
-                password: "%admin.database_password%"
-                charset:  "UTF8"
-            cron:
-                driver:   "%cron.database_driver%"
-                host:     "%cron.database_host%"
-                port:     "%cron.database_port%"
-                dbname:   "%cron.database_name%"
-                user:     "%cron.database_user%"
-                password: "%cron.database_password%"
-                charset:  "UTF8"
+                wrapper_class: Unilend\Library\Bridge\Doctrine\DBAL\Connection
 
 cache_adapter:
     providers:
@@ -49,6 +34,8 @@ monolog:
             max_files: 10
 
 swiftmailer:
+    spool:
+        type: db
     transport: '%mailer_transport%'
     host:      '%mailer_host%'
     username:  '%mailer_user%'

@@ -8,7 +8,7 @@ use Unilend\librairies\ULogger;
  * Class BidManager
  * @package Unilend\Service
  */
-class BidManager extends DataService
+class BidManager
 {
     const MODE_REBID_AUTO_BID_CREATE = 1;
     const MODE_REBID_AUTO_BID_UPDATE = 2;
@@ -40,12 +40,12 @@ class BidManager extends DataService
     /** @var LenderManager */
     private $oLenderManager;
 
-    public function __construct(NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager)
+    public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager)
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oNMP       = $this->loadData('nmp');
-        $this->oNMPDesabo = $this->loadData('nmp_desabo');
+        $this->oNMP       = $this->oEntityManager->getRepository('nmp');
+        $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
 
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
@@ -53,6 +53,7 @@ class BidManager extends DataService
         $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail = Loader::loadLib('email');
 
+        $this->oEntityManager          = $oEntityManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
         $this->oLenderManager          = $oLenderManager;
@@ -69,17 +70,17 @@ class BidManager extends DataService
     public function bid(\bids $oBid)
     {
         /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \transactions $oTransaction */
-        $oTransaction = $this->loadData('transactions');
+        $oTransaction = $this->oEntityManager->getRepository('transactions');
         /** @var \wallets_lines $oWalletsLine */
-        $oWalletsLine = $this->loadData('wallets_lines');
+        $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
+        $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
 
-        $this->loadData('transactions_types'); //load for constant use
+        $this->oEntityManager->getRepository('transactions_types'); //load for constant use
 
         $oSettings->get('Pret min', 'type');
         $iAmountMin = (int)$oSettings->value;
@@ -195,9 +196,9 @@ class BidManager extends DataService
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
-            $oBid = $this->loadData('bids');
+            $oBid = $this->oEntityManager->getRepository('bids');
             /** @var \lenders_accounts $LenderAccount */
-            $oLenderAccount = $this->loadData('lenders_accounts');
+            $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
             if ($oLenderAccount->get($oAutoBid->id_lender) && $this->oAutoBidSettingsManager->isOn($oLenderAccount)) {
                 $oBid->id_autobid        = $oAutoBid->id_autobid;
@@ -242,11 +243,11 @@ class BidManager extends DataService
     public function reBidAutoBidOrReject(\bids $oBid, $fCurrentRate, $iMode)
     {
         /** @var \autobid $oAutoBid */
-        $oAutoBid = $this->loadData('autobid');
+        $oAutoBid = $this->oEntityManager->getRepository('autobid');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
-        $oClient = $this->loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
             if ($oAutoBid->rate_min <= $fCurrentRate
@@ -282,13 +283,13 @@ class BidManager extends DataService
     private function creditRejectedBid($oBid, $fAmount)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \transactions $oTransaction */
-        $oTransaction = $this->loadData('transactions');
+        $oTransaction = $this->oEntityManager->getRepository('transactions');
         /** @var \wallets_lines $oWalletsLine */
-        $oWalletsLine = $this->loadData('wallets_lines');
+        $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
+        $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
 
         $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
         $fAmountX100 = $fAmount * 100;
@@ -348,7 +349,7 @@ class BidManager extends DataService
     private function notificationRejection(\bids $oBid, \transactions $oTransaction)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         if ($oLenderAccount->get($oBid->id_lender_account)) {
             $this->oNotificationManager->create(
                 \notifications::TYPE_BID_REJECTED,

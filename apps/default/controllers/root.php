@@ -10,6 +10,23 @@ class rootController extends bootstrap
 
     public function _default()
     {
+/*
+        $varMail = array(
+            'surl'          => 'http://dev.www.unilend.fr',
+            'url'           => 'http://dev.www.unilend.fr',
+            'prenom'        => 'bin',
+            'login'         => 'bin.xiao@unilend.fr',
+            'link_password' => 'http://dev.www.unilend.fr/pwd',
+            'lien_fb'       => 'http://dev.www.unilend.fr',
+            'lien_tw'       => 'http://dev.www.unilend.fr',
+        );
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', 'fr', $varMail);
+        $message->setTo('bin.xiao@unilend.fr');
+        $mailer = $this->get('mailer');
+        $mailer->send($message);die;
+*/
+
+        $this->get('unilend.swiftmailer.db_spool')->flushQueue($this->get('unilend.swiftmailer.transport.mailjet'));die;
         $this->fireCache();
 
         // ajout du slash car capital rajout un Get
@@ -157,7 +174,7 @@ class rootController extends bootstrap
 
             // Recuperation des positions des blocs
             $oCachedItem  = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
-            
+
             if (false === $oCachedItem->isHit()) {
                 $this->bloc_content    = array();
                 $this->bloc_complement = array();
