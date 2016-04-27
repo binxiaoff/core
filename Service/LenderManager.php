@@ -42,9 +42,9 @@ class LenderManager
     public function addLendersToLendersAccountsStatQueue(array $aLenders)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
-        $oLendersAccountsStatsQueue = Loader::loadData('lenders_accounts_stats_queue');
+        $oLendersAccountsStatsQueue = $this->oEntityManager->getRepository('lenders_accounts_stats_queue');
 
         foreach ($aLenders as $aLender) {
             if (array_key_exists('id_lender', $aLender) && $oLenderAccount->get($aLender['id_lender'], 'id_lender_account')

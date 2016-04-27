@@ -50,9 +50,9 @@ class ClientManager
     public function changeClientStatusTriggeredByClientAction($iClientId, $sContent)
     {
         /** @var \clients_status_history $oClientStatusHistory */
-        $oClientStatusHistory = Loader::loadData('clients_status_history');
+        $oClientStatusHistory = $this->oEntityManager->getRepository('clients_status_history');
         /** @var \clients_status $oLastClientStatus */
-        $oLastClientStatus = Loader::loadData('clients_status');
+        $oLastClientStatus = $this->oEntityManager->getRepository('clients_status');
         $oLastClientStatus->getLastStatut($iClientId);
 
         switch ($oLastClientStatus->status) {

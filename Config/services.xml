@@ -59,6 +59,10 @@
             <argument type="service" id="memcache.default"/>
         </service>
 
+        <service id="unilend.service.irr_manager" class="Unilend\Service\IRRManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
+
         <service id="unilend.service.entity_manager" class="Unilend\Service\EntityManager">
             <argument type="service" id="database_connection"/>
         </service>

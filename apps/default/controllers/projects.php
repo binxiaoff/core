@@ -622,7 +622,7 @@ class projectsController extends bootstrap
         $aAssetsDebts = $oAssetsDebts->select('id_bilan IN (' . implode(', ', $aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $aAnnualAccountsIds) . ') ASC');
 
         /** @var \settings $oSetting */
-        $oSetting = Loader::loadData('settings');
+        $oSetting = $this->loadData('settings');
         $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
         $aFundedCompanies     = explode(',', $oSetting->value);
         $bPreviousRiskProject = in_array($oCompany->id_company, $aFundedCompanies);

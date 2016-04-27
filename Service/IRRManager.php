@@ -24,11 +24,15 @@ class IRRManager
 
     /** @var array */
     private $aConfig;
+    
+    /** @var EntityManager  */
+    private $oEntityManager;
 
-    public function __construct()
+    public function __construct(EntityManager $oEntityManager)
     {
         $this->aConfig = Loader::loadConfig();
         $this->oLogger = new ULogger('Calculate IRR', $this->aConfig['log_path'][$this->aConfig['env']], 'IRR.' . date('Ymd') . '.log');
+        $this->oEntityManager = $oEntityManager;
 
     }
 
@@ -43,7 +47,7 @@ class IRRManager
     public function updateIRRUnilend()
     {
         /** @var \unilend_stats $oUnilendStats */
-        $oUnilendStats = Loader::loadData('unilend_stats');
+        $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
 
         $aLastUnilendIRR = $this->getLastUnilendIRR();
         $oLastIRRDate    = new \DateTime($aLastUnilendIRR['added']);
@@ -98,7 +102,7 @@ class IRRManager
     public function calculateIRRForLender($iLenderId)
     {
         /** @var \lenders_account_stats $oLendersAccountStats */
-        $oLendersAccountStats = Loader::loadData('lenders_account_stats');
+        $oLendersAccountStats = $this->oEntityManager->getRepository('lenders_account_stats');
 
         $fStartSQL  = microtime(true);
         $aValuesIRR = $oLendersAccountStats->getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLenderId);
@@ -121,7 +125,7 @@ class IRRManager
     {
         set_time_limit(1000);
         /** @var \unilend_stats $oUnilendStats */
-        $oUnilendStats = Loader::loadData('unilend_stats');
+        $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
         $fStartSQL  = microtime(true);
         $aValuesIRR = $oUnilendStats->getDataForUnilendIRRUsingProjectsLastStatusMaterialized();
         $this->oLogger->addRecord(ULogger::INFO, 'Unilend - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
@@ -141,9 +145,9 @@ class IRRManager
     public function IRRUnilendNeedsToBeRecalculated($sDate)
     {
         /** @var \lenders_account_stats $oLendersAccountsStats */
-        $oLendersAccountsStats = Loader::loadData('lenders_account_stats');
+        $oLendersAccountsStats = $this->oEntityManager->getRepository('lenders_account_stats');
         /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = Loader::loadData('projects_status_history');
+        $oProjectStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         $aProjectStatusTriggeringChange = array(
             \projects_status::REMBOURSEMENT,
             \projects_status::PROBLEME,
@@ -161,7 +165,7 @@ class IRRManager
     public function getLastUnilendIRR()
     {
         /** @var \unilend_stats $oUnilendStats */
-        $oUnilendStats = Loader::loadData('unilend_stats');
+        $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
         return array_shift($oUnilendStats->select('type_stat = "IRR"', 'added DESC', null, '1'));
     }
 
