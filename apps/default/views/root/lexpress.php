@@ -29,29 +29,14 @@
 <body>
 <script>var dataLayer = [<?= json_encode($this->aDataLayer) ?>];</script>
 <!-- Google Tag Manager -->
-<noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL"
+<noscript><iframe src="//www.googletagmanager.com/ns.html?id=<?= $this->google_tag_manager ?>"
                   height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
         new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
         j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
         '//www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-    })(window,document,'script','dataLayer','GTM-MB66VL');</script>
+    })(window,document,'script','dataLayer','<?= $this->google_tag_manager ?>');</script>
 <!-- End Google Tag Manager -->
-<?php if ($this->google_analytics != '') { ?>
-    <script>
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', '<?=$this->google_analytics?>']);
-        _gaq.push(['_trackPageview']);
-        (function () {
-            var ga = document.createElement('script');
-            ga.type = 'text/javascript';
-            ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(ga, s);
-        })();
-    </script>
-<?php } ?>
 <div class="shell page-landing">
     <div class="container cf">
         <section class="content left">

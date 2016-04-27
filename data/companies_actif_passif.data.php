@@ -99,7 +99,6 @@ class companies_actif_passif extends companies_actif_passif_crud
         $this->capitaux_propres                   = $aBalances[$this->id_bilan]['DL'] + $aBalances[$this->id_bilan]['DO'];
         $this->provisions_pour_risques_et_charges = $aBalances[$this->id_bilan]['CK'] + $aBalances[$this->id_bilan]['DR'];
         $this->amortissement_sur_immo             = $aBalances[$this->id_bilan]['BK'];
-        $this->depreciation_actif_circulant       = $aBalances[$this->id_bilan]['CK'];
         $this->dettes_financieres                 = $aBalances[$this->id_bilan]['DS'] + $aBalances[$this->id_bilan]['DT'] + $aBalances[$this->id_bilan]['DU'] + $aBalances[$this->id_bilan]['DV'];
         $this->dettes_fournisseurs                = $aBalances[$this->id_bilan]['DW'] + $aBalances[$this->id_bilan]['DX'];
         $this->autres_dettes                      = $aBalances[$this->id_bilan]['DY'] + $aBalances[$this->id_bilan]['DZ'] + $aBalances[$this->id_bilan]['EA'];

@@ -478,7 +478,6 @@ class projectsController extends bootstrap
                     $oAssetsDebts->capitaux_propres                   = 0;
                     $oAssetsDebts->provisions_pour_risques_et_charges = 0;
                     $oAssetsDebts->amortissement_sur_immo             = 0;
-                    $oAssetsDebts->depreciation_actif_circulant       = 0;
                     $oAssetsDebts->dettes_financieres                 = 0;
                     $oAssetsDebts->dettes_fournisseurs                = 0;
                     $oAssetsDebts->autres_dettes                      = 0;
@@ -500,7 +499,6 @@ class projectsController extends bootstrap
                 $this->totalAnneePassif[] = $ap['capitaux_propres']
                     + $ap['provisions_pour_risques_et_charges']
                     + $ap['amortissement_sur_immo']
-                    + $ap['depreciation_actif_circulant']
                     + $ap['dettes_financieres']
                     + $ap['dettes_fournisseurs']
                     + $ap['autres_dettes']
@@ -733,12 +731,6 @@ class projectsController extends bootstrap
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['amortissement_sur_immo']);
         }
-        if (false === $bPreviousRiskProject) {
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['depreciation-actif-circulant']);
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['depreciation_actif_circulant']);
-            }
-        }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['dettes-financieres']);
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_financieres']);
@@ -759,7 +751,7 @@ class projectsController extends bootstrap
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-passifs']);
         for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['depreciation_actif_circulant'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
         }
 
         /** @var \PHPExcel_Writer_CSV $oWriter */
