@@ -715,8 +715,6 @@ class dossiersController extends bootstrap
                     /////////////////
                     // REMBOURSEMENT //
                     // si on a le pouvoir
-
-
                     if (
                         isset($_POST['statut_pouvoir'])
                         && $this->projects_pouvoir->get($this->projects->id_project, 'id_project')

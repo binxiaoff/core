@@ -1719,8 +1719,7 @@ class cronController extends bootstrap
                                     $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                                     $this->email->setHTMLBody($texteMail);
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                } elseif (
-                                    isset($r['libelleOpe3']) && strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
+                                } elseif (isset($r['libelleOpe3']) && strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
                                     preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extract);
 
                                     foreach ($extract[0] as $nombre) {
