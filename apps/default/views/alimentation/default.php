@@ -251,7 +251,7 @@
 										<div class="row">
 											 <span class="pass-field-holder">
 
-												<input name="password-2" type="password" id="mot-de-passe" title="<?=$this->lng['preteur-alimentation']['mot-de-passe']?>" value="" class="field field-large required" data-validators="Presence" autocomplete="off">
+												<input name="password-2" type="text" id="mot-de-passe" title="<?=$this->lng['preteur-alimentation']['mot-de-passe']?>" value="" class="field field-large required" data-validators="Presence" autocomplete="off">
 											</span>
 										</div>
 										<div class="row">
