@@ -571,9 +571,7 @@ class universignController extends bootstrap
         $projects         = $this->loadData('projects');
         $prelevements     = $this->loadData('prelevements');
 
-        // Si on a 2 parmas
         if (isset($this->params[0]) && isset($this->params[1])) {
-            // si on a le mandat
             $oProjectManagement = $this->get('ProjectManager');
 
             if ($this->params[0] == 'mandat' && $clients_mandats->get($this->params[1], 'id_mandat')) {

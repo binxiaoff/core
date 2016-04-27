@@ -769,5 +769,4 @@ class projects extends projects_crud
         //F, G, H are not used today.
         return array('A', 'B', 'C', 'D', 'E');
     }
-
 }
