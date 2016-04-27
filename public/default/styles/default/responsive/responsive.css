@@ -975,7 +975,7 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         text-align: left;
     }
     .single-project-mobile th {
-        color: #fff;
+        /*color: #fff;*/ /* Removed 27/04/2016 */
         font-size: 13px;
         line-height: 17px;
         text-align: left;

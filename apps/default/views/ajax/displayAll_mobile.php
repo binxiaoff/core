@@ -42,16 +42,16 @@
 <?php if (count($this->aBidsOnProject) > 0) : ?>
     <table class="table orders-table">
         <tr>
-            <th width="125"><span id="triNum_mobile">N°<i class="icon-arrows"></i></span></th>
+            <th width="125"><span id="triNum_mobile">N°<i class="icon-grey icon-arrows "></i></span></th>
             <th width="180">
-                <span id="triTx_mobile"><?= $this->lng['preteur-projets']['taux-dinteret'] ?> <i class="icon-arrows"></i></span>
+                <span id="triTx_mobile"><?= $this->lng['preteur-projets']['taux-dinteret'] ?> <i class="icon-grey icon-arrows "></i></span>
                 <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</small>
             </th>
             <th width="214">
-                <span id="triAmount_mobile"><?= $this->lng['preteur-projets']['montant'] ?> <i class="icon-arrows"></i></span>
+                <span id="triAmount_mobile"><?= $this->lng['preteur-projets']['montant'] ?> <i class="icon-grey icon-arrows "></i></span>
                 <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?> €</small>
             </th>
-            <th width="101"><span id="triStatuts_mobile"><?= $this->lng['preteur-projets']['statuts'] ?> <i class="icon-arrows"></i></span></th>
+            <th width="101"><span id="triStatuts_mobile"><?= $this->lng['preteur-projets']['statuts'] ?> <i class="icon-grey icon-arrows "></i></span></th>
         </tr>
         <?php foreach ($this->aBidsOnProject as $iKey => $aBid) : ?>
             <?php if ($this->CountEnchere >= 12 && !isset($_POST['tri'])) : ?>

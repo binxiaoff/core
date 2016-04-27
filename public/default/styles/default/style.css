@@ -259,6 +259,7 @@ form p { padding-left:13px; }
 .active .icon-home,
 a:hover > .icon-home { background-position:0 -19px; }
 
+.icon-grey.icon-arrows { background-image: url('images/double-grey-arrow.png'); background-position:0 -2px;}
 .icon-arrows { background-position:-76px -19px; }
 .icon-arrow-gt { background-position:-235px -97px; width: 16px; height: 40px; }
 .icon-bank { background-position:-248px 0; width:19px; height:17px; }
@@ -558,11 +559,11 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 
 
 /* === Table === */
-.table { width:100%; line-height:14px; }
+.table { width:100%; line-height:14px;border:8px solid #eceaed; }
 .table tr:nth-child(even) td { background:#fafafa; }
 .table tr:hover td { background:#fbf2f7; }
 
-.table th { background:#b10366; padding:10px 0; text-align:center; }
+.table th { background-color:#eceaed; padding:10px 0; text-align:center; font-family:Helvetica, Arial, sans-serif; text-transform:uppercase;font-weight:400; }
 .table th:first-child { text-align:left; border-radius:3px 0 0 0; padding-left:70px; }
 .table th:last-child { border-radius:0 3px 0 0; }
 .table .th-wrap { display:block; position:relative; }
@@ -753,13 +754,24 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 /* ===========================
     Tabs Nav
 ============================ */
+/*
+.tabs-nav { height: 42px; margin-bottom: 25px;border-bottom: 1px solid #b10366; }
+.tabs-nav ul { padding-left: 0;float:right; }
+.tabs-nav li { float:left;padding: 0 6px; list-style-type: none; }
+.tabs-nav li a { display:block; padding: 0 11px 1px;line-height: 42px; font-size: 18px; font-weight:bold; color: #a1a5a7;border-style:solid;padding:0 6px 3px 0;text-decoration:none;}
+.tabs-nav li a:hover, .tabs-nav li.active a{ padding: 0 10px 0;border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366;line-height: 41px;}
+*/
+/* deleted 27/04/2016 */
 
-.tabs-nav { height: 42px; margin-bottom: 25px; border-bottom: 1px solid #b10366; }
-.tabs-nav ul { padding-left: 0; }
-.tabs-nav li { float:left; padding: 0 6px; list-style-type: none; }
-.tabs-nav li a { display:block; padding: 0 11px 1px; line-height: 42px; font-size: 18px; font-weight:bold; color: #a1a5a7; }
-.tabs-nav li a:hover ,
-.tabs-nav li.active a { padding: 0 10px 0; text-decoration:none; border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366; line-height: 41px; }
+.tabs-nav:after{content: "";display:block;clear:both;}
+.tabs-nav ul{float:right;}
+.tabs-nav ul:after{ content: "";display:block;clear:both;}
+.tabs-nav ul li {float:left;list-style-type:none;cursor:pointer;}
+.tabs-nav ul li a {line-height:42px;border-style:solid;border-width:2px;border-radius:4px;border-color:#eceaed;display:block;padding:0px 10px;color:#302a32;background-color:#eceaed}
+.tabs-nav ul li a:hover{background-color:#dedcdf;border-color:#dedcdf;text-decoration:none;}
+.tabs-nav ul li.active a{background-color:#fff;color:#787679;}
+.tabs-nav ul li a{transition:none;-webkit-transition:none;}
+/* added 27/04/2016 */
 
 .tabs { font-size: 15px; }
 .section-c h2 { font-size: 26px; line-height: 30px; color: #b10366; font-weight: bold; font-family: arial, serif; letter-spacing: 0; border-bottom: 1px solid #e3e4e4; padding-bottom: 7px; margin-bottom: 18px; text-transform: capitalize; }
@@ -860,10 +872,11 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .stat-list li .i-holder { display:block; height: 33px; line-height: 33px; margin-bottom: 10px; background: #b10366; text-align:center; }
 .stat-list li span { font-size: 24px; line-height: 28px; }
 
-.project-c th { color: #fff; font-size: 13px; line-height: 17px; text-align:left; }
+.project-c th { color: #9F9D98; font-size: 13px; line-height: 17px; text-align:left; }
 .project-c th small { color: #d881b3; display:block; font-size: 11px; line-height: 15px; text-transform: uppercase;}
-.project-c .orders-table td, .project-c .orders-table th { text-align:left; }
-.project-c .orders-table th:first-child { padding-left: 20px }
+.project-c .orders-table td, .project-c .orders-table th { text-align:right; }
+.project-c .orders-table td.bid-number { text-align:left;}
+.project-c .orders-table th:first-child { padding-left: 20px;text-align:left; }
 .project-c .orders-table { font-weight:bold; }
 
 .nth-table-row, .project-c .orders-table td.nth-table-row { text-align: center; background: #f7e5ef; font-size: 14px; line-height: 30px; color: #b10366; }
@@ -921,6 +934,12 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .statistic-tables .csv-extract { float: left; text-align: center; }
 .statistic-tables .csv-extract > a { padding: 0; }
 .statistic-tables .csv-extract img { width: 50px; }
+
+#bottom-nav { margin-bottom:20px; }
+#bottom-nav:after{ content:"";display:block;clear:both; }
+#bottom-nav a { float:right;line-height:46px;border-radius:4px;padding:0 10px;color:#302a32;background-color:#eceaed;cursor:pointer;text-decoration:none; margin:0 2px; }
+#bottom-nav a:hover { background-color:#dedcdf;}
+
 .statistic-tables.year-nav a { height: 41px; padding: 0 15px; line-height: 41px; font-size: 14px; font-weight:bold; }
 .statistic-tables.year-nav ul { padding: 0; }
 
