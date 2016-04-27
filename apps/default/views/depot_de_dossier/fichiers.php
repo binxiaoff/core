@@ -20,7 +20,7 @@
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['type-de-document'] ?></div>
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['champs-dupload'] ?></div>
                 </div>
-                <div class="row row-upload show-scrollbar">
+                <div class="row row-upload show-scrollbar upload-input">
                     <select class="custom-select required field field-large">
                         <option value=""><?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
                         <?php foreach ($this->aAttachmentTypes as $aAttachmentType) { ?>
@@ -79,7 +79,7 @@
             $(this).parents('.row.row-upload').find('input.file-field').attr('name', attachmentTypeId);
         });
 
-        $uploadRow = $('.row.row-upload:nth-child(3)').clone().hide().prop('id', 'upload-row-pattern');
+        $uploadRow = $("#form_espace_emprunteur > div.row.row-upload.upload-input").clone().hide().prop('id', 'upload-row-pattern');
         $uploadRow.children('select').removeClass('custom-select');
         $('#form_espace_emprunteur').append($uploadRow);
     });
