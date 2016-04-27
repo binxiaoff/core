@@ -770,15 +770,4 @@ class projects extends projects_crud
         return array('A', 'B', 'C', 'D', 'E');
     }
 
-    public function getBorrowerBankTransferLabel($iProjectId)
-    {
-        $oCompanies = new \companies($this->bdd);
-
-        $this->get($iProjectId);
-        $oCompanies->get($this->id_company);
-
-        $sIdProject         = str_pad($iProjectId, 6, 0, STR_PAD_LEFT);
-        $sBankTransferLabel = mb_strtoupper('UNILEND' . $sIdProject . 'E' . trim($oCompanies->siren), 'UTF-8');
-        return $sBankTransferLabel;
-    }
 }

@@ -736,4 +736,17 @@ class ProjectManager
         }
         return $oEndDate;
     }
+
+    public static function getBorrowerBankTransferLabel(\projects $oProject)
+    {
+        /** @var \companies $oCompanies */
+        $oCompanies = Loader::loadData('companies');
+
+        $oCompanies->get($oProject->id_company);
+
+        $sIdProject         = str_pad($oProject->id_project, 6, 0, STR_PAD_LEFT);
+        $oCompanies->siren = '123456789';
+        $sBankTransferLabel = mb_strtoupper('UNILEND' . $sIdProject . 'E' . trim($oCompanies->siren), 'UTF-8');
+        return $sBankTransferLabel;
+    }
 }

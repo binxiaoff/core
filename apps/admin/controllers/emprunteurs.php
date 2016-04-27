@@ -273,26 +273,6 @@ class emprunteursController extends bootstrap
                     die;
                 }
 
-                $oMoneyOrders = $this->loadData('clients_mandats');
-
-                // on met a jour les prelevement en cours si y en a.
-                foreach ($this->lprojects as $aProject) {
-                    $prelevements->updateIbanBic($aProject['id_project'], $this->companies->bic, $this->companies->iban);
-
-                    $aMoneyOrders = $oMoneyOrders->select(
-                        'id_project = ' . $aProject['id_project'] . ' AND id_client = ' . $this->clients->id_client . ' AND status IN (' . \clients_mandats::STATUS_SIGNED . ')',
-                        'id_mandat DESC'
-                    );
-                    $aMoneyOrder = array_shift($aMoneyOrders);
-
-                    if ($aMoneyOrder['status'] == \clients_mandats::STATUS_SIGNED
-                        && $aMoneyOrder['iban'] == str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']))
-                        && $aMoneyOrder['bic'] == str_replace(' ', '', strtoupper($_POST['bic']))) {
-                        $sBankTransferLabel = $this->projects->getBorrowerBankTransferLabel($aProject['id_project']);
-                        $prelevements->updateBankTransferLabel($aProject['id_project'], $sBankTransferLabel);
-                    }
-                }
-
                 if ($this->companies->status_adresse_correspondance == 1) {
                     $this->companies->adresse1 = $_POST['adresse'];
                     $this->companies->city     = $_POST['ville'];
@@ -436,10 +416,15 @@ class emprunteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $oCompanies = $this->loadData('companies');
-        $oProjects = $this->loadData('projects');
-        $oCompanies->get($this->params[0], 'id_client_owner');
-        $this->aProjects = $oProjects->select('id_company = "' . $oCompanies->id_company . '"');
+        if (isset($this->params[0]) && $this->params[0] != '') {
+            /** @var \companies $oCompanies */
+            $oCompanies = $this->loadData('companies');
+            /** @var \projects $oProjects */
+            $oProjects  = $this->loadData('projects');
+
+            $oCompanies->get($this->params[0], 'id_client_owner');
+            $this->aProjects = $oProjects->select('id_company = ' . $oCompanies->id_company);
+        }
     }
 
     public function _RIBlightbox_no_prelev()

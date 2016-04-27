@@ -312,7 +312,6 @@ class universignController extends bootstrap
     {
         $clients         = $this->loadData('clients');
         $clients_mandats = $this->loadData('clients_mandats');
-        $companies       = $this->loadData('companies');
 
         if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != \clients_mandats::STATUS_SIGNED) {
             if ($clients_mandats->url_universign != '' && $clients_mandats->status == \clients_mandats::STATUS_PENDING) {
@@ -335,6 +334,9 @@ class universignController extends bootstrap
                         header('Location: ' . $this->lurl);
                         die;
                 }
+                /** @var \companies $companies */
+                $companies = $this->loadData('companies');
+
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
                 $companies->get($clients_mandats->id_client, 'id_client_owner');
@@ -572,6 +574,8 @@ class universignController extends bootstrap
         // Si on a 2 parmas
         if (isset($this->params[0]) && isset($this->params[1])) {
             // si on a le mandat
+            $oProjectManagement = $this->get('ProjectManager');
+
             if ($this->params[0] == 'mandat' && $clients_mandats->get($this->params[1], 'id_mandat')) {
                 $clients->get($clients_mandats->id_client, 'id_client');
                 $companies->get($clients->id_client, 'id_client_owner');
@@ -580,10 +584,21 @@ class universignController extends bootstrap
 
                 if ($clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
                     $aProjects = $this->projects->select('id_company = "' . $companies->id_company . '"');
+
+                    /** @var \projects $oProject */
+                    $oProject = $this->loadData('projects');
+
+                    /** @var \clients_mandats $oClientsMandats */
+                    $oClientsMandats = $this->loadData('clients_mandats');
+
                     foreach ($aProjects as $aProject) {
-                        $sBankTransferLabel = $projects->getBorrowerBankTransferLabel($aProject['id_project']);
-                        $prelevements->updateBankTransferLabel($aProject['id_project'], $sBankTransferLabel);
-                        $prelevements->updateIbanBic($aProject['id_project'], $this->companies->bic, $this->companies->iban);
+                        $oProject->get($aProject['id_project']);
+                        $aMandat = $oClientsMandats->select('id_project = ' . $oProject->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC LIMIT 1');
+                        $aMandat = array_shift($aMandat);
+
+                        $sBankTransferLabel = $oProjectManagement->getBorrowerBankTransferLabel($oProject);
+                        $prelevements->updateBankTransferLabel($oProject->id_project, $sBankTransferLabel);
+                        $prelevements->updateIbanBic($oProject->id_project, $aMandat['bic'], $aMandat['iban']);
                     }
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été signé';

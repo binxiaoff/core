@@ -211,15 +211,15 @@
         <?php endif; ?>
     <?php endif; ?>
 
-    <h2>Historique Mandats</h2>
+    <h2>Historique des Mandats</h2>
     <table class="tablesorter listeMandats">
         <thead>
             <tr>
-                <th>ID Project</th>
+                <th>ID Projet</th>
                 <th>IBAN</th>
                 <th>BIC</th>
                 <th>PDF</th>
-                <th>Status</th>
+                <th>Statut</th>
                 <th>Date d'ajout</th>
             </tr>
         </thead>
@@ -227,8 +227,8 @@
             <?php foreach ($this->aMoneyOrders as $aMoneyOrder) : ?>
                 <tr<?= (++$iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $aMoneyOrder['id_project'] ?></td>
-                    <td><?= isset($aMoneyOrder['iban']) ? $aMoneyOrder['iban'] : $this->companies->iban ?></td>
-                    <td><?= isset($aMoneyOrder['bic']) ? $aMoneyOrder['bic'] : $this->companies->bic ?></td>
+                    <td><?= $aMoneyOrder['iban'] ?></td>
+                    <td><?= $aMoneyOrder['bic'] ?></td>
                     <td><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
                     <td><?= $this->aStatusMandat[$aMoneyOrder['status']] ?></td>
                     <td><?= $aMoneyOrder['added'] ?></td>

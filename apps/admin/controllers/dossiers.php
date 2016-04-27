@@ -715,6 +715,8 @@ class dossiersController extends bootstrap
                     /////////////////
                     // REMBOURSEMENT //
                     // si on a le pouvoir
+
+
                     if (
                         isset($_POST['statut_pouvoir'])
                         && $this->projects_pouvoir->get($this->projects->id_project, 'id_project')
@@ -724,7 +726,6 @@ class dossiersController extends bootstrap
                         $this->projects_pouvoir->update();
 
                         $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers');
-
                         // si on a validé le pouvoir
                         if ($this->projects_pouvoir->status_remb == 1) {
                             $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
@@ -766,9 +767,13 @@ class dossiersController extends bootstrap
                                 $montant -= $partUnliend;
 
                                 if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false) {
-                                    $companies->get($this->projects->id_company, 'id_company');
+                                    /** @var \clients_mandats $oClientsMandats */
+                                    $oClientsMandats    = $this->loadData('clients_mandats');
 
-                                    // transaction
+                                    $aMandat            = $oClientsMandats->select('id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC LIMIT 1');
+                                    $aMandat            = array_shift($aMandat);
+                                    $oProjectManagement = $this->get('ProjectManager');
+
                                     $this->transactions->id_client        = $this->clients->id_client;
                                     $this->transactions->montant          = '-' . ($montant * 100); // moins car c'est largent qui part d'unilend
                                     $this->transactions->montant_unilend  = ($partUnliend * 100);
@@ -808,7 +813,7 @@ class dossiersController extends bootstrap
                                     $virements->id_project     = $this->projects->id_project;
                                     $virements->id_transaction = $this->transactions->id_transaction;
                                     $virements->montant        = $montant * 100;
-                                    $virements->motif          = $this->projects->getBorrowerBankTransferLabel($this->projects->id_project);
+                                    $virements->motif          = $oProjectManagement->getBorrowerBankTransferLabel($this->projects);
                                     $virements->type           = 2;
                                     $virements->create();
                                     // mail emprunteur facture a la fin
@@ -833,8 +838,8 @@ class dossiersController extends bootstrap
                                         $prelevements->id_project                         = $this->projects->id_project;
                                         $prelevements->motif                              = $virements->motif;
                                         $prelevements->montant                            = $montant;
-                                        $prelevements->bic                                = str_replace(' ', '', $this->companies->bic); // bic
-                                        $prelevements->iban                               = str_replace(' ', '', $this->companies->iban);
+                                        $prelevements->bic                                = str_replace(' ', '', $aMandat['bic']);
+                                        $prelevements->iban                               = str_replace(' ', '', $aMandat['iban']);
                                         $prelevements->type_prelevement                   = 1; // recurrent
                                         $prelevements->type                               = 2; //emprunteur
                                         $prelevements->num_prelevement                    = $e['ordre'];
