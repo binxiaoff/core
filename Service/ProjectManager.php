@@ -796,4 +796,16 @@ class ProjectManager
             $this->oMailerManager->sendFundedToBorrower($oProject);
         }
     }
+
+    /**
+     * @param \projects $oProject
+     *
+     * @return array
+     */
+    public function getBidsStatistics(\projects $oProject)
+    {
+        /** @var \bids $oBid */
+        $oBid = Loader::loadData('bids');
+        return $oBid->getBidsStatistics($oProject->id_project);
+    }
 }
