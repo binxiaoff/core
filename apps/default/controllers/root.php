@@ -24,9 +24,9 @@ class rootController extends bootstrap
         $message->setTo('bin.xiao@unilend.fr');
         $mailer = $this->get('mailer');
         $mailer->send($message);die;
-*/
 
         $this->get('unilend.swiftmailer.db_spool')->flushQueue($this->get('unilend.swiftmailer.transport.mailjet'));die;
+*/
         $this->fireCache();
 
         // ajout du slash car capital rajout un Get
