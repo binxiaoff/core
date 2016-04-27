@@ -36,4 +36,23 @@ class LenderManager
         return false;
     }
 
+    /**
+     * @param array $aLenders
+     */
+    public function addLendersToLendersAccountsStatQueue(array $aLenders)
+    {
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = Loader::loadData('lenders_accounts');
+        /** @var \lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
+        $oLendersAccountsStatsQueue = Loader::loadData('lenders_accounts_stats_queue');
+
+        foreach ($aLenders as $aLender) {
+            if (array_key_exists('id_lender', $aLender) && $oLenderAccount->get($aLender['id_lender'], 'id_lender_account')
+                || array_key_exists('id_lender_account', $aLender) && $oLenderAccount->get($aLender['id_lender_account'], 'id_lender_account')
+            ) {
+                $oLendersAccountsStatsQueue->addLenderToQueue($oLenderAccount);
+            }
+        }
+    }
+
 }

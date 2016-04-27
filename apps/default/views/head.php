@@ -84,7 +84,7 @@
             ?>
             <script>var dataLayer = [<?= json_encode($this->aDataLayer) ?>];</script>
             <!-- Google Tag Manager -->
-            <noscript><iframe src="//www.googletagmanager.com/ns.html?id=GTM-MB66VL" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+            <noscript><iframe src="//www.googletagmanager.com/ns.html?id=<?= $this->google_tag_manager ?>" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
             <script>(function (w, d, s, l, i) {
                     w[l] = w[l] || [];
                     w[l].push({'gtm.start':
@@ -95,7 +95,7 @@
                     j.src =
                             '//www.googletagmanager.com/gtm.js?id=' + i + dl;
                     f.parentNode.insertBefore(j, f);
-                })(window, document, 'script', 'dataLayer', 'GTM-MB66VL');</script>
+                })(window, document, 'script', 'dataLayer', '<?= $this->google_tag_manager ?>');</script>
             <!-- End Google Tag Manager -->
 
             <div id="fb-root"></div>
@@ -132,24 +132,6 @@
                 </div>
                 <?php
             }
-            if ($this->google_analytics != '') {
-                ?>
-                <script type="text/javascript">
-                    var _gaq = _gaq || [];
-                    _gaq.push(['_setAccount', '<?= $this->google_analytics ?>']);
-                    _gaq.push(['_trackPageview']);
-                    (function () {
-                        var ga = document.createElement('script');
-                        ga.type = 'text/javascript';
-                        ga.async = true;
-                        ga.src = ('https:' == document.location.protocol ? 'https://' : 'http://') + 'stats.g.doubleclick.net/dc.js';
-                        var s = document.getElementsByTagName('script')[0];
-                        s.parentNode.insertBefore(ga, s);
-                    })();
-                </script>
-                <?php
-            }
-
             //gestion du temps d'attente en cas d'echec successifs
             if (isset($_SESSION['login']['nb_tentatives_precedentes']) && $_SESSION['login']['nb_tentatives_precedentes'] > 1) {
                 ?>

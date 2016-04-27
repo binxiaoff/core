@@ -195,7 +195,8 @@ class inscription_preteurController extends bootstrap
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
             $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-            $this->iban1 = empty($this->lenders_accounts->iban) ? 'FR...' : substr($this->lenders_accounts->iban, 0, 4);
+            $this->ibanPlaceholder = 'FR..';
+            $this->iban1 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 0, 4);
             $this->iban2 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 4, 4);
             $this->iban3 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 8, 4);
             $this->iban4 = empty($this->lenders_accounts->iban) ? '' : substr($this->lenders_accounts->iban, 12, 4);
@@ -1116,7 +1117,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk         = false;
             $bCountryCheckOk = false;
         }
-        if (false === isset($_POST['naissance']) || false === $oVilles->get($_POST['naissance'], 'ville')) {
+        if (false === isset($_POST['naissance']) || \pays_v2::COUNTRY_FRANCE == $oPays->id_pays  && false === $oVilles->get($_POST['naissance'], 'ville')) {
             $bFormOk         = false;
             $bCountryCheckOk = false;
         }

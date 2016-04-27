@@ -349,15 +349,6 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
             var change_file_identite = false;
             var change_txt_identite = false;
 
-            // nom famille et prenom
-            $("#nom-famille,#prenom").change(function () {
-                if ($(this).val() != "<?=$this->clients->nom?>" && change_file_identite == false) {
-                    $("#text_ci").val('');
-                    $(".change_identite").fadeIn();
-                    change_txt_identite = true;
-                }
-            });
-
             // nom usage
             $("#nom-dusage").change(function () {
                 if ($(this).val() != "<?=($this->clients->nom_usage != '' ? $this->clients->nom_usage : $this->lng['etape1']['nom-dusage'])?>" && change_file_identite == false) {
@@ -366,16 +357,6 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
                     change_txt_identite = true;
                 }
             });
-
-
-            $("#file-ci").change(function () {
-                if (change_txt_identite == false) {
-                    $("#nom-famille,#prenom").val('');
-                    $(".change_identite").fadeIn();
-                    change_file_identite = true;
-                }
-            });
-
 
             /////////////////////////
             // change_addr_fiscale //

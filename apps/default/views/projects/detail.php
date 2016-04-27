@@ -494,14 +494,6 @@
                                                         <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) ?>&nbsp;€</td>
                                                     <?php endfor; ?>
                                                 </tr>
-                                                <?php if (false === $this->bPreviousRiskProject) : ?>
-                                                    <tr>
-                                                        <td class="intitule"><?= $this->lng['preteur-projets']['depreciation-actif-circulant'] ?></td>
-                                                        <?php for ($i = 0; $i < 3; $i++): ?>
-                                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['depreciation_actif_circulant'], 0) ?>&nbsp;€</td>
-                                                        <?php endfor; ?>
-                                                    </tr>
-                                                <?php endif; ?>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['dettes-financieres'] ?></td>
                                                     <?php for ($i = 0; $i < 3; $i++): ?>
@@ -817,14 +809,6 @@
                                                         <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['amortissement_sur_immo'], 0) ?>&nbsp;€</td>
                                                     <?php endfor; ?>
                                                 </tr>
-                                                <?php if (false === $this->bPreviousRiskProject) : ?>
-                                                    <tr>
-                                                        <td class="intitule"><?= $this->lng['preteur-projets']['depreciation-actif-circulant'] ?></td>
-                                                        <?php for ($i = 0; $i < 3; $i++): ?>
-                                                            <td class="sameSize" style="text-align:right;"><?= $this->ficelle->formatNumber($this->listAP[$i]['depreciation_actif_circulant'], 0) ?>&nbsp;€</td>
-                                                        <?php endfor; ?>
-                                                    </tr>
-                                                <?php endif; ?>
                                                 <tr>
                                                     <td class="intitule"><?= $this->lng['preteur-projets']['dettes-financieres'] ?></td>
                                                     <?php for ($i = 0; $i < 3; $i++): ?>

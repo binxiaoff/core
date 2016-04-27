@@ -132,6 +132,9 @@ class bootstrap extends Controller
             $this->settings->get('Google Analytics', 'type');
             $this->google_analytics = $this->settings->value;
 
+            $this->settings->get('Google Tag Manager', 'type');
+            $this->google_tag_manager = $this->settings->value;
+
             $this->settings->get('Baseline Title', 'type');
             $this->baseline_title = $this->settings->value;
 
@@ -145,12 +148,13 @@ class bootstrap extends Controller
             $this->id_tree_cookies = $this->settings->value;
 
             $aElements = array(
-                'GoogleTools'     => $this->google_webmaster_tools,
-                'GoogleAnalytics' => $this->google_analytics,
-                'BaselineTitle'   => $this->baseline_title,
-                'Facebook'        => $this->like_fb,
-                'Twitter'         => $this->twitter,
-                'TreeCookies'     => $this->id_tree_cookies
+                'GoogleTools'      => $this->google_webmaster_tools,
+                'GoogleAnalytics'  => $this->google_analytics,
+                'GoogleTagManager' => $this->google_tag_manager,
+                'BaselineTitle'    => $this->baseline_title,
+                'Facebook'         => $this->like_fb,
+                'Twitter'          => $this->twitter,
+                'TreeCookies'      => $this->id_tree_cookies
             );
             $oCachedItem->set($aElements)
                 ->expiresAfter(3600);
@@ -159,6 +163,7 @@ class bootstrap extends Controller
             $aElements   = $oCachedItem->get();
             $this->google_webmaster_tools = $aElements['GoogleTools'];
             $this->google_analytics       = $aElements['GoogleAnalytics'];
+            $this->google_tag_manager     = $aElements['GoogleTagManager'];
             $this->baseline_title         = $aElements['BaselineTitle'];
             $this->like_fb                = $aElements['Facebook'];
             $this->twitter                = $aElements['Twitter'];
@@ -349,6 +354,8 @@ class bootstrap extends Controller
             $this->bDisplayHeaderLender        = false;
             $this->bDisplayHeaderBorrower      = false;
             $this->bShowChoiceBorrowerOrLender = $this->bIsBorrowerAndLender;
+
+            $this->addDataLayer('uid', md5($this->clients->email));
 
             if ($this->bIsBorrowerAndLender) {
                 $this->getDataBorrower();
@@ -753,7 +760,7 @@ class bootstrap extends Controller
     }
 
     /**
-     * Set the source details in session
+     * Set the source details in session and push into dataLayer
      */
     private function setSessionSource()
     {
@@ -767,6 +774,10 @@ class bootstrap extends Controller
                 'utm_source'   => 'Directe',
                 'slug_origine' => $this->getSlug()
             );
+        }
+
+        foreach ($_SESSION['source'] as $mKey => $mValue) {
+            $this->addDataLayer($mKey, $mValue);
         }
     }
 

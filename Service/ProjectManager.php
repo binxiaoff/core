@@ -43,10 +43,16 @@ class ProjectManager
     /** @var AutoBidSettingsManager */
     private $oAutoBidSettingsManager;
 
+    /** @var MailerManager */
+    private $oMailerManager;
+
+    /** @var LenderManager */
+    private $oLenderManager;
+
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
-    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager)
+    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager)
     {
         $this->aConfig = Loader::loadConfig();
 
@@ -55,6 +61,8 @@ class ProjectManager
         $this->oLoanManager            = $oLoanManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
+        $this->oMailerManager          = $oMailerManager;
+        $this->oLenderManager          = $oLenderManager;
 
         $this->oNMP       = $this->oEntityManager->getRepository('nmp');
         $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
@@ -76,18 +84,14 @@ class ProjectManager
 
     public function prePublish(\projects $oProject)
     {
-        /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         $this->checkAutoBidBalance($oProject);
         $this->autoBid($oProject);
-        $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject->id_project);
+        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject);
     }
 
     public function publish(\projects $oProjects)
     {
-        /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
-        $oProjectsStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $oProjects->id_project);
+        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $oProjects);
     }
 
     public function checkBids(\projects $oProject)
@@ -277,14 +281,11 @@ class ProjectManager
         $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \loans $oLoan */
         $oLoan = $this->oEntityManager->getRepository('loans');
-        /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
-
-        $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject->id_project);
+        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->oLogger instanceof ULogger) {
             $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' is now changed to status funded.');
@@ -401,13 +402,11 @@ class ProjectManager
 
     public function treatFundFailed(\projects $oProject)
     {
-        /** @var \projects_status_history $oProjectStatusHistory */
-        $oProjectStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
 
         // On passe le projet en funding ko
-        $oProjectStatusHistory->addStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject->id_project);
+        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject);
 
         $aBidList      = $oBid->select('id_project = ' . $oProject->id_project, 'rate ASC, ordre ASC');
         $iBidNbTotal   = count($aBidList);
@@ -734,5 +733,47 @@ class ProjectManager
             $oEndDate->add(new \DateInterval('PT' . $iEndHour . 'H'));
         }
         return $oEndDate;
+    }
+
+    public function addProjectStatus($iUserId, $iProjectStatus, \projects $oProject, $iReminderNumber = 0, $sContent = '')
+    {
+        /** @var \projects_status_history $oProjectsStatusHistory */
+        $oProjectsStatusHistory = Loader::loadData('projects_status_history');
+        /** @var \projects_status $oProjectStatus */
+        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus->get($iProjectStatus, 'status');
+
+        $oProjectsStatusHistory->id_project        = $oProject->id_project;
+        $oProjectsStatusHistory->id_project_status = $oProjectStatus->id_project_status;
+        $oProjectsStatusHistory->id_user           = $iUserId;
+        $oProjectsStatusHistory->numero_relance    = $iReminderNumber;
+        $oProjectsStatusHistory->content           = $sContent;
+        $oProjectsStatusHistory->create();
+
+        $this->projectStatusUpdateTrigger($oProjectStatus, $oProject);
+    }
+
+    private function projectStatusUpdateTrigger(\projects_status $oProjectStatus, \projects $oProject)
+    {
+        switch ($oProjectStatus->status) {
+            case \projects_status::A_TRAITER:
+                /** @var \settings $oSettings */
+                $oSettings = Loader::loadData('settings');
+                $oSettings->get('Adresse notification inscription emprunteur', 'type');
+                $this->oMailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $oProject, trim($oSettings->value));
+                break;
+            case \projects_status::ATTENTE_ANALYSTE:
+                $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, \email::EMAIL_ADDRESS_ANALYSTS);
+                break;
+            case \projects_status::REMBOURSEMENT:
+            case \projects_status::PROBLEME:
+            case \projects_status::PROBLEME_J_X:
+            case \projects_status::RECOUVREMENT:
+            case \projects_status::PROCEDURE_SAUVEGARDE:
+            case \projects_status::REDRESSEMENT_JUDICIAIRE:
+            case \projects_status::LIQUIDATION_JUDICIAIRE:
+                $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
+                break;
+        }
     }
 }

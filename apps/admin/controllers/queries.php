@@ -39,8 +39,7 @@ class queriesController extends bootstrap
         $this->queries   = $this->loadData('queries');
         $this->lRequetes = $this->queries->select(($this->cms == 'iZinoa' ? 'cms = "iZinoa" || cms = ""' : ''), 'executed DESC');
 
-        // Formulaire édition d'une requête
-        if (isset($_POST['form_edit_requete'])) {
+        if (isset($_POST['form_edit_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
             $this->queries->get($this->params[0], 'id_query');
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
@@ -54,8 +53,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        // Formulaire d'ajout d'une requête
-        if (isset($_POST['form_add_requete'])) {
+        if (isset($_POST['form_add_requete']) && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
             $this->queries->name   = $_POST['name'];
             $this->queries->paging = $_POST['paging'];
             $this->queries->sql    = $_POST['sql'];
@@ -68,8 +66,7 @@ class queriesController extends bootstrap
             die;
         }
 
-        // Suppression d'une requête
-        if (isset($this->params[0]) && $this->params[0] == 'delete') {
+        if (isset($this->params[0]) && $this->params[0] == 'delete' && \users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) {
             $this->queries->delete($this->params[1], 'id_query');
 
             $_SESSION['freeow']['title']   = 'Suppression d\'une requ&ecirc;te';
@@ -168,6 +165,7 @@ class queriesController extends bootstrap
 
         /** @var \PHPExcel_Writer_CSV $oWriter */
         $oWriter = PHPExcel_IOFactory::createWriter($oDocument, 'CSV');
+        $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
     }

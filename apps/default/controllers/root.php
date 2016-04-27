@@ -1389,14 +1389,14 @@ class rootController extends bootstrap
             $infos = '<ul>';
             $infos .= '<li>Type demande : ' . $objet . '</li>';
             if ($this->demande_contact->demande == 5) {
-                $infos .= '<li>Preciser :' . utf8_decode($this->demande_contact->preciser) . '</li>';
+                $infos .= '<li>Preciser :' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->preciser) . '</li>';
             }
-            $infos .= '<li>Nom : ' . utf8_decode($this->demande_contact->nom) . '</li>';
-            $infos .= '<li>Prenom : ' . utf8_decode($this->demande_contact->prenom) . '</li>';
-            $infos .= '<li>Email : ' . utf8_decode($this->demande_contact->email) . '</li>';
-            $infos .= '<li>telephone : ' . utf8_decode($this->demande_contact->telephone) . '</li>';
-            $infos .= '<li>Societe : ' . utf8_decode($this->demande_contact->societe) . '</li>';
-            $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
+            $infos .= '<li>Nom : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->nom) . '</li>';
+            $infos .= '<li>Prenom : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->prenom) . '</li>';
+            $infos .= '<li>Email : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->email) . '</li>';
+            $infos .= '<li>telephone : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->telephone) . '</li>';
+            $infos .= '<li>Societe : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->societe) . '</li>';
+            $infos .= '<li>Message : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->message) . '</li>';
             $infos .= '</ul>';
 
             $sujetMail = $this->mails_text->subject;

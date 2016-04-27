@@ -226,6 +226,10 @@ class Loader
         }
     }
 
+    /**
+     * @deprecated It will be removed with the project new infrastructure.
+     * @return array
+     */
     public static function loadConfig()
     {
         /* @var array $config */

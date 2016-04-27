@@ -322,8 +322,9 @@ class espace_emprunteurController extends Bootstrap
                 $oProject->period                               = $_POST['duree'];
                 $oProject->create();
 
-                $oProjectsStatusHistory = $this->loadData('projects_status_history');
-                $oProjectsStatusHistory->addStatus(-2, \projects_status::A_TRAITER, $oProject->id_project);
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('ProjectManager');
+                $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $oProject);
 
                 header('Location:' . $this->lurl . '/espace_emprunteur/projets');
                 die;

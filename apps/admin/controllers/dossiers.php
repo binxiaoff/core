@@ -91,6 +91,8 @@ class dossiersController extends bootstrap
         $this->prescripteurs                   = $this->loadData('prescripteurs');
         $this->clients_prescripteurs           = $this->loadData('clients');
         $this->companies_prescripteurs         = $this->loadData('companies');
+        /** @var \Unilend\Service\ProjectManager $oProjectManager */
+        $oProjectManager                       = $this->get('ProjectManager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
@@ -244,7 +246,8 @@ class dossiersController extends bootstrap
             $this->completude_wording[] = $aTranslations['completude-charge-affaires'];
 
             if (isset($_POST['problematic_status']) && $this->current_projects_status->status != $_POST['problematic_status']) {
-                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects->id_project);
+                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
+
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
@@ -463,13 +466,13 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                             if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
                             }
                         } elseif (in_array($_POST['status'], array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING, \projects_status::FUNDE))) {
-                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                             $companies        = $this->loadData('companies');
                             $clients          = $this->loadData('clients');
@@ -572,7 +575,7 @@ class dossiersController extends bootstrap
                                 mail($to, $subject, $message, $headers);
                             }
                         } else {
-                            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects->id_project);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
                         }
                     }
 
@@ -626,7 +629,7 @@ class dossiersController extends bootstrap
 
                         $nb_loans = $loans->getNbPreteurs($this->projects->id_project);
 
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects->id_project);
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PRET_REFUSE, $this->projects);
 
                         $lesloans = $loans->select('id_project = ' . $this->projects->id_project);
                         $companies->get($this->projects->id_company, 'id_company');
@@ -742,7 +745,7 @@ class dossiersController extends bootstrap
                                 $settingsControleRemb->value = 0;
                                 $settingsControleRemb->update();
 
-                                $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects->id_project);
+                                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
 
                                 //*** virement emprunteur ***//
                                 $this->transactions     = $this->loadData('transactions');
@@ -2386,9 +2389,11 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->update();
                     }
 
+                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                    $oProjectManager                     = $this->get('ProjectManager');
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
                     if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->params['0']);
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
                     }
 
                     $settingsControleRemb->value = 1;
@@ -2422,6 +2427,8 @@ class dossiersController extends bootstrap
                 $this->companies                     = $this->loadData('companies');
                 $this->loans                         = $this->loadData('loans');
                 $loans                               = $this->loadData('loans');
+                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                $oProjectManager                     = $this->get('ProjectManager');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -2452,7 +2459,7 @@ class dossiersController extends bootstrap
                     $remboursement_anticipe_mail_a_envoyer->create();
 
                     //on change le statut du projet
-                    $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
 
                     // on recupere les preteurs de ce projet (par loans)
                     $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
@@ -2616,7 +2623,7 @@ class dossiersController extends bootstrap
 
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
                     if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                        $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects->id_project);
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
                     }
 
                     header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
@@ -2749,71 +2756,63 @@ class dossiersController extends bootstrap
     }
 
     //utilisé pour récup les infos affichées dans le cadre
-    /**
-     * @todo Optimize: almost all loading time is here
-     */
     private function recup_info_remboursement_anticipe($id_project)
     {
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers            = $this->loadData('echeanciers');
+        $oBusinessDays                = $this->loadLib('jours_ouvres');
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-        $L_echeance         = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW() GROUP BY ordre", 'ordre ASC', 0, 1);
-        $next_echeanche     = isset($L_echeance[0]) ? $L_echeance[0] : null;
-        $ordre_echeance_ra  = isset($L_echeance[0]) ? $L_echeance[0]['ordre'] + 1 : 1;
-        $date_next_echeance = $next_echeanche['date_echeance'];
+        $aLastOrder             = $this->echeanciers->getLastOrder($id_project);
+        $iOrderEarlyRefund      = isset($aLastOrder['ordre']) ? $aLastOrder['ordre'] + 1 : 1;
+        $sLastOrderDate         = $aLastOrder['date_echeance'];
+        $iLastOrderDate         = strtotime($sLastOrderDate);
+        $sBusinessDaysOrderDate = "";
 
-        // Date 4 jours ouvrés avant date next echeance
-        $jo = $this->loadLib('jours_ouvres');
-
-        $dateEcheance                            = strtotime($date_next_echeance);
-        $date_next_echeance_4jouvres_avant_stamp = "";
-
-        if ($dateEcheance != "" && isset($dateEcheance)) {
-            $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
+        // Date 4 jours ouvrés avant $sLastOrderDate
+        if ($iLastOrderDate != "" && isset($iLastOrderDate)) {
+            $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
         }
-        if (false === empty($next_echeanche)) {
+
+        if (false === empty($aLastOrder)) {
             // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
-            if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
+            if ($sBusinessDaysOrderDate <= time()) {
                 // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($next_echeanche['date_echeance']);
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aLastOrder['date_echeance']);
 
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
+                $aNextEcheance = $this->echeanciers->select(" id_project = " . $id_project . "
+                    AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()
+                    AND id_lender = (SELECT id_lender
+                    FROM echeanciers where id_project = " . $id_project . " LIMIT 1)
+                    AND ordre = " . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
 
-                if (count($L_echeance) > 0) {
+                if (count($aNextEcheance) > 0) {
                     // on refait le meme process pour la nouvelle date
-                    $next_echeanche = $L_echeance[0];
-
-                    $date_next_echeance = $next_echeanche['date_echeance'];
-
-                    // Date 4 jours ouvrés avant date next echeance
-                    $jo = $this->loadLib('jours_ouvres');
-
-                    $dateEcheance                            = strtotime($date_next_echeance);
-                    $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
-
-                    //$ordre_echeance_ra = $ordre_echeance_ra + 1; // changement on n'ajoute plus un mois supp
+                    $aLastOrder             = $aNextEcheance[0];
+                    $sLastOrderDate         = $aLastOrder['date_echeance'];
+                    $iLastOrderDate         = strtotime($sLastOrderDate);
+                    $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
                 } else {
                     $this->date_next_echeance_4jouvres_avant = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
                 }
             } else {
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $L_echeance_normale = $this->echeanciers->select(' id_project = ' . $id_project . ' AND ordre = ' . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($L_echeance_normale[0]['date_echeance']);
+                $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']);
             }
         }
 
-        if (false === empty($date_next_echeance_4jouvres_avant_stamp)) {
-            $this->date_next_echeance_4jouvres_avant = date('d/m/Y', $date_next_echeance_4jouvres_avant_stamp);
-            $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($date_next_echeance);
+        if (false === empty($sBusinessDaysOrderDate)) {
+            $this->date_next_echeance_4jouvres_avant = date('d/m/Y', $sBusinessDaysOrderDate);
+            $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
         }
 
-        $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $ordre_echeance_ra);
-        $this->montant_restant_du_preteur    = $this->echeanciers->reste_a_payer_ra($id_project, $ordre_echeance_ra);
+        $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
+        $this->montant_restant_du_preteur    = $this->echeanciers->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
         $resultat_num                        = $this->montant_restant_du_preteur - $this->montant_restant_du_emprunteur;
 
-        $this->ordre_echeance_ra = $ordre_echeance_ra;
+        $this->ordre_echeance_ra = $iOrderEarlyRefund;
 
         $this->projects_status_history = $this->loadData('projects_status_history');
         $statut_projet                 = $this->projects_status_history->select('id_project = ' . $id_project, 'id_project_status_history DESC', 0, 1);
@@ -3133,9 +3132,9 @@ class dossiersController extends bootstrap
                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
             }
 
-            $this->loadData('projects_status');
-            $oProjects_status_history = $this->loadData('projects_status_history');
-            $oProjects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects->id_project, 1, $varMail['liste_pieces']);
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects, 1, $varMail['liste_pieces']);
 
             unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);
 
