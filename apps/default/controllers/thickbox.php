@@ -305,11 +305,7 @@ class thickboxController extends bootstrap
             // Liste des encheres enregistrées
             $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
             $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-            $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-
-            if ($this->avgAmount == false) {
-                $this->avgAmount = 0;
-            }
+            $this->avgAmount    = $this->bids->getAVGAmount($this->projects->id_project);
         }
     }
 

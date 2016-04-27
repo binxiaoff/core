@@ -462,31 +462,31 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['direction'])) {
             if ($_POST['direction'] == 1) {
-                $direction       = 'ASC';
-                $this->direction = 2;
+                $direction        = 'ASC';
+                $this->direction  = 2;
             } else {
-                $direction       = 'DESC';
-                $this->direction = 1;
+                $direction        = 'DESC';
+                $this->direction  = 1;
             }
         }
 
         if ($order == 'rate') {
-            $order = 'rate ' . $direction . ', ordre ' . $direction;
+            $order        = 'rate ' . $direction . ', ordre ' . $direction;
         } elseif ($order == 'amount') {
-            $order = 'amount ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
+            $order        = 'amount ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
         } elseif ($order == 'status') {
-            $order = 'status ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
+            $order        = 'status ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
         } else {
-            $order = 'ordre ' . $direction;
+            $order        = 'ordre ' . $direction;
         }
 
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = $this->loadData('projects_status');
         $oProjectStatus->getLastStatut($this->projects->id_project);
 
-        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->aBids          = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
         $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgAmount      = $this->bids->getAVGAmount($this->projects->id_project);
         $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
         $this->status         = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
@@ -496,10 +496,10 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->bids                   = $this->loadData('bids');
-        $this->projects               = $this->loadData('projects');
-        $this->lenders_accounts       = $this->loadData('lenders_accounts');
-        $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+        $this->bids              = $this->loadData('bids');
+        $this->projects          = $this->loadData('projects');
+        $this->lenders_accounts  = $this->loadData('lenders_accounts');
+        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
@@ -513,30 +513,31 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['direction'])) {
             if ($_POST['direction'] == 1) {
-                $direction       = 'ASC';
-                $this->direction = 2;
+                $direction        = 'ASC';
+                $this->direction  = 2;
             } else {
-                $direction       = 'DESC';
-                $this->direction = 1;
+                $direction        = 'DESC';
+                $this->direction  = 1;
             }
         }
 
         if ($order == 'rate') {
-            $order = 'rate ' . $direction . ', ordre ' . $direction;
+            $order        = 'rate ' . $direction . ', ordre ' . $direction;
         } elseif ($order == 'amount') {
-            $order = 'amount ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
+            $order        = 'amount ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
         } elseif ($order == 'status') {
-            $order = 'status ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
+            $order        = 'status ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
         } else {
-            $order = 'ordre ' . $direction;
+            $order        = 'ordre ' . $direction;
         }
+
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = $this->loadData('projects_status');
         $oProjectStatus->getLastStatut($this->projects->id_project);
 
-        $this->aBidsOnProject = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
+        $this->aBids          = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
         $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount      = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+        $this->avgAmount      = $this->bids->getAVGAmount($this->projects->id_project);
         $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
         $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }

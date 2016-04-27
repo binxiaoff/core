@@ -2,25 +2,25 @@
     <aside class="widget widget-price">
         <div class="widget-top">
             <i class="icon-pig"></i>
-            <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?> €
+            <?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>&nbsp;€
         </div>
         <div class="widget-body">
             <form action="" method="post">
                 <div class="widget-cat progress-cat clearfix">
                     <div class="prices clearfix">
                         <span class="price less">
-                            <strong><?= $this->ficelle->formatNumber($this->payer, $this->decimales) ?> €</strong>
+                            <strong><?= $this->ficelle->formatNumber($this->payer, 0) ?>&nbsp;€</strong>
                             <?= $this->lng['preteur-projets']['de-pretes'] ?>
                         </span>
                         <i class="icon-arrow-gt"></i>
                         <?php if ($this->soldeBid >= $this->projects->amount) { ?>
                             <p style="font-size:14px;">
                                 <?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?>
-                                <?= $this->ficelle->formatNumber($this->txLenderMax, 1) ?>%
+                                <?= $this->ficelle->formatNumber($this->txLenderMax, 1) ?>&nbsp;%
                             </p>
                         <?php } else { ?>
                             <span class="price">
-                                <strong><?= $this->ficelle->formatNumber($this->resteApayer, $this->decimales) ?> €</strong>
+                                <strong><?= $this->ficelle->formatNumber($this->resteApayer, 0) ?>&nbsp;€</strong>
                                 <?= $this->lng['preteur-projets']['restent-a-preter'] ?>
                             </span>
                         <?php } ?>
@@ -32,7 +32,7 @@
                 <?php if ($this->bidsEncours['nbEncours'] > 0) { ?>
                     <div class="widget-cat">
                         <h4 id="plusOffres">
-                            <?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= $this->ficelle->formatNumber($this->bidsEncours['solde'], 0) ?> €
+                            <?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= $this->ficelle->formatNumber($this->bidsEncours['solde'], 0) ?>&nbsp;€
                         </h4>
                         <div id="lOffres" class="show-scrollbar">
                             <div class="orders-table-wrapper">
@@ -60,8 +60,8 @@
                                                 <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                                                 <?= $aBid['ordre'] ?>
                                             </td>
-                                            <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
-                                            <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
+                                            <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?>&nbsp;%</td>
+                                            <td style="white-space: nowrap"><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>&nbsp;€
                                             </td>
                                             <td><span>
                                                 <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span></span>
@@ -83,7 +83,7 @@
                                 <option value="<?= $this->projects->target_rate ?>"><?= $this->projects->target_rate ?></option>
                                 <?php foreach (range(10, 4, -0.1) as $fRate) { ?>
                                     <?php if ($this->soldeBid < $this->projects->amount || $fRate < round($this->txLenderMax, 1)) { ?>
-                                        <option value="<?= $fRate ?>"><?= $this->ficelle->formatNumber($fRate, 1) ?>%</option>
+                                        <option value="<?= $fRate ?>"><?= $this->ficelle->formatNumber($fRate, 1) ?>&nbsp;%</option>
                                     <?php } ?>
                                 <?php } ?>
                             </select>
@@ -95,7 +95,7 @@
                         </div>
                         <p class="laMensual" style="font-size:14px;display:none;"><?= $this->lng['preteur-projets']['soit-un-remboursement-mensuel-de'] ?></p>
                         <div class="laMensual" style="font-size:14px;width:245px;display:none;">
-                            <div style="text-align:center;"><span id="mensualite">xx</span> €</div>
+                            <div style="text-align:center;"><span id="mensualite">xx</span>&nbsp;€</div>
                         </div>
                         <br/>
 
