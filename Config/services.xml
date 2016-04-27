@@ -50,6 +50,8 @@
             <argument type="service" id="unilend.service.loan_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
             <argument type="service" id="unilend.service.autobid_settings_manager"/>
+            <argument type="service" id="unilend.service.email_manager"/>
+            <argument type="service" id="unilend.service.lender_manager"/>
         </service>
 
         <service id="unilend.service.client_settings_manager" class="Unilend\Service\ClientSettingsManager">

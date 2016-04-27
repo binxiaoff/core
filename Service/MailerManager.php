@@ -1086,7 +1086,7 @@ class MailerManager
         $this->oMailText->get($sNotificationType, 'lang = "fr" AND type');
 
         /** @var \companies $oCompanies */
-        $oCompanies = Loader::loadData('companies');
+        $oCompanies = $this->oEntityManager->getRepository('companies');
         $oCompanies->get($oProject->id_company, 'id_company');
 
         $aReplacements = array(

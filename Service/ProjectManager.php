@@ -738,9 +738,9 @@ class ProjectManager
     public function addProjectStatus($iUserId, $iProjectStatus, \projects $oProject, $iReminderNumber = 0, $sContent = '')
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = Loader::loadData('projects_status_history');
+        $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         $oProjectStatus->get($iProjectStatus, 'status');
 
         $oProjectsStatusHistory->id_project        = $oProject->id_project;
@@ -758,7 +758,7 @@ class ProjectManager
         switch ($oProjectStatus->status) {
             case \projects_status::A_TRAITER:
                 /** @var \settings $oSettings */
-                $oSettings = Loader::loadData('settings');
+                $oSettings = $this->oEntityManager->getRepository('settings');
                 $oSettings->get('Adresse notification inscription emprunteur', 'type');
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $oProject, trim($oSettings->value));
                 break;
