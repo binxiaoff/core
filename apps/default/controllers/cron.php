@@ -177,17 +177,18 @@ class cronController extends bootstrap
 
     public function _pre_publish_project()
     {
-        if (true === $this->startCron('pre_publish_project', 10)) {
-            ini_set('max_execution_time', '600');
+        if (true === $this->startCron('pre_publish_project', 15)) {
+            ini_set('max_execution_time', '900');
             ini_set('memory_limit', '1G');
             /** @var \projects $oProject */
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= (NOW() + INTERVAL 15 MINUTE)", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
+                    $this->oLogger->addRecord(ULogger::INFO, 'Do process pre-publish on project ID: ' . $oProject->id_project);
                     $oProjectManager->prePublish($oProject);
                 }
             }
@@ -255,36 +256,27 @@ class cronController extends bootstrap
             foreach ($aProjectsList as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
                     $oEndDate = $oProjectManager->getProjectEndDate($oProject);
-                    $oNow = new \DateTime();
+                    $oNow     = new \DateTime();
+
+                    $bFunded = $oProjectManager->isFunded($oProject);
+
+                    if ($bFunded) {
+                        $oProjectManager->markAsFunded($oProject);
+                    }
 
                     if ($oEndDate > $oNow) {
                         $oProjectManager->setLogger($this->oLogger);
                         $oProjectManager->checkBids($oProject);
-
                         $oProjectManager->autoBid($oProject);
-
-                        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
-
-                        if ($iBidTotal >= $oProject->amount && $oProject->status_solde == 0) {
-                            $oProject->date_funded  = date('Y-m-d H:i:s');
-                            $oProject->status_solde = 1;
-                            $oProject->update();
-
-                            $oMailerManager->sendFundedToBorrower($oProject);
-                        }
                     } else {
                         $oProjectManager->setLogger($oLoggerEndProject);
                         $oProject->date_fin = $oNow->format('Y-m-d H:i:s');
                         $oProject->update();
 
                         $bHasProjectFinished = true;
-                        // Solde total obtenue dans l'enchere
-                        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
 
-                        // Fundé
-                        if ($iBidTotal >= $oProject->amount) {
+                        if ($bFunded) {
                             $oProjectManager->buildLoans($oProject);
-
                             $oProjectManager->createRepaymentSchedule($oProject);
                             $oProjectManager->createPaymentSchedule($oProject);
 
@@ -536,7 +528,7 @@ class cronController extends bootstrap
 				</InitgPty>
 			</GrpHdr>
 			<PmtInf>
-				<PmtInfId>' . $titulaire . '/' . $dateColle . '/' . $id_compteur . '</PmtInfId>
+				<PmtInfId>' . $this->getIdLot($titulaire, $dateColle, $id_compteur) . '</PmtInfId>
 				<PmtMtd>TRF</PmtMtd>
 				<NbOfTxs>' . $nbVirements . '</NbOfTxs>
 				<CtrlSum>' . $Totalmontants . '</CtrlSum>
@@ -601,8 +593,6 @@ class cronController extends bootstrap
                 $this->virements->added_xml = date('Y-m-d H:i') . ':00';
                 $this->virements->update();
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $v['id_virement'];
                 $montant = round($v['montant'] / 100, 2);
                 if (strncmp('FR', strtoupper(str_replace(' ', '', $ibanDestinataire)), 2) == 0) {
                     $bicFr = '';
@@ -617,7 +607,7 @@ class cronController extends bootstrap
                 $xml .= '
                 <CdtTrfTxInf>
                     <PmtId>
-                        <EndToEndId>' . $id_lot . '</EndToEndId>
+                        <EndToEndId>' . $this->getIdLot($titulaire, $dateColle, $v['id_virement']) . '</EndToEndId>
                     </PmtId>
                     <Amt>
                         <InstdAmt Ccy="EUR">' . $montant . '</InstdAmt>
@@ -831,8 +821,6 @@ class cronController extends bootstrap
                 $this->prelevements->added_xml = date('Y-m-d H:i') . ':00';
                 $this->prelevements->update();
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
                 $montant = round($p['montant'] / 100, 2);
 
                 // Date execution
@@ -858,7 +846,7 @@ class cronController extends bootstrap
                 //si jamais eu de prelevement avant
                 $val = 'FRST'; // prelevement ponctuel
 
-                $table['id_lot']         = $id_lot;
+                $table['id_lot']         = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                 $table['montant']        = $montant;
                 $table['val']            = $val;
                 $table['date_execution'] = date('Y-m-d', $date_execution);
@@ -884,8 +872,6 @@ class cronController extends bootstrap
                 $this->clients->get($p['id_client'], 'id_client');
                 $this->lenders_accounts->get($p['id_client'], 'id_client_owner');
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
                 $montant = round($p['montant'] / 100, 2);
 
                 // Date execution
@@ -932,7 +918,7 @@ class cronController extends bootstrap
                 // si status est a 0 (en cours) ou si le satut est supperieur et que la date du jour est égale a la date xml + 1 mois
                 // 2 cas possible = 1 : premier prelevement | 2 : prelevement recurrent
                 if ($p['status'] == 0 || $p['status'] > 0 && $dateXmlPlusUnMois == $today) {
-                    $table['id_lot']         = $id_lot;
+                    $table['id_lot']         = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                     $table['montant']        = $montant;
                     $table['val']            = $val;
                     $table['date_execution'] = date('Y-m-d', $date_execution);
@@ -976,8 +962,6 @@ class cronController extends bootstrap
                     }
                 }
 
-                // variables
-                $id_lot  = $titulaire . '/' . $dateColle . '/' . $p['id_prelevement'];
                 $montant = round($p['montant'] / 100, 2);
 
                 // On recup le mandat
@@ -1005,7 +989,7 @@ class cronController extends bootstrap
 
                 $this->clients->get($p['id_client'], 'id_client');
 
-                $table['id_lot']         = $id_lot;
+                $table['id_lot']         = $this->getIdLot($titulaire, $dateColle, $p['id_prelevement']);
                 $table['montant']        = $montant;
                 $table['val']            = $val;
                 $table['date_execution'] = $p['date_echeance_emprunteur'];
@@ -1051,6 +1035,17 @@ class cronController extends bootstrap
 
             $this->stopCron();
         }
+    }
+
+    /**
+     * @param string $titulaire
+     * @param string $dateColle date format : Ymd
+     * @param int $iId id prelevement
+     * @return string
+     */
+    private function getIdLot($titulaire, $dateColle, $iId)
+    {
+        return $titulaire . '/' . $dateColle . '/' . $iId;
     }
 
     private function xmPrelevement($table)
@@ -1876,7 +1871,7 @@ class cronController extends bootstrap
                                 $oTransactions          = $this->loadData('transactions');
 
                                 if (
-                                    1 === preg_match('#^RUMUNILEND([0-9]+)#', $r['libelleOpe3'], $aMatches)
+                                    1 === preg_match('#^RUM[^0-9]*([0-9]+)#', $r['libelleOpe3'], $aMatches)
                                     && $this->projects->get((int) $aMatches[1])
                                     && 1 === preg_match('#^RCNUNILEND/([0-9]{8})/([0-9]+)#', $r['libelleOpe4'], $aMatches)
                                     && $oPrelevements->get((int) $aMatches[2])

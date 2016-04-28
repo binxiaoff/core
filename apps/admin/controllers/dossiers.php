@@ -162,7 +162,7 @@ class dossiersController extends bootstrap
             $this->aAnalysts            = $this->users->select('status = 1 AND id_user_type = 2');
             $this->aSalesPersons        = $this->users->select('status = 1 AND id_user_type = 3');
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
-            $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
+            $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
@@ -2756,71 +2756,63 @@ class dossiersController extends bootstrap
     }
 
     //utilisé pour récup les infos affichées dans le cadre
-    /**
-     * @todo Optimize: almost all loading time is here
-     */
     private function recup_info_remboursement_anticipe($id_project)
     {
         $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $this->echeanciers            = $this->loadData('echeanciers');
+        $oBusinessDays                = $this->loadLib('jours_ouvres');
 
         //Récupération de la date theorique de remb ( ON AJOUTE ICI LA ZONE TAMPON DE 3 JOURS APRES LECHEANCE)
-        $L_echeance         = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW() GROUP BY ordre", 'ordre ASC', 0, 1);
-        $next_echeanche     = isset($L_echeance[0]) ? $L_echeance[0] : null;
-        $ordre_echeance_ra  = isset($L_echeance[0]) ? $L_echeance[0]['ordre'] + 1 : 1;
-        $date_next_echeance = $next_echeanche['date_echeance'];
+        $aLastOrder             = $this->echeanciers->getLastOrder($id_project);
+        $iOrderEarlyRefund      = isset($aLastOrder['ordre']) ? $aLastOrder['ordre'] + 1 : 1;
+        $sLastOrderDate         = $aLastOrder['date_echeance'];
+        $iLastOrderDate         = strtotime($sLastOrderDate);
+        $sBusinessDaysOrderDate = "";
 
-        // Date 4 jours ouvrés avant date next echeance
-        $jo = $this->loadLib('jours_ouvres');
-
-        $dateEcheance                            = strtotime($date_next_echeance);
-        $date_next_echeance_4jouvres_avant_stamp = "";
-
-        if ($dateEcheance != "" && isset($dateEcheance)) {
-            $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
+        // Date 4 jours ouvrés avant $sLastOrderDate
+        if ($iLastOrderDate != "" && isset($iLastOrderDate)) {
+            $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
         }
-        if (false === empty($next_echeanche)) {
+
+        if (false === empty($aLastOrder)) {
             // on check si la date limite est pas déjà dépassé. Si oui on prend la prochaine echeance
-            if ($date_next_echeance_4jouvres_avant_stamp <= time()) {
+            if ($sBusinessDaysOrderDate <= time()) {
                 // Dans ce cas, on connait donc déjà la derniere echeance qui se déroulera normalement
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($next_echeanche['date_echeance']);
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aLastOrder['date_echeance']);
 
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $L_echeance = $this->echeanciers->select(" id_project = " . $id_project . " AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW() AND ordre = " . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
+                $aNextEcheance = $this->echeanciers->select(" id_project = " . $id_project . "
+                    AND DATE_ADD(date_echeance, INTERVAL 3 DAY) > NOW()
+                    AND id_lender = (SELECT id_lender
+                    FROM echeanciers where id_project = " . $id_project . " LIMIT 1)
+                    AND ordre = " . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
 
-                if (count($L_echeance) > 0) {
+                if (count($aNextEcheance) > 0) {
                     // on refait le meme process pour la nouvelle date
-                    $next_echeanche = $L_echeance[0];
-
-                    $date_next_echeance = $next_echeanche['date_echeance'];
-
-                    // Date 4 jours ouvrés avant date next echeance
-                    $jo = $this->loadLib('jours_ouvres');
-
-                    $dateEcheance                            = strtotime($date_next_echeance);
-                    $date_next_echeance_4jouvres_avant_stamp = $jo->display_jours_ouvres($dateEcheance, 4);
-
-                    //$ordre_echeance_ra = $ordre_echeance_ra + 1; // changement on n'ajoute plus un mois supp
+                    $aLastOrder             = $aNextEcheance[0];
+                    $sLastOrderDate         = $aLastOrder['date_echeance'];
+                    $iLastOrderDate         = strtotime($sLastOrderDate);
+                    $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
                 } else {
                     $this->date_next_echeance_4jouvres_avant = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
                 }
             } else {
                 // on va recup la date de la derniere echeance qui suit le process de base
-                $L_echeance_normale = $this->echeanciers->select(' id_project = ' . $id_project . ' AND ordre = ' . ($ordre_echeance_ra + 1), 'ordre ASC', 0, 1);
-                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($L_echeance_normale[0]['date_echeance']);
+                $aRepaymentSchedule                   = $this->echeanciers->select(' id_project = ' . $id_project . ' AND ordre = ' . ($iOrderEarlyRefund + 1), 'ordre ASC', 0, 1);
+                $this->date_derniere_echeance_normale = $this->dates->formatDateMysqltoFr_HourOut($aRepaymentSchedule[0]['date_echeance']);
             }
         }
 
-        if (false === empty($date_next_echeance_4jouvres_avant_stamp)) {
-            $this->date_next_echeance_4jouvres_avant = date('d/m/Y', $date_next_echeance_4jouvres_avant_stamp);
-            $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($date_next_echeance);
+        if (false === empty($sBusinessDaysOrderDate)) {
+            $this->date_next_echeance_4jouvres_avant = date('d/m/Y', $sBusinessDaysOrderDate);
+            $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
         }
 
-        $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $ordre_echeance_ra);
-        $this->montant_restant_du_preteur    = $this->echeanciers->reste_a_payer_ra($id_project, $ordre_echeance_ra);
+        $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
+        $this->montant_restant_du_preteur    = $this->echeanciers->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
         $resultat_num                        = $this->montant_restant_du_preteur - $this->montant_restant_du_emprunteur;
 
-        $this->ordre_echeance_ra = $ordre_echeance_ra;
+        $this->ordre_echeance_ra = $iOrderEarlyRefund;
 
         $this->projects_status_history = $this->loadData('projects_status_history');
         $statut_projet                 = $this->projects_status_history->select('id_project = ' . $id_project, 'id_project_status_history DESC', 0, 1);
