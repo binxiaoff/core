@@ -33,7 +33,6 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
             </div><!-- /.row -->
             <div class="row">
                 <input type="text" name="phone_inscription" id="phone_inscription" value="<?= ($this->companies->phone != '' ? str_replace(' ', '', $this->companies->phone) : $this->lng['etape1']['telephone']) ?>" title="<?= $this->lng['etape1']['telephone'] ?>" class="field field-large required" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 9,maximum: 14}">
-                <input type="text" name="siret_inscription" id="siret_inscription" title="<?= $this->lng['etape1']['siret'] ?>" value="<?= ($this->companies->siret != '' ? $this->companies->siret : $this->lng['etape1']['siret']) ?>" data-validators="Presence&amp;Numericality&amp;Length, {minimum: 14, maximum: 14}" class="field field-large required">
             </div><!-- /.row -->
         </div>
 

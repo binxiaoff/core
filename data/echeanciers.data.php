@@ -963,6 +963,7 @@ class echeanciers extends echeanciers_crud
             FROM `echeanciers`
             WHERE id_project = ' . $iProjectID . '
                 AND DATE_ADD(date_echeance, INTERVAL ' . $sInterval . ' DAY) > ' . $sDate . '
+                AND id_lender = (SELECT id_lender FROM echeanciers where id_project = ' . $iProjectID . ' LIMIT 1)
             GROUP BY id_project
             ORDER BY ordre ASC
             LIMIT 1'

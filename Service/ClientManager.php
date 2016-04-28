@@ -43,6 +43,34 @@ class ClientManager
     }
 
     /**
+     * @param int    $iClientId
+     * @param string $sContent
+     */
+    public function changeClientStatusTriggeredByClientAction($iClientId, $sContent)
+    {
+        /** @var \clients_status_history $oClientStatusHistory */
+        $oClientStatusHistory = Loader::loadData('clients_status_history');
+        /** @var \clients_status $oLastClientStatus */
+        $oLastClientStatus = Loader::loadData('clients_status');
+        $oLastClientStatus->getLastStatut($iClientId);
+
+        switch ($oLastClientStatus->status) {
+            case \clients_status::COMPLETENESS:
+            case \clients_status::COMPLETENESS_REMINDER:
+            case \clients_status::COMPLETENESS_REPLY:
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::COMPLETENESS_REPLY, $iClientId, $sContent);
+                break;
+            case \clients_status::VALIDATED:
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::MODIFICATION, $iClientId, $sContent);
+                break;
+            case \clients_status::TO_BE_CHECKED:
+                $oClientStatusHistory->addStatus(\users::USER_ID_FRONT, \clients_status::TO_BE_CHECKED, $iClientId, $sContent);
+                break;
+        }
+    }
+
+
+    /**
      * @param \clients $oClient
      *
      * @return bool

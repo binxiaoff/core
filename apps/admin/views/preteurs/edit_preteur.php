@@ -468,8 +468,12 @@
                         case \clients_status::TO_BE_CHECKED: ?>
                             <tr>
                                 <td>
-                                    Création de compte le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
-                                    <?= $a['content'] ?>
+                                    <?php if (empty($a['content'])) : ?>
+                                        Création de compte le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
+                                    <?php else: ?>
+                                        Compte modifié le <?= date('d/m/Y H:i:s', strtotime($a['added'])) ?><br>
+                                        <?= $a['content'] ?>
+                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php break;
