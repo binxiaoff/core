@@ -21,41 +21,10 @@ class lenders_account_stats extends lenders_account_stats_crud
     }
 
     /**
-     * @param int $iLimit number of lender accounts to be selected
-     * @return array with lenders
+     * @param $iLendersAccountId
+     * @return array
      */
-    public function selectLendersForIRR($iLimit)
-    {
-        $sql = 'SELECT
-                    l.id_lender,
-                    la.added,
-                    MAX(las.tri_date) AS last_tri_date
-                FROM
-                    lenders_accounts la
-                    INNER JOIN clients c ON la.id_client_owner = c.id_client
-                    INNER JOIN loans l ON l.id_lender = la.id_lender_account
-                    LEFT JOIN lenders_account_stats las ON la.id_lender_account = las.id_lender_account
-                WHERE
-                    c.status = 1
-                GROUP BY
-                    l.id_lender
-                ORDER BY
-                    last_tri_date ASC,
-                    la.added DESC
-                LIMIT ' . $iLimit;
-        $result   = $this->bdd->query($sql);
-        $aLenders = array();
-        while ($record = $this->bdd->fetch_array($result)) {
-            $aLenders[] = $record;
-        }
-        return $aLenders;
-    }
-
-    /**
-     * @param int $iLendersAccountId unique identifier of the lender
-     * @return array with dates and values of loans and dues sorted by date (impacts result of calculation)
-     */
-    private function getValuesForIRR($iLendersAccountId)
+    public function getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLendersAccountId)
     {
         $aValuesIRR      = array();
         $aDatesTimeStamp = array();
@@ -167,44 +136,7 @@ class lenders_account_stats extends lenders_account_stats_crud
         return $aValuesIRR;
     }
 
-    /**
-     * @param int $iLendersAccountId unique identifier of the lender for who the IRR should be calculated
-     * @return float with IRR value
-     * @throws Exception when not values are available to be used in the calculation,
-     * when the result is not in the accepted range
-     */
-    public function calculateIRR($iLendersAccountId)
-    {
-        /* @var array $config */
-        include __DIR__ . '/../config.php';
 
-        $oLoggerIRR = new ULogger('Calculate IRR', $config['log_path'][ENVIRONMENT], 'IRR.log');
-        $fGuess     = 0.1;
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Guess : ' . $fGuess . ' MAX_INTERATIONS : '. 100);
-
-        $fStartSQL  = microtime(true);
-        $aValuesIRR = $this->getValuesForIRR($iLendersAccountId);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
-
-        foreach ($aValuesIRR as $aValues) {
-            foreach ($aValues as $date => $value) {
-                $aDates[] = $date;
-                $aSums[]  = $value;
-            }
-        }
-
-        $fStartXIRR = microtime(true);
-        $oFinancial = new \PHPExcel_Calculation_Financial();
-        $fXIRR      = round($oFinancial->XIRR($aSums, $aDates, $fGuess) * 100, 2);
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)));
-
-        if (abs($fXIRR) > 100) {
-            throw new Exception('IRR not in range for id_lender ' . $iLendersAccountId . ' IRR : ' . $fXIRR);
-        }
-        $oLoggerIRR->addRecord(ULogger::INFO, 'Lender ' . $iLendersAccountId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
-
-        return $fXIRR;
-    }
 
     public function getLossRate($iLendersAccountId, lenders_accounts $oLendersAccounts)
     {
@@ -241,5 +173,37 @@ class lenders_account_stats extends lenders_account_stats_crud
         }
 
         return $fLossRate;
+    }
+
+    public function getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized()
+    {
+        $sQuery =   'SELECT
+                        e.id_lender
+                    FROM
+                        echeanciers e
+                        INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project
+                        INNER JOIN projects_status_history psh ON plshm.id_project_status_history = psh.id_project_status_history
+                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE
+                        e.date_echeance < NOW()
+                        AND (
+                            SELECT
+                                MAX(las1.tri_date)
+                            FROM
+                                lenders_account_stats las1
+                            WHERE
+                                e.id_lender = las1.id_lender_account
+                        ) < e.date_echeance
+                        AND e.status = 0
+                        AND ps.status IN (' . implode(',', array(\projects_status::PROBLEME, \projects_status::PROBLEME_J_X, \projects_status::RECOUVREMENT)) . ')
+                    GROUP BY
+                        id_lender';
+
+        $aLenderIds = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_assoc($rResult)) {
+            $aLenderIds[] = $aRecord;
+        }
+        return $aLenderIds;
     }
 }

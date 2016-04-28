@@ -31,7 +31,7 @@
                                 <ul class="refUnique">
                                 <?php
                                     for ($i = 0; $i < 26; $i++) {
-                                        ?><li style="text-align:center;"><?= (empty($this->motif[$i]) ? '&nbsp;' : $this->motif[$i]) ?></li><?php
+                                        ?><li style="text-align:center;"><?= isset($this->motif[$i]) ? $this->motif[$i] : '&nbsp;' ?></li><?php
                                     }
                                 ?>
                                 </ul>
