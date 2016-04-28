@@ -1084,7 +1084,7 @@ class depot_de_dossierController extends bootstrap
     private function redirect($sPage, $iProjectStatus = null, $sRejectionMessage = '')
     {
         /** @var \Unilend\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->get('ProjectManager');
+        $oProjectManager = $this->get('unilend.service.project_manager');
 
         if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $iProjectStatus, $this->projects, 0, $sRejectionMessage);

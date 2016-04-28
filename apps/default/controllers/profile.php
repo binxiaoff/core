@@ -628,7 +628,7 @@ class profileController extends bootstrap
                     $contenu .= '</ul>';
 
                     /** @var \Unilend\Service\ClientManager $oClientManager */
-                    $oClientManager = $this->get('ClientManager');
+                    $oClientManager = $this->get('unilend.service.client_manager');
                     $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');

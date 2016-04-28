@@ -323,7 +323,7 @@ class espace_emprunteurController extends Bootstrap
                 $oProject->create();
 
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $oProject);
 
                 header('Location:' . $this->lurl . '/espace_emprunteur/projets');

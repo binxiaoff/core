@@ -92,7 +92,7 @@ class dossiersController extends bootstrap
         $this->clients_prescripteurs           = $this->loadData('clients');
         $this->companies_prescripteurs         = $this->loadData('companies');
         /** @var \Unilend\Service\ProjectManager $oProjectManager */
-        $oProjectManager                       = $this->get('ProjectManager');
+        $oProjectManager                       = $this->get('unilend.service.project_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
@@ -2390,7 +2390,7 @@ class dossiersController extends bootstrap
                     }
 
                     /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                    $oProjectManager                     = $this->get('ProjectManager');
+                    $oProjectManager                     = $this->get('unilend.service.project_manager');
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
                     if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
@@ -2428,7 +2428,7 @@ class dossiersController extends bootstrap
                 $this->loans                         = $this->loadData('loans');
                 $loans                               = $this->loadData('loans');
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager                     = $this->get('ProjectManager');
+                $oProjectManager                     = $this->get('unilend.service.project_manager');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -3133,7 +3133,7 @@ class dossiersController extends bootstrap
             }
 
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager = $this->get('unilend.service.project_manager');
             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects, 1, $varMail['liste_pieces']);
 
             unset($_SESSION['project_submission_files_list'][$oProjects->id_project]);

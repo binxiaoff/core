@@ -6146,7 +6146,7 @@ class cronController extends bootstrap
                                     }
 
                                     /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                                    $oProjectManager = $this->get('ProjectManager');
+                                    $oProjectManager = $this->get('unilend.service.project_manager');
 
                                     /**
                                      * When project is pending documents, abort status is not automatic and must be set manually in BO
@@ -6179,7 +6179,7 @@ class cronController extends bootstrap
             /** @var \projects $oProject */
             $oProject = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager = $this->get('unilend.service.project_manager');
 
             foreach ($oProject->getFastProcessStep3() as $iProjectId) {
                 $oProject->get($iProjectId, 'id_project');
@@ -6298,7 +6298,7 @@ class cronController extends bootstrap
             $this->fillProjectLastStatusMaterialized();
 
             /** @var \Unilend\Service\LenderManager $oLenderManager */
-            $oLenderManager           = $this->get('LenderManager');
+            $oLenderManager           = $this->get('unilend.service.lender_manager');
             /** @var \lenders_account_stats $oLendersAccountsStats */
             $oLendersAccountsStats    = $this->loadData('lenders_account_stats');
             $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
@@ -6308,7 +6308,7 @@ class cronController extends bootstrap
             $fTimeStart              = microtime(true);
             $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
             /** @var \Unilend\Service\IRRManager $oIRRManager */
-            $oIRRManager             = $this->get('IRRManager');
+            $oIRRManager             = $this->get('unilend.service.irr_manager');
             $oIRRManager->setLogger($oLoggerIRR);
 
             /** @var lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
@@ -6413,7 +6413,7 @@ class cronController extends bootstrap
             $oLoggerIRR = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
 
             /** @var \Unilend\Service\IRRManager $oIRRManager */
-            $oIRRManager = $this->get('IRRManager');
+            $oIRRManager = $this->get('unilend.service.irr_manager');
             $oIRRManager->setLogger($oLoggerIRR);
             $sYesterday = date('Y-m-d', strtotime('-1 day'));
 

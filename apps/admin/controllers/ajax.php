@@ -768,7 +768,7 @@ class ajaxController extends bootstrap
 
             if ($form_ok == true) {
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                 $this->current_projects_status = $this->loadData('projects_status');
@@ -1054,7 +1054,7 @@ class ajaxController extends bootstrap
                     $this->projects_notes->create();
                 }
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
                 } elseif ($_POST['status'] == 2) {
@@ -1366,7 +1366,7 @@ class ajaxController extends bootstrap
                 $content_risk = '';
 
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
 
                 if ($_POST['status'] == 1) {
                     $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);

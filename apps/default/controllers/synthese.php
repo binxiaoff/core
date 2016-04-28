@@ -250,7 +250,7 @@ class syntheseController extends bootstrap
         $this->clients_status->getLastStatut($this->clients->id_client);
 
         /** @var \Unilend\Service\IRRManager $oIRRManager */
-        $oIRRManager                 = $this->get('IRRManager');
+        $oIRRManager                 = $this->get('unilend.service.irr_manager');
         $aLastUnilendIRR             = $oIRRManager->getLastUnilendIRR();
         $this->sIRRUnilend           = $this->ficelle->formatNumber((float) $aLastUnilendIRR['value']);
         $this->iDiversificationLevel = '';
