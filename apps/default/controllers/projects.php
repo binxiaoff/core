@@ -1,6 +1,5 @@
 <?php
 
-use Unilend\core\Loader;
 use Unilend\librairies\Cache;
 
 class projectsController extends bootstrap
@@ -416,7 +415,6 @@ class projectsController extends bootstrap
                     die;
                 }
             }
-            // FIN INSCRIPTION PRETEUR //
 
             $this->nbProjects = $this->projects->countSelectProjectsByStatus($this->tabProjectDisplay . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = ' . \projects::DISPLAY_PROJECT_ON);
             $this->mois_jour  = $this->dates->formatDate($this->projects->date_retrait, 'F d');
@@ -442,7 +440,6 @@ class projectsController extends bootstrap
                 $this->ordreProject = $_SESSION['ordreProject'];
             }
 
-            // id_project avant et apres
             $this->positionProject = $this->projects->positionProject($this->projects->id_project, $this->tabProjectDisplay, $this->tabOrdreProject[$this->ordreProject]);
 
             if ($this->favoris->get($this->clients->id_client, 'id_project = ' . $this->projects->id_project . ' AND id_client')) {
@@ -478,7 +475,6 @@ class projectsController extends bootstrap
                     $oAssetsDebts->capitaux_propres                   = 0;
                     $oAssetsDebts->provisions_pour_risques_et_charges = 0;
                     $oAssetsDebts->amortissement_sur_immo             = 0;
-                    $oAssetsDebts->depreciation_actif_circulant       = 0;
                     $oAssetsDebts->dettes_financieres                 = 0;
                     $oAssetsDebts->dettes_fournisseurs                = 0;
                     $oAssetsDebts->autres_dettes                      = 0;
@@ -500,7 +496,6 @@ class projectsController extends bootstrap
                 $this->totalAnneePassif[] = $ap['capitaux_propres']
                     + $ap['provisions_pour_risques_et_charges']
                     + $ap['amortissement_sur_immo']
-                    + $ap['depreciation_actif_circulant']
                     + $ap['dettes_financieres']
                     + $ap['dettes_fournisseurs']
                     + $ap['autres_dettes']
@@ -511,31 +506,34 @@ class projectsController extends bootstrap
                 $this->payer                = $this->projects->amount;
                 $this->resteApayer          = 0;
                 $this->pourcentage          = 100;
-                $this->decimales            = 0;
                 $this->decimalesPourcentage = 0;
                 $this->txLenderMax          = $this->bids->getProjectMaxRate($this->projects->id_project);
             } else {
                 $this->payer                = $this->soldeBid;
                 $this->resteApayer          = $this->projects->amount - $this->soldeBid;
                 $this->pourcentage          = (1 - $this->resteApayer / $this->projects->amount) * 100;
-                $this->decimales            = 0;
                 $this->decimalesPourcentage = 1;
-                $this->txLenderMax          = '10.0';
+                $this->txLenderMax          = 10;
             }
 
-            $sCacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
-            if (false === ($this->aBidsOnProject = $this->oCache->get($sCacheKey))) {
-                $this->aBidsOnProject  = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-                $this->oCache->set($sCacheKey, $this->aBidsOnProject, Cache::SHORT_TIME);
-            }
-            $this->CountEnchere = count($this->aBidsOnProject );
-            $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
+            $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
+            $this->avgAmount    = $this->bids->getAVGAmount($this->projects->id_project);
             $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction    = 1;
 
-            if ($this->avgAmount == false) {
-                $this->avgAmount = 0;
+            $sCacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
+
+            if (false === ($this->aBids = $this->oCache->get($sCacheKey))) {
+                if ($this->CountEnchere > 10) {
+                    $this->aBids = array_merge(
+                        $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC', 0, 5),
+                        array_reverse($this->bids->select('id_project = ' . $this->projects->id_project, 'ordre DESC', 0, 5))
+                    );
+                } else {
+                    $this->aBids = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+                }
+                $this->oCache->set($sCacheKey, $this->aBids, Cache::SHORT_TIME);
             }
 
             if (false === empty($this->clients->id_client)) {
@@ -574,7 +572,7 @@ class projectsController extends bootstrap
             }
 
             /** @var \settings $oSetting */
-            $oSetting = Loader::loadData('settings');
+            $oSetting = $this->loadData('settings');
             $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
             $aFundedCompanies = explode(',', $oSetting->value);
 
@@ -610,9 +608,8 @@ class projectsController extends bootstrap
         $oCompany->get($oProject->id_company, 'id_company');
 
         /** @var \companies_bilans $oAnnualAccounts */
-        $oAnnualAccounts = $this->loadData('companies_bilans');
-        $aAnnualAccounts = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
-
+        $oAnnualAccounts    = $this->loadData('companies_bilans');
+        $aAnnualAccounts    = $oAnnualAccounts->select('id_company = "' . $oCompany->id_company . '" AND cloture_exercice_fiscal <= (SELECT cloture_exercice_fiscal FROM companies_bilans WHERE id_bilan = ' . $oProject->id_dernier_bilan . ')', 'cloture_exercice_fiscal DESC', 0, 3);
         $aAnnualAccountsIds = array_column($aAnnualAccounts, 'id_bilan');
 
         /** @var \companies_actif_passif $oAssetsDebts */
@@ -620,7 +617,7 @@ class projectsController extends bootstrap
         $aAssetsDebts = $oAssetsDebts->select('id_bilan IN (' . implode(', ', $aAnnualAccountsIds) . ')', 'FIELD(id_bilan, ' . implode(', ', $aAnnualAccountsIds) . ') ASC');
 
         /** @var \settings $oSetting */
-        $oSetting = Loader::loadData('settings');
+        $oSetting = $this->loadData('settings');
         $oSetting->get('Entreprises fundés au passage du risque lot 1', 'type');
         $aFundedCompanies     = explode(',', $oSetting->value);
         $bPreviousRiskProject = in_array($oCompany->id_company, $aFundedCompanies);
@@ -733,12 +730,6 @@ class projectsController extends bootstrap
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['amortissement_sur_immo']);
         }
-        if (false === $bPreviousRiskProject) {
-            $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['depreciation-actif-circulant']);
-            for ($i = 0; $i < 3; $i++) {
-                $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['depreciation_actif_circulant']);
-            }
-        }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['dettes-financieres']);
         for ($i = 0; $i < 3; $i++) {
             $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['dettes_financieres']);
@@ -759,7 +750,7 @@ class projectsController extends bootstrap
         }
         $oActiveSheet->setCellValueByColumnAndRow(0, ++$iRow, $this->lng['preteur-projets']['total-bilan-passifs']);
         for ($i = 0; $i < 3; $i++) {
-            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['depreciation_actif_circulant'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
+            $oActiveSheet->setCellValueByColumnAndRow($i + 1, $iRow, $aAssetsDebts[$i]['capitaux_propres'] + $aAssetsDebts[$i]['provisions_pour_risques_et_charges'] + $aAssetsDebts[$i]['amortissement_sur_immo'] + $aAssetsDebts[$i]['dettes_financieres'] + $aAssetsDebts[$i]['dettes_fournisseurs'] + $aAssetsDebts[$i]['autres_dettes'] + $aAssetsDebts[$i]['comptes_regularisation_passif']);
         }
 
         /** @var \PHPExcel_Writer_CSV $oWriter */
