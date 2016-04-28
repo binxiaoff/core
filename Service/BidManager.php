@@ -125,7 +125,6 @@ class BidManager
         $oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
         $oTransaction->etat             = \transactions::STATUS_VALID;
         $oTransaction->id_project       = $iProjectId;
-        $oTransaction->transaction      = \transactions::VIRTUAL;
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $oTransaction->create();
 
@@ -309,7 +308,6 @@ class BidManager
         $oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
         $oTransaction->id_bid_remb      = $oBid->id_bid;
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-        $oTransaction->transaction      = \transactions::VIRTUAL;
         $oTransaction->create();
 
         $oWalletsLine->id_lender                = $oBid->id_lender_account;

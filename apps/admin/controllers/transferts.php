@@ -95,7 +95,6 @@ class transfertsController extends bootstrap
                 $transactions->date_transaction = date('Y-m-d H:i:s');
                 $transactions->status           = 1;
                 $transactions->etat             = 1;
-                $transactions->transaction      = \transactions::PHYSICAL;
                 $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $transactions->create();
@@ -122,7 +121,6 @@ class transfertsController extends bootstrap
                 $transactions->date_transaction = date('Y-m-d H:i:s');
                 $transactions->status           = 1;
                 $transactions->etat             = 1;
-                $transactions->transaction      = \transactions::PHYSICAL;
                 $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $transactions->create();
@@ -244,7 +242,6 @@ class transfertsController extends bootstrap
             $transactions->date_transaction = date('Y-m-d H:i:s');
             $transactions->status           = 1;
             $transactions->etat             = 1;
-            $transactions->transaction      = \transactions::PHYSICAL;
             $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $transactions->create();
@@ -387,7 +384,7 @@ class transfertsController extends bootstrap
             isset($_POST['id_project'], $_POST['id_reception'])
             && $projects->get($_POST['id_project'], 'id_project')
             && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
+            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
         ) {
             $bank_unilend->delete($transactions->id_transaction, 'id_transaction');
 
@@ -452,8 +449,8 @@ class transfertsController extends bootstrap
             isset($_POST['id_project'], $_POST['id_reception'])
             && $projects->get($_POST['id_project'], 'id_project')
             && $receptions->get($_POST['id_reception'], 'id_reception')
-            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 6 AND id_prelevement')
-            && false === $new_transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = 15 AND id_prelevement')
+            && $transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT . ' AND id_prelevement')
+            && false === $new_transactions->get($_POST['id_reception'], 'status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION . ' AND id_prelevement')
         ) {
             $companies->get($projects->id_company, 'id_company');
             $clients->get($companies->id_client_owner, 'id_client');
@@ -465,7 +462,6 @@ class transfertsController extends bootstrap
             $new_transactions->date_transaction = date('Y-m-d H:i:s');
             $new_transactions->status           = 1;
             $new_transactions->etat             = 1;
-            $new_transactions->transaction      = \transactions::PHYSICAL;
             $new_transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
             $new_transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
             $new_transactions->id_user          = $_SESSION['user']['id_user'];
@@ -564,8 +560,8 @@ class transfertsController extends bootstrap
             $this->offres_bienvenues->get($this->params[1]);
             $oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
-            $bOfferValid      = false;
-            $bEnoughMoneyLeft = false;
+            $bOfferValid                      = false;
+            $bEnoughMoneyLeft                 = false;
             $aVirtualWelcomeOfferTransactions = array(
                 \transactions_types::TYPE_WELCOME_OFFER,
                 \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION
@@ -611,7 +607,6 @@ class transfertsController extends bootstrap
                 $oTransactions->etat                             = 1;
                 $oTransactions->ip_client                        = $_SERVER['REMOTE_ADDR'];
                 $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
-                $oTransactions->transaction                      = 2;
                 $oTransactions->create();
 
                 $oWalletsLines->id_lender                        = $oLendersAccounts->id_lender_account;
@@ -623,7 +618,7 @@ class transfertsController extends bootstrap
                 $oWalletsLines->create();
 
                 $oBankUnilend->id_transaction                    = $oTransactions->id_transaction;
-                $oBankUnilend->montant                           = '-' . $oWelcomeOfferDetails->montant;
+                $oBankUnilend->montant                           = - $oWelcomeOfferDetails->montant;
                 $oBankUnilend->type                              = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                 $oBankUnilend->create();
 

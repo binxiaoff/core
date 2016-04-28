@@ -150,16 +150,7 @@ class alimentationController extends bootstrap
                 $this->transactions->status           = 0;
                 $this->transactions->etat             = 0;
                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                $this->transactions->civilite_fac     = $this->clients->civilite;
-                $this->transactions->nom_fac          = $this->clients->nom;
-                $this->transactions->prenom_fac       = $this->clients->prenom;
-                $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
-                $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
-                $this->transactions->cp_fac           = $this->clients_adresses->cp;
-                $this->transactions->ville_fac        = $this->clients_adresses->ville;
-                $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
                 $this->transactions->type_transaction = \transactions_types::TYPE_DIRECT_DEBIT;
-                $this->transactions->transaction      = \transactions::PHYSICAL;
                 $this->transactions->create();
 
                 $this->prelevements->id_client        = $this->clients->id_client;
@@ -244,16 +235,7 @@ class alimentationController extends bootstrap
                 $this->transactions->status           = 0;
                 $this->transactions->etat             = 0;
                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                $this->transactions->civilite_fac     = $this->clients->civilite;
-                $this->transactions->nom_fac          = $this->clients->nom;
-                $this->transactions->prenom_fac       = $this->clients->prenom;
-                $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
-                $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
-                $this->transactions->cp_fac           = $this->clients_adresses->cp;
-                $this->transactions->ville_fac        = $this->clients_adresses->ville;
-                $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
-                $this->transactions->transaction      = 1; // transaction physique
                 $this->transactions->create();
 
                 //***************//

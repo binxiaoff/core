@@ -381,13 +381,41 @@ class operationsController extends bootstrap
         $this->date_debut = date('Y-m-d', $date_debut_time);
         $this->date_fin   = date('Y-m-d', $date_fin_time);
 
+
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23'
+            1 => array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_LOAN,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ),
+            2 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL
+            ),
+            3 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT
+            ),
+            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
+            5 => array(\transactions_types::TYPE_LENDER_LOAN),
+            6 => array(
+                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            )
         );
 
         if (isset($post_tri_type_transac)) {
@@ -443,9 +471,9 @@ class operationsController extends bootstrap
                 $order = 'date_operation DESC, id_transaction DESC';
             }
         }
-        $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 
-        $this->lTrans = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
+        $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
+        $this->lTrans                  = $this->indexage_vos_operations->select('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
 
         header('Content-type: application/vnd.ms-excel; charset=utf-8');
         header('Expires: 0');
@@ -475,7 +503,19 @@ class operationsController extends bootstrap
                 <td></td>
             </tr>
             <?php
-            $asterix_on = false;
+
+            $asterix_on    = false;
+            $aTranslations = array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION          => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+                \transactions_types::TYPE_LENDER_WITHDRAWAL            => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
+                \transactions_types::TYPE_WELCOME_OFFER                => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION   => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-parrain']
+            );
+
             foreach ($this->lTrans as $t) {
                 $t['libelle_operation'] = $t['libelle_operation'];
                 $t['libelle_projet']    = $t['libelle_projet'];
@@ -488,7 +528,7 @@ class operationsController extends bootstrap
                 $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
                 $solde      = $t['solde'];
 
-                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT || $t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
+                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
                     if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
@@ -524,35 +564,11 @@ class operationsController extends bootstrap
                         <td></td>
                     </tr>
                     <?php
-                } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
+                } elseif (in_array($t['type_transaction'], array_keys($aTranslations))) {
                     // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
-                    switch ($t['type_transaction']) {
-                        case 8:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-dargents'];
-                            break;
-                        case 1:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                            break;
-                        case 3:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                            break;
-                        case 4:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['depot-de-fonds'];
-                            break;
-                        case 16:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'];
-                            break;
-                        case 17:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['retrait-offre'];
-                            break;
-                        case 19:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-filleul'];
-                            break;
-                        case 20:
-                            $t['libelle_operation'] = $this->lng['preteur-operations-vos-operations']['gain-parrain'];
-                            break;
-                    }
-                    if ($t['type_transaction'] == 8 && $t['montant'] > 0) {
+                    $t['libelle_operation'] = $aTranslations[$t['type_transaction']];
+
+                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) {
                         $type = "Annulation retrait des fonds - compte bancaire clos";
                     } else {
                         $type = $t['libelle_operation'];
@@ -577,14 +593,13 @@ class operationsController extends bootstrap
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
-                    <?
-
-                } elseif (in_array($t['type_transaction'], array(2))) {//offres en cours
+                    <?php
+                } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) {
                     $bdc = $t['bdc'];
                     if ($t['bdc'] == 0) {
                         $bdc = "";
                     }
-                    //asterix pour les offres acceptees
+
                     $asterix       = "";
                     $offre_accepte = false;
                     if ($t['libelle_operation'] == $this->lng['preteur-operations-vos-operations']['offre-acceptee']) {
@@ -657,25 +672,26 @@ class operationsController extends bootstrap
         $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
 
         $array_type_transactions = array(
-            1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2  => array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_LOAN                    => array(
                 1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
                 2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
                 3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
             ),
-            3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5  => $this->lng['preteur-operations-vos-operations']['remboursement'],
-            7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-            16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-            17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_REPAYMENT               => $this->lng['preteur-operations-vos-operations']['remboursement'],
+            \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
+            \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
+            \transactions_types::TYPE_WELCOME_OFFER                  => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
+            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
+            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
+            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
         );
+
         $sLastOperation = $this->indexage_vos_operations->getLastOperationDate($clients->id_client);
 
         if (empty($sLastOperation)) {

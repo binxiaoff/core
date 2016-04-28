@@ -206,22 +206,22 @@
                 <?php
                 $i = 1;
                 foreach ($this->lTrans as $t) :
-                    if ($t['type_transaction'] == 5) :
+                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT) :
                         $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                         $this->projects->get($this->echeanciers->id_project, 'id_project');
                         $this->companies->get($this->projects->id_company, 'id_company');
-                    elseif ($t['type_transaction'] == 23) :
+                    elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) :
                         $this->projects->get($t['id_project'], 'id_project');
                         $this->companies->get($this->projects->id_company, 'id_company');
                     endif;
                     $type = "";
-                    if ($t['type_transaction'] == 8 && $t['montant'] > 0) :
+                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_WITHDRAWAL && $t['montant'] > 0) :
                         $type = "Annulation retrait des fonds - compte bancaire clos";
                     else :
-                        $type = $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == 5 ? ' - ' . $this->companies->name : '');
+                        $type = $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT ? ' - ' . $this->companies->name : '');
                     endif; ?>
                     <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == 5 || $t['type_transaction'] == 23 ? ' - ' . $this->companies->name : '') ?></td>
+                        <td><?= $this->lesStatuts[$t['type_transaction']] . (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT)) ? ' - ' . $this->companies->name : '') ?></td>
                         <td><?= $this->dates->formatDate($t['date_transaction'], 'd-m-Y') ?></td>
                         <td><?= $this->ficelle->formatNumber($t['montant'] / 100) ?> €</td>
                     </tr>

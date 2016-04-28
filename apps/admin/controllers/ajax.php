@@ -727,23 +727,21 @@ class ajaxController extends bootstrap
         $this->companies    = $this->loadData('companies');
 
         if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
-
             $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
-            $year = $_POST['year'];
-
-            $this->lTrans     = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
             $this->lesStatuts = array(
-                1  => $this->lng['profile']['versement-initial'],
-                3  => $this->lng['profile']['alimentation-cb'],
-                4  => $this->lng['profile']['alimentation-virement'],
-                5  => 'Remboursement',
-                7  => $this->lng['profile']['alimentation-prelevement'],
-                8  => $this->lng['profile']['retrait'],
-                14 => 'Régularisation prêteur',
-                16 => 'Offre de bienvenue',
-                17 => 'Retrait offre de bienvenue'
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $this->lng['profile']['alimentation-cb'],
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $this->lng['profile']['alimentation-virement'],
+                \transactions_types::TYPE_LENDER_REPAYMENT            => 'Remboursement',
+                \transactions_types::TYPE_DIRECT_DEBIT                => $this->lng['profile']['alimentation-prelevement'],
+                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $this->lng['profile']['retrait'],
+                \transactions_types::TYPE_LENDER_REGULATION           => 'Régularisation prêteur',
+                \transactions_types::TYPE_WELCOME_OFFER               => 'Offre de bienvenue',
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION  => 'Retrait offre de bienvenue'
             );
+
+            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
         }
     }
 

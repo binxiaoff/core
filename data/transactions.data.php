@@ -40,11 +40,8 @@ class transactions extends transactions_crud
     const STATUS_VALID    = 1;
     const STATUS_CANCELED = 3;
 
-    const PHYSICAL = 1;
-    const VIRTUAL  = 2;
-
-    const DISPLAY_IN_FO = 0;
-    const HIDE_IN_FO = 1;
+    public static $aPhysicalTransactions = array(1, 3, 4, 6, 7, 8, 9, 11, 12, 14, 15, 18, 22, 24, 25);
+    public static $aVirtualTransactions  = array(2, 5, 10, 13, 16, 17, 19, 20, 23, 26);
 
     public function __construct($bdd, $params = '')
     {
@@ -94,8 +91,7 @@ class transactions extends transactions_crud
             WHERE status = 1
                 AND etat = 1
                 AND YEAR(date_transaction) = ' . $year . '
-                AND type_transaction IN (1, 3, 4)
-                AND display = 0
+                AND type_transaction IN (' . implode(', ', array(\transactions_types::TYPE_LENDER_SUBSCRIPTION, \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT, \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT)) . ')
                 AND id_client = ' . $id_client . '
             GROUP BY LEFT(date_transaction, 7)';
 
@@ -150,7 +146,7 @@ class transactions extends transactions_crud
             WHERE etat = 1
                 AND status = 1
                 AND id_client = ' . $id_client . '
-                AND type_transaction NOT IN (9, 6, 15)
+                AND type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ')
                 AND DATE(added) <= "' . $dateLimite . '"';
 
         $result = $this->bdd->query($sql);
@@ -161,28 +157,6 @@ class transactions extends transactions_crud
             $solde = ($solde / 100);
         }
         return $solde;
-    }
-
-    public function sumByMonthByPreteur($id_client, $type_transaction, $month, $year)
-    {
-        $sql = '
-            SELECT SUM(montant) AS montant
-            FROM transactions
-            WHERE MONTH(added) = ' . $month . '
-                AND YEAR(added) = ' . $year . '
-                AND etat = 1
-                AND status = 1
-                AND type_transaction IN(' . $type_transaction . ')
-                AND id_client = ' . $id_client;
-
-        $result  = $this->bdd->query($sql);
-        $montant = $this->bdd->result($result, 0, 'montant');
-        if ($montant == '') {
-            $montant = 0;
-        } else {
-            $montant = ($montant / 100);
-        }
-        return $montant;
     }
 
     public function sumByday($type_transaction, $month, $year)
@@ -198,7 +172,7 @@ class transactions extends transactions_crud
 
         $result = array();
 
-        if ($type_transaction == 3) { // si cb on recup les inscription par cb
+        if ($type_transaction == \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT) {
             $sql = '
                 SELECT
                     SUM(ROUND(t.montant / 100, 2)) AS montant,
@@ -211,7 +185,7 @@ class transactions extends transactions_crud
                     AND YEAR(t.added) = ' . $year . '
                     AND t.etat = 1
                     AND t.status = 1
-                    AND t.type_transaction = 1
+                    AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . '
                     AND l.type_transfert = 2
                 GROUP BY DATE(t.date_transaction)';
 
@@ -253,12 +227,10 @@ class transactions extends transactions_crud
             $result[$record['jour']]['montant_etat'] = $record['montant_etat'];
         }
 
-        // on affiche chaque jours du mois
         foreach ($listDates as $d) {
             $lresult[$d]['montant']         = empty($result[$d]['montant']) ? '0' : $result[$d]['montant'];
             $lresult[$d]['montant_unilend'] = empty($result[$d]['montant_unilend']) ? '0' : $result[$d]['montant_unilend'];
             $lresult[$d]['montant_etat']    = empty($result[$d]['montant_etat']) ? '0' : $result[$d]['montant_etat'];
-
         }
 
         return $lresult;
@@ -267,16 +239,26 @@ class transactions extends transactions_crud
     // solde d'une journée
     public function getSoldeReelDay($date)
     {
+        $aTypes = array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+            \transactions_types::TYPE_BORROWER_REPAYMENT,
+            \transactions_types::TYPE_DIRECT_DEBIT,
+            \transactions_types::TYPE_LENDER_WITHDRAWAL,
+            \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION,
+            \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER,
+            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT,
+            \transactions_types::TYPE_REGULATION_BANK_TRANSFER,
+            \transactions_types::TYPE_RECOVERY_BANK_TRANSFER
+        );
+
         $sql = '
             SELECT SUM(montant) AS solde
             FROM transactions
             WHERE etat = 1
                 AND status = 1
-                AND transaction = 1
-                AND type_transaction <> 9
-                AND type_transaction <> 11
-                AND type_transaction <> 12
-                AND type_transaction <> 14
+                AND transactions.type_transaction IN (' . implode(', ', $aTypes) . ')
                 AND DATE(date_transaction) = "' . $date . '"
             GROUP BY DATE(date_transaction)';
 
@@ -290,7 +272,6 @@ class transactions extends transactions_crud
         return $solde;
     }
 
-    // solde d'une journée
     public function getSoldeReelUnilendDay($date)
     {
         $sql = '
@@ -319,8 +300,7 @@ class transactions extends transactions_crud
             FROM transactions
             WHERE etat = 1
                 AND status = 1
-                AND transaction = 2
-                AND type_transaction = 10
+                AND type_transaction = ' . \transactions_types::TYPE_UNILEND_REPAYMENT . '
                 AND DATE(date_transaction) = "' . $date . '"
             GROUP BY DATE(date_transaction)';
 
@@ -363,7 +343,7 @@ class transactions extends transactions_crud
             CASE ';
 
         foreach ($array_type_transactions as $key => $t) {
-            if ($key == 2) {
+            if ($key == \transactions_types::TYPE_LENDER_LOAN) {
                 foreach ($t as $key_offre => $offre) {
                     // offre en cours
                     if ($key_offre == 1) {
@@ -383,34 +363,34 @@ class transactions extends transactions_crud
         }
         $sql .= '
                 ELSE ""
-            END as type_transaction_alpha,
+            END AS type_transaction_alpha,
 
             CASE
-                WHEN t.type_transaction = 5 THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
+                WHEN t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
                 WHEN b.id_project IS NULL THEN b2.id_project
                 ELSE b.id_project
-            END as le_id_project,
+            END AS le_id_project,
 
-            date_transaction as date_tri,
+            date_transaction AS date_tri,
 
-            (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.id_transaction <= t.id_transaction) as solde,
-
-            CASE t.type_transaction
-                WHEN 2 THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-                WHEN 5 THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
-                WHEN 23 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                WHEN 26 THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
-                ELSE ""
-            END as title,
+            (SELECT ROUND(SUM(t2.montant / 100), 2) AS solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND t2.id_transaction <= t.id_transaction) AS solde,
 
             CASE t.type_transaction
-                WHEN 2 THEN 0
-                WHEN 5 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
-                WHEN 23 THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
+                WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
+                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
+                WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
+                WHEN ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
                 ELSE ""
-            END as bdc,
+            END AS title,
 
-            t.montant as amount_operation
+            CASE t.type_transaction
+                WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN 0
+                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
+                WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
+                ELSE ""
+            END AS bdc,
+
+            t.montant AS amount_operation
 
             FROM transactions t
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
@@ -420,20 +400,19 @@ class transactions extends transactions_crud
                 AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
                 AND t.status = 1
                 AND t.etat = 1
-                AND t.display = 0
                 AND t.id_client = ' . $iClientId . '
         )
         UNION ALL
         (
             SELECT
               t.*,
-              "' . $array_type_transactions[2][3] . '" as type_transaction_alpha,
-              lo.id_project as le_id_project,
-              psh.added as date_tri,
-              (SELECT ROUND(SUM(t2.montant/100),2) as solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (9,6,15) AND t2.date_transaction < date_tri) as solde,
-              p.title as title,
-              lo.id_loan as bdc,
-              lo.amount as amount_operation
+              "' . $array_type_transactions[2][3] . '" AS type_transaction_alpha,
+              lo.id_project AS le_id_project,
+              psh.added AS date_tri,
+              (SELECT ROUND(SUM(t2.montant/100),2) AS solde FROM transactions t2 WHERE t2.etat = 1 AND t2.status = 1 AND t2.id_client = t.id_client AND t2.type_transaction NOT IN (' . implode(', ', array(\transactions_types::TYPE_BORROWER_REPAYMENT, \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION)) . ') AND t2.date_transaction < date_tri) AS solde,
+              p.title AS title,
+              lo.id_loan AS bdc,
+              lo.amount AS amount_operation
             FROM loans lo
               INNER JOIN accepted_bids ab ON ab.id_loan = lo.id_loan
               INNER JOIN bids b ON ab.id_bid = b.id_bid
@@ -445,7 +424,6 @@ class transactions extends transactions_crud
                 AND t.type_transaction IN (' . implode(',', array_keys($array_type_transactions)) . ')
                 AND t.status = 1
                 AND t.etat = 1
-                AND t.display = 0
                 AND t.id_client = ' . $iClientId . '
                 AND psh.id_project_status_history = (SELECT MIN(id_project_status_history) FROM projects_status_history psh1 WHERE psh1.id_project = lo.id_project AND psh1.id_project_status = 8)
         )';

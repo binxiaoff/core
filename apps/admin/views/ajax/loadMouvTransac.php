@@ -11,14 +11,14 @@
         <?php
         $i = 1;
         foreach ($this->lTrans as $t) {
-            if ($t['type_transaction'] == 5) {
+            if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                 $this->projects->get($this->echeanciers->id_project, 'id_project');
                 $this->companies->get($this->projects->id_company, 'id_company');
             }
             ?>
             <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
-                <td><?= $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == 5 ? ' - ' . $this->companies->name : '') ?></td>
+                <td><?= $this->lesStatuts[$t['type_transaction']] . ($t['type_transaction'] == \transactions_types::TYPE_LENDER_REPAYMENT ? ' - ' . $this->companies->name : '') ?></td>
                 <td><?= $this->dates->formatDate($t['date_transaction'], 'd-m-Y') ?></td>
                 <td><?= $this->ficelle->formatNumber($t['montant'] / 100) ?> €</td>
             </tr>

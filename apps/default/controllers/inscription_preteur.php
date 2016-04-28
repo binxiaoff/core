@@ -343,21 +343,8 @@ class inscription_preteurController extends bootstrap
                     $this->transactions->status           = 0;
                     $this->transactions->etat             = 0;
                     $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $this->transactions->civilite_fac     = $this->clients->civilite;
-                    $this->transactions->nom_fac          = $this->clients->nom;
-                    $this->transactions->prenom_fac       = $this->clients->prenom;
-                    $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
-                    $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
-                    $this->transactions->cp_fac           = $this->clients_adresses->cp;
-                    $this->transactions->ville_fac        = $this->clients_adresses->ville;
-                    $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
                     $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_SUBSCRIPTION;
-                    $this->transactions->transaction      = \transactions::PHYSICAL;
                     $this->transactions->create();
-
-                    //***************//
-                    //*** PAYLINE ***//
-                    //***************//
 
                     $array                    = array();
                     $payline                  = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
@@ -365,20 +352,18 @@ class inscription_preteurController extends bootstrap
                     $payline->cancelURL       = $this->lurl . '/inscription_preteur/payment/' . $this->clients->hash . '/';
                     $payline->notificationURL = NOTIFICATION_URL;
 
-                    $array['payment']['amount']   = $amount;
-                    $array['payment']['currency'] = ORDER_CURRENCY;
-                    $array['payment']['action']   = PAYMENT_ACTION;
-                    $array['payment']['mode']     = PAYMENT_MODE;
+                    $array['payment']['amount']         = $amount;
+                    $array['payment']['currency']       = ORDER_CURRENCY;
+                    $array['payment']['action']         = PAYMENT_ACTION;
+                    $array['payment']['mode']           = PAYMENT_MODE;
+                    $array['payment']['contractNumber'] = CONTRACT_NUMBER;
 
                     $array['order']['ref']      = $this->transactions->id_transaction;
                     $array['order']['amount']   = $amount;
                     $array['order']['currency'] = ORDER_CURRENCY;
 
-                    $array['payment']['contractNumber'] = CONTRACT_NUMBER;
-                    $contracts                          = explode(";", CONTRACT_NUMBER_LIST);
-                    $array['contracts']                 = $contracts;
-                    $secondContracts                    = explode(";", SECOND_CONTRACT_NUMBER_LIST);
-                    $array['secondContracts']           = $secondContracts;
+                    $array['contracts']       = explode(';', CONTRACT_NUMBER_LIST);
+                    $array['secondContracts'] = explode(';', SECOND_CONTRACT_NUMBER_LIST);
 
                     $result = $payline->doWebPayment($array);
 
@@ -400,7 +385,6 @@ class inscription_preteurController extends bootstrap
             } elseif (isset($_POST['send_form_preteur_virement'])) {// Virement
                 $this->clients->etape_inscription_preteur = 3; // etape 3 ok
 
-                // type de versement virement
                 $this->lenders_accounts->fonds          = 0;
                 $this->lenders_accounts->motif          = $this->motif;
                 $this->lenders_accounts->type_transfert = 1;

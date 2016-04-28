@@ -730,7 +730,7 @@ class ajaxController extends bootstrap
 
         $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
-        if (isset($_POST['year']) && isset($_POST['id_client'])) {
+        if (isset($_POST['year'], $_POST['id_client'])) {
             $this->clients      = $this->loadData('clients');
             $this->transactions = $this->loadData('transactions');
             $this->echeanciers  = $this->loadData('echeanciers');
@@ -739,14 +739,21 @@ class ajaxController extends bootstrap
 
             $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
 
-            // Offre de bienvenue motif
             $this->settings->get('Offre de bienvenue motif', 'type');
             $this->motif_offre_bienvenue = $this->settings->value;
 
-            $year = $_POST['year'];
+            $this->lesStatuts = array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $this->lng['profile']['alimentation-cb'],
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $this->lng['profile']['alimentation-virement'],
+                \transactions_types::TYPE_LENDER_REPAYMENT            => $this->lng['profile']['remboursement'],
+                \transactions_types::TYPE_DIRECT_DEBIT                => $this->lng['profile']['alimentation-prelevement'],
+                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $this->lng['profile']['retrait'],
+                \transactions_types::TYPE_WELCOME_OFFER               => $this->motif_offre_bienvenue,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION  => 'Retrait offre de bienvenue'
+            );
 
-            $this->lTrans     = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,16,17) AND status = 1 AND etat = 1 AND display = 0 AND id_client = ' . $_POST['id_client'] . ' AND YEAR(date_transaction) = ' . $year, 'added DESC');
-            $this->lesStatuts = array(1 => $this->lng['profile']['versement-initial'], 3 => $this->lng['profile']['alimentation-cb'], 4 => $this->lng['profile']['alimentation-virement'], 5 => $this->lng['profile']['remboursement'], 7 => $this->lng['profile']['alimentation-prelevement'], 8 => $this->lng['profile']['retrait'], 16 => $this->motif_offre_bienvenue, 17 => 'Retrait offre de bienvenue');
+            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $_POST['id_client'] . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
         }
     }
 
@@ -775,7 +782,7 @@ class ajaxController extends bootstrap
 
             $this->clients_status->getLastStatut($this->clients->id_client);
 
-            if ($this->clients_status->status < 60) {
+            if ($this->clients_status->status < \clients_status::VALIDATED) {
                 echo 'nok';
                 die;
             }
@@ -821,8 +828,6 @@ class ajaxController extends bootstrap
             if ($verif == 'ok') {
                 $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
 
-                // on effectue une demande de virement
-                // on retire la somme dur les transactions, bank_line et wallet
                 $this->transactions->id_client        = $this->clients->id_client;
                 $this->transactions->montant          = - $montant * 100;
                 $this->transactions->id_langue        = 'fr';
@@ -830,16 +835,7 @@ class ajaxController extends bootstrap
                 $this->transactions->status           = 1;
                 $this->transactions->etat             = 1;
                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                $this->transactions->civilite_fac     = $this->clients->civilite;
-                $this->transactions->nom_fac          = $this->clients->nom;
-                $this->transactions->prenom_fac       = $this->clients->prenom;
-                $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
-                $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
-                $this->transactions->cp_fac           = $this->clients_adresses->cp;
-                $this->transactions->ville_fac        = $this->clients_adresses->ville;
-                $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_WITHDRAWAL;
-                $this->transactions->transaction      = \transactions::PHYSICAL;
                 $this->transactions->create();
 
                 $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
@@ -1586,16 +1582,45 @@ class ajaxController extends bootstrap
         $this->date_fin_display   = date('d/m/Y', $date_fin_time);
 
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23,26'
+            1 => array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_LOAN,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ),
+            2 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL
+            ),
+            3 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT
+            ),
+            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
+            5 => array(\transactions_types::TYPE_LENDER_LOAN),
+            6 => array(
+                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            )
         );
 
         if (isset($_POST['tri_type_transac'])) {
             $tri_type_transac = $array_type_transactions_liste_deroulante[$_POST['tri_type_transac']];
+        } else {
+            $tri_type_transac = $array_type_transactions_liste_deroulante[1];
         }
 
         if (isset($_POST['tri_projects'])) {
@@ -1647,8 +1672,8 @@ class ajaxController extends bootstrap
         }
 
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-        $this->lTrans                  = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
-        $this->lProjectsLoans          = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
+        $this->lTrans                  = $this->indexage_vos_operations->select('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"' . $tri_project, $order);
+        $this->lProjectsLoans          = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
     }
 
     public function _acceptCookies()

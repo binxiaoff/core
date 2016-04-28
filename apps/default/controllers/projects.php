@@ -230,7 +230,6 @@ class projectsController extends bootstrap
                     $this->transactions->id_project       = $this->projects->id_project;
                     $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                     $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-                    $this->transactions->transaction      = \transactions::VIRTUAL;
                     $this->transactions->create();
 
                     $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;

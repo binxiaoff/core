@@ -1385,7 +1385,6 @@ class cronController extends bootstrap
                             $transactions->date_transaction = date('Y-m-d H:i:s');
                             $transactions->status           = 1;
                             $transactions->etat             = 1;
-                            $transactions->transaction      = \transactions::PHYSICAL;
                             $transactions->type_transaction = \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER;
                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                             $transactions->create();
@@ -1442,7 +1441,6 @@ class cronController extends bootstrap
                                     $transactions->date_transaction = date('Y-m-d H:i:s');
                                     $transactions->status           = 1;
                                     $transactions->etat             = 1;
-                                    $transactions->transaction      = \transactions::PHYSICAL;
                                     $transactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT;
                                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                     $transactions->create();
@@ -1473,7 +1471,6 @@ class cronController extends bootstrap
                                     $transactions->date_transaction = date('Y-m-d H:i:s');
                                     $transactions->status           = 1;
                                     $transactions->etat             = 1;
-                                    $transactions->transaction      = \transactions::PHYSICAL;
                                     $transactions->type_transaction = \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT;
                                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                     $transactions->create();
@@ -1531,7 +1528,6 @@ class cronController extends bootstrap
                                             $transactions->date_transaction = date('Y-m-d H:i:s');
                                             $transactions->status           = 1;
                                             $transactions->etat             = 1;
-                                            $transactions->transaction      = \transactions::PHYSICAL;
                                             $transactions->type_transaction = \transactions_types::TYPE_REGULATION_BANK_TRANSFER;
                                             $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                             $transactions->create();
@@ -1574,7 +1570,6 @@ class cronController extends bootstrap
                                                 $transactions->date_transaction = date('Y-m-d H:i:s');
                                                 $transactions->status           = 1;
                                                 $transactions->etat             = 1;
-                                                $transactions->transaction      = \transactions::PHYSICAL;
                                                 $transactions->type_transaction = \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT;
                                                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                                 $transactions->create();
@@ -1685,7 +1680,6 @@ class cronController extends bootstrap
                                     $oTransactions->date_transaction = date('Y-m-d H:i:s');
                                     $oTransactions->status           = 1;
                                     $oTransactions->etat             = 1;
-                                    $oTransactions->transaction      = \transactions::PHYSICAL;
                                     $oTransactions->type_transaction = \transactions_types::TYPE_BORROWER_REPAYMENT_REJECTION;
                                     $oTransactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                     $oTransactions->create();
@@ -2788,7 +2782,6 @@ class cronController extends bootstrap
                     $transactions->etat             = 1;
                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                     $transactions->type_transaction = \transactions_types::TYPE_UNILEND_BANK_TRANSFER;
-                    $transactions->transaction      = \transactions::PHYSICAL;
                     $transactions->create();
 
                     $virements->id_client      = 0;
@@ -3181,7 +3174,6 @@ class cronController extends bootstrap
                 $transactions->etat             = 1;
                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                 $transactions->type_transaction = \transactions_types::TYPE_FISCAL_BANK_TRANSFER;
-                $transactions->transaction      = \transactions::PHYSICAL;
                 $transactions->create();
 
                 $bank_unilend->id_transaction         = $transactions->id_transaction;
@@ -3297,20 +3289,20 @@ class cronController extends bootstrap
                 if ($projects_check->get($p['id_project'], 'id_project') === false ) {
                     $montantBidsTotal = $bids->getSoldeBid($p['id_project']);
                     $montantBidsOK    = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 1', 'amount');
-                    $montantBidsOK    = ($montantBidsOK / 100);
+                    $montantBidsOK    = $montantBidsOK / 100;
                     $montantBidsKO    = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 2', 'amount');
-                    $montantBidsKO    = ($montantBidsKO / 100);
+                    $montantBidsKO    = $montantBidsKO / 100;
 
                     $montantLoans = $loans->sum('id_project = ' . $p['id_project'], 'amount');
-                    $montantLoans = ($montantLoans / 100);
+                    $montantLoans = $montantLoans / 100;
 
-                    $montantTransTotal = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = 2', 'montant');
+                    $montantTransTotal = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_LOAN, 'montant');
                     $montantTransTotal = str_replace('-', '', ($montantTransTotal / 100));
-                    $montantTransDegel = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = 2 AND id_bid_remb != 0', 'montant');
-                    $montantTransDegel = ($montantTransDegel / 100);
+                    $montantTransDegel = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_LOAN . ' AND id_bid_remb != 0', 'montant');
+                    $montantTransDegel = $montantTransDegel / 100;
 
-                    $montantTransEnchere = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = 2 AND id_bid_remb != 0', 'montant');
-                    $montantTransEnchere = ($montantTransEnchere / 100);
+                    $montantTransEnchere = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = ' . \transactions_types::TYPE_LENDER_LOAN . ' AND id_bid_remb != 0', 'montant');
+                    $montantTransEnchere = $montantTransEnchere / 100;
 
                     $diffMontantBidsEtProjet = str_replace('-', '', ($montantBidsOK - $p['amount']));
                     $diffEntreBidsKoEtDegel  = ($montantTransEnchere - $montantBidsKO);
@@ -3641,13 +3633,12 @@ class cronController extends bootstrap
             $this->wallets_lines    = $this->loadData('wallets_lines');
             $this->bank_lines       = $this->loadData('bank_lines');
 
-            // On recup la lib et le reste payline
             require_once($this->path . 'protected/payline/include.php');
 
-            $date = mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"));
+            $date = mktime(0, 0, 0, date('m'), date('d') - 1, date('Y'));
             $date = date('Y-m-d', $date);
 
-            $listTran = $this->transactions->select('type_transaction = 3 AND status = 0 AND etat = 0 AND LEFT(date_transaction,10) = "' . $date . '"');
+            $listTran = $this->transactions->select('type_transaction = ' . \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT . ' AND status = 0 AND etat = 0 AND DATE(date_transaction) = "' . $date . '"');
 
             $payline = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
 
@@ -4936,7 +4927,6 @@ class cronController extends bootstrap
                     $transactions->etat               = 1;
                     $transactions->ip_client          = $_SERVER['REMOTE_ADDR'];
                     $transactions->type_transaction   = \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD;
-                    $transactions->transaction        = \transactions::VIRTUAL;
                     $transactions->create();
 
                     $wallets_lines->id_lender                = $lenders_accounts->id_lender_account;
@@ -5005,7 +4995,6 @@ class cronController extends bootstrap
                     $transactions->etat               = 1;
                     $transactions->ip_client          = $_SERVER['REMOTE_ADDR'];
                     $transactions->type_transaction   = \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD;
-                    $transactions->transaction        = \transactions::VIRTUAL;
                     $transactions->create();
 
                     $wallets_lines->id_lender                = $lenders_accounts->id_lender_account;
@@ -5284,7 +5273,6 @@ class cronController extends bootstrap
                                     $transactions->etat             = 1;
                                     $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                     $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT;
-                                    $transactions->transaction      = \transactions::VIRTUAL;
                                     $transactions->create();
 
                                     $wallets_lines->id_lender                = $e['id_lender'];
@@ -5318,7 +5306,6 @@ class cronController extends bootstrap
                             $transactions->etat                     = 1;
                             $transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                             $transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
-                            $transactions->transaction              = \transactions::VIRTUAL;
                             $transactions->create();
 
                             $bank_unilend->id_transaction         = $transactions->id_transaction;
@@ -6017,7 +6004,6 @@ class cronController extends bootstrap
                     $oTransactions->etat                      = 1;
                     $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
                     $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION;
-                    $oTransactions->transaction               = \transactions::VIRTUAL;
                     $oTransactions->create();
 
                     $oLendersAccounts->get($aWelcomeOffer['id_client'], 'id_client_owner');

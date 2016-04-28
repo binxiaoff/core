@@ -1095,8 +1095,8 @@ class pdfController extends bootstrap
             $debutTemp = explode('/', $post_debut);
             $finTemp   = explode('/', $post_fin);
 
-            $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
-            $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
+            $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
+            $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
 
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
@@ -1104,8 +1104,8 @@ class pdfController extends bootstrap
         } elseif (isset($post_id_last_action) && $post_id_last_action == 'nbMois') {
             $nbMois = $post_nbMois;
 
-            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
+            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
 
             // On sauvegarde la derniere action
             $_SESSION['id_last_action'] = $post_id_last_action;
@@ -1113,7 +1113,7 @@ class pdfController extends bootstrap
 
             $year = $post_annee;
 
-            $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
+            $date_debut_time = mktime(0, 0, 0, 1, 1, $year);
 
             if (date('Y') == $year) {
                 $date_fin_time = mktime(0, 0, 0, date('m'), date('d'), $year);
@@ -1132,61 +1132,68 @@ class pdfController extends bootstrap
                 $debutTemp = explode('/', $post_debut);
                 $finTemp   = explode('/', $post_fin);
 
-                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
-                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
+                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
+                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
             } elseif ($post_id_last_action == 'nbMois') {
-                //echo 'titi';
                 $nbMois = $post_nbMois;
 
-                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
-                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
+                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
             } elseif ($post_id_last_action == 'annee') {
-                //echo 'tata';
                 $year = $post_annee;
 
-                $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
-                $date_fin_time   = mktime(0, 0, 0, 12, 31, $year); // date fin
+                $date_debut_time = mktime(0, 0, 0, 1, 1, $year);
+                $date_fin_time   = mktime(0, 0, 0, 12, 31, $year);
             }
         } // Par defaut (on se base sur le 1M)
         else {
-            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date debut
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y'));
+            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
         }
 
         $this->date_debut = date('Y-m-d', $date_debut_time);
         $this->date_fin   = date('Y-m-d', $date_fin_time);
 
-        $array_type_transactions = array(
-            1 => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            2 => array(
-                1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
-                2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
-                3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
-            ),
-            3 => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            4 => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            5 => $this->lng['preteur-operations-vos-operations']['remboursement'],
-            7 => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            8 => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-            16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-            17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur']
-        );
-
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23',
-            2 => '3,4,7,8',
-            3 => '3,4,7',
-            4 => '8',
-            5 => '2',
-            6 => '5,23'
+            1 => array(
+                \transactions_types::TYPE_LENDER_SUBSCRIPTION,
+                \transactions_types::TYPE_LENDER_LOAN,
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL,
+                \transactions_types::TYPE_WELCOME_OFFER,
+                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD,
+                \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            ),
+            2 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT,
+                \transactions_types::TYPE_LENDER_WITHDRAWAL
+            ),
+            3 => array(
+                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
+                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
+                \transactions_types::TYPE_DIRECT_DEBIT
+            ),
+            4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
+            5 => array(\transactions_types::TYPE_LENDER_LOAN),
+            6 => array(
+                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
+                \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
+            )
         );
 
         if (isset($post_tri_type_transac)) {
             $tri_type_transac = $array_type_transactions_liste_deroulante[$post_tri_type_transac];
+        } else {
+            $tri_type_transac = $array_type_transactions_liste_deroulante[1];
         }
 
         if (isset($post_tri_projects)) {
@@ -1239,8 +1246,8 @@ class pdfController extends bootstrap
 
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
 
-        $this->lTrans         = $this->indexage_vos_operations->select('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
-        $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . $tri_type_transac . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
+        $this->lTrans         = $this->indexage_vos_operations->select('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"' . $tri_project, $order);
+        $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('type_transaction IN (' . implode(', ', $tri_type_transac) . ') AND id_client = ' . $this->clients->id_client . ' AND LEFT(date_operation,10) >= "' . $this->date_debut . '" AND LEFT(date_operation,10) <= "' . $this->date_fin . '"');
 
         $this->setDisplay('vos_operations_pdf_html_indexation');
     }

@@ -658,7 +658,6 @@ class dossiersController extends bootstrap
                                 $transactions->etat             = 1;
                                 $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $transactions->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
-                                $transactions->transaction      = \transactions::VIRTUAL;
                                 $transactions->create();
 
                                 $wallets_lines->id_lender                = $l['id_lender'];
@@ -765,16 +764,7 @@ class dossiersController extends bootstrap
                                     $this->transactions->status           = 1;
                                     $this->transactions->etat             = 1;
                                     $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                    $this->transactions->civilite_fac     = $this->clients->civilite;
-                                    $this->transactions->nom_fac          = $this->clients->nom;
-                                    $this->transactions->prenom_fac       = $this->clients->prenom;
-                                    $this->transactions->societe_fac      = $this->clients->type == \clients::TYPE_LEGAL_ENTITY ? $this->companies->name : '';
-                                    $this->transactions->adresse1_fac     = $this->clients_adresses->adresse1;
-                                    $this->transactions->cp_fac           = $this->clients_adresses->cp;
-                                    $this->transactions->ville_fac        = $this->clients_adresses->ville;
-                                    $this->transactions->id_pays_fac      = $this->clients_adresses->id_pays;
                                     $this->transactions->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
-                                    $this->transactions->transaction      = \transactions::PHYSICAL;
                                     $this->transactions->create();
 
                                     $bank_unilend->id_transaction = $this->transactions->id_transaction;
@@ -2004,7 +1994,6 @@ class dossiersController extends bootstrap
                                 $this->transactions->etat             = 1;
                                 $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT;
-                                $this->transactions->transaction      = \transactions::VIRTUAL;
                                 $this->transactions->create();
 
                                 $this->wallets_lines->id_lender                = $e['id_lender'];
@@ -2225,7 +2214,6 @@ class dossiersController extends bootstrap
                             $this->transactions->etat                     = 1;
                             $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                             $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
-                            $this->transactions->transaction              = \transactions::VIRTUAL;
                             $this->transactions->create();
 
                             $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
@@ -2431,7 +2419,6 @@ class dossiersController extends bootstrap
                         $this->transactions->etat             = 1;
                         $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT;
-                        $this->transactions->transaction      = \transactions::VIRTUAL;
                         $this->transactions->create();
 
                         $this->wallets_lines->id_lender                = $preteur['id_lender'];
@@ -2527,7 +2514,6 @@ class dossiersController extends bootstrap
                         $this->transactions->etat                     = 1;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
                         $this->transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
-                        $this->transactions->transaction              = \transactions::VIRTUAL;
                         $this->transactions->id_loan_remb             = 0;
                         $this->transactions->id_project               = $this->projects->id_project;
                         $this->transactions->create();

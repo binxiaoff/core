@@ -614,20 +614,19 @@ class clients extends clients_crud
     private function getBorrowerOperationTransferFinancing($iClientId, $aProjects, $sStartDate, $sEndDate)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    montant/100 AS montant,
-                    DATE(date_transaction) AS date,
-                    id_project,
-                    "virement" AS type
-                FROM
-                    `transactions`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND id_client = ' . $iClientId . '
-                    AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
-                    AND `type_transaction` = 9
-                GROUP BY
-                    id_project';
+        $sql = '
+            SELECT
+                montant / 100 AS montant,
+                DATE(date_transaction) AS date,
+                id_project,
+                "virement" AS type
+            FROM transactions
+            WHERE
+                id_project IN (' . implode(',', $aProjects) . ')
+                AND id_client = ' . $iClientId . '
+                AND date_transaction BETWEEN ' . $sStartDate . 'AND ' . $sEndDate . '
+                AND type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . '
+            GROUP BY id_project';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -639,26 +638,23 @@ class clients extends clients_crud
     private function getBorrowerOperationMonthlyDueAndCommission($aProjects, $sStartDate, $sEndDate, $iType = null)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                    `id_project`,
-                    SUM(montant + commission + tva)/100 AS montant,
-                    -`commission`/100 AS commission,
-                    -`tva`/100 AS tva,
-                    DATE(date_echeance_emprunteur_reel) AS date
-                FROM
-                    `echeanciers_emprunteur`
-                WHERE
-                    `id_project` IN (' . implode(',', $aProjects) . ')
-                    AND DATE(`date_echeance_emprunteur_reel`) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
-                    AND `status_emprunteur` = 1
-                    AND `status_ra` = 0
-                GROUP BY
-                    `id_project`,
-                    DATE(`date_echeance_emprunteur_reel`)';
+        $sql = '
+            SELECT
+                id_project,
+                SUM(montant + commission + tva) / 100 AS montant,
+                -commission / 100 AS commission,
+                -tva / 100 AS tva,
+                DATE(date_echeance_emprunteur_reel) AS date
+            FROM echeanciers_emprunteur
+            WHERE
+                id_project IN (' . implode(',', $aProjects) . ')
+                AND DATE(date_echeance_emprunteur_reel) BETWEEN ' . $sStartDate . ' AND ' . $sEndDate . '
+                AND status_emprunteur = 1
+                AND status_ra = 0
+            GROUP BY id_project, DATE(date_echeance_emprunteur_reel)';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
-
             if ($iType === self::PRLV_MENSUALITE || $iType === null ) {
                 $aDataForBorrowerOperations[] = array(
                     'id_project' => $record['id_project'],
@@ -916,7 +912,7 @@ class clients extends clients_crud
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
                     NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
                     AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);

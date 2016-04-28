@@ -86,7 +86,6 @@ class preteursController extends bootstrap
             $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', null, '', '0', '300');
         }
 
-        //preteur sans mouvement
         $aTransactionTypes = array(
             \transactions_types::TYPE_LENDER_SUBSCRIPTION,
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
@@ -185,28 +184,28 @@ class preteursController extends bootstrap
         $oLenderTaxExemption   = $this->loadData('lender_tax_exemption');
         $this->aExemptionYears = array_column($oLenderTaxExemption->select('id_lender = ' . $this->lenders_accounts->id_lender_account, 'year DESC'), 'year');
 
+        $this->lesStatuts = array(
+            \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $this->lng['profile']['versement-initial'],
+            \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['profile']['alimentation-cb'],
+            \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['profile']['alimentation-virement'],
+            \transactions_types::TYPE_LENDER_REPAYMENT               => 'Remboursement',
+            \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['profile']['alimentation-prelevement'],
+            \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['profile']['retrait'],
+            \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
+            \transactions_types::TYPE_WELCOME_OFFER                  => 'Offre de bienvenue',
+            \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION     => 'Retrait offre de bienvenue',
+            \transactions_types::TYPE_SPONSORSHIP_SPONSORED_REWARD   => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
+            \transactions_types::TYPE_SPONSORSHIP_SPONSOR_REWARD     => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
+            \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
+            \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT   => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
+            \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT      => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
+        );
+
         $this->transactions = $this->loadData('transactions');
         $this->solde        = $this->transactions->getSolde($this->clients->id_client);
         $this->soldeRetrait = $this->transactions->sum('status = 1 AND etat = 1 AND type_transaction = '. \transactions_types::TYPE_LENDER_WITHDRAWAL .' AND id_client = ' . $this->clients->id_client, 'montant');
         $this->soldeRetrait = abs($this->soldeRetrait / 100);
-        $this->lTrans       = $this->transactions->select('type_transaction IN (1,3,4,5,7,8,14,16,17,19,20,22,23,26) AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
-
-        $this->lesStatuts = array(
-            1  => $this->lng['profile']['versement-initial'],
-            3  => $this->lng['profile']['alimentation-cb'],
-            4  => $this->lng['profile']['alimentation-virement'],
-            5  => 'Remboursement',
-            7  => $this->lng['profile']['alimentation-prelevement'],
-            8  => $this->lng['profile']['retrait'],
-            14 => 'Régularisation prêteur',
-            16 => 'Offre de bienvenue',
-            17 => 'Retrait offre de bienvenue',
-            19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-            20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-            22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-            23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-            26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
-        );
+        $this->lTrans       = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $this->clients->id_client . ' AND YEAR(date_transaction) = ' . date('Y'), 'added DESC');
 
         $this->getMessageAboutClientStatus();
     }
@@ -999,16 +998,12 @@ class preteursController extends bootstrap
             }
         }
 
-        $this->sumOffres = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'montant');
-        $this->lOffres   = $offres_bienvenues_details->select('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'added DESC');
-
-        // Somme des virements unilend offre de bienvenue
-        $sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18', 'montant');
-        // Somme des offres utilisé
-        $sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)', 'montant');
-        // Somme reel dispo
-        $this->sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
-        $this->sumDispoPourOffresSelonMax = (($this->montant_limit * 100) - $sumOffresTransac);
+        $this->sumOffres                  = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'montant');
+        $this->lOffres                    = $offres_bienvenues_details->select('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status != 2', 'added DESC');
+        $sumVirementUnilendOffres         = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
+        $sumOffresTransac                 = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
+        $this->sumDispoPourOffres         = $sumVirementUnilendOffres - $sumOffresTransac;
+        $this->sumDispoPourOffresSelonMax = $this->montant_limit * 100 - $sumOffresTransac;
     }
 
     private function createWelcomeOffer($id_client)
@@ -1025,15 +1020,11 @@ class preteursController extends bootstrap
             $bank_unilend              = $this->loadData('bank_unilend');
 
             if ($offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue')) {
-                $sumOffres          = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
-                $sumOffresPlusOffre = ($sumOffres + $offres_bienvenues->montant);
-
-                // Somme des virements unilend offre de bienvenue
-                $sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = 18', 'montant');
-                // Somme des offres utilisé
-                $sumOffresTransac = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(16,17)', 'montant');
-                // Somme reel dispo
-                $sumDispoPourOffres = ($sumVirementUnilendOffres - $sumOffresTransac);
+                $sumOffres                = $offres_bienvenues_details->sum('type = 0 AND id_offre_bienvenue = ' . $offres_bienvenues->id_offre_bienvenue . ' AND status <> 2', 'montant');
+                $sumOffresPlusOffre       = ($sumOffres + $offres_bienvenues->montant);
+                $sumVirementUnilendOffres = $transactions->sum('status = 1 AND etat = 1 AND type_transaction = ' . \transactions_types::TYPE_UNILEND_WELCOME_OFFER_BANK_TRANSFER, 'montant');
+                $sumOffresTransac         = $transactions->sum('status = 1 AND etat = 1 AND type_transaction IN(' . \transactions_types::TYPE_WELCOME_OFFER . ', ' . \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION . ')', 'montant');
+                $sumDispoPourOffres       = $sumVirementUnilendOffres - $sumOffresTransac;
 
                 // On regarde que l'offre soit pas terminé
                 if (strtotime($offres_bienvenues->debut) <= time() && strtotime($offres_bienvenues->fin . ' 23:59:59') >= time() && $sumOffresPlusOffre <= $offres_bienvenues->montant_limit && $sumDispoPourOffres >= $offres_bienvenues->montant) {
@@ -1058,7 +1049,6 @@ class preteursController extends bootstrap
                     $transactions->etat                      = 1;
                     $transactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
                     $transactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
-                    $transactions->transaction               = \transactions::VIRTUAL;
                     $transactions->create();
 
                     $wallets_lines->id_lender                = $lenders_accounts->id_lender_account;
@@ -1479,10 +1469,9 @@ class preteursController extends bootstrap
 
                     if (0 != $iRepaymentNetDiff) {
                         // Update transaction type "Remboursement prêteur"
-                        if (false === $oTransactionsLender->get($aRepayment['id_echeancier'], 'type_transaction = 5 AND id_echeancier')) {
-                            $aTransaction = array_shift($oTransactionsLender->select('type_transaction = 5 AND id_echeancier = ' . $aRepayment['id_echeancier']));
+                        if (false === $oTransactionsLender->get($aRepayment['id_echeancier'], 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' AND id_echeancier')) {
+                            $aTransaction = array_shift($oTransactionsLender->select('type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' AND id_echeancier = ' . $aRepayment['id_echeancier']));
                             if (null === $aTransaction || false === $oTransactionsLender->get($aTransaction['id_transaction'])) {
-                                //Rollback repayment
                                 $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
                                 $aNonMatch[] = $aRepayment;
                                 unset($aMatch[$aRepayment['id_echeancier']]);
@@ -1494,8 +1483,6 @@ class preteursController extends bootstrap
                         $oTransactionsLender->montant += $iRepaymentNetDiff;
                         $oTransactionsLender->update();
 
-
-                        // Update lender's wallet line
                         if (false === $oWalletLine->get($oTransactionsLender->id_transaction, 'id_transaction')) {
                             $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
                             $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
@@ -1522,8 +1509,8 @@ class preteursController extends bootstrap
                             unset($aMatch[$aRepayment['id_echeancier']]);
                             continue;
                         }
-                        if (false === $oTransactionsUnilend->get($aPaymentSchedule['id_echeancier_emprunteur'], 'type_transaction = 10 AND id_echeancier_emprunteur')) {
-                            $aTransactionUnilend = array_shift($oTransactionsUnilend->select('type_transaction = 10 AND id_echeancier_emprunteur = ' . $aPaymentSchedule['id_echeancier_emprunteur']));
+                        if (false === $oTransactionsUnilend->get($aPaymentSchedule['id_echeancier_emprunteur'], 'type_transaction = ' . \transactions_types::TYPE_UNILEND_REPAYMENT . ' AND id_echeancier_emprunteur')) {
+                            $aTransactionUnilend = array_shift($oTransactionsUnilend->select('type_transaction = ' . \transactions_types::TYPE_UNILEND_REPAYMENT . ' AND id_echeancier_emprunteur = ' . $aPaymentSchedule['id_echeancier_emprunteur']));
                             if (null === $aTransactionUnilend || false === $oTransactionsUnilend->get($aTransactionUnilend['id_transaction'])) {
                                 $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
                                 $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);

@@ -420,7 +420,7 @@ class rootController extends bootstrap
                 $this->heureFinFunding = $this->settings->value;
 
                 // ensemblee des fonds recupérés
-                $compteurFonds = $this->transactions->sum('type_transaction = 9', 'montant_unilend-montant');
+                $compteurFonds = $this->transactions->sum('type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'montant_unilend-montant');
                 $compteurFonds = $this->ficelle->formatNumber(($compteurFonds / 100), 0);
                 $tabCompteur   = str_split($compteurFonds);
 
