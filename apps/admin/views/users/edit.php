@@ -1,7 +1,7 @@
 <div id="popup">
 	<a onclick="parent.$.fn.colorbox.close();" title="Fermer" class="closeBtn"><img src="<?=$this->surl?>/images/admin/delete.png" alt="Fermer" /></a>
 	<form method="post" name="mod_users" id="mod_users" enctype="multipart/form-data" action="<?=$this->lurl?>/users/<?=$this->users->id_user?>" target="_parent" onsubmit="return checkFormModifUser();">
-        <h1>Modifier <?=$this->users->firstname?> <?=$this->users->name?></h1>            
+        <h1>Modifier <?=$this->users->firstname?> <?=$this->users->name?></h1>
         <fieldset>
             <table class="formColor">
             	<tr>
@@ -21,11 +21,11 @@
                     <td><input type="text" name="mobile" id="mobile" value="<?=$this->users->mobile?>" class="input_large" /></td>
                 </tr>
                 <tr>
-                    <th><label for="email">Email* :</label></th>
+                    <th><label for="email">Email :</label></th>
                     <td><input type="text" name="email" id="email" value="<?=$this->users->email?>" autocomplete="off" class="input_large" /></td>
                 </tr>
                 <tr>
-                    <th><label for="password">Password* :</label></th>
+                    <th><label for="password">Réinitialiser le mot de passe :</label></th>
                     <td><input type="password" name="password" id="password" value="" autocomplete="off" class="input_large" /></td>
                 </tr>
                 <tr>
@@ -63,7 +63,7 @@
                             <input type="radio" value="1" id="status1" name="status" class="radio" <?=($this->users->status == 1?'checked="checked"':'')?> />
                             <label for="status1" class="label_radio">En ligne</label>
                             <input type="radio" value="0" id="status0" name="status" class="radio" <?=($this->users->status == 0?'checked="checked"':'')?> />
-                            <label for="status0" class="label_radio">Hors ligne</label>	
+                            <label for="status0" class="label_radio">Hors ligne</label>
                         </td>
                     </tr>
                 <?
