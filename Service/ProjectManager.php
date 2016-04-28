@@ -772,6 +772,11 @@ class ProjectManager
             case \projects_status::ATTENTE_ANALYSTE:
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, \email::EMAIL_ADDRESS_ANALYSTS);
                 break;
+            case \projects_status::REJETE:
+            case \projects_status::REJET_ANALYSTE:
+            case \projects_status::REJET_COMITE:
+                $this->stopRemindersForOlderProjects($oProject);
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
@@ -782,6 +787,25 @@ class ProjectManager
                 $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
                 break;
         }
+    }
+
+    public function stopRemindersForOlderProjects(\projects $oProject)
+    {
+        /** @var \companies $oCompany */
+        $oCompany = Loader::loadData('companies');
+
+        $oCompany->get($oProject->id_company);
+        $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
+        foreach ($aPreviousProjectsWithSameSiren as $aProject) {
+            $oProject->get($aProject['id_project'], 'id_project');
+            $this->stopRemindersOnProject($oProject);
+        }
+    }
+
+    public function stopRemindersOnProject(\projects $oProject)
+    {
+        $oProject->stop_relances = '1';
+        $oProject->update();
     }
 
     public function isFunded(\projects $oProject)
