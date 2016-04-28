@@ -221,8 +221,8 @@ class ProjectManager
                 $iOffset += $iLimit;
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if (false === $oClient->get($aAutoBidSetting['id_client'])
-                        && false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
-                        && false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+                        || false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
+                        || false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
                     ) {
                         continue;
                     }
