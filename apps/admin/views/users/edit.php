@@ -45,11 +45,9 @@
                     <td>
                         <select name="id_tree" id="id_tree" class="select">
                             <option value="0">Choisir un lien</option>
-                            <?php
-                            foreach ($this->lTree as $tree) {
-                                echo '<option value="' . $tree['id_tree'] . '" ' . ($this->users->id_tree == $tree['id_tree'] ? 'selected="selected"' : '') . '>' . $tree['title'] . '</option>';
-                            }
-                            ?>
+                            <?php foreach ($this->lTree as $tree) : ?>
+                                <option value="<?= $tree['id_tree'] ?>" <?php $this->users->id_tree == $tree['id_tree'] ? 'selected="selected"' : '' ?>><?= $tree['title'] ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                 </tr>
@@ -58,34 +56,29 @@
                     <td>
                         <select name="id_user_type" id="id_user_type" class="select">
                             <option value="0">Choisir</option>
-                            <?php foreach ($this->lUsersTypes as $type) { ?>
-                                <option value="<?= $type['id_user_type'] ?>" <?= ($this->users->id_user_type == $type['id_user_type'] ? 'selected="selected"' : '') ?>><?= $type['label'] ?></option>
-                            <?php } ?>
+                            <?php foreach ($this->lUsersTypes as $type) : ?>
+                                <option value="<?= $type['id_user_type'] ?>" <?= $this->users->id_user_type == $type['id_user_type'] ? 'selected="selected"' : '' ?>><?= $type['label'] ?></option>
+                            <?php endforeach; ?>
                         </select>
                     </td>
                 </tr>
-                <?
-                if ($this->settings->status != 2) {
-                    ?>
+                <?php if ($this->settings->status != 2) : ?>
                     <tr>
                         <th><label>Statut de l'administrateur :</label></th>
                         <td>
-                            <input type="radio" value="1" id="status1" name="status" class="radio" <?= ($this->users->status == 1 ? 'checked="checked"' : '') ?> />
+                            <input type="radio" value="1" id="status1" name="status" class="radio" <?= $this->users->status == 1 ? 'checked="checked"' : '' ?> />
                             <label for="status1" class="label_radio">En ligne</label>
-                            <input type="radio" value="0" id="status0" name="status" class="radio" <?= ($this->users->status == 0 ? 'checked="checked"' : '') ?> />
+                            <input type="radio" value="0" id="status0" name="status" class="radio" <?= $this->users->status == 0 ? 'checked="checked"' : '' ?> />
                             <label for="status0" class="label_radio">Hors ligne</label>
                         </td>
                     </tr>
-                    <?
-                }
-                ?>
+                <?php endif; ?>
                 <tr>
                     <td>&nbsp;</td>
                     <th>
                         <input type="hidden" name="form_mod_users" id="form_mod_users"/>
                         <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn"/>
                     </th>
-                </tr>
                 </tr>
             </table>
         </fieldset>
