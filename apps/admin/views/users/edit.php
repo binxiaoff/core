@@ -25,7 +25,7 @@
                     <td><input type="text" name="email" id="email" value="<?=$this->users->email?>" autocomplete="off" class="input_large" /></td>
                 </tr>
                 <tr>
-                    <th><label for="password">Réinitialiser le mot de passe :</label></th>
+                    <th><label for="password">R&eacute;initialiser le mot de passe :</label></th>
                     <td><input type="password" name="password" id="password" value="" autocomplete="off" class="input_large" /></td>
                 </tr>
                 <tr>
