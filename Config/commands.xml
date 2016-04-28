@@ -5,11 +5,11 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <service id="unilend.command.example" class="Unilend\apps\Command\example">
-            <tag name="unilend.command"/>
+            <tag name="console.command"/>
             <argument>Bin</argument>
-            <call method="setDbConn">
-                <argument type="service" id="unilend.database.cron" />
-            </call>
+        </service>
+        <service id="unilend.command.send_mail" class="Unilend\apps\Command\SendMail">
+            <tag name="console.command"/>
         </service>
     </services>
 </container>

@@ -56,7 +56,7 @@ abstract class Controller extends ContainerAware
         $this->current_function   = $this->Command->getfunction();
 
         // Mise en place des chemins
-        $this->path       = $this->get('kernel')->getPath();
+        $this->path       = $this->get('kernel')->getRootDir() . '/';
         $this->spath      = $this->Config['user_path'][$this->Config['env']];
         $this->staticPath = $this->Config['static_path'][$this->Config['env']];
         $this->logPath    = $this->Config['log_path'][$this->Config['env']];

@@ -5,8 +5,9 @@ use Unilend\core\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
+use Unilend\Library\Bridge\SwiftMailer\DatabaseSpool;
 
-class SendEmail extends Command
+class SendMail extends Command
 {
     /**
      * @see Command
@@ -34,7 +35,7 @@ EOF
         $transport = $mailer->getTransport();
         if ($transport instanceof \Swift_Transport_SpoolTransport) {
             $spool = $transport->getSpool();
-            if ($spool instanceof \TSS\AutomailerBundle\Library\AutomailerSpool) {
+            if ($spool instanceof DatabaseSpool) {
                 $spool->setMessageLimit($input->getOption('message-limit'));
                 $spool->setTimeLimit($input->getOption('time-limit'));
             }

@@ -14,10 +14,10 @@ class Dispatcher
         $this->kernel      = $kernel;
         $this->Route       = $route;
         $this->Config      = $config;
-        $this->App         = $this->kernel->getAppName();
+        $this->App         = $this->kernel->getName();
         $this->environment = $this->kernel->getEnvironment();
         $this->debug       = $this->kernel->isDebug();
-        $this->path        = $this->kernel->getPath();
+        $this->path        = $this->kernel->getRootDir() . '/';
 
         $this->handleUrl();
         $this->dispatch();

@@ -3,22 +3,11 @@ parameters:
     database_host:     localhost
     database_port:     ~
     database_name:     unilend
-    database_user:     front
-    database_password: front
+    database_user:     root
+    database_password: ROOTPASSWORD
 
-    admin.database_driver:   pdo_mysql
-    admin.database_host:     localhost
-    admin.database_port:          ~
-    admin.database_name:     unilend
-    admin.database_user:     back
-    admin.database_password: back
-
-    cron.database_driver:   pdo_mysql
-    cron.database_host:     localhost
-    cron.database_port:          ~
-    cron.database_name:     unilend
-    cron.database_user:     cron
-    cron.database_password: cron
+    secret: 440caf9a41b35b72dc75ec333e3a33b7cab2366b
+    locale: fr
 
     server1.memcache_host:   127.0.0.1
     server1.memcache_port:   11211

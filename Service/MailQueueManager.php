@@ -81,7 +81,7 @@ class MailQueueManager
 
         /** @var \mail_queue $oMailQueue */
         $oMailQueue   = $this->oEntityManager->getRepository('mail_queue');
-        $aEmailToSend = $oMailQueue->select('status = ' . \mail_queue::STATUS_PENDING . ' AND to_send_at <= NOW()' , '', '', $iLimit);
+        $aEmailToSend = $oMailQueue->select('status = ' . \mail_queue::STATUS_PENDING . ' AND to_send_at <= NOW()', '', '', $iLimit);
 
         if (is_array($aEmailToSend)) {
             foreach ($aEmailToSend as $aEmail) {

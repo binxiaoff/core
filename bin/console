@@ -6,27 +6,13 @@ require_once __DIR__ . '/../Autoloader.php';
 
 use Unilend\apps\Command;
 use Unilend\core\Console\Application;
-use Symfony\Component\DependencyInjection\ContainerBuilder;
-use Symfony\Component\EventDispatcher\ContainerAwareEventDispatcher;
-use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
-use Symfony\Component\Config\FileLocator;
+use Symfony\Component\Console\Input\ArgvInput;
 
-$container = new ContainerBuilder();
-$loader = new XmlFileLoader($container, new FileLocator(__DIR__ . '/../Config'));
-$loader->load('events.xml');
+$input = new ArgvInput();
+$env = $input->getParameterOption(array('--env', '-e'), getenv('SYMFONY_ENV') ?: 'dev');
+$debug = getenv('UNILEND_DEBUG') !== '0' && !$input->hasParameterOption(array('--no-debug', '')) && $env !== 'prod';
 
-$dispatcher = new ContainerAwareEventDispatcher($container);
-$eventListeners = $container->findTaggedServiceIds(
-    'console.event_listener'
-);
-
-if ($eventListeners) {
-    foreach ($eventListeners as $service => $attributes) {
-        $dispatcher->addListenerService($attributes[0]['event'], array($service, $attributes[0]['method']));
-    }
-}
-
-$application = new Application('Unilend console', '1.0');
-
-$application->setDispatcher($dispatcher);
+$kernel = new \Unilend\core\Kernel($env, $debug, 'console');
+$kernel->boot();
+$application = new Application($kernel);
 $application->run();

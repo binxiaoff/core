@@ -28,7 +28,7 @@ class ConsoleEventListener
     {
         $input = $event->getInput();
         $command = $event->getCommand();
-        
+
         $this->logger->addRecord(ULogger::INFO, 'Start command ' . $command->getName(), array('arguments' => $input->getArguments(), 'options' => $input->getOptions()));
     }
 
@@ -36,7 +36,7 @@ class ConsoleEventListener
     {
         $input = $event->getInput();
         $command = $event->getCommand();
-        
+
         $this->logger->addRecord(ULogger::INFO, 'End command ' . $command->getName(), array('arguments' => $input->getArguments(), 'options' => $input->getOptions()));
     }
 }

@@ -5,11 +5,11 @@
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
         <service id="unilend.event.console.listener.start" class="Unilend\Service\Event\ConsoleEventListener">
-            <tag name="console.event_listener" event="console.command" method="onCommandStart"/>
+            <tag name="kernel.event_listener" event="console.command" method="onCommandStart"/>
         </service>
 
         <service id="unilend.event.console.listener.end" class="Unilend\Service\Event\ConsoleEventListener">
-            <tag name="console.event_listener" event="console.terminate" method="onCommandEnd"/>
+            <tag name="kernel.event_listener" event="console.terminate" method="onCommandEnd"/>
         </service>
     </services>
 </container>

@@ -57,21 +57,6 @@ mysql -uroot -pROOTPASSWORD -e "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERN
 mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON unilend.* TO 'external'@'%'"
 mysql -uroot -pROOTPASSWORD -e "flush privileges"
 
-# create front user
-mysql -uroot -pROOTPASSWORD -e "CREATE USER 'front'@'localhost' IDENTIFIED BY 'front'"
-mysql -uroot -pROOTPASSWORD -e "GRANT ALL PRIVILEGES ON unilend.* TO 'front'@'localhost'"
-mysql -uroot -pROOTPASSWORD -e "flush privileges"
-
-# create back user
-mysql -uroot -pROOTPASSWORD -e "CREATE USER 'back'@'localhost' IDENTIFIED BY 'back'"
-mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON unilend.* TO 'back'@'localhost'"
-mysql -uroot -pROOTPASSWORD -e "flush privileges"
-
-# create cron user
-mysql -uroot -pROOTPASSWORD -e "CREATE USER 'cron'@'localhost' IDENTIFIED BY 'cron'"
-mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON unilend.* TO 'cron'@'localhost'"
-mysql -uroot -pROOTPASSWORD -e "flush privileges"
-
 # install php
 add-apt-repository -y ppa:ondrej/php5-5.6
 apt-get update > /dev/null
@@ -105,9 +90,9 @@ restart php5-fpm
 
 # install Nginx
 apt-get install -y nginx
-ln -fs /vagrant/conf/vhosts/admin.unilend.fr.nginx.conf /etc/nginx/sites-enabled/admin.unilend.fr.conf
-ln -fs /vagrant/conf/vhosts/www.unilend.fr.nginx.conf /etc/nginx/sites-enabled/www.unilend.fr.conf
-ln -fs /vagrant/conf/vhosts/phpmyadmin.nginx.conf /etc/nginx/sites-enabled/phpmyadmin.conf
+ln -fs /vagrant/conf/vhosts/admin.unilend.fr.conf /etc/nginx/sites-enabled/admin.unilend.fr.conf
+ln -fs /vagrant/conf/vhosts/www.unilend.fr.conf /etc/nginx/sites-enabled/www.unilend.fr.conf
+ln -fs /vagrant/conf/vhosts/phpmyadmin.conf /etc/nginx/sites-enabled/phpmyadmin.conf
 sed -i "s/types_hash_max_size 2048;/types_hash_max_size 2048;\n        fastcgi_read_timeout 300;/" /etc/nginx/nginx.conf
 
 # copy unversioned files

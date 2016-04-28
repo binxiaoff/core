@@ -1,47 +1,28 @@
 <?php
 namespace Unilend\core\Console;
 
-use Symfony\Component\Console\Command\Command as BaseCommand;
-use Unilend\core\DataBase;
-use Unilend\librairies\Cache;
-use Unilend\librairies\ULogger;
-use Unilend\core\Loader;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 
-class Command extends BaseCommand
+class Command extends ContainerAwareCommand
 {
-    /** @var Cache */
-    public $oCache;
-    /** @var array */
-    public $aConfig;
-    /** @var \settings */
-    public $oSemaphore;
-    /** @var ULogger */
-    public $oLogger;
-    /** @var integer */
-    public $iStartTime;
-    /** @var  DataBase */
-    private $oDbConn;
-
-    public function __construct()
+    public function __construct($name = null)
     {
-        parent::__construct();
-
-        setlocale(LC_TIME, 'fr_FR.utf8');
-        setlocale(LC_TIME, 'fr_FR');
-        date_default_timezone_set('Europe/Paris');
-
-        $this->oCache     = Cache::getInstance();
-        $this->aConfig    = Loader::loadConfig();
-        $this->oSemaphore = $this->loadData('settings');
+        parent::__construct($name);
     }
 
-    public function setDbConn(DataBase $oDbConn)
+    public function loadData($object, $params = array())
     {
-        $this->oDbConn = $oDbConn;
+        return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
     }
 
-    protected function loadData($object, $params = array())
+    //Cree une nouvelle instance d'une librairie
+    public function loadLib($library, $params = array(), $instanciate = true)
     {
-        return Loader::loadData($object, $params, $this->oDbConn);
+        return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
+    }
+
+    public function get($service)
+    {
+        return $this->getContainer()->get($service);
     }
 }
