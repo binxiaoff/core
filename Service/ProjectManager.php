@@ -221,8 +221,8 @@ class ProjectManager
                 $iOffset += $iLimit;
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if (false === $oClient->get($aAutoBidSetting['id_client'])
-                        && false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
-                        && false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+                        || false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
+                        || false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
                     ) {
                         continue;
                     }
@@ -691,7 +691,7 @@ class ProjectManager
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = Loader::loadData('projects_status');
         $oProjectStatus->getLastStatut($oProject->id_project);
-        if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
+        if (in_array($oProjectStatus->status, array(\projects_status::EN_FUNDING, \projects_status::AUTO_BID_PLACED))) {
             return self::getWeightedAvgRateFromBid($oProject);
         } elseif ($oProjectStatus->status == \projects_status::FUNDE) {
             return self::getWeightedAvgRateFromLoan($oProject);
