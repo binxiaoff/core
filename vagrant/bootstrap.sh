@@ -90,9 +90,9 @@ restart php5-fpm
 
 # install Nginx
 apt-get install -y nginx
-ln -fs /vagrant/conf/vhosts/admin.unilend.fr.conf /etc/nginx/sites-enabled/admin.unilend.fr.conf
-ln -fs /vagrant/conf/vhosts/www.unilend.fr.conf /etc/nginx/sites-enabled/www.unilend.fr.conf
-ln -fs /vagrant/conf/vhosts/phpmyadmin.conf /etc/nginx/sites-enabled/phpmyadmin.conf
+ln -fs /vagrant/conf/vhosts/admin.unilend.fr.conf /etc/nginx/sites-enabled/admin.unilend.fr.nginx.conf
+ln -fs /vagrant/conf/vhosts/www.unilend.fr.conf /etc/nginx/sites-enabled/www.unilend.fr.nginx.conf
+ln -fs /vagrant/conf/vhosts/phpmyadmin.conf /etc/nginx/sites-enabled/phpmyadmin.nginx.conf
 sed -i "s/types_hash_max_size 2048;/types_hash_max_size 2048;\n        fastcgi_read_timeout 300;/" /etc/nginx/nginx.conf
 
 # copy unversioned files
