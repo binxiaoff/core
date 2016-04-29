@@ -465,12 +465,14 @@ class preteursController extends bootstrap
                     $this->lenders_accounts->precision = '';
                 }
 
-                // debut fichiers //
+                /** @var \greenpoint_attachment $oGreenPointAttachment */
+                $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
                 foreach ($_FILES as $field => $file) {
                     //We made the field name = attachment type id
                     $iAttachmentType = $field;
                     if ('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType, $oGreenPointAttachment);
                     }
                 }
 
@@ -798,13 +800,14 @@ class preteursController extends bootstrap
                 if ($this->lenders_accounts->origine_des_fonds == '1000000') $this->lenders_accounts->precision = $_POST['preciser'];
                 else $this->lenders_accounts->precision = '';
 
-                // debut fichiers //
+                /** @var \greenpoint_attachment $oGreenPointAttachment */
+                $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
 
                 foreach ($_FILES as $field => $file) {
                     //We made the field name = attachment type id
                     $iAttachmentType = $field;
                     if ('' !== $file['name']) {
-                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
+                        $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType, $oGreenPointAttachment);
                     }
                 }
 
@@ -1279,9 +1282,10 @@ class preteursController extends bootstrap
      * @param integer $iOwnerId
      * @param integer $field
      * @param integer $iAttachmentType
+     * @param \greenpoint_attachment $oGreenPointAttachment
      * @return bool
      */
-    private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
+    private function uploadAttachment($iOwnerId, $field, $iAttachmentType, $oGreenPointAttachment = null)
     {
         if (false === isset($this->upload) || false === $this->upload instanceof upload) {
             $this->upload = $this->loadLib('upload');
@@ -1306,6 +1310,10 @@ class preteursController extends bootstrap
 
         $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->upload, $sNewName);
 
+        if(false === is_null($oGreenPointAttachment) && $this->attachmentHelper->getIsUpdate() && $oGreenPointAttachment->get($resultUpload, 'id_attachment')){
+            $oGreenPointAttachment->revalidate = 1;
+            $oGreenPointAttachment->update();
+        }
         return $resultUpload;
     }
 

@@ -14,11 +14,15 @@ class attachment_helper
     /** @var  string */
     private $basePath;
 
+    /** @var  boolean */
+    private $isUpdate;
+
     public function __construct($aAttributes)
     {
         $this->oAttachment      = $aAttributes[0];
         $this->oAttachmentType  = $aAttributes[1];
         $this->basePath         = $aAttributes[2];
+        $this->isUpdate        = false;
     }
     /**
      * @param integer    $ownerId
@@ -63,6 +67,7 @@ class attachment_helper
         );
 
         if (false === empty($attachmentInfo) && $attachmentInfo[0]['path'] != '') {
+            $this->isUpdate = true;
             @unlink($this->basePath . $uploadPath . $attachmentInfo[0]['path']);
         }
 
@@ -231,5 +236,13 @@ class attachment_helper
             default:
                 return '';
         }
+    }
+
+    /**
+     * @return boolean
+     */
+    public function getIsUpdate()
+    {
+        return $this->isUpdate;
     }
 }

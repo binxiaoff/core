@@ -945,7 +945,18 @@ class inscription_preteurController extends bootstrap
                 return false;
         }
 
-        return $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
+        $iAttachmentId = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
+
+        if($this->attachmentHelper->getIsUpdate()) {
+            /** @var \greenpoint_attachment $oGreenPointAttachment */
+            $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
+            if($oGreenPointAttachment->get($iAttachmentId, 'id_attachment')) {
+                $oGreenPointAttachment->revalidate = 1;
+                $oGreenPointAttachment->update();
+            }
+        }
+        return $iAttachmentId;
     }
 
     private function sendSubscriptionConfirmationEmail(\clients $oClient)

@@ -6493,7 +6493,7 @@ class cronController extends bootstrap
                 if (false === empty($aAttachments)) {
                     $aError = array();
                     foreach ($aAttachments as $iAttachmentTypeId => $aAttachment) {
-                        if ($oGreenPointAttachment->counter('id_attachment = ' . $aAttachment['id']) > 0) {
+                        if ($oGreenPointAttachment->get($aAttachment['id'], 'id_attachment') && 0 == $oGreenPointAttachment->revalidate) {
                             continue;
                         }
                         $sAttachmentPath = $oAttachmentHelper->getFullPath($aAttachment['type_owner'], $aAttachment['id_type']) . $aAttachment['path'];
@@ -6663,6 +6663,7 @@ class cronController extends bootstrap
                 continue;
             }
             $oGreenPointAttachment->control_level = 1;
+            $oGreenPointAttachment->revalidate    = 0;
             $iAttachmentId = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
             $aResponse     = json_decode($aResponseDetail[$iQRID]['RESPONSE'], true);
 

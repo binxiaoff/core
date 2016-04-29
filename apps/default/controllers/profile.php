@@ -1818,6 +1818,14 @@ class profileController extends bootstrap
         if (false === $resultUpload || is_null($resultUpload)) {
             $this->form_ok       = false;
             $this->error_fichier = true;
+        } elseif($this->attachmentHelper->getIsUpdate()) {
+            /** @var \greenpoint_attachment $oGreenPointAttachment */
+            $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
+            if($oGreenPointAttachment->get($resultUpload, 'id_attachment')) {
+                $oGreenPointAttachment->revalidate = 1;
+                $oGreenPointAttachment->update();
+            }
         }
 
         return $resultUpload;
