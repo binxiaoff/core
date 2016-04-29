@@ -1011,4 +1011,8 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .login-panel .error_login_mobile .error_login{height: auto;text-align: center;}
 
     .testimonials{height: 100px;}
+
+    #bids_mobile .table.orders-table th {font-size:10px;text-align:left;padding:0 10px 0 0 }
+    #bids_mobile .table.orders-table th i { display:none; }
+    #bids_mobile .table.orders-table tr:first-of-type { padding-bottom:15px;}
 }

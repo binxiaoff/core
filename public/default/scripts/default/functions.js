@@ -55,13 +55,36 @@
             selector: 'form'
         });
 
-        $('.tabs-nav').on('click', 'a', function (event) {
-            if (!$(this).parent().is('.active')) {
-                var index = $(this).parent().index();
-                $('.tabs-nav li').eq(index).addClass('active').siblings('li').removeClass('active');
-                $('.tabs .tab').hide().eq(index).stop(true, true).fadeIn();
+        $(".table-body").click(function () {
+            var targ = $(this);
+            var el = $(this).children().children().children();
+            if(el.hasClass("expand")){
+                targ.removeClass("line-focus");
+                el.removeClass("expand");
+                $(".table-body.detail").remove();
             }
-            event.preventDefault()
+            else {
+                $.post(add_url + '/ajax/displayDetail').done(function (data) {
+                    var newLine = data;
+                    $(newLine).insertAfter(targ);
+                });
+                targ.addClass("line-focus");
+                el.addClass("expand");
+            }
+        });
+        $('a[href^="#"]').click(function(){
+            var the_id = $(this).attr("href");
+            $('html, body').animate({
+                scrollTop:$(the_id).offset().top -100
+            }, 'slow');
+            return false;
+        });
+
+        $('#scrollUp').click(function(){
+            $('html, body').animate({
+                scrollTop:$("body").offset().top +200
+            }, 'slow');
+            return false;
         });
 
         $('.ex-article > h3').on('click', function (event) {

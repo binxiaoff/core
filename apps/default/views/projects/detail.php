@@ -36,6 +36,7 @@
 
 <div class="main">
     <div class="shell">
+        <button id="scrollUp" style="display:none"><i class="icon-scroll-up"></i></button>
         <div class="section-c clearfix section-single-project">
             <div class="page-title clearfix">
                 <h1 class="left"><?= $this->lng['preteur-projets']['decouvrez-les'] ?> <?= $this->nbProjects ?> <?= $this->lng['preteur-projets']['projets-en-cours'] ?></h1>
@@ -132,6 +133,13 @@
                             </ul>
                         </div>
                     </div>
+                    <nav class="tabs-nav">
+                        <ul>
+                            <li class="active"><a href="#bids">Présentation du projet</a></li>
+                            <li class=""><a href="#presentation">Comptes financiers</a></li>
+                            <li class=""><a href="#infos">Suivi du projet</a></li>
+                        </ul>
+                    </nav>
                     <div class="tabs">
                         <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                         <div class="tab tc" id="bids">
@@ -153,7 +161,7 @@
                                 </tr>
                                 <tr class="table-body">
                                   <td class="bid-number">
-                                      <span class="order-rate">4 - 4,5 % <i class="icon-grey icon-simple-arrow"></i></span>
+                                      <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
                                   </td>
                                     <td>
                                       <span class="total-amount">850,15€</span>
@@ -165,17 +173,61 @@
                                         <span class="offers-rate">100%</span>
                                     </td>
                                 </tr>
+
+                                <tr class="table-body">
+                                    <td class="bid-number">
+                                        <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
+                                    </td>
+                                    <td>
+                                        <span class="total-amount">850,15€</span>
+                                    </td>
+                                    <td>
+                                        <span class="number-of-offers">42</span>
+                                    </td>
+                                    <td>
+                                        <span class="offers-rate">100%</span>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-body">
+                                    <td class="bid-number">
+                                        <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
+                                    </td>
+                                    <td>
+                                        <span class="total-amount">850,15€</span>
+                                    </td>
+                                    <td>
+                                        <span class="number-of-offers">42</span>
+                                    </td>
+                                    <td>
+                                        <span class="offers-rate">100%</span>
+                                    </td>
+                                </tr>
+
+                                <tr class="table-body">
+                                    <td class="bid-number">
+                                        <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
+                                    </td>
+                                    <td>
+                                        <span class="total-amount">850,15€</span>
+                                    </td>
+                                    <td>
+                                        <span class="number-of-offers">42</span>
+                                    </td>
+                                    <td>
+                                        <span class="offers-rate">100%</span>
+                                    </td>
+                                </tr>
+
                             </table>
 
                             <div id="bottom-nav">
                               <a class="csv-extract">Export CSV</a>
-                              <?php if ($this->CountEnchere >= 12) : ?>
-                              <a class="csv-extract displayAll"><?= $this->lng['preteur-projets']['voir-tout-le-carnet-dordres'] ?></a>
-                              <?php else: ?>
                             </div>
                             <div class="displayAll"></div>
-                            <?php endif; ?>
                             <script>
+
+
 
                                 $("#triTaux").click(function () {
                                     $("#tri").html('rate');
@@ -204,30 +256,16 @@
                                         $('#bids').html(data)
                                     });
                                 });
-                                $(".table-body").click(function () {
-                                    var targ = $(this);
-                                    var el = $(this).children().children().children();
-                                    if(el.hasClass("expand")){
-                                        el.removeClass("expand");
-                                    }
-                                    else{
-                                        $.post(add_url + '/ajax/displayDetail').done(function (data) {
-                                            targ.html(data);
-                                        });
-                                        el.addClass("expand");
-                                    }
-                                })
-
+                                
                             </script>
                         <?php else : ?>
                             <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
                         <?php endif; ?>
-                            </div>
                         </div>
                         <div id="tri" style="display:none;">ordre</div>
                         <div id="direction" style="display:none;">1</div>
                         <?php endif; ?>
-                        <div class="tab">
+                        <div class="tab" id="presentation">
                             <article class="ex-article">
                                 <h3>
                                     <a href="#"><?= $this->lng['preteur-projets']['qui-sommes-nous'] ?></a><i class="icon-arrow-down"></i>
@@ -255,7 +293,7 @@
                                 </div>
                             </article>
                         </div>
-                        <div class="tab">
+                        <div class="tab" id="infos">
                         <?php if (false === $this->bIsConnected) : ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
@@ -518,9 +556,9 @@
                     </div>
                 </div>
             </div>
-          </div>
-            <?php $this->fireView('../blocs/sidebar-project'); ?>
 
+            <?php $this->fireView('../blocs/sidebar-project'); ?>
+        </div>
 
         <div class="single-project-mobile">
             <h3><?= $this->projects->title ?></h3>

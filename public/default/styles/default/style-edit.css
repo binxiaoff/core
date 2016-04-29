@@ -84,8 +84,8 @@ form .row input.field ~ input.field, form .row input.field ~ .c2-sb-wrap, form .
 .block-facebook:hover .icon-big-facebook { background-position:-60px -90px;  }
 a.header_account_name{color:#919396;text-decoration:none;}
 
-.tabs-nav li{padding: 0 /*5px*/ 2px;} /* modif 19/09/2014 offres en cours */
-.tabs-nav li a{padding: 0 /*7px*/4px 1px;} /* modif 19/09/2014 offres en cours */
+.tabs-nav li{padding: 0 2px;}
+.tabs-nav li a{padding:0 4px 0px 4px;}
 
 .tabs-nav .navProfile li{padding: 0 5px;padding-left:0px;}
 .tabs-nav .navProfile li a{padding: 0 4px 1px;}
