@@ -19,9 +19,9 @@
                             echo $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a-autobid'];
                         }
                         ?>
-                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
+                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?>&nbsp;%</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
                         <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a>
-                        <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
+                        <?= $this->lng['notifications']['offre-refusee-a-ete-decoupe'] ?> <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100, 0) ?>&nbsp;€</b><?= $this->lng['notifications']['offre-refusee-point'] ?>
                     </div>
                 <?php } else { ?>
                     <b><?= $this->lng['notifications']['offre-refusee'] ?></b><br/>
@@ -33,8 +33,8 @@
                             echo $this->lng['notifications']['offre-refusee-attention-votre-offre-de-pret-a-autobid'];
                         }
                         ?>
-                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?>
-                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
+                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?>&nbsp;%</b> <?= $this->lng['notifications']['offre-refusee-pour-un-montant-de'] ?>
+                        <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100, 0) ?>&nbsp;€</b> <?= $this->lng['notifications']['offre-refusee-sur-le-projet'] ?>
                         <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-refusee-nest-plus-recevable'] ?>
                     </div>
                 <?php
@@ -46,7 +46,7 @@
                 <b><?= $this->lng['notifications']['remboursement'] ?></b><br/>
                 <div class="content_notif">
                     <?= $this->lng['notifications']['remboursement-vous-venez-de-recevoir-un-remboursement-de'] ?>
-                    <b style="white-space:nowrap;color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['remboursement-pour-le-projet'] ?>
+                    <b style="white-space:nowrap;color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?>&nbsp;€</b> <?= $this->lng['notifications']['remboursement-pour-le-projet'] ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a><?= $this->lng['notifications']['remboursement-point'] ?>
                 </div><?php
                 break;
@@ -65,8 +65,8 @@
                         echo $this->lng['notifications']['offre-placee-votre-offre-de-pret-de-autobid'];
                     }
                     ?>
-                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->bids->amount / 100) ?> €</b> <?= $this->lng['notifications']['offre-placee-a'] ?>
-                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-placee-sur-le-projet'] ?>
+                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->bids->amount / 100, 0) ?>&nbsp;€</b> <?= $this->lng['notifications']['offre-placee-a'] ?>
+                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?>&nbsp;%</b> <?= $this->lng['notifications']['offre-placee-sur-le-projet'] ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->companies_notifs->name ?></a> <?= $this->lng['notifications']['offre-placee-point'] ?>
                     <?php
                     if ($oAutobid->get($this->bids->id_autobid)) {
@@ -85,8 +85,8 @@
                 <b><?= $this->lng['notifications']['offre-acceptee'] ?></b><br/>
                 <div class="content_notif">
                     <?= $this->lng['notifications']['offre-acceptee-votre-offre-de-pret-de'] ?>
-                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?> %</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?>
-                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($fAmount) ?> €</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?>
+                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($this->bids->rate, 1) ?>&nbsp;%</b> <?= $this->lng['notifications']['offre-acceptee-pour-un-montant-de'] ?>
+                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($fAmount, 0) ?>&nbsp;€</b> <?= $this->lng['notifications']['offre-acceptee-sur-le-projet'] ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['offre-acceptee-a-ete-acceptee'] ?>
                 </div><?php
                 break;
@@ -95,7 +95,7 @@
                 <b><?= $this->lng['notifications']['conf-alim-virement'] ?></b><br/>
                 <div class="content_notif">
                     <?= $this->lng['notifications']['conf-alim-virement-votre-alim-par-virement-dun-montant-de'] ?>
-                    <b style="white-space:nowrap;color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['conf-alim-virement-a-ete-ajoute-a-votre-solde'] ?>
+                    <b style="white-space:nowrap;color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?>&nbsp;€</b> <?= $this->lng['notifications']['conf-alim-virement-a-ete-ajoute-a-votre-solde'] ?>
                 </div><?php
                 break;
             case \notifications::TYPE_CREDIT_CARD_CREDIT:
@@ -103,7 +103,7 @@
                 <b><?= $this->lng['notifications']['conf-alim-cb'] ?></b><br/>
                 <div class="content_notif">
                     <?= $this->lng['notifications']['conf-alim-cb-votre-alim-par-cb-dun-montant-de'] ?>
-                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b> <?= $this->lng['notifications']['conf-alim-cb-a-ete-ajoute-a-votre-solde'] ?>
+                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?>&nbsp;€</b> <?= $this->lng['notifications']['conf-alim-cb-a-ete-ajoute-a-votre-solde'] ?>
                 </div><?php
                 break;
             case \notifications::TYPE_DEBIT:
@@ -111,7 +111,7 @@
                 <b><?= $this->lng['notifications']['conf-retrait'] ?></b><br/>
                 <div class="content_notif">
                     <?= $this->lng['notifications']['conf-retrait-votre-retrait-dun-montant-de'] ?>
-                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?> €</b><?= $this->lng['notifications']['conf-retrait-a-ete-pris-en-compte'] ?>
+                    <b style="color:#b20066;"><?= $this->ficelle->formatNumber($r['amount'] / 100) ?>&nbsp;€</b><?= $this->lng['notifications']['conf-retrait-a-ete-pris-en-compte'] ?>
                 </div><?php
                 break;
             case \notifications::TYPE_NEW_PROJECT:
@@ -120,7 +120,7 @@
                 <b><?= $this->lng['notifications']['annonce-nouveau-projet'] ?></b><br/>
                 <div class="content_notif"><?= $this->lng['notifications']['annonce-nouveau-projet-nouveau-projet'] ?>
                     <a href="<?= $this->lurl ?>/projects/detail/<?= $this->projects_notifs->slug ?>"><?= $this->projects_notifs->title ?></a> <?= $this->lng['notifications']['annonce-nouveau-projet-mis-en-ligne-le'] ?> <?= date('d/m/Y', strtotime($this->projects_notifs->date_publication_full)) ?> <?= $this->lng['notifications']['annonce-nouveau-projet-a'] ?> <?= date('H\Hi', strtotime($this->projects_notifs->date_publication_full)) ?><?= $this->lng['notifications']['annonce-nouveau-projet-montant-demande'] ?>
-                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->projects_notifs->amount, 0) ?> €</b> <?= $this->lng['notifications']['annonce-nouveau-projet-sur-une-periode-de'] ?> <?= $this->projects_notifs->period ?> <?= $this->lng['notifications']['annonce-nouveau-projet-mois'] ?>
+                    <b style="color:#b20066;white-space:nowrap;"><?= $this->ficelle->formatNumber($this->projects_notifs->amount, 0) ?>&nbsp;€</b> <?= $this->lng['notifications']['annonce-nouveau-projet-sur-une-periode-de'] ?> <?= $this->projects_notifs->period ?> <?= $this->lng['notifications']['annonce-nouveau-projet-mois'] ?>
                 </div><?php
                 break;
             case \notifications::TYPE_PROJECT_PROBLEM:

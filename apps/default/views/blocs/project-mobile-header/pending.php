@@ -8,15 +8,15 @@
             <div class="widget-cat progress-cat clearfix">
                 <div class="prices clearfix">
                     <span class="price less">
-                        <strong><?= $this->ficelle->formatNumber($this->payer, $this->decimales) ?> €</strong>
+                        <strong><?= $this->ficelle->formatNumber($this->payer, 0) ?>&nbsp;€</strong>
                         <?= $this->lng['preteur-projets']['de-pretes'] ?>
                     </span>
                     <i class="icon-arrow-gt"></i>
                     <?php if ($this->soldeBid >= $this->projects->amount) { ?>
-                        <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= $this->ficelle->formatNumber($this->txLenderMax, 1) ?>%</p>
+                        <p style="font-size:14px;"><?= $this->lng['preteur-projets']['vous-pouvez-encore-preter-en-proposant-une-offre-de-pret-inferieure-a'] ?> <?= $this->ficelle->formatNumber($this->txLenderMax, 1) ?>&nbsp;%</p>
                     <?php } else { ?>
                         <span class="price">
-                            <strong><?= $this->ficelle->formatNumber($this->resteApayer, $this->decimales) ?> €</strong>
+                            <strong><?= $this->ficelle->formatNumber($this->resteApayer, 0) ?>&nbsp;€</strong>
                             <?= $this->lng['preteur-projets']['restent-a-preter'] ?>
                         </span>
                     <?php } ?>
