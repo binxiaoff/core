@@ -211,8 +211,7 @@ class Connection extends BaseConnection
     public function generateSlug($string)
     {
         $string = strip_tags(utf8_decode($string));
-        $string = strtr($string, '??????????????????????????����????������?����??����???����?��????',
-            'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyyNn');
+        $string = strtr($string, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyyNn');
         $string = strtolower($string); // lower-case the string
         $string = preg_replace('/[ ]/', '-', $string); // replace special characters by score
         $string = preg_replace('/[^a-z0-9-.]/', '', $string); // replace all non-alphanumeric characters by void
