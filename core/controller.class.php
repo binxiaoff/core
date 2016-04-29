@@ -45,11 +45,6 @@ abstract class Controller extends ContainerAware
         $this->included_js  = array();
         $this->included_css = array();
 
-        // Initialisation des propriétés nécessaires au cache
-        $this->enableCache      = false;
-        $this->cacheDuration    = $this->Config['cacheDuration'][$this->Config['env']];
-        $this->cacheCurrentPage = false;
-
         // Langue et controller
         $this->language           = $this->Command->Language;
         $this->current_controller = $this->Command->getControllerName();
@@ -135,11 +130,6 @@ abstract class Controller extends ContainerAware
         $this->params = $this->Command->getParameters();
         call_user_func(array($this, '_' . $FunctionToCall));
 
-        // Si la page courante doit être cachée, on cherche la page en cache ou on initie le processus de création de la version en cache
-        if ($this->cacheCurrentPage) {
-            $this->initCache();
-        }
-
         //Affiche le contenu(view) avant le menu(header) si on est en mode seo_optimize
         if ($this->Config['params']['seo_optimize']) {
             if ($this->autoFireHead) {
@@ -167,11 +157,6 @@ abstract class Controller extends ContainerAware
             if ($this->autoFireFooter) {
                 $this->fireFooter();
             }
-        }
-
-        // Si la page courante doit être cachée, termine le boulot de création du cache
-        if ($this->cacheCurrentPage) {
-            $this->completeCache();
         }
 
         //Affiche une fentre de debug/error si l'option est activée dans le config.php
@@ -517,63 +502,7 @@ abstract class Controller extends ContainerAware
             $requestURI = explode('/', $_SERVER['REQUEST_URI']);
         }
     }
-
-    // Fonction qui déclenche le caching d'une page
-    public function fireCache()
-    {
-        if ($this->enableCache) {
-            $this->cacheCurrentPage = true;
-        }
-    }
-
-    // Initialisation du cache
-    public function initCache()
-    {
-        $this->cacheFile = $this->path . 'tmp/cache/' . md5($_SERVER['REQUEST_URI']);
-        // On recherche un fichier de cache suffisament récent
-        if (file_exists($this->cacheFile) && (time() - $this->cacheDuration * 60 < filemtime($this->cacheFile))) {
-            // Si on le trouve, on l'output
-            include($this->cacheFile);
-            echo "<!-- From cache generated " . date('H:i', filemtime($this->cacheFile)) . " -->";
-            exit;
-        }
-        // Sinon, on ouvre le buffer
-        ob_start();
-    }
-
-    public function completeCache()
-    {
-        // Ecriture du fichier de cache
-        $fp = fopen($this->cacheFile, 'w');
-        // Contenu du buffer
-        fwrite($fp, ob_get_contents());
-
-        fclose($fp);
-
-        ob_end_flush();
-
-        // Cassos
-        exit;
-    }
-
-    public function clearCache($page = '')
-    {
-        $cacheFile   = $this->path . 'tmp/cache/' . md5($page);
-        $cacheFolder = $this->path . 'tmp/cache/';
-        if ($page == '') {
-            $dossier = opendir($cacheFolder);
-            while ($fichier = readdir($dossier)) {
-                if ($fichier != "." && $fichier != "..") {
-                    $Vidage = $cacheFolder . $fichier;
-                    @unlink($Vidage);
-                }
-            }
-            closedir($dossier);
-        } else {
-            @unlink($cacheFile);
-        }
-    }
-
+    
     // Redirige vers une autre url avec le bon header si besoin
     public function redirection($url, $type = '')
     {
