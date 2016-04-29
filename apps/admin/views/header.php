@@ -95,7 +95,6 @@
                     <li><a href="<?= $this->lurl ?>/stats/requete_infosben" title="Requete infosben">Requete infosben</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/requete_encheres" title="Requete Toutes les enchères">Requete Toutes les enchères</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/tous_echeanciers_pour_projet" title="Echeanciers projet">Echeanciers projet</a></li>
-                    <li><a href="<?= $this->lurl ?>/stats/infos_preteurs" title="Requete Infos preteurs">Requete infos preteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/requete_donnees_financieres" title="Requete Données financières emprunteurs">Requete Données financières emprunteurs</a></li>
                     <li><a href="<?= $this->lurl ?>/stats/autobid_statistic" title="Statistiques Autolend">Statistiques Autolend</a></li>
                 </ul>
