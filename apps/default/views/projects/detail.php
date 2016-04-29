@@ -132,22 +132,6 @@
                             </ul>
                         </div>
                     </div>
-                    <nav class="tabs-nav">
-                        <ul>
-                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) :  ?>
-                                <li class="active"><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a></li>
-                                <li><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
-                            <?php else : ?>
-                                <li class="active"><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
-                            <?php endif; ?>
-                            <li><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a></li>
-                            <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) : ?>
-                                <?php if (isset($_SESSION['client']) && $this->bIsLender) : ?>
-                                    <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
-                                <?php endif;?>
-                            <?php endif; ?>
-                        </ul>
-                    </nav>
                     <div class="tabs">
                         <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                         <div class="tab tc" id="bids">
@@ -169,7 +153,7 @@
                                 </tr>
                                 <tr class="table-body">
                                   <td class="bid-number">
-                                      <span class="order-rate">4 - 4,5 %</span>
+                                      <span class="order-rate">4 - 4,5 % <i class="icon-grey icon-simple-arrow"></i></span>
                                   </td>
                                     <td>
                                       <span class="total-amount">850,15€</span>
@@ -192,10 +176,6 @@
                             <div class="displayAll"></div>
                             <?php endif; ?>
                             <script>
-
-                                $(".table-body").click(function(){
-                                  $(".displayAll").click();
-                                })
 
                                 $("#triTaux").click(function () {
                                     $("#tri").html('rate');
@@ -224,10 +204,25 @@
                                         $('#bids').html(data)
                                     });
                                 });
+                                $(".table-body").click(function () {
+                                    var targ = $(this);
+                                    var el = $(this).children().children().children();
+                                    if(el.hasClass("expand")){
+                                        el.removeClass("expand");
+                                    }
+                                    else{
+                                        $.post(add_url + '/ajax/displayDetail').done(function (data) {
+                                            targ.html(data);
+                                        });
+                                        el.addClass("expand");
+                                    }
+                                })
+
                             </script>
                         <?php else : ?>
                             <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
                         <?php endif; ?>
+                            </div>
                         </div>
                         <div id="tri" style="display:none;">ordre</div>
                         <div id="direction" style="display:none;">1</div>
