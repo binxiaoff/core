@@ -216,11 +216,8 @@ class cronController extends bootstrap
 
                     $oProjectManager->publish($oProject);
 
-                    // Zippage pour groupama
                     $this->zippage($oProject->id_project);
-
                     $this->sendNewProjectEmail($oProject->id_project);
-                    $this->sendProjectOnlineEmailBorrower($oProject->id_project);
                 }
             }
             if ($bHasProjectPublished) {
@@ -4229,72 +4226,6 @@ class cronController extends bootstrap
             }
 
             $oLogger->addRecord(ULogger::DEBUG, 'Emails sent: ' . $iEmails);
-        }
-    }
-
-    // Fonction qui crée le mail nouveau projet pour l'emprunteur (immediatement)
-    private function sendProjectOnlineEmailBorrower($iIdProject)
-    {
-        $oProject   = $this->loadData('projects');
-        $oCompanies = $this->loadData('companies');
-
-        $oProject->get($iIdProject);
-        $oCompanies->get($oProject->id_company);
-        $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
-
-        if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
-            $sFirstName  = $oCompanies->prenom_dirigeant;
-            $sMailClient = $oCompanies->email_dirigeant;
-        } else {
-            $this->clients->get($oCompanies->id_client_owner);
-            $sFirstName  = $this->clients->prenom;
-            $sMailClient = $this->clients->email;
-        }
-
-        if ($oProject->date_publication_full != '0000-00-00 00:00:00') {
-            $oPublicationDate = new \DateTime($oProject->date_publication_full);
-        } else {
-            $oPublicationDate = new \DateTime($oProject->date_publication);
-        }
-
-        if ($oProject->date_retrait_full != '0000-00-00 00:00:00') {
-            $oEndDate = new \DateTime($oProject->date_retrait_full);
-        } else {
-            $oEndDate = new \DateTime($oProject->date_retrait);
-        }
-        $oFundingTime = $oPublicationDate->diff($oEndDate);
-        $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
-        $sFundingTime = $iFundingTime . ($iFundingTime == 1 ? ' jour' : ' jours');
-
-        $aMail = array(
-            'surl'           => $this->surl,
-            'url'            => $this->furl,
-            'nom_entreprise' => $oCompanies->name,
-            'projet_p'       => $this->furl . '/projects/detail/' . $oProject->slug,
-            'montant'        => $this->ficelle->formatNumber((float) $oProject->amount, 0),
-            'duree'          => $sFundingTime,
-            'prenom_e'       => $sFirstName,
-            'lien_fb'        => $this->like_fb,
-            'lien_tw'        => $this->twitter,
-            'annee'          => date('Y')
-        );
-
-        $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
-        $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
-        $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
-        $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
-
-        $oEmail = $this->loadLib('email');
-        $oEmail->setFrom($this->mails_text->exp_email, $sSender);
-        $oEmail->setSubject(stripslashes($sMailSubject));
-        $oEmail->setHTMLBody(stripslashes($sMailBody));
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $oEmail->addRecipient(trim($sMailClient));
-            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
         }
     }
 
