@@ -1,6 +1,6 @@
 <div class="popup" style="width: 300px;height:300px;">
 	<a href="#" class="popup-close">close</a>
-	
+
 	<div class="popup-head">
 		<h2><?=$this->lng['pop-up-mdp']['mot-de-passe-oublie']?></h2>
 	</div>
@@ -16,7 +16,7 @@
 			</tr>
             <tr>
             	<td colspan="2" style="text-align:center;">
-        			<button type="button" name="preter" class="btn btn-medium mdp_lost"><?=$this->lng['pop-up-mdp']['valider']?></button>
+        			<button type="submit" name="preter" class="btn btn-medium mdp_lost"><?=$this->lng['pop-up-mdp']['valider']?></button>
                 </td>
             </tr>
         </table>
@@ -26,33 +26,32 @@
 
 </div>
 <script>
-$(".mdp_lost").click(function() {
-	var email = $("#email_mdp").val();
-	
-	var val = {email: email}
-	$.post(add_url + '/ajax/mdp_lost', val).done(function(data) {
-		
-		
-		if(data == 'nok')
-		{
-			$(".reponse_mdp_nok").slideDown('slow');
-			
-			setTimeout(function() {
-				$(".reponse_mdp_nok").slideUp('slow');
-			}, 3000);
-		}
-		else
-		{
-			$(".reponse_mdp_ok").slideDown('slow');
-			$(".form_mdp_lost").hide();
-			setTimeout(function() {
-      			$(".popup-close").click();
-			}, 4000);
-		}
-		
-		
-		
-	});
-	
+
+
+$('.form_mdp_lost').submit(function(e) {
+    e.preventDefault();
+    sendRequest();
 });
+
+
+var sendRequest = function() {
+    var email = $("#email_mdp").val();
+    var val = {
+        email: email
+    }
+    $.post(add_url + '/ajax/mdp_lost', val).done(function(data) {
+        if (data == 'nok') {
+            $(".reponse_mdp_nok").slideDown('slow');
+            setTimeout(function() {
+                $(".reponse_mdp_nok").slideUp('slow');
+            }, 3000);
+        } else {
+            $(".reponse_mdp_ok").slideDown('slow');
+            $(".form_mdp_lost").hide();
+            setTimeout(function() {
+                $(".popup-close").click();
+            }, 4000);
+        }
+    });
+}
 </script>
