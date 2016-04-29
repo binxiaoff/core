@@ -116,8 +116,8 @@ class Connection extends BaseConnection
      * @deprecated for backwards compatibility only.
      *
      * @param Statement|null|boolean $statement
-     * @param int $row not used, for backwards compatibility only.
-     * @param int $column
+     * @param int                    $row not used, for backwards compatibility only.
+     * @param int                    $column
      *
      * @return mixed
      */
@@ -138,8 +138,7 @@ class Connection extends BaseConnection
             'colum' => $id_name,
             'value' => $id_value
         ];
-        $statement = $this->executeQuery('SELECT slug FROM :table WHERE slug = :slug AND :colum != :value',
-            $params);
+        $statement = $this->executeQuery('SELECT slug FROM :table WHERE slug = :slug AND :colum != :value', $params);
 
         if ($statement->rowCount() == 1 || $slug == "") {
             if ($table == 'tree' && $id_value == 1 && $slug == '') {
