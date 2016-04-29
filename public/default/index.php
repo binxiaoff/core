@@ -45,9 +45,9 @@ $handler    = new ErrorHandler(
     $config['error_handler'][$config['env']]['report']
 );
 
-$oKernel = new \Unilend\core\Kernel('prod', false, $app);
+$oKernel = new \Unilend\core\Kernel('prod', false);
 $oKernel->boot();
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, $config);
+$oDispatcher = new \Unilend\core\Dispatcher($oKernel, $app, $config);
 
 if ($bCacheFullPage) {
     require __DIR__ . '/append.php';

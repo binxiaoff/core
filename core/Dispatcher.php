@@ -9,12 +9,12 @@ class Dispatcher
     /** @var  Kernel */
     private $kernel;
 
-    public function __construct($kernel, $config, $route = array())
+    public function __construct($kernel, $name, $config,$route = array())
     {
         $this->kernel      = $kernel;
         $this->Route       = $route;
         $this->Config      = $config;
-        $this->App         = $this->kernel->getName();
+        $this->App         = $name;
         $this->environment = $this->kernel->getEnvironment();
         $this->debug       = $this->kernel->isDebug();
         $this->path        = $this->kernel->getRootDir() . '/';

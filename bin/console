@@ -12,7 +12,7 @@ $input = new ArgvInput();
 $env = $input->getParameterOption(array('--env', '-e'), getenv('SYMFONY_ENV') ?: 'dev');
 $debug = getenv('UNILEND_DEBUG') !== '0' && !$input->hasParameterOption(array('--no-debug', '')) && $env !== 'prod';
 
-$kernel = new \Unilend\core\Kernel($env, $debug, 'console');
+$kernel = new \Unilend\core\Kernel($env, $debug);
 $kernel->boot();
 $application = new Application($kernel);
 $application->run();

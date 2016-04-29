@@ -7,15 +7,20 @@ use Symfony\Component\HttpKernel\Kernel as BaseKernel;
 
 class Kernel extends BaseKernel
 {
-    public function __construct($environment, $debug, $name = 'default')
+    /**
+     * @return BundleInterface[]
+     */
+    public function registerBundles()
     {
-        $this->name = $name;
-        parent::__construct($environment, $debug);
-    }
+        $bundles = [
+            new \Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
+            new \Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle(),
+            new \Symfony\Bundle\MonologBundle\MonologBundle(),
+            new \Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
+            new \Cache\AdapterBundle\CacheAdapterBundle(),
+        ];
 
-    public function getName()
-    {
-        return $this->name;
+        return $bundles;
     }
 
     /**
@@ -32,29 +37,8 @@ class Kernel extends BaseKernel
         return $this->rootDir;
     }
 
-    public function getLogDir()
-    {
-        return $this->rootDir . '/log';
-    }
-
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
         $loader->load($this->rootDir . '/Config/config_' . $this->environment . '.yml');
-    }
-
-    /**
-     * @return BundleInterface[]
-     */
-    public function registerBundles()
-    {
-        $bundles = [
-            new \Symfony\Bundle\FrameworkBundle\FrameworkBundle(),
-            new \Symfony\Bundle\SwiftmailerBundle\SwiftmailerBundle(),
-            new \Symfony\Bundle\MonologBundle\MonologBundle(),
-            new \Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
-            new \Cache\AdapterBundle\CacheAdapterBundle(),
-        ];
-
-        return $bundles;
     }
 }

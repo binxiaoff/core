@@ -25,6 +25,6 @@ $handler = new ErrorHandler(
     $config['error_handler'][$config['env']]['report']
 );
 
-$oKernel     = new \Unilend\core\Kernel('dev', true, $app);
+$oKernel     = new \Unilend\core\Kernel('dev', true);
 $oKernel->boot();
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, $config);
+$oDispatcher = new \Unilend\core\Dispatcher($oKernel, $app, $config);
