@@ -16,7 +16,7 @@
 			</tr>
             <tr>
             	<td colspan="2" style="text-align:center;">
-        			<button type="button" name="preter" class="btn btn-medium mdp_lost"><?=$this->lng['pop-up-mdp']['valider']?></button>
+        			<button type="submit" name="preter" class="btn btn-medium mdp_lost"><?=$this->lng['pop-up-mdp']['valider']?></button>
                 </td>
             </tr>
         </table>
@@ -26,17 +26,12 @@
 
 </div>
 <script>
-$('#email_mdp').keypress(function(e) {
-    if (e.keyCode == 13) {
-        e.preventDefault();
-        sendRequest();
-    }
-})
 
-$('.btn.btn-medium.mdp_lost').click(function() {
-		sendRequest();
-	}
-);
+
+$('.form_mdp_lost').submit(function(e) {
+    e.preventDefault();
+    sendRequest();
+});
 
 var sendRequest = function() {
     var email = $("#email_mdp").val();
