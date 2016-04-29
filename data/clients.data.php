@@ -939,26 +939,22 @@ class clients extends clients_crud
                     companies.name,
                     DATE(c.added) AS date_creation,
                     (
-                    SELECT
-                            DATE(csh.added)
+                        SELECT MAX(DATE(csh.added))
                         FROM
                             clients_status_history csh
                             LEFT JOIN clients ON clients.id_client = csh.id_client
                             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
                         WHERE
-                            cs.status = ' . \clients_status::VALIDATED . '
+                            cs.status = '. \clients_status::VALIDATED . '
                             AND c.id_client = csh.id_client
-                        ORDER BY
-                            csh.added DESC
-                        LIMIT
-                            1
                     ) AS date_validation
                 FROM
                     clients c
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
+                    LEFT JOIN offres_bienvenues_details obd ON c.id_client = obd.id_client
                 WHERE
                     NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
                     AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
