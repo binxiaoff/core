@@ -15,7 +15,7 @@ nb-configuration.xml
 
 ### Izinoa ###
 protected/
-log/
+logs/
 backup2/
 backup3/
 tmp/

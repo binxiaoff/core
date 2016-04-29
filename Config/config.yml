@@ -5,8 +5,11 @@ imports:
     - { resource: commands.xml }
 
 framework:
-    secret: %secret%
+    secret: "%secret%"
     default_locale:  "%locale%"
+    assets:
+        base_urls:
+            - "https://%router.request_context.host%"
 
 doctrine:
     dbal:
