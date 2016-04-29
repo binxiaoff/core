@@ -324,12 +324,12 @@ class ajaxController extends bootstrap
                 $oProject = $this->loadData('projects');
                 $oProject->get($_POST['id_project'], 'id_project');
                 $oProject->amount               = $this->ficelle->cleanFormatedNumber($_POST['montant_etape3']);
-                $oProject->period               = htmlspecialchars(strip_tags($_POST['duree_etape3']));
-                $oProject->title                = htmlspecialchars(strip_tags($_POST['titre_etape3']));
-                $oProject->objectif_loan        = htmlspecialchars(strip_tags($_POST['objectif_etape3']));
-                $oProject->presentation_company = htmlspecialchars(strip_tags($_POST['presentation_etape3']));
-                $oProject->means_repayment      = htmlspecialchars(strip_tags($_POST['moyen_etape3']));
-                $oProject->comments             = htmlspecialchars(strip_tags($_POST['comments_etape3']));
+                $oProject->period               = $_POST['duree_etape3'];
+                $oProject->title                = $_POST['titre_etape3'];
+                $oProject->objectif_loan        = $_POST['objectif_etape3'];
+                $oProject->presentation_company = $_POST['presentation_etape3'];
+                $oProject->means_repayment      = $_POST['moyen_etape3'];
+                $oProject->comments             = $_POST['comments_etape3'];
                 $oProject->update();
             } elseif ($_POST['etape'] == 4.1) {
                 /** @var projects $oProject */
