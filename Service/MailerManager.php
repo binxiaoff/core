@@ -1070,7 +1070,7 @@ class MailerManager
             'nom_entreprise' => $oCompanies->name,
             'projet_p'       => $this->sFUrl . '/projects/detail/' . $oProject->slug,
             'montant'        => $this->oFicelle->formatNumber((float) $oProject->amount, 0),
-            'heure_debut'    => $oPublicationDate->format('H:i'),
+            'heure_debut'    => $oPublicationDate->format('H\hi'),
             'duree'          => $sFundingTime,
             'prenom_e'       => $sFirstName,
             'lien_fb'        => $this->getFacebookLink(),
