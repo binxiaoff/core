@@ -33,6 +33,7 @@ $('.form_mdp_lost').submit(function(e) {
     sendRequest();
 });
 
+
 var sendRequest = function() {
     var email = $("#email_mdp").val();
     var val = {
