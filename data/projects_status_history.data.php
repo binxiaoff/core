@@ -34,16 +34,6 @@ class projects_status_history extends projects_status_history_crud
         parent::projects_status_history($bdd, $params);
     }
 
-    public function get($id, $field = 'id_project_status_history')
-    {
-        return parent::get($id, $field);
-    }
-
-    public function delete($id, $field = 'id_project_status_history')
-    {
-        parent::delete($id, $field);
-    }
-
     public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
@@ -52,7 +42,7 @@ class projects_status_history extends projects_status_history_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `projects_status_history`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM projects_status_history' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -68,7 +58,7 @@ class projects_status_history extends projects_status_history_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `projects_status_history` ' . $where;
+        $sql = 'SELECT COUNT(*) FROM projects_status_history ' . $where;
 
         $result = $this->bdd->query($sql);
         return (int) ($this->bdd->result($result, 0, 0));
@@ -76,7 +66,7 @@ class projects_status_history extends projects_status_history_crud
 
     public function exist($id, $field = 'id_project_status_history')
     {
-        $sql    = 'SELECT * FROM `projects_status_history` WHERE ' . $field . '="' . $id . '"';
+        $sql    = 'SELECT * FROM projects_status_history WHERE ' . $field . ' = "' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
     }
@@ -299,11 +289,23 @@ class projects_status_history extends projects_status_history_crud
                         AND ps.status IN ' . implode(',', $aProjectStatus);
 
         $aProjectStatusCount = array();
-        $oQuery              = $this->bdd->query($sQuery);
-        while ($aRecord = $this->bdd->fetch_array($oQuery)) {
+        $rQuery              = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_array($rQuery)) {
             $aProjectStatusCount[] = $aRecord;
         }
 
         return $aProjectStatusCount;
+    }
+
+    /**
+     * @param int $iProjectId
+     */
+    public function loadLastProjectHistory($iProjectId)
+    {
+        $sQuery = '
+            SELECT MAX(id_project_status_history)
+            FROM projects_status_history
+            WHERE id_project = ' . $iProjectId;
+        $this->get($this->bdd->result($this->bdd->query($sQuery), 0, 0));
     }
 }
