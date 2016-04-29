@@ -1031,9 +1031,9 @@ class MailerManager
             '[LIEN_BO_PROJET]' => $this->aConfig['url'][ENVIRONMENT]['admin'] . '/dossiers/edit/' . $oProject->id_project
         );
 
-        $this->oEmail->setFrom($this->oMailsText->exp_email, utf8_decode($this->oMailsText->exp_name));
-        $this->oEmail->setSubject(utf8_decode($this->oMailsText->subject));
-        $this->oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->oMailsText->content));
+        $this->oEmail->setFrom($this->oMailText->exp_email, utf8_decode($this->oMailText->exp_name));
+        $this->oEmail->setSubject(utf8_decode($this->oMailText->subject));
+        $this->oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->oMailText->content));
         $this->oEmail->addRecipient($sRecipient);
 
         \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
