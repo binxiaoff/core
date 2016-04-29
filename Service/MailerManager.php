@@ -851,7 +851,7 @@ class MailerManager
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
 
         if ($oClient->status == 1) {
-            $iBalance = $oTransaction->getSolde($oLenderAccount->id_client_owner);
+            $fBalance = $oTransaction->getSolde($oLenderAccount->id_client_owner);
             $sPurpose = $oClient->getLenderPattern($oClient->id_client);
 
             $this->oSettings->get('Virement - aide par banque', 'type');
@@ -872,7 +872,7 @@ class MailerManager
                 'surl'           => $this->sSUrl,
                 'url'            => $this->sLUrl,
                 'prenom_p'       => $oClient->prenom,
-                'balance'        => $iBalance,
+                'balance'        => $this->oFicelle->formatNumber($fBalance, 2),
                 'iban'           => $sIban,
                 'bic'            => $sBic,
                 'titulaire'      => $sTitulaire,

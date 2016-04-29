@@ -226,9 +226,10 @@ class ProjectManager
                     ) {
                         continue;
                     }
-                    $iBalance = $oTransaction->getSolde($oClient->id_client);
 
-                    if ($iBalance < $aAutoBidSetting['amount']) {
+                    $fBalance = $oTransaction->getSolde($oClient->id_client);
+
+                    if ($fBalance < $aAutoBidSetting['amount']) {
                         $this->oNotificationManager->create(
                             \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
                             \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
@@ -236,7 +237,7 @@ class ProjectManager
                             'sendAutoBidBalanceInsufficient',
                             $oProject->id_project
                         );
-                    } elseif ($iBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
+                    } elseif ($fBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
                         $this->oNotificationManager->create(
                             \notifications::TYPE_AUTOBID_BALANCE_LOW,
                             \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,
