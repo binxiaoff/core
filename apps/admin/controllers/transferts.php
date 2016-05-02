@@ -151,7 +151,7 @@ class transfertsController extends bootstrap
 
         foreach ($eche as $e) {
             $ordre         = $e['ordre'];
-            $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
+            $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
             if ($montantDuMois <= $newsum) {
                 $echeanciers->updateStatusEmprunteur($id_project, $ordre);
@@ -403,7 +403,7 @@ class transfertsController extends bootstrap
             $newsum = $receptions->montant / 100;
 
             foreach ($eche as $e) {
-                $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
+                $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
                 if ($montantDuMois <= $newsum) {
                     $echeanciers->updateStatusEmprunteur($_POST['id_project'], $e['ordre'], 'annuler');
@@ -481,7 +481,7 @@ class transfertsController extends bootstrap
             $newsum = $receptions->montant / 100;
 
             foreach ($eche as $e) {
-                $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
+                $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
                 if ($montantDuMois <= $newsum) {
                     $echeanciers->updateStatusEmprunteur($projects->id_project, $e['ordre'], 'annuler');
@@ -500,7 +500,6 @@ class transfertsController extends bootstrap
                         $projects_remb->status = \projects_remb::STATUS_REJECTED;
                         $projects_remb->update();
                     }
-
                 } else {
                     break;
                 }

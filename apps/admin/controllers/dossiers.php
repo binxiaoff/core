@@ -786,7 +786,6 @@ class dossiersController extends bootstrap
                                     $virements->motif          = $this->ficelle->motif_mandat($this->clients->prenom, $this->clients->nom, $this->projects->id_project);
                                     $virements->type           = 2;
                                     $virements->create();
-                                    //*** fin virement emprunteur ***//
 
                                     //*** prelevement emprunteur ***//
                                     $prelevements = $this->loadData('prelevements');
@@ -799,14 +798,10 @@ class dossiersController extends bootstrap
                                         $result      = mktime(0, 0, 0, date("m", $dateEcheEmp), date("d", $dateEcheEmp) - 15, date("Y", $dateEcheEmp));
                                         $dateExec    = date('Y-m-d', $result);
 
-                                        // montant emprunteur a remb
-                                        $montant = $echeanciers->getMontantRembEmprunteur($e['montant'], $e['commission'], $e['tva']);
-
-                                        // on enregistre le prelevement recurent a effectuer chaque mois
                                         $prelevements->id_client                          = $this->clients->id_client;
                                         $prelevements->id_project                         = $this->projects->id_project;
                                         $prelevements->motif                              = $virements->motif;
-                                        $prelevements->montant                            = $montant;
+                                        $prelevements->montant                            = round($e['montant'] + $e['commission'] + $e['tva'], 2);
                                         $prelevements->bic                                = str_replace(' ', '', $this->companies->bic); // bic
                                         $prelevements->iban                               = str_replace(' ', '', $this->companies->iban);
                                         $prelevements->type_prelevement                   = 1; // recurrent
@@ -1875,24 +1870,20 @@ class dossiersController extends bootstrap
             $this->nextRemb = '';
 
             foreach ($lRembs as $k => $r) {
-                // remboursement effectué
                 if ($r['status_emprunteur'] == 1) {
                     $this->nbRembEffet += 1;
-                    $MontantRemb = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
-                    $this->totalEffet += $MontantRemb;
+                    $this->totalEffet += round($r['montant'] + $r['commission'] + $r['tva'], 2);
                     $this->interetEffet += $r['interets'];
                     $this->capitalEffet += $r['capital'];
                     $this->commissionEffet += $r['commission'];
                     $this->tvaEffet += $r['tva'];
-                } // remb a venir
-                else {
+                } else {
                     if ($this->nextRemb == '') {
                         $this->nextRemb = $r['date_echeance_emprunteur'];
                     }
 
                     $this->nbRembaVenir += 1;
-                    $MontantRemb = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
-                    $this->totalaVenir += $MontantRemb;
+                    $this->totalaVenir += round($r['montant'] + $r['commission'] + $r['tva'], 2);
                     $this->interetaVenir += $r['interets'];
                     $this->capitalaVenir += $r['capital'];
                     $this->commissionaVenir += $r['commission'];
@@ -2554,40 +2545,21 @@ class dossiersController extends bootstrap
     public function _detail_remb_preteur()
     {
         $this->clients          = $this->loadData('clients');
-        $this->loans            = $this->loadData('loans');
         $this->echeanciers      = $this->loadData('echeanciers');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
         $this->projects         = $this->loadData('projects');
 
+        /** @var \loans $oLoans */
+        $oLoans = $this->loadData('loans');
+
+        /** @var \echeanciers_emprunteur $oRepaymentSchedule */
+        $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-
-            $this->nbPeteurs = $this->loans->getNbPreteurs($this->projects->id_project);
-
-            $this->tauxMoyen = $this->loans->getAvgLoans($this->projects->id_project, 'rate');
-
-            $montantHaut = 0;
-            $montantBas  = 0;
-            // si fundé ou remboursement
-
-            foreach ($this->loans->select('id_project = ' . $this->projects->id_project) as $b) {
-                $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                $montantBas += ($b['amount'] / 100);
-            }
-            $this->tauxMoyen = ($montantHaut / $montantBas);
-
-            // liste des echeances emprunteur par mois
-            $lRembs = $this->echeanciers->getSumRembEmpruntByMonths($this->projects->id_project);
-
-            $this->montant     = 0;
-            $this->MontantRemb = 0;
-
-            foreach ($lRembs as $r) {
-                $this->montant += $r['montant'];
-
-                $this->MontantRemb += $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
-            }
-
-            $this->lLenders = $this->loans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
+            $this->nbPeteurs = $oLoans->getNbPreteurs($this->projects->id_project);
+            $this->tauxMoyen = $this->projects->getAverageInterestRate();
+            $this->montant   = $oRepaymentSchedule->sum('montant', 'id_project = ' . $this->projects->id_project) / 100;
+            $this->lLenders  = $oLoans->select('id_project = ' . $this->projects->id_project, 'rate ASC');
         }
     }
 
@@ -2621,7 +2593,6 @@ class dossiersController extends bootstrap
     {
         $this->clients                 = $this->loadData('clients');
         $this->echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
-        $this->echeanciers             = $this->loadData('echeanciers');
         $this->projects                = $this->loadData('projects');
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
@@ -2643,7 +2614,7 @@ class dossiersController extends bootstrap
 
             foreach ($this->lRemb as $r) {
                 $this->montantPreteur += $r['montant'];
-                $this->MontantEmprunteur += $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
+                $this->MontantEmprunteur += round($r['montant'] + $r['commission'] + $r['tva'], 2);
                 $this->commission += $r['commission'];
                 $this->comParMois    = $r['commission'];
                 $this->comTtcParMois = $r['commission'] + $r['tva'];

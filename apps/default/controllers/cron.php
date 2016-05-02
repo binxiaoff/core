@@ -1698,7 +1698,7 @@ class cronController extends bootstrap
                                     $newsum = $receptions->montant / 100;
 
                                     foreach ($oEcheanciersEmprunteur->select('status_emprunteur = 1 AND id_project = ' . $this->projects->id_project, 'ordre DESC') as $e) {
-                                        $montantDuMois = $oEcheanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
+                                        $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
                                         if ($montantDuMois <= $newsum) {
                                             $oEcheanciers->updateStatusEmprunteur($this->projects->id_project, $e['ordre'], 'annuler');
@@ -1741,7 +1741,7 @@ class cronController extends bootstrap
 
         foreach ($eche as $e) {
             $ordre         = $e['ordre'];
-            $montantDuMois = $echeanciers->getMontantRembEmprunteur($e['montant'] / 100, $e['commission'] / 100, $e['tva'] / 100);
+            $montantDuMois = round($e['montant'] / 100 + $e['commission'] / 100 + $e['tva'] / 100, 2);
 
             if ($montantDuMois <= $newsum) {
                 $echeanciers->updateStatusEmprunteur($id_project, $ordre);

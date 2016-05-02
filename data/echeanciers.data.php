@@ -442,29 +442,28 @@ class echeanciers extends echeanciers_crud
 
 
     // Retourne un tableau avec les sommes des echeances par mois d'un projet
-    public function getSumRembEmpruntByMonths($id_project = '', $ordre = '', $status_emprunteur = '', $month = '', $year = '', $order = '')
+    public function getSumRembEmpruntByMonths($id_project, $ordre = '')
     {
-        if ($id_project != '') {
-            $id_project = ' AND id_project = ' . $id_project;
-        }
         if ($ordre != '') {
             $ordre = ' AND ordre = ' . $ordre;
         }
-        if ($status_emprunteur != '') {
-            $status_emprunteur = ' AND status_emprunteur = ' . $status_emprunteur;
-        }
 
-        if ($month != '') {
-            $month = ' AND MONTH(added) = ' . $month;
-        }
-        if ($year != '') {
-            $year = ' AND YEAR(added) = ' . $year;
-        }
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = 'SELECT ordre, status_emprunteur,id_project,id_echeancier, SUM(montant) AS montant, SUM(capital) AS capital, SUM(interets) AS interets, SUM(commission) AS commission, SUM(tva) AS tva, LEFT(date_echeance_emprunteur,16) as date_echeance_emprunteur, LEFT(date_echeance,16) as date_echeance, status_emprunteur FROM echeanciers WHERE 1 = 1 ' . $id_project . $ordre . $status_emprunteur . $month . $year . ' GROUP BY ordre ' . $order;
+        $sql = '
+            SELECT ordre,
+                status_emprunteur,
+                id_project,
+                id_echeancier,
+                SUM(montant) AS montant,
+                SUM(capital) AS capital,
+                SUM(interets) AS interets,
+                SUM(commission) AS commission,
+                SUM(tva) AS tva,
+                LEFT(date_echeance_emprunteur,16) AS date_echeance_emprunteur,
+                LEFT(date_echeance, 16) AS date_echeance,
+                status_emprunteur
+            FROM echeanciers
+            WHERE id_project = ' . $id_project . $ordre . '
+            GROUP BY ordre';
         $req = $this->bdd->query($sql);
         $res = array();
         while ($rec = $this->bdd->fetch_array($req)) {
@@ -496,22 +495,15 @@ class echeanciers extends echeanciers_crud
         $this->bdd->query($sql);
     }
 
-    // Montant que l'emprunteur doit rembourser
-    public function getMontantRembEmprunteur($montant, $commission, $tva)
-    {
-        return round($montant + $tva + $commission, 2);
-    }
-
     // somme du remb d'un emprunteur sur son projet
-    public function getRembTotalEmprunteur($id_project, $tva = '')
+    public function getRembTotalEmprunteur($id_project)
     {
         $lRemb = $this->getSumRembEmpruntByMonths($id_project);
         $total = 0;
 
-
         foreach ($lRemb as $key => $r) {
             // On recup le montant a remb par l'emprunteur
-            $total += $this->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
+            $total += round($r['montant'] + $r['commission'] + $r['tva'], 2);
 
         }
         return $total;
@@ -565,7 +557,7 @@ class echeanciers extends echeanciers_crud
 
         $Remb = $this->getSumRembEmpruntByMonths($id_project, $ordre);
 
-        $montantRembEmprunteur = $this->getMontantRembEmprunteur($Remb[$ordre]['montant'], $Remb[$ordre]['commission'], $Remb[$ordre]['tva']);
+        $montantRembEmprunteur = round($Remb[$ordre]['montant'] + $Remb[$ordre]['commission'] + $Remb[$ordre]['tva'], 2);
 
         $retourne['date_echeance_emprunteur'] = $Remb[$ordre]['date_echeance_emprunteur'];
         $retourne['montant']                  = $montantRembEmprunteur;

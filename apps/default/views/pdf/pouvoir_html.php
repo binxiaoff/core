@@ -313,7 +313,7 @@
                         $capRestant = $this->capital;
                         foreach ($this->lRemb as $r) {
                             if ($r['ordre'] <= 48) {
-                                $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
+                                $montantEmprunteur = round($r['montant'] + $r['commission'] + $r['tva'], 2);
 
                                 $capRestant -= $r['capital'];
                                 if ($capRestant < 0) {
@@ -346,7 +346,7 @@
                         <?php
                         foreach ($this->lRemb as $r) {
                             if ($r['ordre'] > 48) {
-                                $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
+                                $montantEmprunteur = round($r['montant'] + $r['commission'] + $r['tva'], 2);
 
                                 $capRestant -= $r['capital'];
                                 if ($capRestant < 0) {
@@ -391,7 +391,7 @@
 
                         $capRestant = $this->capital;
                         foreach ($this->lRemb as $r) {
-                            $montantEmprunteur = $this->echeanciers->getMontantRembEmprunteur($r['montant'], $r['commission'], $r['tva']);
+                            $montantEmprunteur = round($r['montant'] + $r['commission'] + $r['tva'], 2);
 
                             $capRestant -= $r['capital'];
                             if ($capRestant < 0) {
