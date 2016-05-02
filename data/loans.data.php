@@ -309,20 +309,19 @@ class loans extends loans_crud
         }
     }
 
-    public function getRepaymentSchedule($fCommissionRate, $fVAT, $iLoanId = null)
+    public function getRepaymentSchedule($iLoanId = null)
     {
         if (null !== $iLoanId) {
             $this->get($iLoanId);
         }
 
-        $iMonthNb           = $this->getMonthNb();
-        $aBids              = $this->getBids();
-        $aScheduleGrouped   = array();
-        $aCommissionGrouped = array();
+        $iMonthNb         = $this->getMonthNb();
+        $aBids            = $this->getBids();
+        $aScheduleGrouped = array();
         foreach ($aBids as $aBid) {
-            $aSchedule = \repayment::getRepaymentScheduleWithCommission($aBid['accepted_amount'] / 100, $iMonthNb, $aBid['rate'] / 100, $fCommissionRate, $fVAT);
+            $aSchedule = \repayment::getRepaymentSchedule($aBid['accepted_amount'] / 100, $iMonthNb, $aBid['rate'] / 100);
             //Group the schedule of all bid of a loan
-            foreach ($aSchedule['repayment_schedule'] as $iOrder => $aRepayment) {
+            foreach ($aSchedule as $iOrder => $aRepayment) {
                 if (isset($aScheduleGrouped[$iOrder])) {
                     foreach ($aRepayment as $sKey => $fValue) {
                         $aScheduleGrouped[$iOrder][$sKey] += $fValue;
@@ -330,21 +329,9 @@ class loans extends loans_crud
                 } else {
                     $aScheduleGrouped[$iOrder] = $aRepayment;
                 }
-
-            }
-            foreach ($aSchedule['commission'] as $sKey => $fValue) {
-                if (isset($aCommissionGrouped[$sKey])) {
-                    $aCommissionGrouped[$sKey] += $fValue;
-                } else {
-                    $aCommissionGrouped[$sKey] = $fValue;
-                }
-
             }
         }
-        return array(
-            'repayment_schedule' => $aScheduleGrouped,
-            'commission' => $aCommissionGrouped
-        );
+        return $aScheduleGrouped;
     }
 
     public function getMonthNb($iProjectId = null)

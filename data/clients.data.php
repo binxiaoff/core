@@ -770,7 +770,7 @@ class clients extends clients_crud
                     WHERE
                         `id_project` IN (' . implode(',', $aProjects) . ')
                         AND `date` BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                        AND type_commission = 1';
+                        AND type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT;
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {

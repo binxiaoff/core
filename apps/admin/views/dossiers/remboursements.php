@@ -103,7 +103,6 @@
                 <?php
 
                 $datePremiereEcheance = $this->echeanciers->getDatePremiereEcheance($aProject['id_project']);
-                $rembTotal            = $this->echeanciers->getRembTotalEmprunteur($aProject['id_project']);
                 $prochainRemb         = $this->echeanciers_emprunteur->select('id_project = ' . $aProject['id_project'] . ' AND status_emprunteur = 0', 'ordre ASC');
 
                 ?>

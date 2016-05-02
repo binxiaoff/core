@@ -428,55 +428,27 @@ class echeanciers extends echeanciers_crud
         return $resultat;
     }
 
-    // listes des echeance (goupe par lender et par date)
-    public function getEcheancesProject($id_project)
-    {
-        $sql      = 'SELECT ordre, id_lender, status_emprunteur,status,id_project, SUM(montant) AS montant, SUM(capital) AS capital, SUM(interets) AS interets, SUM(commission) AS commission, SUM(tva) AS tva, LEFT(date_echeance_emprunteur,16) as date_echeance_emprunteur, LEFT(date_echeance,16) as date_echeance FROM echeanciers GROUP BY id_lender,ordre having id_project = ' . $id_project . ' order by date_echeance';
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-
     // Retourne un tableau avec les sommes des echeances par mois d'un projet
-    public function getSumRembEmpruntByMonths($id_project, $ordre = '')
+    public function getSumRembEmpruntByMonths($id_project)
     {
-        if ($ordre != '') {
-            $ordre = ' AND ordre = ' . $ordre;
-        }
-
         $sql = '
             SELECT ordre,
-                status_emprunteur,
-                id_project,
-                id_echeancier,
                 SUM(montant) AS montant,
                 SUM(capital) AS capital,
                 SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
-                LEFT(date_echeance_emprunteur,16) AS date_echeance_emprunteur,
-                LEFT(date_echeance, 16) AS date_echeance,
                 status_emprunteur
             FROM echeanciers
-            WHERE id_project = ' . $id_project . $ordre . '
+            WHERE id_project = ' . $id_project . '
             GROUP BY ordre';
-        $req = $this->bdd->query($sql);
         $res = array();
+        $req = $this->bdd->query($sql);
         while ($rec = $this->bdd->fetch_array($req)) {
-            $res[$rec['ordre']]['ordre']                    = $rec['ordre'];
-            $res[$rec['ordre']]['id_project']               = $rec['id_project'];
-            $res[$rec['ordre']]['status_emprunteur']        = $rec['status_emprunteur'];
-            $res[$rec['ordre']]['montant']                  = $rec['montant'] / 100;
-            $res[$rec['ordre']]['capital']                  = $rec['capital'] / 100;
-            $res[$rec['ordre']]['interets']                 = $rec['interets'] / 100;
-            $res[$rec['ordre']]['commission']               = $rec['commission'] / 100;
-            $res[$rec['ordre']]['tva']                      = $rec['tva'] / 100;
-            $res[$rec['ordre']]['date_echeance_emprunteur'] = $rec['date_echeance_emprunteur'];
-            $res[$rec['ordre']]['date_echeance']            = $rec['date_echeance'];
+            $res[$rec['ordre']] = array(
+                'montant'           => $rec['montant'] / 100,
+                'capital'           => $rec['capital'] / 100,
+                'interets'          => $rec['interets'] / 100,
+                'status_emprunteur' => $rec['status_emprunteur']
+            );
         }
         return $res;
     }
@@ -493,20 +465,6 @@ class echeanciers extends echeanciers_crud
         }
 
         $this->bdd->query($sql);
-    }
-
-    // somme du remb d'un emprunteur sur son projet
-    public function getRembTotalEmprunteur($id_project)
-    {
-        $lRemb = $this->getSumRembEmpruntByMonths($id_project);
-        $total = 0;
-
-        foreach ($lRemb as $key => $r) {
-            // On recup le montant a remb par l'emprunteur
-            $total += round($r['montant'] + $r['commission'] + $r['tva'], 2);
-
-        }
-        return $total;
     }
 
     // premiere echance emprunteur
@@ -547,23 +505,6 @@ class echeanciers extends echeanciers_crud
         return $derniereEcheance[0]['date_echeance'];
     }
 
-    // retourne la sommes des remb du prochain mois d'un emprunteur
-    public function getNextRembEmprunteur($id_project)
-    {
-        $sql = 'SELECT DISTINCT(ordre) FROM `echeanciers` WHERE status_emprunteur = 0 AND id_project = ' . $id_project . ' ORDER BY ordre LIMIT 0,1';
-
-        $result = $this->bdd->query($sql);
-        $ordre  = (int) ($this->bdd->result($result, 0, 0));
-
-        $Remb = $this->getSumRembEmpruntByMonths($id_project, $ordre);
-
-        $montantRembEmprunteur = round($Remb[$ordre]['montant'] + $Remb[$ordre]['commission'] + $Remb[$ordre]['tva'], 2);
-
-        $retourne['date_echeance_emprunteur'] = $Remb[$ordre]['date_echeance_emprunteur'];
-        $retourne['montant']                  = $montantRembEmprunteur;
-        return $retourne;
-    }
-
     // retourne la sum des echeance d'une journée
     // $date : yyyy-mm-dd
     public function getEcheanceByDay($date, $val = 'montant', $statutEmprunteur = '0')
@@ -581,8 +522,6 @@ class echeanciers extends echeanciers_crud
         SUM(montant) as montant,
         SUM(capital) as capital,
         SUM(interets) as interets,
-        SUM(commission) as commission,
-        SUM(tva) as tva,
         SUM(prelevements_obligatoires) as prelevements_obligatoires,
         SUM(retenues_source) as retenues_source,
         SUM(csg) as csg,
@@ -614,8 +553,6 @@ class echeanciers extends echeanciers_crud
                 SUM(montant) AS montant,
                 SUM(capital) AS capital,
                 SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
                 SUM(prelevements_obligatoires) AS prelevements_obligatoires,
                 SUM(retenues_source) AS retenues_source,
                 SUM(csg) AS csg,
@@ -654,8 +591,6 @@ class echeanciers extends echeanciers_crud
                 SUM(montant) AS montant,
                 SUM(capital) AS capital,
                 SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
                 SUM(prelevements_obligatoires) AS prelevements_obligatoires,
                 SUM(retenues_source) AS retenues_source,
                 SUM(csg) AS csg,
@@ -699,8 +634,6 @@ class echeanciers extends echeanciers_crud
                 SUM(montant) AS montant,
                 SUM(capital) AS capital,
                 SUM(interets) AS interets,
-                SUM(commission) AS commission,
-                SUM(tva) AS tva,
                 SUM(prelevements_obligatoires) AS prelevements_obligatoires,
                 SUM(retenues_source) AS retenues_source,
                 SUM(csg) AS csg,
@@ -740,12 +673,6 @@ class echeanciers extends echeanciers_crud
         return $aReturn;
     }
 
-    public function onMetAjourTVA($taux)
-    {
-        $sql = 'UPDATE echeanciers SET tva = ROUND(commission * ' . $taux . ') WHERE status_emprunteur = 0';
-        $this->bdd->query($sql);
-    }
-
     public function onMetAjourLesDatesEcheances($id_project, $ordre, $date_echeance, $date_echeance_emprunteur)
     {
         $sql = 'UPDATE echeanciers SET date_echeance = "' . $date_echeance . '", date_echeance_emprunteur = "' . $date_echeance_emprunteur . '", updated = "' . date('Y-m-d H:i:s') . '" WHERE status_emprunteur = 0 AND id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" ';
@@ -775,58 +702,6 @@ class echeanciers extends echeanciers_crud
                 status_email_remb,
                 status
             FROM `echeanciers`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    public function requete_revenus($id_project)
-    {
-        $sql = '
-            SELECT
-                e.id_lender,
-                le.id_client_owner,
-                le.id_company_owner,
-                e.capital,
-                e.interets,
-                e.retenues_source,
-                e.prelevements_obligatoires,
-                (SELECT lih.resident_etranger FROM lenders_imposition_history lih WHERE lih.added <= e.date_echeance_reel AND lih.id_lender = e.id_lender ORDER BY lih.added DESC LIMIT 1) as resident,
-                e.date_echeance_reel
-            FROM echeanciers e
-            LEFT JOIN lenders_accounts le ON le.id_lender_account = e.id_lender
-            WHERE e.status = 1 AND e.id_project = ' . $id_project . '
-            ORDER BY e.date_echeance';
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
-    // Utilisé dans le cron remb auto
-    public function selectfirstEcheanceByproject($date)
-    {
-
-        $sql = '
-        SELECT
-            e.id_project,
-            e.ordre,
-            e.date_echeance,
-            e.status,
-            e.date_echeance_emprunteur,
-            e.status_emprunteur,
-            (SELECT ROUND(SUM(ee.montant+ee.commission+ee.tva)/100,2) FROM echeanciers_emprunteur ee WHERE e.id_project = ee.id_project AND e.ordre = ee.ordre) as montant_emprunteur
-        FROM echeanciers e
-        WHERE LEFT(e.date_echeance,10) = "' . $date . '" AND status_emprunteur = 0
-        GROUP BY e.id_project
-        ORDER BY e.ordre';
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -883,20 +758,6 @@ class echeanciers extends echeanciers_crud
         }
         return $aResult;
     }
-
-    // retourne la somme total a rembourser pour un projet
-    public function getSumRestanteARembByProject_only($id_project = '', $date_debut = "")
-    {
-        $sql = '
-            SELECT SUM(capital) FROM `echeanciers`
-            WHERE status = 0
-                AND DATE(date_echeance) > "' . $date_debut . '"
-                AND id_project = ' . $id_project;
-
-        $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 0) / 100;
-    }
-
 
     // retourne la somme total a rembourser pour un projet
     public function get_liste_preteur_on_project($id_project = '')

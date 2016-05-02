@@ -1405,8 +1405,6 @@ class preteursController extends bootstrap
             'montant',
             'capital',
             'interets',
-            'commission',
-            'tva',
             'prelevements_obligatoires',
             'retenues_source',
             'csg',

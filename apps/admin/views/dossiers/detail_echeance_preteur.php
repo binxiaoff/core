@@ -44,7 +44,6 @@
                 <th>Nom</th>
                 <th>Prénom</th>
                 <th>Montant</th>
-
                 <th>Prélèvements<br/>obligatoires</th>
                 <th>Retenues à la<br/>source</th>
                 <th>CSG</th>
@@ -52,11 +51,8 @@
                 <th>Contributions<br/>additionnelles</th>
                 <th>Prélèvements <br/>de solidarité</th>
                 <th>CRDS</th>
-
                 <th>capital</th>
                 <th>interets</th>
-                <th>commission</th>
-                <th>tva</th>
                 <th>Date</th>
                 <th>Statut</th>
             </tr>
@@ -84,8 +80,6 @@
                     <td><?= $this->ficelle->formatNumber($r['crds']) ?></td>
                     <td><?= $this->ficelle->formatNumber($r['capital'] / 100) ?></td>
                     <td><?= $this->ficelle->formatNumber($r['interets'] / 100) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['commission'] / 100) ?></td>
-                    <td><?= $this->ficelle->formatNumber($r['tva'] / 100) ?></td>
                     <td><?= $this->dates->formatDate($r['date_echeance'], 'd/m/Y') ?></td>
                     <td><?= ($r['status'] == 1 ? 'Remboursé' : 'A venir') ?></td>
                 </tr>

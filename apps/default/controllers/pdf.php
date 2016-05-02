@@ -776,7 +776,7 @@ class pdfController extends bootstrap
 
         $this->companies->get($this->clients->id_client, 'id_client_owner');
 
-        $aInvoices = $this->factures->select('type_commission = 1 AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
+        $aInvoices = $this->factures->select('type_commission = ' . \factures::TYPE_COMMISSION_FINANCEMENT . ' AND id_company = ' . $this->companies->id_company . ' AND id_project = ' . $this->projects->id_project);
 
         if (empty($aInvoices)) {
             header('Location: ' . $this->lurl);

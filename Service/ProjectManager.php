@@ -439,8 +439,6 @@ class ProjectManager
         ini_set('max_execution_time', 300);
         ini_set('memory_limit', '512M');
 
-        /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
         /** @var \loans $oLoan */
         $oLoan = Loader::loadData('loans');
         /** @var \projects_status $oProjectStatus */
@@ -453,12 +451,6 @@ class ProjectManager
         $oClientAdresse = Loader::loadData('clients_adresses');
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
-
-        $oSettings->get('Commission remboursement', 'type');
-        $commission = $oSettings->value;
-
-        $oSettings->get('TVA', 'type');
-        $tva = $oSettings->value;
 
         $oProjectStatus->getLastStatut($oProject->id_project);
 
@@ -474,14 +466,11 @@ class ProjectManager
             foreach ($lLoans as $l) {
                 $oLenderAccount->get($l['id_lender'], 'id_lender_account');
                 $oClient->get($oLenderAccount->id_client_owner, 'id_client');
-
                 $oClientAdresse->get($oLenderAccount->id_client_owner, 'id_client');
-
                 $oLoan->get($l['id_loan']);
-                $tabl = $oLoan->getRepaymentSchedule($commission, $tva);
 
                 $aRepaymentSchedule = array();
-                foreach ($tabl['repayment_schedule'] as $k => $e) {
+                foreach ($oLoan->getRepaymentSchedule() as $k => $e) {
                     $dateEcheance = $this->oDate->dateAddMoisJoursV3($oProject->date_fin, $k);
                     $dateEcheance = date('Y-m-d H:i', $dateEcheance) . ':00';
 
@@ -490,17 +479,15 @@ class ProjectManager
                     $dateEcheance_emprunteur = date('Y-m-d H:i', $dateEcheance_emprunteur) . ':00';
 
                     $aRepaymentSchedule[] = array(
-                        'id_lender'                    => $l['id_lender'],
-                        'id_project'                   => $oProject->id_project,
-                        'id_loan'                      => $l['id_loan'],
-                        'ordre'                        => $k,
-                        'montant'                      => bcmul($e['repayment'], 100),
-                        'capital'                      => bcmul($e['capital'], 100),
-                        'interets'                     => bcmul($e['interest'], 100),
-                        'commission'                   => bcmul($e['commission'], 100),
-                        'tva'                          => bcmul($e['vat_amount'], 100),
-                        'date_echeance'                => $dateEcheance,
-                        'date_echeance_emprunteur'     => $dateEcheance_emprunteur,
+                        'id_lender'                => $l['id_lender'],
+                        'id_project'               => $oProject->id_project,
+                        'id_loan'                  => $l['id_loan'],
+                        'ordre'                    => $k,
+                        'montant'                  => bcmul($e['repayment'], 100),
+                        'capital'                  => bcmul($e['capital'], 100),
+                        'interets'                 => bcmul($e['interest'], 100),
+                        'date_echeance'            => $dateEcheance,
+                        'date_echeance_emprunteur' => $dateEcheance_emprunteur,
                     );
                 }
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);

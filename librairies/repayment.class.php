@@ -94,7 +94,7 @@ class repayment
         }
 
         return array(
-            'commission' => $aCommission,
+            'commission'         => $aCommission,
             'repayment_schedule' => $aSchedule
         );
     }

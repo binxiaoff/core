@@ -40,10 +40,7 @@ class settingsController extends bootstrap
             $this->settings->update();
 
             if ($this->settings->id_setting == 9) {
-                $echeanciers            = $this->loadData('echeanciers');
                 $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-
-                $echeanciers->onMetAjourTVA($this->settings->value);
                 $echeanciers_emprunteur->onMetAjourTVA($this->settings->value);
             }
 

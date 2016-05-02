@@ -47,7 +47,7 @@
         </tr>
         <tr>
             <td colspan="2"><b><?= $this->companies->name ?> - <?= $this->projects->title_bo ?></b></td>
-            <td><?= $this->ficelle->formatNumber($this->projects->amount) ?> € - <?= $this->projects->period ?> mois</td>
+            <td><?= $this->ficelle->formatNumber($this->projects->amount, 0) ?>&nbsp;€ - <?= $this->projects->period ?> mois</td>
             <th>Risques :</th>
             <td><?= $this->companies->risk ?></td>
             <th>Analyste :</th>
