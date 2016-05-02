@@ -55,6 +55,30 @@
             selector: 'form'
         });
 
+
+        //----------------------------------------
+        /*----------------------------------------
+        ----------------------------------------*/
+
+        var globalTabToggle = $(".global-tab-nav > th > span"),
+            globalTri,
+            detailTabToggle = $(".detail-nav > th > span"),
+            detailTri,
+            previousElem;
+
+        globalTabToggle.click(function(){
+            previousElem = $(this);
+            globalTri = $(this).attr("id");
+            $("#tri").html(globalTri);
+        });
+        detailTabToggle.click(function(){
+            detailTri = $(this).attr("class");
+            console.log("clicked on : "+detailTri);
+            $("#triDetail").html(detailTri);
+        });
+
+
+        // AJAX TAB DETAIL DISPLAY
         $(".table-body").click(function () {
             var targ = $(this);
             var el = $(this).children().children().children();
@@ -64,14 +88,96 @@
                 $(".table-body.detail").remove();
             }
             else {
+                if($(".table-body.detail").length){
+                    $(".line-focus").removeClass("line-focus");
+                    $(".expand").removeClass("expand");
+                    $(".table-body.detail").remove();
+                }
                 $.post(add_url + '/ajax/displayDetail').done(function (data) {
                     var newLine = data;
-                    $(newLine).insertAfter(targ);
+                    $(newLine).insertAfter(targ.next());
                 });
                 targ.addClass("line-focus");
                 el.addClass("expand");
             }
         });
+
+
+        function changeDirection(){
+            if($("#direction").html() == "1"){
+                $("#direction").html("2");
+            }
+            else{
+                $("#direction").html("1");
+            }
+        }
+        function changeDetailDirection(){
+            if($("#directionDetail").html() == "1"){
+                $("#directionDetail").html("2");
+            }
+            else{
+                $("#directionDetail").html("1");
+            }
+        }
+        function changeDirectionMobile(){
+            if($("#direction").html() == "1"){
+                $("#direction").html("2");
+            }
+            else{
+                $("#direction").html("1");
+            }
+        }
+        function changeDetailDirectionMobile(){
+            if($("#directionDetail").html() == "1"){
+                $("#directionDetail").html("2");
+            }
+            else{
+                $("#directionDetail").html("1");
+            }
+        }
+        /*
+        $("#triTaux").click(function() {
+            changeDirection();
+            $("#tri").html('rate');
+        })
+        $("#triAmount").click(function () {
+            changeDirection();
+            $("#tri").html('globalAmount');
+        });
+
+        $("#triOffers").click(function () {
+            changeDirection();
+            $("#tri").html('offers');
+        });
+
+        $("#triCurrentOffers").click(function () {
+            changeDirection();
+            $("#tri").html('currentOffers');
+        });
+
+
+        $(".triNumDetail").click(function () {
+            changeDetailDirectionMobile();
+            $("#tri_mobile_detail").html('detailNumber');
+        });
+
+        $(".triTauxDetail").click(function () {
+            changeDetailDirectionMobile();
+            $("#tri_mobile_detail").html('detailRate');
+        });
+
+        $(".triAmountDetail").click(function () {
+            changeDetailDirectionMobile();
+            $("#tri_mobile_detail").html('detailAmount');
+        });
+
+        $(".triStatusDetail").click(function () {
+            changeDetailDirectionMobile();
+            $("#tri_mobile_detail").html('detailStatus');
+        });
+         */
+//----------------------------------------------------
+
         $('a[href^="#"]').click(function(){
             var the_id = $(this).attr("href");
             $('html, body').animate({

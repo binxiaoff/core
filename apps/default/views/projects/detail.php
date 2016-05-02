@@ -145,22 +145,24 @@
                         <div class="tab tc" id="bids">
                             <?php if (count($this->aBidsOnProject) > 0) : ?>
                             <table class="table orders-table">
-                                <tr>
+                                <tr class="global-tab-nav">
                                     <th width="25%">
-                                        <span id="triTaux">taux<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="rate">taux<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th width="25%">
-                                        <span id="triAmount">montant total<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="amount">montant total<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th width="25%">
-                                        <span id="triOffers">nb offres<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="offers">nb offres<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th width="25%">
-                                        <span id="triCurrentOffers">offres en cours<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="current-offers">offres en cours<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                 </tr>
+
+
                                 <tr class="table-body">
-                                  <td class="bid-number">
+                                  <td class="rate-cell">
                                       <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
                                   </td>
                                     <td>
@@ -173,9 +175,23 @@
                                         <span class="offers-rate">100%</span>
                                     </td>
                                 </tr>
+                                <tr class="detail-nav">
+                                    <th>
+                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                </tr>
 
                                 <tr class="table-body">
-                                    <td class="bid-number">
+                                    <td class="rate-cell">
                                         <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
                                     </td>
                                     <td>
@@ -188,9 +204,23 @@
                                         <span class="offers-rate">100%</span>
                                     </td>
                                 </tr>
+                                <tr class="detail-nav">
+                                    <th>
+                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                </tr>
 
                                 <tr class="table-body">
-                                    <td class="bid-number">
+                                    <td class="rate-cell">
                                         <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
                                     </td>
                                     <td>
@@ -203,9 +233,23 @@
                                         <span class="offers-rate">100%</span>
                                     </td>
                                 </tr>
+                                <tr class="detail-nav">
+                                    <th>
+                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                </tr>
 
                                 <tr class="table-body">
-                                    <td class="bid-number">
+                                    <td class="rate-cell">
                                         <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
                                     </td>
                                     <td>
@@ -217,6 +261,20 @@
                                     <td>
                                         <span class="offers-rate">100%</span>
                                     </td>
+                                </tr>
+                                <tr class="detail-nav">
+                                    <th>
+                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
                                 </tr>
 
                             </table>
@@ -228,22 +286,6 @@
                             <script>
 
 
-
-                                $("#triTaux").click(function () {
-                                    $("#tri").html('rate');
-                                });
-
-                                $("#triAmount").click(function () {
-                                    $("#tri").html('globalAmount');
-                                });
-
-                                $("#triOffers").click(function () {
-                                    $("#tri").html('offers');
-                                });
-
-                                $("#triCurrentOffers").click(function () {
-                                    $("#tri").html('currentOffers');
-                                });
 
                                 $(".displayAll").click(function () {
                                     var tri = $("#tri").html();
@@ -262,8 +304,10 @@
                             <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
                         <?php endif; ?>
                         </div>
-                        <div id="tri" style="display:none;">ordre</div>
+                        <div id="tri" style="display:none;">rate</div>
+                        <div id="triDetail" style="display:none">detail-bid-number</div>
                         <div id="direction" style="display:none;">1</div>
+                        <div id="directionDetail" style="display:none;">1</div>
                         <?php endif; ?>
                         <div class="tab" id="presentation">
                             <article class="ex-article">
@@ -589,8 +633,10 @@
                     </h3>
                     <div class="article-entry" style="display: none;">
                         <div id="bids_mobile"><?= $this->fireView('../ajax/displayAll_mobile') ?></div>
-                        <div id="tri_mobile" style="display:none;">ordre</div>
+                        <div id="tri_mobile" style="display:none;">rate</div>
+                        <div id="tri_mobile_detail" style="display:none;">number</div>
                         <div id="direction_mobile" style="display:none;">1</div>
+                        <div id="direction_mobile_detail" style="display:none;">1</div>
                     </div>
                 </article>
             <?php endif; ?>

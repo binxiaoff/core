@@ -999,10 +999,11 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         text-align: center;
     }
 
+/*
     #triNum_mobile, #triTx_mobile, #triAmount_mobile, #triStatuts_mobile {
         cursor: pointer;
     }
-
+*/
     .has-fixed-nav .navigation ul ul a.active,.nav-fixed .navigation ul ul a.active{color: white;}
 
     .article-entry h5{font-size: 12px;}
@@ -1013,6 +1014,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     .testimonials{height: 100px;}
 
     #bids_mobile .table.orders-table th {font-size:10px;text-align:left;padding:0 10px 0 0 }
-    #bids_mobile .table.orders-table th i { display:none; }
     #bids_mobile .table.orders-table tr:first-of-type { padding-bottom:15px;}
+    #bids_mobile > table > tbody > tr.detail-nav > th {padding:20px 10px 0 0!important;}
 }
