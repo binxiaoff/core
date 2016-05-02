@@ -9,8 +9,8 @@
 namespace Unilend\Service;
 
 
-use Unilend\Library\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Library\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Bridge\SwiftMailer\TemplateMessage;
+use Unilend\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class MailQueueManager
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Library\Bridge\SwiftMailer;
+namespace Unilend\Bridge\SwiftMailer;
 
 
 class TemplateMessage extends \Swift_Message

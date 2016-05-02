@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\Library\Bridge\Doctrine\DBAL;
+namespace Unilend\Bridge\Doctrine\DBAL;
 
 use Doctrine\DBAL\Connection as BaseConnection;
 use Doctrine\DBAL\Driver\Statement;

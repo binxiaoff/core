@@ -5,7 +5,7 @@ use Unilend\core\Console\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Unilend\Library\Bridge\SwiftMailer\DatabaseSpool;
+use Unilend\Bridge\SwiftMailer\DatabaseSpool;
 
 class SendMail extends Command
 {

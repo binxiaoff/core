@@ -21,7 +21,9 @@
   },
   "autoload": {
     "psr-4": {
-      "Unilend\\": ""
+      "Unilend\\": "",
+      "Unilend\\Bridge\\": "Library/Bridge",
+      "Unilend\\Bundle\\": "Library/Bundle"
     }
   }
 }

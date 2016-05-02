@@ -1,8 +1,7 @@
 <?php
 
-namespace Unilend\Library\Bridge\SwiftMailer;
+namespace Unilend\Bridge\SwiftMailer;
 
-use Mailjet\Resources;
 use Mailjet\Response;
 use Unilend\Service\MailQueueManager;
 

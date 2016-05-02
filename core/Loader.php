@@ -1,9 +1,8 @@
 <?php
 namespace Unilend\core;
 
+use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
 use Symfony\Component\Yaml\Yaml;
-use Unilend\Bundle\Doctrine\DBAL\ConnectionFactory;
-use Unilend\librairies\Cache;
 
 /**
  * Class Loader
@@ -26,12 +25,12 @@ class Loader
 
         if (null === $db) {
             $params            = Yaml::parse(file_get_contents(__DIR__ . '/../Config/parameters.yml'));
-            $connectionFactory = new ConnectionFactory();
+            $connectionFactory = new ConnectionFactory([]);
             $db                = $connectionFactory->createConnection(
                 [
                     'driver'   => $params['parameters']['database_driver'],
                     'host'     => $params['parameters']['database_host'],
-                    'dbname'     => $params['parameters']['database_name'],
+                    'dbname'   => $params['parameters']['database_name'],
                     'user'     => $params['parameters']['database_user'],
                     'password' => $params['parameters']['database_password'],
                     'charset'  => 'utf8'

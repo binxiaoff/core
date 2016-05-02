@@ -76,18 +76,18 @@
         <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
         <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />
 
-        <service id="unilend.swiftmailer.message_provider" class="Unilend\Library\Bridge\SwiftMailer\TemplateMessageProvider">
+        <service id="unilend.swiftmailer.message_provider" class="Unilend\Bridge\SwiftMailer\TemplateMessageProvider">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument>Unilend\Library\Bridge\SwiftMailer\TemplateMessage</argument>
+            <argument>Unilend\Bridge\SwiftMailer\TemplateMessage</argument>
         </service>
 
-        <service id="unilend.swiftmailer.db_spool" class="Unilend\Library\Bridge\SwiftMailer\DatabaseSpool">
+        <service id="unilend.swiftmailer.db_spool" class="Unilend\Bridge\SwiftMailer\DatabaseSpool">
             <argument type="service" id="unilend.service.mail_queue"/>
         </service>
 
-        <service id="unilend.swiftmailer.transport.mailjet.eventdispatcher" class="Unilend\Library\Bridge\SwiftMailer\MailjetTransportEventDispatcher" parent="swiftmailer.transport.eventdispatcher.abstract" />
+        <service id="unilend.swiftmailer.transport.mailjet.eventdispatcher" class="Unilend\Bridge\SwiftMailer\MailjetTransportEventDispatcher" parent="swiftmailer.transport.eventdispatcher.abstract" />
 
-        <service id="unilend.swiftmailer.transport.mailjet" class="Unilend\Library\Bridge\SwiftMailer\MailjetTransport">
+        <service id="unilend.swiftmailer.transport.mailjet" class="Unilend\Bridge\SwiftMailer\MailjetTransport">
             <argument type="service" id="unilend.swiftmailer.transport.mailjet.eventdispatcher"/>
             <argument type="service" id="mailjet.api.client"/>
         </service>

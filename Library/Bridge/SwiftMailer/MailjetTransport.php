@@ -6,7 +6,7 @@
  * Time: 22:10
  */
 
-namespace Unilend\Library\Bridge\SwiftMailer;
+namespace Unilend\Bridge\SwiftMailer;
 
 use Mailjet\Client;
 use Mailjet\Resources;

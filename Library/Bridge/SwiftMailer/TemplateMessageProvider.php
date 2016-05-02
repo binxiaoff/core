@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Library\Bridge\SwiftMailer;
+namespace Unilend\Bridge\SwiftMailer;
 
 use Unilend\Service\EntityManager;
 

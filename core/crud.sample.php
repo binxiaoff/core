@@ -27,7 +27,7 @@
 // **************************************************************************************************** //
 class --classe--
 {
-    /** @var \Unilend\Library\Bridge\Doctrine\DBAL\Connection */
+    /** @var \Unilend\Bridge\Doctrine\DBAL\Connection */
     protected $bdd;
 
 --declaration--
