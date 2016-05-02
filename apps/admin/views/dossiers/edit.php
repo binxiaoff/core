@@ -533,6 +533,19 @@
                             <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
+                    <?php if (in_array($this->current_projects_status->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))) : ?>
+                    <tr>
+                        <th><label for="rejection_reason">Motif de rejet :</label></th>
+                        <td>
+                            <select name="rejection_reason" id="rejection_reason" class="select" style="width:160px;background-color:#AAACAC;">
+                                <option value="0">Choisir</option>
+                                <?php foreach ($this->aRejectionReasons as $aRejection) : ?>
+                                    <option<?= (isset($this->sRejectionReason) && $this->sRejectionReason == $aRejection['label'] ? ' selected' : '') ?> value="<?= $aRejection['id_rejection'] ?>"><?= $aRejection['label'] ?></option>
+                                <?php endforeach ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <?php endif; ?>
                     <?php if ($this->current_projects_status->status == \projects_status::NOTE_EXTERNE_FAIBLE && false === empty($this->current_projects_status_history->content)) { ?>
                     <tr>
                         <th><label for="status">Motif :</label></th>

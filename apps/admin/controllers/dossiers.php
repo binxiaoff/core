@@ -715,6 +715,31 @@ class dossiersController extends bootstrap
                         }
                     }
 
+                    if (isset($_POST['rejection_reason'])) {
+                        /** @var \projects_status_history_details $oStatusHistoryDetails */
+                        $oStatusHistoryDetails = $this->loadData('projects_status_history_details');
+
+                        /** @var \project_rejection_reason $oRejectionReason */
+                        $oRejectionReason = $this->loadData('project_rejection_reason');
+
+                        $oStatusHistoryDetails->get($this->current_projects_status_history->id_project_status_history, 'id_project_status_history');
+                        $this->sRejectionReason = $oRejectionReason->getRejectionReason($oStatusHistoryDetails);
+
+                        $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects);
+
+                        if ($this->projects_last_status_history->get($this->projects->id_project, 'id_project')
+                            && $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')) {
+                            $oStatusHistoryDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
+                            $oStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                            $oStatusHistoryDetails->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
+                            $oStatusHistoryDetails->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
+                            $oStatusHistoryDetails->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
+                            $oStatusHistoryDetails->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
+                            $oStatusHistoryDetails->create();
+                        }
+                    }
+
                     /////////////////
                     // REMBOURSEMENT //
                     // si on a le pouvoir
@@ -1152,20 +1177,18 @@ class dossiersController extends bootstrap
             $oProjectNeed = $this->loadData('project_need');
             $this->aNeeds = $oProjectNeed->getTree();
 
-            /** @var \projects_status_history_details $oProjectStatusHistoryDetails */
-            $oStatusHistoryDetails = $this->loadData('projects_status_history_details');
+            $this->projects_status->getLastStatut($this->projects->id_project);
+            if (in_array($this->projects_status->status, array(\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE))) {
+                /** @var \projects_status_history_details $oProjectStatusHistoryDetails */
+                $oStatusHistoryDetails = $this->loadData('projects_status_history_details');
 
-            if ($oStatusHistoryDetails->get($this->current_projects_status_history->id_project_status_history, 'id_project_status_history')) {
                 /** @var \project_rejection_reason $oRejectionReason */
                 $oRejectionReason = $this->loadData('project_rejection_reason');
 
-                if (
-                    $oStatusHistoryDetails->commercial_rejection_reason > 0 && $oRejectionReason->get($oStatusHistoryDetails->commercial_rejection_reason)
-                    || $oStatusHistoryDetails->analyst_rejection_reason > 0 && $oRejectionReason->get($oStatusHistoryDetails->analyst_rejection_reason)
-                    || $oStatusHistoryDetails->comity_rejection_reason > 0 && $oRejectionReason->get($oStatusHistoryDetails->comity_rejection_reason)
-                ) {
-                    $this->sRejectionReason = $oRejectionReason->label;
-                }
+                $oStatusHistoryDetails->get($this->current_projects_status_history->id_project_status_history, 'id_project_status_history');
+                $oRejectionReason->getRejectionReason($oStatusHistoryDetails);
+                $this->sRejectionReason  = $oRejectionReason->label;
+                $this->aRejectionReasons = $oRejectionReason->select();
             }
 
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();
