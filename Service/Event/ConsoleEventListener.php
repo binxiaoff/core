@@ -5,8 +5,6 @@ namespace Unilend\Service\Event;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Event\ConsoleTerminateEvent;
-use Unilend\core\Loader;
-use Unilend\librairies\ULogger;
 
 /**
  * Created by PhpStorm.
