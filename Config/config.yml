@@ -23,6 +23,12 @@ doctrine:
                 password: "%database_password%"
                 charset:  "UTF8"
                 wrapper_class: Unilend\Bridge\Doctrine\DBAL\Connection
+    orm:
+        result_cache_driver:
+            type: memcache
+            host: "%server1.memcache_host%"
+            port: "%server1.memcache_port%"
+            instance_class: Memcache
 
 cache_adapter:
     providers:

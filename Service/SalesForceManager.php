@@ -61,9 +61,9 @@ class SalesforceManager
     public function extractCompanies()
     {
         try {
-            $oQuery = $this->oEntityManager->getRepository('companies')->getCompaniesSalesForce();
-            if ($oQuery) {
-                $this->createFileFromQuery($oQuery, 'companies.csv');
+            $oStatement = $this->oEntityManager->getRepository('companies')->getCompaniesSalesForce();
+            if ($oStatement) {
+                $this->createFileFromQuery($oStatement, 'companies.csv');
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
@@ -76,9 +76,9 @@ class SalesforceManager
     public function extractBorrowers()
     {
         try {
-            $oQuery = $this->oEntityManager->getRepository('clients')->getBorrowersSalesForce();
-            if ($oQuery) {
-                $this->createFileFromQuery($oQuery, 'emprunteurs.csv');
+            $oStatement = $this->oEntityManager->getRepository('clients')->getBorrowersSalesForce();
+            if ($oStatement) {
+                $this->createFileFromQuery($oStatement, 'emprunteurs.csv');
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
@@ -91,9 +91,9 @@ class SalesforceManager
     public function extractProjects()
     {
         try {
-            $oQuery = $this->oEntityManager->getRepository('projects')->getProjectsSalesForce();
-            if ($oQuery) {
-                $this->createFileFromQuery($oQuery, 'projects.csv');
+            $oStatement = $this->oEntityManager->getRepository('projects')->getProjectsSalesForce();
+            if ($oStatement) {
+                $this->createFileFromQuery($oStatement, 'projects.csv');
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
@@ -106,9 +106,9 @@ class SalesforceManager
     public function extractLenders()
     {
         try {
-            $oQuery = $this->oEntityManager->getRepository('lenders_accounts')->getLendersSalesForce();
-            if ($oQuery) {
-                $this->createFileFromQuery($oQuery, 'preteurs.csv');
+            $oStatement = $this->oEntityManager->getRepository('lenders_accounts')->getLendersSalesForce();
+            if ($oStatement) {
+                $this->createFileFromQuery($oStatement, 'preteurs.csv');
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
@@ -125,12 +125,12 @@ class SalesforceManager
     public function extractProspects()
     {
         try {
-            $oQuery = $this->oEntityManager->getRepository('prospects')->getProspectsSalesForce();
-            if ($oQuery) {
+            $oStatement = $this->oEntityManager->getRepository('prospects')->getProspectsSalesForce();
+            if ($oStatement) {
                 $iTimeStartCsv = microtime(true);
                 $rCsvFile = fopen($this->sRootDir . self::PATH_EXTRACT . 'preteurs.csv', 'a');
                 $sNom = $sPrenom = $sEmail = '';
-                while ($aRow = $oQuery->fetch(\PDO::FETCH_ASSOC)) {
+                while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
                     $aRow = array_map(array($this, 'cleanValue'), $aRow);
                     if ($aRow['nom'] != $sNom && $aRow['prenom'] != $sPrenom && $aRow['email'] != $sEmail) {
                         //Array adding in file preteur.csv
@@ -179,6 +179,7 @@ class SalesforceManager
                     $sPrenom = $aRow['prenom'];
                     $sEmail = $aRow['email'];
                 }
+                $oStatement->closeCursor();
                 fclose($rCsvFile);
                 $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
                 $this->oLogger->info(
@@ -195,18 +196,18 @@ class SalesforceManager
     }
 
     /**
-     * @param Statement $oSql resource of query sql
+     * @param Statement $oStatement resource of query sql
      * @param string $sNameFile name of csv file to write
      * @return mixed
      */
-    private function createFileFromQuery($oSql, $sNameFile)
+    private function createFileFromQuery($oStatement, $sNameFile)
     {
         if (true === $this->createExtractDir()) {
             $iTimeStartCsv = microtime(true);
             $sNameFile .= (1 !== preg_match('/(\.csv)$/i', $sNameFile)) ? '.csv' : '';
             $rCsvFile = fopen($this->sRootDir . self::PATH_EXTRACT . $sNameFile, 'w');
             $iCountLine = 0;
-            while ($aRow = $oSql->fetch(\PDO::FETCH_ASSOC)) {
+            while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
                 $aRow = array_map(array($this, 'cleanValue'), $aRow);
                 switch ($sNameFile) {
                     case 'preteurs.csv':
@@ -220,6 +221,7 @@ class SalesforceManager
                 fputs($rCsvFile, '""' . implode('"", ""', $aRow) . '""' . "\n");
                 $iCountLine++;
             }
+            $oStatement->closeCursor();
             fclose($rCsvFile);
 
             $iTimeEndCsv = microtime(true) - $iTimeStartCsv;

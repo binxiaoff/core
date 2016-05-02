@@ -1058,4 +1058,5 @@ class clients extends clients_crud
                       c.id_client";
 
         return $this->bdd->executeQuery($sQuery);
-    }}
+    }
+}

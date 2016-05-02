@@ -18,6 +18,7 @@ class Kernel extends BaseKernel
             new \Symfony\Bundle\MonologBundle\MonologBundle(),
             new \Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new \Cache\AdapterBundle\CacheAdapterBundle(),
+            new \Unilend\Bundle\KernelBundle\KernelBundle(),
         ];
 
         return $bundles;
