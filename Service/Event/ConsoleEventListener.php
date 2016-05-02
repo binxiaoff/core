@@ -16,12 +16,10 @@ use Unilend\librairies\ULogger;
  */
 class ConsoleEventListener
 {
-    private $config;
     private $logger;
 
     public function __construct(LoggerInterface $logger)
     {
-        $this->config = Loader::loadConfig();
         $this->logger = $logger;
     }
 
