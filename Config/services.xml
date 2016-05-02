@@ -3,10 +3,8 @@
 <container xmlns="http://symfony.com/schema/dic/services"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
-    <parameters>
-        <parameter key=""></parameter>
-    </parameters>
     <services>
+        <!-- Unilend services -->
         <service id="unilend.service.autobid_settings_manager" class="Unilend\Service\AutoBidSettingsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_settings_manager"/>
@@ -78,7 +76,7 @@
             <argument type="service" id="logger"/>
         </service>
 
-
+        <!-- Swift Mailer -->
         <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
         <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />
 
@@ -91,18 +89,19 @@
             <argument type="service" id="unilend.service.mail_queue"/>
         </service>
 
-        <service id="unilend.swiftmailer.transport.mailjet.eventdispatcher" class="Unilend\Bridge\SwiftMailer\MailjetTransportEventDispatcher" parent="swiftmailer.transport.eventdispatcher.abstract" />
-
-        <service id="unilend.swiftmailer.transport.mailjet" class="Unilend\Bridge\SwiftMailer\MailjetTransport">
-            <argument type="service" id="unilend.swiftmailer.transport.mailjet.eventdispatcher"/>
+        <service id="swiftmailer.mailer.transport.mailjet" class="Unilend\Bridge\SwiftMailer\MailjetTransport">
+            <argument type="service" id="swiftmailer.mailer.default.transport.eventdispatcher"/>
             <argument type="service" id="mailjet.api.client"/>
         </service>
+        <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet" />
 
+        <!-- Mailjet API -->
         <service id="mailjet.api.client" class="Mailjet\Client">
             <argument>%mailjet.api_key%</argument>
             <argument>%mailjet.api_secret%</argument>
         </service>
 
+        <!-- To be removed -->
         <service id="cache" class="Unilend\librairies\Cache"/>
     </services>
 </container>

@@ -28,6 +28,7 @@ data/crud/*
 route.php
 *.rej
 cache/
+Config/parameters.yml
 
 # PHPStorm
 .idea/

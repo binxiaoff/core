@@ -1,2 +1,6 @@
 imports:
     - { resource: config.yml }
+
+swiftmailer:
+    spool:
+        type: db

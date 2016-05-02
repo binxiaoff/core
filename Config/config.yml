@@ -29,6 +29,11 @@ doctrine:
             host: "%server1.memcache_host%"
             port: "%server1.memcache_port%"
             instance_class: Memcache
+        query_cache_driver:
+            type: memcache
+            host: "%server1.memcache_host%"
+            port: "%server1.memcache_port%"
+            instance_class: Memcache
 
 cache_adapter:
     providers:
@@ -48,8 +53,6 @@ monolog:
             max_files: 10
 
 swiftmailer:
-    spool:
-        type: db
     transport: '%mailer_transport%'
     host:      '%mailer_host%'
     username:  '%mailer_user%'
