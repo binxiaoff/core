@@ -1,6 +1,6 @@
 <?php
 
-class espace_emprunteurController extends Bootstrap
+class espace_emprunteurController extends bootstrap
 {
     public function initialize()
     {

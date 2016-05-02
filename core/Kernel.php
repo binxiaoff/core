@@ -23,6 +23,12 @@ class Kernel extends BaseKernel
         return $bundles;
     }
 
+    public function getName()
+    {
+        return 'app';
+    }
+
+
     /**
      * Get the root path
      * @return string

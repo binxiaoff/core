@@ -72,6 +72,12 @@
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
         </service>
 
+        <service id="unilend.service.salesforce" class="Unilend\Service\SalesforceManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument>%kernel.root_dir%</argument>
+            <argument type="service" id="logger"/>
+        </service>
+
 
         <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
         <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />

@@ -15,7 +15,13 @@ class Command extends ContainerAwareCommand
         return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
     }
 
-    //Cree une nouvelle instance d'une librairie
+    /**
+     * @deprecated Each lib will be declared as a service.
+     * @param string $library
+     * @param array $params
+     * @param bool $instanciate
+     * @return bool|object
+     */
     public function loadLib($library, $params = array(), $instanciate = true)
     {
         return \Unilend\core\Loader::loadLib($library, $params, $instanciate);

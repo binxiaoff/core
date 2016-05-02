@@ -7,7 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Unilend\Bridge\SwiftMailer\DatabaseSpool;
 
-class SendMail extends Command
+class SendMailCommand extends Command
 {
     /**
      * @see Command
@@ -21,7 +21,7 @@ class SendMail extends Command
             ->addOption('time-limit', 0, InputOption::VALUE_OPTIONAL, 'The time limit for sending messages (in seconds).')
             ->setHelp(<<<EOF
 The <info>mailer:spool:send</info> command sends all emails from the spool.
-<info>php app/console mailer:spool:send --message-limit=10 --time-limit=10 --recover-timeout=900</info>
+<info>php bin/console mailer:spool:send --message-limit=10 --time-limit=10</info>
 EOF
             );
     }

@@ -774,4 +774,71 @@ class projects extends projects_crud
         //F, G, H are not used today.
         return array('A', 'B', 'C', 'D', 'E');
     }
+
+    public function getProjectsSalesForce()
+    {
+        $sQuery = "SELECT
+                        p.id_project AS 'IDProjet',
+                        REPLACE(cl.source,',','') AS 'Source1',
+                        REPLACE(cl.source2,',','') AS 'Source2',
+                        p.id_company AS 'IDCompany',
+                        p.amount AS 'Amount',
+                        p.period AS 'NbMois',
+                        CASE p.date_publication
+                          WHEN '0000-00-00' then ''
+                          ELSE p.date_publication
+                        END AS 'Date_Publication',
+						CASE p.date_retrait
+                          WHEN '0000-00-00' then ''
+                          ELSE p.date_retrait
+                        END AS 'Date_Retrait',
+                        CASE p.added
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE p.added
+                        END AS 'Date_Ajout',
+                        CASE p.updated
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE p.updated
+                        END AS 'Date_Mise_Jour',
+                        REPLACE(ps.label,',','') AS 'Status',
+                        pn.note AS 'Note',
+                        CASE REPLACE(co.name,',','')
+                          WHEN '' THEN 'A renseigner'
+                          ELSE REPLACE(co.name,',','')
+                        END AS 'Nom_Societe',
+                        REPLACE(co.forme,',','') AS 'Forme',
+                        REPLACE(REPLACE(co.siren,'\t',''),',','') AS 'Siren',
+                        REPLACE(co.adresse1,',','') as 'Adresse1',
+                        REPLACE(co.adresse2,',','') as 'Adresse2',
+                        REPLACE(co.zip,',','') AS 'CP',
+                        REPLACE(co.city,',','') AS 'Ville',
+                        co.id_pays AS 'IdPays',
+                        REPLACE(co.phone,'\t','') AS 'Telephone',
+                        co.status_client AS 'Status_Client',
+                        CASE co.added
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE co.added
+                        END AS 'Date_ajout',
+                        CASE co.updated
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE co.updated
+                        END AS 'Date_Mise_A_Jour',
+                        co.id_client_owner AS 'IDClient'
+                    FROM
+                        projects p
+                    LEFT JOIN
+                        companies co ON (p.id_company = co.id_company)
+                    LEFT JOIN
+                        clients cl ON (cl.id_client = co.id_client_owner)
+                    LEFT JOIN
+                        projects_notes pn ON (p.id_project = pn.id_project)
+                    LEFT JOIN
+                      projects_last_status_history pslh ON pslh.id_project = p.id_project
+                    LEFT JOIN
+                      projects_status_history psh ON psh.id_project_status_history = pslh.id_project_status_history
+                    LEFT JOIN
+                      projects_status ps ON ps.id_project_status = psh.id_project_status";
+
+        return $this->bdd->executeQuery($sQuery);
+    }
 }

@@ -22,7 +22,7 @@ doctrine:
                 user:     "%database_user%"
                 password: "%database_password%"
                 charset:  "UTF8"
-                wrapper_class: Unilend\Library\Bridge\Doctrine\DBAL\Connection
+                wrapper_class: Unilend\Bridge\Doctrine\DBAL\Connection
 
 cache_adapter:
     providers:

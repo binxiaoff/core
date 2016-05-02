@@ -96,4 +96,27 @@ class prospects extends prospects_crud
         $sql = "UPDATE prospects SET added = '" . $date . "' WHERE id_prospect = " . $id_prospect;
         $this->bdd->query($sql);
     }
+
+    public function getProspectsSalesForce()
+    {
+        $sQuery = "SELECT id_prospect,
+                    id_langue,
+                    REPLACE(source,',','') as 'source',
+                    REPLACE(source2,',','') as 'source2',
+                    REPLACE(source3,',','') as 'source3',
+                    REPLACE(nom,',','') as 'nom',
+                    REPLACE(prenom,',','') as 'prenom',
+                    email,
+                    CASE added
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE added
+                    END as 'added',
+                    CASE updated
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE updated
+                    END as 'updated'
+                  FROM prospects p";
+
+        return $this->bdd->executeQuery($sQuery);
+    }
 }

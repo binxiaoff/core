@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 
-class Example extends Command
+class ExampleCommand extends Command
 {
     /** @var  string */
     private $defaultArgument;
