@@ -238,27 +238,40 @@
                 <h5>ACTIF</h5>
                 <div class="list">
                     <ul>
-                        <li>Immobilisations corporelles
+                        <li>
+                            Immobilisations corporelles
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles']) ?> &euro;</div>
                         </li>
-                        <li>Immobilisations incorporelles
+                        <li>
+                            Immobilisations incorporelles
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles']) ?> &euro;</div>
                         </li>
-                        <li>Immobilisations financières
+                        <li>
+                            Immobilisations financières
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres']) ?> &euro;</div>
                         </li>
-                        <li>Stocks
+                        <li>
+                            Stocks
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks']) ?> &euro;</div>
                         </li>
-                        <li>Créances clients et autres
+                        <li>
+                            Créances clients et autres
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients']) ?> &euro;</div>
                         </li>
-                        <li>Disponibilités
+                        <li>
+                            Disponibilités
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites']) ?> &euro;</div>
                         </li>
-                        <li>Valeurs mobilières de placement
+                        <li>
+                            Valeurs mobilières de placement
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement']) ?> &euro;</div>
                         </li>
+                        <?php if ($this->l_AP[0]['comptes_regularisation_actif'] != 0) : ?>
+                        <li>
+                            Comptes de régularisation
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif']) ?> &euro;</div>
+                        </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
                 <div class="total-row">
@@ -267,24 +280,36 @@
                 <h5>PASSIF</h5>
                 <div class="list">
                     <ul>
-                        <li>Capitaux propres
+                        <li>
+                            Capitaux propres
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres']) ?> &euro;</div>
                         </li>
-                        <li>Provisions pour risques et charges
+                        <li>
+                            Provisions pour risques et charges
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges']) ?> &euro;</div>
                         </li>
-                        <li>Amortissements sur immobilisations
+                        <li>
+                            Amortissements sur immobilisations
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo']) ?> &euro;</div>
                         </li>
-                        <li>Dettes financières
+                        <li>
+                            Dettes financières
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres']) ?> &euro;</div>
                         </li>
-                        <li>Dettes fournisseurs
+                        <li>
+                            Dettes fournisseurs
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs']) ?> &euro;</div>
                         </li>
-                        <li>Autres dettes
+                        <li>
+                            Autres dettes
                             <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes']) ?> &euro;</div>
                         </li>
+                        <?php if ($this->l_AP[0]['comptes_regularisation_passif'] != 0) : ?>
+                        <li>
+                            Comptes de régularisation
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif']) ?> &euro;</div>
+                        </li>
+                        <?php endif; ?>
                     </ul>
                 </div>
                 <div class="total-row">
@@ -322,15 +347,12 @@
 
                                 ?>
                                 <tr>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'],
-                                            'd/m/Y') ?></td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"
-                                        class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['tva'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"
-                                        class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($capRestant / 100) ?> &euro;</td>
                                 </tr>
                                 <?php
@@ -355,15 +377,12 @@
 
                                 ?>
                                 <tr>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'],
-                                            'd/m/Y') ?></td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"
-                                        class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['tva'] / 100) ?> &euro;</td>
-                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"
-                                        class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
+                                    <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($montantEmprunteur / 100) ?> &euro;</td>
                                     <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($capRestant / 100) ?> &euro;</td>
                                 </tr>
                                 <?php
@@ -375,7 +394,7 @@
             </div>
         <?php else: ?>
             <div class="page-break">
-                <h3 class="pink"><?= $this->bloc_pdf_contrat['echeancier-remboursements'] ?></h3>
+                <h3 class="pink"><?= $this->bloc_pouvoir['echeancier-remboursements'] ?></h3>
                 <div class="dates-table">
                     <table width="100%" cellspacing="0" cellpadding="0" class="table-2">
                         <tr>
@@ -400,8 +419,7 @@
 
                             ?>
                             <tr>
-                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'],
-                                        'd/m/Y') ?></td>
+                                <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->dates->formatDate($r['date_echeance_emprunteur'], 'd/m/Y') ?></td>
                                 <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['capital'] / 100) ?> &euro;</td>
                                 <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['interets'] / 100) ?> &euro;</td>
                                 <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($r['commission'] / 100) ?> &euro;</td>

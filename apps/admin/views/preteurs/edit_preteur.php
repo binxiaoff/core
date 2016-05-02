@@ -623,9 +623,7 @@
                         <tr>
                             <td>
                                 <label for="id">Saisir votre message :</label>
-                                <textarea name="content_email_completude" id="content_email_completude">
-                                    <?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?>
-                                </textarea>
+                                <textarea name="content_email_completude" id="content_email_completude"><?= isset($_SESSION['content_email_completude'][$this->params[0]]) ? $text = str_replace(array('<br>', '<br />'), '', $_SESSION['content_email_completude'][$this->params[0]]) : '' ?></textarea>
                             </td>
                         </tr>
                         <tr>
