@@ -170,6 +170,7 @@
             <th>Type de fichier</th>
             <th>Nom (cliquer pour télécharger)</th>
             <th>Statut GreenPoint</th>
+            <th>&Eacute;tat de validation</th>
         </tr>
         <?php foreach ($this->aAvailableAttachments as $aAttachmentType) : ?>
             <tr style="height: 2em; padding: 2px; ">
@@ -182,6 +183,7 @@
                 <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
                     <?= $aAttachmentType['greenpoint_label'] ?>
                 </td>
+                <td><?= $aAttachmentType['final_status'] ?></td>
             </tr>
         <?php endforeach; ?>
         <tr>

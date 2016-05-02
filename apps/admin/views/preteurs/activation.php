@@ -57,6 +57,7 @@
             $iRow      = 1;
             foreach ($this->lPreteurs as $c) {
                 if (isset($this->aGreenPointStatus[$c['id_client']])) {
+                    $sWaitingForGP     = '';
                     $sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
                     if (preg_match('/^[8-9]{3}$/', $sGreenPointStatus)) {
                         $sBGColor = '#14892c;';
@@ -68,8 +69,8 @@
                         }
                     }
                 } else {
-                    $sGreenPointStatus = 'Non contrôlé';
-                    $sBGColor = '#ff0100;';
+                    $sWaitingForGP = '&nbsp;<span style="font-weight: bold; color: #f79232;">Attente Green Point</span>';
+                    $sBGColor      = '';
                 }
 
                 // Solde du compte preteur
@@ -96,12 +97,12 @@
                 ?>
 
                 <tr class="<?= ($iRow % 2 == 1 ? '' : 'odd') ?> ">
-                    <td align="center" style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
+                    <td align="center" <?php if (false === empty($sBGColor)): ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
                     <td><?= $nom ?></td>
                     <td><?= $prenom ?></td>
                     <td align="center"><?= date('d/m/Y', strtotime($c['added'])) ?></td>
                     <td align="center"><?= $val ?></td>
-                    <td align="center"><?= $c['label_status'] ?></td>
+                    <td align="center"><?= $c['label_status'] . $sWaitingForGP ?></td>
                     <td align="center">
                         <?
                         if (in_array($c['status_client'], array(clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION))) {

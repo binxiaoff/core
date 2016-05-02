@@ -14,15 +14,11 @@ class attachment_helper
     /** @var  string */
     private $basePath;
 
-    /** @var  boolean */
-    private $isUpdate;
-
     public function __construct($aAttributes)
     {
         $this->oAttachment      = $aAttributes[0];
         $this->oAttachmentType  = $aAttributes[1];
         $this->basePath         = $aAttributes[2];
-        $this->isUpdate        = false;
     }
     /**
      * @param integer    $ownerId
@@ -31,8 +27,7 @@ class attachment_helper
      * @param string     $field
      * @param upload     $upload
      * @param string     $sNewName
-     *
-     * @return bool|string
+     * @return bool|int
      */
     public function upload($ownerId, $ownerType, $attachmentType, $field, $upload, $sNewName = '')
     {
@@ -67,7 +62,6 @@ class attachment_helper
         );
 
         if (false === empty($attachmentInfo) && $attachmentInfo[0]['path'] != '') {
-            $this->isUpdate = true;
             @unlink($this->basePath . $uploadPath . $attachmentInfo[0]['path']);
         }
 
@@ -239,10 +233,23 @@ class attachment_helper
     }
 
     /**
-     * @return boolean
+     * @param \attachment_type $oAttachment
+     * @param int $ownerId
+     * @param int $ownerType
+     * @param int $attachmentType
+     * @return int|bool
      */
-    public function getIsUpdate()
+    public function attachmentExists($oAttachment, $ownerId, $ownerType, $attachmentType)
     {
-        return $this->isUpdate;
+        $attachmentInfo = $oAttachment->select(
+            'id_owner = ' . $ownerId . '
+            AND type_owner = "' . $ownerType . '"
+            AND id_type = ' . $attachmentType
+        );
+        if (false === empty($attachmentInfo) && $attachmentInfo[0]['path'] != '') {
+            return $attachmentInfo[0]['id'];
+        } else {
+            return false;
+        }
     }
 }

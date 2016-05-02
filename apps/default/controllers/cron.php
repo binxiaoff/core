@@ -6450,9 +6450,6 @@ class cronController extends bootstrap
         /** @var \greenpoint_attachment $oGreenPointAttachment */
         $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
 
-        /** @var \greenpoint_attachment_detail $oGreenPointAttachmentDetail */
-        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
-
         /** @var \greenpoint_kyc $oGreenPointKyc */
         $oGreenPointKyc = $this->loadData('greenpoint_kyc');
 
@@ -6490,11 +6487,16 @@ class cronController extends bootstrap
             foreach ($aClientsToCheck as $iClientId => $aClient) {
                 $aAttachments = $oLendersAccount->getAttachments($aClient['id_lender_account']);
 
+                /** @var array $aAttachmentsToRevalidate */
+                $aAttachmentsToRevalidate = array();
+
                 if (false === empty($aAttachments)) {
                     $aError = array();
                     foreach ($aAttachments as $iAttachmentTypeId => $aAttachment) {
                         if ($oGreenPointAttachment->get($aAttachment['id'], 'id_attachment') && 0 == $oGreenPointAttachment->revalidate) {
                             continue;
+                        } elseif (1 == $oGreenPointAttachment->revalidate) {
+                            $aAttachmentsToRevalidate[$iAttachmentTypeId] = $oGreenPointAttachment->id_greenpoint_attachment;
                         }
                         $sAttachmentPath = $oAttachmentHelper->getFullPath($aAttachment['type_owner'], $aAttachment['id_type']) . $aAttachment['path'];
                         $sFullPath       = realpath($sAttachmentPath);
@@ -6540,7 +6542,7 @@ class cronController extends bootstrap
                         if ($bDebug) {
                             $oLogger->addRecord(ULogger::DEBUG, 'CLIENT_ID=' . $iClientId . ' - Request Details : ' . var_export($aResult, 1));
                         }
-                        $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $oGreenPointAttachment, $oGreenPointAttachmentDetail);
+                        $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $aAttachmentsToRevalidate);
                         unset($aResult, $aQueryID);
                         greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
                     }
@@ -6653,19 +6655,31 @@ class cronController extends bootstrap
      * @param int $iClientId
      * @param array $aResponseDetail
      * @param array $aResponseKeys
-     * @param \greenpoint_attachment $oGreenPointAttachment
-     * @param \greenpoint_attachment_detail $oGreenPointAttachmentDetail
+     * @param array $aExistingAttachment
      */
-    private function processGreenPointResponse($iClientId, array $aResponseDetail, array $aResponseKeys, $oGreenPointAttachment, $oGreenPointAttachmentDetail)
+    private function processGreenPointResponse($iClientId, array $aResponseDetail, array $aResponseKeys, array $aExistingAttachment)
     {
+        /** @var \greenpoint_attachment $oGreenPointAttachment */
+        $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
+        /** @var \greenpoint_attachment_detail $oGreenPointAttachmentDetail */
+        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
+
         foreach ($aResponseKeys as $iQRID => $iAttachmentTypeId) {
             if (false === isset($aResponseDetail[$iQRID])) {
                 continue;
             }
+
+            if (isset($aExistingAttachment[$iAttachmentTypeId]) && $oGreenPointAttachment->get($aExistingAttachment[$iAttachmentTypeId], 'id_greenpoint_attachment')) {
+                $bUpdate = true;
+            } else {
+                $bUpdate = false;
+            }
             $oGreenPointAttachment->control_level = 1;
             $oGreenPointAttachment->revalidate    = 0;
-            $iAttachmentId = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
-            $aResponse     = json_decode($aResponseDetail[$iQRID]['RESPONSE'], true);
+            $oGreenPointAttachment->final_status  = 0;
+            $iAttachmentId                        = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
+            $aResponse                            = json_decode($aResponseDetail[$iQRID]['RESPONSE'], true);
 
             if (isset($aResponse['resource']) && is_array($aResponse['resource'])) {
                 $aGreenPointData = greenPointStatus::getGreenPointData($aResponse['resource'], $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
@@ -6678,15 +6692,26 @@ class cronController extends bootstrap
                     $oGreenPointAttachment->$sKey = $mValue;
                 }
             }
-            $oGreenPointAttachment->create();
+
+            if ($bUpdate) {
+                $oGreenPointAttachment->update();
+                $oGreenPointAttachmentDetail->get($oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
+            } else {
+                $oGreenPointAttachment->create();
+                $oGreenPointAttachmentDetail->id_greenpoint_attachment = $oGreenPointAttachment->id_greenpoint_attachment;
+            }
 
             foreach ($aGreenPointData['greenpoint_attachment_detail'] as $sKey => $mValue) {
                 if (false === is_null($mValue)) {
                     $oGreenPointAttachmentDetail->$sKey = $mValue;
                 }
             }
-            $oGreenPointAttachmentDetail->id_greenpoint_attachment = $oGreenPointAttachment->id_greenpoint_attachment;
-            $oGreenPointAttachmentDetail->create();
+
+            if ($bUpdate) {
+                $oGreenPointAttachmentDetail->update();
+            } else {
+                $oGreenPointAttachmentDetail->create();
+            }
             $oGreenPointAttachment->unsetData();
             $oGreenPointAttachmentDetail->unsetData();
         }

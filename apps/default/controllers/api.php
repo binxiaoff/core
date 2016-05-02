@@ -35,7 +35,7 @@ class apiController extends Controller
                 $sAllowedIPSettings = $oSettings->value;
                 break;
             default:
-                $oSettings->get('green_point_ip_prod', 'type');
+                $oSettings->get('green_point_ip_test', 'type');
                 $sAllowedIPSettings = $oSettings->value;
                 break;
         }
@@ -116,6 +116,8 @@ class apiController extends Controller
                 $oGreenPointAttachment->$sKey = $mValue;
             }
         }
+        $oGreenPointAttachment->final_status = 1;
+        $oGreenPointAttachment->revalidate   = 0;
         $oGreenPointAttachment->update();
 
         foreach ($aGreenPointData['greenpoint_attachment_detail'] as $sKey => $mValue) {

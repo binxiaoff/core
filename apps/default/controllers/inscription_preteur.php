@@ -945,18 +945,18 @@ class inscription_preteurController extends bootstrap
                 return false;
         }
 
-        $iAttachmentId = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
-
-        if($this->attachmentHelper->getIsUpdate()) {
-            /** @var \greenpoint_attachment $oGreenPointAttachment */
-            $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
-
-            if($oGreenPointAttachment->get($iAttachmentId, 'id_attachment')) {
-                $oGreenPointAttachment->revalidate = 1;
-                $oGreenPointAttachment->update();
-            }
+        if (false === isset($this->oGreenPointAttachment) || false === $this->oGreenPointAttachment instanceof greenpoint_attachment) {
+            /** @var greenpoint_attachment oGreenPointAttachment */
+            $this->oGreenPointAttachment = $this->loadData('greenpoint_attachment');
         }
-        return $iAttachmentId;
+        $mResult = $this->attachmentHelper->attachmentExists($this->attachment, $lenderAccountId, attachment::LENDER, $attachmentType);
+        if (is_numeric($mResult)) {
+            $this->oGreenPointAttachment->get($mResult, 'id_attachment');
+            $this->oGreenPointAttachment->revalidate   = 1;
+            $this->oGreenPointAttachment->final_status = 0;
+            $this->oGreenPointAttachment->update();
+        }
+        return $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $field, $this->upload);
     }
 
     private function sendSubscriptionConfirmationEmail(\clients $oClient)
