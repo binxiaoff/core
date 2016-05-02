@@ -8,7 +8,6 @@ error_reporting(E_ERROR | E_WARNING);
 
 include('../../core/controller.class.php');
 include('../../core/command.class.php');
-include('../../core/bdd.class.php');
 include('../../core/errorhandler.class.php');
 include('../../config.php');
 

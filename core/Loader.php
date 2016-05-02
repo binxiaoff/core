@@ -21,8 +21,6 @@ class Loader
      */
     public static function loadData($object, array $params = array(), $db = null)
     {
-        $config = self::loadConfig();
-
         if (null === $db) {
             $params            = Yaml::parse(file_get_contents(__DIR__ . '/../Config/parameters.yml'));
             $connectionFactory = new ConnectionFactory([]);
@@ -37,8 +35,7 @@ class Loader
                 ]
             );
         }
-
-        $path = $config['path'][$config['env']];
+        $path = realpath(dirname(__FILE__) . '/..') . '/';
 
         if (false === file_exists($path . 'data/crud/' . $object . '.crud.php') && false === self::generateCRUD($object, $db, $path)
             || false === file_exists($path . 'data/' . $object . '.data.php') && false === self::generateDATA($object, $db, $path)
@@ -207,8 +204,7 @@ class Loader
 
     public static function loadLib($sLibrary, array $aParams = array(), $bInstancing = true)
     {
-        $config       = self::loadConfig();
-        $sProjectPath = $config['path'][$config['env']];
+        $sProjectPath = realpath(dirname(__FILE__) . '/..') . '/';
         $sClassPath   = '';
         $aPath        = explode('/', $sLibrary);
 

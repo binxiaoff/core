@@ -45,12 +45,21 @@ cache_adapter:
             aliases: ['memcache.default']
 
 monolog:
+    channels: [console]
     handlers:
         main:
             type: rotating_file
             path: "%kernel.logs_dir%/%kernel.environment%.log"
             level: info
             max_files: 10
+            channels: ['!console']
+        console:
+            type: stream
+            path: "%kernel.logs_dir%/console-%kernel.environment%.log"
+            path: info
+            max_files: 10
+            channels: [console]
+
 
 swiftmailer:
     transport: '%mailer_transport%'

@@ -8,7 +8,7 @@
 
 namespace Unilend\Service;
 
-use Unilend\core\Loader;
+use Unilend\Service\Simulator\EntityManager;
 
 class NotificationManager
 {

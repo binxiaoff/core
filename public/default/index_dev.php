@@ -26,7 +26,6 @@ if ($bCacheFullPage) {
 
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
-include __DIR__ . '/../../core/bdd.class.php';
 include __DIR__ . '/../../core/errorhandler.class.php';
 include __DIR__ . '/../../route.php';
 

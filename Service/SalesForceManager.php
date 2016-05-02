@@ -3,6 +3,7 @@ namespace Unilend\Service;
 
 use Doctrine\DBAL\Statement;
 use Psr\Log\LoggerInterface;
+use Unilend\Service\Simulator\EntityManager;
 
 class SalesforceManager
 {
@@ -248,7 +249,7 @@ class SalesforceManager
         }
         return true;
     }
-    
+
     /**
      * @param string $sPath path of directory to unlink. If null, path of success log.
      */

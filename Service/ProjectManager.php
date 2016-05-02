@@ -1,15 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: binxiao
- * Date: 09/02/2016
- * Time: 09:38
- */
-
 namespace Unilend\Service;
 
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
+use Unilend\Service\Simulator\EntityManager;
 
 class ProjectManager
 {
@@ -51,6 +45,9 @@ class ProjectManager
 
     /** @var \jours_ouvres */
     private $oWorkingDay;
+    
+    /** @var EntityManager  */
+    private $oEntityManager;
 
     public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager)
     {

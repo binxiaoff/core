@@ -59,9 +59,10 @@
 
         <service id="unilend.service.irr_manager" class="Unilend\Service\IRRManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="logger"/>
         </service>
 
-        <service id="unilend.service.entity_manager" class="Unilend\Service\EntityManager">
+        <service id="unilend.service.entity_manager" class="Unilend\Service\Simulator\EntityManager">
             <argument type="service" id="database_connection"/>
         </service>
 

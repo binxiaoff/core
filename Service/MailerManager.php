@@ -3,6 +3,7 @@ namespace Unilend\Service;
 
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
+use Unilend\Service\Simulator\EntityManager;
 
 class MailerManager
 {

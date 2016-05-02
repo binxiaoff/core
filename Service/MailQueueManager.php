@@ -8,7 +8,7 @@
 
 namespace Unilend\Service;
 
-
+use Unilend\Service\Simulator\EntityManager;
 use Unilend\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\Bridge\SwiftMailer\TemplateMessageProvider;
 

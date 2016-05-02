@@ -2,6 +2,7 @@
 namespace Unilend\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Service\Simulator\EntityManager;
 
 /**
  * Class ClientSettingsManager

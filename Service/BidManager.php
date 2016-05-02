@@ -3,6 +3,7 @@ namespace Unilend\Service;
 
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
+use Unilend\Service\Simulator\EntityManager;
 
 /**
  * Class BidManager
@@ -248,7 +249,7 @@ class BidManager
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
-        
+
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
             if ($oAutoBid->rate_min <= $fCurrentRate
                 && $oLenderAccount->get($oBid->id_lender_account) && $oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE) { //check online/offline instead of LenderManager::canBid() because of the performance issue.

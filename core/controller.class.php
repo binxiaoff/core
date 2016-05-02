@@ -52,9 +52,9 @@ abstract class Controller extends ContainerAware
 
         // Mise en place des chemins
         $this->path       = $this->get('kernel')->getRootDir() . '/';
-        $this->spath      = $this->Config['user_path'][$this->Config['env']];
-        $this->staticPath = $this->Config['static_path'][$this->Config['env']];
-        $this->logPath    = $this->Config['log_path'][$this->Config['env']];
+        $this->spath      = $this->get('kernel')->getRootDir() . '/public/default/var/';
+        $this->staticPath = $this->get('kernel')->getRootDir() . '/public/default/';
+        $this->logPath    = $this->get('kernel')->getLogDir();
         $this->surl       = $this->Config['static_url'][$this->Config['env']];
         $this->url        = $this->Config['url'][$this->Config['env']][$this->App];
         $this->lurl       = $this->Config['url'][$this->Config['env']][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
@@ -63,9 +63,6 @@ abstract class Controller extends ContainerAware
         $this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
         //fo
         $this->furl = $this->Config['url'][$this->Config['env']]['default'];
-
-        // Bypass le htaccess
-        $this->bp_url = $this->Config['bypass_htaccess_url'][$this->Config['env']];
 
         // Recuperation du type de plateforme
         $this->cms = $this->Config['cms'];
@@ -160,7 +157,7 @@ abstract class Controller extends ContainerAware
         }
 
         //Affiche une fentre de debug/error si l'option est activée dans le config.php
-        if (($this->Config['bdd_option'][$this->Config['env']]['DEBUG_DISPLAY'] || $this->Config['bdd_option'][$this->Config['env']]['DISPLAY_ERREUR']) && in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]) && $this->autoFireDebug) {
+        if ($this->getParameter('kernel.debug')) {
             $this->fireDebug();
         }
     }
@@ -259,7 +256,7 @@ abstract class Controller extends ContainerAware
                             </tr>
                             <tr>
                                 <td>Base utilis&eacute;e</td>
-                                <td>' . $this->Config['bdd_config'][$this->Config['env']]['BDD'] . '</td>
+                                <td>' . $this->getParameter('database_name') . '</td>
                             </tr>
                         </table>
                     </fieldset>
@@ -407,7 +404,7 @@ abstract class Controller extends ContainerAware
         $this->footer = $footer;
     }
 
-    public function loadData($object, $params = array())
+    protected function loadData($object, $params = array())
     {
         return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
     }
@@ -419,14 +416,26 @@ abstract class Controller extends ContainerAware
      * @param bool $instanciate
      * @return bool|object
      */
-    public function loadLib($library, $params = array(), $instanciate = true)
+    protected function loadLib($library, $params = array(), $instanciate = true)
     {
         return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
     }
 
-    public function get($service)
+    protected function get($service)
     {
         return $this->container->get($service);
+    }
+
+    /**
+     * Gets a container configuration parameter by its name.
+     *
+     * @param string $name The parameter name
+     *
+     * @return mixed
+     */
+    protected function getParameter($name)
+    {
+        return $this->container->getParameter($name);
     }
 
     //Charge un fichier js dans le tableau des js
@@ -508,7 +517,7 @@ abstract class Controller extends ContainerAware
             $requestURI = explode('/', $_SERVER['REQUEST_URI']);
         }
     }
-    
+
     // Redirige vers une autre url avec le bon header si besoin
     public function redirection($url, $type = '')
     {

@@ -2,6 +2,7 @@
 namespace Unilend\Service\Event;
 
 
+use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;
 use Symfony\Component\Console\Event\ConsoleTerminateEvent;
 use Unilend\core\Loader;
@@ -18,10 +19,10 @@ class ConsoleEventListener
     private $config;
     private $logger;
 
-    public function __construct()
+    public function __construct(LoggerInterface $logger)
     {
         $this->config = Loader::loadConfig();
-        $this->logger = new ULogger('cron', $this->config['log_path'][$this->config['env']], 'cron.' . date('Ymd') . '.log');
+        $this->logger = $logger;
     }
 
     public function onCommandStart(ConsoleCommandEvent $event)
@@ -29,7 +30,7 @@ class ConsoleEventListener
         $input = $event->getInput();
         $command = $event->getCommand();
 
-        $this->logger->addRecord(ULogger::INFO, 'Start command ' . $command->getName(), array('arguments' => $input->getArguments(), 'options' => $input->getOptions()));
+        $this->logger->info('Start command ' . $command->getName(), array('arguments' => $input->getArguments(), 'options' => $input->getOptions()));
     }
 
     public function onCommandEnd(ConsoleTerminateEvent $event)
@@ -37,6 +38,6 @@ class ConsoleEventListener
         $input = $event->getInput();
         $command = $event->getCommand();
 
-        $this->logger->addRecord(ULogger::INFO, 'End command ' . $command->getName(), array('arguments' => $input->getArguments(), 'options' => $input->getOptions()));
+        $this->logger->info('End command ' . $command->getName(), array('arguments' => $input->getArguments(), 'options' => $input->getOptions()));
     }
 }
