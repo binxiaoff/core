@@ -729,13 +729,16 @@ class dossiersController extends bootstrap
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects);
 
                         if ($this->projects_last_status_history->get($this->projects->id_project, 'id_project')
-                            && $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')) {
-                            $oStatusHistoryDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
-                            $oStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                            $oStatusHistoryDetails->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
-                            $oStatusHistoryDetails->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
-                            $oStatusHistoryDetails->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
-                            $oStatusHistoryDetails->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
+                            && $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')
+                        ) {
+                            $oStatusHistoryDetails->analyst_rejection_reason    = $_POST['rejection_reason'];
+                            $oStatusHistoryDetails->comity_rejection_reason     = 0;
+                            $oStatusHistoryDetails->commercial_rejection_reason = 0;
+                            $oStatusHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
+                            $oStatusHistoryDetails->date                        = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
+                            $oStatusHistoryDetails->receiver                    = isset($_POST['receiver']) ? $_POST['receiver'] : '';
+                            $oStatusHistoryDetails->mail_content                = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
+                            $oStatusHistoryDetails->site_content                = isset($_POST['site_content']) ? $_POST['site_content'] : '';
                             $oStatusHistoryDetails->create();
                         }
                     }
