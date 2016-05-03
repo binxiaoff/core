@@ -1,8 +1,8 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\core\Loader;
-use Unilend\librairies\Cache;
+use Psr\Cache\CacheItemPoolInterface;
+use Unilend\Service\Simulator\EntityManager;
 
 /**
  * Class ClientSettingsManager
@@ -12,13 +12,13 @@ class ClientSettingsManager
 {
     const CACHE_KEY_GET_SETTING = 'UNILEND_SERVICE_CLIENTSETTINGSMANAGER_GETSETTING';
 
-    /** @var \client_settings ClientSettings */
-    private $oClientSettings;
+    private $oCachePool;
 
-    public function __construct()
+    public function __construct(EntityManager $oEntityManager, CacheItemPoolInterface $oCachePool)
     {
-        $this->oClientSettings = Loader::loadData('client_settings');
-        Loader::loadData('client_setting_type'); //load for use of constants
+        $this->oEntityManager = $oEntityManager;
+        $this->oCachePool     = $oCachePool;
+        $this->oEntityManager->getRepository('client_setting_type'); //load for use of constants
     }
 
     /**
@@ -31,7 +31,7 @@ class ClientSettingsManager
     public function saveClientSetting(\clients $oClient, $iSettingType, $sValue)
     {
         /** @var \client_settings $oClientSettings */
-        $oClientSettings = Loader::loadData('client_settings');
+        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
 
         if ($oClientSettings->get($oClient->id_client, 'id_type = ' . $iSettingType . ' AND id_client')) {
             if ($sValue != $oClientSettings->value) {
@@ -61,13 +61,17 @@ class ClientSettingsManager
      */
     public function getSetting(\clients $oClient, $iSettingType)
     {
-        $oCache = Cache::getInstance();
-        $sKey   = $oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
-        $mValue = $oCache->get($sKey);
+        /** @var \client_settings $oClientSettings */
+        $oClientSettings = $this->oEntityManager->getRepository('client_settings');
+        $oCachedItem     = $this->oCachePool->get(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
 
-        if (false === $mValue) {
-            $mValue = $this->oClientSettings->getSetting($oClient->id_client, $iSettingType);
-            $oCache->set($sKey, $mValue);
+        if (false === $oCachedItem->isHit()) {
+            $mValue = $oClientSettings->getSetting($oClient->id_client, $iSettingType);
+            $oCachedItem->set($mValue)
+                        ->expiresAfter(1800);
+            $this->oCachePool->save($oCachedItem);
+        } else {
+            $mValue = $oCachedItem->get();
         }
 
         return $mValue;
@@ -75,8 +79,6 @@ class ClientSettingsManager
 
     private function flushSettingCache(\clients $oClient, $iSettingType)
     {
-        $oCache = Cache::getInstance();
-        $sKey   = $oCache->makeKey(self::CACHE_KEY_GET_SETTING, $oClient->id_client, $iSettingType);
-        $oCache->delete($sKey);
+        $this->oCachePool->deleteItem(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
     }
 }

@@ -210,4 +210,29 @@ class companies extends companies_crud
                 AND current_company.id_company = ' . $this->id_company
         ));
     }
+
+    public function getCompaniesSalesForce()
+    {
+        $sQuery = "SELECT
+                    co.id_company AS 'IDCompany',
+                    REPLACE(REPLACE(co.siren,',',''),'t','') AS 'Siren',
+                    CASE REPLACE(co.name,',','')
+                      WHEN '' THEN 'A renseigner'
+                      ELSE REPLACE(co.name,',','')
+                    END AS 'RaisonSociale',
+                    REPLACE(co.adresse1,',','') AS 'Adresse1',
+                    REPLACE(co.zip,',','') AS 'CP',
+                    REPLACE(co.city,',','') AS 'Ville',
+                    acountry.fr AS 'Pays',
+                    REPLACE(co.email_facture,',','') AS 'EmailFacturation',
+                    co.id_client_owner AS 'IDClient',
+                    co.forme as 'FormeSociale',
+                    '012240000002G4U' as 'Sfcompte'
+                  FROM
+                    companies co
+                  LEFT JOIN
+                    pays_v2 acountry ON (co.id_pays = acountry.id_pays)";
+
+        return $this->bdd->executeQuery($sQuery);
+    }
 }

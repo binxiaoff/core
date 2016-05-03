@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\core\Loader;
+use Unilend\Service\Simulator\EntityManager;
 
 /**
  * Class LenderManager
@@ -9,6 +9,13 @@ use Unilend\core\Loader;
  */
 class LenderManager
 {
+    /** @var EntityManager  */
+    private $oEntityManager;
+
+    public function __construct(EntityManager $oEntityManager)
+    {
+        $this->oEntityManager = $oEntityManager;
+    }
 
     /**
      * @param \lenders_accounts $oLenderAccount
@@ -18,9 +25,9 @@ class LenderManager
     public function canBid(\lenders_accounts $oLenderAccount)
     {
         /** @var \clients_status $oClientStatus */
-        $oClientStatus = Loader::loadData('clients_status');
+        $oClientStatus = $this->oEntityManager->getRepository('clients_status');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
 
         if ($oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE
              && $oClientStatus->getLastStatut($oLenderAccount->id_client_owner) && $oClientStatus->status == \clients_status::VALIDATED) {
@@ -35,9 +42,9 @@ class LenderManager
     public function addLendersToLendersAccountsStatQueue(array $aLenders)
     {
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
-        $oLendersAccountsStatsQueue = Loader::loadData('lenders_accounts_stats_queue');
+        $oLendersAccountsStatsQueue = $this->oEntityManager->getRepository('lenders_accounts_stats_queue');
 
         foreach ($aLenders as $aLender) {
             if (array_key_exists('id_lender', $aLender) && $oLenderAccount->get($aLender['id_lender'], 'id_lender_account')

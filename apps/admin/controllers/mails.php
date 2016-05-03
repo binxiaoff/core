@@ -2,10 +2,10 @@
 class mailsController extends bootstrap
 {
 	var $Command;
-	
-	function mailsController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 

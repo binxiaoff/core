@@ -2,12 +2,12 @@
 
 class statsController extends bootstrap
 {
-    public function __construct(&$command, $config, $app)
+    public function initialize()
     {
         ini_set('memory_limit', '2G');
         ini_set('max_execution_time', 1200);
 
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
@@ -1357,7 +1357,7 @@ class statsController extends bootstrap
                 $oQueryResident = $this->bdd->query($sSqlResident);
                 $aRow = $this->bdd->fetch_array($oQueryResident);
 
-                if (0 !== $this->bdd->num_rows() && 0 < $aRow['resident_etranger']) {
+                if (0 !== $this->bdd->num_rows($oQueryResident) && 0 < $aRow['resident_etranger']) {
                     $bForeigner = true;
                     if (in_array($aRow['id_pays'], $aZoneB040CountryIds)) {
                         $bZoneB040Country = true;

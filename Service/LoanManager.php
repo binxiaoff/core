@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\core\Loader;
+use Unilend\Service\Simulator\EntityManager;
 use Unilend\librairies\ULogger;
 
 /**
@@ -12,7 +12,13 @@ class LoanManager
 {
     /** @var  ULogger */
     private $oLogger;
+    /** @var EntityManager  */
+    private $oEntityManager;
 
+    public function __construct(EntityManager $oEntityManager)
+    {
+        $this->oEntityManager = $oEntityManager;
+    }
     /**
      * @param ULogger $oLogger
      */
@@ -33,7 +39,7 @@ class LoanManager
             return false;
         }
         /** @var \accepted_bids $oAcceptedBid */
-        $oAcceptedBid = Loader::loadData('accepted_bids');
+        $oAcceptedBid = $this->oEntityManager->getRepository('accepted_bids');
         foreach ($oLoan->getAcceptedBids() as $aAcceptedBid) {
             $oAcceptedBid->unsetData();
             $oAcceptedBid->id_bid  = $aAcceptedBid['bid_id'];

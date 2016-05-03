@@ -2,16 +2,14 @@
 
 class rootController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
         $this->catchAll = true;
     }
 
     public function _default()
     {
-        $this->fireCache();
-
         // ajout du slash car capital rajout un Get
         if (isset($this->params[0]) && substr($this->params[0], 0, 8) == 'capital?') {
             header('Location:' . $this->lurl . '/capital/?');
@@ -103,9 +101,10 @@ class rootController extends bootstrap
             }
 
             // Recuperation du contenu de la page
-            $sKey      = $this->oCache->makeKey('Home_Tree_Childs_Elements', $this->tree->id_tree, $this->language);
-            $aElements = $this->oCache->get($sKey);
-            if (false === $aElements) {
+            $oCachePool = $this->get('memcache.default');
+
+            $oCachedItem  = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            if (false === $oCachedItem->isHit()) {
                 $this->content          = array();
                 $this->complement       = array();
                 $this->childsContent    = array();
@@ -134,8 +133,11 @@ class rootController extends bootstrap
                     'childsComplement' => $this->childsComplement
                 );
 
-
-                $this->oCache->set($sKey, $aElements);
+                $oCachedItem->set($aElements)
+                            ->expiresAfter(3600);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $aElements    = $oCachedItem->get();
             }
 
             $this->content          = $aElements['content'];
@@ -152,9 +154,9 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $sKey      = $this->oCache->makeKey('Home_Blocs_Elements', $this->tree->id_template, $this->language);
-            $aElements = $this->oCache->get($sKey);
-            if (false === $aElements) {
+            $oCachedItem  = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+
+            if (false === $oCachedItem->isHit()) {
                 $this->bloc_content    = array();
                 $this->bloc_complement = array();
                 // Recuperation des blocs pour chaque position
@@ -175,7 +177,11 @@ class rootController extends bootstrap
                     'bloc_complement' => $this->bloc_complement
                 );
 
-                $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
+                $oCachedItem->set($aElements)
+                            ->expiresAfter(3600);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $aElements    = $oCachedItem->get();
             }
 
             $this->bloc_content    = $aElements['bloc_content'];
@@ -858,14 +864,8 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des librairies
-        $this->xml2array = $this->loadLib('xml2array');
-
-        $xmlstring = file_get_contents('http://www.capital.fr/wrapper-unilend.xml');
-
-        $result  = $this->xml2array->getArray($xmlstring);
-        $content = $result['wrapper']['content'];
-        $content = explode('<!--CONTENT_ZONE-->', $content);
+        $oXml    = new SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
+        $content = explode('<!--CONTENT_ZONE-->', (string)$oXml->content);
 
         $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);

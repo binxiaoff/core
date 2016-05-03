@@ -1,0 +1,24 @@
+parameters:
+    database_driver:                pdo_mysql
+    database_host:                  localhost
+    database_port:                  ~
+    database_name:                  unilend
+    database_user:                  root
+    database_password:              ROOTPASSWORD
+
+    secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
+    locale:                         fr
+
+    server1.memcache_host:          127.0.0.1
+    server1.memcache_port:          11211
+
+    mailer_transport:               mail #use mailjet en prod
+    mailer_host:                    ~
+    mailer_user:                    ~
+    mailer_password:                ~
+
+    mailjet.api_key:                9968d5b7419c2d4edf7c00f32f629f8a
+    mailjet.api_secret:             579bc26d8656f837ca8dcdcc6739da95
+
+    router.request_context.host:    dev.www.unilend.fr
+    router.request_context.scheme:  https

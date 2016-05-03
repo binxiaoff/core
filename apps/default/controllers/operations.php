@@ -4,9 +4,9 @@ class operationsController extends bootstrap
 {
     const LAST_OPERATION_DATE = '2013-01-01';
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
         // On prend le header account

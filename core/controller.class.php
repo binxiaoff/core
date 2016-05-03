@@ -1,34 +1,9 @@
 <?php
-// **************************************************************************************************** //
-// ***************************************    ASPARTAM    ********************************************* //
-// **************************************************************************************************** //
-//
-// Copyright (c) 2008-2011, equinoa
-// Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-// associated documentation files (the "Software"), to deal in the Software without restriction,
-// including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-// and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so,
-// subject to the following conditions:
-// The above copyright notice and this permission notice shall be included in all copies
-// or substantial portions of the Software.
-// The Software is provided "as is", without warranty of any kind, express or implied, including but
-// not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement.
-// In no event shall the authors or copyright holders equinoa be liable for any claim,
-// damages or other liability, whether in an action of contract, tort or otherwise, arising from,
-// out of or in connection with the software or the use or other dealings in the Software.
-// Except as contained in this notice, the name of equinoa shall not be used in advertising
-// or otherwise to promote the sale, use or other dealings in this Software without
-// prior written authorization from equinoa.
-//
-//  Version : 2.4.0
-//  Date : 21/03/2011
-//  Coupable : CM
-//
-// **************************************************************************************************** //
+require_once __DIR__ . '/../Autoloader.php';
 
-use Unilend\librairies\Cache;
+use Unilend\core\ContainerAware;
 
-class Controller
+abstract class Controller extends ContainerAware
 {
     var $Command;
     var $Config;
@@ -48,20 +23,10 @@ class Controller
 
     public $current_template = '';
 
-    /**
-     * @var Cache
-     */
-    public $oCache;
-
     public function __construct(&$command, $config, $app)
     {
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
-
-        require_once __DIR__ . '/../Autoloader.php';
-        Autoloader::register();
-
-        $this->oCache = Cache::getInstance();
 
         //Variables de session pour la fenetre de debug
         unset($_SESSION['error']);
@@ -71,14 +36,14 @@ class Controller
         $this->Command      = $command;
         $this->Config       = $config;
         $this->App          = $app;
+    }
+
+    protected function initialize()
+    {
+        $this->bdd = $this->get('database_connection');
+
         $this->included_js  = array();
         $this->included_css = array();
-        $this->bdd          = \bdd::instance($this->Config['bdd_config'][$this->Config['env']], $this->Config['bdd_option'][$this->Config['env']]);
-
-        // Initialisation des propriétés nécessaires au cache
-        $this->enableCache      = false;
-        $this->cacheDuration    = $this->Config['cacheDuration'][$this->Config['env']];
-        $this->cacheCurrentPage = false;
 
         // Langue et controller
         $this->language           = $this->Command->Language;
@@ -86,10 +51,10 @@ class Controller
         $this->current_function   = $this->Command->getfunction();
 
         // Mise en place des chemins
-        $this->path       = $this->Config['path'][$this->Config['env']];
-        $this->spath      = $this->Config['user_path'][$this->Config['env']];
-        $this->staticPath = $this->Config['static_path'][$this->Config['env']];
-        $this->logPath    = $this->Config['log_path'][$this->Config['env']];
+        $this->path       = $this->get('kernel')->getRootDir() . '/';
+        $this->spath      = $this->get('kernel')->getRootDir() . '/public/default/var/';
+        $this->staticPath = $this->get('kernel')->getRootDir() . '/public/default/';
+        $this->logPath    = $this->get('kernel')->getLogDir();
         $this->surl       = $this->Config['static_url'][$this->Config['env']];
         $this->url        = $this->Config['url'][$this->Config['env']][$this->App];
         $this->lurl       = $this->Config['url'][$this->Config['env']][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
@@ -98,9 +63,6 @@ class Controller
         $this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
         //fo
         $this->furl = $this->Config['url'][$this->Config['env']]['default'];
-
-        // Bypass le htaccess
-        $this->bp_url = $this->Config['bypass_htaccess_url'][$this->Config['env']];
 
         // Recuperation du type de plateforme
         $this->cms = $this->Config['cms'];
@@ -144,11 +106,13 @@ class Controller
 
     public function execute()
     {
+        $this->initialize();
+
         $FunctionToCall = $this->Command->getFunction();
         if ($FunctionToCall == '') {
             $FunctionToCall = 'default';
         }
-        if (!is_callable(array(&$this, '_' . $FunctionToCall))) {
+        if (!is_callable(array($this, '_' . $FunctionToCall))) {
             if ($this->catchAll == true) {
                 $current_params = $this->Command->getParameters();
                 $arr            = array(0 => $FunctionToCall);
@@ -161,12 +125,7 @@ class Controller
         }
         $this->setView($FunctionToCall);
         $this->params = $this->Command->getParameters();
-        call_user_func(array(&$this, '_' . $FunctionToCall));
-
-        // Si la page courante doit être cachée, on cherche la page en cache ou on initie le processus de création de la version en cache
-        if ($this->cacheCurrentPage) {
-            $this->initCache();
-        }
+        call_user_func(array($this, '_' . $FunctionToCall));
 
         //Affiche le contenu(view) avant le menu(header) si on est en mode seo_optimize
         if ($this->Config['params']['seo_optimize']) {
@@ -197,13 +156,8 @@ class Controller
             }
         }
 
-        // Si la page courante doit être cachée, termine le boulot de création du cache
-        if ($this->cacheCurrentPage) {
-            $this->completeCache();
-        }
-
         //Affiche une fentre de debug/error si l'option est activée dans le config.php
-        if (($this->Config['bdd_option'][$this->Config['env']]['DEBUG_DISPLAY'] || $this->Config['bdd_option'][$this->Config['env']]['DISPLAY_ERREUR']) && in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]) && $this->autoFireDebug) {
+        if ($this->getParameter('kernel.debug')) {
             $this->fireDebug();
         }
     }
@@ -219,7 +173,7 @@ class Controller
         }
 
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $head . '.php')) {
-            call_user_func(array(&$this, '_error'), 'head not found : views/' . $head . '.php');
+            call_user_func(array($this, '_error'), 'head not found : views/' . $head . '.php');
         } else {
             include($this->path . 'apps/' . $this->App . '/views/' . $head . '.php');
         }
@@ -235,7 +189,7 @@ class Controller
         if ($view != '') {
             if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $this->Command->getControllerName() . '/' . $view . '.php')) {
                 call_user_func(array(
-                    &$this, '_error'
+                    $this, '_error'
                 ), 'view not found : views/' . $this->Command->getControllerName() . '/' . $view . '.php');
             } else {
                 if ($this->is_view_template && file_exists($this->path . 'apps/' . $this->App . '/controllers/templates/' . $view . '.php')) {
@@ -256,7 +210,7 @@ class Controller
             $header = 'header';
         }
         if (!file_exists($this->path . 'apps/' . $this->App . '/views/' . $header . '.php')) {
-            call_user_func(array(&$this, '_error'), 'header not found : views/' . $header . '.php');
+            call_user_func(array($this, '_error'), 'header not found : views/' . $header . '.php');
         } else {
             include($this->path . 'apps/' . $this->App . '/views/' . $header . '.php');
         }
@@ -268,7 +222,7 @@ class Controller
         $footer = empty($footer) ? (empty($this->footer) ? 'footer' : $this->footer) : $footer;
 
         if (! file_exists($this->path . 'apps/' . $this->App . '/views/' . $footer . '.php')) {
-            call_user_func(array(&$this, '_error'), 'footer not found : views/' . $footer . '.php');
+            call_user_func(array($this, '_error'), 'footer not found : views/' . $footer . '.php');
         } else {
             include $this->path . 'apps/' . $this->App . '/views/' . $footer . '.php';
         }
@@ -302,7 +256,7 @@ class Controller
                             </tr>
                             <tr>
                                 <td>Base utilis&eacute;e</td>
-                                <td>' . $this->Config['bdd_config'][$this->Config['env']]['BDD'] . '</td>
+                                <td>' . $this->getParameter('database_name') . '</td>
                             </tr>
                         </table>
                     </fieldset>
@@ -391,7 +345,7 @@ class Controller
                     <fieldset style="border:1px solid #0096ff; padding:5px; background-color:white;">
                         <legend style="border:1px solid #0096ff; padding:2px; background-color:white;"><strong>BDD:</strong></legend>
             ';
-        if (count($_SESSION['debug']) > 0) {
+        if (isset($_SESSION['debug']) && count($_SESSION['debug']) > 0) {
             foreach ($_SESSION['debug'] as $i => $sQuery) {
                 echo '<span>' . ($i == 0 ? '' : '<hr>') . ' ' . $sQuery . '</span>';
             }
@@ -450,21 +404,38 @@ class Controller
         $this->footer = $footer;
     }
 
-    //Cree une nouvelle instance d'un objet
-    public function loadData($object, $params = array())
+    protected function loadData($object, $params = array())
     {
-        return \Unilend\core\Loader::loadData($object, $params);
+        return $this->get('unilend.service.entity_manager')->getRepository($object, $params);
     }
 
-    //Cree une nouvelle instance d'une librairie
-    public function loadLib($library, $params = array(), $instanciate = true)
+    /**
+     * @deprecated Each lib will be declared as a service.
+     * @param string $library
+     * @param array $params
+     * @param bool $instanciate
+     * @return bool|object
+     */
+    protected function loadLib($library, $params = array(), $instanciate = true)
     {
         return \Unilend\core\Loader::loadLib($library, $params, $instanciate);
     }
 
-    public function get($sService, $aParams = array())
+    protected function get($service)
     {
-        return \Unilend\core\Loader::loadService($sService, $aParams);
+        return $this->container->get($service);
+    }
+
+    /**
+     * Gets a container configuration parameter by its name.
+     *
+     * @param string $name The parameter name
+     *
+     * @return mixed
+     */
+    protected function getParameter($name)
+    {
+        return $this->container->getParameter($name);
     }
 
     //Charge un fichier js dans le tableau des js
@@ -544,62 +515,6 @@ class Controller
             }
         } else {
             $requestURI = explode('/', $_SERVER['REQUEST_URI']);
-        }
-    }
-
-    // Fonction qui déclenche le caching d'une page
-    public function fireCache()
-    {
-        if ($this->enableCache) {
-            $this->cacheCurrentPage = true;
-        }
-    }
-
-    // Initialisation du cache
-    public function initCache()
-    {
-        $this->cacheFile = $this->path . 'tmp/cache/' . md5($_SERVER['REQUEST_URI']);
-        // On recherche un fichier de cache suffisament récent
-        if (file_exists($this->cacheFile) && (time() - $this->cacheDuration * 60 < filemtime($this->cacheFile))) {
-            // Si on le trouve, on l'output
-            include($this->cacheFile);
-            echo "<!-- From cache generated " . date('H:i', filemtime($this->cacheFile)) . " -->";
-            exit;
-        }
-        // Sinon, on ouvre le buffer
-        ob_start();
-    }
-
-    public function completeCache()
-    {
-        // Ecriture du fichier de cache
-        $fp = fopen($this->cacheFile, 'w');
-        // Contenu du buffer
-        fwrite($fp, ob_get_contents());
-
-        fclose($fp);
-
-        ob_end_flush();
-
-        // Cassos
-        exit;
-    }
-
-    public function clearCache($page = '')
-    {
-        $cacheFile   = $this->path . 'tmp/cache/' . md5($page);
-        $cacheFolder = $this->path . 'tmp/cache/';
-        if ($page == '') {
-            $dossier = opendir($cacheFolder);
-            while ($fichier = readdir($dossier)) {
-                if ($fichier != "." && $fichier != "..") {
-                    $Vidage = $cacheFolder . $fichier;
-                    @unlink($Vidage);
-                }
-            }
-            closedir($dossier);
-        } else {
-            @unlink($cacheFile);
         }
     }
 

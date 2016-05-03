@@ -2,9 +2,9 @@
 
 class prescripteursController extends bootstrap
 {
-    public function prescripteursController($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 

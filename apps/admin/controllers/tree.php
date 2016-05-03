@@ -3,14 +3,14 @@
 class treeController extends bootstrap
 {
 	var $Command;
-	
-	function treeController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 		
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('edition');
 		
 		// Activation du menu
@@ -24,7 +24,7 @@ class treeController extends bootstrap
 		{
 			$this->tree->moveUp($this->params[1]);
 			
-			// on vérifie si la page éditer est dans l'arbo du preteur,emprunteur ou izinoa
+			// on vï¿½rifie si la page ï¿½diter est dans l'arbo du preteur,emprunteur ou izinoa
 			$this->tree->get(array('id_tree'=>$this->params[1],'id_langue'=>$this->language));
 
 			switch($this->tree->arbo)
@@ -52,7 +52,7 @@ class treeController extends bootstrap
 		{
 			$this->tree->moveDown($this->params[1]);
 			
-			// on vérifie si la page éditer est dans l'arbo du preteur,emprunteur ou izinoa
+			// on vï¿½rifie si la page ï¿½diter est dans l'arbo du preteur,emprunteur ou izinoa
 			$this->tree->get(array('id_tree'=>$this->params[1],'id_langue'=>$this->language));
 
 			switch($this->tree->arbo)
@@ -87,7 +87,7 @@ class treeController extends bootstrap
 			$_SESSION['freeow']['title'] = 'Suppression d\'une page';
 			$_SESSION['freeow']['message'] = 'La page et ses enfants ont bien &eacute;t&eacute; supprim&eacute;s !';
 			
-			// on vérifie si la page éditer est dans l'arbo du preteur,emprunteur ou izinoa
+			// on vï¿½rifie si la page ï¿½diter est dans l'arbo du preteur,emprunteur ou izinoa
 			$this->tree->get(array('id_tree'=>$this->params[1],'id_langue'=>$this->language));
 
 			switch($arbo)
@@ -119,7 +119,7 @@ class treeController extends bootstrap
 		// Formulaire d'ajout d'une page
 		if(isset($_POST['form_add_tree']))
 		{
-			// On enregistre les données pour toutes les langues
+			// On enregistre les donnï¿½es pour toutes les langues
 			foreach($this->lLangues as $key => $lng)
 			{
 				$this->tree->id_langue = $key;
@@ -128,8 +128,8 @@ class treeController extends bootstrap
 				$this->tree->id_user = $_SESSION['user']['id_user'];
 				$this->tree->title = trim($_POST['title_'.$key]);
 				
-				// On vérifie si le père fait parti de l'arbo preteur,emprunteur ou d'izinoa
-				// si le pere fait partie de larbo preteur ou emprunteur l'enfant que l'on crée ici sera aussi marqué dans le champs "arbo"
+				// On vï¿½rifie si le pï¿½re fait parti de l'arbo preteur,emprunteur ou d'izinoa
+				// si le pere fait partie de larbo preteur ou emprunteur l'enfant que l'on crï¿½e ici sera aussi marquï¿½ dans le champs "arbo"
 				$this->treepere = $this->loadData('tree');			
 				$this->treepere->get(array('id_tree'=>$_POST['id_parent'],'id_langue'=>$key)); 
 				// L'enfant prend l'arbo de son pere
@@ -239,7 +239,7 @@ class treeController extends bootstrap
 			// Modification du tree
 			if(isset($_POST['form_edit_tree']))
 			{
-				// On enregistre les données pour toutes les langues
+				// On enregistre les donnï¿½es pour toutes les langues
 				foreach($this->lLangues as $key => $lng)
 				{
 					// Recuperation des infos de la page
@@ -259,7 +259,7 @@ class treeController extends bootstrap
 					}
 					else
 					{
-						// On regarde si le slug est different du precedent pour le mettre à jour et créer la redirection
+						// On regarde si le slug est different du precedent pour le mettre ï¿½ jour et crï¿½er la redirection
 						if(trim($_POST['slug_'.$key]) != $this->tree->slug)
 						{
 							// On recupere le nouveau slug
@@ -367,7 +367,7 @@ class treeController extends bootstrap
 					$this->tree->prive = $_POST['prive_'.$key];
 					$this->tree->indexation = $_POST['indexation_'.$key];
 					
-					// On modifie ou on créé si la page n"existe pas
+					// On modifie ou on crï¿½ï¿½ si la page n"existe pas
 					if(!$create)
 					{
 						$this->tree->update(array('id_tree'=>$this->params[0],'id_langue'=>$this->tree->id_langue));
@@ -377,7 +377,7 @@ class treeController extends bootstrap
 						$this->tree->create(array('id_tree'=>$this->params[0],'id_langue'=>$this->tree->id_langue));	
 					}
 					
-					// Modification du statu de tous les enfants si on passe le parent à 0
+					// Modification du statu de tous les enfants si on passe le parent ï¿½ 0
 					if($_POST['status_'.$key] == 0)
 					{
 						$this->tree->statusCascade($this->params[0],$key);
@@ -402,7 +402,7 @@ class treeController extends bootstrap
 				
 				// Renvoi sur l'edition pour remplir le contenu des templates
 				
-				// on vérifie si la page éditer est dans l'arbo preteur, emprunteur ou izinoa
+				// on vï¿½rifie si la page ï¿½diter est dans l'arbo preteur, emprunteur ou izinoa
 				switch($this->tree->arbo)
 				{
 					case 1:
@@ -438,7 +438,7 @@ class treeController extends bootstrap
 			$_SESSION['freeow']['title'] = 'Modification d\'une page';
 			$_SESSION['freeow']['message'] = 'Aucune page &agrave; modifier !';
 				
-			// on vérifie si la page éditer est dans l'arbo preteur, emprunteur ou izinoa
+			// on vï¿½rifie si la page ï¿½diter est dans l'arbo preteur, emprunteur ou izinoa
 			switch($this->tree->arbo)
 			{
 				case 1:

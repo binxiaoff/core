@@ -1,10 +1,10 @@
 <?php
 
-class espace_emprunteurController extends Bootstrap
+class espace_emprunteurController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
@@ -323,7 +323,7 @@ class espace_emprunteurController extends Bootstrap
                 $oProject->create();
 
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $oProject);
 
                 header('Location:' . $this->lurl . '/espace_emprunteur/projets');
@@ -367,7 +367,7 @@ class espace_emprunteurController extends Bootstrap
                     $aProjectsPreFunding[$iKey]['project_status_label'] = 'en-attente-de-mise-en-ligne';
                     break;
             }
-            $fPredictAmountAutoBid = $this->get('AutoBidSettingsManager')->predictAmount($aProject['risk'], $aProject['period']);
+            $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($aProject['risk'], $aProject['period']);
             $aProjectsPreFunding[$iKey]['predict_autobid'] = round(($fPredictAmountAutoBid / $aProject['amount']) * 100, 1);
         }
         return $aProjectsPreFunding;

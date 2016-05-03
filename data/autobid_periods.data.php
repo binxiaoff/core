@@ -92,7 +92,7 @@ class autobid_periods extends autobid_periods_crud
             if ($this->get($iPeriodId)) {
                 $mDurations['min'] = $this->min;
                 $mDurations['max'] = $this->max;
-                $oCache->set($sKey, $mDurations, Cache::LONG_TIME);
+                $oCache->set($sKey, $mDurations);
             }
         }
 

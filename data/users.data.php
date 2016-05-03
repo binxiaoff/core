@@ -229,7 +229,7 @@ class users extends users_crud
 
                     $sql    = 'SELECT * FROM users_zones WHERE id_user = ' . $_SESSION['user']['id_user'] . ' AND id_zone = "' . $id_zone . '"';
                     $result = $this->bdd->query($sql);
-                    $nb     = $this->bdd->num_rows();
+                    $nb     = $this->bdd->num_rows($result);
 
                     if ($nb == 1) {
                         return true;

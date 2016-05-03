@@ -12,9 +12,9 @@ class universignController extends bootstrap
      */
     private $oLogger;
 
-    public function universignController($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
         // On masque les Head, header et footer originaux plus le debug
@@ -47,7 +47,7 @@ class universignController extends bootstrap
                 $f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 
                 //Send request and analyse response
-                $r = &$c->send($f);
+                $r = $c->send($f);
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat send to Universign', array($clients_mandats->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
@@ -135,7 +135,7 @@ class universignController extends bootstrap
                 $f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 
                 //Send request and analyse response
-                $r = &$c->send($f);
+                $r = $c->send($f);
                 $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir send to Universign', array($projects_pouvoir->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
@@ -223,7 +223,7 @@ class universignController extends bootstrap
                 $c = new Client($uni_url);
                 $f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 
-                $r = &$c->send($f);
+                $r = $c->send($f);
                 $this->oLogger->addRecord(ULogger::INFO, 'CGV emprunteur send to Universign', array($oProjectCgv->id_project));
 
                 if (! $r->faultCode()) {
@@ -401,7 +401,7 @@ class universignController extends bootstrap
                 $f = new Request('requester.requestTransaction', array(new Value($request, "struct")));
 
                 //send request and stores response values
-                $r = &$c->send($f);
+                $r = $c->send($f);
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat send to Universign', array($clients_mandats->id_project), array($clients_mandats->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded
@@ -526,7 +526,7 @@ class universignController extends bootstrap
                 $f = new Request('requester.requestTransaction', array(new Value($request, "struct")));
 
                 //send request and stores response values
-                $r = &$c->send($f);
+                $r = $c->send($f);
                 $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir send to Universign', array($projects_pouvoir->id_project));
                 if (!$r->faultCode()) {
                     //if the request succeeded

@@ -2,9 +2,9 @@
 
 class ajaxController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $_SESSION['request_url'] = $this->lurl;
 
@@ -445,7 +445,7 @@ class ajaxController extends bootstrap
         $this->bids              = $this->loadData('bids');
         $this->projects          = $this->loadData('projects');
         $this->lenders_accounts  = $this->loadData('lenders_accounts');
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
@@ -496,10 +496,10 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->bids              = $this->loadData('bids');
-        $this->projects          = $this->loadData('projects');
-        $this->lenders_accounts  = $this->loadData('lenders_accounts');
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $this->bids                   = $this->loadData('bids');
+        $this->projects               = $this->loadData('projects');
+        $this->lenders_accounts       = $this->loadData('lenders_accounts');
+        $oAutoBidSettingsManager      = $this->get('unilend.service.autobid_settings_manager');
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
@@ -1778,7 +1778,7 @@ class ajaxController extends bootstrap
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oBids          = $this->loadData('bids');
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         if (isset($this->params[0]) && isset($this->params[1]) && $this->oProject->get($this->params[0]) && $oClient->get($this->params[1], 'hash')) {

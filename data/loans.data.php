@@ -84,7 +84,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(amount) as solde FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -153,7 +153,7 @@ class loans extends loans_crud
         $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result));
     }
 
     // retourne la moyenne des prets validés d'un projet
@@ -162,7 +162,7 @@ class loans extends loans_crud
         $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
+        $avg    = $this->bdd->result($result);
         if ($avg == '') {
             $avg = 0;
         }
@@ -176,7 +176,7 @@ class loans extends loans_crud
         $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 'avg');
+        return $this->bdd->result($result);
     }
 
     // retourne la moyenne des prets validés d'un preteur
@@ -185,7 +185,7 @@ class loans extends loans_crud
         $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 'avg');
+        return $this->bdd->result($result);
     }
 
     // sum prêtée d'un lender

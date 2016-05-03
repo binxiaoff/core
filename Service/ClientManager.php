@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\core\Loader;
+use Unilend\Service\Simulator\EntityManager;
 
 /**
  * Class ClientManager
@@ -13,9 +13,10 @@ class ClientManager
     /** @var ClientSettingsManager */
     private $oClientSettingsManager;
 
-    public function __construct()
+    public function __construct(EntityManager $oEntityManager, ClientSettingsManager $oClientSettingsManager)
     {
-        $this->oClientSettingsManager = Loader::loadService('ClientSettingsManager');
+        $this->oEntityManager         = $oEntityManager;
+        $this->oClientSettingsManager = $oClientSettingsManager;
     }
 
 
@@ -38,7 +39,7 @@ class ClientManager
     public function isAcceptedCGV(\clients $oClient, $iLegalDocId)
     {
         /** @var \acceptations_legal_docs $oAcceptationLegalDocs */
-        $oAcceptationLegalDocs = Loader::loadData('acceptations_legal_docs');
+        $oAcceptationLegalDocs = $this->oEntityManager->getRepository('acceptations_legal_docs');
         return $oAcceptationLegalDocs->exist($oClient->id_client, 'id_legal_doc = ' . $iLegalDocId . ' AND id_client ');
     }
 
@@ -49,9 +50,9 @@ class ClientManager
     public function changeClientStatusTriggeredByClientAction($iClientId, $sContent)
     {
         /** @var \clients_status_history $oClientStatusHistory */
-        $oClientStatusHistory = Loader::loadData('clients_status_history');
+        $oClientStatusHistory = $this->oEntityManager->getRepository('clients_status_history');
         /** @var \clients_status $oLastClientStatus */
-        $oLastClientStatus = Loader::loadData('clients_status');
+        $oLastClientStatus = $this->oEntityManager->getRepository('clients_status');
         $oLastClientStatus->getLastStatut($iClientId);
 
         switch ($oLastClientStatus->status) {

@@ -7,9 +7,9 @@ class preteursController extends bootstrap
      */
     private $attachmentHelper;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         include $this->path . '/apps/default/controllers/pdf.php';
 
@@ -1317,9 +1317,9 @@ class preteursController extends bootstrap
         $oTextes                   = $this->loadData('textes');
         $this->lng['autobid']      = $oTextes->selectFront('autobid', $this->language, $this->App);
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager   = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Service\ClientManager $oClientManager */
-        $oClientManager            = $this->get('ClientManager');
+        $oClientManager            = $this->get('unilend.service.client_manager');
         $oAutoBidPeriod            = $this->loadData('autobid_periods');
 
         $this->bAutoBidOn          = $oAutoBidSettingsManager->isOn($this->lenders_accounts);
@@ -1754,7 +1754,7 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $oClientSettingsManager = $this->get('ClientSettingsManager');
+        $oClientSettingsManager = $this->get('unilend.service.client_settings_manager');
         $oClient                = $this->loadData('clients');
         $oLendersAccount        = $this->loadData('lenders_accounts');
 

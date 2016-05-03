@@ -16,6 +16,7 @@ nb-configuration.xml
 ### Izinoa ###
 protected/
 log/
+logs/
 backup2/
 backup3/
 tmp/
@@ -26,6 +27,8 @@ config.php
 data/crud/*
 route.php
 *.rej
+cache/
+Config/parameters.yml
 
 # PHPStorm
 .idea/

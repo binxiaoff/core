@@ -7,9 +7,9 @@ class inscription_preteurController extends bootstrap
      */
     private $attachmentHelper;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
         $this->lng['inscription-preteur-etape-header'] = $this->ln->selectFront('inscription-preteur-etape-header', $this->language, $this->App);
@@ -896,7 +896,7 @@ class inscription_preteurController extends bootstrap
         if (isset($_SESSION['client'])) {
             $this->clients->get($_SESSION['client']['id_client'], 'id_client');
 
-            if ($this->isLenderWithSubscriptionProcessFinished($this->clients) || $this->get('ClientManager')->isBorrower($this->clients)) {
+            if ($this->isLenderWithSubscriptionProcessFinished($this->clients) || $this->get('unilend.service.client_manager')->isBorrower($this->clients)) {
                 header('Location:' . $this->lurl . '/projects');
                 die;
             }
@@ -905,12 +905,12 @@ class inscription_preteurController extends bootstrap
 
     private function isLenderWithSubscriptionProcessFinished(\clients $oClient)
     {
-        return $this->get('ClientManager')->isLender($oClient) && $oClient->etape_inscription_preteur >= 3;
+        return $this->get('unilend.service.client_manager')->isLender($oClient) && $oClient->etape_inscription_preteur >= 3;
     }
 
     private function isLenderWithOngoingSubscriptionProcess(\clients $oClient)
     {
-        return $this->get('ClientManager')->isLender($oClient) && $oClient->etape_inscription_preteur < 3;
+        return $this->get('unilend.service.client_manager')->isLender($oClient) && $oClient->etape_inscription_preteur < 3;
     }
 
 
@@ -1322,7 +1322,7 @@ class inscription_preteurController extends bootstrap
                     $this->companies->id_company      = $this->companies->create();
                 }
 
-                if ($this->get('ClientManager')->isBorrower($this->clients) && false === $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
+                if ($this->get('unilend.service.client_manager')->isBorrower($this->clients) && false === $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner')) {
                     $this->lenders_accounts->id_client_owner  = $this->clients->id_client;
                     $this->lenders_accounts->id_company_owner = $this->companies->id_company;
                     $this->lenders_accounts->status           = \lenders_accounts::LENDER_STATUS_ONLINE;

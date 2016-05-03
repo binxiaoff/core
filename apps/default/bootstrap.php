@@ -1,4 +1,5 @@
 <?php
+use Unilend\Bundle\Memcache\Cache\MemcacheInterface;
 
 class bootstrap extends Controller
 {
@@ -19,9 +20,9 @@ class bootstrap extends Controller
      */
     public $aDataLayer = array();
 
-    public function __construct($command, $config, $app)
+    protected function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         if ($this->current_function != 'login') {
             $_SESSION['redirection_url'] = $_SERVER['REQUEST_URI'];
@@ -122,9 +123,10 @@ class bootstrap extends Controller
         $urlParams = explode('/', $_SERVER['REQUEST_URI']);
         $this->handlePartenaire($urlParams);
 
-        $sKey      = $this->oCache->makeKey('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
-        $aElements = $this->oCache->get($sKey);
-        if (false === $aElements) {
+        $oCachePool  = $this->get('memcache.default');
+        $oCachedItem = $oCachePool->getItem('Settings_GoogleTools_Analytics_BaseLine_FB_Twitter_Cookie');
+
+        if (false === $oCachedItem->isHit()) {
             $this->settings->get('Google Webmaster Tools', 'type');
             $this->google_webmaster_tools = $this->settings->value;
 
@@ -155,9 +157,11 @@ class bootstrap extends Controller
                 'Twitter'          => $this->twitter,
                 'TreeCookies'      => $this->id_tree_cookies
             );
-
-            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+            $oCachedItem->set($aElements)
+                ->expiresAfter(3600);
+            $oCachePool->save($oCachedItem);
         } else {
+            $aElements   = $oCachedItem->get();
             $this->google_webmaster_tools = $aElements['GoogleTools'];
             $this->google_analytics       = $aElements['GoogleAnalytics'];
             $this->google_tag_manager     = $aElements['GoogleTagManager'];
@@ -187,9 +191,8 @@ class bootstrap extends Controller
         );
 
         // Recuperation du bloc nos-partenaires
-        $sKey      = $this->oCache->makeKey('Blocs_Partenaires', $this->blocs->id_bloc, $this->language);
-        $aElements = $this->oCache->get($sKey);
-        if (false === $aElements) {
+        $oCachedItem = $oCachePool->getItem('Blocs_Partenaires_' . $this->blocs->id_bloc . '_' . $this->language);
+        if (false === $oCachedItem->isHit()) {
             $this->blocs->get('nos-partenaires', 'slug');
             $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
             foreach ($lElements as $b_elt) {
@@ -203,23 +206,31 @@ class bootstrap extends Controller
                 'blocPartenairesComplement' => $this->bloc_partenairesComplement
             );
 
-            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
+            $oCachedItem->set($aElements)
+                        ->expiresAfter(3600);
+            $oCachePool->save($oCachedItem);
+        } else {
+            $aElements   = $oCachedItem->get();
         }
 
         $this->bloc_partenaires           = $aElements['blocPartenaires'];
         $this->bloc_partenairesComplement = $aElements['blocPartenairesComplement'];
 
         //Recuperation des element de traductions
-        $sKey      = $this->oCache->makeKey('Trad_Header_Footer_home');
-        $aElements = $this->oCache->get($sKey);
-        if (false === $aElements) {
+        $oCachedItem = $oCachePool->getItem('Trad_Header_Footer_home');
+
+        if (false === $oCachedItem->isHit()) {
             $aElements = array(
                 'TradHeader' => $this->ln->selectFront('header', $this->language, $this->App),
                 'TradFooter' => $this->ln->selectFront('footer', $this->language, $this->App),
                 'TradHome'   => $this->ln->selectFront('home', $this->language, $this->App)
             );
 
-            $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::LONG_TIME);
+            $oCachedItem->set($aElements)
+                        ->expiresAfter(3600);
+            $oCachePool->save($oCachedItem);
+        } else {
+            $aElements   = $oCachedItem->get();
         }
 
         $this->lng['header'] = $aElements['TradHeader'];
@@ -296,7 +307,7 @@ class bootstrap extends Controller
                             die;
                         }
                     } else {
-                       $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
+                        $this->error_login = $this->lng['header']['identifiant-ou-mot-de-passe-inccorect'];
                     }
                 } elseif ($aOfflineClient = $this->clients->select('email = "' . $this->login . '" AND password = "' . md5($this->passsword) . '" AND status = 0')) {
                     $this->error_login = $this->lng['header']['message-login-compte-ferme'];
@@ -351,7 +362,7 @@ class bootstrap extends Controller
                 $this->getDataBorrower();
                 $this->getDataLender();
 
-                if (in_array($command->Name, array('espace_emprunteur', 'depot_de_dossier'))) {
+                if (in_array($this->Command->Name, array('espace_emprunteur', 'depot_de_dossier'))) {
                     $this->bDisplayHeaderBorrower      = true;
                     $this->bShowChoiceBorrowerOrLender = false;
                     $this->bDisplayHeaderLender        = false;
@@ -402,41 +413,41 @@ class bootstrap extends Controller
 
         if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
 
-            if ($command->Name == 'root' && $command->Function == 'capital') {
+            if ($this->Command->Name == 'root' && $this->Command->Function == 'capital') {
                 //echo 'ok';
-            } elseif ($command->Name == 'root' && $command->Function == 'default') {
+            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
                 //echo 'ok';
-            } elseif ($command->Name == 'projects' && $command->Function == 'detail') {
+            } elseif ($this->Command->Name == 'projects' && $this->Command->Function == 'detail') {
                 //echo 'ok';
-            } elseif ($command->Name == 'ajax') {
+            } elseif ($this->Command->Name == 'ajax') {
                 //echo 'ok';
             } else {
                 header('location: http://prets-entreprises-unilend.capital.fr/capital/');
                 die;
             }
 
-            //print_r($command);
+            //print_r($this->Command);
         } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr') {
 
-            if ($command->Name == 'root' && $command->Function == 'challenges') {
+            if ($this->Command->Name == 'root' && $this->Command->Function == 'challenges') {
                 //echo 'ok';
-            } elseif ($command->Name == 'root' && $command->Function == 'default') {
+            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
                 //echo 'ok';
-            } elseif ($command->Name == 'projects' && $command->Function == 'detail') {
+            } elseif ($this->Command->Name == 'projects' && $this->Command->Function == 'detail') {
                 //echo 'ok';
-            } elseif ($command->Name == 'ajax') {
+            } elseif ($this->Command->Name == 'ajax') {
                 //echo 'ok';
             } else {
                 header('location: http://partenaire.unilend.challenges.fr/challenges/');
                 die;
             }
 
-            //print_r($command);
+            //print_r($this->Command);
         } elseif ($this->lurl == 'http://lexpress.unilend.fr') {
 
-            if ($command->Name == 'root' && $command->Function == 'lexpress') {
+            if ($this->Command->Name == 'root' && $this->Command->Function == 'lexpress') {
                 //echo 'ok';
-            } elseif ($command->Name == 'root' && $command->Function == 'default') {
+            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
                 // voir dans root autres restrictions
             } else {
 
@@ -445,9 +456,9 @@ class bootstrap extends Controller
             }
         } elseif ($this->lurl == 'http://pret-entreprise.votreargent.lexpress.fr') {
 
-            if ($command->Name == 'root' && $command->Function == 'lexpress') {
+            if ($this->Command->Name == 'root' && $this->Command->Function == 'lexpress') {
                 //echo 'ok';
-            } elseif ($command->Name == 'root' && $command->Function == 'default') {
+            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
                 // voir dans root autres restrictions
             } else {
 
@@ -456,9 +467,9 @@ class bootstrap extends Controller
             }
         } elseif ($this->lurl == 'http://emprunt-entreprise.lentreprise.lexpress.fr') {
 
-            if ($command->Name == 'root' && $command->Function == 'lexpress') {
+            if ($this->Command->Name == 'root' && $this->Command->Function == 'lexpress') {
                 //echo 'ok';
-            } elseif ($command->Name == 'root' && $command->Function == 'default') {
+            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
                 // voir dans root autres restrictions
             } else {
 

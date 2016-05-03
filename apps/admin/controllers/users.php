@@ -3,14 +3,14 @@
 class usersController extends bootstrap
 {
 	var $Command;
-	
-	function usersController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 
-		// Controle d'acces à la rubrique (déplacé dans chaque fonction le necessitant)
+		// Controle d'acces ï¿½ la rubrique (dï¿½placï¿½ dans chaque fonction le necessitant)
 		//$this->users->checkAccess('admin');
 		
 		// Activation du menu
@@ -24,7 +24,7 @@ class usersController extends bootstrap
 	
 	function _default()
 	{
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('admin');
 		
 		// Formulaire d'ajout d'un utilisateur
@@ -41,7 +41,7 @@ class usersController extends bootstrap
 			$this->users->id_user_type = $_POST['id_user_type'];
 			$this->users->id_user = $this->users->create();
 			
-			// on créé ses droits
+			// on crï¿½ï¿½ ses droits
 			$lZones = $this->users_types_zones->select('id_user_type = '.$this->users->id_user_type.' ');
 			foreach($lZones as $zone)
 			{
@@ -152,7 +152,7 @@ class usersController extends bootstrap
 	
 	function _edit()
 	{
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('admin');
 		
 		// On masque les Head, header et footer originaux plus le debug
@@ -195,7 +195,7 @@ class usersController extends bootstrap
 	
 	function _add()
 	{
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('admin');
 		
 		// On masque les Head, header et footer originaux plus le debug
@@ -253,7 +253,7 @@ class usersController extends bootstrap
 		// Recuperation des infos de la personne
 		$this->users->get($this->params[0],'id_user');
 		
-		// on check si le user en session est bien celui chargé, sinon on bloque
+		// on check si le user en session est bien celui chargï¿½, sinon on bloque
 		if($this->users->id_user != $_SESSION['user']['id_user'])
 		{
 			// Renvoi sur la liste des utilisateurs
@@ -265,7 +265,7 @@ class usersController extends bootstrap
 		if(isset($_POST['form_edit_pass_user']))
 		{
 			
-			// on check si le user qui post est le même que celui qu'on a en session, sinon on bloque tout 
+			// on check si le user qui post est le mï¿½me que celui qu'on a en session, sinon on bloque tout 
 			if($_POST['id_user'] == $_SESSION['user']['id_user'])
 			{			
 				// Recuperation des infos de la personne
@@ -291,7 +291,7 @@ class usersController extends bootstrap
 								$this->users->password_edited = date('Y-m-d H:i:s');
 								$this->users->update();		
 								
-								// on change le pass en session pour ne pas etre déco
+								// on change le pass en session pour ne pas etre dï¿½co
 								$_SESSION['user']['password'] = md5($_POST['new_pass']);					
 								$_SESSION['user']['password_edited'] = date('Y-m-d H:i:s');
 								
@@ -309,7 +309,7 @@ class usersController extends bootstrap
 								$email = trim($this->users->email);
 								$password = $_POST['new_pass'];
 								
-								// Attribution des données aux variables
+								// Attribution des donnï¿½es aux variables
 								$sujetMail = $this->mails_text->subject;
 								eval("\$sujetMail = \"$sujetMail\";");
 								
@@ -320,8 +320,8 @@ class usersController extends bootstrap
 								eval("\$exp_name = \"$exp_name\";");
 								
 								// Nettoyage de printemps
-								$sujetMail = strtr($sujetMail,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-								$exp_name = strtr($exp_name,'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+								$sujetMail = strtr($sujetMail,'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
+								$exp_name = strtr($exp_name,'ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½','AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 								
 								// Envoi du mail
 								$this->email = $this->loadLib('email',array());
@@ -365,7 +365,7 @@ class usersController extends bootstrap
 							}
 							else
 							{
-								$this->retour_pass = "La confirmation du nouveau de passe doit être la même que votre nouveau mot de passe";
+								$this->retour_pass = "La confirmation du nouveau de passe doit ï¿½tre la mï¿½me que votre nouveau mot de passe";
 							}
 						}
 						else

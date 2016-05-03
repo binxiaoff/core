@@ -2,9 +2,10 @@
 
 class bootstrap extends Controller
 {
-    public function __construct($command, $config, $app)
+
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         if ($this->current_function != 'login') {
             $_SESSION['request_url'] = $_SERVER['REQUEST_URI'];

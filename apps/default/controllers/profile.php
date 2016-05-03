@@ -7,9 +7,9 @@ class profileController extends bootstrap
      */
     private $attachmentHelper;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
         $this->setHeader('header_account');
@@ -35,7 +35,7 @@ class profileController extends bootstrap
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($oLenderAccount);
 
         if (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) {
@@ -78,7 +78,7 @@ class profileController extends bootstrap
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         $this->lPays = $this->pays->select('', 'ordre ASC');
@@ -628,7 +628,7 @@ class profileController extends bootstrap
                     $contenu .= '</ul>';
 
                     /** @var \Unilend\Service\ClientManager $oClientManager */
-                    $oClientManager = $this->get('ClientManager');
+                    $oClientManager = $this->get('unilend.service.client_manager');
                     $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
@@ -865,7 +865,7 @@ class profileController extends bootstrap
         $this->clients_status->getLastStatut($this->clients->id_client);
 
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
         $this->settings->get("Liste deroulante origine des fonds societe", 'status = 1 AND type');
@@ -1451,7 +1451,7 @@ class profileController extends bootstrap
                     $contenu .= '</ul>';
 
                     /** @var \Unilend\Service\ClientManager $oClientManager */
-                    $oClientManager = $this->get('ClientManager');
+                    $oClientManager = $this->get('unilend.service.client_manager');
                     $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
                     $this->settings->get('Adresse notification modification preteur', 'type');
@@ -1889,7 +1889,7 @@ class profileController extends bootstrap
 
         if (false !== strpos($sContentForHistory, '<li>')) {
             /** @var \Unilend\Service\ClientManager $oClientManager */
-            $oClientManager = $this->get('ClientManager');
+            $oClientManager = $this->get('unilend.service.client_manager');
             $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $sContentForHistory);
             $this->sendAccountModificationEmail($this->clients);
             $_SESSION['form_profile_doc']['answer_upload'] = $this->lng['profile']['message-completness-document-upload'];
@@ -1907,7 +1907,7 @@ class profileController extends bootstrap
     public function _autolend()
     {
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->oLendersAccounts  = $this->loadData('lenders_accounts');
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
@@ -1996,7 +1996,7 @@ class profileController extends bootstrap
         $this->autoFireView = false;
 
         /** @var $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
 
         $oLendersAccounts = $this->loadData('lenders_accounts');
         $oSettings        = $this->loadData('settings');
@@ -2067,7 +2067,7 @@ class profileController extends bootstrap
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount          = $this->loadData('lenders_accounts');
         $oClientSettings         = $this->loadData('client_settings');
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $sInstruction            = '';
 
         if (false === empty($_POST['setting']) && $oLenderAccount->get($_POST['id_lender'])) {
@@ -2084,7 +2084,7 @@ class profileController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = true;
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
         $oClientStatus           = $this->loadData('clients_status');
         $oClientStatus->getLastStatut($this->clients->id_client);

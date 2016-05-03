@@ -1,13 +1,10 @@
 <?php
 
-use Unilend\librairies\Cache;
-
 class projectsController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
-
+        parent::initialize();
         $this->catchAll = true;
 
         $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
@@ -94,7 +91,7 @@ class projectsController extends bootstrap
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->projects_status_history       = $this->loadData('projects_status_history');
-        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
 
         $this->lng['landing-page']           = $this->ln->selectFront('landing-page', $this->language, $this->App);
 
@@ -252,7 +249,8 @@ class projectsController extends bootstrap
                     $this->bids->ordre                 = $numBid;
                     $this->bids->create();
 
-                    $this->oCache->delete($this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project));
+                    $oCachePool = $this->get('memcache.default');
+                    $oCachePool->deleteItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $this->projects->id_project);
 
                     $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
 
@@ -521,9 +519,10 @@ class projectsController extends bootstrap
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction    = 1;
 
-            $sCacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
+            $oCachePool  = $this->get('memcache.default');
+            $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $this->projects->id_project);
 
-            if (false === ($this->aBids = $this->oCache->get($sCacheKey))) {
+            if (false === $oCachedItem->isHit()) {
                 if ($this->CountEnchere > 10) {
                     $this->aBids = array_merge(
                         $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC', 0, 5),
@@ -532,7 +531,11 @@ class projectsController extends bootstrap
                 } else {
                     $this->aBids = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
                 }
-                $this->oCache->set($sCacheKey, $this->aBids, Cache::SHORT_TIME);
+                $oCachedItem->set($this->aBids)
+                            ->expiresAfter(300);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $this->aBids = $oCachedItem->get();
             }
 
             if (false === empty($this->clients->id_client)) {

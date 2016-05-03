@@ -1,15 +1,9 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: binxiao
- * Date: 09/02/2016
- * Time: 09:38
- */
-
 namespace Unilend\Service;
 
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
+use Unilend\Service\Simulator\EntityManager;
 
 class ProjectManager
 {
@@ -52,27 +46,29 @@ class ProjectManager
     /** @var \jours_ouvres */
     private $oWorkingDay;
 
-    public function __construct()
+    /** @var EntityManager  */
+    private $oEntityManager;
+
+    public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager)
     {
         $this->aConfig = Loader::loadConfig();
 
-        $this->oBidManager             = Loader::loadService('BidManager');
-        $this->oLoanManager            = Loader::loadService('LoanManager');
-        $this->oNotificationManager    = Loader::loadService('NotificationManager');
-        $this->oAutoBidSettingsManager = Loader::loadService('AutoBidSettingsManager');
-        $this->oMailerManager          = Loader::loadService('MailerManager');
-        $this->oLenderManager          = Loader::loadService('LenderManager');
+        $this->oEntityManager          = $oEntityManager;
+        $this->oBidManager             = $oBidManager;
+        $this->oLoanManager            = $oLoanManager;
+        $this->oNotificationManager    = $oNotificationManager;
+        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
+        $this->oMailerManager          = $oMailerManager;
+        $this->oLenderManager          = $oLenderManager;
 
-        $this->oNMP       = Loader::loadData('nmp');
-        $this->oNMPDesabo = Loader::loadData('nmp_desabo');
+        $this->oNMP       = $this->oEntityManager->getRepository('nmp');
+        $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
 
         $this->oTNMP       = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail      = Loader::loadLib('email');
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
         $this->oWorkingDay = Loader::loadLib('jours_ouvres');
-
-        $this->sLanguage = 'fr';
     }
 
     /**
@@ -104,9 +100,9 @@ class ProjectManager
     public function checkBids(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \bids_logs $oBidLog */
-        $oBidLog = Loader::loadData('bids_logs');
+        $oBidLog = $this->oEntityManager->getRepository('bids_logs');
 
         $aLogContext      = array();
         $bBidsLogs        = false;
@@ -170,7 +166,7 @@ class ProjectManager
     public function autoBid(\projects $oProject)
     {
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         if ($oProjectStatus->getLastStatut($oProject->id_project)) {
             if ($oProjectStatus->status == \projects_status::A_FUNDER) {
                 $this->bidAllAutoBid($oProject);
@@ -183,7 +179,7 @@ class ProjectManager
     private function bidAllAutoBid(\projects $oProject)
     {
         /** @var \autobid $oAutoBid */
-        $oAutoBid = Loader::loadData('autobid');
+        $oAutoBid = $this->oEntityManager->getRepository('autobid');
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
@@ -199,7 +195,7 @@ class ProjectManager
             }
 
             /** @var \bids $oBid */
-            $oBid = Loader::loadData('bids');
+            $oBid = $this->oEntityManager->getRepository('bids');
             $oBid->shuffleAutoBidOrder($oProject->id_project);
         }
     }
@@ -207,11 +203,11 @@ class ProjectManager
     public function checkAutoBidBalance(\projects $oProject)
     {
         /** @var \transactions $oTransaction */
-        $oTransaction = Loader::loadData('transactions');
+        $oTransaction = $this->oEntityManager->getRepository('transactions');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $aPeriod = $this->oAutoBidSettingsManager->getPeriod($oProject->period);
         if (false === empty($aPeriod)) {
@@ -254,9 +250,9 @@ class ProjectManager
     private function reBidAutoBid(\projects $oProject, $iMode)
     {
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
 
         $oSettings->get('Auto-bid step', 'type');
         $fStep        = (float)$oSettings->value;
@@ -274,7 +270,7 @@ class ProjectManager
     private function reBidAutoBidDeeply(\projects $oProject, $iMode)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         $this->checkBids($oProject);
         $aRefusedAutoBid = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY, 1);
         if (false === empty($aRefusedAutoBid)) {
@@ -286,11 +282,11 @@ class ProjectManager
     public function buildLoans(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \loans $oLoan */
-        $oLoan = Loader::loadData('loans');
+        $oLoan = $this->oEntityManager->getRepository('loans');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
 
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
@@ -411,7 +407,7 @@ class ProjectManager
     public function treatFundFailed(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid = Loader::loadData('bids');
+        $oBid = $this->oEntityManager->getRepository('bids');
 
         // On passe le projet en funding ko
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDING_KO, $oProject);
@@ -440,17 +436,17 @@ class ProjectManager
         ini_set('memory_limit', '512M');
 
         /** @var \loans $oLoan */
-        $oLoan = Loader::loadData('loans');
+        $oLoan = $this->oEntityManager->getRepository('loans');
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         /** @var \echeanciers $oRepaymentSchedule */
-        $oRepaymentSchedule = Loader::loadData('echeanciers');
+        $oRepaymentSchedule = $this->oEntityManager->getRepository('echeanciers');
         /** @var \clients_adresses $oClientAdresse */
-        $oClientAdresse = Loader::loadData('clients_adresses');
+        $oClientAdresse = $this->oEntityManager->getRepository('clients_adresses');
         /** @var \clients $oClient */
-        $oClient = Loader::loadData('clients');
+        $oClient = $this->oEntityManager->getRepository('clients');
 
         $oProjectStatus->getLastStatut($oProject->id_project);
 
@@ -508,11 +504,11 @@ class ProjectManager
         ini_set('memory_limit', '512M');
 
         /** @var \echeanciers_emprunteur $oPaymentSchedule */
-        $oPaymentSchedule = Loader::loadData('echeanciers_emprunteur');
+        $oPaymentSchedule = $this->oEntityManager->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $oRepaymentSchedule */
-        $oRepaymentSchedule = Loader::loadData('echeanciers');
+        $oRepaymentSchedule = $this->oEntityManager->getRepository('echeanciers');
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
 
         $oSettings->get('Commission remboursement', 'type');
         $fCommissionRate = $oSettings->value;
@@ -556,10 +552,10 @@ class ProjectManager
         }
     }
 
-    public static function getProjectEndDate(\projects $oProject)
+    public function getProjectEndDate(\projects $oProject)
     {
         /** @var \settings $oSettings */
-        $oSettings = Loader::loadData('settings');
+        $oSettings = $this->oEntityManager->getRepository('settings');
         $oEndDate  = new \DateTime($oProject->date_retrait_full);
         if ($oProject->date_fin != '0000-00-00 00:00:00') {
             $oEndDate = new \DateTime($oProject->date_fin);
@@ -575,9 +571,9 @@ class ProjectManager
     public function addProjectStatus($iUserId, $iProjectStatus, \projects $oProject, $iReminderNumber = 0, $sContent = '')
     {
         /** @var \projects_status_history $oProjectsStatusHistory */
-        $oProjectsStatusHistory = Loader::loadData('projects_status_history');
+        $oProjectsStatusHistory = $this->oEntityManager->getRepository('projects_status_history');
         /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         $oProjectStatus->get($iProjectStatus, 'status');
 
         $oProjectsStatusHistory->id_project        = $oProject->id_project;
@@ -595,7 +591,7 @@ class ProjectManager
         switch ($oProjectStatus->status) {
             case \projects_status::A_TRAITER:
                 /** @var \settings $oSettings */
-                $oSettings = Loader::loadData('settings');
+                $oSettings = $this->oEntityManager->getRepository('settings');
                 $oSettings->get('Adresse notification inscription emprunteur', 'type');
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $oProject, trim($oSettings->value));
                 break;

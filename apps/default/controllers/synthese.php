@@ -2,9 +2,9 @@
 
 class syntheseController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
@@ -249,7 +249,7 @@ class syntheseController extends bootstrap
         $this->clients_status->getLastStatut($this->clients->id_client);
 
         /** @var \Unilend\Service\IRRManager $oIRRManager */
-        $oIRRManager                 = $this->get('IRRManager');
+        $oIRRManager                 = $this->get('unilend.service.irr_manager');
         $aLastUnilendIRR             = $oIRRManager->getLastUnilendIRR();
         $this->sIRRUnilend           = $this->ficelle->formatNumber((float) $aLastUnilendIRR['value']);
         $this->iDiversificationLevel = '';
@@ -312,7 +312,7 @@ class syntheseController extends bootstrap
 
         //Ongoing Bids Widget
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
+        $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         $this->bFirstTimeActivation          = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);
         $this->iDisplayTotalNumberOfBids     = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);

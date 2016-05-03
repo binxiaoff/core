@@ -94,7 +94,7 @@ class wallets_lines extends wallets_lines_crud
         $sql = 'SELECT SUM(amount) as montant FROM wallets_lines WHERE id_lender = ' . $id_lender . ' AND type_financial_operation IN (' . $type . ') AND display = 0';
 
         $result  = $this->bdd->query($sql);
-        $montant = $this->bdd->result($result, 0, 'montant');
+        $montant = $this->bdd->result($result);
         if ($montant == '') {
             $montant = 0;
         } else {

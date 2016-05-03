@@ -1,4 +1,5 @@
 <?php
+include_once __DIR__ . '/../../Autoloader.php';
 
 if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVER_PORT'] == 443) {
     $currentCookieParams = session_get_cookie_params();
@@ -20,16 +21,11 @@ include __DIR__ . '/../../config.php';
 $bCacheFullPage = ($_SERVER['SERVER_NAME'] === 'www.unilend.fr');
 
 if ($bCacheFullPage) {
-    include_once __DIR__ . '/../../Autoloader.php';
-    Autoloader::register();
-
     require __DIR__ . '/prepend.php';
 }
 
-include __DIR__ . '/../../core/dispatcher.class.php';
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
-include __DIR__ . '/../../core/bdd.class.php';
 include __DIR__ . '/../../core/errorhandler.class.php';
 include __DIR__ . '/../../route.php';
 
@@ -47,7 +43,10 @@ $handler    = new ErrorHandler(
     $config['error_handler'][$config['env']]['allow_log'],
     $config['error_handler'][$config['env']]['report']
 );
-$dispatcher = new Dispatcher($config, $app);
+
+$oKernel = new \Unilend\core\Kernel('prod', false);
+$oKernel->boot();
+$oDispatcher = new \Unilend\core\Dispatcher($oKernel, $app, $config);
 
 if ($bCacheFullPage) {
     require __DIR__ . '/append.php';

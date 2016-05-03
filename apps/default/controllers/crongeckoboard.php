@@ -5,9 +5,9 @@ class crongeckoboardController extends bootstrap
 
     var $Command;
 
-    function crongeckoboardController($command, $config)
+    public function initialize()
     {
-        parent::__construct($command, $config, 'default');
+        parent::initialize();
 
         $this->autoFireHeader = false;
         $this->autoFireHead = false;
