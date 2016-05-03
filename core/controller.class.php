@@ -93,17 +93,6 @@ abstract class Controller extends ContainerAware
         die;
     }
 
-    public function initErrorHandling()
-    {
-
-        if (file_exists($this->path . 'core/errorhandler.class.php')) {
-            include($this->path . 'core/errorhandler.class.php');
-            $this->ErrorHandler = new ErrorHandler($this->Config, $this->App, $this->bdd);
-            set_error_handler(array($this->ErrorHandler, 'errorHandler'));
-        }
-
-    }
-
     public function execute()
     {
         $this->initialize();
