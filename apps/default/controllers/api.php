@@ -37,6 +37,8 @@ class apiController extends Controller
             default:
                 $oSettings->get('green_point_ip_test', 'type');
                 $sAllowedIPSettings = $oSettings->value;
+                $oSettings->get('green_point_ip_local', 'type');
+                $sLocalIp = $oSettings->value;
                 break;
         }
 
@@ -57,7 +59,7 @@ class apiController extends Controller
                 $aAllowedIP[] = $aAllowedIPSettings['root'] . $iSuffix;
             }
         }
-        if (false === in_array($_SERVER['REMOTE_ADDR'], $aAllowedIP)) {
+        if (false === in_array($_SERVER['REMOTE_ADDR'], $aAllowedIP) && false === in_array($_SERVER['REMOTE_ADDR'], explode(',', $sLocalIp))) {
             header('HTTP/1.0 403 Forbidden');
             echo 'Forbidden';
             die;
