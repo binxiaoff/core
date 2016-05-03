@@ -90,9 +90,9 @@ restart php5-fpm
 
 # install Nginx
 apt-get install -y nginx
-ln -fs /vagrant/conf/vhosts/admin.unilend.fr.conf /etc/nginx/sites-enabled/admin.unilend.fr.nginx.conf
-ln -fs /vagrant/conf/vhosts/www.unilend.fr.conf /etc/nginx/sites-enabled/www.unilend.fr.nginx.conf
-ln -fs /vagrant/conf/vhosts/phpmyadmin.conf /etc/nginx/sites-enabled/phpmyadmin.nginx.conf
+ln -fs /vagrant/conf/vhosts/admin.unilend.fr.conf /etc/nginx/sites-enabled/admin.unilend.fr.conf
+ln -fs /vagrant/conf/vhosts/www.unilend.fr.conf /etc/nginx/sites-enabled/www.unilend.fr.conf
+ln -fs /vagrant/conf/vhosts/phpmyadmin.conf /etc/nginx/sites-enabled/phpmyadmin.conf
 sed -i "s/types_hash_max_size 2048;/types_hash_max_size 2048;\n        fastcgi_read_timeout 300;/" /etc/nginx/nginx.conf
 
 # copy unversioned files
@@ -139,7 +139,7 @@ apt-get install -y ruby-all-dev ruby-switch libsqlite3-dev
 ruby-switch --set ruby2.0
 gem install mailcatcher
 sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env /usr/local/bin/catchmail' /etc/php5/fpm/php.ini
-ln -fs /vagrant/conf/vhosts/mailcatcher.nginx.conf /etc/nginx/sites-enabled/mailcatcher.conf
+ln -fs /vagrant/conf/vhosts/mailcatcher.conf /etc/nginx/sites-enabled/mailcatcher.conf
 cp /vagrant/conf/mailcatcher.conf /etc/init/mailcatcher.conf
 
 #increase swap memory
