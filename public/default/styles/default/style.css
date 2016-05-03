@@ -564,20 +564,13 @@ a:hover > .icon-big-facebook { background-position:-60px -90px; }
 
 
 /* === Table === */
-.table { width:100%; line-height:14px;border:8px solid #eceaed; }
-.table tr:nth-child(even) td { background:#fafafa; }
-.table tr.table-body.detail:nth-child(even) td, .table tr.table-body.detail:nth-child(odd) td {background:#daf6f9;}
-#bids .table tr.line-focus td, #bids_mobile .table tr.line-focus td{ background:#b10366;}
 
-.table tr:hover td { background:#fbf2f7; }
 
-.table th { background-color:#eceaed; padding:10px 0; text-align:center; font-family:Helvetica, Arial, sans-serif; text-transform:uppercase;font-weight:400; }
-.table th:first-child { text-align:left; border-radius:3px 0 0 0; padding-left:70px; }
-.table th:last-child { border-radius:0 3px 0 0; }
-.table .th-wrap { display:block; position:relative; }
-
+.table th { background-color:#b10366; padding:10px 0; text-align:center; font-family:Helvetica, Arial, sans-serif; text-transform:uppercase;font-weight:400; }
 .table td { padding:15px; text-align:center; }
 .table td:first-child { text-align:left; }
+.table tr:nth-child(even) td { background:#fafafa; }
+.table tr:hover td { background:#FBF2F1;}
 
 .table strong { color:#8e0252; }
 
@@ -760,32 +753,46 @@ form .row.rel { position:relative; }
 form .row.rel .euro-sign { left: 0; right: auto; }
 
 /* ===========================
-    Tabs Nav
+    Tabs Nav & Single project tab
 ============================ */
 
-.tabs-nav:after {content: "";display:block;clear:both;}
-.tabs-nav { height: 42px; margin-bottom: 25px;border-bottom: 1px solid #b10366; }
-.tabs-nav ul { padding-left: 0;float:left; }
-.tabs-nav li { float:left;padding: 0 6px; list-style-type: none; }
-.tabs-nav li a { padding:0 /*6px*/3px 0;display:block; line-height: 42px; font-size: 18px; font-weight:bold; color: #a1a5a7;padding:0 6px 3px 0;text-decoration:none;border: 1px solid rgba(0,0,0,0);}
-.tabs-nav li a:hover, .tabs-nav li.active a{ border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366;}
+div[class*="single-project"] .tabs-nav:after {content: "";display:block;clear:both;}
+div[class*="single-project"] .tabs-nav { height: 42px; margin-bottom: 25px;border-bottom: 1px solid #b10366; }
+div[class*="single-project"] .tabs-nav ul { padding-left: 0;float:left; }
+div[class*="single-project"] .tabs-nav li { float:left;padding: 0 6px; list-style-type: none; }
+div[class*="single-project"] .tabs-nav li a { display:block; line-height: 41px; font-size: 18px; font-weight:bold; color: #a1a5a7;/*padding:0 6px 3px 0;*/text-decoration:none;border: 1px solid rgba(0,0,0,0);}
+div[class*="single-project"] .tabs-nav li a:hover, div[class*="single-project"] .tabs-nav li.active a{ border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366;}
+div[class*="single-project"] .detail-nav th span.bid-number { text-align:left;}
+
+div[class*="single-project"] .line-focus { border-style:solid;border-color:#b10366;border-left-width:0px;background:#daf6f9;color:#f1f1f1;}
+div[class*="single-project"] #bids .table tr.line-focus:hover td { background:#b10366}
+div[class*="single-project"] .table-body.detail { border-style:solid;border-color:#b10366;border-left-width:0px;}
+div[class*="single-project"] .table-body.detail > td { color:#4fa8b0; }
+div[class*="single-project"] .table-body.detail:last-of-type { border-bottom:10px;border-color:#b10366;border-style:solid; }
+
+div[class*="single-project"] .tabs { font-size: 15px; }
+div[class*="single-project"] .section-c h2 { font-size: 26px; line-height: 30px; color: #b10366; font-weight: bold; font-family: arial, serif; letter-spacing: 0; border-bottom: 1px solid #e3e4e4; padding-bottom: 7px; margin-bottom: 18px; text-transform: capitalize; }
+div[class*="single-project"] .section-c p { padding-bottom: 30px; }
+
+div[class*="single-project"] .tab-form { width: 460px; }
+div[class*="single-project"] .tab-form .row p { padding: 0; }
+div[class*="single-project"] .tab-form em { display:block; margin-bottom: 45px; }
+div[class*="single-project"] .tab-form .btn { float:right; position: relative; margin-right: -93px; }
+div[class*="single-project"] .tab-form .c2-sb-wrap { margin-bottom: 30px; }
+
+div[class*="single-project"] .table { width:100%; line-height:14px;border:8px solid #eceaed; }
+div[class*="single-project"] .table tr:nth-child(even) td { background:#fafafa; }
+div[class*="single-project"] .table tr.table-body.detail:nth-child(even) td, div[class*="single-project"] .table tr.table-body.detail:nth-child(odd) td {background:#daf6f9;}
+div[class*="single-project"] #bids .table tr.line-focus td, #bids_mobile .table tr.line-focus td{ background:#b10366;}
+
+div[class*="single-project"] .table tr:hover td { background:#fbf2f7; }
+
+div[class*="single-project"] .table th { background-color:#eceaed; padding:10px 0; text-align:center; font-family:Helvetica, Arial, sans-serif; text-transform:uppercase;font-weight:400; }
+div[class*="single-project"] .table th:first-child { text-align:left; border-radius:3px 0 0 0;}
+div[class*="single-project"] .table th:last-child { border-radius:0 3px 0 0; }
+div[class*="single-project"] .table .th-wrap { display:block; position:relative; }
 
 
-.line-focus { border-style:solid;border-color:#b10366;border-left-width:0px;background:#daf6f9;color:#f1f1f1;}
-#bids .table tr.line-focus:hover td { background:#b10366}
-.table-body.detail { border-style:solid;border-color:#b10366;border-left-width:0px;}
-.table-body.detail > td { color:#4fa8b0; }
-.table-body.detail:last-of-type { border-bottom:10px;border-color:#b10366;border-style:solid; }
-
-.tabs { font-size: 15px; }
-.section-c h2 { font-size: 26px; line-height: 30px; color: #b10366; font-weight: bold; font-family: arial, serif; letter-spacing: 0; border-bottom: 1px solid #e3e4e4; padding-bottom: 7px; margin-bottom: 18px; text-transform: capitalize; }
-.section-c p { padding-bottom: 30px; }
-
-.tab-form { width: 460px; }
-.tab-form .row p { padding: 0; }
-.tab-form em { display:block; margin-bottom: 45px; }
-.tab-form .btn { float:right; position: relative; margin-right: -93px; }
-.tab-form .c2-sb-wrap { margin-bottom: 30px; }
 
 /* ===========================
     Info Table
