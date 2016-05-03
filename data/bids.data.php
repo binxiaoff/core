@@ -96,20 +96,13 @@ class bids extends bids_crud
         return $solde;
     }
 
-    public function getAVG($id_project, $champ = 'amount', $status = '')
+    public function getAVGAmount($id_project)
     {
-        if ($status != '') {
-            $status = ' AND status IN(' . $status . ')';
-        }
-
-        $sql = 'SELECT AVG(' . $champ . ') as avg FROM bids WHERE id_project = ' . $id_project . $status;
-
+        $sql    = 'SELECT AVG(amount) AS average FROM bids WHERE id_project = ' . $id_project;
         $result = $this->bdd->query($sql);
         $avg    = $this->bdd->result($result);
-        if ($avg == '') {
-            $avg = 0;
-        }
-        return $avg;
+
+        return empty($avg) ? 0 : $avg;
     }
 
     public function getAvgPreteur($id_lender, $champ = 'amount', $status = '')

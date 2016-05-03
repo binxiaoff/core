@@ -3,16 +3,16 @@
         <th width="18%"><span id="triNum">N°<i class="icon-arrows"></i></span></th>
         <th width="25%">
             <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?> <i class="icon-arrows"></i></span>
-            <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgRate, 1) ?> %</small>
+            <small><?= $this->lng['preteur-projets']['taux-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgRate, 1) ?>&nbsp;%</small>
         </th>
         <th width="35%">
             <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?> <i class="icon-arrows"></i></span>
-            <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?> €</small>
+            <small><?= $this->lng['preteur-projets']['montant-moyen'] ?> : <?= $this->ficelle->formatNumber($this->avgAmount / 100) ?>&nbsp;€</small>
         </th>
         <th width="22%"><span id="triStatuts"><?= $this->lng['preteur-projets']['statuts'] ?><i class="icon-arrows"></i></span>
         </th>
     </tr>
-    <?php foreach ($this->aBidsOnProject as $iKey => $aBid) : ?>
+    <?php foreach ($this->aBids as $iKey => $aBid) : ?>
         <tr <?= (($aBid['id_lender_account'] == $this->lenders_accounts->id_lender_account) ? ' class="enchereVousColor"' : '') ?>>
             <td>
                 <div style="position: relative">
@@ -30,8 +30,8 @@
             <?php endif; ?>
                 </div>
             </td>
-            <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?> %</td>
-            <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>€
+            <td><?= $this->ficelle->formatNumber($aBid['rate'], 1) ?>&nbsp;%</td>
+            <td><?= $this->ficelle->formatNumber($aBid['amount'] / 100, 0) ?>&nbsp;€
             </td>
             <td>
                 <span class="<?= ($aBid['status'] == \bids::STATUS_BID_PENDING ? 'circle_pending' : ($aBid['status'] == \bids::STATUS_BID_REJECTED ? 'circle_rejected' : '')) ?>"></span>
@@ -40,7 +40,7 @@
                 </span>
             </td>
         </tr>
-        <?php endforeach; ?>
+    <?php endforeach; ?>
 </table>
 <div id="displayAll"></div>
 

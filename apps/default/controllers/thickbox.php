@@ -250,66 +250,21 @@ class thickboxController extends bootstrap
 
     public function _pop_up_offer_mobile()
     {
-        if (! $this->clients->checkAccess()) {
-            header('Location:' . $this->lurl);
+        if (false === $this->clients->checkAccess()) {
+            header('Location: ' . $this->lurl);
             die;
         }
 
         $this->projects = $this->loadData('projects');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
-            //Recuperation des element de traductions
             $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
 
-            // Pret min
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
 
-
-            // la sum des encheres
-            $this->soldeBid = $this->bids->getSoldeBid($this->projects->id_project);
-
-            // solde payé
-            $this->payer = $this->soldeBid;
-
-            // Reste a payer
-            $this->resteApayer = ($this->projects->amount - $this->soldeBid);
-
-            $this->pourcentage = ((1 - ($this->resteApayer / $this->projects->amount)) * 100);
-
-            $this->decimales            = 0;
-            $this->decimalesPourcentage = 1;
-            $this->txLenderMax          = '10.0';
-            if ($this->soldeBid >= $this->projects->amount) {
-                $this->payer                = $this->projects->amount;
-                $this->resteApayer          = 0;
-                $this->pourcentage          = 100;
-                $this->decimales            = 0;
-                $this->decimalesPourcentage = 0;
-
-                $this->lEnchereRate = $this->bids->select('id_project = ' . $this->projects->id_project, 'rate ASC,added ASC');
-                $leSoldeE           = 0;
-                foreach ($this->lEnchereRate as $k => $e) {
-                    // on parcour les encheres jusqu'au montant de l'emprunt
-                    if ($leSoldeE < $this->projects->amount) {
-                        // le montant preteur (x100)
-                        $amount = $e['amount'];
-
-                        // le solde total des encheres
-                        $leSoldeE += ($e['amount'] / 100);
-                        $this->txLenderMax = $e['rate'];
-                    }
-                }
-            }
-
-            // Liste des encheres enregistrées
-            $this->lEnchere     = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-            $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-            $this->avgAmount    = $this->bids->getAVG($this->projects->id_project, 'amount', '0');
-
-            if ($this->avgAmount == false) {
-                $this->avgAmount = 0;
-            }
+            $this->soldeBid    = $this->bids->getSoldeBid($this->projects->id_project);
+            $this->txLenderMax = $this->soldeBid >= $this->projects->amount ? $this->bids->getProjectMaxRate($this->projects->id_project) : 10;
         }
     }
 

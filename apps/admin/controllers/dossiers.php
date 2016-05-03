@@ -162,7 +162,7 @@ class dossiersController extends bootstrap
             $this->aAnalysts            = $this->users->select('status = 1 AND id_user_type = 2');
             $this->aSalesPersons        = $this->users->select('status = 1 AND id_user_type = 3');
             $this->aEmails              = $this->projects_status_history->select('content != "" AND id_project = ' . $this->projects->id_project, 'id_project_status_history DESC');
-            $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added ASC', 0, 3);
+            $this->lProjects_comments   = $this->projects_comments->select('id_project = ' . $this->projects->id_project, 'added DESC');
             $this->lProjects_status     = $this->projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
             $this->aAllAnnualAccounts   = $this->companies_bilans->select('id_company = ' . $this->companies->id_company, 'cloture_exercice_fiscal DESC');
 
