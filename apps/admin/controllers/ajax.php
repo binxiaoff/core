@@ -750,10 +750,9 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->companies               = $this->loadData('companies');
-        $this->clients                 = $this->loadData('clients');
+        $this->projects  = $this->loadData('projects');
+        $this->companies = $this->loadData('companies');
+        $this->clients   = $this->loadData('clients');
 
         if (isset($_POST['status'], $_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
@@ -768,26 +767,31 @@ class ajaxController extends bootstrap
 
             if ($form_ok == true) {
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager = $this->get('ProjectManager');
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
-                $this->current_projects_status = $this->loadData('projects_status');
-                $this->current_projects_status->getLastStatut($this->projects->id_project);
+                /** @var \projects_status_history $oProjectStatusHistory */
+                $oProjectStatusHistory = $this->loadData('projects_status_history');
+                $oProjectStatusHistory->loadLastProjectHistory($this->projects->id_project);
 
-                $this->lProjects_status = $this->current_projects_status->getPossibleStatus($this->projects->id_project, $this->projects_status_history);
+                /** @var \projects_status $oProjectStatus */
+                $oProjectStatus = $this->loadData('projects_status');
+                $oProjectStatus->get($oProjectStatusHistory->id_project_status);
 
-                if (count($this->lProjects_status) > 0) {
+                $aPossibleStatus = $oProjectStatus->getPossibleStatus($this->projects->id_project, $oProjectStatusHistory);
+
+                if (count($aPossibleStatus) > 0) {
                     $select = '<select name="status" id="status" class="select">';
-                    foreach ($this->lProjects_status as $s) {
-                        $select .= '<option ' . ($this->current_projects_status->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
+                    foreach ($aPossibleStatus as $s) {
+                        $select .= '<option ' . ($oProjectStatus->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
                     }
                     $select .= '</select>';
                 } else {
-                    $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
-                    $select .= $this->current_projects_status->label;
+                    $select = '<input type="hidden" name="status" id="status" value="' . $oProjectStatus->status . '" />';
+                    $select .= $oProjectStatus->label;
                 }
 
-                if ($this->current_projects_status->status != \projects_status::REJETE) {
+                if ($oProjectStatus->status != \projects_status::REJETE) {
                     $etape_6  = '
                     <div class="tab_title" id="title_etape6">Etape 6</div>
                     <div class="tab_content" id="etape6">
@@ -852,7 +856,7 @@ class ajaxController extends bootstrap
                             <br /><br />
                             <div id="valid_etape6" class="valid_etape">Données sauvegardées</div>';
 
-                    if ($this->current_projects_status->status == \projects_status::REVUE_ANALYSTE) {
+                    if ($oProjectStatus->status == \projects_status::REVUE_ANALYSTE) {
                         $etape_6 .= '
                             <div class="btnDroite listBtn_etape6">
                                 <input type="button" onclick="valid_rejete_etape6(3,' . $this->projects->id_project . ')" class="btn btnValid_rejet_etape6"  value="Sauvegarder">
@@ -903,7 +907,7 @@ class ajaxController extends bootstrap
 
                     /** @var \projects_status_history_details $oHistoryDetails */
                     $oHistoryDetails                              = $this->loadData('projects_status_history_details');
-                    $oHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->id_project_status_history   = $oProjectStatusHistory->id_project_status_history;
                     $oHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
                     $oHistoryDetails->create();
 

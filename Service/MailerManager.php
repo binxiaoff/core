@@ -256,7 +256,7 @@ class MailerManager
         }
 
         // Taux moyen pondéré
-        $fWeightedAvgRate = $this->oFicelle->formatNumber(ProjectManager::getWeightedAvgRate($oProject));
+        $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate());
 
         // Pas de mail si le compte est desactivé
         if ($oBorrower->status == 1) {
@@ -346,7 +346,7 @@ class MailerManager
 
         if ($oBorrower->status == 1) {
             $this->oMailText->get('emprunteur-dossier-funde-et-termine', 'lang = "' . $this->sLanguage . '" AND type');
-            $fWeightedAvgRate = $this->oFicelle->formatNumber((float) ProjectManager::getWeightedAvgRate($oProject));
+            $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate());
 
             $oBorrowerPaymentSchedule->get($oProject->id_project, 'ordre = 1 AND id_project');
             $fMonthlyPayment = $oBorrowerPaymentSchedule->montant + $oBorrowerPaymentSchedule->commission + $oBorrowerPaymentSchedule->tva;
@@ -409,7 +409,7 @@ class MailerManager
         $this->oSettings->get('Adresse notification projet funde a 100', 'type');
         $sRecipient = $this->oSettings->value;
 
-        $fWeightedAvgRate = $this->oFicelle->formatNumber((float) ProjectManager::getWeightedAvgRate($oProject));
+        $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate());
 
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
         // si le solde des enchere est supperieur au montant du pret on affiche le montant du pret
@@ -851,7 +851,7 @@ class MailerManager
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
 
         if ($oClient->status == 1) {
-            $iBalance = $oTransaction->getSolde($oLenderAccount->id_client_owner);
+            $fBalance = $oTransaction->getSolde($oLenderAccount->id_client_owner);
             $sPurpose = $oClient->getLenderPattern($oClient->id_client);
 
             $this->oSettings->get('Virement - aide par banque', 'type');
@@ -872,7 +872,7 @@ class MailerManager
                 'surl'           => $this->sSUrl,
                 'url'            => $this->sLUrl,
                 'prenom_p'       => $oClient->prenom,
-                'balance'        => $iBalance,
+                'balance'        => $this->oFicelle->formatNumber($fBalance, 2),
                 'iban'           => $sIban,
                 'bic'            => $sBic,
                 'titulaire'      => $sTitulaire,
