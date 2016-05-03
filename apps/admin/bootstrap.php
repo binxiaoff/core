@@ -25,7 +25,7 @@ class bootstrap extends Controller
         $this->tree           = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->Config['url'][$this->Config['env']]['default'], 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
         $this->users          = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
         $this->users_zones    = $this->loadData('users_zones');
-        $this->routages       = $this->loadData('routages', array('url' => $this->lurl));
+        //$this->routages       = $this->loadData('routages', array('url' => $this->lurl));
         $this->users_history  = $this->loadData('users_history');
         $this->mails_filer    = $this->loadData('mails_filer');
         $this->mails_text     = $this->loadData('mails_text');

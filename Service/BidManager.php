@@ -41,9 +41,17 @@ class BidManager
     /** @var LenderManager */
     private $oLenderManager;
 
+    /** @var EntityManager */
+    private $oEntityManager;
+
     public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager)
     {
         $this->aConfig = Loader::loadConfig();
+
+        $this->oEntityManager          = $oEntityManager;
+        $this->oNotificationManager    = $oNotificationManager;
+        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
+        $this->oLenderManager          = $oLenderManager;
 
         $this->oNMP       = $this->oEntityManager->getRepository('nmp');
         $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
@@ -53,11 +61,6 @@ class BidManager
 
         $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
         $this->oEmail = Loader::loadLib('email');
-
-        $this->oEntityManager          = $oEntityManager;
-        $this->oNotificationManager    = $oNotificationManager;
-        $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
-        $this->oLenderManager          = $oLenderManager;
     }
 
     /**

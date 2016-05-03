@@ -17,7 +17,7 @@ class projects_last_status_history
      */
     public $id_project;
 
-    public function __construct(\bdd $bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         $this->bdd = $bdd;
     }

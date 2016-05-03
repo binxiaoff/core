@@ -41,7 +41,7 @@ class bootstrap extends Controller
         $this->mails_filer             = $this->loadData('mails_filer');
         $this->mails_text              = $this->loadData('mails_text');
         $this->ln                      = $this->loadData('textes');
-        $this->routages                = $this->loadData('routages', array('url' => $this->lurl, 'route' => $this->Config['route_url']));
+        //$this->routages                = $this->loadData('routages', array('url' => $this->lurl, 'route' => $this->Config['route_url']));
         $this->nmp                     = $this->loadData('nmp');
         $this->nmp_desabo              = $this->loadData('nmp_desabo');
         $this->clients                 = $this->loadData('clients');

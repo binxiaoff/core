@@ -1,4 +1,5 @@
 <?php
+namespace Unilend\core;
 // **************************************************************************************************** //
 // ***************************************    ASPARTAM    ********************************************* //
 // **************************************************************************************************** //
@@ -28,7 +29,7 @@
 
 class ErrorHandler
 {
-    function __construct($file, $allow_display, $allow_log, $report)
+    public static function enable($file)
     {
         $aDir = explode('/', $file);
         $sDirLog = '';
@@ -44,12 +45,7 @@ class ErrorHandler
             chmod($file, 0766);
         }
 
-        //on lance la machine
-        ini_set('display_errors', $allow_display);
-        ini_set('log_errors', $allow_log);
         ini_set('error_log', $file);
-        error_reporting($report);
-
     }
 }
 
