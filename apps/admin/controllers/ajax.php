@@ -976,6 +976,7 @@ class ajaxController extends bootstrap
         $this->companies               = $this->loadData('companies');
         $this->clients                 = $this->loadData('clients');
         $this->clients_history         = $this->loadData('clients_history');
+        $oProjectsLastStatusHistory    = $this->loadData('projects_last_status_history');
 
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
@@ -1058,15 +1059,21 @@ class ajaxController extends bootstrap
                     $this->projects_notes->create();
                 }
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager            = $this->get('ProjectManager');
+
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
                 } elseif ($_POST['status'] == 2) {
+                    $oProjectsLastStatusHistory->get($this->projects->id_project, 'id_project');
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects);
+
+                    $oProjectsLastStatusHistory->get($this->projects->id_project, 'id_project');
+                    $this->projects_status_history->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history');
 
                     /** @var \projects_status_history_details $oHistoryDetails */
                     $oHistoryDetails                            = $this->loadData('projects_status_history_details');
                     $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
                     $oHistoryDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
                     $oHistoryDetails->create();
 
@@ -1405,12 +1412,17 @@ class ajaxController extends bootstrap
                         </td>
                     ';
                 } elseif ($_POST['status'] == 2) {
+                    $oProjectsLastStatusHistory = $this->loadData('projects_last_status_history');
+                    $oProjectsLastStatusHistory->get($this->projects->id_project, 'id_project');
+
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects);
+                    $oProjectsLastStatusHistory->get($this->projects->id_project, 'id_project');
+                    $this->projects_status_history->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history');
 
                     /** @var \projects_status_history_details $oHistoryDetails */
                     $oHistoryDetails                            = $this->loadData('projects_status_history_details');
                     $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                    $oHistoryDetails->comity_rejection_reason  = $_POST['rejection_reason'];
+                    $oHistoryDetails->comity_rejection_reason   = $_POST['rejection_reason'];
                     $oHistoryDetails->create();
 
                     /** @var \project_rejection_reason $oRejectionReason */
