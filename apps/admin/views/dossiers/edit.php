@@ -533,7 +533,9 @@
                             <a href="<?= $this->lurl ?>/thickbox/project_history/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/info.png" alt="Information" /></a>
                         </td>
                     </tr>
-                    <?php if (in_array($this->current_projects_status->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))) : ?>
+                    <?php if (in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE))
+                            && in_array($this->current_projects_status->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))
+                            ) : ?>
                     <tr>
                         <th><label for="rejection_reason">Motif de rejet :</label></th>
                         <td>
