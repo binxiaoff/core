@@ -581,7 +581,18 @@ class universignController extends bootstrap
                 $this->lien_pdf = $this->lurl . $clients_mandats->url_pdf;
 
                 if ($clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
-                    $aProjects = $this->projects->select('id_company = "' . $companies->id_company . '"');
+                    $aProjectStatus = array(
+                        \projects_status::REMBOURSEMENT,
+                        \projects_status::REMBOURSEMENT_ANTICIPE,
+                        \projects_status::PROBLEME,
+                        \projects_status::PROBLEME_J_X,
+                        \projects_status::RECOUVREMENT,
+                        \projects_status::PROCEDURE_SAUVEGARDE,
+                        \projects_status::REDRESSEMENT_JUDICIAIRE,
+                        \projects_status::LIQUIDATION_JUDICIAIRE,
+                        \projects_status::DEFAUT
+                    );
+                    $aProjects      = $this->projects->selectProjectsByStatus(implode(',', $aProjectStatus), ' AND id_company = "' . $companies->id_company . '"');
 
                     /** @var \projects $oProject */
                     $oProject = $this->loadData('projects');
@@ -596,7 +607,14 @@ class universignController extends bootstrap
 
                         $sBankTransferLabel = $oProjectManagement->getBorrowerBankTransferLabel($oProject);
                         $prelevements->updateBankTransferLabel($oProject->id_project, $sBankTransferLabel);
-                        $prelevements->updateIbanBic($oProject->id_project, $aMandat['bic'], $aMandat['iban']);
+
+                        $aSchedule = $prelevements->select('id_project = ' . $oProject->id_project);
+                        foreach ($aSchedule as $aOrder) {
+                            $prelevements->get($aOrder['id_prelevement']);
+                            $prelevements->bic  = $aMandat['bic'];
+                            $prelevements->iban = $aMandat['iban'];
+                            $prelevements->update();
+                        }
                     }
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été signé';

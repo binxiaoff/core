@@ -82,14 +82,6 @@ class prelevements extends prelevements_crud
         return (int) $this->bdd->result($result, 0, 0);
     }
 
-    public function updateIbanBic($iProjectId, $sBic, $sIban)
-    {
-        $sql = 'UPDATE prelevements SET bic = "' . $sBic . '", iban = "' . $sIban . '" WHERE id_project = ' . $iProjectId . ' AND status = ' . \prelevements::STATUS_PENDING;
-
-        $rResult = $this->bdd->query($sql);
-        return $rResult;
-    }
-
     public function updateBankTransferLabel($iProjectId, $sBankTransferLabel)
     {
         $sql = 'UPDATE prelevements SET motif = "' . $sBankTransferLabel . '" WHERE id_project = ' . $iProjectId . ' AND status = ' . \prelevements::STATUS_PENDING;
