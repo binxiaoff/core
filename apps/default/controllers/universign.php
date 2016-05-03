@@ -334,12 +334,9 @@ class universignController extends bootstrap
                         header('Location: ' . $this->lurl);
                         die;
                 }
-                /** @var \companies $companies */
-                $companies = $this->loadData('companies');
 
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat status : ' . $sMandatStatus . '. Creation of pdf for send to universign.', array($clients_mandats->id_project));
                 $clients->get($clients_mandats->id_client, 'id_client');
-                $companies->get($clients_mandats->id_client, 'id_client_owner');
 
                 $uni_url     = $this->uni_url; // address of the universign server with basic authentication
                 $firstname   = $clients->prenom; // the signatory first name
@@ -408,15 +405,18 @@ class universignController extends bootstrap
                 $r = &$c->send($f);
                 $this->oLogger->addRecord(ULogger::INFO, 'Mandat send to Universign', array($clients_mandats->id_project), array($clients_mandats->id_project));
                 if (!$r->faultCode()) {
-                    //if the request succeeded
                     $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url
                     $id  = $r->value()->structMem('id')->scalarVal(); //you should store this id
+
+                    /** @var \companies $company */
+                    $company = $this->loadData('companies');
+                    $company->get($clients_mandats->id_client, 'id_client_owner');
 
                     $clients_mandats->id_universign  = $id;
                     $clients_mandats->url_universign = $url;
                     $clients_mandats->status         = \clients_mandats::STATUS_PENDING;
-                    $clients_mandats->bic            = $companies->bic;
-                    $clients_mandats->iban           = $companies->iban;
+                    $clients_mandats->bic            = $company->bic;
+                    $clients_mandats->iban           = $company->iban;
                     $clients_mandats->update();
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat response generation from universign : OK. Redirection to universign to sign.', array($clients_mandats->id_project));
                     header('Location: ' . $url);
@@ -459,14 +459,10 @@ class universignController extends bootstrap
                 }
                 $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir status : ' . $sPouvoirStatus . '. Creation of pdf for send to universign.', array($projects_pouvoir->id_project));
 
-                // on recup le projet
                 $projects->get($projects_pouvoir->id_project, 'id_project');
-                // on recup la companie
                 $companies->get($projects->id_company, 'id_company');
-                // on recup l'emprunteur
                 $clients->get($companies->id_client_owner, 'id_client');
 
-                //used variables
                 $uni_url      = $this->uni_url; // address of the universign server with basic authentication
                 $firstname    = $clients->prenom; // the signatory first name
                 $lastname     = $clients->nom; // the signatory last name
@@ -485,7 +481,6 @@ class universignController extends bootstrap
                 $x    = 335;
                 $y    = 370;
 
-                //create the request
                 $c = new Client($uni_url);
 
                 $docSignatureField = array(
@@ -535,7 +530,6 @@ class universignController extends bootstrap
                 $r = &$c->send($f);
                 $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir send to Universign', array($projects_pouvoir->id_project));
                 if (!$r->faultCode()) {
-                    //if the request succeeded
                     $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url
                     $id  = $r->value()->structMem('id')->scalarVal(); //you should store this id
 
@@ -559,21 +553,22 @@ class universignController extends bootstrap
 
     public function _confirmation()
     {
-        // On masque les Head, header et footer originaux plus le debug
         $this->autoFireHeader = true;
         $this->autoFireHead   = true;
         $this->autoFireFooter = true;
 
-        $clients          = $this->loadData('clients');
-        $clients_mandats  = $this->loadData('clients_mandats');
-        $companies        = $this->loadData('companies');
+        /** @var \clients $clients */
+        $clients = $this->loadData('clients');
+        /** @var \clients_mandats $clients_mandats */
+        $clients_mandats = $this->loadData('clients_mandats');
+        /** @var \companies $companies */
+        $companies = $this->loadData('companies');
+        /** @var \projects_pouvoir $projects_pouvoir */
         $projects_pouvoir = $this->loadData('projects_pouvoir');
-        $projects         = $this->loadData('projects');
-        $prelevements     = $this->loadData('prelevements');
+        /** @var \projects $projects */
+        $projects = $this->loadData('projects');
 
         if (isset($this->params[0]) && isset($this->params[1])) {
-            $oProjectManagement = $this->get('ProjectManager');
-
             if ($this->params[0] == 'mandat' && $clients_mandats->get($this->params[1], 'id_mandat')) {
                 $clients->get($clients_mandats->id_client, 'id_client');
                 $companies->get($clients->id_client, 'id_client_owner');
@@ -581,39 +576,28 @@ class universignController extends bootstrap
                 $this->lien_pdf = $this->lurl . $clients_mandats->url_pdf;
 
                 if ($clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
-                    $aProjectStatus = array(
-                        \projects_status::REMBOURSEMENT,
-                        \projects_status::REMBOURSEMENT_ANTICIPE,
-                        \projects_status::PROBLEME,
-                        \projects_status::PROBLEME_J_X,
-                        \projects_status::RECOUVREMENT,
-                        \projects_status::PROCEDURE_SAUVEGARDE,
-                        \projects_status::REDRESSEMENT_JUDICIAIRE,
-                        \projects_status::LIQUIDATION_JUDICIAIRE,
-                        \projects_status::DEFAUT
-                    );
-                    $aProjects      = $this->projects->selectProjectsByStatus(implode(',', $aProjectStatus), ' AND id_company = "' . $companies->id_company . '"');
+                    $aProjects = $this->projects->selectProjectsByStatus(implode(',', \projects_status::$runningRepayment), ' AND id_company = "' . $companies->id_company . '"');
 
-                    /** @var \projects $oProject */
-                    $oProject = $this->loadData('projects');
-
-                    /** @var \clients_mandats $oClientsMandats */
-                    $oClientsMandats = $this->loadData('clients_mandats');
+                    /** @var \projects $project */
+                    $project = $this->loadData('projects');
+                    /** @var \clients_mandats $mandate */
+                    $mandate = $this->loadData('clients_mandats');
+                    /** @var \prelevements $directDebit */
+                    $directDebit = $this->loadData('prelevements');
+                    /** @var \Unilend\Service\ProjectManager $projectManager */
+                    $projectManager = $this->get('ProjectManager');
 
                     foreach ($aProjects as $aProject) {
-                        $oProject->get($aProject['id_project']);
-                        $aMandat = $oClientsMandats->select('id_project = ' . $oProject->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC LIMIT 1');
-                        $aMandat = array_shift($aMandat);
+                        $project->get($aProject['id_project']);
 
-                        $sBankTransferLabel = $oProjectManagement->getBorrowerBankTransferLabel($oProject);
-                        $prelevements->updateBankTransferLabel($oProject->id_project, $sBankTransferLabel);
+                        $mandate = array_shift($mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
 
-                        $aSchedule = $prelevements->select('id_project = ' . $oProject->id_project);
-                        foreach ($aSchedule as $aOrder) {
-                            $prelevements->get($aOrder['id_prelevement']);
-                            $prelevements->bic  = $aMandat['bic'];
-                            $prelevements->iban = $aMandat['iban'];
-                            $prelevements->update();
+                        foreach ($directDebit->select('id_project = ' . $project->id_project . ' AND status = ' . \prelevements::STATUS_PENDING) as $debit) {
+                            $directDebit->get($debit['id_prelevement']);
+                            $directDebit->motif = $projectManager->getBorrowerBankTransferLabel($project);
+                            $directDebit->bic   = $mandate['bic'];
+                            $directDebit->iban  = $mandate['iban'];
+                            $directDebit->update();
                         }
                     }
                     $this->titre   = 'Confirmation mandat';
@@ -633,11 +617,8 @@ class universignController extends bootstrap
                     $this->oLogger->addRecord(ULogger::INFO, 'Mandat confirmation : not signed.', array($clients_mandats->id_project));
                 }
             } elseif ($this->params[0] == 'pouvoir' && $projects_pouvoir->get($this->params[1], 'id_pouvoir')) {// si on a le pouvoir
-                // on recup le projet
                 $projects->get($projects_pouvoir->id_project, 'id_project');
-                // on recup la companie
                 $companies->get($projects->id_company, 'id_company');
-                // on recup l'emprunteur
                 $clients->get($companies->id_client_owner, 'id_client');
 
                 $this->titre    = 'Confirmation pouvoir';

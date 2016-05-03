@@ -797,15 +797,16 @@ class ProjectManager
         }
     }
 
-    public static function getBorrowerBankTransferLabel(\projects $oProject)
+    /**
+     * @param \projects $project
+     * @return string
+     */
+    public static function getBorrowerBankTransferLabel(\projects $project)
     {
-        /** @var \companies $oCompanies */
-        $oCompanies = Loader::loadData('companies');
+        /** @var \companies $company */
+        $company = Loader::loadData('companies');
+        $company->get($project->id_company);
 
-        $oCompanies->get($oProject->id_company);
-
-        $sIdProject         = str_pad($oProject->id_project, 6, 0, STR_PAD_LEFT);
-        $sBankTransferLabel = mb_strtoupper('UNILEND' . $sIdProject . 'E' . trim($oCompanies->siren), 'UTF-8');
-        return $sBankTransferLabel;
+        return 'UNILEND' . str_pad($project->id_project, 6, 0, STR_PAD_LEFT) . 'E' . trim($company->siren);
     }
 }

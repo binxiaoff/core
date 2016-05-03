@@ -81,12 +81,4 @@ class prelevements extends prelevements_crud
         $result = $this->bdd->query('SELECT SUM(montant) FROM `prelevements` ' . $where);
         return (int) $this->bdd->result($result, 0, 0);
     }
-
-    public function updateBankTransferLabel($iProjectId, $sBankTransferLabel)
-    {
-        $sql = 'UPDATE prelevements SET motif = "' . $sBankTransferLabel . '" WHERE id_project = ' . $iProjectId . ' AND status = ' . \prelevements::STATUS_PENDING;
-
-        $rResult = $this->bdd->query($sql);
-        return $rResult;
-    }
 }

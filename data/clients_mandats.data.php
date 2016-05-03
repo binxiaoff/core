@@ -74,16 +74,25 @@ class clients_mandats extends clients_mandats_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
+    /**
+     * @param int|null $iCompanyId
+     * @return array
+     */
     public function getMoneyOrderHistory($iCompanyId = null)
     {
         if (null === $iCompanyId) {
             $iCompanyId = $this->id_company;
         }
 
-        $sQuery = 'SELECT cm.* FROM clients_mandats cm INNER JOIN companies c ON cm.id_client = c.id_client_owner WHERE c.id_company = ' . $iCompanyId . ' ORDER BY cm.updated DESC';
+        $sQuery = '
+            SELECT cm.*
+            FROM clients_mandats cm
+            INNER JOIN companies c ON cm.id_client = c.id_client_owner
+            WHERE c.id_company = ' . $iCompanyId . '
+            ORDER BY cm.added DESC';
 
-        $rQuery      = $this->bdd->query($sQuery);
         $aMoneyOrder = array();
+        $rQuery      = $this->bdd->query($sQuery);
         while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aMoneyOrder[] = $aRow;
         }

@@ -169,7 +169,7 @@
                     <td><?= $aProject['id_project'] ?></td>
                     <td><?= $aProject['title'] ?></td>
                     <td><?= $this->projects_status->label ?></td>
-                    <td><?= $this->ficelle->formatNumber($aProject['amount']) ?> €</td>
+                    <td class="right"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>&nbsp;€</td>
                     <td>
                         <?php if ($this->projects_pouvoir->get($aProject['id_project'], 'id_project')) : ?>
                             <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
@@ -230,8 +230,31 @@
                     <td><?= $aMoneyOrder['iban'] ?></td>
                     <td><?= $aMoneyOrder['bic'] ?></td>
                     <td><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
-                    <td><?= $this->aStatusMandat[$aMoneyOrder['status']] ?></td>
-                    <td><?= $aMoneyOrder['added'] ?></td>
+                    <td>
+                        <?php
+                            switch ($aMoneyOrder['status']) {
+                                case \clients_mandats::STATUS_PENDING:
+                                    echo 'En attente de signature';
+                                    break;
+                                case \clients_mandats::STATUS_SIGNED:
+                                    echo 'Signé';
+                                    break;
+                                case \clients_mandats::STATUS_CANCELED:
+                                    echo 'Annulé';
+                                    break;
+                                case \clients_mandats::STATUS_FAILED:
+                                    echo 'Echec';
+                                    break;
+                                case \clients_mandats::STATUS_ARCHIVED:
+                                    echo 'Archivé';
+                                    break;
+                                default:
+                                    echo 'Inconnu';
+                                    break;
+                            }
+                        ?>
+                    </td>
+                    <td><?= $this->dates->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
                 </tr>
             <?php endforeach; ?>
         </tbody>

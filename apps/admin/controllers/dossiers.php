@@ -767,12 +767,12 @@ class dossiersController extends bootstrap
                                 // montant - la part unilend
                                 $montant -= $partUnliend;
 
-                                if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false) {
-                                    /** @var \clients_mandats $oClientsMandats */
-                                    $oClientsMandats    = $this->loadData('clients_mandats');
+                                if (false === $this->transactions->get($this->projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
+                                    /** @var \clients_mandats $oMandate */
+                                    $oMandate = $this->loadData('clients_mandats');
+                                    $aMandate = array_shift($oMandate->select('id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
 
-                                    $aMandat            = $oClientsMandats->select('id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC LIMIT 1');
-                                    $aMandat            = array_shift($aMandat);
+                                    /** @var \Unilend\Service\ProjectManager $oProjectManagement */
                                     $oProjectManagement = $this->get('ProjectManager');
 
                                     $this->transactions->id_client        = $this->clients->id_client;
@@ -839,8 +839,8 @@ class dossiersController extends bootstrap
                                         $prelevements->id_project                         = $this->projects->id_project;
                                         $prelevements->motif                              = $virements->motif;
                                         $prelevements->montant                            = $montant;
-                                        $prelevements->bic                                = str_replace(' ', '', $aMandat['bic']);
-                                        $prelevements->iban                               = str_replace(' ', '', $aMandat['iban']);
+                                        $prelevements->bic                                = str_replace(' ', '', $aMandate['bic']);
+                                        $prelevements->iban                               = str_replace(' ', '', $aMandate['iban']);
                                         $prelevements->type_prelevement                   = 1; // recurrent
                                         $prelevements->type                               = 2; //emprunteur
                                         $prelevements->num_prelevement                    = $e['ordre'];

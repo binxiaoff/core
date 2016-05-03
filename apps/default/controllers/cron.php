@@ -947,8 +947,6 @@ class cronController extends bootstrap
             ///////////////////////////////////////
             /// $lPrelevementsEnCoursEmprunteur ///
 
-            $old_iban = '';
-            $old_bic  = '';
             foreach ($lPrelevementsEnCoursEmprunteur as $p) {
                 // on recup le dernier prelevement effectué pour voir si c'est le meme iban ou bic
                 $first = false;
@@ -971,21 +969,11 @@ class cronController extends bootstrap
                 $date_mandat = date('Y-m-d', strtotime($clients_mandats->updated));
 
                 // si premier remb
-                if ($p['num_prelevement'] == 1 || $first == true) //if($p['num_prelevement'] == 1)
-                {
+                if ($p['num_prelevement'] == 1 || $first == true) {
                     $val = 'FRST';
                 } else {
                     $val = 'RCUR';
                 }
-                $old_iban = $p['iban'];
-                $old_bic  = $p['bic'];
-
-                ///////////////////////////////////////////////////////////
-                // Temporaire pour régulariser le future prelevement du projet 374 qui passera le 2014-08-13
-                //if($p['id_project'] == '374' && date('n') < 9){
-                //$val = 'FRST';
-                //}
-                ///////////////////////////////////////////////////////////
 
                 $this->clients->get($p['id_client'], 'id_client');
 
@@ -1007,7 +995,6 @@ class cronController extends bootstrap
 
                 $xml .= $this->xmPrelevement($table);
 
-                // on met a jour le prelevement
                 $this->prelevements->get($p['id_prelevement'], 'id_prelevement');
                 $this->prelevements->status    = 1; // envoyé
                 $this->prelevements->added_xml = date('Y-m-d H:i') . ':00';
@@ -1053,17 +1040,17 @@ class cronController extends bootstrap
         $id_lot         = $table['id_lot'];
         $montant        = $table['montant'];
         $val            = $table['val'];
-        $date_execution = date('Y-m-d', strtotime($table['date_execution']));;
-        $iban          = $table['iban'];
-        $bic           = $table['bic'];
-        $ics           = $table['ics'];
-        $refmandat     = $table['refmandat'];
-        $date_mandat   = $table['date_mandat'];
-        $bicPreteur    = $table['bicPreteur'];
-        $ibanPreteur   = $table['ibanPreteur'];
-        $nomPreteur    = $table['nomPreteur'];
-        $prenomPreteur = $table['prenomPreteur'];
-        $motif         = $table['motif'];
+        $date_execution = date('Y-m-d', strtotime($table['date_execution']));
+        $iban           = $table['iban'];
+        $bic            = $table['bic'];
+        $ics            = $table['ics'];
+        $refmandat      = $table['refmandat'];
+        $date_mandat    = $table['date_mandat'];
+        $bicPreteur     = $table['bicPreteur'];
+        $ibanPreteur    = $table['ibanPreteur'];
+        $nomPreteur     = $table['nomPreteur'];
+        $prenomPreteur  = $table['prenomPreteur'];
+        $motif          = $table['motif'];
 
         $xml = '
 			<PmtInf>
