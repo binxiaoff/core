@@ -41,16 +41,16 @@
 <table class="table orders-table">
     <tr>
         <th width="25%">
-            <span id="rate">taux<i class="icon-grey icon-arrows"></i></span>
+            <span id="rate">taux</span>
         </th>
         <th width="25%">
-            <span id="amount">montant total<i class="icon-grey icon-arrows"></i></span>
+            <span id="amount">montant total</span>
         </th>
         <th width="25%">
-            <span id="offers">nb offres<i class="icon-grey icon-arrows"></i></span>
+            <span id="offers">nb offres</span>
         </th>
         <th width="25%">
-            <span id="current-offers">offres en cours<i class="icon-grey icon-arrows"></i></span>
+            <span id="current-offers">offres en cours</span>
         </th>
     </tr>
 

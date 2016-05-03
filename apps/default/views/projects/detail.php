@@ -147,16 +147,16 @@
                             <table class="table orders-table">
                                 <tr class="global-tab-nav">
                                     <th width="25%">
-                                        <span id="rate">taux<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="rate">taux</span>
                                     </th>
                                     <th width="25%">
-                                        <span id="amount">montant total<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="amount">montant total</span>
                                     </th>
                                     <th width="25%">
-                                        <span id="offers">nb offres<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="offers">nb offres</span>
                                     </th>
                                     <th width="25%">
-                                        <span id="current-offers">offres en cours<i class="icon-grey icon-arrows"></i></span>
+                                        <span id="current-offers">offres en cours</span>
                                     </th>
                                 </tr>
 
@@ -177,45 +177,16 @@
                                 </tr>
                                 <tr class="detail-nav">
                                     <th>
-                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="bid-number">N°<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="amount">Montant<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
-                                    </th>
-                                </tr>
-
-                                <tr class="table-body">
-                                    <td class="rate-cell">
-                                        <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
-                                    </td>
-                                    <td>
-                                        <span class="total-amount">850,15€</span>
-                                    </td>
-                                    <td>
-                                        <span class="number-of-offers">42</span>
-                                    </td>
-                                    <td>
-                                        <span class="offers-rate">100%</span>
-                                    </td>
-                                </tr>
-                                <tr class="detail-nav">
-                                    <th>
-                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
-                                    </th>
-                                    <th>
-                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
-                                    </th>
-                                    <th>
-                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
-                                    </th>
-                                    <th>
-                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="status">Statut<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                 </tr>
 
@@ -235,16 +206,16 @@
                                 </tr>
                                 <tr class="detail-nav">
                                     <th>
-                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="bid-number">N°<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="amount">Montant<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="status">Statut<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                 </tr>
 
@@ -264,16 +235,45 @@
                                 </tr>
                                 <tr class="detail-nav">
                                     <th>
-                                        <span class="detail-bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="bid-number">N°<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="amount">Montant<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                     <th>
-                                        <span class="detail-status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                        <span class="status">Statut<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                </tr>
+
+                                <tr class="table-body">
+                                    <td class="rate-cell">
+                                        <span class="order-rate">4 % <i class="icon-grey icon-simple-arrow"></i></span>
+                                    </td>
+                                    <td>
+                                        <span class="total-amount">850,15€</span>
+                                    </td>
+                                    <td>
+                                        <span class="number-of-offers">42</span>
+                                    </td>
+                                    <td>
+                                        <span class="offers-rate">100%</span>
+                                    </td>
+                                </tr>
+                                <tr class="detail-nav">
+                                    <th>
+                                        <span class="bid-number">N°<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="rate">Taux d'intérêt<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="amount">Montant<i class="icon-grey icon-arrows"></i></span>
+                                    </th>
+                                    <th>
+                                        <span class="status">Statut<i class="icon-grey icon-arrows"></i></span>
                                     </th>
                                 </tr>
 
@@ -282,32 +282,12 @@
                             <div id="bottom-nav">
                               <a class="csv-extract">Export CSV</a>
                             </div>
-                            <div class="displayAll"></div>
-                            <script>
-
-
-
-                                $(".displayAll").click(function () {
-                                    var tri = $("#tri").html();
-                                    var direction = $("#direction").html();
-                                    $.post(add_url + '/ajax/displayAll', {
-                                        id: <?= $this->projects->id_project ?>,
-                                        tri: tri,
-                                        direction: direction
-                                    }).done(function (data) {
-                                        $('#bids').html(data)
-                                    });
-                                });
-                                
-                            </script>
                         <?php else : ?>
                             <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
                         <?php endif; ?>
                         </div>
-                        <div id="tri" style="display:none;">rate</div>
-                        <div id="triDetail" style="display:none">detail-bid-number</div>
+                        <div id="tri" style="display:none;">bid-number</div>
                         <div id="direction" style="display:none;">1</div>
-                        <div id="directionDetail" style="display:none;">1</div>
                         <?php endif; ?>
                         <div class="tab" id="presentation">
                             <article class="ex-article">
@@ -634,9 +614,7 @@
                     <div class="article-entry" style="display: none;">
                         <div id="bids_mobile"><?= $this->fireView('../ajax/displayAll_mobile') ?></div>
                         <div id="tri_mobile" style="display:none;">rate</div>
-                        <div id="tri_mobile_detail" style="display:none;">number</div>
                         <div id="direction_mobile" style="display:none;">1</div>
-                        <div id="direction_mobile_detail" style="display:none;">1</div>
                     </div>
                 </article>
             <?php endif; ?>

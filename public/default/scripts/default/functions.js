@@ -56,29 +56,48 @@
         });
 
 
-        //----------------------------------------
-        /*----------------------------------------
-        ----------------------------------------*/
+        var detailTabToggle = $(".detail-nav > th > span"),
+            filterMode,
+            triEl,
+            dirEl;
 
-        var globalTabToggle = $(".global-tab-nav > th > span"),
-            globalTri,
-            detailTabToggle = $(".detail-nav > th > span"),
-            detailTri,
-            previousElem;
+        if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
+            $("#tri_mobile").html("detail-bid-number");
+            dirEl = $("#direction_mobile");
+            triEl = $("#tri_mobile");
+        }
+        else{
+            dirEl = $("#direction");
+            triEl = $("#tri");
+            $('a[href^="#"]').click(function(){
+                var the_id = $(this).attr("href");
+                $('html, body').animate({
+                    scrollTop:$(the_id).offset().top -100
+                }, 'slow');
+                return false;
+            });
+        }
 
-        globalTabToggle.click(function(){
-            previousElem = $(this);
-            globalTri = $(this).attr("id");
-            $("#tri").html(globalTri);
-        });
+        function changeDirection(){
+            if(dirEl.html() == "1"){
+                dirEl.html("2");
+            }
+            else{
+                dirEl.html("1");
+            }
+        }
+
         detailTabToggle.click(function(){
-            detailTri = $(this).attr("class");
-            console.log("clicked on : "+detailTri);
-            $("#triDetail").html(detailTri);
+            if((filterMode != undefined) && (filterMode == $(this).attr("class"))){
+                changeDirection();
+            }
+            else{
+                dirEl.html("1");
+            }
+            filterMode = $(this).attr("class");
+            triEl.html(filterMode);
         });
 
-
-        // AJAX TAB DETAIL DISPLAY
         $(".table-body").click(function () {
             var targ = $(this);
             var el = $(this).children().children().children();
@@ -93,6 +112,7 @@
                     $(".expand").removeClass("expand");
                     $(".table-body.detail").remove();
                 }
+                dirEl.html("1");
                 $.post(add_url + '/ajax/displayDetail').done(function (data) {
                     var newLine = data;
                     $(newLine).insertAfter(targ.next());
@@ -100,90 +120,6 @@
                 targ.addClass("line-focus");
                 el.addClass("expand");
             }
-        });
-
-
-        function changeDirection(){
-            if($("#direction").html() == "1"){
-                $("#direction").html("2");
-            }
-            else{
-                $("#direction").html("1");
-            }
-        }
-        function changeDetailDirection(){
-            if($("#directionDetail").html() == "1"){
-                $("#directionDetail").html("2");
-            }
-            else{
-                $("#directionDetail").html("1");
-            }
-        }
-        function changeDirectionMobile(){
-            if($("#direction").html() == "1"){
-                $("#direction").html("2");
-            }
-            else{
-                $("#direction").html("1");
-            }
-        }
-        function changeDetailDirectionMobile(){
-            if($("#directionDetail").html() == "1"){
-                $("#directionDetail").html("2");
-            }
-            else{
-                $("#directionDetail").html("1");
-            }
-        }
-        /*
-        $("#triTaux").click(function() {
-            changeDirection();
-            $("#tri").html('rate');
-        })
-        $("#triAmount").click(function () {
-            changeDirection();
-            $("#tri").html('globalAmount');
-        });
-
-        $("#triOffers").click(function () {
-            changeDirection();
-            $("#tri").html('offers');
-        });
-
-        $("#triCurrentOffers").click(function () {
-            changeDirection();
-            $("#tri").html('currentOffers');
-        });
-
-
-        $(".triNumDetail").click(function () {
-            changeDetailDirectionMobile();
-            $("#tri_mobile_detail").html('detailNumber');
-        });
-
-        $(".triTauxDetail").click(function () {
-            changeDetailDirectionMobile();
-            $("#tri_mobile_detail").html('detailRate');
-        });
-
-        $(".triAmountDetail").click(function () {
-            changeDetailDirectionMobile();
-            $("#tri_mobile_detail").html('detailAmount');
-        });
-
-        $(".triStatusDetail").click(function () {
-            changeDetailDirectionMobile();
-            $("#tri_mobile_detail").html('detailStatus');
-        });
-         */
-//----------------------------------------------------
-
-        $('a[href^="#"]').click(function(){
-            var the_id = $(this).attr("href");
-            $('html, body').animate({
-                scrollTop:$(the_id).offset().top -100
-            }, 'slow');
-            return false;
         });
 
         $('#scrollUp').click(function(){
