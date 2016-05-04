@@ -153,8 +153,12 @@ form p{padding-left:0px;}
 .etoile2{right:558px;}
 .etoile1{right:629px;}
 
-.enchereVousColor{color:#B10366;}
-.enchereVous{position:absolute;left:-58px;}
+.enchereVousColor > td > span{color:#b10366;}
+.enchereVousColor > td > .autobid{color:#fff;}
+.enchereVousColor > td > .green-span{color:#40b34f;}
+.enchereVousColor > td > .red-span{color:#ec1a29;}
+
+.enchereVous{position:absolute;left:-64px;color:#b10366;}
 
 .register-form .pass-field-holder em{
     color: #b10366;

@@ -1,15 +1,15 @@
 <?php foreach ($this->bidsList as $index => $bid) : ?>
 <tr class="table-body detail <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' enchereVousColor' : '' )?>">
     <td class="bid-number">
-    <?php if ($this->lenders_accounts->id_lender_account == $bid['id_lender_account']): ?>
-        <div style="position: relative">
-            <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
-        </div>
-    <?php endif; ?>
+        <?php if ($this->lenders_accounts->id_lender_account == $bid['id_lender_account']): ?>
+            <div style="position: relative">
+                <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
+            </div>
+        <?php endif; ?>
         <span class="order-rate"><?= $bid['ordre'] ?></span>
-    <?php if (! empty($bid['id_autobid']) || true == $this->bIsAllowedToSeeAutobid) : ?>
-        <span class="autobid">A</span>
-    <?php endif; ?>
+        <?php if (! empty($bid['id_autobid']) || true == $this->bIsAllowedToSeeAutobid) : ?>
+            <span class="autobid">A</span>
+        <?php endif; ?>
     </td>
     <td>
         <span class="total-amount"><?= $this->ficelle->formatNumber($bid['rate'], 1) ?>&nbsp;%</span>
