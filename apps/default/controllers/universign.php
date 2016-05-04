@@ -590,13 +590,13 @@ class universignController extends bootstrap
                     foreach ($aProjects as $aProject) {
                         $project->get($aProject['id_project']);
 
-                        $mandate = array_shift($mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
+                        $aMandate = array_shift($mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
 
                         foreach ($directDebit->select('id_project = ' . $project->id_project . ' AND status = ' . \prelevements::STATUS_PENDING) as $debit) {
                             $directDebit->get($debit['id_prelevement']);
                             $directDebit->motif = $projectManager->getBorrowerBankTransferLabel($project);
-                            $directDebit->bic   = $mandate['bic'];
-                            $directDebit->iban  = $mandate['iban'];
+                            $directDebit->bic   = $aMandate['bic'];
+                            $directDebit->iban  = $aMandate['iban'];
                             $directDebit->update();
                         }
                     }
