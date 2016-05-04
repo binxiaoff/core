@@ -5284,23 +5284,23 @@ class cronController extends bootstrap
             $this->email = $this->loadLib('email');
 
             /** @var \echeanciers $echeanciers */
-            $echeanciers                         = $this->loadData('echeanciers');
+            $echeanciers = $this->loadData('echeanciers');
             /** @var \transactions $transactions */
-            $transactions                        = $this->loadData('transactions');
+            $transactions = $this->loadData('transactions');
             /** @var \lenders_accounts $lenders */
-            $lenders                             = $this->loadData('lenders_accounts');
+            $lenders = $this->loadData('lenders_accounts');
             /** @var \clients $clients */
-            $clients                             = $this->loadData('clients');
+            $clients = $this->loadData('clients');
             /** @var \clients $companies */
-            $companies                           = $this->loadData('companies');
+            $companies = $this->loadData('companies');
             /** @var \notifications $notifications */
-            $notifications                       = $this->loadData('notifications');
+            $notifications = $this->loadData('notifications');
             /** @var \loans $loans */
-            $loans                               = $this->loadData('loans');
+            $loans = $this->loadData('loans');
             /** @var \projects_status_history $projects_status_history */
-            $projects_status_history             = $this->loadData('projects_status_history');
+            $projects_status_history = $this->loadData('projects_status_history');
             /** @var \projects $projects */
-            $projects                            = $this->loadData('projects');
+            $projects = $this->loadData('projects');
             /** @var clients_gestion_notifications clients_gestion_notifications */
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 

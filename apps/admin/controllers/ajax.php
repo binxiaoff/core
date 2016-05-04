@@ -969,13 +969,11 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->projects_notes          = $this->loadData('projects_notes');
-        $this->companies               = $this->loadData('companies');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_history         = $this->loadData('clients_history');
+        $this->projects        = $this->loadData('projects');
+        $this->projects_status = $this->loadData('projects_status');
+        $this->projects_notes  = $this->loadData('projects_notes');
+        $this->companies       = $this->loadData('companies');
+        $this->clients         = $this->loadData('clients');
 
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $form_ok = true;
@@ -1064,9 +1062,13 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 2) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_ANALYSTE, $this->projects);
 
+                    /** @var \projects_status_history $oProjectStatusHistory */
+                    $oProjectStatusHistory = $this->loadData('projects_status_history');
+                    $oProjectStatusHistory->loadLastProjectHistory($this->projects->id_project);
+
                     /** @var \projects_status_history_details $oHistoryDetails */
                     $oHistoryDetails                            = $this->loadData('projects_status_history_details');
-                    $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->id_project_status_history = $oProjectStatusHistory->id_project_status_history;
                     $oHistoryDetails->analyst_rejection_reason  = $_POST['rejection_reason'];
                     $oHistoryDetails->create();
 
@@ -1252,13 +1254,11 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $this->projects                = $this->loadData('projects');
-        $this->projects_notes          = $this->loadData('projects_notes');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
-        $this->companies               = $this->loadData('companies');
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_history         = $this->loadData('clients_history');
+        $this->projects        = $this->loadData('projects');
+        $this->projects_notes  = $this->loadData('projects_notes');
+        $this->projects_status = $this->loadData('projects_status');
+        $this->companies       = $this->loadData('companies');
+        $this->clients         = $this->loadData('clients');
 
         // on check si on a les posts
         if (isset($_POST['status']) && isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
@@ -1370,14 +1370,17 @@ class ajaxController extends bootstrap
                 $content_risk = '';
 
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager = $this->get('ProjectManager');
 
                 if ($_POST['status'] == 1) {
                     $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);
 
+                    /** @var \projects_status_history $oProjectStatusHistory */
+                    $oProjectStatusHistory = $this->loadData('projects_status_history');
+
                     $aExistingStatus = array();
                     foreach ($aProjects as $aProject) {
-                        $aStatusHistory = $this->projects_status_history->getHistoryDetails($aProject['id_project']);
+                        $aStatusHistory = $oProjectStatusHistory->getHistoryDetails($aProject['id_project']);
                         foreach ($aStatusHistory as $aStatus) {
                             $aExistingStatus[] = $aStatus['status'];
                         }
@@ -1407,9 +1410,13 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 2) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects);
 
+                    /** @var \projects_status_history $oProjectStatusHistory */
+                    $oProjectStatusHistory = $this->loadData('projects_status_history');
+                    $oProjectStatusHistory->loadLastProjectHistory($this->projects->id_project);
+
                     /** @var \projects_status_history_details $oHistoryDetails */
                     $oHistoryDetails                            = $this->loadData('projects_status_history_details');
-                    $oHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                    $oHistoryDetails->id_project_status_history = $oProjectStatusHistory->id_project_status_history;
                     $oHistoryDetails->comity_rejection_reason  = $_POST['rejection_reason'];
                     $oHistoryDetails->create();
 
@@ -1463,25 +1470,19 @@ class ajaxController extends bootstrap
                     ';
                 }
 
-                //on recup le statut courant
-                $this->current_projects_status = $this->loadData('projects_status');
-                $this->current_projects_status->getLastStatut($this->projects->id_project);
+                /** @var \projects_status $oProjectStatus */
+                $oProjectStatus = $this->loadData('projects_status');
+                $oProjectStatus->getLastStatut($this->projects->id_project);
 
-                if ($this->current_projects_status->status == \projects_status::PREP_FUNDING) {
-                    $this->lProjects_status = $this->projects_status->select(' status IN (' . \projects_status::PREP_FUNDING . ', ' . \projects_status::A_FUNDER . ') ', ' status ASC ');
-                } else {
-                    $this->lProjects_status = array();
-                }
-
-                if (count($this->lProjects_status) > 0) {
+                if ($oProjectStatus->status == \projects_status::PREP_FUNDING) {
                     $select = '<select name="status" id="status" class="select">';
-                    foreach ($this->lProjects_status as $s) {
-                        $select .= '<option ' . ($this->current_projects_status->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
+                    foreach (array(\projects_status::PREP_FUNDING, \projects_status::A_FUNDER) as $s) {
+                        $select .= '<option ' . ($oProjectStatus->status == $s['status'] ? 'selected' : '') . ' value="' . $s['status'] . '">' . $s['label'] . '</option>';
                     }
                     $select .= '</select>';
                 } else {
-                    $select = '<input type="hidden" name="status" id="status" value="' . $this->current_projects_status->status . '" />';
-                    $select .= $this->current_projects_status->label;
+                    $select = '<input type="hidden" name="status" id="status" value="' . $oProjectStatus->status . '" />';
+                    $select .= $oProjectStatus->label;
 
                     if (isset($oRejectionReason)) {
                         $select .= ' (' . $oRejectionReason->label . ')';
