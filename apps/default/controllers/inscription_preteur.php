@@ -1117,7 +1117,7 @@ class inscription_preteurController extends bootstrap
             $bFormOk         = false;
             $bCountryCheckOk = false;
         }
-        if (false === isset($_POST['naissance']) || \pays_v2::COUNTRY_FRANCE == $oPays->id_pays  && false === $oVilles->get($_POST['naissance'], 'ville')) {
+        if (false === isset($_POST['naissance']) || \pays_v2::COUNTRY_FRANCE == $oPays->id_pays  && false === $oVilles->exist($_POST['naissance'], 'ville')) {
             $bFormOk         = false;
             $bCountryCheckOk = false;
         }
