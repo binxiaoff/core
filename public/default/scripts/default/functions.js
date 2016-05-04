@@ -126,15 +126,13 @@
             event.preventDefault()
         });
 
-   /*
-        $('a[href^="#"]').click(function(){
-            var the_id = $(this).attr("href");
-            $('html, body').animate({
-                scrollTop:$(the_id).offset().top -100
-            }, 'slow');
-            return false;
+        $(".table-body").click(function(){
+            $("html, body").animate({
+                scrollTop:$(this).offset().top -35
+            }, "slow");
+            return false
         });
-*/
+
         $('#scrollUp').click(function(){
             $('html, body').animate({
                 scrollTop:$("body").offset().top +200

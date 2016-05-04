@@ -10,7 +10,7 @@ textarea { overflow:auto; resize:none; }
 
 /* === Common Styles === */
 html, body { height:100%; }
-body { /*font-size:14px;*/font-size:16px; line-height:1.43; font-family:'Arial', sans-serif; /*color:#a1a5a7;*/ /*color:#A0A0A0;*/ color:#727272; background:#fff; min-width:100%; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:rgba(0,0,0,0); }
+body {font-size:16px; line-height:1.43; font-family:'Arial', sans-serif;color:#727272; background:#fff; min-width:100%; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:rgba(0,0,0,0); }
 
 a { color:#b10366; text-decoration:none; cursor:pointer; }
 a:hover { text-decoration:underline; }
@@ -780,7 +780,7 @@ div[class*="single-project"] .tab-form em { display:block; margin-bottom: 45px; 
 div[class*="single-project"] .tab-form .btn { float:right; position: relative; margin-right: -93px; }
 div[class*="single-project"] .tab-form .c2-sb-wrap { margin-bottom: 30px; }
 
-div[class*="single-project"] .table { width:100%; line-height:14px;border:8px solid #eceaed; }
+div[class*="single-project"] .table { width:100%; line-height:14px;border:8px solid #eceaed; border-bottom-width:12px;}
 div[class*="single-project"] .table tr:nth-child(even) td { background:#fafafa; }
 div[class*="single-project"] .table tr.table-body.detail:nth-child(even) td, div[class*="single-project"] .table tr.table-body.detail:nth-child(odd) td {background:#daf6f9;}
 div[class*="single-project"] #bids .table tr.line-focus td, #bids_mobile .table tr.line-focus td{ background:#b10366;}
