@@ -81,11 +81,4 @@ class prelevements extends prelevements_crud
         $result = $this->bdd->query('SELECT SUM(montant) FROM `prelevements` ' . $where);
         return (int) $this->bdd->result($result, 0, 0);
     }
-
-    public function updateIbanBic($id_project, $bic, $iban)
-    {
-        $sql = 'UPDATE prelevements SET bic = "' . $bic . '", iban = "' . $iban . '" WHERE id_project = ' . $id_project . ' AND status = 0';
-
-        $this->bdd->query($sql);
-    }
 }

@@ -415,15 +415,6 @@ class ficelle
         }
     }
 
-    // Motif mandat emprunteur
-    public function motif_mandat($prenom, $nom, $id_project)
-    {
-        $p          = substr($this->generateSlug(trim($prenom)), 0, 1);
-        $nom        = $this->generateSlug(trim($nom));
-        $id_project = str_pad($id_project, 6, 0, STR_PAD_LEFT);
-        return $motif = mb_strtoupper('UNILEND' . $id_project . 'E' . $p . $nom, 'UTF-8');
-    }
-
     /**
      * Format numbers to make them readable
      * @todo intl

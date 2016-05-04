@@ -947,8 +947,6 @@ class cronController extends bootstrap
             ///////////////////////////////////////
             /// $lPrelevementsEnCoursEmprunteur ///
 
-            $old_iban = '';
-            $old_bic  = '';
             foreach ($lPrelevementsEnCoursEmprunteur as $p) {
                 // on recup le dernier prelevement effectué pour voir si c'est le meme iban ou bic
                 $first = false;
@@ -971,21 +969,11 @@ class cronController extends bootstrap
                 $date_mandat = date('Y-m-d', strtotime($clients_mandats->updated));
 
                 // si premier remb
-                if ($p['num_prelevement'] == 1 || $first == true) //if($p['num_prelevement'] == 1)
-                {
+                if ($p['num_prelevement'] == 1 || $first == true) {
                     $val = 'FRST';
                 } else {
                     $val = 'RCUR';
                 }
-                $old_iban = $p['iban'];
-                $old_bic  = $p['bic'];
-
-                ///////////////////////////////////////////////////////////
-                // Temporaire pour régulariser le future prelevement du projet 374 qui passera le 2014-08-13
-                //if($p['id_project'] == '374' && date('n') < 9){
-                //$val = 'FRST';
-                //}
-                ///////////////////////////////////////////////////////////
 
                 $this->clients->get($p['id_client'], 'id_client');
 
@@ -1007,7 +995,6 @@ class cronController extends bootstrap
 
                 $xml .= $this->xmPrelevement($table);
 
-                // on met a jour le prelevement
                 $this->prelevements->get($p['id_prelevement'], 'id_prelevement');
                 $this->prelevements->status    = 1; // envoyé
                 $this->prelevements->added_xml = date('Y-m-d H:i') . ':00';
@@ -1053,17 +1040,17 @@ class cronController extends bootstrap
         $id_lot         = $table['id_lot'];
         $montant        = $table['montant'];
         $val            = $table['val'];
-        $date_execution = date('Y-m-d', strtotime($table['date_execution']));;
-        $iban          = $table['iban'];
-        $bic           = $table['bic'];
-        $ics           = $table['ics'];
-        $refmandat     = $table['refmandat'];
-        $date_mandat   = $table['date_mandat'];
-        $bicPreteur    = $table['bicPreteur'];
-        $ibanPreteur   = $table['ibanPreteur'];
-        $nomPreteur    = $table['nomPreteur'];
-        $prenomPreteur = $table['prenomPreteur'];
-        $motif         = $table['motif'];
+        $date_execution = date('Y-m-d', strtotime($table['date_execution']));
+        $iban           = $table['iban'];
+        $bic            = $table['bic'];
+        $ics            = $table['ics'];
+        $refmandat      = $table['refmandat'];
+        $date_mandat    = $table['date_mandat'];
+        $bicPreteur     = $table['bicPreteur'];
+        $ibanPreteur    = $table['ibanPreteur'];
+        $nomPreteur     = $table['nomPreteur'];
+        $prenomPreteur  = $table['prenomPreteur'];
+        $motif          = $table['motif'];
 
         $xml = '
 			<PmtInf>
@@ -1501,7 +1488,6 @@ class cronController extends bootstrap
             } else {
                 // lecture du fichier
                 $lrecus = $this->recus2array($lien);
-
                 /* EX :
 
                   0430004056802118EUR2 0004063100718230615  230615DELERY HELENE                    0000000  0000000000400{ZZ0X4VY7PFE69K8V
@@ -1615,16 +1601,15 @@ class cronController extends bootstrap
                             $receptions->create();
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
-                                preg_match_all('#[0-9]+#', $motif, $extract);
-                                $iProjectId = (int) $extract[0][0];
+                                preg_match('#[0-9]+#', $motif, $extract);
+                                $iProjectId = (int) $extract[0];
 
                                 /** @var \echeanciers_emprunteur $oRepaymentSchedule */
                                 $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-                                $aNextRepayment = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+                                $aNextRepayment     = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
 
                                 /** @var \prelevements $oBankDirectDebit */
                                 $oBankDirectDebit = $this->loadData('prelevements');
-
                                 if (
                                     count($aNextRepayment) > 0
                                     && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
@@ -1663,7 +1648,8 @@ class cronController extends bootstrap
                                 }
                             } elseif ($type === 2 && $status_virement === 1) { // Virements reçus
                                 if (
-                                    1 === preg_match('/RA-?([0-9]+)/', $r['libelleOpe3'], $aMatches)
+                                    isset($r['libelleOpe3'])
+                                    && 1 === preg_match('/RA-?([0-9]+)/', $r['libelleOpe3'], $aMatches)
                                     && $this->projects->get((int) $aMatches[1])
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                 ) {
@@ -1715,7 +1701,7 @@ class cronController extends bootstrap
                                     $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                                     $this->email->setHTMLBody($texteMail);
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                } elseif (strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
+                                } elseif (isset($r['libelleOpe3']) && strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
                                     preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extract);
 
                                     foreach ($extract[0] as $nombre) {

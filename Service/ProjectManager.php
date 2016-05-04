@@ -796,4 +796,17 @@ class ProjectManager
             $this->oMailerManager->sendFundedToBorrower($oProject);
         }
     }
+
+    /**
+     * @param \projects $project
+     * @return string
+     */
+    public static function getBorrowerBankTransferLabel(\projects $project)
+    {
+        /** @var \companies $company */
+        $company = Loader::loadData('companies');
+        $company->get($project->id_company);
+
+        return 'UNILEND' . str_pad($project->id_project, 6, 0, STR_PAD_LEFT) . 'E' . trim($company->siren);
+    }
 }
