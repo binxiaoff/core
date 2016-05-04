@@ -975,7 +975,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         text-align: left;
     }
     .single-project-mobile th {
-        /*color: #fff;*/ /* Removed 27/04/2016 */
         font-size: 13px;
         line-height: 17px;
         text-align: left;
@@ -987,9 +986,9 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         line-height: 15px;
         text-transform: uppercase;
     }
-    .single-project-mobile td {padding: 5px !important; font-size: 15px; }
+    .single-project-mobile td {padding: 5px !important; font-size: 13px; }
 
-    .single-project-mobile .enchereVous{left: 0px;}
+   /* .single-project-mobile .enchereVous{left: 0px;}*/
 
     .single-project-mobile .orders-table td.nth-table-row {
         background: #f7e5ef none repeat scroll 0 0;
@@ -999,11 +998,6 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
         text-align: center;
     }
 
-/*
-    #triNum_mobile, #triTx_mobile, #triAmount_mobile, #triStatuts_mobile {
-        cursor: pointer;
-    }
-*/
     .has-fixed-nav .navigation ul ul a.active,.nav-fixed .navigation ul ul a.active{color: white;}
 
     .article-entry h5{font-size: 12px;}
@@ -1016,4 +1010,9 @@ body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; 
     #bids_mobile .table.orders-table th {font-size:10px;text-align:left;padding:0 10px 0 0 }
     #bids_mobile .table.orders-table tr:first-of-type { padding-bottom:15px;}
     #bids_mobile > table > tbody > tr.detail-nav > th {padding:20px 10px 0 0!important;}
+
+    #bids_mobile > table > tbody > tr.table-body.detail > td.bid-number .autobid{padding:2px 4px;border-radius:4px;}
+    #bids_mobile .single-project-mobile td{font-size:13px!important;}
+    #bids_mobile > table > tbody > tr > td.bid-number{padding: 5px 0px!important;}
+    .single-project-mobile .enchereVous{left:-30px;top:-4px;transform:rotate(-90deg);-ms-transform:rotate(-90deg);-webkit-transform:rotate(-90deg);background:rgba(177, 3, 102,0.4);text-align:center;padding:2px;color:#fff;border:1px solid rgba(177, 3, 102,0.4);}
 }
