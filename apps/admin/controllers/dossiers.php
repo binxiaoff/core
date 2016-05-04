@@ -753,7 +753,6 @@ class dossiersController extends bootstrap
                         $this->projects_pouvoir->update();
 
                         $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers');
-
                         // si on a validé le pouvoir
                         if ($this->projects_pouvoir->status_remb == 1) {
                             $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
@@ -794,7 +793,14 @@ class dossiersController extends bootstrap
                                 // montant - la part unilend
                                 $montant -= $partUnliend;
 
-                                if ($this->transactions->get($this->projects->id_project, 'type_transaction = 9 AND id_project') == false) {
+                                if (false === $this->transactions->get($this->projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
+                                    /** @var \clients_mandats $oMandate */
+                                    $oMandate = $this->loadData('clients_mandats');
+                                    $aMandate = array_shift($oMandate->select('id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
+
+                                    /** @var \Unilend\Service\ProjectManager $oProjectManagement */
+                                    $oProjectManagement = $this->get('ProjectManager');
+
                                     $this->transactions->id_client        = $this->clients->id_client;
                                     $this->transactions->montant          = '-' . ($montant * 100); // moins car c'est largent qui part d'unilend
                                     $this->transactions->montant_unilend  = ($partUnliend * 100);
@@ -834,7 +840,7 @@ class dossiersController extends bootstrap
                                     $virements->id_project     = $this->projects->id_project;
                                     $virements->id_transaction = $this->transactions->id_transaction;
                                     $virements->montant        = $montant * 100;
-                                    $virements->motif          = $this->ficelle->motif_mandat($this->clients->prenom, $this->clients->nom, $this->projects->id_project);
+                                    $virements->motif          = $oProjectManagement->getBorrowerBankTransferLabel($this->projects);
                                     $virements->type           = 2;
                                     $virements->create();
                                     // mail emprunteur facture a la fin
@@ -859,8 +865,8 @@ class dossiersController extends bootstrap
                                         $prelevements->id_project                         = $this->projects->id_project;
                                         $prelevements->motif                              = $virements->motif;
                                         $prelevements->montant                            = $montant;
-                                        $prelevements->bic                                = str_replace(' ', '', $this->companies->bic); // bic
-                                        $prelevements->iban                               = str_replace(' ', '', $this->companies->iban);
+                                        $prelevements->bic                                = str_replace(' ', '', $aMandate['bic']);
+                                        $prelevements->iban                               = str_replace(' ', '', $aMandate['iban']);
                                         $prelevements->type_prelevement                   = 1; // recurrent
                                         $prelevements->type                               = 2; //emprunteur
                                         $prelevements->num_prelevement                    = $e['ordre'];
@@ -1751,12 +1757,11 @@ class dossiersController extends bootstrap
 
     public function _add()
     {
-        $this->clients                 = $this->loadData('clients');
-        $this->clients_adresses        = $this->loadData('clients_adresses');
-        $this->companies               = $this->loadData('companies');
-        $this->projects                = $this->loadData('projects');
-        $this->projects_status         = $this->loadData('projects_status');
-        $this->projects_status_history = $this->loadData('projects_status_history');
+        $this->clients          = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+        $this->companies        = $this->loadData('companies');
+        $this->projects         = $this->loadData('projects');
+        $this->projects_status  = $this->loadData('projects_status');
 
         if (isset($_POST['send_create_etape1'])) {
             if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
@@ -1787,7 +1792,9 @@ class dossiersController extends bootstrap
             $this->projects->create_bo  = 1; // on signale que le projet a été créé en Bo
             $this->projects->create();
 
-            $this->projects_status_history->addStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects->id_project);
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects);
 
             $serialize = serialize(array('id_project' => $this->projects->id_project));
             $this->users_history->histo(7, 'dossier create', $_SESSION['user']['id_user'], $serialize);
@@ -2418,7 +2425,7 @@ class dossiersController extends bootstrap
                     }
 
                     /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                    $oProjectManager                     = $this->get('ProjectManager');
+                    $oProjectManager = $this->get('ProjectManager');
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
                     if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
@@ -2449,7 +2456,6 @@ class dossiersController extends bootstrap
                 $this->wallets_lines                 = $this->loadData('wallets_lines');
                 $this->notifications                 = $this->loadData('notifications');
                 $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-                $this->projects_status_history       = $this->loadData('projects_status_history');
                 $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
                 $this->mails_text                    = $this->loadData('mails_text');
                 $this->companies                     = $this->loadData('companies');
@@ -3421,6 +3427,21 @@ class dossiersController extends bootstrap
             $aStatus['avg_days'] = round($aStatus['total_days'] / $aStatus['count'], 1);
             return $aStatus;
         }, $aStatus);
+    }
 
+    public function _autocompleteCompanyName()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $aNames = array();
+
+        if ($sTerm = filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)) {
+            /** @var \companies $oCompanies */
+            $oCompanies = $this->loadData('companies');
+            $aNames = $oCompanies->searchByName($sTerm);
+        }
+
+        echo json_encode($aNames);
     }
 }

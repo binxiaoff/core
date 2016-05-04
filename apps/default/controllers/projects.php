@@ -114,7 +114,12 @@ class projectsController extends bootstrap
             $this->setHeader('header_account');
         }
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0' && $this->projects->display == \projects::DISPLAY_PROJECT_ON) {
+        if (
+            isset($this->params[0])
+            && $this->projects->get($this->params[0], 'slug')
+            && $this->projects->status == 0
+            && ($this->projects->display == \projects::DISPLAY_PROJECT_ON || $this->bIsConnected && 28002 == $this->projects->id_project)
+        ) {
             $this->meta_title = $this->projects->title . ' - Unilend';
 
             $this->settings->get('Pret min', 'type');

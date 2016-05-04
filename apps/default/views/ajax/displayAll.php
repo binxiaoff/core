@@ -19,12 +19,12 @@
                 <?php if ($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']): ?>
                     <span class="enchereVous"><?= $this->lng['preteur-projets']['vous'] ?></span>
                     <span style="position: relative; left: -12px;">
-                    <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
+                    <span data-info="Offre réalisée avec Autolend" class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                     <?= $aBid['ordre'] ?>
                     </span>
             <?php else : ?>
                     <span style="position: relative; left: -12px;">
-                    <span class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
+                    <span data-info="Offre réalisée avec Autolend" class="<?= (empty($aBid['id_autobid']) || false == $this->bIsAllowedToSeeAutobid) ? 'no_autobid' : 'autobid' ?>">A</span>
                     <?= $aBid['ordre'] ?>
                     </span>
             <?php endif; ?>

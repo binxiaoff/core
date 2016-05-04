@@ -52,18 +52,25 @@
                             <a href="<?= $this->lurl ?>/queries/params/<?= $r['id_query'] ?>" class="thickbox">
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Renseigner les paramètres"/>
                             </a>
+                            <a href="<?= $this->lurl ?>/queries/params/<?= $r['id_query'] ?>/export" class="thickbox">
+                                <img src="<?= $this->surl ?>/images/admin/xls.png" alt="Export Brut"/>
+                            </a>
                         <?php else : ?>
                             <a href="<?= $this->lurl ?>/queries/execute/<?= $r['id_query'] ?>" title="Voir le résultat">
                                 <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Voir le résultat"/>
                             </a>
+                            <a href="<?= $this->lurl ?>/queries/export/<?= $r['id_query'] ?>" target="_blank" title="Export Brut">
+                                <img src="<?= $this->surl ?>/images/admin/xls.png" alt="Export Brut"/>
+                            </a>
+
                         <?php endif; ?>
                         <?php if (\users_types::TYPE_ADMIN == $_SESSION['user']['id_user_type']) : ?>
-                        <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
-                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $r['name'] ?>"/>
-                        </a>
-                        <a href="<?= $this->lurl ?>/queries/delete/<?= $r['id_query'] ?>" title="Supprimer <?= $r['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $r['name'] ?> ?')">
-                            <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
-                        </a>
+                            <a href="<?= $this->lurl ?>/queries/edit/<?= $r['id_query'] ?>" class="thickbox">
+                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier <?= $r['name'] ?>"/>
+                            </a>
+                            <a href="<?= $this->lurl ?>/queries/delete/<?= $r['id_query'] ?>" title="Supprimer <?= $r['name'] ?>" onclick="return confirm('Etes vous sur de vouloir supprimer <?= $r['name'] ?> ?')">
+                                <img src="<?= $this->surl ?>/images/admin/delete.png" alt="Supprimer <?= $r['name'] ?>"/>
+                            </a>
                         <?php endif; ?>
                     </td>
                 </tr>
