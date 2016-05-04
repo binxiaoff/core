@@ -1791,14 +1791,39 @@ class ajaxController extends bootstrap
     public function _displayDetail()
     {
         $this->hideDecoration();
+
         if (isset($this->params[0], $this->params[1]) && is_numeric($this->params[0]) && is_numeric($this->params[1])) {
             $projectId = $this->params[0];
             $rate      = $this->params[1];
             $bid       = $this->loadData('bids');
+            $sortBy = 'ordre';
+            if (isset($_GET['sort'])) {
+                switch ($_GET['sort']) {
+                    case 'rate':
+                    case 'detail-rate':
+                        $sortBy = 'rate';
+                        break;
+                    case 'amount':
+                    case 'detail-amount':
+                        $sortBy = 'amount';
+                        break;
+                    case 'status':
+                    case 'detail-status':
+                        $sortBy = 'status';
+                        break;
+                    default:
+                        $sortBy = 'ordre';
+                }
+            }
+            $order = 'ASC';
+            if (isset($_GET['direction']) && $_GET['direction'] == 2) {
+                $order = 'DESC';
+            }
 
-            $cacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, str_replace('.', '_', $rate));
-            if (false === ($this->bidsList = $this->oCache->get($cacheKey))) {
-                $this->bidsList = $bid->select('id_project = ' . $projectId . ' AND rate like ' . $rate, 'ordre ASC');
+            $cacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, $rate, $sortBy, $order);
+            $this->bidsList = $this->oCache->get($cacheKey);
+            if (false === $this->bidsList) {
+                $this->bidsList = $bid->select('id_project = ' . $projectId . ' AND rate like ' . $rate, $sortBy . ' ' . $order);
                 $this->oCache->set($cacheKey, $this->bidsList, \Unilend\librairies\Cache::SHORT_TIME);
             }
             $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);

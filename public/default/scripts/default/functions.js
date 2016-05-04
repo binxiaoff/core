@@ -108,9 +108,16 @@
                 dirEl.html("1");
                 var rate = targ.data('rate');
                 var project = targ.data('project');
-                $.get(add_url + '/ajax/displayDetail/'+project+'/'+rate).done(function (data) {
-                    var newLine = data;
-                    $(newLine).insertAfter(targ.next());
+                var sort = $("#tri").html();
+                var direction = $("#direction").html();
+                $.get(
+                    add_url + '/ajax/displayDetail/' + project +'/' + rate + '/',
+                    {
+                        sort: sort,
+                        direction: direction
+                    }
+                ).done(function (data) {
+                    $(data).insertAfter(targ.next());
                 });
                 targ.addClass("line-focus");
                 el.addClass("expand");
