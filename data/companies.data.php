@@ -210,4 +210,26 @@ class companies extends companies_crud
                 AND current_company.id_company = ' . $this->id_company
         ));
     }
+
+    /**
+     * @param string $sName
+     * @return array
+     */
+    public function searchByName($sName)
+    {
+        $sQuery = '
+            SELECT DISTINCT(name)
+            FROM companies
+            WHERE name LIKE "%' . $sName . '%"
+            ORDER BY name ASC';
+
+        $aNames  = array();
+        $rResult = $this->bdd->query($sQuery);
+
+        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
+            $aNames[] = $aRow['name'];
+        }
+
+        return $aNames;
+    }
 }

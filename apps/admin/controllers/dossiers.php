@@ -3393,6 +3393,21 @@ class dossiersController extends bootstrap
             $aStatus['avg_days'] = round($aStatus['total_days'] / $aStatus['count'], 1);
             return $aStatus;
         }, $aStatus);
+    }
 
+    public function _autocompleteCompanyName()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+
+        $aNames = array();
+
+        if ($sTerm = filter_input(INPUT_GET, 'term', FILTER_SANITIZE_STRING)) {
+            /** @var \companies $oCompanies */
+            $oCompanies = $this->loadData('companies');
+            $aNames = $oCompanies->searchByName($sTerm);
+        }
+
+        echo json_encode($aNames);
     }
 }
