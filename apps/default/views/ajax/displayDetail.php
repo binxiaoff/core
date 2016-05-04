@@ -1,5 +1,5 @@
 <?php foreach ($this->bidsList as $index => $bid) : ?>
-<tr class="table-body detail <?= (($this->lenders_accounts->id_lender_account == $aBid['id_lender_account']) ? ' enchereVousColor' : '' )?>">
+<tr class="table-body detail <?= (($this->lenders_accounts->id_lender_account == $bid['id_lender_account']) ? ' enchereVousColor' : '' )?>">
     <td class="bid-number">
         <?php if ($this->lenders_accounts->id_lender_account == $bid['id_lender_account']): ?>
             <div style="position: relative">
