@@ -737,6 +737,9 @@ class ProjectManager
             case \projects_status::REJET_COMITE:
                 $this->stopRemindersForOlderProjects($oProject);
                 break;
+            case \projects_status::A_FUNDER:
+                $this->oMailerManager->sendProjectOnlineToBorrower($oProject);
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
