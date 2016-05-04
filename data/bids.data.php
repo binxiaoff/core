@@ -282,7 +282,7 @@ class bids extends bids_crud
             $sQuery = ' SELECT rate, SUM(amount / 100) as amount_total, SUM(IF(status = 2, 0, amount / 100))  as amount_active, count(*) as nb_bids
                     FROM bids 
                     WHERE id_project = ' . $iProjectId . '
-                    GROUP BY rate ORDER BY rate ASC';
+                    GROUP BY rate ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
             while ($aRow = $this->bdd->fetch_array($rQuery)) {
                 $aBidsByRate[] = $aRow;

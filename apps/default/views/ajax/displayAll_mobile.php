@@ -60,16 +60,16 @@
 ?>
     <tr class="table-body" data-rate="<?=$bidsForRate['rate']?>" data-project="<?=$this->projects->id_project?>">
         <td class="rate-cell">
-            <span class="order-rate"><?=number_format((float) $bidsForRate['rate'], 1, ',', ' ')?> <i class="icon-grey icon-simple-arrow"></i></span>
+            <span class="order-rate"><?=number_format((float) $bidsForRate['rate'], 1, ',', ' ')?> %<i class="icon-grey icon-simple-arrow"></i></span>
         </td>
         <td>
-            <span class="total-amount"><?=number_format((float) $bidsForRate['amount_total'], 0, ',', ' ')?></span>
+            <span class="total-amount"><?=number_format((float) $bidsForRate['amount_total'], 0, ',', ' ')?> €</span>
         </td>
         <td>
             <span class="number-of-offers"><?=$bidsForRate['nb_bids']?></span>
         </td>
         <td>
-            <span class="offers-rate"><?=$bidsForRate['amount_active'] * 100 / $bidsForRate['amount_total']?> %</span>
+            <span class="offers-rate"><?=number_format($bidsForRate['amount_active'] * 100 / $bidsForRate['amount_total'], 1, ',', ' ')?> %</span>
         </td>
     </tr>
     <tr class="detail-nav">
