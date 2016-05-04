@@ -106,7 +106,9 @@
                     $(".table-body.detail").remove();
                 }
                 dirEl.html("1");
-                $.post(add_url + '/ajax/displayDetail').done(function (data) {
+                var rate = targ.data('rate');
+                var project = targ.data('project');
+                $.get(add_url + '/ajax/displayDetail/'+project+'/'+rate).done(function (data) {
                     var newLine = data;
                     $(newLine).insertAfter(targ.next());
                 });

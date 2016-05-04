@@ -527,19 +527,10 @@ class projectsController extends bootstrap
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction    = 1;
 
-            $sCacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $this->projects->id_project);
+            /** @var \Unilend\Service\ProjectManager $projectManager */
+            $projectManager = $this->get('ProjectManager');
+            $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
 
-            if (false === ($this->aBids = $this->oCache->get($sCacheKey))) {
-                if ($this->CountEnchere > 10) {
-                    $this->aBids = array_merge(
-                        $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC', 0, 5),
-                        array_reverse($this->bids->select('id_project = ' . $this->projects->id_project, 'ordre DESC', 0, 5))
-                    );
-                } else {
-                    $this->aBids = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-                }
-                $this->oCache->set($sCacheKey, $this->aBids, Cache::SHORT_TIME);
-            }
 
             if (false === empty($this->clients->id_client)) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);

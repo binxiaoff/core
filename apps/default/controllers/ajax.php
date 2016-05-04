@@ -1791,5 +1791,22 @@ class ajaxController extends bootstrap
     public function _displayDetail()
     {
         $this->hideDecoration();
+        if (isset($this->params[0], $this->params[1]) && is_numeric($this->params[0]) && is_numeric($this->params[1])) {
+            $projectId = $this->params[0];
+            $rate      = $this->params[1];
+            $bid       = $this->loadData('bids');
+
+            $cacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, str_replace('.', '_', $rate));
+            if (false === ($this->bidsList = $this->oCache->get($cacheKey))) {
+                $this->bidsList = $bid->select('id_project = ' . $projectId . ' AND rate like ' . $rate, 'ordre ASC');
+                $this->oCache->set($cacheKey, $this->bidsList, \Unilend\librairies\Cache::SHORT_TIME);
+            }
+            $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+            $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+
+            /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+            $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
+        }
     }
 }
