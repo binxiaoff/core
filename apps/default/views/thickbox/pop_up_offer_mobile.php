@@ -13,42 +13,22 @@
                 <div class="form-controls">
                     <select name="tx_p" id="tx_pM" class="select custom-select">
                         <option value="<?= $this->projects->target_rate ?>"><?= $this->projects->target_rate ?></option>
-                        <?
-                        if ($this->soldeBid >= $this->projects->amount) {
-                            if (number_format($this->txLenderMax, 1, '.', ' ') > '10.0') {
-                                ?><option <?= ($this->projects->target_rate == '10.0' ? 'selected' : '') ?> value="10.0">10,0%</option><?
-                            }
-                            for ($i = 9; $i >= 4; $i--) {
-                                for ($a = 9; $a >= 0; $a--) {
-                                    if (number_format($this->txLenderMax, 1, '.', ' ') > $i . '.' . $a) {
-                                        ?><option <?= ($this->projects->target_rate == $i . '.' . $a ? 'selected' : '') ?> value="<?= $i . '.' . $a ?>"><?= $i . ',' . $a ?>%</option><?
-                                    }
-                                }
-                            }
-                        } else {
-                            ?><option <?= ($this->projects->target_rate == '10.0' ? 'selected' : '') ?> value="10.0">10,0%</option><?
-                            for ($i = 9; $i >= 4; $i--) {
-                                for ($a = 9; $a >= 0; $a--) {
-                                    ?><option <?= ($this->projects->target_rate == $i . '.' . $a ? 'selected' : '') ?> value="<?= $i . '.' . $a ?>"><?= $i . ',' . $a ?>%</option><?
-                                }
-                            }
-                        }
-                        ?>
+                        <?php foreach (range(10, 4, -0.1) as $fRate) : ?>
+                            <?php if ($this->soldeBid < $this->projects->amount || round($fRate, 1) < round($this->txLenderMax, 1)) : ?>
+                                <option value="<?= $fRate ?>"><?= $this->ficelle->formatNumber($fRate, 1) ?>&nbsp;%</option>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
                     </select>
-                </div><!-- /.form-controls -->
-            </div><!-- /.form-row -->
-
+                </div>
+            </div>
             <div class="form-row">
                 <label for="offer-sum" class="form-label"><?= $this->lng['preteur-projets']['la-somme-de'] ?></label>
 
                 <div class="form-controls">
                     <input type="text" id="montant_pM" class="field field-currency" value="<?= $this->lng['preteur-projets']['montant-exemple'] ?>" name="montant_p" title="<?= $this->lng['preteur-projets']['montant-exemple'] ?>" onkeyup="lisibilite_nombre(this.value, this.id);"/>
-
                     <span class="currency">€</span>
-                </div><!-- /.form-controls -->
-            </div><!-- /.form-row -->
-
-
+                </div>
+            </div>
             <div class="form-actions">
                 <p><?= $this->lng['preteur-projets']['soit-un-remboursement-mensuel-de'] ?></p>
 
@@ -58,128 +38,102 @@
                 <br />
 
                 <?php
-                // on check si on a coché les cgv ou pas
-                // cgu societe
-                if (in_array($this->clients->type, array(2, 4))) {
+                if (in_array($this->clients->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
                     $this->settings->get('Lien conditions generales inscription preteur societe', 'type');
                     $this->lienConditionsGenerales_header = $this->settings->value;
-                }
-                // cgu particulier
-                else {
+                } else {
                     $this->settings->get('Lien conditions generales inscription preteur particulier', 'type');
                     $this->lienConditionsGenerales_header = $this->settings->value;
                 }
 
-                // liste des cgv accpeté
                 $listeAccept_header = $this->acceptations_legal_docs->selectAccepts('id_client = ' . $this->clients->id_client);
-                //$listeAccept = array();
-                // Initialisation de la variable
                 $this->update_accept_header = false;
 
-                // On cherche si on a déjà le cgv
                 if (in_array($this->lienConditionsGenerales, $listeAccept_header)) {
                     $this->accept_ok_header = true;
                 } else {
                     $this->accept_ok_header = false;
-                    // Si on a deja des cgv d'accepté
                     if ($listeAccept_header != false) {
                         $this->update_accept_header = true;
                     }
                 }
                 ?>
-
                 <a style="width:76px; display:block;margin:auto;" href="<?= (!$this->accept_ok_header ? $this->lurl . '/thickbox/pop_up_cgv' : $this->lurl . '/thickbox/pop_valid_pret_mobile/' . $this->projects->id_project) ?>" class="btn btn-medium popup-linkM <?= (!$this->accept_ok_header ? 'thickbox' : '') ?>"><?= $this->lng['preteur-projets']['preter'] ?></a>
-            </div><!-- /.form-actions -->
+            </div>
         </form>
-    </div><!-- /popup-cnt -->
+    </div>
 </div>
 
-<script type="text/javascript" >
-
+<script type="text/javascript">
     $('.popup-linkM').colorbox({
         maxWidth: '95%',
         opacity: 0.5,
         scrolling: false,
         onComplete: function () {
-
             $('.popup .custom-select').c2Selectbox();
 
             $('input.file-field').on('change', function () {
                 var $self = $(this),
-                        val = $self.val()
+                        val = $self.val();
                 if (val.length != 0 || val != '') {
                     $self.closest('.uploader').find('input.field').val(val);
 
                     var idx = $('#rule-selector').val();
                     $('.rules-list li[data-rule="' + idx + '"]').addClass('valid');
-
                 }
-            })
+            });
 
             $('#rule-selector').on('change', function () {
                 var idx = $(this).val();
                 $('.uploader[data-file="' + idx + '"]').slideDown().siblings('.uploader:visible').slideUp();
-            })
+            });
         }
-
     });
 
     $("#montant_pM").blur(function () {
-        var montant = $("#montant_pM").val();
-        var tx = $("#tx_pM").val();
-        var form_ok = true;
+        var montant = $("#montant_pM").val(),
+            tx = $("#tx_pM").val(),
+            form_ok = true;
 
-
-        if (tx == '-')
-        {
+        if (tx == '-') {
             form_ok = false;
-        }
-        else if (montant < <?= $this->pretMin ?>)
-        {
+        } else if (montant < <?= $this->pretMin ?>) {
             form_ok = false;
         }
 
-        if (form_ok == true)
-        {
+        if (form_ok == true) {
             var val = {
                 montant: montant,
                 tx: tx,
                 nb_echeances: <?= $this->projects->period ?>
-            }
+            };
 
             $.post(add_url + '/ajax/load_mensual', val).done(function (data) {
-
-                if (data != 'nok')
-                {
-
+                if (data != 'nok') {
                     $(".laMensualM").css('visibility','visible');
                     $("#mensualiteM").html(data);
                 }
             });
         }
-
     });
+
     $("#tx_pM").change(function () {
-        var montant = $("#montant_pM").val();
-        var tx = $("#tx_p").val();
-        var form_ok = true;
+        var montant = $("#montant_pM").val(),
+            tx = $("#tx_p").val(),
+            form_ok = true;
 
-        if (tx == '-')
-        {
+        if (tx == '-') {
             form_ok = false;
-        }
-        else if (montant < <?= $this->pretMin ?>)
-        {
+        } else if (montant < <?= $this->pretMin ?>) {
             form_ok = false;
         }
 
-        if (form_ok == true)
-        {
+        if (form_ok == true) {
             var val = {
                 montant: montant,
                 tx: tx,
                 nb_echeances: <?= $this->projects->period ?>
-            }
+            };
             $.post(add_url + '/ajax/load_mensual', val).done(function (data) {
 
                 if (data != 'nok')
@@ -190,6 +144,5 @@
                 }
             });
         }
-
     });
 </script>

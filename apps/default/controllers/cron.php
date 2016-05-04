@@ -177,17 +177,18 @@ class cronController extends bootstrap
 
     public function _pre_publish_project()
     {
-        if (true === $this->startCron('pre_publish_project', 10)) {
-            ini_set('max_execution_time', '600');
+        if (true === $this->startCron('pre_publish_project', 15)) {
+            ini_set('max_execution_time', '900');
             ini_set('memory_limit', '1G');
             /** @var \projects $oProject */
             $oProject        = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
+            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= (NOW() + INTERVAL 15 MINUTE)", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
+                    $this->oLogger->addRecord(ULogger::INFO, 'Do process pre-publish on project ID: ' . $oProject->id_project);
                     $oProjectManager->prePublish($oProject);
                 }
             }
@@ -255,36 +256,27 @@ class cronController extends bootstrap
             foreach ($aProjectsList as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
                     $oEndDate = $oProjectManager->getProjectEndDate($oProject);
-                    $oNow = new \DateTime();
+                    $oNow     = new \DateTime();
+
+                    $bFunded = $oProjectManager->isFunded($oProject);
+
+                    if ($bFunded) {
+                        $oProjectManager->markAsFunded($oProject);
+                    }
 
                     if ($oEndDate > $oNow) {
                         $oProjectManager->setLogger($this->oLogger);
                         $oProjectManager->checkBids($oProject);
-
                         $oProjectManager->autoBid($oProject);
-
-                        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
-
-                        if ($iBidTotal >= $oProject->amount && $oProject->status_solde == 0) {
-                            $oProject->date_funded  = date('Y-m-d H:i:s');
-                            $oProject->status_solde = 1;
-                            $oProject->update();
-
-                            $oMailerManager->sendFundedToBorrower($oProject);
-                        }
                     } else {
                         $oProjectManager->setLogger($oLoggerEndProject);
                         $oProject->date_fin = $oNow->format('Y-m-d H:i:s');
                         $oProject->update();
 
                         $bHasProjectFinished = true;
-                        // Solde total obtenue dans l'enchere
-                        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
 
-                        // Fundé
-                        if ($iBidTotal >= $oProject->amount) {
+                        if ($bFunded) {
                             $oProjectManager->buildLoans($oProject);
-
                             $oProjectManager->createRepaymentSchedule($oProject);
                             $oProjectManager->createPaymentSchedule($oProject);
 
@@ -5292,23 +5284,23 @@ class cronController extends bootstrap
             $this->email = $this->loadLib('email');
 
             /** @var \echeanciers $echeanciers */
-            $echeanciers                         = $this->loadData('echeanciers');
+            $echeanciers = $this->loadData('echeanciers');
             /** @var \transactions $transactions */
-            $transactions                        = $this->loadData('transactions');
+            $transactions = $this->loadData('transactions');
             /** @var \lenders_accounts $lenders */
-            $lenders                             = $this->loadData('lenders_accounts');
+            $lenders = $this->loadData('lenders_accounts');
             /** @var \clients $clients */
-            $clients                             = $this->loadData('clients');
+            $clients = $this->loadData('clients');
             /** @var \clients $companies */
-            $companies                           = $this->loadData('companies');
+            $companies = $this->loadData('companies');
             /** @var \notifications $notifications */
-            $notifications                       = $this->loadData('notifications');
+            $notifications = $this->loadData('notifications');
             /** @var \loans $loans */
-            $loans                               = $this->loadData('loans');
+            $loans = $this->loadData('loans');
             /** @var \projects_status_history $projects_status_history */
-            $projects_status_history             = $this->loadData('projects_status_history');
+            $projects_status_history = $this->loadData('projects_status_history');
             /** @var \projects $projects */
-            $projects                            = $this->loadData('projects');
+            $projects = $this->loadData('projects');
             /** @var clients_gestion_notifications clients_gestion_notifications */
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
 

@@ -87,6 +87,12 @@ class ProjectManager
     {
         $this->checkAutoBidBalance($oProject);
         $this->autoBid($oProject);
+
+        if ($this->isFunded($oProject)) {
+            $this->markAsFunded($oProject);
+        }
+
+        $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject);
     }
 
@@ -215,14 +221,15 @@ class ProjectManager
                 $iOffset += $iLimit;
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if (false === $oClient->get($aAutoBidSetting['id_client'])
-                        && false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
-                        && false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+                        || false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
+                        || false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
                     ) {
                         continue;
                     }
-                    $iBalance = $oTransaction->getSolde($oClient->id_client);
 
-                    if ($iBalance < $aAutoBidSetting['amount']) {
+                    $fBalance = $oTransaction->getSolde($oClient->id_client);
+
+                    if ($fBalance < $aAutoBidSetting['amount']) {
                         $this->oNotificationManager->create(
                             \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
                             \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
@@ -230,7 +237,7 @@ class ProjectManager
                             'sendAutoBidBalanceInsufficient',
                             $oProject->id_project
                         );
-                    } elseif ($iBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
+                    } elseif ($fBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
                         $this->oNotificationManager->create(
                             \notifications::TYPE_AUTOBID_BALANCE_LOW,
                             \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,
@@ -677,47 +684,6 @@ class ProjectManager
                 );
             }
         }
-
-    }
-
-    public static function getWeightedAvgRate(\projects $oProject)
-    {
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
-        $oProjectStatus->getLastStatut($oProject->id_project);
-        if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-            return self::getWeightedAvgRateFromBid($oProject);
-        } elseif ($oProjectStatus->status == \projects_status::FUNDE) {
-            return self::getWeightedAvgRateFromLoan($oProject);
-        } else {
-            return false;
-        }
-    }
-
-    private static function getWeightedAvgRateFromLoan(\projects $oProject)
-    {
-        /** @var \loans $oLoan */
-        $oLoan          = Loader::loadData('loans');
-        $iInterestTotal = 0;
-        $iCapitalTotal  = 0;
-        foreach ($oLoan->select('id_project = ' . $oProject->id_project) as $aLoan) {
-            $iInterestTotal += $aLoan['rate'] * $aLoan['amount'];
-            $iCapitalTotal += $aLoan['amount'];
-        }
-        return ($iInterestTotal / $iCapitalTotal);
-    }
-
-    private static function getWeightedAvgRateFromBid(\projects $oProject)
-    {
-        /** @var \bids $oBid */
-        $oBid           = Loader::loadData('bids');
-        $iInterestTotal = 0;
-        $iCapitalTotal  = 0;
-        foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aLoan) {
-            $iInterestTotal += $aLoan['rate'] * $aLoan['amount'];
-            $iCapitalTotal += $aLoan['amount'];
-        }
-        return ($iInterestTotal / $iCapitalTotal);
     }
 
     public static function getProjectEndDate(\projects $oProject)
@@ -766,6 +732,11 @@ class ProjectManager
             case \projects_status::ATTENTE_ANALYSTE:
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, \email::EMAIL_ADDRESS_ANALYSTS);
                 break;
+            case \projects_status::REJETE:
+            case \projects_status::REJET_ANALYSTE:
+            case \projects_status::REJET_COMITE:
+                $this->stopRemindersForOlderProjects($oProject);
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
@@ -775,6 +746,54 @@ class ProjectManager
             case \projects_status::LIQUIDATION_JUDICIAIRE:
                 $this->oLenderManager->addLendersToLendersAccountsStatQueue($oProject->getLoansAndLendersForProject($oProject->id_project));
                 break;
+        }
+    }
+
+    public function stopRemindersForOlderProjects(\projects $oProject)
+    {
+        /** @var \companies $oCompany */
+        $oCompany = Loader::loadData('companies');
+
+        $oCompany->get($oProject->id_company);
+        $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
+        foreach ($aPreviousProjectsWithSameSiren as $aProject) {
+            $oProject->get($aProject['id_project'], 'id_project');
+            $this->stopRemindersOnProject($oProject);
+        }
+    }
+
+    public function stopRemindersOnProject(\projects $oProject)
+    {
+        $oProject->stop_relances = '1';
+        $oProject->update();
+    }
+
+    public function isFunded(\projects $oProject)
+    {
+        /** @var \bids $oBid */
+        $oBid      = Loader::loadData('bids');
+        $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
+        if ($iBidTotal >= $oProject->amount) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function markAsFunded(\projects $oProject)
+    {
+        if ($oProject->status_solde == 0) {
+            $oFunded    = new \DateTime();
+            $oPublished = new \DateTime($oProject->date_publication_full);
+            if ($oFunded < $oPublished) {
+                $oFunded = $oPublished;
+            }
+
+            $oProject->date_funded  = $oFunded->format('Y-m-d H:i:s');
+            $oProject->status_solde = 1;
+            $oProject->update();
+
+            $this->oMailerManager->sendFundedToBorrower($oProject);
         }
     }
 }
