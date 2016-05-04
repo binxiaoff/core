@@ -1526,54 +1526,49 @@ class ajaxController extends bootstrap
         $_SESSION['filtre_vos_operations']['id_client']        = $this->clients->id_client;
 
         //////////// DEBUT PARTIE DATES //////////////
-        //echo $_SESSION['id_last_action'];
         // tri debut/fin
         if (isset($_POST['id_last_action']) && in_array($_POST['id_last_action'], array('debut', 'fin'))) {
             $debutTemp       = explode('/', $_POST['debut']);
             $finTemp         = explode('/', $_POST['fin']);
-            $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
-            $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
+            $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
+            $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
 
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
         } elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'nbMois') {
             $nbMois          = $_POST['nbMois'];
-            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+            $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
+            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
 
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
         } elseif (isset($_POST['id_last_action']) && $_POST['id_last_action'] == 'annee') {
-            $year = $_POST['annee'];
-
-            $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
+            $year            = $_POST['annee'];
+            $date_debut_time = mktime(0, 0, 0, 1, 1, $year);
 
             if (date('Y') == $year) {
                 $date_fin_time = mktime(0, 0, 0, date('m'), date('d'), $year);
-            } // date fin
-            else {
+            } else {
                 $date_fin_time = mktime(0, 0, 0, 12, 31, $year);
-            } // date fin
+            }
 
             $_SESSION['id_last_action'] = $_POST['id_last_action'];
-        } // si on a une session
-        elseif (isset($_SESSION['id_last_action'])) {
+        } elseif (isset($_SESSION['id_last_action'])) {
             if (in_array($_SESSION['id_last_action'], array('debut', 'fin'))) {
                 $debutTemp       = explode('/', $_POST['debut']);
                 $finTemp         = explode('/', $_POST['fin']);
-                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');    // date debut
-                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');            // date fin
+                $date_debut_time = strtotime($debutTemp[2] . '-' . $debutTemp[1] . '-' . $debutTemp[0] . ' 00:00:00');
+                $date_fin_time   = strtotime($finTemp[2] . '-' . $finTemp[1] . '-' . $finTemp[0] . ' 00:00:00');
             } elseif ($_SESSION['id_last_action'] == 'nbMois') {
                 $nbMois          = $_POST['nbMois'];
-                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y')); // date debut
-                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+                $date_debut_time = mktime(0, 0, 0, date("m") - $nbMois, date("d"), date('Y'));
+                $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
             } elseif ($_SESSION['id_last_action'] == 'annee') {
                 $year            = $_POST['annee'];
                 $date_debut_time = mktime(0, 0, 0, 1, 1, $year);    // date debut
                 $date_fin_time   = mktime(0, 0, 0, 12, 31, $year); // date fin
             }
-        } // Par defaut (on se base sur le 1M)
-        else {
-            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y')); // date debut
-            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));    // date fin
+        } else {
+            $date_debut_time = mktime(0, 0, 0, date("m") - 1, date("d"), date('Y'));
+            $date_fin_time   = mktime(0, 0, 0, date("m"), date("d"), date('Y'));
         }
 
         $this->date_debut         = date('Y-m-d', $date_debut_time);
@@ -1678,19 +1673,16 @@ class ajaxController extends bootstrap
 
     public function _acceptCookies()
     {
+        $this->autoFireView = false;
+
         $accept_cookies = $this->loadData('accept_cookies');
         $accept_cookies->ip                = $_SERVER['REMOTE_ADDR'];
         $accept_cookies->id_client         = $this->clients->id_client;
         $accept_cookies->id_accept_cookies = $accept_cookies->create();
 
-        $expire = 365 * 24 * 3600; // on définit la durée du cookie, 1 an
-        setcookie("acceptCookies", $accept_cookies->id_accept_cookies, time() + $expire, '/');  // on l'envoi
+        setcookie('acceptCookies', $accept_cookies->id_accept_cookies, time() + 365 * 24 * 3600, '/');
 
-        $create = true;
-
-        echo json_encode(array('reponse' => $create));
-
-        die;
+        echo json_encode(array('reponse' => true));
     }
 
     public function _operations_emprunteur()

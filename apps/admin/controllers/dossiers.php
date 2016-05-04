@@ -1949,9 +1949,12 @@ class dossiersController extends bootstrap
                         $contributions_additionnelles += $e['contributions_additionnelles'];
                         $prelevements_solidarite      += $e['prelevements_solidarite'];
                         $crds                         += $e['crds'];
-                        $rembNet                       = $e['montant'] / 100 - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
 
                         if (false === $this->transactions->get($e['id_echeancier'], 'id_echeancier')) {
+                            $capitalEAT  = bcdiv($e['capital'], 100);
+                            $interestEAT = bcdiv($e['interets'], 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
+                            $totalEAT    = bcadd($capitalEAT, $interestEAT);
+
                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
@@ -1962,14 +1965,26 @@ class dossiersController extends bootstrap
                             $this->echeanciers->update();
 
                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                            $this->transactions->montant          = $rembNet * 100;
-                            $this->transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
+                            $this->transactions->montant          = bcmul($capitalEAT, 100);
+                            $this->transactions->id_echeancier    = $e['id_echeancier'];
                             $this->transactions->id_langue        = 'fr';
                             $this->transactions->date_transaction = date('Y-m-d H:i:s');
                             $this->transactions->status           = 1;
                             $this->transactions->etat             = 1;
                             $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                            $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT;
+                            $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
+                            $this->transactions->create();
+
+                            $this->transactions->unsetData();
+                            $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
+                            $this->transactions->montant          = bcmul($interestEAT, 100);
+                            $this->transactions->id_echeancier    = $e['id_echeancier'];
+                            $this->transactions->id_langue        = 'fr';
+                            $this->transactions->date_transaction = date('Y-m-d H:i:s');
+                            $this->transactions->status           = 1;
+                            $this->transactions->etat             = 1;
+                            $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                            $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                             $this->transactions->create();
 
                             $this->wallets_lines->id_lender                = $e['id_lender'];
@@ -1977,13 +1992,13 @@ class dossiersController extends bootstrap
                             $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                             $this->wallets_lines->status                   = 1; // non utilisé
                             $this->wallets_lines->type                     = 2; // transaction virtuelle
-                            $this->wallets_lines->amount                   = $rembNet * 100;
+                            $this->wallets_lines->amount                   = bcmul($totalEAT, 100);
                             $this->wallets_lines->create();
 
                             $this->notifications->type       = \notifications::TYPE_REPAYMENT;
                             $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
                             $this->notifications->id_project = $this->projects->id_project;
-                            $this->notifications->amount     = $rembNet * 100;
+                            $this->notifications->amount     = bcmul($totalEAT, 100);
                             $this->notifications->create();
 
                             $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
@@ -2005,7 +2020,7 @@ class dossiersController extends bootstrap
                                     'url'              => $this->furl,
                                     'prenom_p'         => $this->clients->prenom,
                                     'cab_recouvrement' => $sRecoveryCompany,
-                                    'mensualite_p'     => $this->ficelle->formatNumber($rembNet),
+                                    'mensualite_p'     => $this->ficelle->formatNumber($totalEAT),
                                     'nom_entreprise'   => $this->companies->name,
                                     'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
                                     'link_echeancier'  => $this->furl,
@@ -2042,12 +2057,12 @@ class dossiersController extends bootstrap
                                 $url  = $this->furl;
 
                                 // euro avec ou sans "s"
-                                if ($rembNet >= 2) {
+                                if ($totalEAT >= 2) {
                                     $euros = ' euros';
                                 } else {
                                     $euros = ' euro';
                                 }
-                                $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
+                                $rembNetEmail = $this->ficelle->formatNumber($totalEAT) . $euros;
 
                                 if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
                                     $euros = ' euros';
@@ -2108,12 +2123,12 @@ class dossiersController extends bootstrap
                                 $url  = $this->furl;
 
                                 // euro avec ou sans "s"
-                                if ($rembNet >= 2) {
+                                if ($totalEAT >= 2) {
                                     $euros = ' euros';
                                 } else {
                                     $euros = ' euro';
                                 }
-                                $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
+                                $rembNetEmail = $this->ficelle->formatNumber($totalEAT) . $euros;
 
                                 if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
                                     $euros = ' euros';

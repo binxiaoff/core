@@ -5199,19 +5199,32 @@ class cronController extends bootstrap
     public function _remboursement_preteurs_auto()
     {
         if (true === $this->startCron('remboursements auto', 5)) {
-            $projects                = $this->loadData('projects');
-            $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
-            $echeanciers             = $this->loadData('echeanciers');
-            $companies               = $this->loadData('companies');
-            $transactions            = $this->loadData('transactions');
-            $lenders                 = $this->loadData('lenders_accounts');
-            $clients                 = $this->loadData('clients');
+            /** @var \projects $projects */
+            $projects = $this->loadData('projects');
+            /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
+            $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+            /** @var \echeanciers $echeanciers */
+            $echeanciers = $this->loadData('echeanciers');
+            /** @var \companies $companies */
+            $companies = $this->loadData('companies');
+            /** @var \transactions $transactions */
+            $transactions = $this->loadData('transactions');
+            /** @var \lenders_accounts $lenders */
+            $lenders = $this->loadData('lenders_accounts');
+            /** @var \clients $clients */
+            $clients = $this->loadData('clients');
+            /** @var \projects_status_history $projects_status_history */
             $projects_status_history = $this->loadData('projects_status_history');
-            $wallets_lines           = $this->loadData('wallets_lines');
-            $projects_remb_log       = $this->loadData('projects_remb_log');
-            $bank_unilend            = $this->loadData('bank_unilend');
-            $projects_remb           = $this->loadData('projects_remb');
-            $oAccountUnilend         = $this->loadData('platform_account_unilend');
+            /** @var \wallets_lines $wallets_lines */
+            $wallets_lines = $this->loadData('wallets_lines');
+            /** @var \projects_remb_log $projects_remb_log */
+            $projects_remb_log = $this->loadData('projects_remb_log');
+            /** @var \bank_unilend $bank_unilend */
+            $bank_unilend = $this->loadData('bank_unilend');
+            /** @var \projects_remb $projects_remb */
+            $projects_remb = $this->loadData('projects_remb');
+            /** @var \platform_account_unilend $oAccountUnilend */
+            $oAccountUnilend = $this->loadData('platform_account_unilend');
 
             $settingsDebutRembAuto = $this->loadData('settings');
             $settingsDebutRembAuto->get('Heure de début de traitement des remboursements auto prêteurs', 'type');
@@ -5222,186 +5235,196 @@ class cronController extends bootstrap
 
             if ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
                 $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
-                if ($lProjetsAremb != false) {
-                    foreach ($lProjetsAremb as $r) {
-                        $projects_remb_log->id_project       = $r['id_project'];
-                        $projects_remb_log->ordre            = $r['ordre'];
-                        $projects_remb_log->debut            = date('Y-m-d H:i:s');
-                        $projects_remb_log->fin              = '0000-00-00 00:00:00';
-                        $projects_remb_log->montant_remb_net = 0;
-                        $projects_remb_log->etat             = 0;
-                        $projects_remb_log->nb_pret_remb     = 0;
-                        $projects_remb_log->create();
+                foreach ($lProjetsAremb as $r) {
+                    $projects_remb_log->id_project       = $r['id_project'];
+                    $projects_remb_log->ordre            = $r['ordre'];
+                    $projects_remb_log->debut            = date('Y-m-d H:i:s');
+                    $projects_remb_log->fin              = '0000-00-00 00:00:00';
+                    $projects_remb_log->montant_remb_net = 0;
+                    $projects_remb_log->etat             = 0;
+                    $projects_remb_log->nb_pret_remb     = 0;
+                    $projects_remb_log->create();
 
-                        $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
-                        $dateDernierStatut = $dernierStatut[0]['added'];
-                        $timeAdd           = strtotime($dateDernierStatut);
-                        $day               = date('d', $timeAdd);
-                        $month             = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-                        $year              = date('Y', $timeAdd);
-                        $Total_rembNet     = 0;
-                        $lEcheances        = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
+                    $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
+                    $dateDernierStatut = $dernierStatut[0]['added'];
+                    $timeAdd           = strtotime($dateDernierStatut);
+                    $day               = date('d', $timeAdd);
+                    $month             = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+                    $year              = date('Y', $timeAdd);
+                    $Total_rembNet     = 0;
+                    $lEcheances        = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
 
-                        if ($lEcheances != false) {
-                            $Total_etat   = 0;
-                            $nb_pret_remb = 0;
+                    if ($lEcheances != false) {
+                        $Total_etat   = 0;
+                        $nb_pret_remb = 0;
 
-                            foreach ($lEcheances as $e) {
-                                if ($transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
-                                    $rembNet = $e['rembNet'];
-                                    $etat    = $e['etat'];
+                        foreach ($lEcheances as $e) {
+                            if ($transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
+                                $rembNet = $e['rembNet'];
+                                $etat    = $e['etat'];
 
-                                    $Total_rembNet += $rembNet;
-                                    $Total_etat += $etat;
-                                    $nb_pret_remb = ($nb_pret_remb + 1);
+                                $Total_rembNet += $rembNet;
+                                $Total_etat += $etat;
+                                $nb_pret_remb = ($nb_pret_remb + 1);
 
-                                    $lenders->get($e['id_lender'], 'id_lender_account');
-                                    $clients->get($lenders->id_client_owner, 'id_client');
-                                    $companies->get($projects->id_company, 'id_company');
+                                $lenders->get($e['id_lender'], 'id_lender_account');
+                                $clients->get($lenders->id_client_owner, 'id_client');
+                                $companies->get($projects->id_company, 'id_company');
 
-                                    $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                                    $echeanciers->status             = 1; // remboursé
-                                    $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
-                                    $echeanciers->update();
+                                $echeanciers->get($e['id_echeancier'], 'id_echeancier');
+                                $echeanciers->status             = 1; // remboursé
+                                $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
+                                $echeanciers->update();
 
-                                    $transactions->id_client        = $lenders->id_client_owner;
-                                    $transactions->montant          = $rembNet * 100;
-                                    $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
-                                    $transactions->id_langue        = 'fr';
-                                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                                    $transactions->status           = 1;
-                                    $transactions->etat             = 1;
-                                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                    $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT;
-                                    $transactions->create();
+                                $transactions->id_client        = $lenders->id_client_owner;
+                                $transactions->montant          = $rembNet * 100;
+                                $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
+                                $transactions->id_langue        = 'fr';
+                                $transactions->date_transaction = date('Y-m-d H:i:s');
+                                $transactions->status           = 1;
+                                $transactions->etat             = 1;
+                                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
+                                $transactions->create();
 
-                                    $wallets_lines->id_lender                = $e['id_lender'];
-                                    $wallets_lines->type_financial_operation = 40;
-                                    $wallets_lines->id_transaction           = $transactions->id_transaction;
-                                    $wallets_lines->status                   = 1; // non utilisé
-                                    $wallets_lines->type                     = 2; // transaction virtuelle
-                                    $wallets_lines->amount                   = $rembNet * 100;
-                                    $wallets_lines->create();
-                                } // fin check transasction existante
-                            } // fin boucle echeances preteurs
+                                $transactions->unsetData();
+                                $transactions->id_client        = $lenders->id_client_owner;
+                                $transactions->montant          = $rembNet * 100;
+                                $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
+                                $transactions->id_langue        = 'fr';
+                                $transactions->date_transaction = date('Y-m-d H:i:s');
+                                $transactions->status           = 1;
+                                $transactions->etat             = 1;
+                                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
+                                $transactions->create();
+
+                                $wallets_lines->id_lender                = $e['id_lender'];
+                                $wallets_lines->type_financial_operation = 40;
+                                $wallets_lines->id_transaction           = $transactions->id_transaction;
+                                $wallets_lines->status                   = 1; // non utilisé
+                                $wallets_lines->type                     = 2; // transaction virtuelle
+                                $wallets_lines->amount                   = $rembNet * 100;
+                                $wallets_lines->create();
+                            } // fin check transasction existante
+                        } // fin boucle echeances preteurs
+                    }
+
+                    if ($Total_rembNet > 0) {
+                        $emprunteur = $this->loadData('clients');
+
+                        $projects->get($r['id_project'], 'id_project');
+                        $companies->get($projects->id_company, 'id_company');
+                        $emprunteur->get($companies->id_client_owner, 'id_client');
+                        $echeanciers_emprunteur->get($r['id_project'], ' ordre = ' . $r['ordre'] . ' AND id_project');
+
+                        $transactions->montant                  = 0;
+                        $transactions->id_echeancier            = 0; // on reinitialise
+                        $transactions->id_client                = 0; // on reinitialise
+                        $transactions->montant_unilend          = - $Total_rembNet * 100;
+                        $transactions->montant_etat             = $Total_etat * 100;
+                        $transactions->id_echeancier_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur; // id de l'echeance emprunteur
+                        $transactions->id_langue                = 'fr';
+                        $transactions->date_transaction         = date('Y-m-d H:i:s');
+                        $transactions->status                   = 1;
+                        $transactions->etat                     = 1;
+                        $transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
+                        $transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
+                        $transactions->create();
+
+                        $bank_unilend->id_transaction         = $transactions->id_transaction;
+                        $bank_unilend->id_project             = $r['id_project'];
+                        $bank_unilend->montant                = '-' . $Total_rembNet * 100;
+                        $bank_unilend->etat                   = $Total_etat * 100;
+                        $bank_unilend->type                   = 2; // remb unilend
+                        $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
+                        $bank_unilend->status                 = 1;
+                        $bank_unilend->create();
+
+                        $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
+
+                        $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
+
+                        $varMail = array(
+                            'surl'            => $this->surl,
+                            'url'             => $this->furl,
+                            'prenom'          => $emprunteur->prenom,
+                            'pret'            => $this->ficelle->formatNumber($projects->amount),
+                            'entreprise'      => stripslashes(trim($companies->name)),
+                            'projet-title'    => $projects->title,
+                            'compte-p'        => $this->furl,
+                            'projet-p'        => $this->furl . '/projects/detail/' . $projects->slug,
+                            'link_facture'    => $this->furl . '/pdf/facture_ER/' . $emprunteur->hash . '/' . $r['id_project'] . '/' . $r['ordre'],
+                            'datedelafacture' => $day . ' ' . $month . ' ' . $year,
+                            'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
+                            'annee'           => date('Y'),
+                            'lien_fb'         => $this->like_fb,
+                            'lien_tw'         => $this->twitter,
+                            'montantRemb'     => $Total_rembNet
+                        );
+
+                        $tabVars   = $this->tnmp->constructionVariablesServeur($varMail);
+                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                        $this->email = $this->loadLib('email');
+                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                        $this->email->setSubject(stripslashes($sujetMail));
+                        $this->email->setHTMLBody(stripslashes($texteMail));
+
+                        if ($this->Config['env'] === 'prod') {
+                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
+                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        } else {
+                            $this->email->addRecipient(trim($companies->email_facture));
+                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                         }
 
-                        if ($Total_rembNet > 0) {
-                            $emprunteur = $this->loadData('clients');
+                        $oInvoiceCounter            = $this->loadData('compteur_factures');
+                        $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
+                        $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+                        $oInvoice                   = $this->loadData('factures');
 
-                            $projects->get($r['id_project'], 'id_project');
-                            $companies->get($projects->id_company, 'id_company');
-                            $emprunteur->get($companies->id_client_owner, 'id_client');
-                            $echeanciers_emprunteur->get($r['id_project'], ' ordre = ' . $r['ordre'] . ' AND id_project');
+                        $this->settings->get('Commission remboursement', 'type');
+                        $fCommissionRate = $this->settings->value;
 
-                            $transactions->montant                  = 0;
-                            $transactions->id_echeancier            = 0; // on reinitialise
-                            $transactions->id_client                = 0; // on reinitialise
-                            $transactions->montant_unilend          = - $Total_rembNet * 100;
-                            $transactions->montant_etat             = $Total_etat * 100;
-                            $transactions->id_echeancier_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur; // id de l'echeance emprunteur
-                            $transactions->id_langue                = 'fr';
-                            $transactions->date_transaction         = date('Y-m-d H:i:s');
-                            $transactions->status                   = 1;
-                            $transactions->etat                     = 1;
-                            $transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
-                            $transactions->type_transaction         = \transactions_types::TYPE_UNILEND_REPAYMENT;
-                            $transactions->create();
+                        $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
 
-                            $bank_unilend->id_transaction         = $transactions->id_transaction;
-                            $bank_unilend->id_project             = $r['id_project'];
-                            $bank_unilend->montant                = '-' . $Total_rembNet * 100;
-                            $bank_unilend->etat                   = $Total_etat * 100;
-                            $bank_unilend->type                   = 2; // remb unilend
-                            $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
-                            $bank_unilend->status                 = 1;
-                            $bank_unilend->create();
+                        if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $r['ordre'] . '  AND id_project')) {
+                            $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
+                            $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
+                            $oInvoice->id_company      = $companies->id_company;
+                            $oInvoice->id_project      = $projects->id_project;
+                            $oInvoice->ordre           = $r['ordre'];
+                            $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
+                            $oInvoice->commission      = $fCommissionRate * 100;
+                            $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
+                            $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
+                            $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
+                            $oInvoice->create();
+                        }
 
-                            $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
+                        $lesRembEmprun = $bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $r['id_project']);
 
-                            $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
+                        foreach ($lesRembEmprun as $leR) {
+                            $bank_unilend->get($leR['id_unilend'], 'id_unilend');
+                            $bank_unilend->status = 1;
+                            $bank_unilend->update();
+                        }
 
-                            $varMail = array(
-                                'surl'            => $this->surl,
-                                'url'             => $this->furl,
-                                'prenom'          => $emprunteur->prenom,
-                                'pret'            => $this->ficelle->formatNumber($projects->amount),
-                                'entreprise'      => stripslashes(trim($companies->name)),
-                                'projet-title'    => $projects->title,
-                                'compte-p'        => $this->furl,
-                                'projet-p'        => $this->furl . '/projects/detail/' . $projects->slug,
-                                'link_facture'    => $this->furl . '/pdf/facture_ER/' . $emprunteur->hash . '/' . $r['id_project'] . '/' . $r['ordre'],
-                                'datedelafacture' => $day . ' ' . $month . ' ' . $year,
-                                'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
-                                'annee'           => date('Y'),
-                                'lien_fb'         => $this->like_fb,
-                                'lien_tw'         => $this->twitter,
-                                'montantRemb'     => $Total_rembNet
-                            );
+                        $projects_remb->get($r['id_project_remb'], 'id_project_remb');
+                        $projects_remb->date_remb_preteurs_reel = date('Y-m-d H:i:s');
+                        $projects_remb->status                  = \projects_remb::STATUS_REFUNDED;
+                        $projects_remb->update();
 
-                            $tabVars   = $this->tnmp->constructionVariablesServeur($varMail);
-                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                            $this->email = $this->loadLib('email');
-                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                            $this->email->setSubject(stripslashes($sujetMail));
-                            $this->email->setHTMLBody(stripslashes($texteMail));
-
-                            if ($this->Config['env'] === 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            } else {
-                                $this->email->addRecipient(trim($companies->email_facture));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                            }
-
-                            $oInvoiceCounter            = $this->loadData('compteur_factures');
-                            $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
-                            $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-                            $oInvoice                   = $this->loadData('factures');
-
-                            $this->settings->get('Commission remboursement', 'type');
-                            $fCommissionRate = $this->settings->value;
-
-                            $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
-
-                            if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $r['ordre'] . '  AND id_project')) {
-                                $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
-                                $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
-                                $oInvoice->id_company      = $companies->id_company;
-                                $oInvoice->id_project      = $projects->id_project;
-                                $oInvoice->ordre           = $r['ordre'];
-                                $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                                $oInvoice->commission      = $fCommissionRate * 100;
-                                $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
-                                $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
-                                $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
-                                $oInvoice->create();
-                            }
-
-                            $lesRembEmprun = $bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $r['id_project']);
-
-                            foreach ($lesRembEmprun as $leR) {
-                                $bank_unilend->get($leR['id_unilend'], 'id_unilend');
-                                $bank_unilend->status = 1;
-                                $bank_unilend->update();
-                            }
-
-                            $projects_remb->get($r['id_project_remb'], 'id_project_remb');
-                            $projects_remb->date_remb_preteurs_reel = date('Y-m-d H:i:s');
-                            $projects_remb->status                  = \projects_remb::STATUS_REFUNDED;
-                            $projects_remb->update();
-
-                            $projects_remb_log->fin              = date('Y-m-d H:i:s');
-                            $projects_remb_log->montant_remb_net = $Total_rembNet * 100;
-                            $projects_remb_log->etat             = $Total_etat * 100;
-                            $projects_remb_log->nb_pret_remb     = $nb_pret_remb;
-                            $projects_remb_log->update();
-                        } // Fin check montant remb
-                    } // Fin boucle lProjectsAremb
-                } // Fin condition lProjectsAremb
+                        $projects_remb_log->fin              = date('Y-m-d H:i:s');
+                        $projects_remb_log->montant_remb_net = $Total_rembNet * 100;
+                        $projects_remb_log->etat             = $Total_etat * 100;
+                        $projects_remb_log->nb_pret_remb     = $nb_pret_remb;
+                        $projects_remb_log->update();
+                    } // Fin check montant remb
+                } // Fin boucle lProjectsAremb
             } // Fin condition heure de traitement
 
             $this->stopCron();
