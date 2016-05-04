@@ -5434,7 +5434,7 @@ class cronController extends bootstrap
             $timeDebut = strtotime(date('Y-m-d') . ' ' . $paramDebut . ':00'); // on commence le traitement du cron a l'heure demandé
             $timeFin   = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
 
-            if (true||$timeDebut <= time() && $timeFin >= time()) {
+            if ($timeDebut <= time() && $timeFin >= time()) {
                 /** @var \projects_remb_log $oRepaymentLog */
                 $oRepaymentLog = $this->loadData('projects_remb_log');
 
