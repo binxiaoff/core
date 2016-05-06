@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\apps\Command;
+namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
@@ -17,7 +17,7 @@ class SalesforceExtractionCommand extends ContainerAwareCommand
             ->addArgument('extraction_type', InputArgument::REQUIRED, 'Which type of data do you like to extract?')
             ->setHelp(<<<EOF
 The <info>salesforce:extraction</info> command creates the extractions for sending to SalesForce.
-<info>php app/console salesforce:extraction companies|borrowers|projects|lenders</info>
+<info>php bin/console salesforce:extraction companies|borrowers|projects|lenders</info>
 EOF
             );
     }

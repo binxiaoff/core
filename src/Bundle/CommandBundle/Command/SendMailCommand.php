@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\apps\Command;
+namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -21,7 +21,7 @@ class SendMailCommand extends ContainerAwareCommand
             ->addOption('time-limit', 0, InputOption::VALUE_OPTIONAL, 'The time limit for sending messages (in seconds).')
             ->setHelp(<<<EOF
 The <info>mailer:spool:send</info> command sends all emails from the spool.
-<info>php app/console mailer:spool:send --message-limit=10 --time-limit=10</info>
+<info>php bin/console mailer:spool:send --message-limit=10 --time-limit=10</info>
 EOF
             );
     }

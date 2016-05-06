@@ -1,5 +1,19 @@
 {
+  "name": "unilend/site_project",
+  "license": "proprietary",
+  "type": "project",
   "minimum-stability": "stable",
+  "autoload": {
+    "psr-4": {
+      "Unilend\\": "",
+      "Unilend\\Bridge\\": "src/Bridge",
+      "Unilend\\Bundle\\": "src/Bundle"
+    },
+    "classmap": [
+      "app/AppKernel.php",
+      "app/AppCache.php"
+    ]
+  },
   "require": {
     "knplabs/knp-snappy": "0.4.*",
     "phpxmlrpc/phpxmlrpc": "4.0.*",
@@ -13,11 +27,36 @@
     "cache/memcache-adapter": "^0.2.1",
     "mailjet/mailjet-apiv3-php": "^1.1"
   },
-  "autoload": {
-    "psr-4": {
-      "Unilend\\": "",
-      "Unilend\\Bridge\\": "src/Bridge",
-      "Unilend\\Bundle\\": "src/Bundle"
+  "require-dev": {
+    "sensio/generator-bundle": "^3.0"
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
+    ],
+    "post-update-cmd": [
+      "Incenteev\\ParameterHandler\\ScriptHandler::buildParameters",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::buildBootstrap",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::clearCache",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installAssets",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::installRequirementsFile",
+      "Sensio\\Bundle\\DistributionBundle\\Composer\\ScriptHandler::prepareDeploymentTarget"
+    ]
+  },
+  "extra": {
+    "symfony-app-dir": "app",
+    "symfony-bin-dir": "bin",
+    "symfony-var-dir": "var",
+    "symfony-web-dir": "web",
+    "symfony-tests-dir": "tests",
+    "symfony-assets-install": "relative",
+    "incenteev-parameters": {
+      "file": "app/config/parameters.yml"
     }
   }
 }

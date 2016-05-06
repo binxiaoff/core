@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\apps\Command;
+namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;

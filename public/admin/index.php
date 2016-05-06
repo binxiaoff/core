@@ -1,5 +1,5 @@
 <?php
-include_once __DIR__ . '/../../Autoloader.php';
+$loader = require __DIR__.'/../../app/autoload.php';
 include '../../core/controller.class.php';
 include '../../core/command.class.php';
 include '../../config.php';

@@ -1,6 +1,4 @@
 <?php
-require_once __DIR__ . '/../Autoloader.php';
-
 use Unilend\core\ContainerAware;
 
 abstract class Controller extends ContainerAware
