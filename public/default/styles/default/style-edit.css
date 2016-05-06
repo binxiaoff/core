@@ -67,6 +67,7 @@ form .row input.field ~ input.field, form .row input.field ~ .c2-sb-wrap, form .
 .widget-price .widget-cat{padding:20px;}
 
 .detail-nav th > span{cursor:pointer;}
+.detail-nav span.rate{cursor:text;}
 
 .info-table .btnAlimentation{font-size:18px; height:47px; display:block; margin:auto;}
 .error_login{color:#C84747; font-size:12px; text-align:right; height:4px;}
@@ -158,8 +159,6 @@ form p{padding-left:0px;}
 .enchereVousColor > td > .green-span{color:#40b34f;}
 .enchereVousColor > td > .red-span{color:#ec1a29;}
 .enchereVous{position:absolute;left:-64px;color:#b10366;}
-..table-body.detail{opacity:0;}
-
 
 
 .register-form .pass-field-holder em{
