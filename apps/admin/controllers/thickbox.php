@@ -166,4 +166,15 @@ class thickboxController extends bootstrap
             $this->sPreviousReceiver = $oProjectsStatusHistoryDetails->receiver;
         }
     }
+
+    public function _project_rejection_reason()
+    {
+        $this->hideDecoration();
+
+        /** @var \project_rejection_reason $oProjectRejectionReason */
+        $oProjectRejectionReason = $this->loadData('project_rejection_reason');
+
+        $this->iProjectId = $this->params[0];
+        $this->aRejectionReasons = $oProjectRejectionReason->select();
+    }
 }
