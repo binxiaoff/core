@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\core\Console;
+namespace Unilend\Bridge\Symfony\Console;
 
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\Console\Application as BaseApplication;
@@ -53,6 +53,8 @@ class Application extends BaseApplication
      */
     public function doRun(InputInterface $input, OutputInterface $output)
     {
+        $this->kernel->boot();
+        
         if (! $this->commandsRegistered) {
             $this->registerCommands();
 

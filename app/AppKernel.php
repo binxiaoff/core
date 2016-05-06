@@ -1,11 +1,10 @@
 <?php
-namespace Unilend\core;
 
 use Symfony\Component\Config\Loader\LoaderInterface;
 use Symfony\Component\HttpKernel\Bundle\BundleInterface;
-use Symfony\Component\HttpKernel\Kernel as BaseKernel;
+use Symfony\Component\HttpKernel\Kernel;
 
-class Kernel extends BaseKernel
+class AppKernel extends Kernel
 {
     /**
      * @return BundleInterface[]
@@ -24,28 +23,8 @@ class Kernel extends BaseKernel
         return $bundles;
     }
 
-    public function getName()
-    {
-        return 'app';
-    }
-
-
-    /**
-     * Get the root path
-     * @return string
-     */
-    public function getRootDir()
-    {
-        if (null === $this->rootDir) {
-            $r             = new \ReflectionObject($this);
-            $this->rootDir = realpath(dirname($r->getFileName()) . '/..');
-        }
-
-        return $this->rootDir;
-    }
-
     public function registerContainerConfiguration(LoaderInterface $loader)
     {
-        $loader->load($this->rootDir . '/Config/config_' . $this->environment . '.yml');
+        $loader->load($this->rootDir . '/config/config_' . $this->environment . '.yml');
     }
 }

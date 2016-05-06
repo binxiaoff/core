@@ -1,13 +1,13 @@
 <?php
 namespace Unilend\apps\Command;
 
-use Unilend\core\Console\Command;
+use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Unilend\Bridge\SwiftMailer\DatabaseSpool;
 
-class SendMailCommand extends Command
+class SendMailCommand extends ContainerAwareCommand
 {
     /**
      * @see Command
@@ -21,7 +21,7 @@ class SendMailCommand extends Command
             ->addOption('time-limit', 0, InputOption::VALUE_OPTIONAL, 'The time limit for sending messages (in seconds).')
             ->setHelp(<<<EOF
 The <info>mailer:spool:send</info> command sends all emails from the spool.
-<info>php bin/console mailer:spool:send --message-limit=10 --time-limit=10</info>
+<info>php app/console mailer:spool:send --message-limit=10 --time-limit=10</info>
 EOF
             );
     }

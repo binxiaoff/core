@@ -3,16 +3,16 @@
 set_time_limit(0);
 
 require_once __DIR__ . '/../Autoloader.php';
+require_once __DIR__.'/AppKernel.php';
 
 use Unilend\apps\Command;
-use Unilend\core\Console\Application;
+use Unilend\Bridge\Symfony\Console\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 
 $input = new ArgvInput();
 $env = $input->getParameterOption(array('--env', '-e'), getenv('SYMFONY_ENV') ?: 'dev');
-$debug = getenv('UNILEND_DEBUG') !== '0' && !$input->hasParameterOption(array('--no-debug', '')) && $env !== 'prod';
+$debug = getenv('SYMFONY_DEBUG') !== '0' && !$input->hasParameterOption(array('--no-debug', '')) && $env !== 'prod';
 
-$kernel = new \Unilend\core\Kernel($env, $debug);
-$kernel->boot();
+$kernel = new AppKernel($env, $debug);
 $application = new Application($kernel);
-$application->run();
+$application->run($input);

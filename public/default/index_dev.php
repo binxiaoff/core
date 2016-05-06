@@ -2,6 +2,8 @@
 include_once __DIR__ . '/../../Autoloader.php';
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
+include __DIR__ . '/../../config.php';
+require_once __DIR__.'/../../app/AppKernel.php';
 
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
@@ -22,15 +24,13 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-include __DIR__ . '/../../config.php';
-
 $bCacheFullPage = ($_SERVER['SERVER_NAME'] === 'www.unilend.fr');
 
 if ($bCacheFullPage) {
     require __DIR__ . '/prepend.php';
 }
 
-$oKernel = new \Unilend\core\Kernel('dev', false);
+$oKernel = new AppKernel('dev', false);
 $oKernel->boot();
 
 $errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
