@@ -170,7 +170,7 @@ form p{padding-left:0px;}
 
 
 /* ------- alignement ----------- */
-#content_type_personne, .register-form{padding: 0;}
+#content_type_personne, .register-form{padding: 0; }
 .field-large {width: 434px;}
 .form-page form .row .pass-field-holder {width: 472px;}
 .field-mega {width: 922px;}
