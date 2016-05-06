@@ -4,21 +4,14 @@
     "knplabs/knp-snappy": "0.4.*",
     "phpxmlrpc/phpxmlrpc": "4.0.*",
     "phpoffice/phpexcel": "1.8.*",
-    "doctrine/dbal": "^2.5",
-    "symfony/dependency-injection": "^3.0",
-    "symfony/console": "^3.0",
-    "symfony/config": "^3.0",
-    "symfony/filesystem": "^3.0",
-    "symfony/event-dispatcher": "^3.0",
-    "symfony/yaml": "^3.0",
-    "symfony/http-kernel": "~3.0",
+    "symfony/symfony": "^3.0",
     "symfony/swiftmailer-bundle": "^2.3",
     "symfony/monolog-bundle": "^2.11",
+    "doctrine/doctrine-bundle": "^1.6",
+    "doctrine/orm": "^2.5",
     "cache/adapter-bundle": "^0.3.3",
     "cache/memcache-adapter": "^0.2.1",
-    "doctrine/doctrine-bundle": "^1.6",
-    "mailjet/mailjet-apiv3-php": "^1.1",
-    "doctrine/orm": "^2.5"
+    "mailjet/mailjet-apiv3-php": "^1.1"
   },
   "autoload": {
     "psr-4": {

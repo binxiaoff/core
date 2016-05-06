@@ -63,7 +63,7 @@ class ClientSettingsManager
     {
         /** @var \client_settings $oClientSettings */
         $oClientSettings = $this->oEntityManager->getRepository('client_settings');
-        $oCachedItem     = $this->oCachePool->get(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
+        $oCachedItem     = $this->oCachePool->getItem(self::CACHE_KEY_GET_SETTING . '_' . $oClient->id_client . '_' . $iSettingType);
 
         if (false === $oCachedItem->isHit()) {
             $mValue = $oClientSettings->getSetting($oClient->id_client, $iSettingType);
