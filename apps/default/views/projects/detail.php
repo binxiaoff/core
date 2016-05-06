@@ -546,7 +546,7 @@
                     </h3>
                     <div class="article-entry" style="display: none;">
                         <div id="bids_mobile"><?= $this->fireView('../ajax/displayAll_mobile') ?></div>
-                        <div id="tri_mobile" style="display:none;">rate</div>
+                        <div id="tri_mobile" style="display:none;">bid-number</div>
                         <div id="direction_mobile" style="display:none;">1</div>
                     </div>
                 </article>

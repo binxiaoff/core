@@ -56,8 +56,7 @@
         });
 
 
-        var detailTabToggle = $(".detail-nav > th > span"),
-            filterMode,
+        var filterMode,
             triEl,
             dirEl;
 

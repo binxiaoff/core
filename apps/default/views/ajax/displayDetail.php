@@ -7,7 +7,7 @@
             </div>
         <?php endif; ?>
         <span class="order-rate"><?= $bid['ordre'] ?></span>
-        <?php if (! empty($bid['id_autobid']) || true == $this->bIsAllowedToSeeAutobid) : ?>
+        <?php if (! empty($bid['id_autobid']) && true == $this->bIsAllowedToSeeAutobid) : ?>
             <span class="autobid">A</span>
         <?php endif; ?>
     </td>
