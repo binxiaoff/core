@@ -189,15 +189,15 @@ class emprunteursController extends bootstrap
 
     public function _edit()
     {
-        $this->clients           = $this->loadData('clients');
-        $this->clients_adresses  = $this->loadData('clients_adresses');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_bilans  = $this->loadData('companies_bilans');
-        $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->clients_mandats   = $this->loadData('clients_mandats');
-        $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
-        $this->clients->history  = '';
+        $this->clients          = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+        $this->companies        = $this->loadData('companies');
+        $this->companies_bilans = $this->loadData('companies_bilans');
+        $this->projects         = $this->loadData('projects');
+        $this->projects_status  = $this->loadData('projects_status');
+        $this->clients_mandats  = $this->loadData('clients_mandats');
+        $this->projects_pouvoir = $this->loadData('projects_pouvoir');
+        $this->clients->history = '';
 
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
@@ -229,18 +229,19 @@ class emprunteursController extends bootstrap
                 }
 
                 $this->clients->telephone = str_replace(' ', '', $_POST['telephone']);
+                $this->companies->name    = $_POST['societe'];
+                $this->companies->sector  = $_POST['secteur'];
+                $edited_rib               = false;
+                $sCurrent_Iban            = $this->companies->iban;
+                $sNew_Iban                = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
 
-                $this->companies->name   = $_POST['societe'];
-                $this->companies->sector = $_POST['secteur'];
-                //Log modification de RIP par Unilend
-                $edited_rib = false;
-                if ($this->companies->bic != str_replace(' ', '', strtoupper($_POST['bic'])) || $this->companies->iban != str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']))) {
-                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7'])) . " / " . str_replace(' ', '', strtoupper($_POST['bic'])) . "</tr></td>";
+                if ($this->companies->bic != str_replace(' ', '', strtoupper($_POST['bic'])) || $this->companies->iban != $sNew_Iban) {
+                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . $sNew_Iban . " / " . str_replace(' ', '', strtoupper($_POST['bic'])) . "</tr></td>";
                     $edited_rib = true;
                 }
 
-                $this->companies->bic  = str_replace(' ', '', strtoupper($_POST['bic']));
-                $this->companies->iban = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
+                $this->companies->bic           = str_replace(' ', '', strtoupper($_POST['bic']));
+                $this->companies->iban          = $sNew_Iban;
                 $this->companies->email_facture = trim($_POST['email_facture']);
 
                 // on verif si le bic est good
@@ -294,96 +295,18 @@ class emprunteursController extends bootstrap
                         $this->clients->signature = $this->upload->getName();
                     }
                 }
-
                 $this->companies->update();
                 $this->clients->update();
                 $this->clients_adresses->update();
 
                 if ($edited_rib) {
-                    $e                      = $this->loadData('clients');
-                    $project                = $this->loadData('projects');
-                    $companie               = $this->loadData('companies');
-                    $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-
-                    foreach ($companie->select('id_client_owner = ' . $this->clients->id_client) as $company2) {
-                        foreach ($project->select('id_company = ' . $company2['id_company']) as $projects) {
-                            $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $this->clients->id_client . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
-                            if (false === empty($aMandats)) {
-                                foreach ($aMandats as $aMandatToArchive) {
-                                    $this->clients_mandats->get($aMandatToArchive['id_mandat']);
-                                    if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status) {
-                                        $nouveauNom    = str_replace('mandat', 'mandat-' . $this->clients_mandats->id_mandat, $this->clients_mandats->name);
-                                        $chemin        = $this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name;
-                                        $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
-
-                                        rename($chemin, $nouveauChemin);
-
-                                        $this->clients_mandats->name = $nouveauNom;
-                                    }
-                                    $this->clients_mandats->status = \clients_mandats::STATUS_ARCHIVED;
-                                    $this->clients_mandats->update();
-                                }
-
-                                // No need to create the new mandat, it will be created in pdf::_mandat()
-
-                                //**********************************************//
-                                //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
-                                //**********************************************//
-                                $project->get($projects['id_project'], 'id_project');
-                                $companie->get($project->id_company, 'id_company');
-                                $e->get($companie->id_client_owner, 'id_client');
-
-                                $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
-
-                                $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
-                                $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
-                                $mensualite = ($mensualite / 100);
-
-                                $this->settings->get('Facebook', 'type');
-                                $lien_fb = $this->settings->value;
-
-                                $this->settings->get('Twitter', 'type');
-                                $lien_tw = $this->settings->value;
-
-                                /** @var \prelevements $directDebit */
-                                $directDebit        = $this->loadData('prelevements');
-                                $this->nextEcheance = $directDebit->select('status = 0 AND id_project = ' . $projects['id_project']);
-
-                                $varMail = array(
-                                    'surl'                   => $this->surl,
-                                    'url'                    => $this->lurl,
-                                    'prenom_e'               => $e->prenom,
-                                    'nom_e'                  => $companie->name,
-                                    'mensualite'             => $this->ficelle->formatNumber($mensualite),
-                                    'montant'                => $this->ficelle->formatNumber($project->amount, 0),
-                                    'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
-                                    'link_mandat'            => $this->urlfront . '/pdf/mandat/' . $e->hash . '/' . $project->id_project,
-                                    'link_pouvoir'           => $this->urlfront . '/pdf/pouvoir/' . $e->hash . '/' . $project->id_project,
-                                    'projet'                 => $project->title,
-                                    'lien_fb'                => $lien_fb,
-                                    'lien_tw'                => $lien_tw,
-                                    'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
-                                );
-
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                                $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $e->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($e->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
-                            }
-                        }
-                    }
+                    $this->sendEmail($this->clients->id_client);
                 }
 
+                if (0 !== strcmp($sCurrent_Iban, $sNew_Iban)) {
+                    //Send email to the control team
+                    $this->sendIbanUpdateEmail($this->clients->id_client, $sCurrent_Iban, $sNew_Iban);
+                }
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
 
@@ -398,6 +321,133 @@ class emprunteursController extends bootstrap
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;
         }
+    }
+
+    /**
+     * @param int $iClientId
+     */
+    private function sendEmail($iClientId)
+    {
+        /** @var \clients $client */
+        $client = $this->loadData('clients');
+
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
+
+        /** @var companies $companie */
+        $companie = $this->loadData('companies');
+
+        /** @var echeanciers_emprunteur $echeanciers_emprunteur */
+        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+
+        foreach ($companie->select('id_client_owner = ' . $iClientId) as $company2) {
+            foreach ($project->select('id_company = ' . $company2['id_company']) as $projects) {
+                $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $iClientId . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
+
+                if (false === empty($aMandats)) {
+                    foreach ($aMandats as $aMandatToArchive) {
+                        $this->clients_mandats->get($aMandatToArchive['id_mandat']);
+
+                        if (\clients_mandats::STATUS_SIGNED == $this->clients_mandats->status) {
+                            $nouveauNom    = str_replace('mandat', 'mandat-' . $this->clients_mandats->id_mandat, $this->clients_mandats->name);
+                            $chemin        = $this->path . 'protected/pdf/mandat/' . $this->clients_mandats->name;
+                            $nouveauChemin = $this->path . 'protected/pdf/mandat/' . $nouveauNom;
+
+                            rename($chemin, $nouveauChemin);
+
+                            $this->clients_mandats->name = $nouveauNom;
+                        }
+                        $this->clients_mandats->status = \clients_mandats::STATUS_ARCHIVED;
+                        $this->clients_mandats->update();
+                    }
+
+                    // No need to create the new mandat, it will be created in pdf::_mandat()
+
+                    //**********************************************//
+                    //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
+                    //**********************************************//
+                    $project->get($projects['id_project'], 'id_project');
+                    $companie->get($project->id_company, 'id_company');
+                    $client->get($companie->id_client_owner, 'id_client');
+                    $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
+                    $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
+                    $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
+                    $mensualite = ($mensualite / 100);
+
+                    $this->settings->get('Facebook', 'type');
+                    $lien_fb = $this->settings->value;
+
+                    $this->settings->get('Twitter', 'type');
+                    $lien_tw = $this->settings->value;
+
+                    /** @var \prelevements $directDebit */
+                    $directDebit        = $this->loadData('prelevements');
+                    $this->nextEcheance = $directDebit->select('status = 0 AND id_project = ' . $projects['id_project']);
+
+                    $varMail = array(
+                        'surl'                   => $this->surl,
+                        'url'                    => $this->lurl,
+                        'prenom_e'               => $client->prenom,
+                        'nom_e'                  => $companie->name,
+                        'mensualite'             => $this->ficelle->formatNumber($mensualite),
+                        'montant'                => $this->ficelle->formatNumber($project->amount, 0),
+                        'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
+                        'link_mandat'            => $this->urlfront . '/pdf/mandat/' . $client->hash . '/' . $project->id_project,
+                        'link_pouvoir'           => $this->urlfront . '/pdf/pouvoir/' . $client->hash . '/' . $project->id_project,
+                        'projet'                 => $project->title,
+                        'lien_fb'                => $lien_fb,
+                        'lien_tw'                => $lien_tw,
+                        'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
+                    );
+
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                    /** @var \Email email */
+                    $email = $this->loadLib('email');
+
+                    $email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                    $email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                    $email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
+
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($email, $this->mails_filer, $this->mails_text->id_textemail, $client->email, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $email->addRecipient(trim($client->email));
+                        Mailer::send($email, $this->mails_filer, $this->mails_text->id_textemail);
+                    }
+                }
+            }
+        }
+    }
+
+    /** @var Mailer $oEmail
+     * @param int $iClientId
+     * @param string $sCurrent_Iban
+     * @param string $sNew_Iban
+     * @return bool
+     */
+    private function sendIbanUpdateEmail($iClientId, $sCurrent_Iban, $sNew_Iban)
+    {
+        $sTo      = 'controle_interne@unilend.fr';
+        $sSubject = 'Modification du IBAN dans le BO';
+        $sBody    = '
+                <html>
+                    <body>Le IBAN du client : ' . $iClientId . ' vient d\'être modifié par : ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] . ' (identifiant:' . $_SESSION['user']['id_user'] . ')' .
+            '<ul>
+                            <li>Ancien IBAN : ' . $sCurrent_Iban . '</li>
+                            <li>Nouvel IBAN : ' . $sNew_Iban . '</li>
+                        </ul>
+                    </body>
+                </html>';
+        /** @var Mailer $oEmail */
+        $oEmail = $this->loadLib('email');
+
+        $oEmail->setFrom('admin_bo@unilend.fr', 'Admin BO');
+        $oEmail->setSubject(stripslashes($sSubject));
+        $oEmail->setHTMLBody(stripslashes($sBody));
+        $oEmail->addRecipient($sTo);
+        return Mailer::send($oEmail);
     }
 
     public function _RIBlightbox()

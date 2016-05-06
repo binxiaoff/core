@@ -1898,45 +1898,121 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
-
-        $sSwift           = strtoupper($_POST['bic']);
-        $bBicOk           = true;
-        $bIbanOk          = true;
-        $sIban            = '';
-        $sRibChangeStatus = 'ok';
-
-        if ($this->ficelle->swift_validate(trim($sSwift))) {
-            $oLendersAccounts->bic = str_replace(' ', '', strtoupper($sSwift));
-        } else {
-            $bBicOk = false;
+        $iClientId = $_POST['id_client'];
+        if (false === is_numeric($iClientId)) {
+            echo json_encode(array('text' => 'Une erreur est survenue', 'color' => 'red'));
+            return 0;
         }
+        /** @var \lenders_accounts $oLendersAccounts */
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($iClientId, 'id_client_owner');
+
+        $sCurrrent_Bic = $oLendersAccounts->bic;
+        $sNew_Bic      = str_replace(' ', '', strtoupper($_POST['bic']));
+        $sIban         = '';
 
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
-                $bIbanOk = false;
-                break;
+                echo json_encode(array('text' => 'IBAN incorrect', 'color' => 'red'));
+                return 0;
             }
             $sIban .= strtoupper($_POST['iban' . $i]);
         }
+        $sCurrent_Iban = $oLendersAccounts->iban;
+        $sNew_Iban     = str_replace(' ', '', $sIban);
 
-        if ($bIbanOk && $this->ficelle->isIBAN($sIban)) {
-            $oLendersAccounts->iban = str_replace(' ', '', $sIban);
+        if (0 !== strcmp($sCurrrent_Bic, $sNew_Bic) && 0 !== strcmp($sCurrent_Iban, $sNew_Iban)) {
+            if ($this->validateBic($sNew_Bic, $oLendersAccounts) && $this->validateIban($sNew_Iban, $oLendersAccounts)) {
+                $this->sendIbanUpdateEmail($iClientId, $sCurrent_Iban, $sNew_Iban);
+                $sMessage = 'Bic et IBAN modifiés';
+                $sColor   = 'green';
+            } else {
+                $sMessage = 'BIC / IBAN incorrect';
+                $sColor   = 'red';
+            }
+        } elseif (0 !== strcmp($sCurrrent_Bic, $sNew_Bic)) {
+            if ($this->validateBic($sNew_Bic, $oLendersAccounts)) {
+                $sMessage = 'BIC modifié';
+                $sColor   = 'green';
+            } else {
+                $sMessage = 'BIC incorrect';
+                $sColor   = 'red';
+            }
+        } elseif (0 !== strcmp($sCurrent_Iban, $sNew_Iban)) {
+            if ($this->validateIban($sNew_Iban, $oLendersAccounts)) {
+                $this->sendIbanUpdateEmail($iClientId, $sCurrent_Iban, $sNew_Iban);
+                $sMessage = 'IBAN modifié';
+                $sColor   = 'green';
+            } else {
+                $sMessage = 'IBAN incorrect';
+                $sColor   = 'red';
+            }
         } else {
-            $bIbanOk = false;
+            echo json_encode(array('text' => 'Aucune modification', 'color' => 'orange'));
+            return 0;
         }
-
-        if (false === $bBicOk && false === $bIbanOk) {
-            $sRibChangeStatus = 'both_ko';
-        } else if (false === $bBicOk) {
-            $sRibChangeStatus = 'bic_ko';
-        } else if (false === $bIbanOk) {
-            $sRibChangeStatus = 'iban_ko';
-        }
-
         $oLendersAccounts->update();
-        echo $sRibChangeStatus;
+        echo json_encode(array('text' => $sMessage, 'color' => $sColor));
+    }
+
+    /**
+     * @param int $iClientId
+     * @param string $sCurrent_Iban
+     * @param string $sNew_Iban
+     * @return bool
+     */
+    private function sendIbanUpdateEmail($iClientId, $sCurrent_Iban, $sNew_Iban)
+    {
+        $sTo      = 'controle_interne@unilend.fr';
+        $sSubject = 'Modification du IBAN dans le BO';
+        $sBody    = '
+                <html>
+                    <body>Le IBAN du client : ' . $iClientId . ' vient d\'être modifié par : ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] . ' (identifiant:' . $_SESSION['user']['id_user'] . ')' .
+                        '<ul>
+                            <li>Ancien IBAN : ' . $sCurrent_Iban . '</li>
+                            <li>Nouvel IBAN : ' . $sNew_Iban . '</li>
+                        </ul>
+                    </body>
+                </html>';
+
+        /** @var Mailer $oEmail */
+        $oEmail = $this->loadLib('email');
+
+        $oEmail->setFrom('admin_bo@unilend.fr', 'Admin BO');
+        $oEmail->setSubject(stripslashes($sSubject));
+        $oEmail->setHTMLBody(stripslashes($sBody));
+        $oEmail->addRecipient($sTo);
+        return Mailer::send($oEmail);
+    }
+
+    /**
+     * @param string $sNew_Bic
+     * @param \lenders_accounts $oLendersAccounts
+     * @return bool
+     */
+    private function validateBic($sNew_Bic, &$oLendersAccounts)
+    {
+        if ($this->ficelle->swift_validate($sNew_Bic)) {
+            $oLendersAccounts->bic = $sNew_Bic;
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * @param string $sNew_Iban
+     * @param \lenders_accounts $oLendersAccounts
+     * @return bool
+     */
+    private function validateIban($sNew_Iban, &$oLendersAccounts)
+    {
+        if ($this->ficelle->isIBAN($sNew_Iban)) {
+            $oLendersAccounts->iban = $sNew_Iban;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function _lenderOnlineOffline()
