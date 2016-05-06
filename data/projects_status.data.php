@@ -59,6 +59,20 @@ class projects_status extends projects_status_crud
     const LIQUIDATION_JUDICIAIRE  = 150;
     const DEFAUT                  = 160;
 
+    /**
+     * List of projects with pending repayments
+     * @var array $runningRepayment
+     */
+    public static $runningRepayment = array(
+        self::REMBOURSEMENT,
+        self::PROBLEME,
+        self::PROBLEME_J_X,
+        self::RECOUVREMENT,
+        self::PROCEDURE_SAUVEGARDE,
+        self::REDRESSEMENT_JUDICIAIRE,
+        self::LIQUIDATION_JUDICIAIRE
+    );
+
     public function __construct($bdd, $params = '')
     {
         parent::projects_status($bdd, $params);

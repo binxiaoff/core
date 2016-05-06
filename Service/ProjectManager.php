@@ -737,6 +737,9 @@ class ProjectManager
             case \projects_status::REJET_COMITE:
                 $this->stopRemindersForOlderProjects($oProject);
                 break;
+            case \projects_status::A_FUNDER:
+                $this->oMailerManager->sendProjectOnlineToBorrower($oProject);
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
@@ -795,6 +798,19 @@ class ProjectManager
 
             $this->oMailerManager->sendFundedToBorrower($oProject);
         }
+    }
+
+    /**
+     * @param \projects $project
+     * @return string
+     */
+    public static function getBorrowerBankTransferLabel(\projects $project)
+    {
+        /** @var \companies $company */
+        $company = Loader::loadData('companies');
+        $company->get($project->id_company);
+
+        return 'UNILEND' . str_pad($project->id_project, 6, 0, STR_PAD_LEFT) . 'E' . trim($company->siren);
     }
 
     /**

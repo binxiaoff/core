@@ -1207,7 +1207,7 @@ table#bids td {
     border-radius: 5px;
     bottom: 26px;
     color: #d9aa34;
-    content:  "Offre réalisée avec Autolend";
+    content:  attr(data-info);
     left: 20%;
     padding: 5px 15px;
     position: absolute;
