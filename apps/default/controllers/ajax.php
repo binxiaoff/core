@@ -437,60 +437,7 @@ class ajaxController extends bootstrap
 
         echo json_encode($aCities);
     }
-
-    public function _displayAll()
-    {
-        $this->autoFireView = true;
-
-        $this->bids              = $this->loadData('bids');
-        $this->projects          = $this->loadData('projects');
-        $this->lenders_accounts  = $this->loadData('lenders_accounts');
-        $oAutoBidSettingsManager = $this->get('AutoBidSettingsManager');
-
-        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
-
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
-
-        $this->projects->get($this->bdd->escape_string($_POST['id']), 'id_project');
-
-        if (isset($_POST['tri'])) {
-            $order = $_POST['tri'];
-        } else {
-            $order = 'ordre';
-        }
-
-        if (isset($_POST['direction'])) {
-            if ($_POST['direction'] == 1) {
-                $direction        = 'ASC';
-                $this->direction  = 2;
-            } else {
-                $direction        = 'DESC';
-                $this->direction  = 1;
-            }
-        }
-
-        if ($order == 'rate') {
-            $order        = 'rate ' . $direction . ', ordre ' . $direction;
-        } elseif ($order == 'amount') {
-            $order        = 'amount ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
-        } elseif ($order == 'status') {
-            $order        = 'status ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
-        } else {
-            $order        = 'ordre ' . $direction;
-        }
-
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
-        $oProjectStatus->getLastStatut($this->projects->id_project);
-
-        $this->aBids          = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount      = $this->bids->getAVGAmount($this->projects->id_project);
-        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
-        $this->status         = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
-    }
-
+    
     // Affichage du tableau d'offres en cours mobile
     public function _displayAll_mobile()
     {

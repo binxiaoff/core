@@ -79,20 +79,20 @@
             }
         }
 
-         detailTabToggle.click(function(){
-             if((filterMode != undefined) && (filterMode == $(this).attr("class"))){
-                 changeDirection();
-             }
-             else{
-                 dirEl.html("1");
-             }
-             filterMode = $(this).attr("class");
-             triEl.html(filterMode);
-         });
-
-
-
         $(".detail-nav span").click(function() {
+            if ('rate' == $(this).attr("class")) {
+                return false;
+            }
+            filterMode = triEl.html();
+            if((filterMode == $(this).attr("class"))){
+                changeDirection();
+            }
+            else{
+                dirEl.html("1");
+            }
+            filterMode = $(this).attr("class");
+            triEl.html(filterMode);
+
             var targ = $(this).parent().parent().prev();
             var el = $(this).parent().parent().prev().children().children();
             var rate = targ.data('rate');
@@ -134,11 +134,7 @@
                 var sort = triEl.html();
                 var direction = dirEl.html();
                 $.get(
-                    add_url + '/ajax/displayDetail/' + project +'/' + rate + '/',
-                    {
-                        sort: sort,
-                        direction: direction
-                    }
+                    add_url + '/ajax/displayDetail/' + project +'/' + rate + '/'
                 ).done(function (data) {
                     $(data).insertAfter(targ.next());
                 });

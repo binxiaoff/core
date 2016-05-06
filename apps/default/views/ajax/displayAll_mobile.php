@@ -82,7 +82,6 @@
         <th>
             <span class="rate">
                 <?= $this->lng['preteur-projets']['taux-dinteret'] ?>
-                <i class="icon-grey icon-arrows"></i>
             </span>
         </th>
         <th>
