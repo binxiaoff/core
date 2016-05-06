@@ -109,12 +109,8 @@ class cronController extends bootstrap
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
             /** @var \echeanciers_emprunteur $oPaymentSchedule */
-            $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
-
-            $this->mails_text->get('mail-echeance-emprunteur', 'lang = "' . $this->language . '" AND type');
-
+            $oPaymentSchedule    = $this->loadData('echeanciers_emprunteur');
             $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
-
             /** @var \prelevements $oDirectDebit */
             $oDirectDebit = $this->loadData('prelevements');
 
@@ -151,23 +147,11 @@ class cronController extends bootstrap
                         'lien_tw'            => $this->twitter
                     );
 
-                    $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
-                    $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
-                    $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
-                    $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $sSender);
-                    $this->email->setSubject(stripslashes($sMailSubject));
-                    $this->email->setHTMLBody(stripslashes($sMailBody));
-
-                    if ($this->Config['env'] == 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($sMailClient));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $this->language, $aMail);
+                    $message->setTo($sMailClient);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             }
 
@@ -1466,36 +1450,22 @@ class cronController extends bootstrap
 
                 // Si a 10h on a pas encore de fichier bah on lance un mail notif
                 if ($ladate >= $NotifHeure && $ladate <= $NotifHeurefin) {
-                    //************************************//
-                    //*** ENVOI DU MAIL ETAT QUOTIDIEN ***//
-                    //************************************//
-                    // destinataire
-                    $this->settings->get('Adresse notification aucun virement', 'type');
+                    $oSettings = $this->loadData('settings');
+                    $oSettings->get('Adresse notification aucun virement', 'type');
                     $destinataire = $this->settings->value;
 
-                    $this->mails_text->get('notification-aucun-virement', 'lang = "' . $this->language . '" AND type');
+                    $this->mails_text->get('', 'lang = "' . $this->language . '" AND type');
 
-                    $surl = $this->surl;
-                    $url  = $this->lurl;
+                    $varMail = array(
+                        '$surl' => $this->surl,
+                        '$url'  => $this->lurl
+                    );
 
-                    $sujetMail = $this->mails_text->subject;
-                    eval("\$sujetMail = \"$sujetMail\";");
-
-                    $texteMail = $this->mails_text->content;
-                    eval("\$texteMail = \"$texteMail\";");
-
-                    $exp_name = $this->mails_text->exp_name;
-                    eval("\$exp_name = \"$exp_name\";");
-
-                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                    $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->addRecipient(trim($destinataire));
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                    $this->email->setHTMLBody($texteMail);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-aucun-virement', $this->language, $varMail, false);
+                    $message->setTo($destinataire);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             } else {
                 // lecture du fichier
@@ -1691,29 +1661,24 @@ class cronController extends bootstrap
                                     $bank_unilend->status         = 0; // chez unilend
                                     $bank_unilend->create();
 
-                                    $this->settings->get('Adresse notification nouveau remboursement anticipe', 'type');
+                                    $oSettings = $this->loadData('settings');
+                                    $oSettings->get('Adresse notification nouveau remboursement anticipe', 'type');
                                     $destinataire = $this->settings->value;
 
-                                    $this->mails_text->get('notification-nouveau-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+                                    $varMail = array(
+                                        '$surl'       => $this->surl,
+                                        '$url'        => $this->lurl,
+                                        '$id_projet'  => $this->projects->id_project,
+                                        '$montant'    => $transactions->montant / 100,
+                                        '$nom_projet' => $this->projects->title
+                                    );
 
-                                    $surl       = $this->surl;
-                                    $url        = $this->lurl;
-                                    $id_projet  = $this->projects->id_project;
-                                    $montant    = $transactions->montant / 100;
-                                    $nom_projet = $this->projects->title;
+                                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-remboursement-anticipe', $this->language, $varMail, false);
+                                    $message->setTo($destinataire);
+                                    $mailer = $this->get('mailer');
+                                    $mailer->send($message);
 
-                                    $sujetMail = $this->mails_text->subject;
-                                    eval("\$sujetMail = \"$sujetMail\";");
-
-                                    $texteMail = $this->mails_text->content;
-                                    eval("\$texteMail = \"$texteMail\";");
-
-                                    $this->email = $this->loadLib('email');
-                                    $this->email->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
-                                    $this->email->addRecipient(trim($destinataire));
-                                    $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                                    $this->email->setHTMLBody($texteMail);
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 } elseif (strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
                                     preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extract);
 
@@ -1821,8 +1786,6 @@ class cronController extends bootstrap
                                                         $this->clients_gestion_mails_notif->immediatement = 1;
                                                         $this->clients_gestion_mails_notif->update();
 
-                                                        $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
-
                                                         $varMail = array(
                                                             'surl'            => $this->surl,
                                                             'url'             => $this->lurl,
@@ -1836,24 +1799,11 @@ class cronController extends bootstrap
                                                             'lien_tw'         => $this->twitter
                                                         );
 
-                                                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                                        $this->email = $this->loadLib('email');
-                                                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                                        $this->email->setSubject(stripslashes($sujetMail));
-                                                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                                        if ($this->Config['env'] === 'prod') {
-                                                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                        } else {
-                                                            $this->email->addRecipient(trim($clients->email));
-                                                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                                        }
+                                                        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $this->language, $varMail);
+                                                        $message->setTo($clients->email);
+                                                        $mailer = $this->get('mailer');
+                                                        $mailer->send($message);
                                                     }
                                                 }
                                             }
@@ -2929,41 +2879,21 @@ class cronController extends bootstrap
 
             file_put_contents($this->path . 'protected/sftp/etat_quotidien/' . $filename . '.xls', $tableau);
 
-            // Pour regeneration on die avant l'envoie du mail
-
-            //
-            //************************************//
-            //*** ENVOI DU MAIL ETAT QUOTIDIEN ***//
-            //************************************//
-            // destinataire
-            $this->settings->get('Adresse notification etat quotidien', 'type');
+            /** @var \settings $oSettings */
+            $oSettings = $this->loadData('settings');
+            $oSettings->get('Adresse notification etat quotidien', 'type');
             $destinataire = $this->settings->value;
 
-            $this->mails_text->get('notification-etat-quotidien', 'lang = "' . $this->language . '" AND type');
+            $varMail = array(
+                '$surl' => $this->surl,
+                '$url'  => $this->lurl
+            );
 
-            $surl = $this->surl;
-            $url  = $this->lurl;
-
-            $sujetMail = $this->mails_text->subject;
-            eval("\$sujetMail = \"$sujetMail\";");
-
-            $texteMail = $this->mails_text->content;
-            eval("\$texteMail = \"$texteMail\";");
-
-            $exp_name = $this->mails_text->exp_name;
-            eval("\$exp_name = \"$exp_name\";");
-
-            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->attachFromString($tableau, $filename . '.xls');
-            $this->email->addRecipient(trim($destinataire));
-            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-            $this->email->setHTMLBody($texteMail);
-
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', $this->language, $varMail, false);
+            $message->setTo(trim($destinataire));
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
             $this->stopCron();
         }
@@ -3319,44 +3249,21 @@ class cronController extends bootstrap
             fwrite($sftpStream, $table);
             fclose($sftpStream);
 
-            //************************************//
-            //*** ENVOI DU MAIL ETAT FISCAL + echeances mois ***//
-            //************************************//
-            // destinataire
-            $this->mails_text->get('notification-etat-fiscal', 'lang = "' . $this->language . '" AND type');
+            /** @var \settings $oSettings */
+            $oSettings = $this->loadData('settings');
+            $oSettings->get('Adresse notification etat fiscal', 'type');
+            $destinataire = $this->settings->value;
 
-            $surl = $this->surl;
-            $url  = $this->lurl;
+            $varMail = array(
+                '$surl' => $this->surl,
+                '$url'  => $this->lurl
+            );
 
-            $sujetMail = $this->mails_text->subject;
-            eval("\$sujetMail = \"$sujetMail\";");
-
-            $texteMail = $this->mails_text->content;
-            eval("\$texteMail = \"$texteMail\";");
-
-            $exp_name = $this->mails_text->exp_name;
-            eval("\$exp_name = \"$exp_name\";");
-
-            // Nettoyage de printemps
-            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->attachFromString($table, $filename . '.xls');
-
-            if ($this->Config['env'] === 'prod') {
-                $this->settings->get('Adresse notification etat fiscal', 'type');
-                $this->email->addRecipient($this->settings->value);
-            } else {
-                foreach ($this->Config['DebugMailIt'] as $sEmailDebug) {
-                    $this->email->addRecipient($sEmailDebug);
-                }
-            }
-
-            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-            $this->email->setHTMLBody($texteMail);
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $this->language, $varMail, false);
+            $message->setTo(trim($destinataire));
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
             /////////////////////////////////////////////////////
             // On retire de bank unilend la partie  pour letat //
@@ -3399,42 +3306,6 @@ class cronController extends bootstrap
                 $bank_unilend->create();
             }
 
-            $this->stopCron();
-        }
-    }
-
-    // part une fois par jour a 1h du matin afin de checker les mail de la veille
-    public function _checkMailNoDestinataire()
-    {
-        if (true === $this->startCron('checkMailNoDestinataire', 5)) {
-            $nmp  = $this->loadData('nmp');
-            $date = mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"));
-            $date = date('Y-m-d', $date);
-
-            $lNoMail = $nmp->select('mailto = "" AND added LIKE "' . $date . '%"');
-
-            if ($lNoMail != false) {
-                foreach ($lNoMail as $m) {
-                    $subject = '[Alerte] Mail Sans destinataire';
-
-                    $message = '
-                        <html>
-                        <head>
-                          <title>[Alerte] Mail Sans destinataire</title>
-                        </head>
-                        <body>
-                            <p>Un mail a ete envoye sans destinataire</p>
-                            <table>
-                                <tr>
-                                    <th>id_nmp : </th><td>' . $m['id_nmp'] . '</td>
-                                </tr>
-                            </table>
-                        </body>
-                        </html>';
-
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                }
-            }
             $this->stopCron();
         }
     }
