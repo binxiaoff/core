@@ -787,7 +787,7 @@ div[class*="single-project"] #bids .table tr.line-focus td, #bids_mobile .table 
 
 div[class*="single-project"] .table tr:hover td { background:#fbf2f7; }
 
-div[class*="single-project"] .table th { background-color:#eceaed; padding:10px 0; text-align:center; font-family:Helvetica, Arial, sans-serif; text-transform:uppercase;font-weight:400; }
+div[class*="single-project"] .table th { background-color:#eceaed; padding:10px 0;font-family:Helvetica, Arial, sans-serif; text-transform:uppercase;font-weight:400; }
 div[class*="single-project"] .table th:first-child { text-align:left; border-radius:3px 0 0 0;}
 div[class*="single-project"] .table th:last-child { border-radius:0 3px 0 0; }
 div[class*="single-project"] .table .th-wrap { display:block; position:relative; }
@@ -883,10 +883,8 @@ div[class*="single-project"] .table .th-wrap { display:block; position:relative;
 
 .project-c th { color: #9F9D98; font-size: 13px; line-height: 17px; text-align:left; }
 .project-c th small { color: #d881b3; display:block; font-size: 11px; line-height: 15px; text-transform: uppercase;}
-.project-c .orders-table td, .project-c .orders-table th { text-align:right; }
+.project-c .orders-table td, .project-c .orders-table th { text-align:left; }
 .project-c .orders-table td.rate-cell { text-align:left;cursor:pointer;}
-.project-c .orders-table td.bid-number { text-align:left; }
-.project-c .orders-table th:first-child { padding-left: 20px;text-align:left; }
 .project-c .orders-table { font-weight:bold; }
 .detail-nav { display:none; }
 .table-body.line-focus + .detail-nav { display:table-row; }

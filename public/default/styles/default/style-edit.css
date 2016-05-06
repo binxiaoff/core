@@ -158,7 +158,7 @@ form p{padding-left:0px;}
 .enchereVousColor > td > .green-span{color:#40b34f;}
 .enchereVousColor > td > .red-span{color:#ec1a29;}
 .enchereVous{position:absolute;left:-64px;color:#b10366;}
-
+..table-body.detail{opacity:0;}
 
 
 

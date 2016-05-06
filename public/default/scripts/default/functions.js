@@ -62,7 +62,6 @@
             dirEl;
 
         if( /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ) {
-            $("#tri_mobile").html("detail-bid-number");
             dirEl = $("#direction_mobile");
             triEl = $("#tri_mobile");
         }
@@ -80,18 +79,42 @@
             }
         }
 
-        detailTabToggle.click(function(){
-            if((filterMode != undefined) && (filterMode == $(this).attr("class"))){
-                changeDirection();
-            }
-            else{
-                dirEl.html("1");
-            }
-            filterMode = $(this).attr("class");
-            triEl.html(filterMode);
+         detailTabToggle.click(function(){
+             if((filterMode != undefined) && (filterMode == $(this).attr("class"))){
+                 changeDirection();
+             }
+             else{
+                 dirEl.html("1");
+             }
+             filterMode = $(this).attr("class");
+             triEl.html(filterMode);
+         });
+
+
+
+        $(".detail-nav span").click(function() {
+            var targ = $(this).parent().parent().prev();
+            var el = $(this).parent().parent().prev().children().children();
+            var rate = targ.data('rate');
+            var project = targ.data('project');
+            var sort = triEl.html();
+            var direction = dirEl.html();
+            $(".table-body.detail").remove();
+            $.get(
+                add_url + '/ajax/displayDetail/' + project +'/' + rate + '/',
+                {
+                    sort: sort,
+                    direction: direction
+                }
+            ).done(function (data) {
+                $(data).insertAfter(targ.next());
+            });
+            targ.addClass("line-focus");
+            el.addClass("expand");
         });
 
-        $(".table-body").click(function () {
+
+        $(".table-body").click(function() {
             var targ = $(this);
             var el = $(this).children().children().children();
             if(el.hasClass("expand")){
@@ -108,8 +131,8 @@
                 dirEl.html("1");
                 var rate = targ.data('rate');
                 var project = targ.data('project');
-                var sort = $("#tri").html();
-                var direction = $("#direction").html();
+                var sort = triEl.html();
+                var direction = dirEl.html();
                 $.get(
                     add_url + '/ajax/displayDetail/' + project +'/' + rate + '/',
                     {

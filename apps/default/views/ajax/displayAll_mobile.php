@@ -74,25 +74,25 @@
     </tr>
     <tr class="detail-nav">
         <th>
-            <span class="detail-bid-number">
+            <span class="bid-number">
                 N°
                 <i class="icon-grey icon-arrows"></i>
             </span>
         </th>
         <th>
-            <span class="detail-rate">
+            <span class="rate">
                 <?= $this->lng['preteur-projets']['taux-dinteret'] ?>
                 <i class="icon-grey icon-arrows"></i>
             </span>
         </th>
         <th>
-            <span class="detail-amount">
+            <span class="amount">
                 <?= $this->lng['preteur-projets']['montant'] ?>
                 <i class="icon-grey icon-arrows"></i>
             </span>
         </th>
         <th>
-            <span class="detail-status">
+            <span class="status">
                 <?= $this->lng['preteur-projets']['statuts'] ?>
                 <i class="icon-grey icon-arrows"></i>
             </span>
