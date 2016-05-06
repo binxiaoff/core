@@ -533,6 +533,7 @@
                             <?php if (
                                 in_array($this->users->id_user_type, array(\users_types::TYPE_ADMIN, \users_types::TYPE_ANALYSTE))
                                 && in_array($this->current_projects_status->status, array(\projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE, \projects_status::REJETE))
+                                && $this->sRejectionReason == ''
                             ) : ?>
                                 <a href="<?= $this->lurl ?>/thickbox/project_rejection_reason/<?= $this->projects->id_project ?>" class="thickbox"><img src="<?= $this->surl ?>/images/admin/edit.png" alt="Modifier"/></a>
                             <?php endif; ?>

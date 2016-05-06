@@ -345,22 +345,21 @@ class dossiersController extends bootstrap
                 if (
                     $this->projects_last_status_history->get($this->projects->id_project, 'id_project')
                     && $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')
+                    && false === $oProjectsStatusHistoryDetails->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')
                 ) {
-                    if ($oProjectsStatusHistoryDetails->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')) {
-                        if ($oProjectsStatusHistoryDetails->analyst_rejection_reason > 0) {
-                            $oProjectsStatusHistoryDetails->analyst_rejection_reason = $_POST['rejection_reason'];
-                        } elseif ($oProjectsStatusHistoryDetails->commercial_rejection_reason > 0) {
+                    switch ($this->projects_status->status) {
+                        case \projects_status::REJETE:
                             $oProjectsStatusHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
-                        } elseif ($oProjectsStatusHistoryDetails->comity_rejection_reason > 0) {
+                            break;
+                        case \projects_status::REJET_ANALYSTE:
+                            $oProjectsStatusHistoryDetails->analyst_rejection_reason = $_POST['rejection_reason'];
+                            break;
+                        case \projects_status::REJET_COMITE:
                             $oProjectsStatusHistoryDetails->comity_rejection_reason = $_POST['rejection_reason'];
-                        }
-                        $oProjectsStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
-                        $oProjectsStatusHistoryDetails->update();
-                    } else {
-                        $oProjectsStatusHistoryDetails->analyst_rejection_reason    = $_POST['rejection_reason'];
-                        $oProjectsStatusHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
-                        $oProjectsStatusHistoryDetails->create();
+                            break;
                     }
+                    $oProjectsStatusHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
+                    $oProjectsStatusHistoryDetails->create();
                 }
             }
 
@@ -383,7 +382,6 @@ class dossiersController extends bootstrap
                 if (false === $dates_valide && in_array(\projects_status::A_FUNDER, array($_POST['status'], $this->current_projects_status->status))) {
                     $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h';
                 } else {
-
                     $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
                     $_SESSION['freeow']['message'] = '';
 
@@ -1190,17 +1188,24 @@ class dossiersController extends bootstrap
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
                 $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
 
-                /** @var \rejection_reason $oRejectionReason */
+                /** @var \project_rejection_reason $oRejectionReason */
                 $oRejectionReason = $this->loadData('project_rejection_reason');
 
                 /** @var \projects_last_status_history $oProjectsLastStatusHistory */
                 $oProjectsLastStatusHistory = $this->loadData('projects_last_status_history');
 
                 $oProjectsLastStatusHistory->get($this->projects->id_project, 'id_project');
-                if ($oProjectsStatusHistoryDetails->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history')) {
-                    $this->sRejectionReason = $oRejectionReason->getRejectionReason($oProjectsStatusHistoryDetails);
+                if (
+                    $oProjectsStatusHistoryDetails->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history')
+                    && ($oProjectsStatusHistoryDetails->commercial_rejection_reason > 0 && $oRejectionReason->get($oProjectsStatusHistoryDetails->commercial_rejection_reason)
+                        || $oProjectsStatusHistoryDetails->comity_rejection_reason > 0 && $oRejectionReason->get($oProjectsStatusHistoryDetails->comity_rejection_reason)
+                        || $oProjectsStatusHistoryDetails->analyst_rejection_reason > 0 && $oRejectionReason->get($oProjectsStatusHistoryDetails->analyst_rejection_reason)
+                    )
+                ) {
+                    $this->sRejectionReason = $oRejectionReason->label;
+                } else {
+                    $this->sRejectionReason = '';
                 }
-                $this->aRejectionReasons = $oRejectionReason->select();
             }
 
             $this->aCompanyProjects      = $this->companies->getProjectsBySIREN();

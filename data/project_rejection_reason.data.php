@@ -65,16 +65,4 @@ class project_rejection_reason extends project_rejection_reason_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM project_rejection_reason WHERE ' . $field . ' = "' . $id . '"'), 0, 0) > 0;
     }
-
-    public function getRejectionReason(\projects_status_history_details $oStatusHistoryDetails)
-    {
-        if ($oStatusHistoryDetails->commercial_rejection_reason > 0 && $this->get($oStatusHistoryDetails->commercial_rejection_reason)
-            || $oStatusHistoryDetails->comity_rejection_reason > 0 && $this->get($oStatusHistoryDetails->comity_rejection_reason)
-            || $oStatusHistoryDetails->analyst_rejection_reason > 0 && $this->get($oStatusHistoryDetails->analyst_rejection_reason)
-        ) {
-            return $this->label;
-        } else {
-            return '';
-        }
-    }
 }
