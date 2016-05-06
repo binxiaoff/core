@@ -189,16 +189,17 @@ class emprunteursController extends bootstrap
 
     public function _edit()
     {
-        $this->clients           = $this->loadData('clients');
-        $this->clients_adresses  = $this->loadData('clients_adresses');
-        $this->companies         = $this->loadData('companies');
-        $this->companies_bilans  = $this->loadData('companies_bilans');
-        $this->projects          = $this->loadData('projects');
-        $this->projects_status   = $this->loadData('projects_status');
-        $this->clients_mandats   = $this->loadData('clients_mandats');
-        $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
-        $prelevements            = $this->loadData('prelevements');
-        $this->clients->history  = '';
+        $this->clients          = $this->loadData('clients');
+        $this->clients_adresses = $this->loadData('clients_adresses');
+        $this->companies        = $this->loadData('companies');
+        $this->companies_bilans = $this->loadData('companies_bilans');
+        $this->projects         = $this->loadData('projects');
+        $this->projects_status  = $this->loadData('projects_status');
+        $this->clients_mandats  = $this->loadData('clients_mandats');
+        $this->projects_pouvoir = $this->loadData('projects_pouvoir');
+        $prelevements           = $this->loadData('prelevements');
+        $this->clients->history = '';
+        $this->settings         = $this->loadData('settings');
 
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
@@ -339,8 +340,6 @@ class emprunteursController extends bootstrap
                                 $companie->get($project->id_company, 'id_company');
                                 $e->get($companie->id_client_owner, 'id_client');
 
-                                $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
-
                                 $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
                                 $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
                                 $mensualite = ($mensualite / 100);
@@ -369,20 +368,11 @@ class emprunteursController extends bootstrap
                                     'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
                                 );
 
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                                $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $e->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($e->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
+                                /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $this->language, $varMail);
+                                $message->setTo($e->email);
+                                $mailer = $this->get('mailer');
+                                $mailer->send($message);
                             }
                         }
                     }

@@ -219,6 +219,7 @@ class preteursController extends bootstrap
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lNatio                  = $this->nationalites->select();
         $this->lPays                   = $this->pays->select('', 'ordre ASC');
+        $this->settings                = $this->loadData('settings');
 
         $lElements = $this->blocs_elements->select('id_bloc = 9 AND id_langue = "' . $this->language . '"');
         foreach ($lElements as $b_elt) {
@@ -591,9 +592,9 @@ class preteursController extends bootstrap
                     // Recuperation du modele de mail
                     // modif ou inscription
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = 5') > 0) {
-                        $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
+                        $sTypeMail = 'preteur-validation-modification-compte';
                     } else {
-                        $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
+                        $sTypeMail = 'preteur-confirmation-activation';
                     }
 
                     $this->settings->get('Facebook', 'type');
@@ -610,24 +611,12 @@ class preteursController extends bootstrap
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw
                     );
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $this->language, $varMail);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
                     $this->foreignerTax($this->clients, $this->lenders_accounts, $this->clients_adresses);
 
@@ -806,10 +795,10 @@ class preteursController extends bootstrap
                     $this->clients_status_history->addStatus($_SESSION['user']['id_user'], \clients_status::VALIDATED, $this->clients->id_client);
 
                     if ($this->clients_status_history->counter('id_client = ' . $this->clients->id_client . ' AND id_client_status = (SELECT cs.id_client_status FROM clients_status cs WHERE cs.status = ' . \clients_status::VALIDATED . ')') > 1) {
-                        $this->mails_text->get('preteur-validation-modification-compte', 'lang = "' . $this->language . '" AND type');
+                        $sTypeMail = 'preteur-validation-modification-compte';
                     } else {
                         $this->create_offre_bienvenue($this->clients->id_client);
-                        $this->mails_text->get('preteur-confirmation-activation', 'lang = "' . $this->language . '" AND type');
+                        $sTypeMail = 'preteur-confirmation-activation';
                     }
 
                     $this->settings->get('Facebook', 'type');
@@ -826,20 +815,12 @@ class preteursController extends bootstrap
                         'lien_fb' => $lien_fb,
                         'lien_tw' => $lien_tw
                     );
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                    $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $this->language, $varMail);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
                     $_SESSION['compte_valide'] = true;
                 }
@@ -951,9 +932,10 @@ class preteursController extends bootstrap
 
         $this->clients                = $this->loadData('clients');
         $this->clients_status_history = $this->loadData('clients_status_history');
+        $this->mails_text             = $this->loadData('mails_text');
+        $this->settings               = $this->loadData('settings');
 
         $this->clients->get($this->params[0], 'id_client');
-
         $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
 
         $this->settings->get('Facebook', 'type');
@@ -978,7 +960,10 @@ class preteursController extends bootstrap
             'lien_tw'       => $lien_tw
         );
 
-        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+        $tabVars = array();
+        foreach ($varMail as $key => $value) {
+            $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
+        }
 
         echo $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
         die;
@@ -990,6 +975,7 @@ class preteursController extends bootstrap
         $offres_bienvenues_details = $this->loadData('offres_bienvenues_details');
         $transactions              = $this->loadData('transactions');
         $this->clients             = $this->loadData('clients');
+        $this->settings            = $this->loadData('settings');
 
         $this->settings->get("Offre de bienvenue motif", 'type');
         $this->motifOffreBienvenue = $this->settings->value;
@@ -1145,8 +1131,6 @@ class preteursController extends bootstrap
                     $bank_unilend->type           = 4; // Unilend offre de bienvenue
                     $bank_unilend->create();
 
-                    $this->mails_text->get('offre-de-bienvenue', 'lang = "' . $this->language . '" AND type');
-
                     $this->settings->get('Facebook', 'type');
                     $lien_fb = $this->settings->value;
 
@@ -1163,24 +1147,11 @@ class preteursController extends bootstrap
                         'lien_tw'         => $lien_tw
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('offre-de-bienvenue', $this->language, $varMail);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             }
         }
@@ -1764,13 +1735,11 @@ class preteursController extends bootstrap
 
     private function sendEmailClosedAccount(\clients $oClient)
     {
-        $this->mails_text->get('confirmation-fermeture-compte-preteur', 'lang = "' . $this->language . '" AND type');
-
-        $this->settings->get('Facebook', 'type');
-        $sFB = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
-        $sTW = $this->settings->value;
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
+        $sFB = $oSettings->value;
+        $oSettings->get('Twitter', 'type');
+        $sTW = $oSettings->value;
 
         $aVariablesMail = array(
             'surl'    => $this->surl,
@@ -1779,33 +1748,23 @@ class preteursController extends bootstrap
             'lien_fb' => $sFB,
             'lien_tw' => $sTW
         );
-        $tabVars        = $this->tnmp->constructionVariablesServeur($aVariablesMail);
 
-        $exp_name = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $aVariablesMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient(trim($oClient->email));
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $this->language, $aVariablesMail);
+        $message->setTo($oClient->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     private function sendCompletenessRequest()
     {
-        $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
+        $oSettings = $this->loadData('settings');
 
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
+        $oSettings->get('Facebook', 'type');
+        $lien_fb = $oSettings->value;
 
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
+        $oSettings->get('Twitter', 'type');
+        $lien_tw = $oSettings->value;
 
         $lapage = (in_array($this->clients->type, array(\clients::TYPE_PERSON, \clients::TYPE_PERSON_FOREIGNER))) ? 'particulier_doc' : 'societe_doc';
 
@@ -1822,20 +1781,12 @@ class preteursController extends bootstrap
             'lien_fb'       => $lien_fb,
             'lien_tw'       => $lien_tw
         );
-        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient(trim($this->clients->email));
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $this->language, $varMail);
+        $message->setTo($this->clients->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     private function getMessageAboutClientStatus()
