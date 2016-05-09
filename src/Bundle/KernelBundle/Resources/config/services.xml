@@ -40,6 +40,8 @@
 
         <service id="unilend.service.email_manager" class="Unilend\Service\MailerManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument type="service" id="swiftmailer.mailer.default" />
         </service>
 
         <service id="unilend.service.project_manager" class="Unilend\Service\ProjectManager">
