@@ -1191,7 +1191,6 @@ class dossiersController extends bootstrap
             $oProjectNeed = $this->loadData('project_need');
             $this->aNeeds = $oProjectNeed->getTree();
 
-            $this->projects_status->getLastStatut($this->projects->id_project);
             if (in_array($this->projects_status->status, array(\projects_status::REJETE, \projects_status::REJET_ANALYSTE, \projects_status::REJET_COMITE))) {
                 /** @var \projects_status_history_details $oProjectsStatusHistoryDetails */
                 $oProjectsStatusHistoryDetails = $this->loadData('projects_status_history_details');
