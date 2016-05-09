@@ -368,12 +368,12 @@ class dossiersController extends bootstrap
                         $this->upload->setExtValide(array('jpeg', 'JPEG', 'jpg', 'JPG'));
 
                         $oImagick = new \Imagick($_FILES['photo_projet']['tmp_name']);
-
+                        $imageConfig = $this->getParameter('image_resize');
                         if (
-                            $oImagick->getImageWidth() > $this->Config['images']['projets']['width']
-                            || $oImagick->getImageHeight() > $this->Config['images']['projets']['height']
+                            $oImagick->getImageWidth() > $imageConfig['projets']['width']
+                            || $oImagick->getImageHeight() > $imageConfig['projets']['height']
                         ) {
-                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $this->Config['images']['projets']['width'] . 'x' . $this->Config['images']['projets']['height'] . ')<br>';
+                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $imageConfig['projets']['width'] . 'x' . $imageConfig['projets']['height'] . ')<br>';
                         } elseif ($this->upload->doUpload('photo_projet', '', true)) {
                             // Delete previous image of the name was different from the new one
                             if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {

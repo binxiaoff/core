@@ -105,7 +105,6 @@ class projectsController extends bootstrap
 
         $this->bIsConnected                  = $this->clients->checkAccess();
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
-        $this->restriction_ip                = in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]);
 
         if ($this->bIsConnected) {
             $this->setHeader('header_account');

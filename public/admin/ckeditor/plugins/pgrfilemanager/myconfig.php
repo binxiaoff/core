@@ -28,17 +28,22 @@ THE SOFTWARE.
 //i.e. include($_SERVER['DOCUMENT_ROOT'].'/_files/application/PGRFileManagerConfig.php');
 
 // Hotfix-20150819-page-blanche-explorateur-fichier
-include('../../../../../config.php');
+$loader = require __DIR__ . '/../../../../../app/autoload.php';
+require_once __DIR__ . '/../../../../../app/AppKernel.php';
+$kernel = new AppKernel('prod', false);
+$kernel->boot();
 
-//real absolute path to root directory (directory you want to use with PGRFileManager) on your server  
+$userPath  = $kernel->getContainer()->getParameter('user_path');
+$staticUrl = $kernel->getContainer()->get('assets.packages')->getUrl();
+//real absolute path to root directory (directory you want to use with PGRFileManager) on your server
 //i.e  PGRFileManagerConfig::$rootPath = '/home/user/htdocs/userfiles'
 //you can check your absoulte path using
-PGRFileManagerConfig::$rootPath = $config['user_path'][$config['env']].'uploads';
+PGRFileManagerConfig::$rootPath = $userPath.'uploads';
 //url path to root directory
 //this path is using to display images and will be returned to ckeditor with relative path to selected file
 //i.e http://my-super-web-page/gallery
 //i.e /gallery
-PGRFileManagerConfig::$urlPath = $config['static_url'][$config['env']].'/var/uploads';
+PGRFileManagerConfig::$urlPath = $staticUrl.'/var/uploads';
 
 
 //    !!!How to determine rootPath and urlPath!!!
