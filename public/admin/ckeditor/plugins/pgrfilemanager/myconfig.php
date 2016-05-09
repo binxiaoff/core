@@ -34,7 +34,7 @@ $kernel = new AppKernel('prod', false);
 $kernel->boot();
 
 $userPath  = $kernel->getContainer()->getParameter('user_path');
-$staticUrl = $kernel->getContainer()->get('assets.packages')->getUrl();
+$staticUrl = $kernel->getContainer()->get('assets.packages')->getUrl('');
 //real absolute path to root directory (directory you want to use with PGRFileManager) on your server
 //i.e  PGRFileManagerConfig::$rootPath = '/home/user/htdocs/userfiles'
 //you can check your absoulte path using

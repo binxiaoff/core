@@ -53,7 +53,7 @@ abstract class Controller extends ContainerAware
         $this->spath      = $this->get('kernel')->getRootDir() . '/../public/default/var/';
         $this->staticPath = $this->get('kernel')->getRootDir() . '/../public/default/';
         $this->logPath    = $this->get('kernel')->getLogDir();
-        $this->surl       = $this->get('assets.packages')->getUrl();
+        $this->surl       = $this->get('assets.packages')->getUrl('');
         $this->url        = $this->Config['url'][$this->Config['env']][$this->App];
         $this->lurl       = $this->Config['url'][$this->Config['env']][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
 
