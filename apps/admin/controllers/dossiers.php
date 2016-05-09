@@ -345,21 +345,22 @@ class dossiersController extends bootstrap
                 if (
                     $this->projects_last_status_history->get($this->projects->id_project, 'id_project')
                     && $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')
-                    && false === $oProjectsStatusHistoryDetails->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')
                 ) {
-                    switch ($this->projects_status->status) {
-                        case \projects_status::REJETE:
-                            $oProjectsStatusHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
-                            break;
-                        case \projects_status::REJET_ANALYSTE:
+                    if ($oProjectsStatusHistoryDetails->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history')) {
+                        if ($oProjectsStatusHistoryDetails->analyst_rejection_reason > 0) {
                             $oProjectsStatusHistoryDetails->analyst_rejection_reason = $_POST['rejection_reason'];
-                            break;
-                        case \projects_status::REJET_COMITE:
+                        } elseif ($oProjectsStatusHistoryDetails->commercial_rejection_reason > 0) {
+                            $oProjectsStatusHistoryDetails->commercial_rejection_reason = $_POST['rejection_reason'];
+                        } elseif ($oProjectsStatusHistoryDetails->comity_rejection_reason > 0) {
                             $oProjectsStatusHistoryDetails->comity_rejection_reason = $_POST['rejection_reason'];
-                            break;
+                        }
+                        $oProjectsStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+                        $oProjectsStatusHistoryDetails->update();
+                    } else {
+                        $oProjectsStatusHistoryDetails->analyst_rejection_reason    = $_POST['rejection_reason'];
+                        $oProjectsStatusHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
+                        $oProjectsStatusHistoryDetails->create();
                     }
-                    $oProjectsStatusHistoryDetails->id_project_status_history   = $this->projects_status_history->id_project_status_history;
-                    $oProjectsStatusHistoryDetails->create();
                 }
             }
 

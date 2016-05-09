@@ -1410,12 +1410,11 @@ class ajaxController extends bootstrap
                         </td>
                     ';
                 } elseif ($_POST['status'] == 2) {
+                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects);
+
                     /** @var \projects_last_status_history $oProjectsLastStatusHistory */
                     $oProjectsLastStatusHistory = $this->loadData('projects_last_status_history');
-
-                    $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects);
                     $oProjectsLastStatusHistory->get($this->projects->id_project, 'id_project');
-                    $this->projects_status_history->get($oProjectsLastStatusHistory->id_project_status_history, 'id_project_status_history');
 
                     /** @var \projects_status_history $oProjectStatusHistory */
                     $oProjectStatusHistory = $this->loadData('projects_status_history');
@@ -1424,7 +1423,7 @@ class ajaxController extends bootstrap
                     /** @var \projects_status_history_details $oHistoryDetails */
                     $oHistoryDetails                            = $this->loadData('projects_status_history_details');
                     $oHistoryDetails->id_project_status_history = $oProjectStatusHistory->id_project_status_history;
-                    $oHistoryDetails->comity_rejection_reason  = $_POST['rejection_reason'];
+                    $oHistoryDetails->comity_rejection_reason   = $_POST['rejection_reason'];
                     $oHistoryDetails->create();
 
                     /** @var \project_rejection_reason $oRejectionReason */
