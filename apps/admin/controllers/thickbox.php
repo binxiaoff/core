@@ -174,7 +174,7 @@ class thickboxController extends bootstrap
         /** @var \project_rejection_reason $oProjectRejectionReason */
         $oProjectRejectionReason = $this->loadData('project_rejection_reason');
 
-        $this->iProjectId = $this->params[0];
+        $this->iProjectId        = $this->params[0];
         $this->aRejectionReasons = $oProjectRejectionReason->select();
     }
 }

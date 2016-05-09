@@ -1412,10 +1412,6 @@ class ajaxController extends bootstrap
                 } elseif ($_POST['status'] == 2) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REJET_COMITE, $this->projects);
 
-                    /** @var \projects_last_status_history $oProjectsLastStatusHistory */
-                    $oProjectsLastStatusHistory = $this->loadData('projects_last_status_history');
-                    $oProjectsLastStatusHistory->get($this->projects->id_project, 'id_project');
-
                     /** @var \projects_status_history $oProjectStatusHistory */
                     $oProjectStatusHistory = $this->loadData('projects_status_history');
                     $oProjectStatusHistory->loadLastProjectHistory($this->projects->id_project);
