@@ -27,8 +27,7 @@ class attachment_helper
      * @param string     $field
      * @param upload     $upload
      * @param string     $sNewName
-     *
-     * @return bool|string
+     * @return bool|int
      */
     public function upload($ownerId, $ownerType, $attachmentType, $field, $upload, $sNewName = '')
     {
@@ -230,6 +229,27 @@ class attachment_helper
                 return 'derniers_comptes_consolides_groupe';
             default:
                 return '';
+        }
+    }
+
+    /**
+     * @param \attachment_type $oAttachment
+     * @param int $ownerId
+     * @param int $ownerType
+     * @param int $attachmentType
+     * @return int|bool
+     */
+    public function attachmentExists($oAttachment, $ownerId, $ownerType, $attachmentType)
+    {
+        $attachmentInfo = $oAttachment->select(
+            'id_owner = ' . $ownerId . '
+            AND type_owner = "' . $ownerType . '"
+            AND id_type = ' . $attachmentType
+        );
+        if (false === empty($attachmentInfo) && $attachmentInfo[0]['path'] != '') {
+            return $attachmentInfo[0]['id'];
+        } else {
+            return false;
         }
     }
 }
