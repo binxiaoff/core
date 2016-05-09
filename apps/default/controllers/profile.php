@@ -631,77 +631,32 @@ class profileController extends bootstrap
                     $oClientManager = $this->get('unilend.service.client_manager');
                     $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
-                    $this->settings->get('Adresse notification modification preteur', 'type');
-                    $destinataire = $this->settings->value;
+                    /** @var \settings $oSettings */
+                    $oSettings = $this->loadData('settings');
+                    $oSettings->get('Adresse notification modification preteur', 'type');
+                    $destinataire = $oSettings->value;
                     $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
-                    $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
 
-                    $surl         = $this->surl;
-                    $url          = $this->lurl;
-                    $id_preteur   = $this->clients->id_client;
-                    $nom          = utf8_decode($this->clients->nom);
-                    $prenom       = utf8_decode($this->clients->prenom);
-                    $montant      = $this->solde . ' euros';
-                    $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:i');
-                    $email        = $this->clients->email;
-                    $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
-
-                    $sujetMail = htmlentities($this->mails_text->subject);
-                    eval("\$sujetMail = \"$sujetMail\";");
-
-                    $texteMail = $this->mails_text->content;
-                    eval("\$texteMail = \"$texteMail\";");
-
-                    $exp_name = $this->mails_text->exp_name;
-                    eval("\$exp_name = \"$exp_name\";");
-
-                    // Nettoyage de printemps
-                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                    $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->addRecipient(trim($destinataire));
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                    $this->email->setHTMLBody($texteMail);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-
-                    //************************************//
-                    //*** ENVOI DU MAIL GENERATION MDP ***//
-                    //************************************//
-                    $this->mails_text->get('preteur-modification-compte', 'lang = "' . $this->language . '" AND type');
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'    => $this->surl,
-                        'url'     => $this->lurl,
-                        'prenom'  => $this->clients->prenom,
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw
+                    $varsMail = array(
+                        '$surl'         => $this->surl,
+                        '$url'          => $this->lurl,
+                        '$id_preteur'   => $this->clients->id_client,
+                        '$nom'          => utf8_decode($this->clients->nom),
+                        '$prenom'       => utf8_decode($this->clients->prenom),
+                        '$montant'      => $this->solde . ' euros',
+                        '$date'         => date('d') . ' ' . $lemois . ' ' . date('Y'),
+                        '$heure_minute' => date('H:i'),
+                        '$email'        => $this->clients->email,
+                        '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $this->language, $varsMail, false);
+                    $message->setTo($destinataire);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    $this->sendAccountModificationEmail($this->clients);
                 }
                 $_SESSION['reponse_profile_perso'] = $this->lng['profile']['titre-1'] . ' ' . $this->lng['profile']['sauvegardees'];
                 header('Location: ' . $this->lurl . '/profile/particulier/#info_perso');
@@ -744,55 +699,7 @@ class profileController extends bootstrap
                 $_SESSION['client']['password'] = $this->clients->password;
                 $this->clients->update();
 
-                //************************************//
-                //*** ENVOI DU MAIL GENERATION MDP ***//
-                //************************************//
-
-                // Recuperation du modele de mail
-                $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
-
-                $surl  = $this->surl;
-                $url   = $this->lurl;
-                $login = $this->clients->email;
-
-                // FB
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
-
-                // Twitter
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
-
-
-                $varMail = array(
-                    'surl'     => $surl,
-                    'url'      => $url,
-                    'login'    => $login,
-                    'prenom_p' => $this->clients->prenom,
-                    'mdp'      => '',
-                    'lien_fb'  => $lien_fb,
-                    'lien_tw'  => $lien_tw
-                );
-
-
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                $this->sendPasswordModificationEmail($this->clients);
 
                 $_SESSION['reponse_profile_secu'] = $this->lng['profile']['votre-mot-de-passe-a-bien-ete-change'];
             }
@@ -1454,75 +1361,32 @@ class profileController extends bootstrap
                     $oClientManager = $this->get('unilend.service.client_manager');
                     $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
-                    $this->settings->get('Adresse notification modification preteur', 'type');
-                    $destinataire = $this->settings->value;
+                    /** @var \settings $oSettings */
+                    $oSettings = $this->loadData('settings');
+                    $oSettings->get('Adresse notification modification preteur', 'type');
+                    $destinataire = $oSettings->value;
                     $lemois = utf8_decode($this->dates->tableauMois[$this->language][date('n')]);
-                    $this->mails_text->get('notification-modification-preteurs', 'lang = "' . $this->language . '" AND type');
 
-                    $surl         = $this->surl;
-                    $url          = $this->lurl;
-                    $id_preteur   = $this->clients->id_client;
-                    $nom          = utf8_decode($this->clients->nom);
-                    $prenom       = utf8_decode($this->clients->prenom);
-                    $montant      = $this->solde . ' euros';
-                    $date         = date('d') . ' ' . $lemois . ' ' . date('Y');
-                    $heure_minute = date('H:i');
-                    $email        = $this->clients->email;
-                    $lien         = $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account;
-
-                    $sujetMail = htmlentities($this->mails_text->subject);
-                    eval("\$sujetMail = \"$sujetMail\";");
-                    $texteMail = $this->mails_text->content;
-                    eval("\$texteMail = \"$texteMail\";");
-                    $exp_name = $this->mails_text->exp_name;
-                    eval("\$exp_name = \"$exp_name\";");
-
-                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                    $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->addRecipient(trim($destinataire));
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                    $this->email->setHTMLBody($texteMail);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-
-                    //************************************//
-                    //*** ENVOI DU MAIL GENERATION MDP ***//
-                    //************************************//
-
-                    $this->mails_text->get('preteur-modification-compte', 'lang = "' . $this->language . '" AND type');
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
-
-                    $varMail = array(
-                        'surl'    => $this->surl,
-                        'url'     => $this->lurl,
-                        'prenom'  => $this->clients->prenom,
-                        'lien_fb' => $lien_fb,
-                        'lien_tw' => $lien_tw
+                    $varsMail = array(
+                        '$surl'         => $this->surl,
+                        '$url'          => $this->lurl,
+                        '$id_preteur'   => $this->clients->id_client,
+                        '$nom'          => utf8_decode($this->clients->nom),
+                        '$prenom'       => utf8_decode($this->clients->prenom),
+                        '$montant'      => $this->solde . ' euros',
+                        '$date'         => date('d') . ' ' . $lemois . ' ' . date('Y'),
+                        '$heure_minute' => date('H:i'),
+                        '$email'        => $this->clients->email,
+                        '$lien'         => $this->aurl . '/preteurs/edit_preteur/' . $this->lenders_accounts->id_lender_account
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $this->language, $varsMail, false);
+                    $message->setTo($destinataire);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    $this->sendAccountModificationEmail($this->clients);
                 }
                 if ($this->reponse_email != '') {
                     $_SESSION['reponse_email'] = $this->reponse_email;
@@ -1567,44 +1431,8 @@ class profileController extends bootstrap
                 $_SESSION['client']['password'] = $this->clients->password;
                 $this->clients->update();
 
-                //************************************//
-                //*** ENVOI DU MAIL GENERATION MDP ***//
-                //************************************//
+                $this->sendPasswordModificationEmail($this->clients);
 
-                $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
-
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
-
-                $varMail = array(
-                    'surl'     => $this->surl,
-                    'url'      => $this->lurl,
-                    'login'    => $this->clients->email,
-                    'prenom_p' => $this->clients->prenom,
-                    'mdp'      => '',
-                    'lien_fb'  => $lien_fb,
-                    'lien_tw'  => $lien_tw
-                );
-
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
                 $_SESSION['reponse_profile_secu'] = $this->lng['profile']['votre-mot-de-passe-a-bien-ete-change'];
             }
             header('Location: ' . $this->lurl . '/profile/societe/2');
@@ -1825,11 +1653,12 @@ class profileController extends bootstrap
 
     private function sendAccountModificationEmail(\clients $oClient)
     {
-        $this->mails_text->get('preteur-modification-compte', 'lang = "' . $this->language . '" AND type');
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
+        $lien_fb = $oSettings->value;
+        $oSettings->get('Twitter', 'type');
+        $lien_tw = $oSettings->value;
 
         $varMail = array(
             'surl'    => $this->surl,
@@ -1839,24 +1668,11 @@ class profileController extends bootstrap
             'lien_tw' => $lien_tw
         );
 
-        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-        $this->email->setSubject(stripslashes($sujetMail));
-        $this->email->setHTMLBody(stripslashes($texteMail));
-
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient(trim($oClient->email));
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $this->language, $varMail);
+        $message->setTo($oClient->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     private function validateCompletenessForm()
@@ -2104,5 +1920,31 @@ class profileController extends bootstrap
         }
 
         echo json_encode($aResponse);
+    }
+
+    private function sendPasswordModificationEmail(\clients $oClient)
+    {
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
+        $lien_fb = $oSettings->value;
+        $oSettings->get('Twitter', 'type');
+        $lien_tw = $oSettings->value;
+
+        $varMail = array(
+            'surl'     => $this->surl,
+            'url'      => $this->lurl,
+            'login'    => $oClient->email,
+            'prenom_p' => $oClient->prenom,
+            'mdp'      => '',
+            'lien_fb'  => $lien_fb,
+            'lien_tw'  => $lien_tw
+        );
+
+        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $this->language, $varMail);
+        $message->setTo($oClient->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 }

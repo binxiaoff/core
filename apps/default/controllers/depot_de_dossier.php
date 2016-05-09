@@ -915,7 +915,9 @@ class depot_de_dossierController extends bootstrap
 
     private function sendSubscriptionConfirmationEmail()
     {
-        $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+        /** @var \mails_text $oMailText */
+        $oMailText = $this->loadData('mails_text');
+        $oMailText->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
 
         $aVariables = array(
             'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
@@ -923,26 +925,19 @@ class depot_de_dossierController extends bootstrap
             'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
             'lien_fb'              => $this->like_fb,
             'lien_tw'              => $this->twitter,
-            'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
+            'sujet'                => htmlentities($oMailText->subject, null, 'UTF-8'),
             'surl'                 => $this->surl,
             'url'                  => $this->url,
         );
 
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
         $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
-            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailText->type, $this->language, $aVariables);
+        $message->setTo($sRecipient);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     private function sendCommercialEmail($sEmailType)
@@ -951,7 +946,8 @@ class depot_de_dossierController extends bootstrap
             $this->users = $this->loadData('users');
             $this->users->get($this->projects->id_commercial, 'id_user');
 
-            $this->mails_text->get($sEmailType, 'lang = "' . $this->language . '" AND type');
+            $oMailText = $this->loadData('mails_text');
+            $oMailText->get($sEmailType, 'lang = "' . $this->language . '" AND type');
 
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,
@@ -960,13 +956,12 @@ class depot_de_dossierController extends bootstrap
                 '[SURL]'           => $this->surl
             );
 
-            $oEmail = $this->loadLib('email');
-            $oEmail->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
-            $oEmail->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $this->mails_text->subject))));
-            $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
-            $oEmail->addRecipient(trim($this->users->email));
-
-            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailText->type, $this->language, $aReplacements, false);
+            $message->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $oMailText->subject))));
+            $message->setTo(trim($this->users->email));
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
         }
     }
 

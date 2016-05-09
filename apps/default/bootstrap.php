@@ -42,8 +42,6 @@ class bootstrap extends Controller
         $this->mails_text              = $this->loadData('mails_text');
         $this->ln                      = $this->loadData('textes');
         //$this->routages                = $this->loadData('routages', array('url' => $this->lurl, 'route' => $this->Config['route_url']));
-        $this->nmp                     = $this->loadData('nmp');
-        $this->nmp_desabo              = $this->loadData('nmp_desabo');
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->clients_history         = $this->loadData('clients_history');
@@ -62,7 +60,6 @@ class bootstrap extends Controller
 
         $this->ficelle = $this->loadLib('ficelle');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
-        $this->tnmp    = $this->loadLib('tnmp', array($this->nmp, $this->nmp_desabo, $this->Config['env']));
         $this->dates   = $this->loadLib('dates');
 
         // Recuperation de la liste des langue disponibles

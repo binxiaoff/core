@@ -95,16 +95,6 @@ class cronController extends bootstrap
         die;
     }
 
-    public function _queueNMP()
-    {
-        if ($this->startCron('queueNMP', 10)) {
-            if ($this->Config['env'] === 'prod') {
-                $this->tnmp->processQueue();
-            }
-            $this->stopCron();
-        }
-    }
-
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 10)) {

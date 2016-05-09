@@ -424,30 +424,20 @@ class inscription_preteurController extends bootstrap
                 // Enregistrement
                 $this->clients->update();
 
-                //******************************************************//
-                //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
-                //******************************************************//
-
-                // Recuperation du modele de mail
-                $this->mails_text = $this->loadData('mails_text');
-                $this->mails_text->get('confirmation-inscription-preteur-etape-3', 'lang = "' . $this->language . '" AND type');
-
-                // Variables du mailing
-                $surl = $this->surl;
-                $url  = $this->lurl;
-
+                /** @var \settings $oSettings */
+                $oSettings = $this->loadData('settings');
                 // FB
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
+                $oSettings->get('Facebook', 'type');
+                $lien_fb = $oSettings->value;
 
                 // Twitter
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
+                $oSettings->get('Twitter', 'type');
+                $lien_tw = $oSettings->value;
 
                 // Variables du mailing
                 $varMail = array(
-                    'surl'           => $surl,
-                    'url'            => $url,
+                    'surl'           => $this->surl,
+                    'url'            => $this->lurl,
                     'prenom'         => $this->clients->prenom,
                     'email_p'        => $this->clients->email,
                     'mdp'            => $_POST['pass'],
@@ -456,27 +446,12 @@ class inscription_preteurController extends bootstrap
                     'lien_tw'        => $lien_tw
                 );
 
-                // Construction du tableau avec les balises EMV
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $this->language, $varMail);
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
 
-                // Attribution des données aux variables
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                // Envoi du mail
-                $this->email = $this->loadLib('email', array());
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
                 header('Location: ' . $this->lurl . '/inscription_preteur/confirmation/' . $this->clients->hash . '/v/');
                 die;
             }
@@ -587,112 +562,54 @@ class inscription_preteurController extends bootstrap
                         //*** ENVOI DU MAIL NOTIFICATION VERSEMENT ***//
                         //********************************************//
 
-                        $this->settings->get('Adresse notification nouveau versement preteur', 'type');
-                        $destinataire = $this->settings->value;
+                        /** @var \settings $oSettings */
+                        $oSettings = $this->loadData('settings');
+                        $oSettings->get('Adresse notification nouveau versement preteur', 'type');
+                        $destinataire = $oSettings->value;
 
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('notification-nouveau-versement-dun-preteur', 'lang = "' . $this->language . '" AND type');
+                        $varMail = array(
+                            '$surl'       => $this->surl,
+                            '$url'        => $this->lurl,
+                            '$id_preteur' => $this->clients->id_client,
+                            '$nom'        => utf8_decode($this->clients->nom),
+                            '$prenom'     => utf8_decode($this->clients->prenom),
+                            '$montant'    => ($response['payment']['amount'] / 100)
+                        );
 
-                        // Variables du mailing
-                        $surl       = $this->surl;
-                        $url        = $this->lurl;
-                        $id_preteur = $this->clients->id_client;
-                        $nom        = utf8_decode($this->clients->nom);
-                        $prenom     = utf8_decode($this->clients->prenom);
-                        $montant    = ($response['payment']['amount'] / 100);
-
-                        // Attribution des données aux variables
-                        $sujetMail = htmlentities($this->mails_text->subject);
-                        eval("\$sujetMail = \"$sujetMail\";");
-
-                        $texteMail = $this->mails_text->content;
-                        eval("\$texteMail = \"$texteMail\";");
-
-                        $exp_name = $this->mails_text->exp_name;
-                        eval("\$exp_name = \"$exp_name\";");
-
-                        // Nettoyage de printemps
-                        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->addRecipient(trim($destinataire));
-
-                        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($sujetMail)) . '?=');
-                        $this->email->setHTMLBody($texteMail);
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        // fin mail
-
-                        // email inscription preteur //
+                        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-versement-dun-preteur', $this->language, $varMail, false);
+                        $message->setTo($destinataire);
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
 
                         //******************************************************//
                         //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
                         //******************************************************//
 
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('confirmation-inscription-preteur-etape-3', 'lang = "' . $this->language . '" AND type');
-
-                        // Motif virement
-                        $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
-
-                        // Variables du mailing
-                        $surl = $this->surl;
-                        $url  = $this->lurl;
-
-                        // FB
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        // Twitter
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
+                        $oSettings->get('Facebook', 'type');
+                        $lien_fb = $oSettings->value;
+                        $oSettings->get('Twitter', 'type');
+                        $lien_tw = $oSettings->value;
 
                         // Variables du mailing
                         $varMail = array(
-                            'surl'           => $surl,
-                            'url'            => $url,
+                            'surl'           => $this->surl,
+                            'url'            => $this->lurl,
                             'prenom'         => $this->clients->prenom,
                             'email_p'        => $this->clients->email,
                             'mdp'            => $_POST['pass'],
-                            'motif_virement' => $this->motif,
+                            'motif_virement' => $this->clients->getLenderPattern($this->clients->id_client),
                             'lien_fb'        => $lien_fb,
                             'lien_tw'        => $lien_tw
                         );
 
-                        // Construction du tableau avec les balises EMV
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $this->language, $varMail);
+                        $message->setTo($this->clients->email);
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
 
-                        // Attribution des données aux variables
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        // Envoi du mail
-                        $this->email = $this->loadLib('email', array());
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($this->Config['env'] == 'prod') // nmp
-                        {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-
-                            // Injection du mail NMP dans la queue
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($this->clients->email));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                        // fin mail
-
-                        /// email inscription preteur ///
-
-                        $this->clients->etape_inscription_preteur = 3; // etape 3 ok
-
-
-                        // Enregistrement
+                        $this->clients->etape_inscription_preteur = 3;
                         $this->clients->update();
 
                         // connection au compte
@@ -950,12 +867,11 @@ class inscription_preteurController extends bootstrap
 
     private function sendSubscriptionConfirmationEmail(\clients $oClient)
     {
-        $this->mails_text->get('confirmation-inscription-preteur', 'lang = "' . $this->language . '" AND type');
-
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
+        $lien_fb = $oSettings->value;
+        $oSettings->get('Twitter', 'type');
+        $lien_tw = $oSettings->value;
 
         $varMail = array(
             'surl'           => $this->surl,
@@ -968,26 +884,11 @@ class inscription_preteurController extends bootstrap
             'annee'          => date('Y')
         );
 
-        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-        if (false === isset($this->email) || false === $this->email instanceof email) {
-            $this->email = $this->loadLib('email', array());
-        }
-        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-        $this->email->setSubject(stripslashes($sujetMail));
-        $this->email->setHTMLBody(stripslashes($texteMail));
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $oClient->email, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient(trim($oClient->email));
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $this->language, $varMail);
+        $message->setTo($oClient->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     private function checkSession()
