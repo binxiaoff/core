@@ -1055,8 +1055,10 @@ class ajaxController extends bootstrap
                     $this->projects_notes->id_project = $this->projects->id_project;
                     $this->projects_notes->create();
                 }
+
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager               = $this->get('ProjectManager');
+                $oProjectManager = $this->get('ProjectManager');
+
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
                 } elseif ($_POST['status'] == 2) {
@@ -1417,7 +1419,7 @@ class ajaxController extends bootstrap
                     /** @var \projects_status_history_details $oHistoryDetails */
                     $oHistoryDetails                            = $this->loadData('projects_status_history_details');
                     $oHistoryDetails->id_project_status_history = $oProjectStatusHistory->id_project_status_history;
-                    $oHistoryDetails->comity_rejection_reason  = $_POST['rejection_reason'];
+                    $oHistoryDetails->comity_rejection_reason   = $_POST['rejection_reason'];
                     $oHistoryDetails->create();
 
                     /** @var \project_rejection_reason $oRejectionReason */
