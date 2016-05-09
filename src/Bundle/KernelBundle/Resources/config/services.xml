@@ -66,11 +66,6 @@
             <argument type="service" id="database_connection"/>
         </service>
 
-        <service id="unilend.service.mail_queue" class="Unilend\Service\MailQueueManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.swiftmailer.message_provider"/>
-        </service>
-
         <service id="unilend.service.salesforce" class="Unilend\Service\SalesforceManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>%kernel.root_dir%</argument>
@@ -80,6 +75,12 @@
         <!-- Swift Mailer -->
         <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
         <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />
+        <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet" />
+
+        <service id="unilend.service.mail_queue" class="Unilend\Service\MailQueueManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+        </service>
 
         <service id="unilend.swiftmailer.message_provider" class="Unilend\Bridge\SwiftMailer\TemplateMessageProvider">
             <argument type="service" id="unilend.service.entity_manager"/>
@@ -94,15 +95,11 @@
             <argument type="service" id="swiftmailer.mailer.default.transport.eventdispatcher"/>
             <argument type="service" id="mailjet.api.client"/>
         </service>
-        <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet" />
 
         <!-- Mailjet API -->
-        <service id="mailjet.api.client" class="Mailjet\Client">
+        <service id="mailjet.api.client" class="Mailjet\Client" public="false">
             <argument>%mailjet.api_key%</argument>
             <argument>%mailjet.api_secret%</argument>
         </service>
-
-        <!-- To be removed -->
-        <service id="cache" class="Unilend\librairies\Cache"/>
     </services>
 </container>
