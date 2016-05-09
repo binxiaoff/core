@@ -528,7 +528,7 @@ class projectsController extends bootstrap
             $this->direction    = 1;
 
             /** @var \Unilend\Service\ProjectManager $projectManager */
-            $projectManager = $this->get('ProjectManager');
+            $projectManager       = $this->get('ProjectManager');
             $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
 
 
@@ -769,23 +769,22 @@ class projectsController extends bootstrap
 
             if ($projectsStatus->status == \projects_status::EN_FUNDING) {
                 $objPHPExcel = new PHPExcel();
-                $column = 0;
-                $row = 1;
+                $column      = 0;
+                $row         = 1;
                 $activeSheet = $objPHPExcel->getActiveSheet();
-                $header = array('N°', $this->lng['preteur-projets']['taux-dinteret'], $this->lng['preteur-projets']['montant'], $this->lng['preteur-projets']['statuts']);
-                foreach ($header as $index => $item)
-                {
+                $header      = array('N°', $this->lng['preteur-projets']['taux-dinteret'], $this->lng['preteur-projets']['montant'], $this->lng['preteur-projets']['statuts']);
+                foreach ($header as $index => $item) {
                     $activeSheet->setCellValueByColumnAndRow($column, $row, $item);
                     $column++;
                 }
-                $row ++;
+                $row++;
 
-                $bids = $this->loadData('bids');
+                $bids   = $this->loadData('bids');
                 $offset = 0;
-                $limit = 1000;
+                $limit  = 1000;
 
                 $bidStatus = array(
-                    bids::STATUS_BID_PENDING => $this->lng['preteur-projets']['enchere-en-cours'],
+                    bids::STATUS_BID_PENDING  => $this->lng['preteur-projets']['enchere-en-cours'],
                     bids::STATUS_BID_ACCEPTED => $this->lng['preteur-projets']['enchere-ok'],
                     bids::STATUS_BID_REJECTED => $this->lng['preteur-projets']['enchere-ko']
                 );
@@ -793,11 +792,11 @@ class projectsController extends bootstrap
                 while ($bidsList = $bids->select('id_project = ' . $projects->id_project, 'ordre ASC', $offset, $limit)) {
                     foreach ($bidsList as $bid) {
                         $column = 0;
-                        $activeSheet->setCellValueByColumnAndRow($column ++, $row, $bid['ordre']);
-                        $activeSheet->setCellValueByColumnAndRow($column ++, $row, $bid['rate'] . ' %');
-                        $activeSheet->setCellValueByColumnAndRow($column ++, $row, $bid['amount'] . ' €');
+                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['ordre']);
+                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['rate'] . ' %');
+                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['amount'] . ' €');
                         $activeSheet->setCellValueByColumnAndRow($column, $row, $bidStatus[$bid['status']]);
-                        $row ++;
+                        $row++;
                     }
                     $offset += $limit;
                 }

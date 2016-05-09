@@ -437,7 +437,7 @@ class ajaxController extends bootstrap
 
         echo json_encode($aCities);
     }
-    
+
     // Affichage du tableau d'offres en cours mobile
     public function _displayAll_mobile()
     {
@@ -1743,7 +1743,7 @@ class ajaxController extends bootstrap
             $projectId = $this->params[0];
             $rate      = $this->params[1];
             $bid       = $this->loadData('bids');
-            $sortBy = 'ordre';
+            $sortBy    = 'ordre';
             if (isset($_GET['sort'])) {
                 switch ($_GET['sort']) {
                     case 'rate':
@@ -1767,7 +1767,7 @@ class ajaxController extends bootstrap
                 $order = 'DESC';
             }
 
-            $cacheKey = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, $rate, $sortBy, $order);
+            $cacheKey       = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, $rate, $sortBy, $order);
             $this->bidsList = $this->oCache->get($cacheKey);
             if (false === $this->bidsList) {
                 $this->bidsList = $bid->select('id_project = ' . $projectId . ' AND rate like ' . $rate, $sortBy . ' ' . $order);
