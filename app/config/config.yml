@@ -1,7 +1,5 @@
 imports:
     - { resource: parameters.yml }
-    - { resource: services.xml }
-    - { resource: events.xml }
 
 framework:
     secret: "%secret%"

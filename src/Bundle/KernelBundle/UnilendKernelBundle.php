@@ -11,7 +11,7 @@ use Unilend\Bundle\KernelBundle\DependencyInjection\Compiler\AddDbalCacheConfigu
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class KernelBundle extends Bundle
+class UnilendKernelBundle extends Bundle
 {
     public function build(ContainerBuilder $container)
     {
