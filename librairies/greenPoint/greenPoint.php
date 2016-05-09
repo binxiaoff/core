@@ -7,7 +7,7 @@ use Unilend\core\Loader;
 class greenPoint
 {
     const TEST_URL = 'https://id-control.fr/api/';
-    const PROD_URL = 'https://id-control.fr/api/';
+    const PROD_URL = 'https://beprems.pro/api/';
 
     /** @var string */
     private $sPassWord;
