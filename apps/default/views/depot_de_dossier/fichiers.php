@@ -98,7 +98,7 @@
         $(this).parent('.row').before($uploadRow);
         $uploadRow.children('select').addClass('custom-select').c2Selectbox();
         $removeButton = $('<span class="btn btn-small btn-remove-row">-</span>').on('click', function() {
-            $(this).parents('.row').remove();// REMOVE .row-upload
+            $(this).parents('.row').remove();
         });
         $uploadRow.find('.file-holder').append($removeButton);
 
