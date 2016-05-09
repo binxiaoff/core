@@ -24,12 +24,6 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-$bCacheFullPage = ($_SERVER['SERVER_NAME'] === 'www.unilend.fr');
-
-if ($bCacheFullPage) {
-    require __DIR__ . '/prepend.php';
-}
-
 $oKernel = new AppKernel('dev', false);
 $oKernel->boot();
 
@@ -37,7 +31,3 @@ $errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
 \Unilend\core\ErrorHandler::enable($errorLogfile);
 
 $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
-
-if ($bCacheFullPage) {
-    require __DIR__ . '/append.php';
-}
