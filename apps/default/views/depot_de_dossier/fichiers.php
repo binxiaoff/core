@@ -16,11 +16,11 @@
                         <div class="row error"><?= $sError ?></div>
                     <?php } ?>
                 <?php } ?>
-                <div class="row row-upload">
+                <div class="row row-title">
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['type-de-document'] ?></div>
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['champs-dupload'] ?></div>
                 </div>
-                <div class="row row-upload show-scrollbar upload-input">
+                <div class="row upload-input">
                     <select class="custom-select required field field-large">
                         <option value=""><?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
                         <?php foreach ($this->aAttachmentTypes as $aAttachmentType) { ?>
@@ -74,12 +74,12 @@
 <script>
     var uploadFieldId = 1;
     $(function() {
-        $('.row.row-upload').find('select').change(function() {
+        $('.row.row-title').find('select').change(function() {
             var attachmentTypeId = $(this).val();
-            $(this).parents('.row.row-upload').find('input.file-field').attr('name', attachmentTypeId);
+            $(this).parents('.row').find('input.file-field').attr('name', attachmentTypeId);
         });
 
-        $uploadRow = $("#form_espace_emprunteur > div.row.row-upload.upload-input").clone().hide().prop('id', 'upload-row-pattern');
+        $uploadRow = $("#form_espace_emprunteur > div.row.upload-input").clone().hide().prop('id', 'upload-row-pattern');
         $uploadRow.children('select').removeClass('custom-select');
         $('#form_espace_emprunteur').append($uploadRow);
     });
@@ -98,13 +98,13 @@
         $(this).parent('.row').before($uploadRow);
         $uploadRow.children('select').addClass('custom-select').c2Selectbox();
         $removeButton = $('<span class="btn btn-small btn-remove-row">-</span>').on('click', function() {
-            $(this).parents('.row.row-upload').remove();
+            $(this).parents('.row').remove();// REMOVE .row-upload
         });
         $uploadRow.find('.file-holder').append($removeButton);
 
         $('#upload-row-pattern_'+ uploadFieldId).find('select').change(function() {
             var attachmentTypeId = $(this).val();
-            $(this).parents('.row.row-upload').find('input.file-field').attr('name', attachmentTypeId);
+            $(this).parents('div[id^="upload-row-pattern_"]').find('input.file-field').attr('name', attachmentTypeId);
         });
 
         uploadFieldId ++;
