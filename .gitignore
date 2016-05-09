@@ -37,7 +37,7 @@ route.php
 /var/logs/*
 /var/sessions/*
 !var/SymfonyRequirements.php
-/web/bundles/
+/public/bundles/
 
 # PHPStorm
 .idea/
