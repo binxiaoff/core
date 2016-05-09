@@ -66,4 +66,17 @@ class lenders_imposition_history extends lenders_imposition_history_crud
         $result = $this->bdd->query('SELECT * FROM lenders_imposition_history WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
     }
+
+    /**
+     * @param int $lenderId
+     * @return bool
+     */
+    public function loadLastTaxationHistory($lenderId)
+    {
+        $sQuery = '
+            SELECT MAX(id_lenders_imposition_history)
+            FROM lenders_imposition_history
+            WHERE id_lender = ' . $lenderId;
+        return $this->get($this->bdd->result($this->bdd->query($sQuery), 0));
+    }
 }

@@ -1940,6 +1940,9 @@ class dossiersController extends bootstrap
                     $RembEmpr                     = $lEcheancesRembEmprunteur[0];
                     $lEcheances                   = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
+                    /** @var \Unilend\Service\TaxManager $taxManager */
+                    $taxManager = $this->get('TaxManager');
+
                     foreach ($lEcheances as $e) {
                         $montant                      += $e['montant'] / 100;
                         $prelevements_obligatoires    += $e['prelevements_obligatoires'];
@@ -1975,6 +1978,8 @@ class dossiersController extends bootstrap
                             $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
                             $this->transactions->create();
 
+                            $taxManager->taxTransaction($this->transactions);
+
                             $this->transactions->unsetData();
                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
                             $this->transactions->montant          = bcmul($interestEAT, 100);
@@ -1986,6 +1991,8 @@ class dossiersController extends bootstrap
                             $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
                             $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
                             $this->transactions->create();
+
+                            $taxManager->taxTransaction($this->transactions);
 
                             $this->wallets_lines->id_lender                = $e['id_lender'];
                             $this->wallets_lines->type_financial_operation = 40;
@@ -2350,8 +2357,9 @@ class dossiersController extends bootstrap
                 $this->companies                     = $this->loadData('companies');
                 $this->loans                         = $this->loadData('loans');
                 $loans                               = $this->loadData('loans');
+
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager                     = $this->get('ProjectManager');
+                $oProjectManager = $this->get('ProjectManager');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
