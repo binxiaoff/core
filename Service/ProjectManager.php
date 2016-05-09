@@ -812,4 +812,16 @@ class ProjectManager
 
         return 'UNILEND' . str_pad($project->id_project, 6, 0, STR_PAD_LEFT) . 'E' . trim($company->siren);
     }
+
+    /**
+     * @param \projects $oProject
+     *
+     * @return array
+     */
+    public function getBidsStatistics(\projects $oProject)
+    {
+        /** @var \bids $oBid */
+        $oBid = Loader::loadData('bids');
+        return $oBid->getBidsStatistics($oProject->id_project);
+    }
 }
