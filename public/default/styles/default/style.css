@@ -756,11 +756,30 @@ form .row.rel .euro-sign { left: 0; right: auto; }
     Tabs Nav & Single project tab
 ============================ */
 
+.tabs .tab { display:none; }
+.tabs .tab:first-child { display:block; }
+.tabs-nav { height: 42px; margin-bottom: 25px; border-bottom: 1px solid #b10366; }
+.tabs-nav ul { padding-left: 0; }
+.tabs-nav li { float:left; padding: 0 6px; list-style-type: none; }
+.tabs-nav li a { display:block; padding: 0 11px 1px; line-height: 42px; font-size: 18px; font-weight:bold; color: #a1a5a7;}
+.tabs-nav li a:hover ,
+.tabs-nav li.active a { padding: 0 4px 0 4px; text-decoration:none; border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366; line-height: 41px; }
+
+.tabs { font-size: 15px; }
+.section-c h2 { font-size: 26px; line-height: 30px; color: #b10366; font-weight: bold; font-family: arial, serif; letter-spacing: 0; border-bottom: 1px solid #e3e4e4; padding-bottom: 7px; margin-bottom: 18px; text-transform: capitalize; }
+.section-c p { padding-bottom: 30px; }
+.tab-form { width: 460px; }
+.tab-form .row p { padding: 0; }
+.tab-form em { display:block; margin-bottom: 45px; }
+.tab-form .btn { float:right; position: relative; margin-right: -93px; }
+.tab-form .c2-sb-wrap { margin-bottom: 30px; }
+
+div[class='main'] ul > li > a{ border:1px solid transparent;line-height:41px;}
 div[class*="single-project"] .tabs-nav:after {content: "";display:block;clear:both;}
 div[class*="single-project"] .tabs-nav { height: 42px; margin-bottom: 25px;border-bottom: 1px solid #b10366; }
 div[class*="single-project"] .tabs-nav ul { padding-left: 0;float:left; }
 div[class*="single-project"] .tabs-nav li { float:left;padding: 0 6px; list-style-type: none; }
-div[class*="single-project"] .tabs-nav li a { display:block; line-height: 41px; font-size: 18px; font-weight:bold; color: #a1a5a7;/*padding:0 6px 3px 0;*/text-decoration:none;border: 1px solid rgba(0,0,0,0);}
+div[class*="single-project"] .tabs-nav li a { display:block; line-height: 41px; font-size: 18px; font-weight:bold; color: #a1a5a7;text-decoration:none;border: 1px solid rgba(0,0,0,0);}
 div[class*="single-project"] .tabs-nav li a:hover, div[class*="single-project"] .tabs-nav li.active a{ border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366;}
 div[class*="single-project"] .detail-nav th span.bid-number { text-align:left;}
 
