@@ -716,7 +716,7 @@ class operationsController extends bootstrap
 
                 if ($clients->type == \clients::TYPE_PERSON || $clients->type == \clients::TYPE_PERSON_FOREIGNER) {
                     /** @var \lender_tax_exemption $oTaxExemption */
-                    $oTaxExemption = $this->loadDate('lender_tax_exemption');
+                    $oTaxExemption = $this->loadData('lender_tax_exemption');
 
                     if ($oTaxExemption->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND year = "' . substr($t['date_transaction'], 0, 4) . '"') > 0) {
                         $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];

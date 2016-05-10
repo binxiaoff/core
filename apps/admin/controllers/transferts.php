@@ -131,7 +131,7 @@ class transfertsController extends bootstrap
                 $bank_unilend->type           = 1;
                 $bank_unilend->create();
 
-                $this->updateEcheances($this->projects->id_project, $this->receptions->montant, $this->projects->remb_auto);
+                $this->updateEcheances($this->projects->id_project, $this->receptions->montant);
             }
 
             header('Location: ' . $this->lurl . '/transferts/emprunteurs');
@@ -140,7 +140,7 @@ class transfertsController extends bootstrap
     }
 
     // @todo duplicate function in cron.php
-    private function updateEcheances($id_project, $montant, $remb_auto)
+    private function updateEcheances($id_project, $montant)
     {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
@@ -166,15 +166,13 @@ class transfertsController extends bootstrap
                 if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0, 1)') <= 0) {
                     $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
 
-                    if ($remb_auto == 0) {
-                        $projects_remb->id_project                = $id_project;
-                        $projects_remb->ordre                     = $ordre;
-                        $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                        $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
-                        $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                        $projects_remb->status                    = \projects_remb::STATUS_PENDING;
-                        $projects_remb->create();
-                    }
+                    $projects_remb->id_project                = $id_project;
+                    $projects_remb->ordre                     = $ordre;
+                    $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
+                    $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
+                    $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
+                    $projects_remb->status                    = \projects_remb::STATUS_PENDING;
+                    $projects_remb->create();
                 }
             } else {
                 break;

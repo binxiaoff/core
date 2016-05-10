@@ -32,7 +32,7 @@ class transactions_types extends transactions_types_crud
     const TYPE_LENDER_LOAN                         = 2;
     const TYPE_LENDER_CREDIT_CARD_CREDIT           = 3;
     const TYPE_LENDER_BANK_TRANSFER_CREDIT         = 4;
-    const TYPE_LENDER_REPAYMENT                    = 5;
+    const TYPE_LENDER_REPAYMENT                    = 5; // @deprecated
     const TYPE_BORROWER_REPAYMENT                  = 6;
     const TYPE_DIRECT_DEBIT                        = 7;
     const TYPE_LENDER_WITHDRAWAL                   = 8;
@@ -53,6 +53,8 @@ class transactions_types extends transactions_types_crud
     const TYPE_REGULATION_BANK_TRANSFER            = 24;
     const TYPE_RECOVERY_BANK_TRANSFER              = 25;
     const TYPE_LENDER_RECOVERY_REPAYMENT           = 26;
+    const TYPE_LENDER_REPAYMENT_CAPITAL            = 27;
+    const TYPE_LENDER_REPAYMENT_INTERESTS          = 28;
 
     public function __construct($bdd, $params = '')
     {

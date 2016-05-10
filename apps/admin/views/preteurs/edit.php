@@ -26,6 +26,20 @@
         <?php endif; ?>
     });
 </script>
+<style>
+    .td-greenPoint-status-valid {
+        border-radius: 5px; background-color: #00A000; color: white; width: auto; padding: 5px;
+    }
+    .td-greenPoint-status-warning {
+        border-radius: 5px; background-color: #f79232; color: white; width: auto; padding: 5px;
+    }
+    .td-greenPoint-status-error {
+        border-radius: 5px; background-color: #ff0100; color: white; width: auto; padding: 5px;
+    }
+    table.attachment-list td, th{
+        vertical-align: middle;
+    }
+</style>
 <div id="freeow-tr" class="freeow freeow-top-right"></div>
 <div id="contenu">
     <ul class="breadcrumbs">
@@ -157,21 +171,25 @@
     <div style="clear:both;"></div>
     <br/><br/>
     <h2>Pièces jointes :</h2>
-    <table class="form" style="width: auto;">
+    <table class="attachment-list" style="width: auto; border-collapse: separate; border-spacing: 2px;">
         <tr>
             <th>Type de fichier</th>
             <th>Nom (cliquer pour télécharger)</th>
+            <th>Statut GreenPoint</th>
+            <th>&Eacute;tat de validation</th>
         </tr>
-        <?php foreach ($this->aAttachmentTypes as $sAttachmentType) : ?>
-            <tr>
-                <th><?= $sAttachmentType['label'] ?></th>
+        <?php foreach ($this->aAvailableAttachments as $aAttachmentType) : ?>
+            <tr style="height: 2em; padding: 2px; ">
+                <th ><?= $aAttachmentType['label'] ?></th>
                 <td>
-                    <?php if (isset($this->attachments[$sAttachmentType['id']]['path'])) : ?>
-                        <a href="<?= $this->url ?>/attachment/download/id/<?= $this->attachments[$sAttachmentType['id']]['id'] ?>/file/<?= urlencode($this->attachments[$sAttachmentType['id']]['path']) ?>">
-                            <?= $this->attachments[$sAttachmentType['id']]['path'] ?>
-                        </a>
-                    <?php endif; ?>
+                    <a href="<?= $this->url ?>/attachment/download/id/<?= $aAttachmentType['id'] ?>/file/<?= urlencode($aAttachmentType['path']) ?>">
+                        <?= $aAttachmentType['path'] ?>
+                    </a>
                 </td>
+                <td class="td-greenPoint-status-<?= $aAttachmentType['color']?>">
+                    <?= $aAttachmentType['greenpoint_label'] ?>
+                </td>
+                <td><?= $aAttachmentType['final_status'] ?></td>
             </tr>
         <?php endforeach; ?>
         <tr>

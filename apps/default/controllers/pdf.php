@@ -282,11 +282,9 @@ class pdfController extends bootstrap
 
         // pour savoir si Preteur ou emprunteur
         if (isset($this->params[1]) && $this->projects->get($this->params[1], 'id_project')) {
-            $p           = substr($this->ficelle->stripAccents(utf8_decode($this->clients->prenom)), 0, 1);
-            $nom         = $this->ficelle->stripAccents(utf8_decode($this->clients->nom));
-            $id_project  = str_pad($this->projects->id_project, 6, 0, STR_PAD_LEFT);
-            $this->motif = mb_strtoupper($id_project . 'E' . $p . preg_replace('/\s/', '', $nom), 'UTF-8');
-            $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);
+            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('ProjectManager');
+            $this->motif = $oProjectManager->getBorrowerBankTransferLabel($this->projects);
         } else {
             $this->motif = $this->clients->getLenderPattern($this->clients->id_client);
             $this->motif = $this->ficelle->str_split_unicode('UNILEND' . $this->motif);

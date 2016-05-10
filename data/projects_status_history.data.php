@@ -213,6 +213,7 @@ class projects_status_history extends projects_status_history_crud
 
     /**
      * @param int $iProjectId
+     * @return bool
      */
     public function loadLastProjectHistory($iProjectId)
     {
@@ -220,6 +221,6 @@ class projects_status_history extends projects_status_history_crud
             SELECT MAX(id_project_status_history)
             FROM projects_status_history
             WHERE id_project = ' . $iProjectId;
-        $this->get($this->bdd->result($this->bdd->query($sQuery), 0, 0));
+        return $this->get($this->bdd->result($this->bdd->query($sQuery), 0, 0));
     }
 }
