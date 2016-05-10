@@ -1,11 +1,13 @@
 <?php
 
-namespace Unilend\Bridge\SwiftMailer;
+namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
 
 class TemplateMessage extends \Swift_Message
 {
+    /** @var int */
     private $templateId;
+    /** @var  array */
     private $variables;
     /** @var  \DateTime */
     private $toSendAt;

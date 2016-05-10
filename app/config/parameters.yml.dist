@@ -13,9 +13,6 @@ parameters:
     server1.memcache_port:          11211
 
     mailer_transport:               mail #use mailjet en prod
-    mailer_host:                    ~
-    mailer_user:                    ~
-    mailer_password:                ~
 
     mailjet.api_key:                9968d5b7419c2d4edf7c00f32f629f8a
     mailjet.api_secret:             579bc26d8656f837ca8dcdcc6739da95

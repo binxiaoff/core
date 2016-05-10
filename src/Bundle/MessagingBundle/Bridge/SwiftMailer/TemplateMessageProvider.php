@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bridge\SwiftMailer;
+namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
 use Unilend\Service\Simulator\EntityManager;
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-use Unilend\Bridge\Symfony\Console\Application;
+use Unilend\Bundle\CommandBundle\Bridge\Application;
 use Symfony\Component\Console\Input\ArgvInput;
 use Symfony\Component\Debug\Debug;
 

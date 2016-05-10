@@ -15,6 +15,7 @@ class AppKernel extends Kernel
             new Cache\AdapterBundle\CacheAdapterBundle(),
             new Unilend\Bundle\KernelBundle\UnilendKernelBundle(),
             new Unilend\Bundle\CommandBundle\UnilendCommandBundle(),
+            new Unilend\Bundle\MessagingBundle\UnilendMessagingBundle(),
         ];
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();

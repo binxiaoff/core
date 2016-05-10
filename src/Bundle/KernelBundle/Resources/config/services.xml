@@ -71,35 +71,5 @@
             <argument>%kernel.root_dir%</argument>
             <argument type="service" id="logger"/>
         </service>
-
-        <!-- Swift Mailer -->
-        <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
-        <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />
-        <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet" />
-
-        <service id="unilend.service.mail_queue" class="Unilend\Service\MailQueueManager">
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.swiftmailer.message_provider"/>
-        </service>
-
-        <service id="unilend.swiftmailer.message_provider" class="Unilend\Bridge\SwiftMailer\TemplateMessageProvider">
-            <argument type="service" id="unilend.service.entity_manager"/>
-            <argument>Unilend\Bridge\SwiftMailer\TemplateMessage</argument>
-        </service>
-
-        <service id="unilend.swiftmailer.db_spool" class="Unilend\Bridge\SwiftMailer\DatabaseSpool">
-            <argument type="service" id="unilend.service.mail_queue"/>
-        </service>
-
-        <service id="swiftmailer.mailer.transport.mailjet" class="Unilend\Bridge\SwiftMailer\MailjetTransport">
-            <argument type="service" id="swiftmailer.mailer.default.transport.eventdispatcher"/>
-            <argument type="service" id="mailjet.api.client"/>
-        </service>
-
-        <!-- Mailjet API -->
-        <service id="mailjet.api.client" class="Mailjet\Client" public="false">
-            <argument>%mailjet.api_key%</argument>
-            <argument>%mailjet.api_secret%</argument>
-        </service>
     </services>
 </container>
