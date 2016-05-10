@@ -113,7 +113,10 @@ select.field-mega { width:938px; }
 .euro-field { padding-left:22px; }
 .euro-sign { position:absolute; margin:7px 0 0 12px; }
 
-
+.LV_invalid_field::-webkit-input-placeholder { color: #c84747;}
+.LV_invalid_field:-ms-input-placeholder { color: #c84747;}
+.LV_invalid_field::-moz-placeholder { color: #c84747;}
+.LV_invalid_field:-moz-placeholder { color: #c84747;}
 .LV_invalid_field { background:#ffe8e8 url(images/field-error.png) no-repeat right 0; border-color:#e3bcbc; color:#c84747; }
 .LV_valid_field { background-image:url(images/field-ok.png); background-repeat:no-repeat; background-position:right 0; }
 .LV_validation_message { display:none; }
