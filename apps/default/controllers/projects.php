@@ -110,7 +110,12 @@ class projectsController extends bootstrap
             $this->setHeader('header_account');
         }
 
-        if (isset($this->params[0]) && $this->projects->get($this->params[0], 'slug') && $this->projects->status == '0' && $this->projects->display == \projects::DISPLAY_PROJECT_ON) {
+        if (
+            isset($this->params[0])
+            && $this->projects->get($this->params[0], 'slug')
+            && $this->projects->status == 0
+            && ($this->projects->display == \projects::DISPLAY_PROJECT_ON || $this->bIsConnected && 28002 == $this->projects->id_project)
+        ) {
             $this->meta_title = $this->projects->title . ' - Unilend';
 
             $this->settings->get('Pret min', 'type');
@@ -519,24 +524,10 @@ class projectsController extends bootstrap
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction    = 1;
 
-            $oCachePool  = $this->get('memcache.default');
-            $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . '_' . $this->projects->id_project);
+            /** @var \Unilend\Service\ProjectManager $projectManager */
+            $projectManager       = $this->get('unilend.service.project_manager');
+            $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
 
-            if (false === $oCachedItem->isHit()) {
-                if ($this->CountEnchere > 10) {
-                    $this->aBids = array_merge(
-                        $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC', 0, 5),
-                        array_reverse($this->bids->select('id_project = ' . $this->projects->id_project, 'ordre DESC', 0, 5))
-                    );
-                } else {
-                    $this->aBids = $this->bids->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
-                }
-                $oCachedItem->set($this->aBids)
-                            ->expiresAfter(300);
-                $oCachePool->save($oCachedItem);
-            } else {
-                $this->aBids = $oCachedItem->get();
-            }
 
             if (false === empty($this->clients->id_client)) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
@@ -760,5 +751,63 @@ class projectsController extends bootstrap
         $oWriter->setUseBOM(true);
         $oWriter->setDelimiter(';');
         $oWriter->save('php://output');
+    }
+
+    public function _bidsExport()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+        /** @var \projects $projects */
+        $projects = $this->loadData('projects');
+        if (isset($this->params[0]) && $projects->get($this->params[0], 'slug')) {
+            /** @var \projects_status $projectsStatus */
+            $projectsStatus = $this->loadData('projects_status');
+            $projectsStatus->getLastStatut($projects->id_project);
+
+            if ($projectsStatus->status == \projects_status::EN_FUNDING) {
+                $objPHPExcel = new PHPExcel();
+                $column      = 0;
+                $row         = 1;
+                $activeSheet = $objPHPExcel->getActiveSheet();
+                $header      = array('N°', $this->lng['preteur-projets']['taux-dinteret'], $this->lng['preteur-projets']['montant'], $this->lng['preteur-projets']['statuts']);
+                foreach ($header as $index => $item) {
+                    $activeSheet->setCellValueByColumnAndRow($column, $row, $item);
+                    $column++;
+                }
+                $row++;
+
+                $bids   = $this->loadData('bids');
+                $offset = 0;
+                $limit  = 1000;
+
+                $bidStatus = array(
+                    bids::STATUS_BID_PENDING  => $this->lng['preteur-projets']['enchere-en-cours'],
+                    bids::STATUS_BID_ACCEPTED => $this->lng['preteur-projets']['enchere-ok'],
+                    bids::STATUS_BID_REJECTED => $this->lng['preteur-projets']['enchere-ko']
+                );
+
+                while ($bidsList = $bids->select('id_project = ' . $projects->id_project, 'ordre ASC', $offset, $limit)) {
+                    foreach ($bidsList as $bid) {
+                        $column = 0;
+                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['ordre']);
+                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['rate'] . ' %');
+                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['amount'] . ' €');
+                        $activeSheet->setCellValueByColumnAndRow($column, $row, $bidStatus[$bid['status']]);
+                        $row++;
+                    }
+                    $offset += $limit;
+                }
+                header('Content-Type: text/csv');
+                header('Content-Disposition: attachment;filename=' . $projects->slug . '_bids.csv');
+                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                header('Expires: 0');
+
+                /** @var PHPExcel_Writer_CSV $oWriter */
+                $oWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
+                $oWriter->setUseBOM(true);
+                $oWriter->setDelimiter(';');
+                $oWriter->save('php://output');
+            }
+        }
     }
 }

@@ -25,17 +25,11 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
-class projects_remb extends projects_remb_crud
+class greenpoint_attachment extends greenpoint_attachment_crud
 {
-    const STATUS_PENDING                   = 0;
-    const STATUS_REFUNDED                  = 1;
-    const STATUS_REJECTED                  = 2;
-    const STATUS_AUTOMATIC_REFUND_DISABLED = 4;
-
     public function __construct($bdd, $params = '')
     {
-        parent::projects_remb($bdd, $params);
+        parent::greenpoint_attachment($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -43,14 +37,16 @@ class projects_remb extends projects_remb_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `projects_remb`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
+        $sql = 'SELECT * FROM `greenpoint_attachment`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $result   = array();
         $resultat = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -62,38 +58,13 @@ class projects_remb extends projects_remb_crud
             $where = ' WHERE ' . $where;
         }
 
-        $result = $this->bdd->query('SELECT COUNT(*) FROM `projects_remb` ' . $where);
+        $result = $this->bdd->query('SELECT COUNT(*) FROM `greenpoint_attachment` ' . $where);
         return (int) $this->bdd->result($result, 0, 0);
     }
 
-    public function exist($id, $field = 'id_project_remb')
+    public function exist($id, $field = 'id_greenpoint_attachment')
     {
-        $result = $this->bdd->query('SELECT * FROM `projects_remb` WHERE ' . $field . ' = "' . $id . '"');
-        return ($this->bdd->fetch_array($result) > 0);
-    }
-
-    public function getProjectsToRepay(\DateTime $oRepaymentDate = null, $iLimit = null)
-    {
-        if (null === $oRepaymentDate) {
-            $oRepaymentDate = new \DateTime();
-        }
-        $sQuery = '
-            SELECT r.*
-            FROM projects_remb r
-            INNER JOIN projects p ON r.id_project = p.id_project
-            WHERE p.remb_auto = 0
-                AND r.status = ' . \projects_remb::STATUS_PENDING . '
-                AND DATE(r.date_remb_preteurs) <= "' . $oRepaymentDate->format('Y-m-d') . '"';
-
-        if (null !== $iLimit) {
-            $sQuery .= 'LIMIT ' . $iLimit;
-        }
-
-        $aResult  = array();
-        $arResult = $this->bdd->query($sQuery);
-        while ($aRecord = $this->bdd->fetch_assoc($arResult)) {
-            $aResult[] = $aRecord;
-        }
-        return $aResult;
+        $result = $this->bdd->query('SELECT * FROM `greenpoint_attachment` WHERE ' . $field . ' = "' . $id . '"');
+        return ($this->bdd->fetch_assoc($result) > 0);
     }
 }

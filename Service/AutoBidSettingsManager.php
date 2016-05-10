@@ -198,7 +198,7 @@ class AutoBidSettingsManager
      * @param array  $aStatus
      * @param string $sOrder
      *
-     * @return bool
+     * @return array
      */
     public function getSettings($iLenderId = null, $sEvaluation = null, $iAutoBidPeriodId = null, $aStatus = array(\autobid::STATUS_ACTIVE), $sOrder = null, $iLimit = null, $iOffset = null)
     {

@@ -438,59 +438,6 @@ class ajaxController extends bootstrap
         echo json_encode($aCities);
     }
 
-    public function _displayAll()
-    {
-        $this->autoFireView = true;
-
-        $this->bids              = $this->loadData('bids');
-        $this->projects          = $this->loadData('projects');
-        $this->lenders_accounts  = $this->loadData('lenders_accounts');
-        $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
-
-        $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-        $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
-
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
-
-        $this->projects->get($this->bdd->escape_string($_POST['id']), 'id_project');
-
-        if (isset($_POST['tri'])) {
-            $order = $_POST['tri'];
-        } else {
-            $order = 'ordre';
-        }
-
-        if (isset($_POST['direction'])) {
-            if ($_POST['direction'] == 1) {
-                $direction        = 'ASC';
-                $this->direction  = 2;
-            } else {
-                $direction        = 'DESC';
-                $this->direction  = 1;
-            }
-        }
-
-        if ($order == 'rate') {
-            $order        = 'rate ' . $direction . ', ordre ' . $direction;
-        } elseif ($order == 'amount') {
-            $order        = 'amount ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
-        } elseif ($order == 'status') {
-            $order        = 'status ' . $direction . ', rate ' . $direction . ', ordre ' . $direction;
-        } else {
-            $order        = 'ordre ' . $direction;
-        }
-
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->loadData('projects_status');
-        $oProjectStatus->getLastStatut($this->projects->id_project);
-
-        $this->aBids          = $this->bids->select('id_project = ' . $this->projects->id_project, $order);
-        $this->CountEnchere   = $this->bids->counter('id_project = ' . $this->projects->id_project);
-        $this->avgAmount      = $this->bids->getAVGAmount($this->projects->id_project);
-        $this->avgRate        = $this->projects->getAverageInterestRate($this->projects->id_project, $oProjectStatus->status);
-        $this->status         = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
-    }
-
     // Affichage du tableau d'offres en cours mobile
     public function _displayAll_mobile()
     {
@@ -1785,6 +1732,53 @@ class ajaxController extends bootstrap
             $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
             $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
             $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
+        }
+    }
+
+    public function _displayDetail()
+    {
+        $this->hideDecoration();
+
+        if (isset($this->params[0], $this->params[1]) && is_numeric($this->params[0]) && is_numeric($this->params[1])) {
+            $projectId = $this->params[0];
+            $rate      = $this->params[1];
+            $bid       = $this->loadData('bids');
+            $sortBy    = 'ordre';
+            if (isset($_GET['sort'])) {
+                switch ($_GET['sort']) {
+                    case 'rate':
+                    case 'detail-rate':
+                        $sortBy = 'rate';
+                        break;
+                    case 'amount':
+                    case 'detail-amount':
+                        $sortBy = 'amount';
+                        break;
+                    case 'status':
+                    case 'detail-status':
+                        $sortBy = 'status';
+                        break;
+                    default:
+                        $sortBy = 'ordre';
+                }
+            }
+            $order = 'ASC';
+            if (isset($_GET['direction']) && $_GET['direction'] == 2) {
+                $order = 'DESC';
+            }
+
+            $cacheKey       = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, $rate, $sortBy, $order);
+            $this->bidsList = $this->oCache->get($cacheKey);
+            if (false === $this->bidsList) {
+                $this->bidsList = $bid->select('id_project = ' . $projectId . ' AND rate like ' . $rate, $sortBy . ' ' . $order);
+                $this->oCache->set($cacheKey, $this->bidsList, \Unilend\librairies\Cache::SHORT_TIME);
+            }
+            $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+            $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+
+            /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+            $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         }
     }
 }
