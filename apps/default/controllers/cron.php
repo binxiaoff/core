@@ -5360,7 +5360,7 @@ class cronController extends bootstrap
                 /** @var \projects_remb $oProjectRepayment */
                 $oProjectRepayment = $this->loadData('projects_remb');
 
-                foreach ($oProjectRepayment->getProjectsToRepay(1) as $r) {
+                foreach ($oProjectRepayment->getProjectsToRepay(new \DateTime(), 1) as $r) {
                     $oRepaymentLog->id_project       = $r['id_project'];
                     $oRepaymentLog->ordre            = $r['ordre'];
                     $oRepaymentLog->debut            = date('Y-m-d H:i:s');
