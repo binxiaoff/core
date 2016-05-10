@@ -1070,9 +1070,9 @@ class MailerManager
     public function sendProjectOnlineToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompanies */
-        $oCompanies = Loader::loadData('companies');
+        $oCompanies = $this->oEntityManager->getRepository('companies');
         /** @var \clients $oClients */
-        $oClients = Loader::loadData('clients');
+        $oClients = $this->oEntityManager->getRepository('clients');
         $oCompanies->get($oProject->id_company);
         $this->oMailText->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
 
