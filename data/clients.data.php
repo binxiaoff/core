@@ -406,6 +406,40 @@ class clients extends clients_crud
         return $result;
     }
 
+    /**
+     * @param array $aLastStatus list of last status to use separated by a column
+     * @return array
+     */
+    public function selectLendersByLastStatus(array $aLastStatus = array())
+    {
+        $sSql = '
+            SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
+                   ca.adresse1, ca.adresse2, ca.adresse3, ca.ville, ca.cp, p.iso, p.fr,
+                   la.id_lender_account, la.iban, la.bic,
+                   csh.added,
+                   cs.status, cs.label
+            FROM clients_status_history csh
+            INNER JOIN clients c ON c.id_client = csh.id_client
+            INNER JOIN clients_adresses ca ON c.id_client = ca.id_client
+            INNER JOIN pays_v2 p ON p.id_pays = ca.id_pays
+            INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
+            INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+            WHERE csh.id_client_status_history = (
+                SELECT MAX(csh1.id_client_status_history)
+                FROM clients_status_history csh1
+                WHERE csh1.id_client = csh.id_client
+            )';
+        if (false === empty($aLastStatus)) {
+            $sSql .= ' AND cs.status IN (' . implode(', ', $aLastStatus) . ' ) ';
+        }
+        $oResult = $this->bdd->query($sSql);
+        $aResult = array();
+        while ($aRecord = $this->bdd->fetch_assoc($oResult)) {
+            $aResult[$aRecord['id_client']] = $aRecord;
+        }
+        return $aResult;
+    }
+
     public function update_added($date, $id_client)
     {
         $sql = "UPDATE clients SET added = '" . $date . "' WHERE id_client = " . $id_client;

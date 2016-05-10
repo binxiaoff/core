@@ -36,6 +36,13 @@
             $('#commercial option[value="0"]').prop('selected', true);
         });
 
+        $('#raison-sociale').autocomplete({
+          source: '<?= $this->url ?>/dossiers/autocompleteCompanyName/',
+          minLength: 3,
+          delay: 100
+        });
+
+
         $(".tablesorter").tablesorter({headers: {9: {sorter: false}, 5: {sorter: 'digit'}}});
 
         $('#displayPager').html($('#pageActive').val() + '/' + nbPages);
@@ -221,7 +228,7 @@
                     <td><?= $p['name'] ?> <?= ($p['statusProject'] == 1 ? '<i style="color:red">(Hors ligne)</i>' : '') ?></td>
                     <td><?= $this->dates->formatDate($p['added'], 'd/m/Y') ?></td>
                     <td><?= $this->dates->formatDate($p['updated'], 'd/m/Y') ?></td>
-                    <td><?= $this->ficelle->formatNumber($p['amount']) ?> €</td>
+                    <td><?= $this->ficelle->formatNumber($p['amount'], 0) ?> €</td>
                     <td><?= ($p['period'] == 1000000 || $p['period'] == 0) ? 'Je ne sais pas' : $p['period'] . ' mois' ?></td>
                     <td><?= $p['label'] ?></td>
                     <td><?= $this->oUserSalesPerson->firstname ?> <?= $this->oUserSalesPerson->name ?></td>
@@ -266,4 +273,3 @@
     <?php } ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>
-

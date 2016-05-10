@@ -2,6 +2,8 @@
 
 use Unilend\librairies\Cache;
 use Unilend\librairies\ULogger;
+use Unilend\librairies\greenPoint\greenPoint;
+use Unilend\librairies\greenPoint\greenPointStatus;
 
 class cronController extends bootstrap
 {
@@ -216,11 +218,8 @@ class cronController extends bootstrap
 
                     $oProjectManager->publish($oProject);
 
-                    // Zippage pour groupama
                     $this->zippage($oProject->id_project);
-
                     $this->sendNewProjectEmail($oProject->id_project);
-                    $this->sendProjectOnlineEmailBorrower($oProject->id_project);
                 }
             }
             if ($bHasProjectPublished) {
@@ -818,8 +817,6 @@ class cronController extends bootstrap
             ///////////////////////////////////////
             /// $lPrelevementsEnCoursEmprunteur ///
 
-            $old_iban = '';
-            $old_bic  = '';
             foreach ($lPrelevementsEnCoursEmprunteur as $p) {
                 // on recup le dernier prelevement effectué pour voir si c'est le meme iban ou bic
                 $first = false;
@@ -842,21 +839,11 @@ class cronController extends bootstrap
                 $date_mandat = date('Y-m-d', strtotime($clients_mandats->updated));
 
                 // si premier remb
-                if ($p['num_prelevement'] == 1 || $first == true) //if($p['num_prelevement'] == 1)
-                {
+                if ($p['num_prelevement'] == 1 || $first == true) {
                     $val = 'FRST';
                 } else {
                     $val = 'RCUR';
                 }
-                $old_iban = $p['iban'];
-                $old_bic  = $p['bic'];
-
-                ///////////////////////////////////////////////////////////
-                // Temporaire pour régulariser le future prelevement du projet 374 qui passera le 2014-08-13
-                //if($p['id_project'] == '374' && date('n') < 9){
-                //$val = 'FRST';
-                //}
-                ///////////////////////////////////////////////////////////
 
                 $this->clients->get($p['id_client'], 'id_client');
 
@@ -878,7 +865,6 @@ class cronController extends bootstrap
 
                 $xml .= $this->xmPrelevement($table);
 
-                // on met a jour le prelevement
                 $this->prelevements->get($p['id_prelevement'], 'id_prelevement');
                 $this->prelevements->status    = 1; // envoyé
                 $this->prelevements->added_xml = date('Y-m-d H:i') . ':00';
@@ -924,17 +910,17 @@ class cronController extends bootstrap
         $id_lot         = $table['id_lot'];
         $montant        = $table['montant'];
         $val            = $table['val'];
-        $date_execution = date('Y-m-d', strtotime($table['date_execution']));;
-        $iban          = $table['iban'];
-        $bic           = $table['bic'];
-        $ics           = $table['ics'];
-        $refmandat     = $table['refmandat'];
-        $date_mandat   = $table['date_mandat'];
-        $bicPreteur    = $table['bicPreteur'];
-        $ibanPreteur   = $table['ibanPreteur'];
-        $nomPreteur    = $table['nomPreteur'];
-        $prenomPreteur = $table['prenomPreteur'];
-        $motif         = $table['motif'];
+        $date_execution = date('Y-m-d', strtotime($table['date_execution']));
+        $iban           = $table['iban'];
+        $bic            = $table['bic'];
+        $ics            = $table['ics'];
+        $refmandat      = $table['refmandat'];
+        $date_mandat    = $table['date_mandat'];
+        $bicPreteur     = $table['bicPreteur'];
+        $ibanPreteur    = $table['ibanPreteur'];
+        $nomPreteur     = $table['nomPreteur'];
+        $prenomPreteur  = $table['prenomPreteur'];
+        $motif          = $table['motif'];
 
         $xml = '
 			<PmtInf>
@@ -1295,7 +1281,6 @@ class cronController extends bootstrap
             } else {
                 // lecture du fichier
                 $lrecus = $this->recus2array($lien);
-
                 /* EX :
 
                   0430004056802118EUR2 0004063100718230615  230615DELERY HELENE                    0000000  0000000000400{ZZ0X4VY7PFE69K8V
@@ -1408,16 +1393,15 @@ class cronController extends bootstrap
                             $receptions->create();
 
                             if ($type === 1 && $status_prelevement === 2) { // Prélèvements
-                                preg_match_all('#[0-9]+#', $motif, $extract);
-                                $iProjectId = (int) $extract[0][0];
+                                preg_match('#[0-9]+#', $motif, $extract);
+                                $iProjectId = (int) $extract[0];
 
                                 /** @var \echeanciers_emprunteur $oRepaymentSchedule */
                                 $oRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-                                $aNextRepayment = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
+                                $aNextRepayment     = $oRepaymentSchedule->select('id_project = ' . $iProjectId . ' AND status_emprunteur = 0', 'ordre ASC', 0, 1);
 
                                 /** @var \prelevements $oBankDirectDebit */
                                 $oBankDirectDebit = $this->loadData('prelevements');
-
                                 if (
                                     count($aNextRepayment) > 0
                                     && $oBankDirectDebit->get($iProjectId . '" AND num_prelevement = "' . $aNextRepayment[0]['ordre'], 'id_project')
@@ -1451,11 +1435,12 @@ class cronController extends bootstrap
                                     $bank_unilend->type           = 1;
                                     $bank_unilend->create();
 
-                                    $this->updateEcheances($projects->id_project, $receptions->montant, $projects->remb_auto);
+                                    $this->updateEcheances($projects->id_project, $receptions->montant);
                                 }
                             } elseif ($type === 2 && $status_virement === 1) { // Virements reçus
                                 if (
-                                    1 === preg_match('/RA-?([0-9]+)/', $r['libelleOpe3'], $aMatches)
+                                    isset($r['libelleOpe3'])
+                                    && 1 === preg_match('/RA-?([0-9]+)/', $r['libelleOpe3'], $aMatches)
                                     && $this->projects->get((int) $aMatches[1])
                                     && false === $transactions->get($receptions->id_reception, 'status = 1 AND etat = 1 AND id_virement')
                                 ) {
@@ -1506,7 +1491,7 @@ class cronController extends bootstrap
                                     $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
                                     $this->email->setHTMLBody($texteMail);
                                     Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                } elseif (strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
+                                } elseif (isset($r['libelleOpe3']) && strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
                                     preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extract);
 
                                     foreach ($extract[0] as $nombre) {
@@ -1538,7 +1523,7 @@ class cronController extends bootstrap
                                             $bank_unilend->type           = 1;
                                             $bank_unilend->create();
 
-                                            $this->updateEcheances($projects->id_project, $receptions->montant, $projects->remb_auto);
+                                            $this->updateEcheances($projects->id_project, $receptions->montant);
                                             break;
                                         }
                                     }
@@ -1730,7 +1715,7 @@ class cronController extends bootstrap
         }
     }
 
-    private function updateEcheances($id_project, $montant, $remb_auto)
+    private function updateEcheances($id_project, $montant)
     {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
         $echeanciers            = $this->loadData('echeanciers');
@@ -1756,15 +1741,13 @@ class cronController extends bootstrap
                 if ($projects_remb->counter('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '" AND status IN(0, 1)') <= 0) {
                     $date_echeance_preteur = $echeanciers->select('id_project = "' . $id_project . '" AND ordre = "' . $ordre . '"', '', 0, 1);
 
-                    if ($remb_auto == 0) {
-                        $projects_remb->id_project                = $id_project;
-                        $projects_remb->ordre                     = $ordre;
-                        $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
-                        $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
-                        $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
-                        $projects_remb->status                    = \projects_remb::STATUS_PENDING;
-                        $projects_remb->create();
-                    }
+                    $projects_remb->id_project                = $id_project;
+                    $projects_remb->ordre                     = $ordre;
+                    $projects_remb->date_remb_emprunteur_reel = date('Y-m-d H:i:s');
+                    $projects_remb->date_remb_preteurs        = $date_echeance_preteur[0]['date_echeance'];
+                    $projects_remb->date_remb_preteurs_reel   = '0000-00-00 00:00:00';
+                    $projects_remb->status                    = \projects_remb::STATUS_PENDING;
+                    $projects_remb->create();
                 }
             } else {
                 break;
@@ -4017,72 +4000,6 @@ class cronController extends bootstrap
         }
     }
 
-    // Fonction qui crée le mail nouveau projet pour l'emprunteur (immediatement)
-    private function sendProjectOnlineEmailBorrower($iIdProject)
-    {
-        $oProject   = $this->loadData('projects');
-        $oCompanies = $this->loadData('companies');
-
-        $oProject->get($iIdProject);
-        $oCompanies->get($oProject->id_company);
-        $this->mails_text->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->language . '" AND type');
-
-        if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
-            $sFirstName  = $oCompanies->prenom_dirigeant;
-            $sMailClient = $oCompanies->email_dirigeant;
-        } else {
-            $this->clients->get($oCompanies->id_client_owner);
-            $sFirstName  = $this->clients->prenom;
-            $sMailClient = $this->clients->email;
-        }
-
-        if ($oProject->date_publication_full != '0000-00-00 00:00:00') {
-            $oPublicationDate = new \DateTime($oProject->date_publication_full);
-        } else {
-            $oPublicationDate = new \DateTime($oProject->date_publication);
-        }
-
-        if ($oProject->date_retrait_full != '0000-00-00 00:00:00') {
-            $oEndDate = new \DateTime($oProject->date_retrait_full);
-        } else {
-            $oEndDate = new \DateTime($oProject->date_retrait);
-        }
-        $oFundingTime = $oPublicationDate->diff($oEndDate);
-        $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
-        $sFundingTime = $iFundingTime . ($iFundingTime == 1 ? ' jour' : ' jours');
-
-        $aMail = array(
-            'surl'           => $this->surl,
-            'url'            => $this->furl,
-            'nom_entreprise' => $oCompanies->name,
-            'projet_p'       => $this->furl . '/projects/detail/' . $oProject->slug,
-            'montant'        => $this->ficelle->formatNumber((float) $oProject->amount, 0),
-            'duree'          => $sFundingTime,
-            'prenom_e'       => $sFirstName,
-            'lien_fb'        => $this->like_fb,
-            'lien_tw'        => $this->twitter,
-            'annee'          => date('Y')
-        );
-
-        $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
-        $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
-        $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
-        $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
-
-        $oEmail = $this->loadLib('email');
-        $oEmail->setFrom($this->mails_text->exp_email, $sSender);
-        $oEmail->setSubject(stripslashes($sMailSubject));
-        $oEmail->setHTMLBody(stripslashes($sMailBody));
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $oEmail->addRecipient(trim($sMailClient));
-            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-        }
-    }
-
     /**
      * Send new projects summary email
      * @param array $aCustomerId
@@ -5211,14 +5128,10 @@ class cronController extends bootstrap
             $transactions = $this->loadData('transactions');
             /** @var \lenders_accounts $lenders */
             $lenders = $this->loadData('lenders_accounts');
-            /** @var \clients $clients */
-            $clients = $this->loadData('clients');
             /** @var \projects_status_history $projects_status_history */
             $projects_status_history = $this->loadData('projects_status_history');
             /** @var \wallets_lines $wallets_lines */
             $wallets_lines = $this->loadData('wallets_lines');
-            /** @var \projects_remb_log $projects_remb_log */
-            $projects_remb_log = $this->loadData('projects_remb_log');
             /** @var \bank_unilend $bank_unilend */
             $bank_unilend = $this->loadData('bank_unilend');
             /** @var \projects_remb $projects_remb */
@@ -5233,17 +5146,22 @@ class cronController extends bootstrap
             $timeDebut = strtotime(date('Y-m-d') . ' ' . $paramDebut . ':00'); // on commence le traitement du cron a l'heure demandé
             $timeFin   = mktime(0, 0, 0, date("m"), date("d") + 1, date("Y")); // on termine le cron a minuit
 
-            if ($timeDebut <= time() && $timeFin >= time()) { // Traitement des remb toutes les 5mins
-                $lProjetsAremb = $projects_remb->select('status = 0 AND DATE(date_remb_preteurs) <= "' . date('Y-m-d') . '"', '', 0, 1);
-                foreach ($lProjetsAremb as $r) {
-                    $projects_remb_log->id_project       = $r['id_project'];
-                    $projects_remb_log->ordre            = $r['ordre'];
-                    $projects_remb_log->debut            = date('Y-m-d H:i:s');
-                    $projects_remb_log->fin              = '0000-00-00 00:00:00';
-                    $projects_remb_log->montant_remb_net = 0;
-                    $projects_remb_log->etat             = 0;
-                    $projects_remb_log->nb_pret_remb     = 0;
-                    $projects_remb_log->create();
+            if ($timeDebut <= time() && $timeFin >= time()) {
+                /** @var \projects_remb_log $oRepaymentLog */
+                $oRepaymentLog = $this->loadData('projects_remb_log');
+
+                /** @var \projects_remb $oProjectRepayment */
+                $oProjectRepayment = $this->loadData('projects_remb');
+
+                foreach ($oProjectRepayment->getProjectsToRepay(1) as $r) {
+                    $oRepaymentLog->id_project       = $r['id_project'];
+                    $oRepaymentLog->ordre            = $r['ordre'];
+                    $oRepaymentLog->debut            = date('Y-m-d H:i:s');
+                    $oRepaymentLog->fin              = '0000-00-00 00:00:00';
+                    $oRepaymentLog->montant_remb_net = 0;
+                    $oRepaymentLog->etat             = 0;
+                    $oRepaymentLog->nb_pret_remb     = 0;
+                    $oRepaymentLog->create();
 
                     $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
                     $dateDernierStatut = $dernierStatut[0]['added'];
@@ -5268,8 +5186,6 @@ class cronController extends bootstrap
                                 $nb_pret_remb = ($nb_pret_remb + 1);
 
                                 $lenders->get($e['id_lender'], 'id_lender_account');
-                                $clients->get($lenders->id_client_owner, 'id_client');
-                                $companies->get($projects->id_company, 'id_company');
 
                                 $echeanciers->get($e['id_echeancier'], 'id_echeancier');
                                 $echeanciers->status             = 1; // remboursé
@@ -5413,19 +5329,19 @@ class cronController extends bootstrap
                             $bank_unilend->update();
                         }
 
-                        $projects_remb->get($r['id_project_remb'], 'id_project_remb');
-                        $projects_remb->date_remb_preteurs_reel = date('Y-m-d H:i:s');
-                        $projects_remb->status                  = \projects_remb::STATUS_REFUNDED;
-                        $projects_remb->update();
+                        $oProjectRepayment->get($r['id_project_remb'], 'id_project_remb');
+                        $oProjectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
+                        $oProjectRepayment->status                  = \projects_remb::STATUS_REFUNDED;
+                        $oProjectRepayment->update();
 
-                        $projects_remb_log->fin              = date('Y-m-d H:i:s');
-                        $projects_remb_log->montant_remb_net = $Total_rembNet * 100;
-                        $projects_remb_log->etat             = $Total_etat * 100;
-                        $projects_remb_log->nb_pret_remb     = $nb_pret_remb;
-                        $projects_remb_log->update();
-                    } // Fin check montant remb
-                } // Fin boucle lProjectsAremb
-            } // Fin condition heure de traitement
+                        $oRepaymentLog->fin              = date('Y-m-d H:i:s');
+                        $oRepaymentLog->montant_remb_net = $Total_rembNet * 100;
+                        $oRepaymentLog->etat             = $Total_etat * 100;
+                        $oRepaymentLog->nb_pret_remb     = $nb_pret_remb;
+                        $oRepaymentLog->update();
+                    }
+                }
+            }
 
             $this->stopCron();
         }
@@ -6097,4 +6013,279 @@ class cronController extends bootstrap
         $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
     }
 
+
+    public function _greenPointValidation()
+    {
+        /** @var \clients $oClients */
+        $oClients = $this->loadData('clients');
+
+        /** @var \greenpoint_attachment $oGreenPointAttachment */
+        $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
+        /** @var \greenpoint_kyc $oGreenPointKyc */
+        $oGreenPointKyc = $this->loadData('greenpoint_kyc');
+
+        $bDebug = true === isset($_GET['bDebug']);
+        if ($bDebug) {
+            $oLogger = new ULogger('Validate attachments', $this->logPath, 'greenPoint.' . date('Ymd') . '.log');
+            $oLogger->addRecord(ULogger::DEBUG, '************************************* Begin GreenPoint Validation *************************************');
+        }
+
+        $aStatusToCheck = array(
+            \clients_status::TO_BE_CHECKED,
+            \clients_status::COMPLETENESS_REPLY,
+            \clients_status::MODIFICATION
+        );
+
+        $aQueryID        = array();
+        $aClientsToCheck = $oClients->selectLendersByLastStatus($aStatusToCheck);
+
+        if (false === empty($aClientsToCheck)) {
+            /** @var \lenders_accounts $oLendersAccount */
+            $oLendersAccount = $this->loadData('lenders_accounts');
+
+            /** @var greenPoint $oGreenPoint */
+            $oGreenPoint = new greenPoint();
+
+            /** @var \attachment $oAttachment */
+            $oAttachment = $this->loadData('attachment');
+
+            /** @var \attachment_type $oAttachmentType */
+            $oAttachmentType = $this->loadData('attachment_type');
+
+            /** @var \attachment_helper $oAttachmentHelper */
+            $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
+
+            foreach ($aClientsToCheck as $iClientId => $aClient) {
+                $aAttachments = $oLendersAccount->getAttachments($aClient['id_lender_account']);
+
+                /** @var array $aAttachmentsToRevalidate */
+                $aAttachmentsToRevalidate = array();
+
+                if (false === empty($aAttachments)) {
+                    $aError = array();
+                    foreach ($aAttachments as $iAttachmentTypeId => $aAttachment) {
+                        if ($oGreenPointAttachment->get($aAttachment['id'], 'id_attachment') && 0 == $oGreenPointAttachment->revalidate) {
+                            continue;
+                        } elseif (1 == $oGreenPointAttachment->revalidate) {
+                            $aAttachmentsToRevalidate[$iAttachmentTypeId] = $oGreenPointAttachment->id_greenpoint_attachment;
+                        }
+                        $sAttachmentPath = $oAttachmentHelper->getFullPath($aAttachment['type_owner'], $aAttachment['id_type']) . $aAttachment['path'];
+                        $sFullPath       = realpath($sAttachmentPath);
+
+                        if (false == $sFullPath) {
+                            if ($bDebug) {
+                                $oLogger->addRecord(ULogger::ERROR, 'Attachment not found - ID=' . $aAttachment['id']);
+                            }
+                            continue;
+                        }
+                        try {
+                            switch ($iAttachmentTypeId) {
+                                case \attachment_type::CNI_PASSPORTE:
+                                case \attachment_type::CNI_PASSPORTE_VERSO:
+                                case \attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
+                                case \attachment_type::CNI_PASSPORTE_DIRIGEANT:
+                                    $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $sFullPath, $aClient, 'idcontrol');
+                                    $iQRID            = $oGreenPoint->idControl($aData, false);
+                                    $aQueryID[$iQRID] = $iAttachmentTypeId;
+                                    break;
+                                case \attachment_type::RIB:
+                                    $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $sFullPath, $aClient, 'ibanflash');
+                                    $iQRID            = $oGreenPoint->ibanFlash($aData, false);
+                                    $aQueryID[$iQRID] = $iAttachmentTypeId;
+                                    break;
+                                case \attachment_type::JUSTIFICATIF_DOMICILE:
+                                case \attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
+                                    $aData            = $this->getGreenPointData($iClientId, $aAttachment['id'], $sFullPath, $aClient, 'addresscontrol');
+                                    $iQRID            = $oGreenPoint->addressControl($aData, false);
+                                    $aQueryID[$iQRID] = $iAttachmentTypeId;
+                                    break;
+                            }
+                        } catch (\Exception $oException) {
+                            $aError[$aAttachment['id']][$iAttachmentTypeId] = array('iErrorCode' => $oException->getCode(), 'sErrorMessage' => $oException->getMessage());
+                            unset($oException);
+                        }
+                    }
+                    if ($bDebug && false === empty($aError)) {
+                        $oLogger->addRecord(ULogger::ERROR, 'CLIENT_ID=' . $iClientId . ' - Catched Exceptions : ' . var_export($aError, 1));
+                    }
+                    if (false === empty($aQueryID) && is_array($aQueryID)) {
+                        $aResult = $oGreenPoint->sendRequests();
+                        if ($bDebug) {
+                            $oLogger->addRecord(ULogger::DEBUG, 'CLIENT_ID=' . $iClientId . ' - Request Details : ' . var_export($aResult, 1));
+                        }
+                        $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $aAttachmentsToRevalidate);
+                        unset($aResult, $aQueryID);
+                        greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
+                    }
+                }
+            }
+        }
+        if ($bDebug) {
+            $oLogger->addRecord(ULogger::DEBUG, '************************************* End GreenPoint Validation *************************************');
+        }
+    }
+
+    /**
+     * @param int $iClientId
+     * @param int $iAttachmentId
+     * @param string $sPath
+     * @param array $aClient
+     * @param string $sType
+     * @return array
+     */
+    private function getGreenPointData($iClientId, $iAttachmentId, $sPath, array $aClient, $sType)
+    {
+        $aData = array(
+            'files'    => '@' . $sPath,
+            'dossier'  => $iClientId,
+            'document' => $iAttachmentId,
+            'detail'   => 1,
+            'nom'      => $this->getFamilyNames($aClient['nom'], $aClient['nom_usage']),
+            'prenom'   => $aClient['prenom']
+        );
+
+        switch ($sType) {
+            case 'idcontrol':
+                $this->addIdControlData($aData, $aClient);
+                return $aData;
+            case 'ibanflash':
+                $this->addIbanData($aData, $aClient);
+                return $aData;
+            case 'addresscontrol':
+                $this->addAddressData($aData, $aClient);
+                return $aData;
+            default:
+                return $aData;
+        }
+    }
+
+    /**
+     * @param string $sFamilyName
+     * @param string $sUseName
+     * @return string
+     */
+    private function getFamilyNames($sFamilyName, $sUseName)
+    {
+        $sAllowedNames = $sFamilyName;
+        if (false === empty($sUseName)) {
+            $sAllowedNames .= '|' . $sUseName;
+        }
+        return $sAllowedNames;
+    }
+
+    /**
+     * @param array $aData
+     * @param array $aClient
+     */
+    private function addIdControlData(array &$aData, array $aClient)
+    {
+        $aData['date_naissance'] = $aClient['naissance'];
+    }
+
+    /**
+     * @param array $aData
+     * @param array $aClient
+     */
+    private function addIbanData(array &$aData, array $aClient)
+    {
+        $aData['iban'] = $aClient['iban'];
+        $aData['bic']  = $aClient['bic'];
+    }
+
+    /**
+     * @param array $aData
+     * @param array $aClient
+     */
+    private function addAddressData(array &$aData, array $aClient)
+    {
+        $aData['adresse']     = $this->getFullAddress($aClient['adresse1'], $aClient['adresse2'], $aClient['adresse3']);
+        $aData['code_postal'] = $aClient['cp'];
+        $aData['ville']       = $aClient['ville'];
+        $aData['pays']        = strtoupper($aClient['fr']);
+    }
+
+    /**
+     * @param string $sAddress1
+     * @param string $sAddress2
+     * @param string $sAddress3
+     * @return string
+     */
+    private function getFullAddress($sAddress1, $sAddress2, $sAddress3)
+    {
+        $sFullAddress = $sAddress1;
+        if (false === empty($sAddress2)) {
+            $sFullAddress .= ' ' . $sAddress2;
+        }
+        if (false === empty($sAddress3)) {
+            $sFullAddress .= ' ' . $sAddress3;
+        }
+        return $sFullAddress;
+    }
+
+    /**
+     * @param int $iClientId
+     * @param array $aResponseDetail
+     * @param array $aResponseKeys
+     * @param array $aExistingAttachment
+     */
+    private function processGreenPointResponse($iClientId, array $aResponseDetail, array $aResponseKeys, array $aExistingAttachment)
+    {
+        /** @var \greenpoint_attachment $oGreenPointAttachment */
+        $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+
+        /** @var \greenpoint_attachment_detail $oGreenPointAttachmentDetail */
+        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
+
+        foreach ($aResponseKeys as $iQRID => $iAttachmentTypeId) {
+            if (false === isset($aResponseDetail[$iQRID])) {
+                continue;
+            }
+
+            if (isset($aExistingAttachment[$iAttachmentTypeId]) && $oGreenPointAttachment->get($aExistingAttachment[$iAttachmentTypeId], 'id_greenpoint_attachment')) {
+                $bUpdate = true;
+            } else {
+                $bUpdate = false;
+            }
+            $oGreenPointAttachment->control_level = 1;
+            $oGreenPointAttachment->revalidate    = 0;
+            $oGreenPointAttachment->final_status  = 0;
+            $iAttachmentId                        = $aResponseDetail[$iQRID]['REQUEST_PARAMS']['document'];
+            $aResponse                            = json_decode($aResponseDetail[$iQRID]['RESPONSE'], true);
+
+            if (isset($aResponse['resource']) && is_array($aResponse['resource'])) {
+                $aGreenPointData = greenPointStatus::getGreenPointData($aResponse['resource'], $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
+            } else {
+                $aGreenPointData = greenPointStatus::getGreenPointData(array(), $iAttachmentTypeId, $iAttachmentId, $iClientId, $aResponse['code']);
+            }
+
+            foreach ($aGreenPointData['greenpoint_attachment'] as $sKey => $mValue) {
+                if (false === is_null($mValue)) {
+                    $oGreenPointAttachment->$sKey = $mValue;
+                }
+            }
+
+            if ($bUpdate) {
+                $oGreenPointAttachment->update();
+                $oGreenPointAttachmentDetail->get($oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
+            } else {
+                $oGreenPointAttachment->create();
+                $oGreenPointAttachmentDetail->id_greenpoint_attachment = $oGreenPointAttachment->id_greenpoint_attachment;
+            }
+
+            foreach ($aGreenPointData['greenpoint_attachment_detail'] as $sKey => $mValue) {
+                if (false === is_null($mValue)) {
+                    $oGreenPointAttachmentDetail->$sKey = $mValue;
+                }
+            }
+
+            if ($bUpdate) {
+                $oGreenPointAttachmentDetail->update();
+            } else {
+                $oGreenPointAttachmentDetail->create();
+            }
+            $oGreenPointAttachment->unsetData();
+            $oGreenPointAttachmentDetail->unsetData();
+        }
+    }
 }
