@@ -588,7 +588,8 @@ class dossiersController extends bootstrap
                             $mess .= '</ul>';
 
                             if (strlen($mess) > 9) {
-                                $to = implode(',', $this->Config['DebugAlertesBusiness']);
+                                $this->settings->get('DebugAlertesBusiness', 'type');
+                                $to = $this->settings->value;
                                 $subject = '[Rappel] Donnees projet manquantes';
                                 $message = '
                                 <html>

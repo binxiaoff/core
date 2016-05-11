@@ -32,9 +32,9 @@ class cronController extends bootstrap
      */
     private $oLogger;
 
-    public function __construct($command, $config)
+    public function initialize()
     {
-        parent::__construct($command, $config, 'default');
+        parent::initialize();
 
         // Inclusion controller pdf
         include_once $this->path . '/apps/default/controllers/pdf.php';
@@ -42,10 +42,14 @@ class cronController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $this->sDestinatairesDebug = implode(',', $this->Config['DebugMailIt']);
+
+        $this->settings->get('DebugMailFrom', 'type');
+        $debugEmail = $this->settings->value;
+        $this->settings->get('DebugMailIt', 'type');
+        $this->sDestinatairesDebug = $this->settings->value;
         $this->sHeadersDebug       = 'MIME-Version: 1.0' . "\r\n";
         $this->sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-        $this->sHeadersDebug .= 'From: ' . key($this->Config['DebugMailFrom']) . ' <' . $this->Config['DebugMailFrom'][key($this->Config['DebugMailFrom'])] . '>' . "\r\n";
+        $this->sHeadersDebug .= 'From: ' . $debugEmail . "\r\n";
     }
 
     /**

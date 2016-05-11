@@ -39,7 +39,7 @@ mkdir /vagrant/phpmyadmin/
 #awk 'BEGIN{ RS="<a *href *= *\""} NR>2 {sub(/".*/,"");print; }' /vagrant/phpmyadmin/index.html >> /vagrant/phpmyadmin/url-list.txt
 #grep "https://files.phpmyadmin.net/phpMyAdmin/" /vagrant/phpmyadmin/url-list.txt > /vagrant/phpmyadmin/phpmyadmin.url
 #sed -i 's/.zip/.tar.bz2/' /vagrant/phpmyadmin/phpmyadmin.url
-wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 https://files.phpmyadmin.net/phpMyAdmin/4.6.0/phpMyAdmin-4.6.0-all-languages.tar.bz2 > /dev/null
+wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 https://files.phpmyadmin.net/phpMyAdmin/4.6.1/phpMyAdmin-4.6.1-all-languages.tar.bz2 > /dev/null
 mkdir /srv/sites/phpmyadmin
 tar jxvf /vagrant/phpmyadmin/phpMyAdmin.tar.bz2 -C /srv/sites/phpmyadmin --strip 1 > /dev/null
 rm -rf /vagrant/phpmyadmin
@@ -50,7 +50,7 @@ mysql -uroot -pROOTPASSWORD -e "CREATE DATABASE pma"
 mysql -uroot -pROOTPASSWORD -e "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'"
 mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON pma.* TO 'pma'@'localhost'"
 mysql -uroot -pROOTPASSWORD -e "flush privileges"
-cat /vagrant/conf/phpmyadmin.conf.php > /srv/sites/phpmyadmin/config.inc.php
+ln -fs /vagrant/conf/phpmyadmin.conf.php /srv/sites/phpmyadmin/config.inc.php
 
 # create external user
 mysql -uroot -pROOTPASSWORD -e "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERNALPASSWD'"
