@@ -74,7 +74,7 @@
 <script>
     var uploadFieldId = 1;
     $(function() {
-        $('#upload-row-pattern_0').find('select').change(function() {console.log("first");
+        $('#upload-row-pattern_0').find('select').change(function() {
             var attachmentTypeId = $(this).val();
             $(this).parents('.row').find('input.file-field').attr('name', attachmentTypeId);
         });
