@@ -1491,6 +1491,7 @@ class tree extends tree_crud
         ORDER BY p.title ASC
         ';
 
+        $result           = array();
         $resultatProjects = $this->bdd->query($sql);
 
         while ($recordProjects = $this->bdd->fetch_array($resultatProjects)) {

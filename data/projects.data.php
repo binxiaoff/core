@@ -568,6 +568,7 @@ class projects extends projects_crud
                 return round($this->bdd->result($rResult, 0, 0), 2);
             case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
+            case \projects_status::AUTO_BID_PLACED:
                 $rResult = $this->bdd->query('
                     SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
                     FROM bids
@@ -768,5 +769,17 @@ class projects extends projects_crud
     {
         //F, G, H are not used today.
         return array('A', 'B', 'C', 'D', 'E');
+    }
+
+    public function getPreviousProjectsWithSameSiren($sSiren, $sAdded)
+    {
+        $sQuery = 'SELECT projects.id_project FROM projects INNER JOIN companies ON projects.id_company = companies.id_company WHERE companies.siren = ' . $sSiren . ' AND projects.added <= "' . $sAdded . '"';
+
+        $aProjects = array();
+        $rResult   = $this->bdd->query($sQuery);
+        while ($aRecord = $this->bdd->fetch_array($rResult)) {
+            $aProjects[] = $aRecord;
+        }
+        return $aProjects;
     }
 }

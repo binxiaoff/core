@@ -1,14 +1,20 @@
 <div id="popup">
-    <?php if ($this->alreadySent > 0): ?>
-        <p>Attention, un prélèvement est déjà lancé pour le <?= date('d/m/Y', strtotime($this->sentEcheance)) ?>.</p>
-        <p>Ce changement de RIB sera effectif à partir du prélèvement prévu pour le <?= date('d/m/Y', strtotime($this->nextEcheance)) ?>.</p>
-        <p>Valider tout de même ?</p>
+    <?php if (count($this->aProjects) == 1) : ?>
+        <p><strong>Confirmer le changement de RIB pour <?= $this->aProjects[0]['title'] ?>&nbsp;:</strong></p>
     <?php else: ?>
-        <p>Confirmer le changement de RIB pour ce projet?</p>
-        <p>Prise en compte pour l'échéance du <?= date('d/m/Y', strtotime($this->nextEcheance)) ?></p>
+        <p><strong>Confirmer le changement de RIB pour les projets suivants&nbsp;:</strong></p>
+        <p>
+            <ul>
+            <?php foreach ($this->aProjects as $aProject) : ?>
+                <li><?= $aProject['title'] ?> (<?= $aProject['id_project'] ?>)</li>
+            <?php endforeach; ?>
+            </ul>
+        </p>
     <?php endif; ?>
+    <p>Le nouveau mandat va être envoyé par mail.</p>
+    <p>La prise en compte des modifications aura lieu à sa signature.</p>
     <center>
-        <button onclick="document.getElementById('edit_emprunteur').submit()" class='btn' >Valider</button>
-        <button onclick="parent.$.fn.colorbox.close();" class='btn' style="margin-left:15px;"  >Refuser</button>
+        <button onclick="document.getElementById('edit_emprunteur').submit()" class='btn'>Valider</button>
+        <button onclick="parent.$.fn.colorbox.close();" class='btn' style="margin-left:15px;">Refuser</button>
     </center>
 </div>
