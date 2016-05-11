@@ -70,4 +70,49 @@ class mail_queue extends mail_queue_crud
     {
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `mail_queue` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
+
+    public function searchSentEmails($sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
+    {
+        $sWhere = '';
+        $sLimit = '';
+
+        if (false === is_null($sFrom)) {
+            $sWhere .= ' AND mt.exp_name LIKE "%' . $sFrom . '%" ';
+        }
+
+        if (false === is_null($sTo)) {
+            $sWhere .= 'AND mg.recipient LIKE "%' . $sTo . '%"';
+        }
+
+        if (false === is_null($sSubject)) {
+            $sWhere .= 'AND mt.subject LIKE "%' . $sSubject . '%"';
+        }
+
+        if (false === is_null($oDateStart)) {
+            $sWhere .= 'AND mq.sent_at >= ' . $oDateStart->format('Y-m-d h:i:s');
+        }
+
+        if (false === is_null($oDateEnd)) {
+            $sWhere .= 'AND mq.sent_at <= ' . $oDateEnd->format('Y-m-d h:i:s');
+        }
+
+        if (false === is_null($iLimit)) {
+            $sLimit = ' LIMIT ' . $iLimit;
+        }
+
+        $sQuery = 'SELECT
+                      mq.*,
+                      mt.exp_name,
+                      mt.subject,
+                      mt.id_textemail
+                    FROM
+                      mail_queue mq
+                    INNER JOIN mails_text mt ON mq.id_mail_text = mt.id_textemail
+                    WHERE mq.status =' . self::STATUS_SENT . $sWhere . '
+                    ORDER BY mq.sent_at DESC ' . $sLimit;
+
+        return $this->bdd->executeQuery($sQuery);
+
+    }
+
 }

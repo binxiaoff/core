@@ -872,7 +872,7 @@ class ajaxController extends bootstrap
                 //*** ENVOI DU MAIL NOTIFICATION RETRAIT ***//
                 //******************************************//
                 $oSettings->get('Adresse notification controle fond', 'type');
-                $destinataire = $this->settings->value;
+                $destinataire = $oSettings->value;
 
                 $transac = $this->loadData('transactions');
                 $loans   = $this->loadData('loans');

@@ -74,6 +74,11 @@
             <argument type="service" id="logger"/>
         </service>
 
+        <service id="unilend.service.mail_text" class="Unilend\Service\MailTextManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.mail_queue" />
+        </service>
+
         <!-- Swift Mailer -->
         <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
         <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />

@@ -28,34 +28,15 @@
 
 class mails_text extends mails_text_crud
 {
+    const STATUS_ACTIVE   = 1;
+    const STATUS_ARCHIVED = 2;
 
-    function mails_text($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         parent::mails_text($bdd, $params);
     }
 
-    function get($id, $field = 'id_textemail')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_textemail')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -73,7 +54,7 @@ class mails_text extends mails_text_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -82,13 +63,21 @@ class mails_text extends mails_text_crud
         $sql = 'SELECT count(*) FROM `mails_text` ' . $where;
 
         $result = $this->bdd->query($sql);
+
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_textemail')
+    public function exist($id, $field = 'id_textemail')
     {
         $sql    = 'SELECT * FROM `mails_text` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
+
         return ($this->bdd->fetch_array($result) > 0);
+    }
+
+    public function getActiveMailsTexts()
+    {
+        $sQuery = 'SELECT * FROM mails_text WHERE status  = ' . self::STATUS_ACTIVE . ' ORDER BY type ASC';
+        return $this->bdd->executeQuery($sQuery);
     }
 }
