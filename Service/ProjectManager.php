@@ -684,47 +684,6 @@ class ProjectManager
                 );
             }
         }
-
-    }
-
-    public static function getWeightedAvgRate(\projects $oProject)
-    {
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = Loader::loadData('projects_status');
-        $oProjectStatus->getLastStatut($oProject->id_project);
-        if (in_array($oProjectStatus->status, array(\projects_status::EN_FUNDING, \projects_status::AUTO_BID_PLACED))) {
-            return self::getWeightedAvgRateFromBid($oProject);
-        } elseif ($oProjectStatus->status == \projects_status::FUNDE) {
-            return self::getWeightedAvgRateFromLoan($oProject);
-        } else {
-            return false;
-        }
-    }
-
-    private static function getWeightedAvgRateFromLoan(\projects $oProject)
-    {
-        /** @var \loans $oLoan */
-        $oLoan          = Loader::loadData('loans');
-        $iInterestTotal = 0;
-        $iCapitalTotal  = 0;
-        foreach ($oLoan->select('id_project = ' . $oProject->id_project) as $aLoan) {
-            $iInterestTotal += $aLoan['rate'] * $aLoan['amount'];
-            $iCapitalTotal += $aLoan['amount'];
-        }
-        return ($iInterestTotal / $iCapitalTotal);
-    }
-
-    private static function getWeightedAvgRateFromBid(\projects $oProject)
-    {
-        /** @var \bids $oBid */
-        $oBid           = Loader::loadData('bids');
-        $iInterestTotal = 0;
-        $iCapitalTotal  = 0;
-        foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aLoan) {
-            $iInterestTotal += $aLoan['rate'] * $aLoan['amount'];
-            $iCapitalTotal += $aLoan['amount'];
-        }
-        return ($iInterestTotal / $iCapitalTotal);
     }
 
     public static function getProjectEndDate(\projects $oProject)
@@ -777,6 +736,9 @@ class ProjectManager
             case \projects_status::REJET_ANALYSTE:
             case \projects_status::REJET_COMITE:
                 $this->stopRemindersForOlderProjects($oProject);
+                break;
+            case \projects_status::A_FUNDER:
+                $this->oMailerManager->sendProjectOnlineToBorrower($oProject);
                 break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
@@ -836,5 +798,30 @@ class ProjectManager
 
             $this->oMailerManager->sendFundedToBorrower($oProject);
         }
+    }
+
+    /**
+     * @param \projects $project
+     * @return string
+     */
+    public static function getBorrowerBankTransferLabel(\projects $project)
+    {
+        /** @var \companies $company */
+        $company = Loader::loadData('companies');
+        $company->get($project->id_company);
+
+        return 'UNILEND' . str_pad($project->id_project, 6, 0, STR_PAD_LEFT) . 'E' . trim($company->siren);
+    }
+
+    /**
+     * @param \projects $oProject
+     *
+     * @return array
+     */
+    public function getBidsStatistics(\projects $oProject)
+    {
+        /** @var \bids $oBid */
+        $oBid = Loader::loadData('bids');
+        return $oBid->getBidsStatistics($oProject->id_project);
     }
 }
