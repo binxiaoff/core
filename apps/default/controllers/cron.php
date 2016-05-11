@@ -6369,7 +6369,7 @@ class cronController extends bootstrap
             /** @var \greenpoint_kyc $oGreenPointKyc */
             $oGreenPointKyc = $this->loadData('greenpoint_kyc');
 
-            $bDebug = true === isset($_GET['bDebug']);
+            $bDebug = true;
             if ($bDebug) {
                 $oLogger = new ULogger('Validate attachments', $this->logPath, 'greenPoint.' . date('Ymd') . '.log');
                 $oLogger->addRecord(ULogger::DEBUG, '************************************* Begin GreenPoint Validation *************************************');
