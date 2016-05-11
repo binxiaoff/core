@@ -76,7 +76,7 @@
     $(function() {
         $('#upload-row-pattern_0').find('select').change(function() {
             var attachmentTypeId = $(this).val();
-            $(this).parents('.row').find('input.file-field').attr('name', attachmentTypeId);
+            $(this).parents('div[id^="upload-row-pattern_"]').find('input.file-field').attr('name', attachmentTypeId);
         });
 
         $uploadRow = $("#form_espace_emprunteur > div.row.upload-input").clone().hide().prop('id', 'upload-row-pattern');
@@ -101,7 +101,7 @@
             $(this).parents('.row').remove();
         });
         $uploadRow.find('.file-holder').append($removeButton);
-         
+
         $('#upload-row-pattern_'+ uploadFieldId).find('select').change(function() {
             var attachmentTypeId = $(this).val();
             $(this).parents('div[id^="upload-row-pattern_"]').find('input.file-field').attr('name', attachmentTypeId);
