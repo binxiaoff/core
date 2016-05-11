@@ -197,7 +197,7 @@ class alimentationController extends bootstrap
                     'lien_tw'        => $lien_tw
                 );
 
-                /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $this->language, $varMail);
                 $message->setTo($this->clients->email);
                 $mailer = $this->get('mailer');
@@ -414,7 +414,7 @@ class alimentationController extends bootstrap
                                 'lien_tw'         => $lien_tw
                             );
 
-                            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-cb', $this->language, $varMail);
                             $message->setTo($this->clients->email);
                             $mailer = $this->get('mailer');

@@ -1296,7 +1296,7 @@ class rootController extends bootstrap
                 'lien_tw'  => $lien_tw
             );
 
-            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $this->language, $varMail);
             $message->setTo($_POST['email']);
             $mailer = $this->get('mailer');
@@ -1341,7 +1341,7 @@ class rootController extends bootstrap
                 '$infos'  => $infos
             );
 
-            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $this->language, $variablesInternalMail, false);
             $message->setTo($destinataire);
             $mailer = $this->get('mailer');

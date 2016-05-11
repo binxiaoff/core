@@ -289,7 +289,7 @@ class usersController extends bootstrap
                                     '$password' => $_POST['new_pass']
                                 );
 
-                                /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $this->language, $aVars, false);
                                 $message->setTo(trim($this->users->email));
 

@@ -933,7 +933,7 @@ class depot_de_dossierController extends bootstrap
         $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
-        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailText->type, $this->language, $aVariables);
         $message->setTo($sRecipient);
         $mailer = $this->get('mailer');
@@ -956,7 +956,7 @@ class depot_de_dossierController extends bootstrap
                 '[SURL]'           => $this->surl
             );
 
-            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailText->type, $this->language, $aReplacements, false);
             $message->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $oMailText->subject))));
             $message->setTo(trim($this->users->email));

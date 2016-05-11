@@ -83,9 +83,9 @@ class mailsController extends bootstrap
             $oDateStart = (isset($_POST['date_from']) && false === empty($_POST['date_from'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00') : new \DateTime('2013-01-01');
             $oDateEnd   = (isset($_POST['date_to']) && false === empty($_POST['date_to'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59') : new \DateTime('NOW');
 
-            $this->aEmails = $oMailQueueManager->searchSentEmails($sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd);
+            $this->aEmails = $oMailQueueManager->searchSentEmails(null, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd);
         } else {
-            $this->aEmails = $oMailQueueManager->searchSentEmails(null, null, null, null, null, 100);
+            $this->aEmails = $oMailQueueManager->searchSentEmails(null, null, null, null, null, null, 100);
         }
     }
 
@@ -104,9 +104,9 @@ class mailsController extends bootstrap
         $oMailQueue = $this->loadData('mail_queue');
 
         if (isset($this->params[0]) && $oMailQueue->get($this->params[0])) {
-            /** @var \Unilend\Service\MailQueueManager $oMailQueueManager */
+            /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oEmail */
             $oMailQueueManager = $this->get('unilend.service.mail_queue');
-            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $oEmail */
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
             $oEmail = $oMailQueueManager->getMessage($oMailQueue);
 
             $iDate = $oEmail->getDate();

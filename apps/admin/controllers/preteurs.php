@@ -658,7 +658,7 @@ class preteursController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $this->language, $varMail);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
@@ -861,7 +861,7 @@ class preteursController extends bootstrap
                         'lien_tw' => $lien_tw
                     );
 
-                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeMail, $this->language, $varMail);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
@@ -1250,7 +1250,7 @@ class preteursController extends bootstrap
                         'lien_tw'         => $lien_tw
                     );
 
-                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('offre-de-bienvenue', $this->language, $varMail);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
@@ -1865,7 +1865,7 @@ class preteursController extends bootstrap
             'lien_tw' => $sTW
         );
 
-        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-fermeture-compte-preteur', $this->language, $aVariablesMail);
         $message->setTo($oClient->email);
         $mailer = $this->get('mailer');
@@ -1898,7 +1898,7 @@ class preteursController extends bootstrap
             'lien_tw'       => $lien_tw
         );
 
-        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $this->language, $varMail);
         $message->setTo($this->clients->email);
         $mailer = $this->get('mailer');

@@ -104,7 +104,6 @@ class mail_queue extends mail_queue_crud
             $sLimit = ' LIMIT ' . $iLimit;
         }
 
-
         $sQuery = 'SELECT
                       mq.*,
                       mt.exp_name,
@@ -117,7 +116,6 @@ class mail_queue extends mail_queue_crud
                     ORDER BY mq.sent_at DESC ' . $sLimit;
 
         return $this->bdd->executeQuery($sQuery);
-
     }
 
 }

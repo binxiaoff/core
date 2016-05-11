@@ -767,7 +767,7 @@ class transfertsController extends bootstrap
                     'lien_tw'         => $lien_tw
                 );
 
-                /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $this->language, $varMail);
                 $message->setTo($preteurs->email);
                 $mailer = $this->get('mailer');
@@ -1088,7 +1088,7 @@ class transfertsController extends bootstrap
                     'lien_tw'         => $sTwitter
                 );
 
-                /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('offre-de-bienvenue', $this->language, $aVariables);
                 $message->setTo($this->clients->email);
                 $mailer = $this->get('mailer');

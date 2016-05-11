@@ -364,7 +364,7 @@ class emprunteursController extends bootstrap
                                     'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
                                 );
 
-                                /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                                 $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $this->language, $varMail);
                                 $message->setTo($e->email);
                                 $mailer = $this->get('mailer');

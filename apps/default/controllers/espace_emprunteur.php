@@ -176,7 +176,7 @@ class espace_emprunteurController extends bootstrap
                 '[SURL]'      => $this->surl
             );
 
-            /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $this->language, $aReplacements, false);
             $message->setTo(trim($this->settings->value));
             if (empty($sFilePath) === false) {
@@ -447,7 +447,7 @@ class espace_emprunteurController extends bootstrap
             'lien_tw'  => $sTwitterURL
         );
 
-        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $this->language, $aVariables);
         $message->setTo($_POST['email']);
         $mailer = $this->get('mailer');

@@ -78,7 +78,7 @@ class universignController extends bootstrap
                             '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf
                         );
 
-                        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $this->language, $variablesInternalMail, false);
                         $message->setTo($destinataire);
                         $mailer = $this->get('mailer');
@@ -148,7 +148,7 @@ class universignController extends bootstrap
                             '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf
                         );
 
-                        /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $this->language, $variablesInternalMail, false);
                         $message->setTo($destinataire);
                         $mailer = $this->get('mailer');
@@ -237,7 +237,7 @@ class universignController extends bootstrap
                         '[CGV_BORROWER]' => $this->lurl . $oProjectCgv->getUrlPath()
                     );
 
-                    /** @var \Unilend\Bridge\SwiftMailer\TemplateMessage $message */
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-cgv-projet-signe', $this->language, $aReplacements, false);
                     $message->setTo($sRecipient);
                     $mailer = $this->get('mailer');
