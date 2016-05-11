@@ -1,7 +1,7 @@
 <?php
 
 
-namespace Unilend\Service;
+namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Unilend\Service\Simulator\EntityManager;
 

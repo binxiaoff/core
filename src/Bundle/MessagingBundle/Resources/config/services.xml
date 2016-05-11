@@ -15,6 +15,11 @@
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
         </service>
 
+        <service id="unilend.service.mail_text" class="Unilend\Bundle\MessagingBundle\Service\MailTextManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.mail_queue"/>
+        </service>
+
         <service id="unilend.swiftmailer.message_provider" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage</argument>
