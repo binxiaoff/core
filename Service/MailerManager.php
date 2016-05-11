@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Service;
 
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
@@ -855,7 +856,6 @@ class MailerManager
         /** @var \clients $oClients */
         $oClients = $this->oEntityManager->getRepository('clients');
         $oCompanies->get($oProject->id_company);
-        $this->oMailText->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
 
         if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
             $sFirstName  = $oCompanies->prenom_dirigeant;
@@ -887,23 +887,10 @@ class MailerManager
             'annee'          => date('Y')
         );
 
-        $aVars        = $this->oTNMP->constructionVariablesServeur($aMail);
-        $sMailSubject = strtr(utf8_decode($this->oMailText->subject), $aVars);
-        $sMailBody    = strtr(utf8_decode($this->oMailText->content), $aVars);
-        $sSender      = strtr(utf8_decode($this->oMailText->exp_name), $aVars);
-
-        $this->oEmail->setFrom($this->oMailText->exp_email, $sSender);
-        $this->oEmail->setSubject(stripslashes($sMailSubject));
-        $this->oEmail->setHTMLBody(stripslashes($sMailBody));
-
-        if ($this->aConfig['env'] == 'prod') {
-            \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $sMailClient, $tabFiler);
-            $this->oTNMP->sendMailNMP($tabFiler, $aMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
-        } else {
-            $this->oEmail->addRecipient(trim($sMailClient));
-            \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
-        }
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteure', $this->sLanguage, $aMail);
+        $message->setTo($sMailClient);
+        $this->mailer->send($message);
     }
-
 
 }

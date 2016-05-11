@@ -27,34 +27,7 @@ class bootstrap extends Controller
         $this->users_zones    = $this->loadData('users_zones');
         //$this->routages       = $this->loadData('routages', array('url' => $this->lurl));
         $this->users_history  = $this->loadData('users_history');
-        $this->mails_filer    = $this->loadData('mails_filer');
         $this->mails_text     = $this->loadData('mails_text');
-        $this->nmp            = $this->loadData('nmp');
-        $this->nmp_desabo     = $this->loadData('nmp_desabo');
-
-        $this->tnmp = $this->loadLib('tnmp', array($this->nmp, $this->nmp_desabo, $this->Config['env']));
-
-        // Recuperation des variables NMP
-        $this->settings->get('NMP Server API', 'type');
-        $this->serveur_api = $this->settings->value;
-
-        $this->settings->get('NMP Key', 'type');
-        $this->key_api = $this->settings->value;
-
-        $this->settings->get('NMP Login', 'type');
-        $this->login_api = $this->settings->value;
-
-        $this->settings->get('NMP Password', 'type');
-        $this->pwd_api = $this->settings->value;
-
-        $this->settings->get('NMP Mail', 'type');
-        $this->mail_api = $this->settings->value;
-
-        $this->settings->get('NMP From Mail', 'type');
-        $this->frommail_api = $this->settings->value;
-
-        $this->settings->get('NMP ID Clonage', 'type');
-        $this->id_clone_nmp = $this->settings->value;
 
         if (isset($_POST['captcha'])) {
             if (isset($_SESSION['captcha']) && $_SESSION['captcha'] == $_POST['captcha']) {

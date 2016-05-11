@@ -20,12 +20,6 @@ class BidManager
     /** @var \ficelle */
     private $oFicelle;
 
-    /** @var \tnmp */
-    private $oTNMP;
-
-    /** @var \email */
-    private $oEmail;
-
     /** @var array */
     private $aConfig;
 
@@ -53,14 +47,8 @@ class BidManager
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;
         $this->oLenderManager          = $oLenderManager;
 
-        $this->oNMP       = $this->oEntityManager->getRepository('nmp');
-        $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
-
         $this->oDate    = Loader::loadLib('dates');
         $this->oFicelle = Loader::loadLib('ficelle');
-
-        $this->oTNMP  = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
-        $this->oEmail = Loader::loadLib('email');
     }
 
     /**
