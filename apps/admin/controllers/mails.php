@@ -15,7 +15,7 @@ class mailsController extends bootstrap
 
     public function _default()
     {
-        /** @var \Unilend\Service\MailTextManager $oMailTextManager */
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTextManager $oMailTextManager */
         $oMailTextManager = $this->get('unilend.service.mail_text');
 
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
@@ -39,7 +39,7 @@ class mailsController extends bootstrap
     {
         if (isset($_POST['form_add_mail'])) {
             $aPost = $this->handlePost();
-            /** @var \Unilend\Service\MailTextManager $oMailTextManager */
+            /** @var \Unilend\Bundle\MessagingBundle\Service\MailTextManager $oMailTextManager */
             $oMailTextManager = $this->get('unilend.service.mail_text');
             $oMailTextManager->addMailsText($aPost['type'], $aPost['exp_name'],$aPost['exp_email'], $aPost['subject'], $aPost['content']);
 
@@ -54,7 +54,7 @@ class mailsController extends bootstrap
 
     public function _edit()
     {
-        /** @var \Unilend\Service\MailTextManager $oMailTextManager */
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTextManager $oMailTextManager */
         $oMailTextManager = $this->get('unilend.service.mail_text');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
@@ -73,7 +73,7 @@ class mailsController extends bootstrap
 
     public function _emailhistory()
     {
-        /** @var \Unilend\Service\MailQueueManager $oMailQueueManager */
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
         $oMailQueueManager = $this->get('unilend.service.mail_queue');
 
         if (isset($_POST['form_send_search'])) {
