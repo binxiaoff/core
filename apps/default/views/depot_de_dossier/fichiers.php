@@ -101,7 +101,7 @@
             $(this).parents('.row').remove();
         });
         $uploadRow.find('.file-holder').append($removeButton);
-
+         
         $('#upload-row-pattern_'+ uploadFieldId).find('select').change(function() {
             var attachmentTypeId = $(this).val();
             $(this).parents('div[id^="upload-row-pattern_"]').find('input.file-field').attr('name', attachmentTypeId);
