@@ -985,7 +985,6 @@ class clients extends clients_crud
                 FROM
                     clients c
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
-                    LEFT JOIN offres_bienvenues_details obd ON c.id_client = obd.id_client
                 WHERE
                     NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
                     AND NOT EXISTS (SELECT * FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
