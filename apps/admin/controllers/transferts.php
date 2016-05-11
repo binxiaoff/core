@@ -158,6 +158,39 @@ class transfertsController extends bootstrap
         }
     }
 
+    public function _deblocage()
+    {
+        /** @var \projects $projects */
+        $projects = $this->loadData('projects');
+
+        /** @var \clients_mandats $clients_mandats */
+        $clients_mandats = $this->loadData('clients_mandats');
+
+        /** @var \projects_pouvoir $projects_pouvoir */
+        $projects_pouvoir = $this->loadData('projects_pouvoir');
+
+        $aProjects = $projects->selectProjectsByStatus(\projects_status::FUNDE, '', '', array(), '', '', false);
+
+        $this->aProjects = array();
+        foreach ($aProjects as $key => $value) {
+            $this->aProjects[$key] = $value;
+
+            if ($aMandate = array_shift($clients_mandats->select('id_project = ' . $this->aProjects[$key]['id_project'], 'added DESC', 0, 1))) {
+                $this->aProjects[$key]['bic']    = $aMandate['bic'];
+                $this->aProjects[$key]['iban']   = $aMandate['iban'];
+                $this->aProjects[$key]['mandat'] = $aMandate['url_pdf'];
+            }
+
+            if ($aPouvoir = array_shift($projects_pouvoir->select('id_project = ' . $this->aProjects[$key]['id_project'] . ' AND status = 1'))) {
+                $this->aProjects[$key]['pouvoir'] = $aPouvoir['url_pdf'];
+            }
+
+            if ($aAttachments = $projects->getAttachments($this->aProjects[$key]['id_project'])) {
+                $this->aProjects[$key]['kbis'] = $aAttachments[\attachment_type::KBIS]['path'];
+            }
+        }
+    }
+
     // @todo duplicate function in cron.php
     private function updateEcheances($id_project, $montant)
     {
