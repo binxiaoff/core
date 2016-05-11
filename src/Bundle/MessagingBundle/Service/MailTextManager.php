@@ -22,6 +22,14 @@ class MailTextManager
         $this->oMailQueueManager = $oMailQueueManager;
     }
 
+    /**
+     * @param int $iTemplateID
+     * @param string $sType
+     * @param string $sSender
+     * @param string $sSenderEmail
+     * @param string $sSubject
+     * @param string $sContent
+     */
     public function addMailsText($sType, $sSender, $sSenderEmail, $sSubject, $sContent)
     {
         /** @var \mails_text $oMailText */
@@ -37,6 +45,14 @@ class MailTextManager
 
     }
 
+    /**
+     * @param int $iTemplateID
+     * @param string $sType
+     * @param string $sSender
+     * @param string $sSenderEmail
+     * @param string $sSubject
+     * @param string $sContent
+     */
     public function modifyMailsText($iTemplateID, $sType, $sSender, $sSenderEmail, $sSubject, $sContent)
     {
         /** @var \mails_text $oMailText */
@@ -55,14 +71,19 @@ class MailTextManager
         }
     }
 
+    /**
+     * @param \mails_text $oMailText
+     */
     public function archiveMailsText(\mails_text $oMailText)
     {
         $oMailText->status = \mails_text::STATUS_ARCHIVED;
-        $oMailText->type   = $oMailText->type . '_archived';
         $oMailText->update();
 
     }
 
+    /**
+     * @return array
+     */
     public function getActiveMailsText()
     {
         /** @var \mails_text $oMailText */

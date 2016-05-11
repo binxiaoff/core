@@ -71,17 +71,21 @@ class mail_queue extends mail_queue_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `mail_queue` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function searchSentEmails($sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
+    public function searchSentEmails($iClientId = null, $sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
     {
         $sWhere = '';
         $sLimit = '';
 
-        if (false === is_null($sFrom)) {
-            $sWhere .= ' AND mt.exp_name LIKE "%' . $sFrom . '%" ';
+        if (false === is_null($sTo)) {
+            $sWhere .= ' AND mq.recipient LIKE "%' . $sTo . '%"';
         }
 
-        if (false === is_null($sTo)) {
-            $sWhere .= 'AND mg.recipient LIKE "%' . $sTo . '%"';
+        if (false === is_null($iClientId)) {
+            $sWhere = ' AND mq.id_client = ' . $iClientId;
+        }
+
+        if (false === is_null($sFrom)) {
+            $sWhere .= ' AND mt.exp_name LIKE "%' . $sFrom . '%" ';
         }
 
         if (false === is_null($sSubject)) {
@@ -89,16 +93,17 @@ class mail_queue extends mail_queue_crud
         }
 
         if (false === is_null($oDateStart)) {
-            $sWhere .= 'AND mq.sent_at >= ' . $oDateStart->format('Y-m-d h:i:s');
+            $sWhere .= ' AND mq.sent_at >= ' . $oDateStart->format('Y-m-d h:i:s');
         }
 
         if (false === is_null($oDateEnd)) {
-            $sWhere .= 'AND mq.sent_at <= ' . $oDateEnd->format('Y-m-d h:i:s');
+            $sWhere .= ' AND mq.sent_at <= ' . $oDateEnd->format('Y-m-d h:i:s');
         }
 
         if (false === is_null($iLimit)) {
             $sLimit = ' LIMIT ' . $iLimit;
         }
+
 
         $sQuery = 'SELECT
                       mq.*,

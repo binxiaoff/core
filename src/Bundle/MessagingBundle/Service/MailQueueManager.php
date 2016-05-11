@@ -107,6 +107,7 @@ class MailQueueManager
     }
 
     /**
+     * @param int|null $iClientId
      * @param string|null $sFrom
      * @param string|null $sTo
      * @param string|null $sSubject
@@ -116,11 +117,11 @@ class MailQueueManager
      *
      * @return array
      */
-    public function searchSentEmails($sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
+    public function searchSentEmails($iClientId = null, $sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
     {
         /** @var \mail_queue $oMailQueue */
         $oMailQueue = $this->oEntityManager->getRepository('mail_queue');
-        $oStatement = $oMailQueue->searchSentEmails($sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd, $iLimit);
+        $oStatement = $oMailQueue->searchSentEmails($iClientId, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd, $iLimit);
         $aEmails    = array();
 
         while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
@@ -141,6 +142,5 @@ class MailQueueManager
         $oMailQueue   = $this->oEntityManager->getRepository('mail_queue');
         return $oMailQueue->exist($iTemplateID, 'id_mail_text');
     }
-
 
 }
