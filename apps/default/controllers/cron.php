@@ -5785,7 +5785,7 @@ class cronController extends bootstrap
                 $oMailsText             = $this->loadData('mails_text');
                 $oSettings              = $this->loadData('settings');
 
-                $oMailsText->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'lang = "' . $this->language . '" AND type');
+                $oMailsText->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
                 $oSettings->get('Virement - BIC', 'type');
                 $sBIC = $oSettings->value;

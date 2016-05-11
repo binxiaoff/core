@@ -522,7 +522,7 @@ class ajaxController extends bootstrap
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+            $this->mails_text->get('confirmation-depot-de-dossier', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
             $oSettings->get('Facebook', 'type');
             $lien_fb = $oSettings->value;

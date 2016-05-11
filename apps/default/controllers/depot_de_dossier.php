@@ -917,7 +917,7 @@ class depot_de_dossierController extends bootstrap
     {
         /** @var \mails_text $oMailText */
         $oMailText = $this->loadData('mails_text');
-        $oMailText->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+        $oMailText->get('confirmation-depot-de-dossier', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
         $aVariables = array(
             'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
@@ -947,7 +947,7 @@ class depot_de_dossierController extends bootstrap
             $this->users->get($this->projects->id_commercial, 'id_user');
 
             $oMailText = $this->loadData('mails_text');
-            $oMailText->get($sEmailType, 'lang = "' . $this->language . '" AND type');
+            $oMailText->get($sEmailType, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,

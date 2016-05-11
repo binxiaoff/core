@@ -1070,7 +1070,7 @@ class transfertsController extends bootstrap
                 $oBankUnilend->create();
 
                 $oMailsText = $this->loadData('mails_text');
-                $oMailsText->get('offre-de-bienvenue', 'lang = "' . $this->language . '" AND type');
+                $oMailsText->get('offre-de-bienvenue', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
                 $oSettings->get('Facebook', 'type');
                 $sFacebook = $oSettings->value;

@@ -1373,7 +1373,7 @@ class dossiersController extends bootstrap
                 'annee'                => date('Y')
             );
 
-        $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
+        $this->mails_text->get($sMailType, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
         $aReplacements['sujet'] = $this->mails_text->subject;
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
@@ -1513,7 +1513,7 @@ class dossiersController extends bootstrap
 
                     $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
 
-                    $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
+                    $this->mails_text->get($sMailType, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
                     $aReplacements['sujet'] = $this->mails_text->subject;
 
@@ -2847,7 +2847,7 @@ class dossiersController extends bootstrap
         $this->iProjectId = $oProjects->id_project;
 
         $sTypeEmail = $this->selectEmailCompleteness($iClientId);
-        $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
+        $this->mails_text->get($sTypeEmail, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -2879,7 +2879,7 @@ class dossiersController extends bootstrap
         }
 
         $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
-        $oMailsText->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
+        $oMailsText->get($sTypeEmail, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
         $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
         $varMail['sujet'] = $oMailsText->subject;
@@ -2925,7 +2925,7 @@ class dossiersController extends bootstrap
             }
 
             $sTypeEmail       = $this->selectEmailCompleteness($oClients->id_client);
-            $oMailsText->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
+            $oMailsText->get($sTypeEmail, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
             $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
             $varMail['sujet'] = htmlentities($oMailsText->subject, null, 'UTF-8');
             $sRecipientEmail  = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));
