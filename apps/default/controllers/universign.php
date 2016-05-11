@@ -105,9 +105,11 @@ class universignController extends bootstrap
                         $this->oLogger->addRecord(ULogger::INFO, 'Mandat Ok but Pouvoir not signed.', array($clients_mandats->id_project));
                     }
                 } else {
+                    $this->settings->get('DebugMailIt', 'type');
+                    $sDestinatairesDebug = $this->settings->value;
                     //displays the error code and the fault message
                     $this->oLogger->addRecord(ULogger::ERROR, 'Return Universign Mandat NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($clients_mandats->id_project));
-                    mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
+                    mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] == 'fail') {
                 $this->oLogger->addRecord(ULogger::ERROR, 'Mandat Fail.', array($clients_mandats->id_project));
@@ -193,9 +195,11 @@ class universignController extends bootstrap
                         $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir Ok but Mandat not signed.', array($projects_pouvoir->id_project));
                     }
                 } else {
+                    $this->settings->get('DebugMailIt', 'type');
+                    $sDestinatairesDebug = $this->settings->value;
                     //displays the error code and the fault message
                     $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($projects_pouvoir->id_project));
-                    mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id pouvoir : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
+                    mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id pouvoir : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] == 'fail') {
                 $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir Fail.', array($projects_pouvoir->id_project));
@@ -283,8 +287,10 @@ class universignController extends bootstrap
 
                     $this->oLogger->addRecord(ULogger::INFO, 'CGV emprunteur notification mail sent', array($oProjectCgv->id_project));
                 } else {
+                    $this->settings->get('DebugMailIt', 'type');
+                    $sDestinatairesDebug = $this->settings->value;
                     $this->oLogger->addRecord(ULogger::ERROR, 'CGV emprunteur NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($oProjectCgv->id_project));
-                    mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id cgv_project : ' . $oProjectCgv->id . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
+                    mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id cgv_project : ' . $oProjectCgv->id . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] === 'fail') {
                 $this->oLogger->addRecord(ULogger::ERROR, 'CGV emprunteur failed.', array($oProjectCgv->id_project));
@@ -424,8 +430,10 @@ class universignController extends bootstrap
 
                 } else {
                     //displays the error code and the fault message
+                    $this->settings->get('DebugMailIt', 'type');
+                    $sDestinatairesDebug = $this->settings->value;
                     $this->oLogger->addRecord(ULogger::ERROR, 'Mandat response generation from universign : NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($clients_mandats->id_project));
-                    mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', ' creatioon mandat id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
+                    mail($sDestinatairesDebug, 'unilend erreur universign reception', ' creatioon mandat id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             }
         }
@@ -541,9 +549,11 @@ class universignController extends bootstrap
                     header('Location: ' . $url);
                     die;
                 } else {
+                    $this->settings->get('DebugMailIt', 'type');
+                    $sDestinatairesDebug = $this->settings->value;
                     //displays the error code and the fault message
                     $this->oLogger->addRecord(ULogger::ERROR, 'Pouvoir response generation from universign : NOK. ERROR : ' . $r->faultCode() . ' ; REASON : ' . $r->faultString(), array($projects_pouvoir->id_project));
-                    mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id mandat : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
+                    mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id mandat : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             }
         } else {
@@ -793,10 +803,15 @@ class universignController extends bootstrap
                 header('Location: ' . $url);
                 die;
             } else {
+                $this->settings->get('DebugMailFrom', 'type');
+                $debugEmail = $this->settings->value;
+                $this->settings->get('DebugMailIt', 'type');
+                $sDestinatairesDebug = $this->settings->value;
+
                 $sHeadersDebug  = 'MIME-Version: 1.0' . "\r\n";
                 $sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
-                $sHeadersDebug .= 'From: ' . key($this->Config['DebugMailFrom']) . ' <' . $this->Config['DebugMailFrom'][key($this->Config['DebugMailFrom'])] . '>' . "\r\n";
-                mail(implode(',', $this->Config['DebugMailIt']), 'unilend erreur universign reception', 'id cgv project : ' . $oProjectCgv->id . "\r\nAn error occurred\r\nCode: " . $r->faultCode() . "\r\nReason: " . $r->faultString(), $sHeadersDebug);
+                $sHeadersDebug .= 'From: ' . $debugEmail . "\r\n";
+                mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id cgv project : ' . $oProjectCgv->id . "\r\nAn error occurred\r\nCode: " . $r->faultCode() . "\r\nReason: " . $r->faultString(), $sHeadersDebug);
             }
         } else {
             header('Location: ' . $this->lurl);

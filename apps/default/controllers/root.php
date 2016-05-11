@@ -713,9 +713,8 @@ class rootController extends bootstrap
                     // Mail alert transaction //
                     ////////////////////////////
 
-                    //$to  = 'unilend@equinoa.fr';
-                    $to = implode(',', $this->Config['DebugAlertesBusiness']);
-
+                    $this->settings->get('DebugAlertesBusiness', 'type');
+                    $to = $this->settings->value;
                     // subject
                     $subject = '[Alerte] BACK PAYLINE Transaction approved';
 
@@ -760,8 +759,8 @@ class rootController extends bootstrap
                     // Mail alert transaction //
                     ////////////////////////////
 
-                    //$to  = 'unilend@equinoa.fr';
-                    $to = implode(',', $this->Config['DebugAlertesBusiness']);
+                    $this->settings->get('DebugAlertesBusiness', 'type');
+                    $to = $this->settings->value;
 
                     // subject
                     $subject = '[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE';
