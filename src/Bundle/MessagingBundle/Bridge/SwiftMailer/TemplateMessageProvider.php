@@ -20,7 +20,7 @@ class TemplateMessageProvider
     {
         /** @var \mails_text $oMailTemplate */
         $oMailTemplate = $this->oEntityManager->getRepository('mails_text');
-        if (false === $oMailTemplate->get($sTemplate, 'lang = "' . $sLanguage . '" AND type')) {
+        if (false === $oMailTemplate->get($sTemplate, 'status = ' . \mails_text::STATUS_ACTIVE . ' lang = "' . $sLanguage . '" AND type')) {
             throw new \Exception('The mail template ' . $sTemplate . ' for the language ' . $sLanguage . 'is not found.');
         }
 
