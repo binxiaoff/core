@@ -20,7 +20,7 @@
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['type-de-document'] ?></div>
                     <div class="row-title"><?= $this->lng['espace-emprunteur']['champs-dupload'] ?></div>
                 </div>
-                <div class="row upload-input">
+                <div class="row upload-input" id="upload-row-pattern_0">
                     <select class="custom-select required field field-large">
                         <option value=""><?= $this->lng['espace-emprunteur']['selectionnez-un-document'] ?></option>
                         <?php foreach ($this->aAttachmentTypes as $aAttachmentType) { ?>
@@ -74,7 +74,7 @@
 <script>
     var uploadFieldId = 1;
     $(function() {
-        $('.row.row-title').find('select').change(function() {
+        $('#upload-row-pattern_0').find('select').change(function() {console.log("first");
             var attachmentTypeId = $(this).val();
             $(this).parents('.row').find('input.file-field').attr('name', attachmentTypeId);
         });
