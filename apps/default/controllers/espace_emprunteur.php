@@ -408,7 +408,7 @@ class espace_emprunteurController extends bootstrap
 
             $aNextRepayment                                        = array_shift($oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1));
             $aProjectsPostFunding[$iKey]['MonthlyPayment']         = ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100;
-            $aProjectsPostFunding[$iKey]['DateNextMonthlyPayment'] = $aNextRepayment[0]['date_echeance_emprunteur'];
+            $aProjectsPostFunding[$iKey]['DateNextMonthlyPayment'] = $aNextRepayment['date_echeance_emprunteur'];
         }
 
         usort($aProjectsPostFunding, function ($aFirstArray, $aSecondArray) {

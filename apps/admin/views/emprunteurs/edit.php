@@ -12,6 +12,7 @@
 
     $(function() {
         $(".listeProjets").tablesorter({headers: {4: {sorter: false}, 5: {sorter: false}}});
+        $(".listeMandats").tablesorter();
         $(".mandats").tablesorter({headers: {}});
 
         <?php if ($this->nb_lignes != '') : ?>
@@ -151,45 +152,45 @@
     <?php if (count($this->lprojects) > 0) : ?>
         <table class="tablesorter listeProjets">
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Projet</th>
-                    <th>statut</th>
-                    <th>Montant</th>
-                    <th>PDF</th>
-                    <th>Factures</th>
-                    <th>&nbsp;</th>
-                </tr>
+            <tr>
+                <th>ID</th>
+                <th>Projet</th>
+                <th>statut</th>
+                <th>Montant</th>
+                <th>PDF</th>
+                <th>Factures</th>
+                <th>&nbsp;</th>
+            </tr>
             </thead>
             <tbody>
-                <?php foreach ($this->lprojects as $iIndex => $aProject) : ?>
-                    <?php $this->projects_status->getLastStatut($aProject['id_project']); ?>
-                    <tr<?= (++$iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
-                        <td><?= $aProject['id_project'] ?></td>
-                        <td><?= $aProject['title'] ?></td>
-                        <td><?= $this->projects_status->label ?></td>
-                        <td><?= $this->ficelle->formatNumber($aProject['amount']) ?> €</td>
-                        <td>
-                            <?php if ($this->projects_pouvoir->get($aProject['id_project'], 'id_project')) : ?>
-                                <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
-                            <?php endif; ?>
-                            &nbsp;&nbsp;
-                            <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
-                                <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a>
-                            <?php endif; ?>
-                        </td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/emprunteurs/factures/<?= $aProject['id_project'] ?>" class="thickbox cboxElement" target="_blank">
-                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Factures" />
-                            </a>
-                        </td>
-                        <td align="center">
-                            <a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>">
-                                <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Détails" />
-                            </a>
-                        </td>
-                    </tr>
-                <?php endforeach; ?>
+            <?php foreach ($this->lprojects as $iIndex => $aProject) : ?>
+                <?php $this->projects_status->getLastStatut($aProject['id_project']); ?>
+                <tr<?= (++$iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
+                    <td><?= $aProject['id_project'] ?></td>
+                    <td><?= $aProject['title'] ?></td>
+                    <td><?= $this->projects_status->label ?></td>
+                    <td class="right"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>&nbsp;€</td>
+                    <td>
+                        <?php if ($this->projects_pouvoir->get($aProject['id_project'], 'id_project')) : ?>
+                            <a href="<?= $this->lurl ?>/protected/pouvoir_project/<?= $this->projects_pouvoir->name ?>">POUVOIR</a>
+                        <?php endif; ?>
+                        &nbsp;&nbsp;
+                        <?php if ($this->clients_mandats->get($this->clients->id_client, 'id_project = ' . $aProject['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED . ' AND id_client')) : ?>
+                            <a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $this->clients_mandats->name ?>">MANDAT</a>
+                        <?php endif; ?>
+                    </td>
+                    <td align="center">
+                        <a href="<?= $this->lurl ?>/emprunteurs/factures/<?= $aProject['id_project'] ?>" class="thickbox cboxElement" target="_blank">
+                            <img src="<?= $this->surl ?>/images/admin/modif.png" alt="Factures" />
+                        </a>
+                    </td>
+                    <td align="center">
+                        <a href="<?= $this->lurl ?>/dossiers/edit/<?= $aProject['id_project'] ?>">
+                            <img src="<?= $this->surl ?>/images/admin/edit.png" alt="Détails" />
+                        </a>
+                    </td>
+                </tr>
+            <?php endforeach; ?>
             </tbody>
         </table>
         <?php if ($this->nb_lignes != '') : ?>
@@ -209,6 +210,55 @@
             </table>
         <?php endif; ?>
     <?php endif; ?>
+
+    <h2>Historique des Mandats</h2>
+    <table class="tablesorter listeMandats">
+        <thead>
+            <tr>
+                <th>ID Projet</th>
+                <th>IBAN</th>
+                <th>BIC</th>
+                <th>PDF</th>
+                <th>Statut</th>
+                <th>Date d'ajout</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($this->aMoneyOrders as $aMoneyOrder) : ?>
+                <tr<?= (++$iIndex % 2 == 1 ? '' : ' class="odd"') ?>>
+                    <td><?= $aMoneyOrder['id_project'] ?></td>
+                    <td><?= $aMoneyOrder['iban'] ?></td>
+                    <td><?= $aMoneyOrder['bic'] ?></td>
+                    <td><a href="<?= $this->lurl ?>/protected/mandat_preteur/<?= $aMoneyOrder['name'] ?>">MANDAT</a></td>
+                    <td>
+                        <?php
+                            switch ($aMoneyOrder['status']) {
+                                case \clients_mandats::STATUS_PENDING:
+                                    echo 'En attente de signature';
+                                    break;
+                                case \clients_mandats::STATUS_SIGNED:
+                                    echo 'Signé';
+                                    break;
+                                case \clients_mandats::STATUS_CANCELED:
+                                    echo 'Annulé';
+                                    break;
+                                case \clients_mandats::STATUS_FAILED:
+                                    echo 'Echec';
+                                    break;
+                                case \clients_mandats::STATUS_ARCHIVED:
+                                    echo 'Archivé';
+                                    break;
+                                default:
+                                    echo 'Inconnu';
+                                    break;
+                            }
+                        ?>
+                    </td>
+                    <td><?= $this->dates->formatDate($aMoneyOrder['added'], 'd/m/Y à H:i:s') ?></td>
+                </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
 </div>
 
 <script>

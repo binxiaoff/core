@@ -86,6 +86,7 @@ xdebug.profiler_output_name=callgrind.%%t.%%R.cachegrind
 xdebug.var_display_max_data=262144
 xdebug.var_display_max_depth=10
 xdebug.var_display_max_children=1024' >> /etc/php5/apache2/php.ini
+sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/cli/php.ini
 restart php5-fpm
 
 # install Nginx

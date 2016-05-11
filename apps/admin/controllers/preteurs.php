@@ -179,6 +179,11 @@ class preteursController extends bootstrap
         $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
 
+        $this->aAvailableAttachments = array();
+
+        $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
+        $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
+
         //// transactions mouvements ////
         $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
@@ -209,6 +214,44 @@ class preteursController extends bootstrap
         );
 
         $this->getMessageAboutClientStatus();
+    }
+
+    private function setAttachments($iIdClient, $oAttachmentTypes)
+    {
+        /** @var \greenpoint_attachment $oGreenPointAttachment */
+        $oGreenPointAttachment   = $this->loadData('greenpoint_attachment');
+        $aGreenpointAttachmentStatus = array();
+        $this->aIdentity             = array();
+        $this->aDomicile             = array();
+        $this->aRibAndFiscale        = array();
+        $this->aOther                = array();
+
+        foreach ($oGreenPointAttachment->select('id_client = ' . $iIdClient) as $aGPAS) {
+            $aGreenpointAttachmentStatus[$aGPAS['id_attachment']] = $aGPAS;
+        }
+
+        foreach ($oAttachmentTypes as $aAttachmentType) {
+            $iType = $aAttachmentType['id'];
+            switch ($iType) {
+                case attachment_type::CNI_PASSPORTE:
+                case attachment_type::CNI_PASSPORTE_VERSO:
+                case attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT:
+                case attachment_type::CNI_PASSPORTE_DIRIGEANT:
+                    $this->organizeAttachments($this->aIdentity, $this->aIdentityToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
+                    break;
+                case attachment_type::RIB:
+                case attachment_type::JUSTIFICATIF_FISCAL:
+                    $this->organizeAttachments($this->aRibAndFiscale, $this->aRibAndFiscaleToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
+                    break;
+                case attachment_type::JUSTIFICATIF_DOMICILE:
+                case attachment_type::ATTESTATION_HEBERGEMENT_TIERS:
+                    $this->organizeAttachments($this->aDomicile, $this->aDomicileToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
+                    break;
+                default:
+                    $this->organizeAttachments($this->aOther, $this->aOtherToAdd, $aGreenpointAttachmentStatus, $iType, $aAttachmentType);
+                    break;
+            }
+        }
     }
 
     public function _edit_preteur()
@@ -321,6 +364,10 @@ class preteursController extends bootstrap
         $this->attachments      = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
         $this->aAttachmentTypes = $this->attachment_type->getAllTypesForLender($this->language);
 
+        $this->setAttachments($this->lenders_accounts->id_client_owner, $this->aAttachmentTypes);
+
+        $this->loadJs('default/component/add-file-input');
+
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
         $this->lAcceptCGV              = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client);
 
@@ -419,7 +466,6 @@ class preteursController extends bootstrap
                     $this->lenders_accounts->precision = '';
                 }
 
-                // debut fichiers //
                 foreach ($_FILES as $field => $file) {
                     //We made the field name = attachment type id
                     $iAttachmentType = $field;
@@ -737,20 +783,19 @@ class preteursController extends bootstrap
                 }
 
                 $this->lenders_accounts->origine_des_fonds = $_POST['origine_des_fonds'];
-                if ($this->lenders_accounts->origine_des_fonds == '1000000') $this->lenders_accounts->precision = $_POST['preciser'];
-                else $this->lenders_accounts->precision = '';
-
-                // debut fichiers //
+                if ($this->lenders_accounts->origine_des_fonds == '1000000') {
+                    $this->lenders_accounts->precision = $_POST['preciser'];
+                } else {
+                    $this->lenders_accounts->precision = '';
+                }
 
                 foreach ($_FILES as $field => $file) {
-                    //We made the field name = attachment type id
                     $iAttachmentType = $field;
                     if ('' !== $file['name']) {
                         $this->uploadAttachment($this->lenders_accounts->id_lender_account, $field, $iAttachmentType);
                     }
                 }
 
-                // Mandat
                 if (isset($_FILES['mandat']) && $_FILES['mandat']['name'] != '') {
                     if ($this->clients_mandats->get($this->clients->id_client, 'id_client')) {
                         $create = false;
@@ -831,6 +876,50 @@ class preteursController extends bootstrap
         }
     }
 
+    /**
+     * @param array $aDataToDisplay
+     * @param array $aDataToAdd
+     * @param array $aGPAttachmentStatus
+     * @param int $iType
+     * @param array $aAttachmentType
+     */
+    private function organizeAttachments(&$aDataToDisplay, &$aDataToAdd, array $aGPAttachmentStatus, $iType, array $aAttachmentType)
+    {
+        if (isset($this->attachments[$iType]['path'])) {
+            $aDataToDisplay[$iType] = array(
+                'label' => $aAttachmentType['label'],
+                'path'  => $this->attachments[$iType]['path'],
+                'id'    => $this->attachments[$iType]['id']
+            );
+
+            if (false === empty($aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'])) {
+                $aDataToDisplay[$iType]['greenpoint_label'] = $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status_label'];
+
+                if (1 == $aGPAttachmentStatus[$this->attachments[$iType]['id']]['final_status']) {
+                    $aDataToDisplay[$iType]['final_status'] = 'Statut définitif';
+                } elseif(8 > $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
+                    $aDataToDisplay[$iType]['final_status'] = 'Attente de confirmation Green Point';
+                } else {
+                    $aDataToDisplay[$iType]['final_status'] = '';
+                }
+
+                if ('0' === $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
+                    $aDataToDisplay[$iType]['color'] = 'error';
+                } elseif (8 > $aGPAttachmentStatus[$this->attachments[$iType]['id']]['validation_status']) {
+                    $aDataToDisplay[$iType]['color'] = 'warning';
+                } else {
+                    $aDataToDisplay[$iType]['color'] = 'valid';
+                }
+            } else {
+                $aDataToDisplay[$iType]['greenpoint_label'] = 'Non Contrôlé par GreenPoint';
+                $aDataToDisplay[$iType]['color']            = 'error';
+                $aDataToDisplay[$iType]['final_status']     = '';
+            }
+        } else {
+            $aDataToAdd[$iType]['label'] = $aAttachmentType['label'];
+        }
+    }
+
     public function _liste_preteurs_non_inscrits()
     {
         $this->loadGestionData();
@@ -891,6 +980,20 @@ class preteursController extends bootstrap
             WHEN ' . \clients_status::COMPLETENESS_REPLY . ' THEN 5
             WHEN ' . \clients_status::COMPLETENESS_REMINDER . ' THEN 6
             END ASC, c.added DESC');
+
+        if (false === empty($this->lPreteurs)) {
+            /** @var \greenpoint_kyc $oGreenPointKYC */
+            $oGreenPointKYC = $this->loadData('greenpoint_kyc');
+
+            /** @var array aGreenPointStatus */
+            $this->aGreenPointStatus = array();
+
+            foreach ($this->lPreteurs as $aLender) {
+                if ($oGreenPointKYC->get($aLender['id_client'], 'id_client')) {
+                    $this->aGreenPointStatus[$aLender['id_client']] = $oGreenPointKYC->status;
+                }
+            }
+        }
     }
 
     public function _completude()
@@ -1161,7 +1264,7 @@ class preteursController extends bootstrap
      * @param integer $iOwnerId
      * @param integer $field
      * @param integer $iAttachmentType
-     * @return bool
+     * @return int|bool
      */
     private function uploadAttachment($iOwnerId, $field, $iAttachmentType)
     {
@@ -1186,6 +1289,19 @@ class preteursController extends bootstrap
             $sNewName = mb_substr($aFileInfo['filename'], 0, 30) . '_' . $iOwnerId;
         }
 
+
+        if (false === isset($this->oGreenPointAttachment) || false === $this->oGreenPointAttachment instanceof greenpoint_attachment) {
+            /** @var greenpoint_attachment oGreenPointAttachment */
+            $this->oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+        }
+        $mResult = $this->attachmentHelper->attachmentExists($this->attachment, $iOwnerId, attachment::LENDER, $iAttachmentType);
+
+        if (is_numeric($mResult)) {
+            $this->oGreenPointAttachment->get($mResult, 'id_attachment');
+            $this->oGreenPointAttachment->revalidate   = 1;
+            $this->oGreenPointAttachment->final_status = 0;
+            $this->oGreenPointAttachment->update();
+        }
         $resultUpload = $this->attachmentHelper->upload($iOwnerId, attachment::LENDER, $iAttachmentType, $field, $this->upload, $sNewName);
 
         return $resultUpload;

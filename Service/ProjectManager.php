@@ -217,14 +217,15 @@ class ProjectManager
                 $iOffset += $iLimit;
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if (false === $oClient->get($aAutoBidSetting['id_client'])
-                        && false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
-                        && false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
+                        || false === $oLenderAccount->get($aAutoBidSetting['id_lender'])
+                        || false === $this->oAutoBidSettingsManager->isOn($oLenderAccount)
                     ) {
                         continue;
                     }
-                    $iBalance = $oTransaction->getSolde($oClient->id_client);
 
-                    if ($iBalance < $aAutoBidSetting['amount']) {
+                    $fBalance = $oTransaction->getSolde($oClient->id_client);
+
+                    if ($fBalance < $aAutoBidSetting['amount']) {
                         $this->oNotificationManager->create(
                             \notifications::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
                             \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT,
@@ -232,7 +233,7 @@ class ProjectManager
                             'sendAutoBidBalanceInsufficient',
                             $oProject->id_project
                         );
-                    } elseif ($iBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
+                    } elseif ($fBalance < (\autobid::THRESHOLD_AUTO_BID_BALANCE_LOW * $aAutoBidSetting['amount'])) {
                         $this->oNotificationManager->create(
                             \notifications::TYPE_AUTOBID_BALANCE_LOW,
                             \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW,
@@ -679,47 +680,6 @@ class ProjectManager
                 );
             }
         }
-
-    }
-
-    public function getWeightedAvgRate(\projects $oProject)
-    {
-        /** @var \projects_status $oProjectStatus */
-        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
-        $oProjectStatus->getLastStatut($oProject->id_project);
-        if ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-            return self::getWeightedAvgRateFromBid($oProject);
-        } elseif ($oProjectStatus->status == \projects_status::FUNDE) {
-            return self::getWeightedAvgRateFromLoan($oProject);
-        } else {
-            return false;
-        }
-    }
-
-    private function getWeightedAvgRateFromLoan(\projects $oProject)
-    {
-        /** @var \loans $oLoan */
-        $oLoan          = $this->oEntityManager->getRepository('loans');
-        $iInterestTotal = 0;
-        $iCapitalTotal  = 0;
-        foreach ($oLoan->select('id_project = ' . $oProject->id_project) as $aLoan) {
-            $iInterestTotal += $aLoan['rate'] * $aLoan['amount'];
-            $iCapitalTotal += $aLoan['amount'];
-        }
-        return ($iInterestTotal / $iCapitalTotal);
-    }
-
-    private function getWeightedAvgRateFromBid(\projects $oProject)
-    {
-        /** @var \bids $oBid */
-        $oBid           = $this->oEntityManager->getRepository('bids');
-        $iInterestTotal = 0;
-        $iCapitalTotal  = 0;
-        foreach ($oBid->select('id_project = ' . $oProject->id_project . ' AND status = 0') as $aBid) {
-            $iInterestTotal += $aBid['rate'] * $aBid['amount'];
-            $iCapitalTotal += $aBid['amount'];
-        }
-        return ($iInterestTotal / $iCapitalTotal);
     }
 
     public function getProjectEndDate(\projects $oProject)
@@ -768,6 +728,14 @@ class ProjectManager
             case \projects_status::ATTENTE_ANALYSTE:
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, \email::EMAIL_ADDRESS_ANALYSTS);
                 break;
+            case \projects_status::REJETE:
+            case \projects_status::REJET_ANALYSTE:
+            case \projects_status::REJET_COMITE:
+                $this->stopRemindersForOlderProjects($oProject);
+                break;
+            case \projects_status::A_FUNDER:
+                $this->oMailerManager->sendProjectOnlineToBorrower($oProject);
+                break;
             case \projects_status::REMBOURSEMENT:
             case \projects_status::PROBLEME:
             case \projects_status::PROBLEME_J_X:
@@ -780,10 +748,29 @@ class ProjectManager
         }
     }
 
+    public function stopRemindersForOlderProjects(\projects $oProject)
+    {
+        /** @var \companies $oCompany */
+        $oCompany = $this->oEntityManager->getRepository('companies');
+
+        $oCompany->get($oProject->id_company);
+        $aPreviousProjectsWithSameSiren = $oProject->getPreviousProjectsWithSameSiren($oCompany->siren, $oProject->added);
+        foreach ($aPreviousProjectsWithSameSiren as $aProject) {
+            $oProject->get($aProject['id_project'], 'id_project');
+            $this->stopRemindersOnProject($oProject);
+        }
+    }
+
+    public function stopRemindersOnProject(\projects $oProject)
+    {
+        $oProject->stop_relances = '1';
+        $oProject->update();
+    }
+
     public function isFunded(\projects $oProject)
     {
         /** @var \bids $oBid */
-        $oBid      = Loader::loadData('bids');
+        $oBid      = $this->oEntityManager->getRepository('bids');
         $iBidTotal = $oBid->getSoldeBid($oProject->id_project);
         if ($iBidTotal >= $oProject->amount) {
             return true;
@@ -807,5 +794,30 @@ class ProjectManager
 
             $this->oMailerManager->sendFundedToBorrower($oProject);
         }
+    }
+
+    /**
+     * @param \projects $project
+     * @return string
+     */
+    public static function getBorrowerBankTransferLabel(\projects $project)
+    {
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        $company->get($project->id_company);
+
+        return 'UNILEND' . str_pad($project->id_project, 6, 0, STR_PAD_LEFT) . 'E' . trim($company->siren);
+    }
+
+    /**
+     * @param \projects $oProject
+     *
+     * @return array
+     */
+    public function getBidsStatistics(\projects $oProject)
+    {
+        /** @var \bids $oBid */
+        $oBid = $this->oEntityManager->getRepository('bids');
+        return $oBid->getBidsStatistics($oProject->id_project);
     }
 }

@@ -189,16 +189,15 @@ class emprunteursController extends bootstrap
 
     public function _edit()
     {
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->companies        = $this->loadData('companies');
-        $this->companies_bilans = $this->loadData('companies_bilans');
-        $this->projects         = $this->loadData('projects');
-        $this->projects_status  = $this->loadData('projects_status');
-        $this->clients_mandats  = $this->loadData('clients_mandats');
-        $this->projects_pouvoir = $this->loadData('projects_pouvoir');
-        $prelevements           = $this->loadData('prelevements');
-        $this->clients->history = '';
+        $this->clients           = $this->loadData('clients');
+        $this->clients_adresses  = $this->loadData('clients_adresses');
+        $this->companies         = $this->loadData('companies');
+        $this->companies_bilans  = $this->loadData('companies_bilans');
+        $this->projects          = $this->loadData('projects');
+        $this->projects_status   = $this->loadData('projects_status');
+        $this->clients_mandats   = $this->loadData('clients_mandats');
+        $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
+        $this->clients->history  = '';
         $this->settings         = $this->loadData('settings');
 
         $this->settings->get('Liste deroulante secteurs', 'type');
@@ -264,11 +263,6 @@ class emprunteursController extends bootstrap
 
                     header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                     die;
-                }
-
-                // on met a jour les prelevement en cours si y en a.
-                foreach ($this->lprojects as $p) {
-                    $prelevements->updateIbanBic($p['id_project'], $this->companies->bic, $this->companies->iban);
                 }
 
                 if ($this->companies->status_adresse_correspondance == 1) {
@@ -350,7 +344,9 @@ class emprunteursController extends bootstrap
                                 $this->settings->get('Twitter', 'type');
                                 $lien_tw = $this->settings->value;
 
-                                $this->nextEcheance = $prelevements->select('status = 0 AND id_project = ' . $projects['id_project']);
+                                /** @var \prelevements $directDebit */
+                                $directDebit        = $this->loadData('prelevements');
+                                $this->nextEcheance = $directDebit->select('status = 0 AND id_project = ' . $projects['id_project']);
 
                                 $varMail = array(
                                     'surl'                   => $this->surl,
@@ -387,6 +383,7 @@ class emprunteursController extends bootstrap
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 die;
             }
+            $this->aMoneyOrders = $this->clients_mandats->getMoneyOrderHistory($this->companies->id_company);
         } else {
             header('Location: ' . $this->lurl . '/emprunteurs/gestion/');
             die;
@@ -402,15 +399,14 @@ class emprunteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $prelevements       = $this->loadData('prelevements');
-        $this->nextEcheance = $prelevements->select('status = 0 AND id_client = ' . $this->bdd->escape_string($this->params[0]));
-        $this->nextEcheance = $this->nextEcheance[0]['date_echeance_emprunteur'];
+        if (isset($this->params[0]) && $this->params[0] != '') {
+            /** @var \companies $company */
+            $company = $this->loadData('companies');
+            $company->get($this->params[0], 'id_client_owner');
 
-        $this->sentEcheance = $prelevements->select('status = 1 AND date_echeance_emprunteur > CURRENT_DATE AND id_client = ' . $this->bdd->escape_string($this->params[0]));
-        $this->alreadySent  = count($this->sentEcheance);
-
-        if ($this->alreadySent > 0) {
-            $this->sentEcheance = $this->sentEcheance[0]['date_echeance_emprunteur'];
+            /** @var \projects $project */
+            $project         = $this->loadData('projects');
+            $this->aProjects = $project->selectProjectsByStatus(implode(',', \projects_status::$runningRepayment), ' AND id_company = ' . $company->id_company);
         }
     }
 
@@ -423,7 +419,6 @@ class emprunteursController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
-        $prelevements          = $this->loadData('prelevements');
         $this->date_activation = date('d/m/Y');
     }
 

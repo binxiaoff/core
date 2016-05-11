@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\Bridge\Symfony\Console;
+namespace Unilend\Bundle\CommandBundle\Bridge;
 
 use Symfony\Component\DependencyInjection\ContainerAwareInterface;
 use Symfony\Component\Console\Application as BaseApplication;

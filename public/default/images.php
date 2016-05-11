@@ -10,41 +10,46 @@
  * - Output format is JPEG
  * - Output compression is 90%
  */
-include_once __DIR__ . '/../../core/errorhandler.class.php';
+$loader = require __DIR__ . '/../../app/autoload.php';
+require_once __DIR__ . '/../../app/AppKernel.php';
 include_once __DIR__ . '/../../config.php';
 
-/**
- * @var array $config
- */
-$handler = new \ErrorHandler(
-    $config['error_handler'][$config['env']]['file'],
-    $config['error_handler'][$config['env']]['allow_display'],
-    $config['error_handler'][$config['env']]['allow_log'],
-    $config['error_handler'][$config['env']]['report']
-);
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+ini_set('display_errors', 1);
+ini_set('log_errors', 1);
+
+$kernel = new AppKernel('prod', false);
+$kernel->boot();
+
+$errorLogfile = $kernel->getLogDir() . '/error.' . date('Ymd') . '.log';
+\Unilend\core\ErrorHandler::enable($errorLogfile);
+
+
+$config = $kernel->getContainer()->getParameter('image_resize');
 
 try {
     if (1 !== preg_match('#images/dyn/([^/]+)/([0-9]+)/(.+\.(jpg|jpeg|png))$#i', parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), $aMatches)) {
         throw new ResizableImageException('URL does not match pattern');
     }
 
-    if (! isset($config['images'][$aMatches[1]])) {
+    if (! isset($config[$aMatches[1]])) {
         throw new ResizableImageException('Unknown image type');
     }
 
+    $sStaticPath      = $kernel->getContainer()->getParameter('static_path');
     $sImageType       = $aMatches[1];
     $iImageHeight     = $aMatches[2];
-    $iImageWidth      = round($iImageHeight * $config['images'][$sImageType]['width'] / $config['images'][$sImageType]['height']);
+    $iImageWidth      = round($iImageHeight * $config[$sImageType]['width'] / $config[$sImageType]['height']);
     $sFileName        = $aMatches[3];
-    $sTypeRootPath    = $config['static_path'][$config['env']] . 'images/dyn/' . $sImageType;
+    $sTypeRootPath    = $sStaticPath . 'images/dyn/' . $sImageType;
     $sSourceImagePath = $sTypeRootPath . '/source/' . $sFileName;
 
-    if (false === in_array($iImageHeight, $config['images'][$sImageType]['authorized'])) {
+    if (false === in_array($iImageHeight, $config[$sImageType]['authorized'])) {
         throw new ResizableImageException('Unauthorized image size');
     }
 
     if (false === file_exists($sSourceImagePath)) {
-        $oImagick = new \Imagick($config['static_path'][$config['env']] . 'images/dyn/default.jpg');
+        $oImagick = new \Imagick($sStaticPath . 'images/dyn/default.jpg');
         $oImagick->scaleImage($iImageWidth, $iImageHeight);
 
         throw new ResizableImageException('Unable to find source image');

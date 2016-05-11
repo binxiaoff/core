@@ -687,7 +687,7 @@ class MailerManager
         $oClient->get($oLenderAccount->id_client_owner, 'id_client');
 
         if ($oClient->status == 1) {
-            $iBalance = $oTransaction->getSolde($oLenderAccount->id_client_owner);
+            $fBalance = $oTransaction->getSolde($oLenderAccount->id_client_owner);
             $sPurpose = $oClient->getLenderPattern($oClient->id_client);
 
             $this->oSettings->get('Virement - aide par banque', 'type');
@@ -706,7 +706,7 @@ class MailerManager
                 'surl'           => $this->sSUrl,
                 'url'            => $this->sLUrl,
                 'prenom_p'       => $oClient->prenom,
-                'balance'        => $iBalance,
+                'balance'        => $this->oFicelle->formatNumber($fBalance, 2),
                 'iban'           => $sIban,
                 'bic'            => $sBic,
                 'titulaire'      => $sTitulaire,
@@ -848,5 +848,63 @@ class MailerManager
         $message->setTo($sRecipient);
         $this->mailer->send($message);
     }
+
+    public function sendProjectOnlineToBorrower(\projects $oProject)
+    {
+        /** @var \companies $oCompanies */
+        $oCompanies = $this->oEntityManager->getRepository('companies');
+        /** @var \clients $oClients */
+        $oClients = $this->oEntityManager->getRepository('clients');
+        $oCompanies->get($oProject->id_company);
+        $this->oMailText->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
+
+        if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
+            $sFirstName  = $oCompanies->prenom_dirigeant;
+            $sMailClient = $oCompanies->email_dirigeant;
+        } else {
+            $oClients->get($oCompanies->id_client_owner);
+            $sFirstName  = $oClients->prenom;
+            $sMailClient = $oClients->email;
+        }
+
+        $oPublicationDate = $oProject->date_publication_full != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_publication_full) : new \DateTime($oProject->date_publication);
+        $oEndDate         = $oProject->date_retrait_full != '0000-00-00 00:00:00' ? new \DateTime($oProject->date_retrait_full) : $oEndDate = new \DateTime($oProject->date_retrait);
+
+        $oFundingTime = $oPublicationDate->diff($oEndDate);
+        $iFundingTime = $oFundingTime->d + ($oFundingTime->h > 0 ? 1 : 0);
+        $sFundingTime = $iFundingTime . ($iFundingTime == 1 ? ' jour' : ' jours');
+
+        $aMail = array(
+            'surl'           => $this->sSUrl,
+            'url'            => $this->sLUrl,
+            'nom_entreprise' => $oCompanies->name,
+            'projet_p'       => $this->sFUrl . '/projects/detail/' . $oProject->slug,
+            'montant'        => $this->oFicelle->formatNumber((float) $oProject->amount, 0),
+            'heure_debut'    => $oPublicationDate->format('H\hi'),
+            'duree'          => $sFundingTime,
+            'prenom_e'       => $sFirstName,
+            'lien_fb'        => $this->getFacebookLink(),
+            'lien_tw'        => $this->getTwitterLink(),
+            'annee'          => date('Y')
+        );
+
+        $aVars        = $this->oTNMP->constructionVariablesServeur($aMail);
+        $sMailSubject = strtr(utf8_decode($this->oMailText->subject), $aVars);
+        $sMailBody    = strtr(utf8_decode($this->oMailText->content), $aVars);
+        $sSender      = strtr(utf8_decode($this->oMailText->exp_name), $aVars);
+
+        $this->oEmail->setFrom($this->oMailText->exp_email, $sSender);
+        $this->oEmail->setSubject(stripslashes($sMailSubject));
+        $this->oEmail->setHTMLBody(stripslashes($sMailBody));
+
+        if ($this->aConfig['env'] == 'prod') {
+            \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, $sMailClient, $tabFiler);
+            $this->oTNMP->sendMailNMP($tabFiler, $aMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
+        } else {
+            $this->oEmail->addRecipient(trim($sMailClient));
+            \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+        }
+    }
+
 
 }

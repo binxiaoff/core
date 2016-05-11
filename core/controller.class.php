@@ -53,7 +53,7 @@ abstract class Controller extends ContainerAware
         $this->spath      = $this->get('kernel')->getRootDir() . '/../public/default/var/';
         $this->staticPath = $this->get('kernel')->getRootDir() . '/../public/default/';
         $this->logPath    = $this->get('kernel')->getLogDir();
-        $this->surl       = $this->Config['static_url'][$this->Config['env']];
+        $this->surl       = $this->get('assets.packages')->getUrl('');
         $this->url        = $this->Config['url'][$this->Config['env']][$this->App];
         $this->lurl       = $this->Config['url'][$this->Config['env']][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
 
@@ -429,7 +429,7 @@ abstract class Controller extends ContainerAware
     public function loadJs($js, $ieonly = 0, $version = '')
     {
         if (!array_key_exists($js, $this->included_js)) {
-            $this->included_js[$js] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<script type=\"text/javascript\" src=\"" . $this->Config['static_url'][$this->Config['env']] . "/scripts/" . $js . ".js" . ($version != '' ? '?d=' . $version : '') . "\"></script>" . ($ieonly != 0 ? "<![endif]-->" : "");
+            $this->included_js[$js] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<script type=\"text/javascript\" src=\"" . $this->surl . "/scripts/" . $js . ".js" . ($version != '' ? '?d=' . $version : '') . "\"></script>" . ($ieonly != 0 ? "<![endif]-->" : "");
         }
     }
 
@@ -453,7 +453,7 @@ abstract class Controller extends ContainerAware
     public function loadCss($css, $ieonly = 0, $media = 'all', $type = 'css', $version = '')
     {
         if (!array_key_exists($css, $this->included_css)) {
-            $this->included_css[$css] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<link media =\"" . $media . "\" href=\"" . $this->Config['static_url'][$this->Config['env']] . "/styles/" . $css . "." . $type . ($version != '' ? '?d=' . $version : '') . "\" type=\"text/css\" rel=\"stylesheet\" />" . ($ieonly != 0 ? "<![endif]-->" : "");
+            $this->included_css[$css] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<link media =\"" . $media . "\" href=\"" . $this->surl . "/styles/" . $css . "." . $type . ($version != '' ? '?d=' . $version : '') . "\" type=\"text/css\" rel=\"stylesheet\" />" . ($ieonly != 0 ? "<![endif]-->" : "");
         }
     }
 

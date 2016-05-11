@@ -5,7 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Unilend\Bridge\SwiftMailer\DatabaseSpool;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool;
 
 class SendMailCommand extends ContainerAwareCommand
 {

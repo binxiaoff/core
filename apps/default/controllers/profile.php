@@ -1641,6 +1641,17 @@ class profileController extends bootstrap
             }
         }
 
+        if (false === isset($this->oGreenPointAttachment) || false === $this->oGreenPointAttachment instanceof greenpoint_attachment) {
+            /** @var greenpoint_attachment oGreenPointAttachment */
+            $this->oGreenPointAttachment = $this->loadData('greenpoint_attachment');
+        }
+        $mResult = $this->attachmentHelper->attachmentExists($this->attachment, $lenderAccountId, attachment::LENDER, $iAttachmentType);
+        if (is_numeric($mResult)) {
+            $this->oGreenPointAttachment->get($mResult, 'id_attachment');
+            $this->oGreenPointAttachment->revalidate   = 1;
+            $this->oGreenPointAttachment->final_status = 0;
+            $this->oGreenPointAttachment->update();
+        }
         $resultUpload = $this->attachmentHelper->upload($lenderAccountId, attachment::LENDER, $attachmentType, $sFieldName, $this->upload);
 
         if (false === $resultUpload || is_null($resultUpload)) {

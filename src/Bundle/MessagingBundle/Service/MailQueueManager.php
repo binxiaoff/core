@@ -6,11 +6,11 @@
  * Time: 12:18
  */
 
-namespace Unilend\Service;
+namespace Unilend\Bundle\MessagingBundle\Service;
 
 use Unilend\Service\Simulator\EntityManager;
-use Unilend\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bridge\SwiftMailer\TemplateMessageProvider;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
+use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 
 class MailQueueManager
 {
@@ -32,6 +32,8 @@ class MailQueueManager
     }
 
     /**
+     * Put the TemplateMessage to the mail queue
+     *
      * @param TemplateMessage $oMessage
      *
      * @return bool
@@ -43,15 +45,23 @@ class MailQueueManager
         $oMailQueue->id_mail_text         = $oMessage->getTemplateId();
         $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
         $aRecipients                      = array_keys($oMessage->getTo());
-        $oMailQueue->recipient            = array_shift($aRecipients);
-        $oMailQueue->status               = \mail_queue::STATUS_PENDING;
-        $oMailQueue->to_send_at           = $oMessage->getToSendAt();
+        $recipient                        = array_shift($aRecipients);
+        $client                           = $this->oEntityManager->getRepository('clients');
+        // try to find client id
+        if ($client->get($recipient, 'email')) {
+            $oMailQueue->id_client = $client->id_client;
+        }
+        $oMailQueue->recipient  = $recipient;
+        $oMailQueue->status     = \mail_queue::STATUS_PENDING;
+        $oMailQueue->to_send_at = $oMessage->getToSendAt();
         $oMailQueue->create();
 
         return true;
     }
 
     /**
+     * Build a TemplateMessage object from a mail_queue object, so that we Swift Mailer can handle it.
+     *
      * @param \mail_queue $oEmail
      *
      * @return bool|TemplateMessage
@@ -71,6 +81,8 @@ class MailQueueManager
     }
 
     /**
+     * Get N (n = $Limit) mails from queue to send
+     *
      * @param $iLimit
      *
      * @return \mail_queue[]
@@ -86,7 +98,7 @@ class MailQueueManager
         if (is_array($aEmailToSend)) {
             foreach ($aEmailToSend as $aEmail) {
                 if ($oMailQueue->get($aEmail['id_queue'])) {
-                    $aEmails[] = $oMailQueue;
+                    $aEmails[] = clone $oMailQueue;
                 }
             }
         }
