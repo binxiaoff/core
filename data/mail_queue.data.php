@@ -93,11 +93,11 @@ class mail_queue extends mail_queue_crud
         }
 
         if (false === is_null($oDateStart)) {
-            $sWhere .= ' AND mq.sent_at >= ' . $oDateStart->format('Y-m-d h:i:s');
+            $sWhere .= ' AND mq.sent_at >= "' . $oDateStart->format('Y-m-d') . ' 00:00:00"';
         }
 
         if (false === is_null($oDateEnd)) {
-            $sWhere .= ' AND mq.sent_at <= ' . $oDateEnd->format('Y-m-d h:i:s');
+            $sWhere .= ' AND mq.sent_at <= "' . $oDateEnd->format('Y-m-d') . ' 23:59:59"';
         }
 
         if (false === is_null($iLimit)) {

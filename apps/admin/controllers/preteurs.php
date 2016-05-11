@@ -1437,11 +1437,10 @@ class preteursController extends bootstrap
 
         $this->sDisplayDateTimeStart = $oDateTimeStart->format('d/m/Y');
         $this->sDisplayDateTimeEnd   = $oDateTimeEnd->format('d/m/Y');
-        $sStartDate                  = $oDateTimeStart->format('Y-m-d');
-        $sEndDate                    = $oDateTimeEnd->format('Y-m-d');
 
-        $oMailsFiler               = $this->loadData('mails_filer');
-        $this->aEmailsSentToClient = $oMailsFiler->getListOfEmails($this->clients->email, $sStartDate, $sEndDate);
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
+        $oMailQueueManager = $this->get('unilend.service.mail_queue');
+        $this->aEmailsSentToClient = $oMailQueueManager->searchSentEmails($this->clients->id_client, null, null, null, $oDateTimeStart, $oDateTimeEnd);
         $this->getMessageAboutClientStatus();
     }
 
@@ -1531,20 +1530,25 @@ class preteursController extends bootstrap
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        $this->oMail = $this->loadData('mails_filer');
-        $this->oMail->get($this->params[0]);
-    }
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailQueueManager $oMailQueueManager */
+        $oMailQueueManager = $this->get('unilend.service.mail_queue');
+        /** @var mail_queue $oMailQueue */
+        $oMailQueue = $this->loadData('mail_queue');
+        $oMailQueue->get($this->params[0]);
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $oEmail */
+        $oEmail = $oMailQueueManager->getMessage($oMailQueue);
 
-    public function _email_history_preview_iframe()
-    {
-        $this->hideDecoration();
-        $_SESSION['request_url'] = $this->url;
+        $iDate = $oEmail->getDate();
+        $aFrom = $oEmail->getFrom();
+        $aTo   = $oEmail->getTo();
 
-        $this->oMail = $this->loadData('mails_filer');
-        $this->oMail->get($this->params[0]);
-
-        echo stripslashes($this->oMail->content);
-        $this->autoFireView = false;
+        $this->aEmail = array(
+            'date'    => date('d/m/Y H:i', $iDate),
+            'from'    => array_shift($aFrom),
+            'to'      => array_shift($aTo),
+            'subject' => $oEmail->getSubject(),
+            'body'    => $oEmail->getBody()
+        );
     }
 
     private function foreignerTax($oClients, $oLendersAccounts, $oClientsAdresses)

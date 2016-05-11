@@ -80,8 +80,8 @@ class mailsController extends bootstrap
             $sFrom      = (isset($_POST['from']) && false === empty($_POST['from'])) ? $_POST['from'] : null;
             $sTo        = (isset($_POST['to']) && false === empty($_POST['to'])) ? $_POST['to'] : null;
             $sSubject   = (isset($_POST['subject']) && false === empty($_POST['subject'])) ? $_POST['subject'] : null;
-            $oDateStart = (isset($_POST['date_from']) && false === empty($_POST['date_from'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from'] . ' 00:00:00') : new \DateTime('2013-01-01');
-            $oDateEnd   = (isset($_POST['date_to']) && false === empty($_POST['date_to'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to'] . ' 23:59:59') : new \DateTime('NOW');
+            $oDateStart = (isset($_POST['date_from']) && false === empty($_POST['date_from'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_from']) : new \DateTime('2013-01-01');
+            $oDateEnd   = (isset($_POST['date_to']) && false === empty($_POST['date_to'])) ? \DateTime::createFromFormat('d/m/Y H:i:s', $_POST['date_to']) : new \DateTime('NOW');
 
             $this->aEmails = $oMailQueueManager->searchSentEmails(null, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd);
         } else {

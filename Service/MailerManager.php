@@ -1,8 +1,7 @@
 <?php
 namespace Unilend\Service;
 
-use Unilend\Bridge\SwiftMailer\TemplateMessage;
-use Unilend\Bridge\SwiftMailer\TemplateMessageProvider;
+use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
 use Unilend\librairies\ULogger;
 use Unilend\Service\Simulator\EntityManager;
