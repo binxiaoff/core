@@ -328,7 +328,7 @@ class projectsController extends bootstrap
                         );
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-bid', $this->language, $varMail);
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-bid', $varMail);
                         $message->setTo($this->clients->email);
                         $mailer = $this->get('mailer');
                         $mailer->send($message);

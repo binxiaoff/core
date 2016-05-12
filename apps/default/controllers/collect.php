@@ -425,7 +425,7 @@ class collectController extends bootstrap
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $this->language, $varMail);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
                 $message->setTo($this->clients->email);
                 $mailer = $this->get('mailer');
                 $mailer->send($message);

@@ -651,7 +651,7 @@ class profileController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $this->language, $varsMail, false);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $varsMail, false);
                     $message->setTo($destinataire);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -1381,7 +1381,7 @@ class profileController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $this->language, $varsMail, false);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-modification-preteurs', $varsMail, false);
                     $message->setTo($destinataire);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -1680,7 +1680,7 @@ class profileController extends bootstrap
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $this->language, $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-modification-compte', $varMail);
         $message->setTo($oClient->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
@@ -1953,7 +1953,7 @@ class profileController extends bootstrap
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $this->language, $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
         $message->setTo($oClient->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);

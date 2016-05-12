@@ -79,7 +79,7 @@ class universignController extends bootstrap
                         );
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $this->language, $variablesInternalMail, false);
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $variablesInternalMail, false);
                         $message->setTo($destinataire);
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
@@ -151,7 +151,7 @@ class universignController extends bootstrap
                         );
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $this->language, $variablesInternalMail, false);
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $variablesInternalMail, false);
                         $message->setTo($destinataire);
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
@@ -242,7 +242,7 @@ class universignController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-cgv-projet-signe', $this->language, $aReplacements, false);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-cgv-projet-signe', $aReplacements, false);
                     $message->setTo($sRecipient);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);

@@ -542,7 +542,7 @@ class ajaxController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $this->language, $varMail);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $varMail);
             $message->setTo($this->clients->email);
             $mailer = $this->get('mailer');
             $mailer->send($message);
@@ -578,7 +578,7 @@ class ajaxController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $this->language, $varMail);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
             $message->setTo($clients->email);
             $mailer = $this->get('mailer');
             $mailer->send($message);
@@ -618,7 +618,7 @@ class ajaxController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $this->language, $varMail);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
             $message->setTo($this->clients->email);
             $mailer = $this->get('mailer');
             $mailer->send($message);
@@ -874,7 +874,7 @@ class ajaxController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $this->language, $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $varMail);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -1026,7 +1026,7 @@ class ajaxController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $this->language, $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $varMail);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -1360,7 +1360,7 @@ class ajaxController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $this->language, $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $varMail);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -1677,7 +1677,7 @@ class ajaxController extends bootstrap
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $this->language, $aVariables);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $aVariables);
         $message->setTo($oClients->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);

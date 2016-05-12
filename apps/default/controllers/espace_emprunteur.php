@@ -177,7 +177,7 @@ class espace_emprunteurController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $this->language, $aReplacements, false);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $aReplacements, false);
             $message->setTo(trim($this->settings->value));
             if (empty($sFilePath) === false) {
                 $message->attach(Swift_Attachment::fromPath($sFilePath));
@@ -448,7 +448,7 @@ class espace_emprunteurController extends bootstrap
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $this->language, $aVariables);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $aVariables);
         $message->setTo($_POST['email']);
         $mailer = $this->get('mailer');
         $mailer->send($message);

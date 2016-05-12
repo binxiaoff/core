@@ -69,13 +69,13 @@ class MailQueueManager
      */
     public function getMessage(\mail_queue $oEmail)
     {
-        /** @var \mails_text $oMailTemplate */
-        $oMailTemplate = $this->oEntityManager->getRepository('mails_text');
+        /** @var \mail_templates $oMailTemplate */
+        $oMailTemplate = $this->oEntityManager->getRepository('mail_templates');
         if (false === $oMailTemplate->get($oEmail->id_mail_text)) {
             return false;
         }
         /** @var TemplateMessage $oMessage */
-        $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, $oMailTemplate->lang, json_decode($oEmail->serialized_variables, true), false);
+        $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
         $oMessage->addTo($oEmail->recipient);
         return $oMessage;
     }

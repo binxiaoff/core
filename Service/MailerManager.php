@@ -120,7 +120,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage($sMailTemplate, $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage($sMailTemplate, $varMail);
             $message->setTo($oClient->email);
             $this->mailer->send($message);
         }
@@ -170,7 +170,7 @@ class MailerManager
                 );
 
                 /** @var TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('preteur-dossier-funding-ko', $this->sLanguage, $varMail);
+                $message = $this->messageProvider->newMessage('preteur-dossier-funding-ko', $varMail);
                 $message->setTo($oClient->email);
                 $this->mailer->send($message);
             }
@@ -237,7 +237,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('emprunteur-dossier-funde', $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage('emprunteur-dossier-funde', $varMail);
             $message->setTo($oBorrower->email);
             $this->mailer->send($message);
         }
@@ -257,7 +257,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $this->sLanguage, $varMail, false);
+        $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $varMail, false);
         $message->setTo($destinataire);
         $this->mailer->send($message);
     }
@@ -304,7 +304,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage('emprunteur-dossier-funde-et-termine', $varMail);
             $message->setTo($oBorrower->email);
             $this->mailer->send($message);
 
@@ -347,7 +347,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $this->sLanguage, $varMail, false);
+        $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $varMail, false);
         $message->setTo($sRecipient);
         $this->mailer->send($message);
 
@@ -456,7 +456,7 @@ class MailerManager
                 );
 
                 /** @var TemplateMessage $message */
-                $message = $this->messageProvider->newMessage('preteur-bid-ok', $this->sLanguage, $varMail);
+                $message = $this->messageProvider->newMessage('preteur-bid-ok', $varMail);
                 $message->setTo($oClient->email);
                 $this->mailer->send($message);
 
@@ -548,7 +548,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage($sMailTemplate, $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage($sMailTemplate, $varMail);
             $message->setTo($oClient->email);
             $this->mailer->send($message);
         }
@@ -575,7 +575,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage('emprunteur-dossier-funding-ko', $varMail);
             $message->setTo($oClient->email);
             $this->mailer->send($message);
 
@@ -623,7 +623,7 @@ class MailerManager
             '$sujetMail'    => htmlentities($this->oMailText->subject)
         );
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($this->oMailText->type, $this->sLanguage, $varMail, false);
+        $message = $this->messageProvider->newMessage($this->oMailText->type, $varMail, false);
         $message->setTo($oClient->email);
         $this->mailer->send($sRecipient);
 
@@ -668,7 +668,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('preteur-autobid-solde-insuffisant', $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage('preteur-autobid-solde-insuffisant', $varMail);
             $message->setTo($oClient->email);
             $this->mailer->send($message);
         }
@@ -717,7 +717,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('preteur-autobid-solde-faible', $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage('preteur-autobid-solde-faible', $varMail);
             $message->setTo($oClient->email);
             $this->mailer->send($message);
         }
@@ -746,7 +746,7 @@ class MailerManager
             );
 
             /** @var TemplateMessage $message */
-            $message = $this->messageProvider->newMessage('preteur-autobid-activation', $this->sLanguage, $varMail);
+            $message = $this->messageProvider->newMessage('preteur-autobid-activation', $varMail);
             $message->setTo($oClient->email);
             $this->mailer->send($message);
         }
@@ -844,7 +844,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($sNotificationType, $this->sLanguage, $aReplacements, false);
+        $message = $this->messageProvider->newMessage($sNotificationType, $aReplacements, false);
         $message->setTo($sRecipient);
         $this->mailer->send($message);
     }
@@ -888,7 +888,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteure', $this->sLanguage, $aMail);
+        $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteure', $aMail);
         $message->setTo($sMailClient);
         $this->mailer->send($message);
     }

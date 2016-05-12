@@ -144,7 +144,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $this->language, $aMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $aMail);
                     $message->setTo($sMailClient);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -1440,7 +1440,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-aucun-virement', $this->language, $varMail, false);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-aucun-virement', $varMail, false);
                     $message->setTo($destinataire);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -1651,7 +1651,7 @@ class cronController extends bootstrap
                                     );
 
                                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-remboursement-anticipe', $this->language, $varMail, false);
+                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-remboursement-anticipe', $varMail, false);
                                     $message->setTo($destinataire);
                                     $mailer = $this->get('mailer');
                                     $mailer->send($message);
@@ -1777,7 +1777,7 @@ class cronController extends bootstrap
                                                         );
 
                                                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $this->language, $varMail);
+                                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
                                                         $message->setTo($clients->email);
                                                         $mailer = $this->get('mailer');
                                                         $mailer->send($message);
@@ -2865,7 +2865,7 @@ class cronController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', $this->language, $varMail, false);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', $varMail, false);
             $message->setTo(trim($destinataire));
             $mailer = $this->get('mailer');
             $mailer->send($message);
@@ -3235,7 +3235,7 @@ class cronController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $this->language, $varMail, false);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
             $message->setTo(trim($destinataire));
             $mailer = $this->get('mailer');
             $mailer->send($message);
@@ -3457,7 +3457,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $this->language, $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
                     $message->setTo($p['email']);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -3505,7 +3505,7 @@ class cronController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $this->language, $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
                     $message->setTo($p['email']);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -3785,7 +3785,7 @@ class cronController extends bootstrap
         $destinataire = $oSettings->value;
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $this->language, $varMail, false);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $varMail, false);
         $message->setTo($destinataire);
         $mailer = $this->get('mailer');
         $mailer->send($message);
@@ -3822,7 +3822,7 @@ class cronController extends bootstrap
         $sRecipient  = $oSettings->value;
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-check-remboursements-preteurs', $this->language, $aReplacements, false);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-check-remboursements-preteurs', $aReplacements, false);
         $message->setTo(trim($sRecipient));
         $mailer = $this->get('mailer');
         $mailer->send($message);
@@ -4006,7 +4006,7 @@ class cronController extends bootstrap
                     $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $this->language, $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
                     $message->setTo($aLender['email']);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -5056,7 +5056,7 @@ class cronController extends bootstrap
                                 );
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $this->language, $varMail);
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
                                 $message->setTo($clients->email);
                                 $mailer = $this->get('mailer');
                                 $mailer->send($message);
@@ -5612,7 +5612,7 @@ class cronController extends bootstrap
                             );
 
                             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement-anticipe', $this->language, $varMail);
+                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement-anticipe', $varMail);
                             $message->setTo($this->clients->email);
                             $mailer = $this->get('mailer');
                             $mailer->send($message);

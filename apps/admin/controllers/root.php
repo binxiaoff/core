@@ -49,7 +49,7 @@ class rootController extends bootstrap
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $this->language, $aVars, false);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $aVars, false);
                 $message->setTo(trim($_POST['email']));
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
@@ -219,7 +219,7 @@ class rootController extends bootstrap
                                 );
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $this->language, $aVars, false);
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $aVars, false);
                                 $message->setTo(trim($this->users->email));
 
                                 $oSettings = $this->loadData('settings');

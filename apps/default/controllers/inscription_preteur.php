@@ -447,7 +447,7 @@ class inscription_preteurController extends bootstrap
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $this->language, $varMail);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
                 $message->setTo($this->clients->email);
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
@@ -577,7 +577,7 @@ class inscription_preteurController extends bootstrap
                         );
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-versement-dun-preteur', $this->language, $varMail, false);
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-versement-dun-preteur', $varMail, false);
                         $message->setTo($destinataire);
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
@@ -604,7 +604,7 @@ class inscription_preteurController extends bootstrap
                         );
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $this->language, $varMail);
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur-etape-3', $varMail);
                         $message->setTo($this->clients->email);
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
@@ -896,7 +896,7 @@ class inscription_preteurController extends bootstrap
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $this->language, $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
         $message->setTo($oClient->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);

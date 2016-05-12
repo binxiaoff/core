@@ -23,6 +23,7 @@
         <service id="unilend.swiftmailer.message_provider" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage</argument>
+@            <argument>%kernel.default_locale%</argument>
         </service>
 
         <service id="unilend.swiftmailer.db_spool" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool">

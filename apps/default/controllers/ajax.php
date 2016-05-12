@@ -561,7 +561,7 @@ class ajaxController extends bootstrap
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $this->language, $varMail);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
                 $message->setTo($this->clients->email);
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
@@ -595,7 +595,7 @@ class ajaxController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $this->language, $varMail);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
             $message->setTo($clients->email);
             $mailer = $this->get('mailer');
             $mailer->send($message);
@@ -809,7 +809,7 @@ class ajaxController extends bootstrap
                     );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $this->language, $varMail);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -841,7 +841,7 @@ class ajaxController extends bootstrap
                     '$solde'                         => $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client))
                 );
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-retrait-de-fonds', $this->language, $varMail, false);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-retrait-de-fonds', $varMail, false);
                 $message->setTo($destinataire);
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
@@ -982,7 +982,7 @@ class ajaxController extends bootstrap
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $this->language, $varMail);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $varMail);
                 $message->setTo($this->demande_contact->email);
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
@@ -1005,7 +1005,7 @@ class ajaxController extends bootstrap
                 );
 
                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $this->language, $varInternalMail, false);
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $varInternalMail, false);
                 $message->setTo($destinataire);
                 $mailer = $this->get('mailer');
                 $mailer->send($message);

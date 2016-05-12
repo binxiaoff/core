@@ -40,7 +40,7 @@ class crongeckoboardController extends bootstrap
         $jsonPayload = json_encode($_sWidgetPayload,TRUE);
         curl_setopt($oCurl, CURLOPT_POST, true);
         curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($oCurl, CURLOPT_POSTFIELDS,  $jsonPayload);
+        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $jsonPayload);
 
         if (!$output = curl_exec($oCurl)){
             throw new Exception("missed curl");

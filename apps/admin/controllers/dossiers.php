@@ -726,7 +726,7 @@ class dossiersController extends bootstrap
                                 );
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $this->language, $varMail);
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
                                 $message->setTo($clients->email);
                                 $mailer = $this->get('mailer');
                                 $mailer->send($message);
@@ -1015,7 +1015,7 @@ class dossiersController extends bootstrap
                                             );
 
                                             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-contrat', $this->language, $varMail);
+                                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-contrat', $varMail);
                                             $message->setTo($oClient->email);
                                             $mailer = $this->get('mailer');
                                             $mailer->send($message);
@@ -1063,7 +1063,7 @@ class dossiersController extends bootstrap
                                 );
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('facture-emprunteur', $this->language, $varMail);
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('facture-emprunteur', $varMail);
                                 $message->setTo(trim($laCompanie->email_facture));
                                 $mailer = $this->get('mailer');
                                 $mailer->send($message);
@@ -1378,7 +1378,7 @@ class dossiersController extends bootstrap
         $aReplacements['sujet'] = $this->mails_text->subject;
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $this->language, $aReplacements);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
         $message->setTo($this->clients->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
@@ -1519,7 +1519,7 @@ class dossiersController extends bootstrap
                     $aReplacements['sujet'] = $this->mails_text->subject;
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $this->language, $aReplacements);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
                     $message->setTo($this->clients->email);
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
@@ -2062,7 +2062,7 @@ class dossiersController extends bootstrap
                                                 );
 
                                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dossier-recouvre', $this->language, $varMail);
+                                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dossier-recouvre', $varMail);
                                                 $message->setTo($this->clients->email);
                                                 $mailer = $this->get('mailer');
                                                 $mailer->send($message);
@@ -2104,7 +2104,7 @@ class dossiersController extends bootstrap
                                                 );
 
                                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-regularisation-remboursement', $this->language, $varMail);
+                                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-regularisation-remboursement', $varMail);
                                                 $message->setTo($this->clients->email);
                                                 $mailer = $this->get('mailer');
                                                 $mailer->send($message);
@@ -2153,7 +2153,7 @@ class dossiersController extends bootstrap
                                                     );
 
                                                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $this->language, $varMail);
+                                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
                                                     $message->setTo($this->clients->email);
                                                     $mailer = $this->get('mailer');
                                                     $mailer->send($message);
@@ -2230,7 +2230,7 @@ class dossiersController extends bootstrap
                                 );
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('facture-emprunteur-remboursement', $this->language, $varMail);
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('facture-emprunteur-remboursement', $varMail);
                                 $message->setTo(trim($companies->email_facture));
                                 $mailer = $this->get('mailer');
                                 $mailer->send($message);
@@ -2799,7 +2799,7 @@ class dossiersController extends bootstrap
         }
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('signature-universign-de-cgv', $this->language, $varMail);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('signature-universign-de-cgv', $varMail);
         $message->setTo($oClients->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);
@@ -2932,7 +2932,7 @@ class dossiersController extends bootstrap
             $sRecipientEmail  = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $this->language, $varMail);
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $varMail);
             $message->setTo($sRecipientEmail);
             $mailer = $this->get('mailer');
             $mailer->send($message);
@@ -3073,7 +3073,7 @@ class dossiersController extends bootstrap
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $this->language, $aVariables);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $aVariables);
         $message->setTo($this->clients->email);
         $mailer = $this->get('mailer');
         $mailer->send($message);

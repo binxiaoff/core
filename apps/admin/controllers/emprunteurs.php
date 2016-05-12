@@ -365,7 +365,7 @@ class emprunteursController extends bootstrap
                                 );
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $this->language, $varMail);
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $varMail);
                                 $message->setTo($e->email);
                                 $mailer = $this->get('mailer');
                                 $mailer->send($message);
