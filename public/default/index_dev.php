@@ -25,9 +25,21 @@ session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
 $oKernel = new AppKernel('dev', false);
-$oKernel->boot();
 
 $errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
 \Unilend\core\ErrorHandler::enable($errorLogfile);
 
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
+try {
+    Symfony\Component\HttpFoundation\Request::enableHttpMethodParameterOverride();
+    $request  = Symfony\Component\HttpFoundation\Request::createFromGlobals();
+    var_dump($request);die;
+    $response = $oKernel->handle($request);
+    $response->send();
+    $oKernel->terminate($request, $response);
+
+} catch (Symfony\Component\HttpKernel\Exception\NotFoundHttpException $exception) {
+    $oKernel->boot();
+    $errorLogfile = $oKernel->getLogDir() . '/error.' . date('Ymd') . '.log';
+    \Unilend\core\ErrorHandler::enable($errorLogfile);
+    $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
+}

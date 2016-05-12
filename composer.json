@@ -7,7 +7,8 @@
     "psr-4": {
       "Unilend\\": "",
       "Unilend\\Bridge\\": "src/Bridge",
-      "Unilend\\Bundle\\": "src/Bundle"
+      "Unilend\\Bundle\\": "src/Bundle",
+      "Unilend\\Bundle\\FrontBundle\\": "src/Unilend/Bundle/FrontBundle"
     },
     "classmap": [
       "app/AppKernel.php",
@@ -29,7 +30,8 @@
     "cache/memcache-adapter": "^0.2.1",
     "sensio/distribution-bundle": "^5.0",
     "sensio/framework-extra-bundle": "^3.0.2",
-    "incenteev/composer-parameter-handler": "^2.0"
+    "incenteev/composer-parameter-handler": "^2.0",
+    "symfony/twig-bundle": "^3.0"
   },
   "require-dev": {
     "sensio/generator-bundle": "^3.0"

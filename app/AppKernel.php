@@ -16,11 +16,14 @@ class AppKernel extends Kernel
             new Unilend\Bundle\CoreBusinessBundle\UnilendCoreBusinessBundle(),
             new Unilend\Bundle\CommandBundle\UnilendCommandBundle(),
             new Unilend\Bundle\MessagingBundle\UnilendMessagingBundle(),
+            new \Symfony\Bundle\TwigBundle\TwigBundle(),
+            new Unilend\Bundle\FrontBundle\UnilendFrontBundle(),
         ];
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();
             $bundles[] = new Sensio\Bundle\DistributionBundle\SensioDistributionBundle();
             $bundles[] = new Sensio\Bundle\GeneratorBundle\SensioGeneratorBundle();
+            $bundles[] = new Symfony\Bundle\WebProfilerBundle\WebProfilerBundle();
         }
         return $bundles;
     }
