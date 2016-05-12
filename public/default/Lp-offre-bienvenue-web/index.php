@@ -1150,7 +1150,7 @@ $url          = 'https://www.unilend.fr';
 <script src='js/jquery.base64.js'></script>
 <script src='js/bootstrap.min.js'></script>
 <script src="js/jquery.touchSwipe.min.js" type="text/javascript"></script>
-<script src="//crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
+<script src="js/md5.js" type="text/javascript"></script>
 <script src="js/global.js" type="text/javascript"></script>
 <script>
     $(function () {
@@ -1274,7 +1274,7 @@ $url          = 'https://www.unilend.fr';
                     var hash = CryptoJS.MD5(key);
                     var time = $.now();
 
-                    // var token = '<?php echo $token; ?>';
+
                     var token = $.base64.btoa(hash + '-' + time);
                     var localdate = new Date();
                     var mois = localdate.getMonth() + 1;
