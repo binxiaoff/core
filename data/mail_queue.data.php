@@ -116,7 +116,14 @@ class mail_queue extends mail_queue_crud
                     WHERE mq.status =' . self::STATUS_SENT . $sWhere . '
                     ORDER BY mq.sent_at DESC ' . $sLimit;
 
-        return $this->bdd->executeQuery($sQuery);
+        $oStatement = $this->bdd->executeQuery($sQuery);
+        $aEmails    = array();
+
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aEmails[] = $aRow;
+        }
+
+        return $aEmails;
     }
 
 }

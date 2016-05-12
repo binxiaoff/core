@@ -122,14 +122,7 @@ class MailQueueManager
     {
         /** @var \mail_queue $oMailQueue */
         $oMailQueue = $this->oEntityManager->getRepository('mail_queue');
-        $oStatement = $oMailQueue->searchSentEmails($iClientId, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd, $iLimit);
-        $aEmails    = array();
-
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aEmails[] = $aRow;
-        }
-
-        return $aEmails;
+        return $oMailQueue->searchSentEmails($iClientId, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd, $iLimit);
     }
 
     /**
