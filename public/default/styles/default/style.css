@@ -777,7 +777,7 @@ form .row.rel .euro-sign { left: 0; right: auto; }
 .tab-form .btn { float:right; position: relative; margin-right: -93px; }
 .tab-form .c2-sb-wrap { margin-bottom: 30px; }
 
-div[class='main'] ul > li > a{ border:1px solid transparent;line-height:41px;}
+nav.tabs-nav ul > li > a{ border:1px solid transparent;line-height:41px;}
 div[class*="single-project"] .tabs-nav:after {content: "";display:block;clear:both;}
 div[class*="single-project"] .tabs-nav { height: 42px; margin-bottom: 25px;border-bottom: 1px solid #b10366; }
 div[class*="single-project"] .tabs-nav ul { padding-left: 0;float:left; }
