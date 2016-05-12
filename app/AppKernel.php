@@ -13,7 +13,7 @@ class AppKernel extends Kernel
             new Symfony\Bundle\MonologBundle\MonologBundle(),
             new Doctrine\Bundle\DoctrineBundle\DoctrineBundle(),
             new Cache\AdapterBundle\CacheAdapterBundle(),
-            new Unilend\Bundle\KernelBundle\UnilendKernelBundle(),
+            new Unilend\Bundle\CoreBusinessBundle\UnilendCoreBusinessBundle(),
             new Unilend\Bundle\CommandBundle\UnilendCommandBundle(),
             new Unilend\Bundle\MessagingBundle\UnilendMessagingBundle(),
         ];

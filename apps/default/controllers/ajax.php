@@ -1767,17 +1767,21 @@ class ajaxController extends bootstrap
                 $order = 'DESC';
             }
 
-            $cacheKey       = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, $rate, $sortBy, $order);
-            $this->bidsList = $this->oCache->get($cacheKey);
-            if (false === $this->bidsList) {
+            $oCachePool  = $this->get('memcache.default');
+            $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . $projectId . $rate . $sortBy . $order);
+            if (true === $oCachedItem->isHit()) {
+                $this->bidsList = $oCachedItem->get();
+            } else {
                 $this->bidsList = $bid->select('id_project = ' . $projectId . ' AND rate like ' . $rate, $sortBy . ' ' . $order);
-                $this->oCache->set($cacheKey, $this->bidsList, \Unilend\librairies\Cache::SHORT_TIME);
+                $oCachedItem->set($this->bidsList)->expiresAfter(300);
+                $oCachePool->save($oCachedItem);
             }
+
             $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
             $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
             /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-            $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+            $oAutoBidSettingsManager      = $this->get('unilend.service.autobid_settings_manager');
             $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         }
     }

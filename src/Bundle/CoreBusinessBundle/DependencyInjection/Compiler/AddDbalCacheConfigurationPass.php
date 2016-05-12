@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\KernelBundle\DependencyInjection\Compiler;
+namespace Unilend\Bundle\CoreBusinessBundle\DependencyInjection\Compiler;
 
 use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;

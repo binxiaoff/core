@@ -1,6 +1,6 @@
 <?php
 
-namespace Unilend\Bundle\KernelBundle\DependencyInjection;
+namespace Unilend\Bundle\CoreBusinessBundle\DependencyInjection;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\Config\FileLocator;
@@ -12,7 +12,7 @@ use Symfony\Component\DependencyInjection\Loader;
  *
  * @link http://symfony.com/doc/current/cookbook/bundles/extension.html
  */
-class UnilendKernelExtension extends Extension
+class UnilendCoreBusinessExtension extends Extension
 {
     /**
      * {@inheritdoc}

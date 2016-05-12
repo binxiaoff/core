@@ -1,17 +1,17 @@
 <?php
 
-namespace Unilend\Bundle\KernelBundle;
+namespace Unilend\Bundle\CoreBusinessBundle;
 
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-use Unilend\Bundle\KernelBundle\DependencyInjection\Compiler\AddDbalCacheConfigurationPass;
+use Unilend\Bundle\CoreBusinessBundle\DependencyInjection\Compiler\AddDbalCacheConfigurationPass;
 
 /**
  * Bundle.
  *
  * @author Fabien Potencier <fabien@symfony.com>
  */
-class UnilendKernelBundle extends Bundle
+class UnilendCoreBusinessBundle extends Bundle
 {
     public function build(ContainerBuilder $container)
     {
