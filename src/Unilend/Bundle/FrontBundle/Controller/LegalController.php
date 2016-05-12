@@ -7,6 +7,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 
 class LegalController extends Controller
 {
+    /**
+     * @Route("/infos-legales")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
     public function infoAction()
     {
         return $this->render('UnilendFrontBundle:Legal:info.html.twig', array(

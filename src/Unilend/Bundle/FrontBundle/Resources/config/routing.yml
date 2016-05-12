@@ -1,4 +1,3 @@
-# FrontBundle/config/routing.yml
-infos_legales:
-    path: /infos-legales
-    defaults:  { _controller: UnilendFrontBundle:Legal:info }
+front:
+    resource: "@UnilendFrontBundle/Controller"
+    type:     annotation
