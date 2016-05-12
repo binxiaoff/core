@@ -25,15 +25,14 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
-class mails_text extends mails_text_crud
+class mail_templates extends mail_templates_crud
 {
     const STATUS_ACTIVE   = 1;
     const STATUS_ARCHIVED = 2;
 
     public function __construct($bdd, $params = '')
     {
-        parent::mails_text($bdd, $params);
+        parent::mail_templates($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -41,14 +40,16 @@ class mails_text extends mails_text_crud
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `mails_text`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
+        $sql = 'SELECT * FROM `mail_templates`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -60,24 +61,18 @@ class mails_text extends mails_text_crud
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `mails_text` ' . $where;
-
-        $result = $this->bdd->query($sql);
-
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `mail_templates` ' . $where), 0, 0);
     }
 
-    public function exist($id, $field = 'id_textemail')
+    public function exist($id, $field = 'id_mail_template')
     {
-        $sql    = 'SELECT * FROM `mails_text` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-
-        return ($this->bdd->fetch_array($result) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `mail_templates` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function getActiveMailsTexts()
+    public function getActiveMailTemplates()
     {
-        $sQuery = 'SELECT * FROM mails_text WHERE status  = ' . self::STATUS_ACTIVE . ' ORDER BY type ASC';
+        $sQuery = 'SELECT * FROM mail_templates WHERE status  = ' . self::STATUS_ACTIVE . ' ORDER BY type ASC';
         return $this->bdd->executeQuery($sQuery);
     }
+
 }

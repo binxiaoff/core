@@ -7,22 +7,22 @@
     <form method="post" name="mod_mail" id="mod_mail" enctype="multipart/form-data">
         <input type="hidden" name="lng_encours" id="lng_encours" value="<?= $this->language ?>"/>
         <fieldset>
-            <h1>Modifier <?= $this->mails_text->type ?></h1>
+            <h1>Modifier <?= $this->oMailTemplate->type ?></h1>
             <table class="large">
                 <tr>
-                    <th><label for="exp_name">Nom d'expéditeur :</label></th>
+                    <th><label for="sender_name">Nom d'expéditeur :</label></th>
                 </tr>
                 <tr>
                     <td>
-                        <input type="text" name="exp_name" id="exp_name" value="<?= $this->mails_text->exp_name ?>" class="input_big"/>
+                        <input type="text" name="sender_name" id="sender_name" value="<?= $this->oMailTemplate->sender_name ?>" class="input_big"/>
                     </td>
                 </tr>
                 <tr>
-                    <th><label for="exp_email">Adresse d'expéditeur :</label></th>
+                    <th><label for="sender_email">Adresse d'expéditeur :</label></th>
                 </tr>
                 <tr>
                     <td>
-                        <input type="text" name="exp_email" id="exp_email" value="<?= $this->mails_text->exp_email ?>" class="input_big"/>
+                        <input type="text" name="sender_email" id="sender_email" value="<?= $this->oMailTemplate->sender_email ?>" class="input_big"/>
                     </td>
                 </tr>
                 <tr>
@@ -30,7 +30,7 @@
                 </tr>
                 <tr>
                     <td>
-                        <input type="text" name="subject" id="subject" value="<?= $this->mails_text->subject ?>" class="input_big"/>
+                        <input type="text" name="subject" id="subject" value="<?= $this->oMailTemplate->subject ?>" class="input_big"/>
                     </td>
                 </tr>
                 <tr>
@@ -38,13 +38,13 @@
                 </tr>
                 <tr>
                     <td>
-                        <textarea name="content" id="content" class="textarea_big"><?= htmlentities($this->mails_text->content, ENT_COMPAT, 'UTF-8') ?></textarea>
+                        <textarea name="content" id="content" class="textarea_big"><?= htmlentities($this->oMailTemplate->content, ENT_COMPAT, 'UTF-8') ?></textarea>
                     </td>
                 </tr>
                 <tr>
                     <td>
-                        <input type="hidden" name="id_textemail" value="<?= $this->mails_text->id_textemail ?>">
-                        <input type="hidden" name="type" value="<?= $this->mails_text->type ?>">
+                        <input type="hidden" name="id_mail_template" value="<?=$this->oMailTemplate->id_mail_template ?>">
+                        <input type="hidden" name="type" value="<?= $this->oMailTemplate->type ?>">
                         <input type="hidden" name="form_mod_mail" id="form_mod_mail"/>
                         <input type="submit" value="Valider" title="Valider" name="send_mail" id="send_mail" class="btn"/>
                     </td>

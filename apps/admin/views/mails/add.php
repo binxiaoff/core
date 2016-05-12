@@ -18,19 +18,19 @@
                     </td>
                 </tr>
                 <tr>
-                    <th><label for="exp_name>">Nom d'expéditeur :</label></th>
+                    <th><label for="sender_name>">Nom d'expéditeur :</label></th>
                 </tr>
                 <tr>
                     <td>
-                        <input type="text" name="exp_name" id="exp_name" class="input_big"/>
+                        <input type="text" name="sender_name" id="sender_name" class="input_big"/>
                     </td>
                 </tr>
                 <tr>
-                    <th><label for="exp_email">Adresse d'expéditeur :</label></th>
+                    <th><label for="sender_email">Adresse d'expéditeur :</label></th>
                 </tr>
                 <tr>
                     <td>
-                        <input type="text" name="exp_email" id="exp_email" class="input_big"/>
+                        <input type="text" name="sender_email" id="sender_email" class="input_big"/>
                     </td>
                 </tr>
                 <tr>

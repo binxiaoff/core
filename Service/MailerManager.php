@@ -12,8 +12,8 @@ class MailerManager
     /** @var \settings */
     private $oSettings;
 
-    /** @var \mails_text */
-    private $oMailText;
+    /** @var \mail_templates */
+    private $oMailTemplate;
 
     /** @var ULogger */
     private $oLogger;
@@ -42,7 +42,7 @@ class MailerManager
     /** @var \Swift_Mailer */
     private $mailer;
 
-    public function __construct(EntityManager $oEntityManager, TemplateMessageProvider $messageProvider, \Swift_Mailer $mailer)
+    public function __construct(EntityManager $oEntityManager, TemplateMessageProvider $messageProvider, \Swift_Mailer $mailer, $defaultLanguage)
     {
         $this->aConfig = Loader::loadConfig();
 
@@ -50,14 +50,14 @@ class MailerManager
         $this->messageProvider = $messageProvider;
         $this->mailer          = $mailer;
 
-        $this->oSettings  = $this->oEntityManager->getRepository('settings');
-        $this->oMailText  = $this->oEntityManager->getRepository('mails_text');
+        $this->oSettings      = $this->oEntityManager->getRepository('settings');
+        $this->oMailTemplate  = $this->oEntityManager->getRepository('mail_template');
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
         $this->oWorkingDay = Loader::loadLib('jours_ouvres');
 
-        $this->sLanguage = 'fr';
+        $this->sLanguage = $defaultLanguage;
 
         $this->sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
         $this->sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
@@ -609,7 +609,7 @@ class MailerManager
         }
 
         $iLendersNb = $oLoan->getNbPreteurs($oProject->id_project);
-        $this->oMailText->get('notification-projet-fini', 'lang = "' . $this->sLanguage . '" AND type');
+        $this->oMailTemplate->get('notification-projet-fini', 'lang = "' . $this->sLanguage . '" AND type');
 
         $varMail = array(
             '$surl'         => $this->sSUrl,
@@ -623,7 +623,7 @@ class MailerManager
             '$sujetMail'    => htmlentities($this->oMailText->subject)
         );
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage($this->oMailText->type, $varMail, false);
+        $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
         $message->setTo($oClient->email);
         $this->mailer->send($sRecipient);
 

@@ -1374,8 +1374,8 @@ class dossiersController extends bootstrap
                 'annee'                => date('Y')
             );
 
-        $this->mails_text->get($sMailType, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
-        $aReplacements['sujet'] = $this->mails_text->subject;
+        $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+        $aReplacements['sujet'] = $this->mail_template->subject;
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
@@ -1514,9 +1514,9 @@ class dossiersController extends bootstrap
 
                     $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
 
-                    $this->mails_text->get($sMailType, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+                    $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
-                    $aReplacements['sujet'] = $this->mails_text->subject;
+                    $aReplacements['sujet'] = $this->mail_template->subject;
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
@@ -2306,23 +2306,23 @@ class dossiersController extends bootstrap
                 $id_reception        = $_POST['id_reception'];
                 $montant_crd_preteur = ($_POST['montant_crd_preteur'] * 100);
 
-                $this->projects                      = $this->loadData('projects');
-                $this->echeanciers                   = $this->loadData('echeanciers');
-                $this->receptions                    = $this->loadData('receptions');
-                $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
-                $this->transactions                  = $this->loadData('transactions');
-                $this->lenders_accounts              = $this->loadData('lenders_accounts');
-                $this->clients                       = $this->loadData('clients');
-                $this->wallets_lines                 = $this->loadData('wallets_lines');
-                $this->notifications                 = $this->loadData('notifications');
-                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                $this->mails_text                    = $this->loadData('mails_text');
-                $this->companies                     = $this->loadData('companies');
-                $this->loans                         = $this->loadData('loans');
-                $loans                               = $this->loadData('loans');
+                $this->projects                         = $this->loadData('projects');
+                $this->echeanciers                      = $this->loadData('echeanciers');
+                $this->receptions                       = $this->loadData('receptions');
+                $this->echeanciers_emprunteur           = $this->loadData('echeanciers_emprunteur');
+                $this->transactions                     = $this->loadData('transactions');
+                $this->lenders_accounts                 = $this->loadData('lenders_accounts');
+                $this->clients                          = $this->loadData('clients');
+                $this->wallets_lines                    = $this->loadData('wallets_lines');
+                $this->notifications                    = $this->loadData('notifications');
+                $this->clients_gestion_mails_notif      = $this->loadData('clients_gestion_mails_notif');
+                $this->clients_gestion_notifications    = $this->loadData('clients_gestion_notifications');
+                $this->mail_template                    = $this->loadData('mail_templates');
+                $this->companies                        = $this->loadData('companies');
+                $this->loans                            = $this->loadData('loans');
+                $loans                                  = $this->loadData('loans');
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager                     = $this->get('unilend.service.project_manager');
+                $oProjectManager                        = $this->get('unilend.service.project_manager');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -2848,7 +2848,7 @@ class dossiersController extends bootstrap
         $this->iProjectId = $oProjects->id_project;
 
         $sTypeEmail = $this->selectEmailCompleteness($iClientId);
-        $this->mails_text->get($sTypeEmail, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+        $this->mail_template->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -2861,8 +2861,8 @@ class dossiersController extends bootstrap
         $oClients = $this->loadData('clients');
         /** @var companies $oCompanies */
         $oCompanies = $this->loadData('companies');
-        /** @var \mails_text $oMailsText */
-        $oMailsText = $this->loadData('mails_text');
+        /** @var \mail_template $oMailTemplate */
+        $oMailTemplate = $this->loadData('mail_templates');
 
         if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
             echo 'no projects found';
@@ -2880,17 +2880,17 @@ class dossiersController extends bootstrap
         }
 
         $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
-        $oMailsText->get($sTypeEmail, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+        $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
         $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-        $varMail['sujet'] = $oMailsText->subject;
+        $varMail['sujet'] = $oMailTemplate->subject;
 
         $tabVars = array();
         foreach ($varMail as $key => $value) {
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        echo strtr($oMailsText->content, $tabVars);
+        echo strtr($oMailTemplate->content, $tabVars);
     }
 
     public function _send_completude()
@@ -2907,8 +2907,8 @@ class dossiersController extends bootstrap
             $oClients = $this->loadData('clients');
             /** @var companies $oCompanies */
             $oCompanies = $this->loadData('companies');
-            /** @var \mails_text $oMailsText */
-            $oMailsText = $this->loadData('mails_text');
+            /** @var \mail_template $oMailTemplate */
+            $oMailTemplate = $this->loadData('mail_templates');
 
             if (false === isset($_POST['id_project']) || false === $oProjects->get($_POST['id_project'])) {
                 echo 'no projects found';
@@ -2926,9 +2926,9 @@ class dossiersController extends bootstrap
             }
 
             $sTypeEmail       = $this->selectEmailCompleteness($oClients->id_client);
-            $oMailsText->get($sTypeEmail, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+            $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
             $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-            $varMail['sujet'] = htmlentities($oMailsText->subject, null, 'UTF-8');
+            $varMail['sujet'] = htmlentities($oMailTemplate->subject, null, 'UTF-8');
             $sRecipientEmail  = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */

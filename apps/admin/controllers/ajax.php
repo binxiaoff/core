@@ -522,7 +522,7 @@ class ajaxController extends bootstrap
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->mails_text->get('confirmation-depot-de-dossier', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+            $this->mail_template->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
             $oSettings->get('Facebook', 'type');
             $lien_fb = $oSettings->value;
@@ -536,7 +536,7 @@ class ajaxController extends bootstrap
                 'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
                 'lien_fb'              => $lien_fb,
                 'lien_tw'              => $lien_tw,
-                'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
+                'sujet'                => htmlentities($this->mail_template->subject, null, 'UTF-8'),
                 'surl'                 => $this->surl,
                 'url'                  => $this->url,
             );

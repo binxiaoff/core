@@ -42,10 +42,11 @@ class MailQueueManager
     {
         /** @var \mail_queue $oMailQueue */
         $oMailQueue                       = $this->oEntityManager->getRepository('mail_queue');
-        $oMailQueue->id_mail_text         = $oMessage->getTemplateId();
+        $oMailQueue->id_mail_template     = $oMessage->getTemplateId();
         $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
         $aRecipients                      = array_keys($oMessage->getTo());
         $recipient                        = array_shift($aRecipients);
+        /** @var \clients $client */
         $client                           = $this->oEntityManager->getRepository('clients');
         // try to find client id
         if ($client->get($recipient, 'email')) {
@@ -71,7 +72,7 @@ class MailQueueManager
     {
         /** @var \mail_templates $oMailTemplate */
         $oMailTemplate = $this->oEntityManager->getRepository('mail_templates');
-        if (false === $oMailTemplate->get($oEmail->id_mail_text)) {
+        if (false === $oMailTemplate->get($oEmail->id_mail_template)) {
             return false;
         }
         /** @var TemplateMessage $oMessage */
@@ -140,7 +141,7 @@ class MailQueueManager
     {
         /** @var \mail_queue $oMailQueue */
         $oMailQueue   = $this->oEntityManager->getRepository('mail_queue');
-        return $oMailQueue->exist($iTemplateID, 'id_mail_text');
+        return $oMailQueue->exist($iTemplateID, 'id_mail_template');
     }
 
 }

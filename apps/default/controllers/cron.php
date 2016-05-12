@@ -369,7 +369,7 @@ class cronController extends bootstrap
                             //**************************************//
                             //*** ENVOI DU MAIL PROBLEME PRETEUR ***//
                             //**************************************//
-                            $this->mails_text->get('preteur-erreur-remboursement', 'lang = "' . $this->language . '" AND type');
+                            $this->mail_template->get('preteur-erreur-remboursement', 'lang = "' . $this->language . '" AND type');
 
                             $varMail = array(
                                 'surl'              => $this->surl,
@@ -387,7 +387,7 @@ class cronController extends bootstrap
                             //******************************************//
                             //*** ENVOI DU MAIL RECOUVREMENT PRETEUR ***//
                             //******************************************//
-                            $this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
+                            $this->mail_template->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
 
                             $varMail = array(
                                 'surl'             => $this->surl,
@@ -1134,7 +1134,7 @@ class cronController extends bootstrap
         $ladatePlus3J  = date('Y-m-d H', $ladatePlus3J);
         $ladatePlus7J  = date('Y-m-d H', $ladatePlus7J);
 
-        $this->mails_text->get('preteur-relance-paiement-inscription', 'lang = "' . $this->language . '" AND type');
+        $this->mail_template->get('preteur-relance-paiement-inscription', 'lang = "' . $this->language . '" AND type');
 
         foreach ($lLenderNok as $l) {
             $this->clients->get($l['id_client_owner'], 'id_client');
@@ -1162,22 +1162,22 @@ class cronController extends bootstrap
 
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
                 $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                $this->email->setFrom($this->mail_template->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
                 if ($this->clients->status == 1) {
                     if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, $this->clients->email, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
                     } else {
                         $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
                     }
                 }
             }
@@ -4095,22 +4095,22 @@ class cronController extends bootstrap
                     }
 
                     if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
                     } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
                     } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
                     } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
@@ -4237,12 +4237,12 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                     } elseif (1 < $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
@@ -4371,12 +4371,12 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
                     } elseif (1 < $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
@@ -4525,32 +4525,32 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
                     } elseif (1 < $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
                     } elseif (1 === $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
                     } elseif (1 < $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                     } elseif (1 === $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
                     } elseif (1 < $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
@@ -4725,27 +4725,27 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                     } elseif (1 < $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
                     } elseif (1 === $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                     } elseif (1 < $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
                     } elseif (1 === $iRepaymentsCount && 'mensuelle' === $sFrequency) {
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                     } elseif (1 < $iRepaymentsCount && 'mensuelle' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
                     } else {
@@ -4853,7 +4853,7 @@ class cronController extends bootstrap
                     $parrains_filleuls_mouvements->create();
 
                     $destinataire = $parrain->email;
-                    $this->mails_text->get('confirmation-offre-parrain', 'lang = "' . $this->language . '" AND type');
+                    $this->mail_template->get('confirmation-offre-parrain', 'lang = "' . $this->language . '" AND type');
 
                     $varMail = array(
                         'surl'            => $this->surl,
@@ -4865,22 +4865,22 @@ class cronController extends bootstrap
                     );
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                    $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
                     $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setFrom($this->mail_template->exp_email, $exp_name);
 
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
                     if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $destinataire, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, $destinataire, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
                     } else {
                         $this->email->addRecipient(trim($destinataire));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
                     }
 
                     $lenders_accounts->get($pf['id_filleul'], 'id_client_owner');
@@ -4922,7 +4922,7 @@ class cronController extends bootstrap
                     $parrains_filleuls_mouvements->create();
 
                     $destinataire = $filleul->email;
-                    $this->mails_text->get('confirmation-offre-filleul', 'lang = "' . $this->language . '" AND type');
+                    $this->mail_template->get('confirmation-offre-filleul', 'lang = "' . $this->language . '" AND type');
 
                     $varMail = array(
                         'surl'            => $this->surl,
@@ -4935,22 +4935,22 @@ class cronController extends bootstrap
 
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                    $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
                     $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setFrom($this->mail_template->exp_email, $exp_name);
 
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
                     if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $destinataire, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, $destinataire, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
                     } else {
                         $this->email->addRecipient(trim($destinataire));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
                     }
                 } else {// si limite depassé on rejet l'offre de parrainage
                     $parrains_filleuls->get($pf['id_parrain_filleul'], 'id_parrain_filleul');
@@ -5219,21 +5219,21 @@ class cronController extends bootstrap
                         );
 
                             $tabVars   = $this->tnmp->constructionVariablesServeur($varMail);
-                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                            $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                            $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
                             $this->email = $this->loadLib('email');
-                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                            $this->email->setFrom($this->mail_template->exp_email, $exp_name);
                             $this->email->setSubject(stripslashes($sujetMail));
                             $this->email->setHTMLBody(stripslashes($texteMail));
 
                             if ($this->Config['env'] === 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, trim($companies->email_facture), $tabFiler);
+                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
                             } else {
                                 $this->email->addRecipient(trim($companies->email_facture));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
                             }
 
                         $oInvoiceCounter            = $this->loadData('compteur_factures');
@@ -5523,23 +5523,23 @@ class cronController extends bootstrap
     public function _RA_email()
     {
         if ($this->startCron('RAMail', 5)) {
-            $this->projects                        = $this->loadData('projects');
-            $this->echeanciers                     = $this->loadData('echeanciers');
-            $this->receptions                      = $this->loadData('receptions');
-            $this->echeanciers_emprunteur          = $this->loadData('echeanciers_emprunteur');
-            $this->transactions                    = $this->loadData('transactions');
-            $this->lenders_accounts                = $this->loadData('lenders_accounts');
-            $this->clients                         = $this->loadData('clients');
-            $this->wallets_lines                   = $this->loadData('wallets_lines');
-            $this->notifications                   = $this->loadData('notifications');
-            $this->clients_gestion_mails_notif     = $this->loadData('clients_gestion_mails_notif');
-            $this->projects_status_history         = $this->loadData('projects_status_history');
-            $this->clients_gestion_notifications   = $this->loadData('clients_gestion_notifications');
-            $this->mails_text                      = $this->loadData('mails_text');
-            $this->companies                       = $this->loadData('companies');
-            $this->loans                           = $this->loadData('loans');
-            $loans                                 = $this->loadData('loans');
-            $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+            $this->projects                         = $this->loadData('projects');
+            $this->echeanciers                      = $this->loadData('echeanciers');
+            $this->receptions                       = $this->loadData('receptions');
+            $this->echeanciers_emprunteur           = $this->loadData('echeanciers_emprunteur');
+            $this->transactions                     = $this->loadData('transactions');
+            $this->lenders_accounts                 = $this->loadData('lenders_accounts');
+            $this->clients                          = $this->loadData('clients');
+            $this->wallets_lines                    = $this->loadData('wallets_lines');
+            $this->notifications                    = $this->loadData('notifications');
+            $this->clients_gestion_mails_notif      = $this->loadData('clients_gestion_mails_notif');
+            $this->projects_status_history          = $this->loadData('projects_status_history');
+            $this->clients_gestion_notifications    = $this->loadData('clients_gestion_notifications');
+            $this->mail_template                    = $this->loadData('mail_templates');
+            $this->companies                        = $this->loadData('companies');
+            $this->loans                            = $this->loadData('loans');
+            $loans                                  = $this->loadData('loans');
+            $remboursement_anticipe_mail_a_envoyer  = $this->loadData('remboursement_anticipe_mail_a_envoyer');
 
             // recup des mails à envoyer pour les projets en ra en attente, 1 seul à la fois car traitement pouvant etre lourd
             $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0', 'added ASC', '', 1);
@@ -5718,7 +5718,7 @@ class cronController extends bootstrap
                                     $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
                                     $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
                                     $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
-                                    $aReplacements['sujet']                   = htmlentities($this->mails_text->subject, null, 'UTF-8');
+                                    $aReplacements['sujet']                   = htmlentities($this->mail_template->subject, null, 'UTF-8');
                                     $aReplacements['annee']                   = date('Y');
 
                                     $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
@@ -5786,10 +5786,10 @@ class cronController extends bootstrap
                 $oEcheanciers           = $this->loadData('echeanciers');
                 $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
                 $oLoans                 = $this->loadData('loans');
-                $oMailsText             = $this->loadData('mails_text');
+                $oMailTemplate          = $this->loadData('mail_templates');
                 $oSettings              = $this->loadData('settings');
 
-                $oMailsText->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+                $oMailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
                 $oSettings->get('Virement - BIC', 'type');
                 $sBIC = $oSettings->value;
@@ -5823,7 +5823,7 @@ class cronController extends bootstrap
                     $aNextRepayment = $oEcheanciersEmprunteur->select('id_project = ' . $oProjects->id_project . ' AND date_echeance_emprunteur > DATE(NOW())', 'date_echeance_emprunteur ASC', 0, 1);
 
                     $aReplacements = $aCommonReplacements + array(
-                            'sujet'                              => htmlentities($oMailsText->subject, null, 'UTF-8'),
+                            'sujet'                              => htmlentities($oMailTemplate->subject, null, 'UTF-8'),
                             'entreprise'                         => htmlentities($oCompanies->name, null, 'UTF-8'),
                             'civilite_e'                         => $oClients->civilite,
                             'prenom_e'                           => htmlentities($oClients->prenom, null, 'UTF-8'),
@@ -5836,7 +5836,7 @@ class cronController extends bootstrap
                         );
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailsText->type, $this->language, $aReplacements);
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $this->language, $aReplacements);
                     $message->setTo(trim($oClients->email));
                     $mailer = $this->get('mailer');
                     $mailer->send($message);

@@ -1018,7 +1018,7 @@ class preteursController extends bootstrap
         $this->clients          = $this->loadData('clients');
         $this->lenders_accounts = $this->loadData('lenders_accounts');
 
-        $this->mails_text->get('completude', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+        $this->mail_template->get('completude', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
         $this->clients->get($this->params[0], 'id_client');
         $this->lenders_accounts->get($this->params[0], 'id_client_owner');
@@ -1035,11 +1035,11 @@ class preteursController extends bootstrap
 
         $this->clients                = $this->loadData('clients');
         $this->clients_status_history = $this->loadData('clients_status_history');
-        $this->mails_text             = $this->loadData('mails_text');
+        $this->mail_template             = $this->loadData('mail_templates');
         $this->settings               = $this->loadData('settings');
 
         $this->clients->get($this->params[0], 'id_client');
-        $this->mails_text->get('completude', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+        $this->mail_template->get('completude', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
         $this->settings->get('Facebook', 'type');
         $lien_fb = $this->settings->value;
@@ -1068,7 +1068,7 @@ class preteursController extends bootstrap
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        echo $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+        echo $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
         die;
     }
 

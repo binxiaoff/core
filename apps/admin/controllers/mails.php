@@ -15,15 +15,15 @@ class mailsController extends bootstrap
 
     public function _default()
     {
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTextManager $oMailTextManager */
-        $oMailTextManager = $this->get('unilend.service.mail_text');
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
+        $oMailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (isset($this->params[0]) && $this->params[0] == 'delete') {
-            /** @var \mails_text $oMailsText */
-            $oMailsText = $this->loadData('mails_text');
+            /** @var \mail_templates $oMailTemplate */
+            $oMailTemplate = $this->loadData('mail_templates');
 
-            $oMailsText->get($this->params[1], 'type');
-            $oMailTextManager->archiveMailsText($oMailsText);
+            $oMailTemplate->get($this->params[1], 'type');
+            $oMailTemplateManager->archiveTemplate($oMailTemplate);
 
             $_SESSION['freeow']['title']   = 'Archivage d\'un mail';
             $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; archiv&eacute; !';
@@ -32,16 +32,16 @@ class mailsController extends bootstrap
             die;
         }
 
-        $this->lMails = $oMailTextManager->getActiveMailsText();
+        $this->lMails = $oMailTemplateManager->getActiveMailTemplates();
     }
 
     public function _add()
     {
         if (isset($_POST['form_add_mail'])) {
             $aPost = $this->handlePost();
-            /** @var \Unilend\Bundle\MessagingBundle\Service\MailTextManager $oMailTextManager */
-            $oMailTextManager = $this->get('unilend.service.mail_text');
-            $oMailTextManager->addMailsText($aPost['type'], $aPost['exp_name'],$aPost['exp_email'], $aPost['subject'], $aPost['content']);
+            /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
+            $oMailTemplateManager = $this->get('unilend.service.mail_template');
+            $oMailTemplateManager->addTemplate($aPost['type'], $aPost['sender_name'],$aPost['sender_email'], $aPost['subject'], $aPost['content']);
 
             $_SESSION['freeow']['title']   = 'Ajout d\'un mail';
             $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; ajout&eacute; !';
@@ -54,15 +54,16 @@ class mailsController extends bootstrap
 
     public function _edit()
     {
-        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTextManager $oMailTextManager */
-        $oMailTextManager = $this->get('unilend.service.mail_text');
+        /** @var \Unilend\Bundle\MessagingBundle\Service\MailTemplateManager $oMailTemplateManager */
+        $oMailTemplateManager = $this->get('unilend.service.mail_template');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
-            $this->mails_text->get($this->params[0], 'type');
+            $this->oMailTemplate = $this->loadData('mail_templates');
+            $this->oMailTemplate->get($this->params[0], 'type');
 
             if (isset($_POST['form_mod_mail'])) {
                 $aPost = $this->handlePost();
-                $oMailTextManager->modifyMailsText($aPost['id_textemail'], $aPost['type'], $aPost['exp_name'], $aPost['exp_email'], $aPost['subject'], $aPost['content']);
+                $oMailTemplateManager->modifyTemplate($aPost['id_mail_template'], $aPost['type'], $aPost['sender_name'], $aPost['sender_email'], $aPost['subject'], $aPost['content']);
                 $_SESSION['freeow']['title']   = 'Modification d\'un mail';
                 $_SESSION['freeow']['message'] = 'Le mail a bien &eacute;t&eacute; modifi&eacute; !';
                 header('Location:' . $this->url . '/mails');

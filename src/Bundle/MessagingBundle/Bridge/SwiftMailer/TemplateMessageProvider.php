@@ -48,7 +48,7 @@ class TemplateMessageProvider
         $fromName = strtr($mailTemplate->sender_name, $variables);
 
         /** @var TemplateMessage $message */
-        $message = new $this->templateMessageClass($mailTemplate->id_textemail);
+        $message = new $this->templateMessageClass($mailTemplate->id_mail_template);
         $message->setVariables($variables)
                 ->setFrom($mailTemplate->sender_email, $fromName)
                 ->setSubject($subject)

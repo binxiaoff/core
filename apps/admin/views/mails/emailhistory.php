@@ -70,7 +70,7 @@
             foreach ($this->aEmails as $aEmail) : ?>
                 <tr <?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
-                    <td><?= $aEmail['exp_name'] ?></td>
+                    <td><?= $aEmail['sender_name'] ?></td>
                     <td><?= $aEmail['recipient'] ?></td>
                     <td><?= $aEmail['subject'] ?></td>
                     <td align="center">

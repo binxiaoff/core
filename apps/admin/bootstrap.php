@@ -16,18 +16,18 @@ class bootstrap extends Controller
         $this->upload  = $this->loadLib('upload');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
 
-        $this->ln             = $this->loadData('textes');
-        $this->settings       = $this->loadData('settings');
-        $this->tree_elements  = $this->loadData('tree_elements');
-        $this->blocs          = $this->loadData('blocs');
-        $this->blocs_elements = $this->loadData('blocs_elements');
-        $this->elements       = $this->loadData('elements');
-        $this->tree           = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->Config['url'][$this->Config['env']]['default'], 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
-        $this->users          = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
-        $this->users_zones    = $this->loadData('users_zones');
+        $this->ln               = $this->loadData('textes');
+        $this->settings         = $this->loadData('settings');
+        $this->tree_elements    = $this->loadData('tree_elements');
+        $this->blocs            = $this->loadData('blocs');
+        $this->blocs_elements   = $this->loadData('blocs_elements');
+        $this->elements         = $this->loadData('elements');
+        $this->tree             = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->Config['url'][$this->Config['env']]['default'], 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
+        $this->users            = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
+        $this->users_zones      = $this->loadData('users_zones');
         //$this->routages       = $this->loadData('routages', array('url' => $this->lurl));
-        $this->users_history  = $this->loadData('users_history');
-        $this->mails_text     = $this->loadData('mails_text');
+        $this->users_history    = $this->loadData('users_history');
+        $this->mail_template    = $this->loadData('mail_templates');
 
         if (isset($_POST['captcha'])) {
             if (isset($_SESSION['captcha']) && $_SESSION['captcha'] == $_POST['captcha']) {

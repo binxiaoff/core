@@ -120,7 +120,7 @@
         <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
             <tr>
                 <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
-                <td><?= $aEmail['exp_name'] ?></td>
+                <td><?= $aEmail['sender_name'] ?></td>
                 <td><?= $aEmail['subject'] ?></td>
                 <td style="text-align: center">
                     <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_queue'] ?>" class="thickbox">

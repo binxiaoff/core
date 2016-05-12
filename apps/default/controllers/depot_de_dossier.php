@@ -915,9 +915,9 @@ class depot_de_dossierController extends bootstrap
 
     private function sendSubscriptionConfirmationEmail()
     {
-        /** @var \mails_text $oMailText */
-        $oMailText = $this->loadData('mails_text');
-        $oMailText->get('confirmation-depot-de-dossier', 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+        /** @var \mail_templates $oMailTemplate */
+        $oMailTemplate = $this->loadData('mail_templates');
+        $oMailTemplate->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
         $aVariables = array(
             'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
@@ -925,7 +925,7 @@ class depot_de_dossierController extends bootstrap
             'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
             'lien_fb'              => $this->like_fb,
             'lien_tw'              => $this->twitter,
-            'sujet'                => htmlentities($oMailText->subject, null, 'UTF-8'),
+            'sujet'                => htmlentities($oMailTemplate->subject, null, 'UTF-8'),
             'surl'                 => $this->surl,
             'url'                  => $this->url,
         );
@@ -934,7 +934,7 @@ class depot_de_dossierController extends bootstrap
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailText->type, $this->language, $aVariables);
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $this->language, $aVariables);
         $message->setTo($sRecipient);
         $mailer = $this->get('mailer');
         $mailer->send($message);
@@ -946,8 +946,8 @@ class depot_de_dossierController extends bootstrap
             $this->users = $this->loadData('users');
             $this->users->get($this->projects->id_commercial, 'id_user');
 
-            $oMailText = $this->loadData('mails_text');
-            $oMailText->get($sEmailType, 'status = ' . \mails_text::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+            $oMailTemplate = $this->loadData('mail_templates');
+            $oMailTemplate->get($sEmailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,
@@ -957,8 +957,8 @@ class depot_de_dossierController extends bootstrap
             );
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailText->type, $this->language, $aReplacements, false);
-            $message->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $oMailText->subject))));
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $this->language, $aReplacements, false);
+            $message->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $oMailTemplate->subject))));
             $message->setTo(trim($this->users->email));
             $mailer = $this->get('mailer');
             $mailer->send($message);

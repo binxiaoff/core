@@ -42,6 +42,7 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
             <argument type="service" id="swiftmailer.mailer.default" />
+            <argument>%kernel.default_locale%</argument>
         </service>
 
         <service id="unilend.service.project_manager" class="Unilend\Service\ProjectManager">

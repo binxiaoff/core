@@ -85,7 +85,7 @@ class mail_queue extends mail_queue_crud
         }
 
         if (false === is_null($sFrom)) {
-            $sWhere .= ' AND mt.exp_name LIKE "%' . $sFrom . '%" ';
+            $sWhere .= ' AND mt.sender_name LIKE "%' . $sFrom . '%" ';
         }
 
         if (false === is_null($sSubject)) {
@@ -106,12 +106,13 @@ class mail_queue extends mail_queue_crud
 
         $sQuery = 'SELECT
                       mq.*,
-                      mt.exp_name,
+                      mt.sender_name,
+                      mt.sender_email,
                       mt.subject,
-                      mt.id_textemail
+                      mt.id_mail_template
                     FROM
                       mail_queue mq
-                    INNER JOIN mails_text mt ON mq.id_mail_text = mt.id_textemail
+                    INNER JOIN mail_templates mt ON mq.id_mail_template = mt.id_mail_template
                     WHERE mq.status =' . self::STATUS_SENT . $sWhere . '
                     ORDER BY mq.sent_at DESC ' . $sLimit;
 

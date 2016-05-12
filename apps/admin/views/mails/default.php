@@ -42,8 +42,8 @@
             foreach ($this->lMails as $m) : ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td><?= $m['type'] ?></td>
-                    <td><?= $m['exp_name'] ?></td>
-                    <td><?= $m['exp_email'] ?></td>
+                    <td><?= $m['sender_name'] ?></td>
+                    <td><?= $m['sender_email'] ?></td>
                     <td><?= $m['subject'] ?></td>
                     <td><?= $this->dates->formatDate($m['updated'], 'd/m/Y H:i') ?></td>
                     <td align="center">
