@@ -16,7 +16,7 @@ class AppKernel extends Kernel
             new Unilend\Bundle\CoreBusinessBundle\UnilendCoreBusinessBundle(),
             new Unilend\Bundle\CommandBundle\UnilendCommandBundle(),
             new Unilend\Bundle\MessagingBundle\UnilendMessagingBundle(),
-            new \Symfony\Bundle\TwigBundle\TwigBundle(),
+            new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Unilend\Bundle\FrontBundle\UnilendFrontBundle(),
         ];
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

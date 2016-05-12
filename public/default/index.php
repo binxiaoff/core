@@ -1,4 +1,7 @@
 <?php
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 $loader = require __DIR__.'/../../app/autoload.php';
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
@@ -31,12 +34,20 @@ if ($bCacheFullPage) {
 }
 
 $oKernel = new AppKernel('prod', false);
-$oKernel->boot();
 
-$errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
+try {
+    Request::enableHttpMethodParameterOverride();
+    $request  = Request::createFromGlobals();
+    $response = $oKernel->handle($request);
+    $response->send();
+    $oKernel->terminate($request, $response);
 
-$oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
+} catch (NotFoundHttpException $exception) {
+    $oKernel->boot();
+    $errorLogfile = $oKernel->getLogDir() . '/error.' . date('Ymd') . '.log';
+    \Unilend\core\ErrorHandler::enable($errorLogfile);
+    $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
+}
 
 if ($bCacheFullPage) {
     require __DIR__ . '/append.php';

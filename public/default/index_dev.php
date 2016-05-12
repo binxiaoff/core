@@ -1,4 +1,8 @@
 <?php
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Debug\Debug;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 $loader = require __DIR__.'/../../app/autoload.php';
 include __DIR__ . '/../../core/controller.class.php';
 include __DIR__ . '/../../core/command.class.php';
@@ -24,20 +28,18 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-$oKernel = new AppKernel('dev', false);
+Debug::enable();
 
-$errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
+$oKernel = new AppKernel('dev', true);
 
 try {
-    Symfony\Component\HttpFoundation\Request::enableHttpMethodParameterOverride();
-    $request  = Symfony\Component\HttpFoundation\Request::createFromGlobals();
-    var_dump($request);die;
+    Request::enableHttpMethodParameterOverride();
+    $request  = Request::createFromGlobals();
     $response = $oKernel->handle($request);
     $response->send();
     $oKernel->terminate($request, $response);
 
-} catch (Symfony\Component\HttpKernel\Exception\NotFoundHttpException $exception) {
+} catch (NotFoundHttpException $exception) {
     $oKernel->boot();
     $errorLogfile = $oKernel->getLogDir() . '/error.' . date('Ymd') . '.log';
     \Unilend\core\ErrorHandler::enable($errorLogfile);

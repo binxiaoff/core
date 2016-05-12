@@ -3,11 +3,21 @@ imports:
 
 framework:
     secret: "%secret%"
+    router:
+        resource: "%kernel.root_dir%/config/routing.yml"
+        strict_requirements: ~
     default_locale:  "%locale%"
+    templating:
+        engines: ['twig']
     assets:
         base_urls:
             - "https://%router.request_context.host%"
 
+# Twig Configuration
+twig:
+    debug:            "%kernel.debug%"
+    strict_variables: "%kernel.debug%"
+    exception_controller:  UnilendFrontBundle:Compatibility:dispatch
 doctrine:
     dbal:
         connections:
@@ -56,7 +66,6 @@ monolog:
             path: info
             max_files: 10
             channels: [console]
-
 
 swiftmailer:
     transport: '%mailer_transport%'
