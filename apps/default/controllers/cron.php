@@ -5835,34 +5835,65 @@ class cronController extends bootstrap
             $this->transactions                    = $this->loadData('transactions');
             $this->lenders_accounts                = $this->loadData('lenders_accounts');
             $this->clients                         = $this->loadData('clients');
-            $this->wallets_lines                   = $this->loadData('wallets_lines');
-            $this->notifications                   = $this->loadData('notifications');
             $this->clients_gestion_mails_notif     = $this->loadData('clients_gestion_mails_notif');
-            $this->projects_status_history         = $this->loadData('projects_status_history');
             $this->clients_gestion_notifications   = $this->loadData('clients_gestion_notifications');
             $this->mails_text                      = $this->loadData('mails_text');
             $this->companies                       = $this->loadData('companies');
-            $this->loans                           = $this->loadData('loans');
             $loans                                 = $this->loadData('loans');
-            $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+            /** @var \transactions $transaction */
+            $transaction = $this->loadData('transactions');
+            /** @var \remboursement_anticipe_mail_a_envoyer $earlyRepaymentEmail */
+            $earlyRepaymentEmail = $this->loadData('remboursement_anticipe_mail_a_envoyer');
 
-            // recup des mails à envoyer pour les projets en ra en attente, 1 seul à la fois car traitement pouvant etre lourd
-            $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0', 'added ASC', '', 1);
-
-            $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+            $L_mail_ra_en_attente = $earlyRepaymentEmail->select('statut = 0', 'added ASC', '', 1);
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
 
-                // Tout se base sur cette variable !
-                $id_reception = $ra_email['id_reception'];
-
-                $this->receptions->get($id_reception);
+                $this->receptions->get($ra_email['id_reception']);
                 $this->projects->get($this->receptions->id_project);
                 $this->companies->get($this->projects->id_company, 'id_company');
+                $this->clients->get($this->companies->id_client_owner);
+                $transaction->get($this->projects->id_project . '" AND type_transaction = "' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'id_project');
 
                 $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
                 $sum_ech_restant     = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
+                $fundingStartDate    = new \DateTime($this->projects->date_publication_full);
+
+                $this->mails_text->get('emprunteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+
+                $keywords = array(
+                    'surl'               => $this->surl,
+                    'url'                => $this->furl,
+                    'sujet'              => htmlentities($this->mails_text->subject, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+                    'prenom'             => htmlentities($this->clients->prenom, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+                    'date_financement'   => $this->dates->formatDate($transaction->added, 'd/m/Y'),
+                    'raison_sociale'     => htmlentities($this->companies->name, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+                    'montant'            => $this->ficelle->formatNumber($this->projects->amount, 0),
+                    'duree'              => $this->projects->period,
+                    'duree_financement'  => $fundingStartDate->diff(new \DateTime($this->projects->date_retrait_full))->d,
+                    'nb_preteurs'        => count($L_preteur_on_projet),
+                    'date_remboursement' => $this->dates->formatDate($this->receptions->added, 'd/m/Y'),
+                    'annee'              => date('Y')
+                );
+
+                $dynamicVariables = $this->tnmp->constructionVariablesServeur($keywords);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $dynamicVariables));
+                $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $dynamicVariables)));
+                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $dynamicVariables)));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $keywords, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($this->clients->email));
+                    $this->email->addBCCRecipient($this->sDestinatairesDebug);
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+
+                $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
                 foreach ($L_preteur_on_projet as $preteur) {
                     $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $preteur['id_lender'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
@@ -5890,8 +5921,6 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                         $this->clients_gestion_mails_notif->create();
 
-                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
                             $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                             $this->clients_gestion_mails_notif->immediatement = 1;
@@ -5917,7 +5946,8 @@ class cronController extends bootstrap
                                 'lien_tw'              => $this->twitter,
                                 'annee'                => date('Y')
                             );
-                            $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
+
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
                             $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
@@ -5936,10 +5966,9 @@ class cronController extends bootstrap
                     }
                 }
 
-                $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                $remboursement_anticipe_mail_a_envoyer->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);
-                $remboursement_anticipe_mail_a_envoyer->statut = 1;
-                $remboursement_anticipe_mail_a_envoyer->update();
+                $earlyRepaymentEmail->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);
+                $earlyRepaymentEmail->statut = 1;
+                $earlyRepaymentEmail->update();
 
                 $this->oLogger->addRecord(ULogger::INFO, 'End email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
             }
