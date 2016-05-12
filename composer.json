@@ -6,8 +6,8 @@
   "autoload": {
     "psr-4": {
       "Unilend\\": "",
-      "Unilend\\Bridge\\": "src/Bridge",
-      "Unilend\\Bundle\\": "src/Bundle"
+      "Unilend\\Bridge\\": "src/Unilend/Bridge",
+      "Unilend\\Bundle\\": "src/Unilend/Bundle"
     },
     "classmap": [
       "app/AppKernel.php",
