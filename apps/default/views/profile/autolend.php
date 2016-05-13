@@ -50,12 +50,14 @@
             var autobidSwitch = $("#autobid-switch-1").val();
             if(autobidSwitch == 0) {
                 $("#lightbox-overlay").show().addClass("activating");
-                $("#lightbox-validation > button[name='cancel']").click(function() {
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").click(function() {
                     $("#lightbox-overlay").hide().removeClass("activating");
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
                 });
-                $("#lightbox-validation > button[name='confirm']").click(function() {
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").click(function() {
                     $("button[name='send-form-autobid-param-simple']").unbind().click();
                     $("#lightbox-overlay").hide().removeClass("activating");
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
                 });
            }
             else {
@@ -68,12 +70,14 @@
             var autobidSwitch = $("#autobid-switch-1").val();
             if(autobidSwitch == 0) {
                 $("#lightbox-overlay").show().addClass("activating");
-                $("#lightbox-validation > button[name='cancel']").click(function() {
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").click(function() {
                     $("#lightbox-overlay").hide().removeClass("activating");
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
                 });
-                $("#lightbox-validation > button[name='confirm']").click(function() {
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").click(function() {
                     validateExpert();
                     $("#lightbox-overlay").hide().removeClass("activating");
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
                 });
             }
             else {
@@ -85,11 +89,13 @@
         $("#autobid-switch-1").click(function() {
            if($(this).val() == 1) {
                $("#lightbox-overlay").show().addClass("disactivating");
-               $("#lightbox-validation > button[name='cancel']").click(function() {
+               $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").click(function() {
                    $("#lightbox-overlay").hide().removeClass("disactivating");
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").unbind();
                });
-               $("#lightbox-validation > button[name='confirm']").click(function() {
+               $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").click(function() {
                    $("#lightbox-overlay").hide().removeClass("disactivating");
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").unbind();
                    switchChange();
                });
            }
