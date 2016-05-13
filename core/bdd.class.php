@@ -36,7 +36,7 @@ class bdd
     public $ressource; // Contient la ressource si succès ou FALSE
     public $num_rows;
     public $affected_rows;
-    
+
     private static $instance;
 
     public function __construct($bdd_config, $bdd_option, $auto_connect = true)
@@ -245,16 +245,10 @@ class bdd
         }
     }
 
-    public function result($ressource = null, $row = null, $field = null)
+    public function result($ressource = null, $row = 0, $field = 0)
     {
         if ($ressource == null) {
             $ressource = $this->ressource;
-        }
-        if ($row == null) {
-            $row = 0;
-        }
-        if ($field == null) {
-            $field = 0;
         }
 
         $champ = @mysql_result($ressource, $row, $field);
