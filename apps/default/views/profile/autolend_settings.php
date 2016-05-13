@@ -31,20 +31,18 @@
     </div>
     <div class="autobid-param-form">
         <form action="<?= $this->lurl ?>/profile/autolend" method="post" enctype="multipart/form-data">
-            <div class="row position-relative">
+            <div class="row">
                 <label for=""><?= $this->lng['autobid']['settings-label-amount'] ?>
                     <span class="label-note"><?= $this->lng['autobid']['settings-example-amount'] ?></span>
                 </label>
                 <span id="autobid-amount-no-input"><?= (isset($this->aSettingsSubmitted)) ? $this->aSettingsSubmitted['amount'] : '' ?> €</span>
-                <div id="autobid-amount-container">
-                    <input type="text" name="autobid-amount" id="autobid-amount"
-                           value="<?= (isset($this->aSettingsSubmitted)) ? $this->aSettingsSubmitted['amount'] : '' ?>"
-                           class="field required<?= (isset($this->aErrors['amount'])) ? ' LV_invalid_field' : '' ?>"
-                           data-validators="Presence&amp;Numericality {minimum: <?= $this->iMinimumBidAmount ?>}"
-                           onkeyup="noDecimale(this.value,this.id);"
-                           style="display: none;"
-                        <?= (empty($this->aErrors)) ? 'disabled="disabled"' : '' ?>/>
-                </div>
+                <input type="text" name="autobid-amount" id="autobid-amount"
+                       value="<?= (isset($this->aSettingsSubmitted)) ? $this->aSettingsSubmitted['amount'] : '' ?>"
+                       class="field required<?= (isset($this->aErrors['amount'])) ? ' LV_invalid_field' : '' ?>"
+                       data-validators="Presence&amp;Numericality {minimum: <?= $this->iMinimumBidAmount ?>}"
+                       onkeyup="noDecimale(this.value,this.id);"
+                       style="display: none;"
+                    <?= (empty($this->aErrors)) ? 'disabled="disabled"' : '' ?>/>
             </div>
             <div id="novice-settings" class="autobid-param-form-simple" style="display:none">
                 <div id="rate-settings-novice" style="'display:none;">
@@ -176,7 +174,7 @@
             <button class="btn" style="display:none;" id="cancel_modification_settings_expert" onClick="window.location.reload()" >
                 <?= $this->lng['autobid']['cancel-setting-modification-button'] ?>
             </button>
-            <button class="btn" id="validate_settings_expert">
+            <button class="btn" id="validate_settings_expert" style="<?= (empty($this->aErrors)) ? 'display:none;' : '' ?>" >
                 <?= $this->lng['autobid']['settings-button-validate-settings'] ?>
             </button>
         </div>
