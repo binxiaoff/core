@@ -1990,6 +1990,8 @@ class dossiersController extends bootstrap
 
                     /** @var \Unilend\Service\TaxManager $taxManager */
                     $taxManager = $this->get('TaxManager');
+                    /** @var \lender_repayment $lenderRepayment */
+                    $lenderRepayment = $this->loadData('lender_repayment');
 
                     foreach ($lEcheances as $e) {
                         $montant                      += $e['montant'] / 100;
@@ -2009,10 +2011,17 @@ class dossiersController extends bootstrap
                             $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
                             $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
+                            $lenderRepayment->id_lender  = $e['id_lender'];
+                            $lenderRepayment->id_company = $this->projects->id_company;
+                            $lenderRepayment->amount     = $totalEAT;
+                            $lenderRepayment->create();
+
                             $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                            $this->echeanciers->status             = 1; // remboursé
-                            $this->echeanciers->status_email_remb  = 1; // remboursé
-                            $this->echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
+                            $this->echeanciers->capital_rembourse   = $this->echeanciers->capital;
+                            $this->echeanciers->interets_rembourses = $this->echeanciers->interets;
+                            $this->echeanciers->status              = \echeanciers::STATUS_REPAID;
+                            $this->echeanciers->status_email_remb   = 1;
+                            $this->echeanciers->date_echeance_reel  = date('Y-m-d H:i:s');
                             $this->echeanciers->update();
 
                             $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
@@ -2533,7 +2542,7 @@ class dossiersController extends bootstrap
                     }
 
                     // on met à jour toutes les echeances du preteur pour dire qu'elles sont remb
-                    $sql = 'UPDATE `echeanciers` SET `status`="1",`updated`=NOW(), `date_echeance_reel`=NOW(), `date_echeance_emprunteur_reel`=NOW(), status_email_remb = 1 WHERE id_project="' . $this->projects->id_project . '" AND status = 0';
+                    $sql = 'UPDATE `echeanciers` SET `status` = ' . \echeanciers::STATUS_REPAID . ',`updated`=NOW(), `date_echeance_reel`=NOW(), capital_rembourse = capital, `date_echeance_emprunteur_reel`=NOW(), status_email_remb = 1 WHERE id_project="' . $this->projects->id_project . '" AND status = ' . \echeanciers::STATUS_PENDING;
                     $this->bdd->query($sql);
 
                     // partie a retirer de bank unilend

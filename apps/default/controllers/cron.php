@@ -5134,8 +5134,6 @@ class cronController extends bootstrap
             $wallets_lines = $this->loadData('wallets_lines');
             /** @var \bank_unilend $bank_unilend */
             $bank_unilend = $this->loadData('bank_unilend');
-            /** @var \projects_remb $projects_remb */
-            $projects_remb = $this->loadData('projects_remb');
             /** @var \platform_account_unilend $oAccountUnilend */
             $oAccountUnilend = $this->loadData('platform_account_unilend');
 
@@ -5149,11 +5147,14 @@ class cronController extends bootstrap
             if ($timeDebut <= time() && $timeFin >= time()) {
                 /** @var \projects_remb_log $oRepaymentLog */
                 $oRepaymentLog = $this->loadData('projects_remb_log');
-
                 /** @var \projects_remb $oProjectRepayment */
                 $oProjectRepayment = $this->loadData('projects_remb');
+                /** @var \lender_repayment $lenderRepayment */
+                $lenderRepayment = $this->loadData('lender_repayment');
 
                 foreach ($oProjectRepayment->getProjectsToRepay(1) as $r) {
+                    $projects->get($r['id_project'], 'id_project');
+
                     $oRepaymentLog->id_project       = $r['id_project'];
                     $oRepaymentLog->ordre            = $r['ordre'];
                     $oRepaymentLog->debut            = date('Y-m-d H:i:s');
@@ -5172,64 +5173,66 @@ class cronController extends bootstrap
                     $Total_rembNet     = 0;
                     $lEcheances        = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
 
-                    if ($lEcheances != false) {
-                        $Total_etat   = 0;
-                        $nb_pret_remb = 0;
+                    $Total_etat   = 0;
+                    $nb_pret_remb = 0;
 
-                        foreach ($lEcheances as $e) {
-                            if ($transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
-                                $rembNet = $e['rembNet'];
-                                $etat    = $e['etat'];
+                    foreach ($lEcheances as $e) {
+                        if (false === $transactions->get($e['id_echeancier'], 'id_echeancier')) {
+                            $Total_rembNet += $e['rembNet'];
+                            $Total_etat    += $e['etat'];
+                            $nb_pret_remb   = $nb_pret_remb + 1;
 
-                                $Total_rembNet += $rembNet;
-                                $Total_etat += $etat;
-                                $nb_pret_remb = ($nb_pret_remb + 1);
+                            $lenders->get($e['id_lender'], 'id_lender_account');
 
-                                $lenders->get($e['id_lender'], 'id_lender_account');
+                            $lenderRepayment->id_lender  = $e['id_lender'];
+                            $lenderRepayment->id_company = $projects->id_company;
+                            $lenderRepayment->amount     = bcadd(bcmul($e['capital_net'], 100), bcmul($e['interets_net'], 100));
+                            $lenderRepayment->create();
 
-                                $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                                $echeanciers->status             = 1; // remboursé
-                                $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
-                                $echeanciers->update();
+                            $echeanciers->get($e['id_echeancier'], 'id_echeancier');
+                            $echeanciers->capital_rembourse   = $echeanciers->capital;
+                            $echeanciers->interets_rembourses = $echeanciers->interets;
+                            $echeanciers->status              = \echeanciers::STATUS_REPAID;
+                            $echeanciers->date_echeance_reel  = date('Y-m-d H:i:s');
+                            $echeanciers->update();
 
-                                $transactions->id_client        = $lenders->id_client_owner;
-                                $transactions->montant          = $rembNet * 100;
-                                $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
-                                $transactions->id_langue        = 'fr';
-                                $transactions->date_transaction = date('Y-m-d H:i:s');
-                                $transactions->status           = 1;
-                                $transactions->etat             = 1;
-                                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
-                                $transactions->create();
+                            $transactions->unsetData();
+                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->montant          = bcmul($e['capital_net'], 100);
+                            $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
+                            $transactions->id_langue        = 'fr';
+                            $transactions->date_transaction = date('Y-m-d H:i:s');
+                            $transactions->status           = 1;
+                            $transactions->etat             = 1;
+                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
+                            $transactions->create();
 
-                                $transactions->unsetData();
-                                $transactions->id_client        = $lenders->id_client_owner;
-                                $transactions->montant          = $rembNet * 100;
-                                $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
-                                $transactions->id_langue        = 'fr';
-                                $transactions->date_transaction = date('Y-m-d H:i:s');
-                                $transactions->status           = 1;
-                                $transactions->etat             = 1;
-                                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
-                                $transactions->create();
+                            $transactions->unsetData();
+                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->montant          = bcmul($e['interets_net'], 100);
+                            $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
+                            $transactions->id_langue        = 'fr';
+                            $transactions->date_transaction = date('Y-m-d H:i:s');
+                            $transactions->status           = 1;
+                            $transactions->etat             = 1;
+                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
+                            $transactions->create();
 
-                                $wallets_lines->id_lender                = $e['id_lender'];
-                                $wallets_lines->type_financial_operation = 40;
-                                $wallets_lines->id_transaction           = $transactions->id_transaction;
-                                $wallets_lines->status                   = 1; // non utilisé
-                                $wallets_lines->type                     = 2; // transaction virtuelle
-                                $wallets_lines->amount                   = $rembNet * 100;
-                                $wallets_lines->create();
-                            } // fin check transasction existante
-                        } // fin boucle echeances preteurs
-                    }
+                            $wallets_lines->id_lender                = $e['id_lender'];
+                            $wallets_lines->type_financial_operation = 40;
+                            $wallets_lines->id_transaction           = $transactions->id_transaction;
+                            $wallets_lines->status                   = 1; // non utilisé
+                            $wallets_lines->type                     = 2; // transaction virtuelle
+                            $wallets_lines->amount                   = bcadd(bcmul($e['capital_net'], 100), bcmul($e['interets_net'], 100));
+                            $wallets_lines->create();
+                        } // fin check transasction existante
+                    } // fin boucle echeances preteurs
 
                     if ($Total_rembNet > 0) {
                         $emprunteur = $this->loadData('clients');
 
-                        $projects->get($r['id_project'], 'id_project');
                         $companies->get($projects->id_company, 'id_company');
                         $emprunteur->get($companies->id_client_owner, 'id_client');
                         $echeanciers_emprunteur->get($r['id_project'], ' ordre = ' . $r['ordre'] . ' AND id_project');
