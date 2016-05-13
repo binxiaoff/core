@@ -51,13 +51,15 @@
             if(autobidSwitch == 0) {
                 $("#lightbox-overlay").show().addClass("activating");
                 $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").click(function() {
-                    $("#lightbox-overlay").hide().removeClass("activating");
                     $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay").hide().removeClass("activating");
                 });
                 $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").click(function() {
                     $("button[name='send-form-autobid-param-simple']").unbind().click();
-                    $("#lightbox-overlay").hide().removeClass("activating");
                     $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
+                    $("#lightbox-overlay").hide().removeClass("activating");
                 });
            }
             else {
@@ -71,13 +73,15 @@
             if(autobidSwitch == 0) {
                 $("#lightbox-overlay").show().addClass("activating");
                 $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").click(function() {
-                    $("#lightbox-overlay").hide().removeClass("activating");
                     $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay").hide().removeClass("activating");
                 });
                 $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").click(function() {
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
                     validateExpert();
                     $("#lightbox-overlay").hide().removeClass("activating");
-                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
                 });
             }
             else {
@@ -90,12 +94,14 @@
            if($(this).val() == 1) {
                $("#lightbox-overlay").show().addClass("disactivating");
                $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").click(function() {
-                   $("#lightbox-overlay").hide().removeClass("disactivating");
                    $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").unbind();
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").unbind();
+                   $("#lightbox-overlay").hide().removeClass("disactivating");
                });
                $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").click(function() {
-                   $("#lightbox-overlay").hide().removeClass("disactivating");
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").unbind();
                    $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").unbind();
+                   $("#lightbox-overlay").hide().removeClass("disactivating");
                    switchChange();
                });
            }
