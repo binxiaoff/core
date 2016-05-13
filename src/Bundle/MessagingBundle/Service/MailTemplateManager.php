@@ -27,7 +27,6 @@ class MailTemplateManager
     }
 
     /**
-     * @param int $iTemplateID
      * @param string $sType
      * @param string $sSender
      * @param string $sSenderEmail
@@ -36,7 +35,7 @@ class MailTemplateManager
      */
     public function addTemplate($sType, $sSender, $sSenderEmail, $sSubject, $sContent)
     {
-        /** @var \mail_templates_crud $oMailTemplate */
+        /** @var \mail_templates $oMailTemplate */
         $oMailTemplate               = $this->entityManager->getRepository('mail_templates');
         $oMailTemplate->type         = $sType;
         $oMailTemplate->sender_name  = $sSender;
@@ -60,11 +59,11 @@ class MailTemplateManager
     public function modifyTemplate($iTemplateID, $sType, $sSender, $sSenderEmail, $sSubject, $sContent)
     {
         /** @var \mail_templates $oMailTemplate */
-        $oMailTemplate               = $this->entityManager->getRepository('mail_templates');
+        $oMailTemplate = $this->entityManager->getRepository('mail_templates');
         $oMailTemplate->get($iTemplateID);
         if ($this->mailQueueManager->existsInMailQueue($iTemplateID)){
-            $this->archiveMailsTemplate($oMailTemplate);
-            $this->addMailsText($sType, $sSender, $sSenderEmail, $sSubject, $sContent);
+            $this->archiveTemplate($oMailTemplate);
+            $this->addTemplate($sType, $sSender, $sSenderEmail, $sSubject, $sContent);
         } else {
             $oMailTemplate->type         = $sType;
             $oMailTemplate->sender_name  = $sSender;
@@ -91,14 +90,7 @@ class MailTemplateManager
     {
         /** @var \mail_templates $oMailTemplate */
         $oMailTemplate  = $this->entityManager->getRepository('mail_templates');
-        $oStatement     = $oMailTemplate->getActiveMailTemplates();
-        $aTemplates     = array();
-
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aTemplates[] = $aRow;
-        }
-
-        return $aTemplates;
+        return $oMailTemplate->getActiveMailTemplates();
     }
 
 }

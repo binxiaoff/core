@@ -72,7 +72,14 @@ class mail_templates extends mail_templates_crud
     public function getActiveMailTemplates()
     {
         $sQuery = 'SELECT * FROM mail_templates WHERE status  = ' . self::STATUS_ACTIVE . ' ORDER BY type ASC';
-        return $this->bdd->executeQuery($sQuery);
+
+        $aTemplates     = array();
+        $oStatement     = $this->bdd->executeQuery($sQuery);
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aTemplates[] = $aRow;
+        }
+
+        return $aTemplates;
     }
 
 }

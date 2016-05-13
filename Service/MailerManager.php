@@ -620,7 +620,7 @@ class MailerManager
             '$tx'           => $oProject->target_rate,
             '$montant_pret' => $oProject->amount,
             '$montant'      => $iBidTotal,
-            '$sujetMail'    => htmlentities($this->oMailText->subject)
+            '$sujetMail'    => htmlentities($this->oMailTemplate->subject)
         );
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
