@@ -15,9 +15,9 @@ framework:
 
 # Twig Configuration
 twig:
-    debug:            "%kernel.debug%"
     strict_variables: "%kernel.debug%"
     exception_controller:  UnilendFrontBundle:Compatibility:dispatch
+
 doctrine:
     dbal:
         connections:
