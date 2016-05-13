@@ -18,6 +18,11 @@ twig:
     strict_variables: "%kernel.debug%"
     exception_controller:  UnilendFrontBundle:Compatibility:dispatch
 
+assetic:
+    debug:          '%kernel.debug%'
+    use_controller: '%kernel.debug%'
+    write_to: '%kernel.root_dir%/../public'
+
 doctrine:
     dbal:
         connections:
