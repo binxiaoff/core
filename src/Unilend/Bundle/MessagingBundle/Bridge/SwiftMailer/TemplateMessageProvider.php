@@ -7,55 +7,70 @@ use Unilend\Service\Simulator\EntityManager;
 class TemplateMessageProvider
 {
     /** @var EntityManager */
-    private $oEntityManager;
-    private $sTemplateMessageClass;
+    private $entityManager;
+    private $templateMessageClass;
 
-    public function __construct(EntityManager $oEntityManager, $sTemplateMessageClass)
+    /**
+     * TemplateMessageProvider constructor.
+     *
+     * @param EntityManager $entityManager
+     * @param string        $templateMessageClass
+     * @param string        $defaultLanguage
+     */
+    public function __construct(EntityManager $entityManager, $templateMessageClass, $defaultLanguage)
     {
-        $this->oEntityManager        = $oEntityManager;
-        $this->sTemplateMessageClass = $sTemplateMessageClass;
-    }
-
-    public function newMessage($sTemplate, $sLanguage, $aVariables = null, $bWrapVariables = true)
-    {
-        /** @var \mails_text $oMailTemplate */
-        $oMailTemplate = $this->oEntityManager->getRepository('mails_text');
-        if (false === $oMailTemplate->get($sTemplate, 'lang = "' . $sLanguage . '" AND type')) {
-            throw new \Exception('The mail template ' . $sTemplate . ' for the language ' . $sLanguage . 'is not found.');
-        }
-
-        if ($bWrapVariables) {
-            $aVariables = $this->wrapVariables($aVariables);
-        }
-
-        $sSubject  = strtr($oMailTemplate->subject, $aVariables);
-        $sBody     = strtr($oMailTemplate->content, $aVariables);
-        $sFromName = strtr($oMailTemplate->exp_name, $aVariables);
-
-        /** @var TemplateMessage $oMessage */
-        $oMessage = new $this->sTemplateMessageClass($oMailTemplate->id_textemail);
-        $oMessage->setVariables($aVariables)
-                 ->setFrom($oMailTemplate->exp_email, $sFromName)
-                 ->setSubject($sSubject)
-                 ->setBody($sBody, 'text/html');
-
-        return $oMessage;
+        $this->entityManager        = $entityManager;
+        $this->templateMessageClass = $templateMessageClass;
+        $this->defaultLanguage      = $defaultLanguage;
     }
 
     /**
-     * @param        $aVariables
-     * @param string $sPrefix
-     * @param string $sSuffix
+     * @param string $template
+     * @param array  $variables
+     * @param bool   $wrapVariables
+     *
+     * @return TemplateMessage
+     */
+    public function newMessage($template, $variables = null, $wrapVariables = true)
+    {
+        /** @var \mail_templates $mailTemplate */
+        $mailTemplate = $this->entityManager->getRepository('mail_templates');
+        if (false === $mailTemplate->get($template, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->defaultLanguage . '" AND type')) {
+            throw new \InvalidArgumentException('The mail template ' . $template . ' for the language ' . $this->defaultLanguage . 'is not found.');
+        }
+
+        if ($wrapVariables) {
+            $variables = $this->wrapVariables($variables);
+        }
+
+        $subject  = strtr($mailTemplate->subject, $variables);
+        $body     = strtr($mailTemplate->content, $variables);
+        $fromName = strtr($mailTemplate->sender_name, $variables);
+
+        /** @var TemplateMessage $message */
+        $message = new $this->templateMessageClass($mailTemplate->id_mail_template);
+        $message->setVariables($variables)
+                ->setFrom($mailTemplate->sender_email, $fromName)
+                ->setSubject($subject)
+                ->setBody($body, 'text/html');
+
+        return $message;
+    }
+
+    /**
+     * @param array  $variables
+     * @param string $prefix
+     * @param string $suffix
      *
      * @return mixed
      */
-    private function wrapVariables($aVariables, $sPrefix = '[EMV DYN]', $sSuffix = '[EMV /DYN]')
+    private function wrapVariables($variables, $prefix = '[EMV DYN]', $suffix = '[EMV /DYN]')
     {
-        $aVariablesWrapped = [];
-        foreach ($aVariables as $key => $value) {
-            $aVariablesWrapped[$sPrefix . $key . $sSuffix] = $value;
+        $wrappedVars = [];
+        foreach ($variables as $key => $value) {
+            $wrappedVars[$prefix . $key . $suffix] = $value;
         }
 
-        return $aVariablesWrapped;
+        return $wrappedVars;
     }
 }

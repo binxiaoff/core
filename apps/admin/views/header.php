@@ -71,7 +71,7 @@
                 <a href="<?= $this->lurl ?>/settings" title="Configuration"<?= ($this->menu_admin == 'configuration' ? ' class="active"' : '') ?>>Configuration</a>
                 <ul class="sous_menu">
                     <li><a href="<?= $this->lurl ?>/settings" title="Paramètres">Paramètres</a></li>
-                    <li><a href="<?= $this->lurl ?>/mails/logs" title="Historique des Mails">Historique des Mails</a></li>
+                    <li><a href="<?= $this->lurl ?>/mails/emailhistory" title="Historique des Mails">Historique des Mails</a></li>
                     <li><a href="<?= $this->lurl ?>/users/logs" title="Historique des connexions">Logs connexions</a></li>
                     <li><a href="<?= $this->lurl ?>/routages" title="Routage">Routage</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires" title="Campagnes">Campagnes</a></li>

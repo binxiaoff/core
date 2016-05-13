@@ -148,6 +148,7 @@ class espace_emprunteurController extends bootstrap
             $_SESSION['forms']['contact-emprunteur']['errors']['message'] = true;
         }
 
+        $sFilePath = '';
         if (isset($_FILES) && empty($_FILES) === false) {
             $oUpload = new \upload;
             $oUpload->setUploadDir($this->path, 'protected/contact/');
@@ -161,7 +162,6 @@ class espace_emprunteurController extends bootstrap
             die;
         } else {
             $this->contactEmailClient();
-            $this->mails_text->get('notification-demande-de-contact-emprunteur', 'lang = "' . $this->language . '" AND type');
             $this->settings->get('Adresse emprunteur', 'type');
 
             $aReplacements = array(
@@ -176,17 +176,15 @@ class espace_emprunteurController extends bootstrap
                 '[SURL]'      => $this->surl
             );
 
-            $this->email = $this->loadLib('email', array());
-            $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-            $this->email->addRecipient(trim($this->settings->value));
-            $this->email->setReplyTo(utf8_decode($_POST['email']), utf8_decode($_POST['nom']) . ' ' . utf8_decode($_POST['prenom']));
-            $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-            $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
-
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $aReplacements, false);
+            $message->setTo(trim($this->settings->value));
             if (empty($sFilePath) === false) {
-                $this->email->attach($sFilePath);
+                $message->attach(Swift_Attachment::fromPath($sFilePath));
             }
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+
             @unlink($sFilePath);
             $this->bSuccessMessage = true;
         }
@@ -432,12 +430,12 @@ class espace_emprunteurController extends bootstrap
 
     private function contactEmailClient()
     {
-        $this->mails_text->get('demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-        $this->settings->get('Facebook', 'type');
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
 
-        $this->settings->get('Twitter', 'type');
+        $oSettings->get('Twitter', 'type');
         $sTwitterURL = $this->settings->value;
 
         $aVariables = array(
@@ -449,31 +447,11 @@ class espace_emprunteurController extends bootstrap
             'lien_tw'  => $sTwitterURL
         );
 
-        $this->email = $this->loadLib('email', array());
-        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-        $sRecipient = $_POST['email'];
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP(
-                $this->email,
-                $this->mails_filer,
-                $this->mails_text->id_textemail,
-                $sRecipient,
-                $aNMPResponse);
-            $this->tnmp->sendMailNMP(
-                $aNMPResponse,
-                $aVariables,
-                $this->mails_text->nmp_secure,
-                $this->mails_text->id_nmp,
-                $this->mails_text->nmp_unique,
-                $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $aVariables);
+        $message->setTo($_POST['email']);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     public function _getCSVWithLenderDetails()

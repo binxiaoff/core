@@ -10,9 +10,6 @@ class ProjectManager
     /** @var NotificationManager */
     private $oNotificationManager;
 
-    /** @var \email */
-    private $oEmail;
-
     /** @var \ficelle */
     private $oFicelle;
 
@@ -21,9 +18,6 @@ class ProjectManager
 
     /** @var \dates */
     private $oDate;
-
-    /** @var \tnmp */
-    private $oTNMP;
 
     /** @var ULogger */
     private $oLogger;
@@ -45,7 +39,7 @@ class ProjectManager
 
     /** @var \jours_ouvres */
     private $oWorkingDay;
-    
+
     /** @var EntityManager  */
     private $oEntityManager;
 
@@ -61,11 +55,6 @@ class ProjectManager
         $this->oMailerManager          = $oMailerManager;
         $this->oLenderManager          = $oLenderManager;
 
-        $this->oNMP       = $this->oEntityManager->getRepository('nmp');
-        $this->oNMPDesabo = $this->oEntityManager->getRepository('nmp_desabo');
-
-        $this->oTNMP       = Loader::loadLib('tnmp', array($this->oNMP, $this->oNMPDesabo, $this->aConfig['env']));
-        $this->oEmail      = Loader::loadLib('email');
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
         $this->oWorkingDay = Loader::loadLib('jours_ouvres');

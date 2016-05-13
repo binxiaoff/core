@@ -7,7 +7,7 @@ parameters:
     database_password:              ROOTPASSWORD
 
     secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
-    locale:                         fr
+    locale:                         fr_FR
 
     server1.memcache_host:          127.0.0.1
     server1.memcache_port:          11211
