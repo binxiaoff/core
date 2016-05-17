@@ -51,7 +51,7 @@ class MailerManager
         $this->mailer          = $mailer;
 
         $this->oSettings      = $this->oEntityManager->getRepository('settings');
-        $this->oMailTemplate  = $this->oEntityManager->getRepository('mail_template');
+        $this->oMailTemplate  = $this->oEntityManager->getRepository('mail_templates');
 
         $this->oFicelle    = Loader::loadLib('ficelle');
         $this->oDate       = Loader::loadLib('dates');
