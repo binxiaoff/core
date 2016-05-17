@@ -1280,20 +1280,20 @@ class statsController extends bootstrap
             $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
 
             if (isset($_POST['queryOptions']) && 'allLines' == $_POST['queryOptions']) {
-                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'), $bGroupBySiren = false);
+                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart, $oDateTimeEnd, false);
             }
             if (isset($_POST['queryOptions']) && in_array($_POST['queryOptions'], array(
                     'groupBySirenWithDetails',
                     'groupBySiren'
                 ))
             ) {
-                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'), $bGroupBySiren = true);
+                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart, $oDateTimeEnd, true);
 
                 if ('groupBySirenWithDetails' == $_POST['queryOptions']) {
                     foreach ($this->aBorrowers as $iKey => $aBorrower) {
                         if ($aBorrower['countSiren'] > 1) {
-                            $this->aBorrowers[$iKey]['firstEntrySource'] = $oClient->getFirstSourceForSiren($aBorrower['siren'], $oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'));
-                            $this->aBorrowers[$iKey]['lastEntrySource']  = $oClient->getLastSourceForSiren($aBorrower['siren'], $oDateTimeStart->format('Y-m-d'), $oDateTimeEnd->format('Y-m-d'));
+                            $this->aBorrowers[$iKey]['firstEntrySource'] = $oClient->getFirstSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
+                            $this->aBorrowers[$iKey]['lastEntrySource']  = $oClient->getLastSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
                             /** @var \projects_status $oProjectStatus */
                             $oProjectStatus = $this->loadData('projects_status');
                             $oProjectStatus->getLastStatut($aBorrower['id_project']);
