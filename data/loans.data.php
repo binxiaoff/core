@@ -25,7 +25,6 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-use Unilend\librairies\Cache;
 
 class loans extends loans_crud
 {
@@ -362,6 +361,10 @@ class loans extends loans_crud
         );
     }
 
+    /**
+     * @param null $iProjectId
+     * @return bool|int
+     */
     public function getMonthNb($iProjectId = null)
     {
         if (null === $iProjectId) {
@@ -369,17 +372,20 @@ class loans extends loans_crud
         }
 
         if ($iProjectId) {
-            $oCache  = Cache::getInstance();
-            $sKey    = $oCache->makeKey('loans', 'getMonthNb', $iProjectId);
-            $mRecord = $oCache->get($sKey);
+            $sQuery = 'SELECT period FROM projects WHERE id_project = :iProjectId';
 
-            if (!$mRecord) {
-                $sQuery  = 'SELECT period FROM projects WHERE id_project = ' . $iProjectId;
-                $rQuery  = $this->bdd->query($sQuery);
-                $mRecord = (int)$this->bdd->result($rQuery, 0, 0);
-                $oCache->set($sKey, $mRecord);
+            try {
+                $result = $this->bdd->executeQuery($sQuery, array('iProjectId' => $iProjectId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetchAll(PDO::FETCH_ASSOC);
+
+                if (empty($result)) {
+                    return false;
+                }
+            } catch (\Doctrine\DBAL\DBALException $ex) {
+                return false;
             }
-            return $mRecord;
+
+            return (int)$result[0]['period'];
         }
         return false;
     }

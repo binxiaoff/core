@@ -26,8 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\Cache;
-
 class bids extends bids_crud
 {
     const STATUS_BID_PENDING                  = 0;
@@ -222,46 +220,44 @@ class bids extends bids_crud
 
     public function getAcceptationPossibilityRounded()
     {
-        $oCache      = Cache::getInstance();
-        $sKey        = $oCache->makeKey('bids_getAcceptationPossibilityRounded');
-        $mPercentage = $oCache->get($sKey);
-
-        if (false === $mPercentage) {
-            $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
+        $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
                         FROM bids b
                         INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
                         INNER JOIN projects p ON p.id_project = b.id_project
                         INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
                         INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
                         INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-                        WHERE ps.status >= ' . \projects_status::FUNDE . '
-                        AND ps.status != ' . \projects_status::FUNDING_KO . ' GROUP BY b.rate ORDER BY b.rate DESC';
-            $rQuery  = $this->bdd->query($sQuery);
-            $aResult = array();
-            $iTotal = 0;
-            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-                $aResult[] = $aRow;
-                $iTotal += $aRow['count_bid'];
-            }
+                        WHERE ps.status >= :iFunded
+                        AND ps.status != :iFundingKo GROUP BY b.rate ORDER BY b.rate DESC';
+        try {
+            $result = $this->bdd->executeQuery($sQuery, array('iFunded' => \projects_status::FUNDE, 'iFundingKo' => \projects_status::FUNDING_KO), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                ->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Doctrine\DBAL\DBALException $ex) {
+            return false;
+        }
+        $iTotal = 0;
 
-            $mPercentage    = array();
-            $iSubTotal = 0;
-            foreach ($aResult as $aRate) {
-                $iSubTotal += $aRate['count_bid'];
-                $sRate = (string) number_format($aRate['rate'], 1);
-                $mPercentage[$sRate] = ($iSubTotal / $iTotal) * 100;
-                if ($mPercentage[$sRate] < 1) {
-                    $mPercentage[$sRate] = 1;
-                } elseif ($mPercentage[$sRate] > 99) {
-                    $mPercentage[$sRate] =  99;
-                } else {
-                    $mPercentage[$sRate] = (int) $mPercentage[$sRate];
-                }
-            }
-            $oCache->set($sKey, $mPercentage);
+        foreach ($result as $aRow) {
+            $iTotal += $aRow['count_bid'];
         }
 
-        return $mPercentage;
+        $aPercentage = array();
+        $iSubTotal   = 0;
+
+        foreach ($result as $aRate) {
+            $iSubTotal += $aRate['count_bid'];
+            $sRate               = (string) number_format($aRate['rate'], 1);
+            $aPercentage[$sRate] = ($iSubTotal / $iTotal) * 100;
+
+            if ($aPercentage[$sRate] < 1) {
+                $aPercentage[$sRate] = 1;
+            } elseif ($aPercentage[$sRate] > 99) {
+                $aPercentage[$sRate] = 99;
+            } else {
+                $aPercentage[$sRate] = (int) $aPercentage[$sRate];
+            }
+        }
+        return $aPercentage;
     }
 
     public function shuffleAutoBidOrder($iProjectId)
@@ -280,7 +276,7 @@ class bids extends bids_crud
         $aBidsByRate = array();
         if ($iProjectId) {
             $sQuery = ' SELECT rate, SUM(amount / 100) as amount_total, SUM(IF(status = 2, 0, amount / 100))  as amount_active, count(*) as nb_bids
-                    FROM bids 
+                    FROM bids
                     WHERE id_project = ' . $iProjectId . '
                     GROUP BY rate ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
