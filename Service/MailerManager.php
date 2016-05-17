@@ -1043,11 +1043,11 @@ class MailerManager
     {
         /** @var \companies $oCompanies */
         $oCompanies = Loader::loadData('companies');
+        $oCompanies->get($oProject->id_company);
 
         /** @var \clients $oClients */
         $oClients = Loader::loadData('clients');
 
-        $oCompanies->get($oProject->id_company);
         $this->oMailText->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
 
         if (false === empty($oCompanies->prenom_dirigeant) && false === empty($oCompanies->email_dirigeant)) {
