@@ -1,6 +1,5 @@
 <?php
-namespace Unilend\Service\Event;
-
+namespace Unilend\Bundle\CommandBundle\Event;
 
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Console\Event\ConsoleCommandEvent;

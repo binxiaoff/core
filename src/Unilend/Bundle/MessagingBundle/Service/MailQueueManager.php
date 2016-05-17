@@ -42,10 +42,11 @@ class MailQueueManager
     {
         /** @var \mail_queue $oMailQueue */
         $oMailQueue                       = $this->oEntityManager->getRepository('mail_queue');
-        $oMailQueue->id_mail_text         = $oMessage->getTemplateId();
+        $oMailQueue->id_mail_template     = $oMessage->getTemplateId();
         $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
         $aRecipients                      = array_keys($oMessage->getTo());
         $recipient                        = array_shift($aRecipients);
+        /** @var \clients $client */
         $client                           = $this->oEntityManager->getRepository('clients');
         // try to find client id
         if ($client->get($recipient, 'email')) {
@@ -69,13 +70,13 @@ class MailQueueManager
      */
     public function getMessage(\mail_queue $oEmail)
     {
-        /** @var \mails_text $oMailTemplate */
-        $oMailTemplate = $this->oEntityManager->getRepository('mails_text');
-        if (false === $oMailTemplate->get($oEmail->id_mail_text)) {
+        /** @var \mail_templates $oMailTemplate */
+        $oMailTemplate = $this->oEntityManager->getRepository('mail_templates');
+        if (false === $oMailTemplate->get($oEmail->id_mail_template)) {
             return false;
         }
         /** @var TemplateMessage $oMessage */
-        $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, $oMailTemplate->lang, json_decode($oEmail->serialized_variables, true), false);
+        $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
         $oMessage->addTo($oEmail->recipient);
         return $oMessage;
     }
@@ -105,4 +106,35 @@ class MailQueueManager
 
         return $aEmails;
     }
+
+    /**
+     * @param int|null $iClientId
+     * @param string|null $sFrom
+     * @param string|null $sTo
+     * @param string|null $sSubject
+     * @param \DateTime|null $oDateStart
+     * @param \DateTime|null $oDateEnd
+     * @param int|null $iLimit
+     *
+     * @return array
+     */
+    public function searchSentEmails($iClientId = null, $sFrom = null, $sTo = null, $sSubject = null, \DateTime $oDateStart = null, \DateTime $oDateEnd = null, $iLimit = null)
+    {
+        /** @var \mail_queue $oMailQueue */
+        $oMailQueue = $this->oEntityManager->getRepository('mail_queue');
+        return $oMailQueue->searchSentEmails($iClientId, $sFrom, $sTo, $sSubject, $oDateStart, $oDateEnd, $iLimit);
+    }
+
+    /**
+     * @param int $iTemplateID
+     *
+     * @return bool
+     */
+    public function existsInMailQueue($iTemplateID)
+    {
+        /** @var \mail_queue $oMailQueue */
+        $oMailQueue   = $this->oEntityManager->getRepository('mail_queue');
+        return $oMailQueue->exist($iTemplateID, 'id_mail_template');
+    }
+
 }

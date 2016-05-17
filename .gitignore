@@ -23,7 +23,6 @@ tmp/
 public/admin/.htaccess
 public/default/var
 public/default/.htaccess
-config.php
 data/crud/*
 route.php
 *.rej

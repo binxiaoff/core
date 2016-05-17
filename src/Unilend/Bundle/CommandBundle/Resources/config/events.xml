@@ -4,12 +4,12 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <service id="unilend.event.console.listener.start" class="Unilend\Service\Event\ConsoleEventListener">
+        <service id="unilend.event.console.listener.start" class="Unilend\Bundle\CommandBundle\Event\ConsoleEventListener">
             <tag name="kernel.event_listener" event="console.command" method="onCommandStart"/>
             <argument type="service" id="monolog.logger.console"/>
         </service>
 
-        <service id="unilend.event.console.listener.end" class="Unilend\Service\Event\ConsoleEventListener">
+        <service id="unilend.event.console.listener.end" class="Unilend\Bundle\CommandBundle\Event\ConsoleEventListener">
             <tag name="kernel.event_listener" event="console.terminate" method="onCommandEnd"/>
             <argument type="service" id="monolog.logger.console"/>
         </service>

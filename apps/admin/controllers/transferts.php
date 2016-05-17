@@ -233,6 +233,7 @@ class transfertsController extends bootstrap
         $this->transactions                      = $this->loadData('transactions');
         $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
         $this->bank_unilend                      = $this->loadData('bank_unilend');
+        $this->settings                          = $this->loadData('settings');
 
         $this->settings->get('Recouvrement - commission ht', 'type');
         $commission_ht = $this->settings->value;
@@ -677,6 +678,7 @@ class transfertsController extends bootstrap
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->loadData('clients_gestion_type_notif'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
         $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
+        $this->setting = $this->loadData('settings');
 
         if (
             isset($_POST['id_client'], $_POST['id_reception'], $_SESSION['controlDoubleAttr'])
@@ -746,8 +748,6 @@ class transfertsController extends bootstrap
                 $this->clients_gestion_mails_notif->immediatement = 1;
                 $this->clients_gestion_mails_notif->update();
 
-                $this->mails_text->get('preteur-alimentation-manu', 'lang = "' . $this->language . '" AND type');
-
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
 
@@ -767,24 +767,11 @@ class transfertsController extends bootstrap
                     'lien_tw'         => $lien_tw
                 );
 
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteurs->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($preteurs->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $varMail);
+                $message->setTo($preteurs->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
             }
 
             echo $receptions->id_client;
@@ -979,6 +966,7 @@ class transfertsController extends bootstrap
         $oWalletsLines           = $this->loadData('wallets_lines');
         $oBankUnilend            = $this->loadData('bank_unilend');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
+        $oSettings               = $this->loadData('settings');
         //load for use of constants
         $this->loadData('transactions_types');
         $this->loadData('clients_status');
@@ -989,8 +977,8 @@ class transfertsController extends bootstrap
         }
         $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
 
-        $this->settings->get('Offre de bienvenue motif', 'type');
-        $sWelcomeOfferMotive = $this->settings->value;
+        $oSettings->get('Offre de bienvenue motif', 'type');
+        $sWelcomeOfferMotive = $oSettings->value;
 
         unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
@@ -1081,14 +1069,14 @@ class transfertsController extends bootstrap
                 $oBankUnilend->type                              = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                 $oBankUnilend->create();
 
-                $oMailsText = $this->loadData('mails_text');
-                $oMailsText->get('offre-de-bienvenue', 'lang = "' . $this->language . '" AND type');
+                $oMailTemplate = $this->loadData('mail_templates');
+                $oMailTemplate->get('offre-de-bienvenue', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
-                $this->settings->get('Facebook', 'type');
-                $sFacebook = $this->settings->value;
+                $oSettings->get('Facebook', 'type');
+                $sFacebook = $oSettings->value;
 
-                $this->settings->get('Twitter', 'type');
-                $sTwitter = $this->settings->value;
+                $oSettings->get('Twitter', 'type');
+                $sTwitter = $oSettings->value;
 
                 $aVariables = array(
                     'surl'            => $this->surl,
@@ -1100,18 +1088,11 @@ class transfertsController extends bootstrap
                     'lien_tw'         => $sTwitter
                 );
 
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-                $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
-                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
-                }
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('offre-de-bienvenue', $aVariables);
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
             }
         }
     }

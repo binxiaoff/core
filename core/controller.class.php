@@ -1,7 +1,8 @@
 <?php
-use Unilend\core\ContainerAware;
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-abstract class Controller extends ContainerAware
+abstract class Controller implements ContainerAwareInterface
 {
     var $Command;
     var $Config;
@@ -18,6 +19,12 @@ abstract class Controller extends ContainerAware
     var $view;
     var $included_js;
     var $included_css;
+    /**
+     * @var ContainerInterface
+     *
+     * @api
+     */
+    protected $container;
 
     public $current_template = '';
 
@@ -70,6 +77,18 @@ abstract class Controller extends ContainerAware
             //unset ca marche pas, mais ca oui
             $_SESSION = array();
         }
+    }
+
+    /**
+     * Sets the Container associated with this Controller.
+     *
+     * @param ContainerInterface $container A ContainerInterface instance
+     *
+     * @api
+     */
+    public function setContainer(ContainerInterface $container = null)
+    {
+        $this->container = $container;
     }
 
     public function _default()

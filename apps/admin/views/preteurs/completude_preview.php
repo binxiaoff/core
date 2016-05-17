@@ -3,13 +3,13 @@
 	<form action="<?=$this->lurl?>/preteurs/edit_preteur/<?=$this->lenders_accounts->id_lender_account?>" method="post">
     <table class="formMail">
         <tr>
-            <th>From : "<?=$this->mails_text->exp_name?>" <?=$this->mails_text->exp_email?></th>
+            <th>From : "<?=$this->mail_template->sender_name?>" <?=$this->mail_template->sender_email?></th>
         </tr>
         <tr>
             <th>To : <?=$this->clients->email?></th>
         </tr>
         <tr>
-            <th>Sujet : <?=$this->mails_text->subject?></th>
+            <th>Sujet : <?=$this->mail_template->subject?></th>
         </tr>
         <tr>
             <td><iframe src="<?=$this->lurl?>/preteurs/completude_preview_iframe/<?=$this->params[0]?>" width="760px" height="400px"></iframe></td>
@@ -20,7 +20,7 @@
         		<input type="submit" value="Envoyer l'email" title="Envoyer l'email" name="envoyer" id="envoyer" class="btn" />
         	</td>
         </tr>
-        
-    </table> 
+
+    </table>
     </form>
 </div>

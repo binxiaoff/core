@@ -101,26 +101,12 @@ class cronController extends bootstrap
         die;
     }
 
-    public function _queueNMP()
-    {
-        if ($this->startCron('queueNMP', 10)) {
-            if ($this->Config['env'] === 'prod') {
-                $this->tnmp->processQueue();
-            }
-            $this->stopCron();
-        }
-    }
-
     public function _mail_echeance_emprunteur()
     {
         if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
             /** @var \echeanciers_emprunteur $oPaymentSchedule */
-            $oPaymentSchedule = $this->loadData('echeanciers_emprunteur');
-
-            $this->mails_text->get('mail-echeance-emprunteur', 'lang = "' . $this->language . '" AND type');
-
+            $oPaymentSchedule    = $this->loadData('echeanciers_emprunteur');
             $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
-
             /** @var \prelevements $oDirectDebit */
             $oDirectDebit = $this->loadData('prelevements');
 
@@ -157,23 +143,11 @@ class cronController extends bootstrap
                         'lien_tw'            => $this->twitter
                     );
 
-                    $aVars        = $this->tnmp->constructionVariablesServeur($aMail);
-                    $sMailSubject = strtr(utf8_decode($this->mails_text->subject), $aVars);
-                    $sMailBody    = strtr(utf8_decode($this->mails_text->content), $aVars);
-                    $sSender      = strtr(utf8_decode($this->mails_text->exp_name), $aVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $sSender);
-                    $this->email->setSubject(stripslashes($sMailSubject));
-                    $this->email->setHTMLBody(stripslashes($sMailBody));
-
-                    if ($this->Config['env'] == 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sMailClient, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($sMailClient));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $aMail);
+                    $message->setTo($sMailClient);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             }
 
@@ -395,7 +369,7 @@ class cronController extends bootstrap
                             //**************************************//
                             //*** ENVOI DU MAIL PROBLEME PRETEUR ***//
                             //**************************************//
-                            $this->mails_text->get('preteur-erreur-remboursement', 'lang = "' . $this->language . '" AND type');
+                            $this->mail_template->get('preteur-erreur-remboursement', 'lang = "' . $this->language . '" AND type');
 
                             $varMail = array(
                                 'surl'              => $this->surl,
@@ -413,7 +387,7 @@ class cronController extends bootstrap
                             //******************************************//
                             //*** ENVOI DU MAIL RECOUVREMENT PRETEUR ***//
                             //******************************************//
-                            $this->mails_text->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
+                            $this->mail_template->get('preteur-dossier-recouvrement', 'lang = "' . $this->language . '" AND type');
 
                             $varMail = array(
                                 'surl'             => $this->surl,
@@ -1160,7 +1134,7 @@ class cronController extends bootstrap
         $ladatePlus3J  = date('Y-m-d H', $ladatePlus3J);
         $ladatePlus7J  = date('Y-m-d H', $ladatePlus7J);
 
-        $this->mails_text->get('preteur-relance-paiement-inscription', 'lang = "' . $this->language . '" AND type');
+        $this->mail_template->get('preteur-relance-paiement-inscription', 'lang = "' . $this->language . '" AND type');
 
         foreach ($lLenderNok as $l) {
             $this->clients->get($l['id_client_owner'], 'id_client');
@@ -1188,22 +1162,22 @@ class cronController extends bootstrap
 
                 $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
                 $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                $this->email->setFrom($this->mail_template->exp_email, $exp_name);
                 $this->email->setSubject(stripslashes($sujetMail));
                 $this->email->setHTMLBody(stripslashes($texteMail));
 
                 if ($this->clients->status == 1) {
                     if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, $this->clients->email, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
                     } else {
                         $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
                     }
                 }
             }
@@ -1456,36 +1430,20 @@ class cronController extends bootstrap
 
                 // Si a 10h on a pas encore de fichier bah on lance un mail notif
                 if ($ladate >= $NotifHeure && $ladate <= $NotifHeurefin) {
-                    //************************************//
-                    //*** ENVOI DU MAIL ETAT QUOTIDIEN ***//
-                    //************************************//
-                    // destinataire
-                    $this->settings->get('Adresse notification aucun virement', 'type');
-                    $destinataire = $this->settings->value;
+                    $oSettings = $this->loadData('settings');
+                    $oSettings->get('Adresse notification aucun virement', 'type');
+                    $destinataire = $oSettings->value;
 
-                    $this->mails_text->get('notification-aucun-virement', 'lang = "' . $this->language . '" AND type');
+                    $varMail = array(
+                        '$surl' => $this->surl,
+                        '$url'  => $this->lurl
+                    );
 
-                    $surl = $this->surl;
-                    $url  = $this->lurl;
-
-                    $sujetMail = $this->mails_text->subject;
-                    eval("\$sujetMail = \"$sujetMail\";");
-
-                    $texteMail = $this->mails_text->content;
-                    eval("\$texteMail = \"$texteMail\";");
-
-                    $exp_name = $this->mails_text->exp_name;
-                    eval("\$exp_name = \"$exp_name\";");
-
-                    $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                    $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->addRecipient(trim($destinataire));
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                    $this->email->setHTMLBody($texteMail);
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-aucun-virement', $varMail, false);
+                    $message->setTo($destinataire);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             } else {
                 // lecture du fichier
@@ -1680,29 +1638,24 @@ class cronController extends bootstrap
                                     $bank_unilend->status         = 0; // chez unilend
                                     $bank_unilend->create();
 
-                                    $this->settings->get('Adresse notification nouveau remboursement anticipe', 'type');
-                                    $destinataire = $this->settings->value;
+                                    $oSettings = $this->loadData('settings');
+                                    $oSettings->get('Adresse notification nouveau remboursement anticipe', 'type');
+                                    $destinataire = $oSettings->value;
 
-                                    $this->mails_text->get('notification-nouveau-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+                                    $varMail = array(
+                                        '$surl'       => $this->surl,
+                                        '$url'        => $this->lurl,
+                                        '$id_projet'  => $this->projects->id_project,
+                                        '$montant'    => $transactions->montant / 100,
+                                        '$nom_projet' => $this->projects->title
+                                    );
 
-                                    $surl       = $this->surl;
-                                    $url        = $this->lurl;
-                                    $id_projet  = $this->projects->id_project;
-                                    $montant    = $transactions->montant / 100;
-                                    $nom_projet = $this->projects->title;
+                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-nouveau-remboursement-anticipe', $varMail, false);
+                                    $message->setTo($destinataire);
+                                    $mailer = $this->get('mailer');
+                                    $mailer->send($message);
 
-                                    $sujetMail = $this->mails_text->subject;
-                                    eval("\$sujetMail = \"$sujetMail\";");
-
-                                    $texteMail = $this->mails_text->content;
-                                    eval("\$texteMail = \"$texteMail\";");
-
-                                    $this->email = $this->loadLib('email');
-                                    $this->email->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
-                                    $this->email->addRecipient(trim($destinataire));
-                                    $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                                    $this->email->setHTMLBody($texteMail);
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                                 } elseif (isset($r['libelleOpe3']) && strstr($r['libelleOpe3'], 'REGULARISATION')) { // Régularisation
                                     preg_match_all('#[0-9]+#', $r['libelleOpe3'], $extract);
 
@@ -1810,8 +1763,6 @@ class cronController extends bootstrap
                                                         $this->clients_gestion_mails_notif->immediatement = 1;
                                                         $this->clients_gestion_mails_notif->update();
 
-                                                        $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
-
                                                         $varMail = array(
                                                             'surl'            => $this->surl,
                                                             'url'             => $this->lurl,
@@ -1825,24 +1776,11 @@ class cronController extends bootstrap
                                                             'lien_tw'         => $this->twitter
                                                         );
 
-                                                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                                        $this->email = $this->loadLib('email');
-                                                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                                        $this->email->setSubject(stripslashes($sujetMail));
-                                                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                                        if ($this->Config['env'] === 'prod') {
-                                                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                                        } else {
-                                                            $this->email->addRecipient(trim($clients->email));
-                                                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                                        }
+                                                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
+                                                        $message->setTo($clients->email);
+                                                        $mailer = $this->get('mailer');
+                                                        $mailer->send($message);
                                                     }
                                                 }
                                             }
@@ -2916,41 +2854,21 @@ class cronController extends bootstrap
 
             file_put_contents($this->path . 'protected/sftp/etat_quotidien/' . $filename . '.xls', $tableau);
 
-            // Pour regeneration on die avant l'envoie du mail
+            /** @var \settings $oSettings */
+            $oSettings = $this->loadData('settings');
+            $oSettings->get('Adresse notification etat quotidien', 'type');
+            $destinataire = $oSettings->value;
 
-            //
-            //************************************//
-            //*** ENVOI DU MAIL ETAT QUOTIDIEN ***//
-            //************************************//
-            // destinataire
-            $this->settings->get('Adresse notification etat quotidien', 'type');
-            $destinataire = $this->settings->value;
+            $varMail = array(
+                '$surl' => $this->surl,
+                '$url'  => $this->lurl
+            );
 
-            $this->mails_text->get('notification-etat-quotidien', 'lang = "' . $this->language . '" AND type');
-
-            $surl = $this->surl;
-            $url  = $this->lurl;
-
-            $sujetMail = $this->mails_text->subject;
-            eval("\$sujetMail = \"$sujetMail\";");
-
-            $texteMail = $this->mails_text->content;
-            eval("\$texteMail = \"$texteMail\";");
-
-            $exp_name = $this->mails_text->exp_name;
-            eval("\$exp_name = \"$exp_name\";");
-
-            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->attachFromString($tableau, $filename . '.xls');
-            $this->email->addRecipient(trim($destinataire));
-            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-            $this->email->setHTMLBody($texteMail);
-
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', $varMail, false);
+            $message->setTo(trim($destinataire));
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
             $this->stopCron();
         }
@@ -3306,45 +3224,21 @@ class cronController extends bootstrap
             fwrite($sftpStream, $table);
             fclose($sftpStream);
 
-            //************************************//
-            //*** ENVOI DU MAIL ETAT FISCAL + echeances mois ***//
-            //************************************//
-            // destinataire
-            $this->mails_text->get('notification-etat-fiscal', 'lang = "' . $this->language . '" AND type');
+            /** @var \settings $oSettings */
+            $oSettings = $this->loadData('settings');
+            $oSettings->get('Adresse notification etat fiscal', 'type');
+            $destinataire = $oSettings->value;
 
-            $surl = $this->surl;
-            $url  = $this->lurl;
+            $varMail = array(
+                '$surl' => $this->surl,
+                '$url'  => $this->lurl
+            );
 
-            $sujetMail = $this->mails_text->subject;
-            eval("\$sujetMail = \"$sujetMail\";");
-
-            $texteMail = $this->mails_text->content;
-            eval("\$texteMail = \"$texteMail\";");
-
-            $exp_name = $this->mails_text->exp_name;
-            eval("\$exp_name = \"$exp_name\";");
-
-            // Nettoyage de printemps
-            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->attachFromString($table, $filename . '.xls');
-
-            if ($this->Config['env'] === 'prod') {
-                $this->settings->get('Adresse notification etat fiscal', 'type');
-                $this->email->addRecipient($this->settings->value);
-            } else {
-                $debugMails = explode(',', $this->sDestinatairesDebug);
-                foreach ($debugMails as $sEmailDebug) {
-                    $this->email->addRecipient($sEmailDebug);
-                }
-            }
-
-            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-            $this->email->setHTMLBody($texteMail);
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
+            $message->setTo(trim($destinataire));
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
             /////////////////////////////////////////////////////
             // On retire de bank unilend la partie  pour letat //
@@ -3387,42 +3281,6 @@ class cronController extends bootstrap
                 $bank_unilend->create();
             }
 
-            $this->stopCron();
-        }
-    }
-
-    // part une fois par jour a 1h du matin afin de checker les mail de la veille
-    public function _checkMailNoDestinataire()
-    {
-        if (true === $this->startCron('checkMailNoDestinataire', 5)) {
-            $nmp  = $this->loadData('nmp');
-            $date = mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"));
-            $date = date('Y-m-d', $date);
-
-            $lNoMail = $nmp->select('mailto = "" AND added LIKE "' . $date . '%"');
-
-            if ($lNoMail != false) {
-                foreach ($lNoMail as $m) {
-                    $subject = '[Alerte] Mail Sans destinataire';
-
-                    $message = '
-                        <html>
-                        <head>
-                          <title>[Alerte] Mail Sans destinataire</title>
-                        </head>
-                        <body>
-                            <p>Un mail a ete envoye sans destinataire</p>
-                            <table>
-                                <tr>
-                                    <th>id_nmp : </th><td>' . $m['id_nmp'] . '</td>
-                                </tr>
-                            </table>
-                        </body>
-                        </html>';
-
-                    mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                }
-            }
             $this->stopCron();
         }
     }
@@ -3581,10 +3439,8 @@ class cronController extends bootstrap
                 $timestamp_date = $this->dates->formatDateMySqlToTimeStamp($p['added_status']);
 
                 // on ajoute une restriction. Plus de 7j et le premier samedi qui suit.
-                if ($timestamp_date <= $timeMoins8 && date('w') == 6) {
+                if ($timestamp_date <= $timeMoins8 && date('w') == 6 && $p['status'] == 1) {
                     $this->clients_status_history->get($p['id_client_status_history'], 'id_client_status_history');
-
-                    $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
 
                     $timeCreate = strtotime($p['added_status']);
                     $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
@@ -3600,27 +3456,12 @@ class cronController extends bootstrap
                         'lien_tw'       => $this->twitter
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
+                    $message->setTo($p['email']);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $sujetMail = 'RAPPEL : ' . $sujetMail;
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($p['status'] == 1) {
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $p['email'], $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($p['email']));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                    }
                     $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $this->clients_status_history->content);
                 }
             }
@@ -3648,8 +3489,7 @@ class cronController extends bootstrap
                     $this->clients_status_history->addStatus(\users::USER_ID_CRON, \clients_status::COMPLETENESS_REMINDER, $p['id_client'], $data_clients_status_history['content'], 4);
                 }
 
-                if ($op_pour_relance) {
-                    $this->mails_text->get('completude', 'lang = "' . $this->language . '" AND type');
+                if ($op_pour_relance && $p['status'] == 1) {
                     $timeCreate = strtotime($p['added_status']);
                     $month      = $this->dates->tableauMois['fr'][date('n', $timeCreate)];
 
@@ -3663,27 +3503,12 @@ class cronController extends bootstrap
                         'lien_fb'       => $this->like_fb,
                         'lien_tw'       => $this->twitter
                     );
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $sujetMail = 'RAPPEL : ' . $sujetMail;
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($p['status'] == 1) {
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $p['email'], $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($p['email']));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('completude', $varMail);
+                    $message->setTo($p['email']);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             }
 
@@ -3931,7 +3756,7 @@ class cronController extends bootstrap
     {
         $echeanciers = $this->loadData('echeanciers');
         $projects    = $this->loadData('projects');
-        $surl        = $this->surl; //Variable for eval($texteMail); Do not delete.
+
         $liste       = $echeanciers->selectEcheanciersByprojetEtOrdre(); // <--- a rajouter en prod
         $liste_remb  = '';
         foreach ($liste as $l) {
@@ -3949,29 +3774,21 @@ class cronController extends bootstrap
                 </tr>';
         }
 
-        $this->settings->get('Adresse notification check remb preteurs', 'type');
-        $destinataire = $this->settings->value;
+        $varMail = array(
+            '$surl'       => $this->surl,
+            '$liste_remb' => $liste_remb
+        );
 
-        $this->mails_text->get('notification-prelevement-emprunteur', 'lang = "' . $this->language . '" AND type');
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Adresse notification check remb preteurs', 'type');
+        $destinataire = $oSettings->value;
 
-        $sujetMail = $this->mails_text->subject;
-        eval("\$sujetMail = \"$sujetMail\";");
-        $texteMail = $this->mails_text->content;
-        eval("\$texteMail = \"$texteMail\";");
-        $exp_name = $this->mails_text->exp_name;
-        eval("\$exp_name = \"$exp_name\";");
-
-        $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-        $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-        $this->email->addRecipient(trim($destinataire));
-        $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-        $this->email->setHTMLBody($texteMail);
-        if ('prod' === $this->Config['env']) {
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $varMail, false);
+        $message->setTo($destinataire);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     public function _check_remboursement_preteurs()
@@ -3999,20 +3816,16 @@ class cronController extends bootstrap
             '[#REPAYMENTS#]'   => $sRepayments
         );
 
-        $this->settings->get('Adresse notification check remb preteurs', 'type');
-        $sRecipient = $this->settings->value;
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Adresse notification check remb preteurs', 'type');
+        $sRecipient  = $oSettings->value;
 
-        $this->mails_text->get('notification-check-remboursements-preteurs', 'lang = "' . $this->language . '" AND type');
-
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-        $this->email->setSubject('=?UTF-8?B?' . base64_encode(html_entity_decode($this->mails_text->subject)) . '?=');
-        $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), utf8_decode($this->mails_text->content)));
-        $this->email->addRecipient(trim($sRecipient));
-
-        if ('prod' === $this->Config['env']) {
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-check-remboursements-preteurs', $aReplacements, false);
+        $message->setTo(trim($sRecipient));
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
 
@@ -4165,9 +3978,6 @@ class cronController extends bootstrap
             'lien_tw'         => $this->twitter
         );
 
-        $this->mails_text->get('nouveau-projet', 'lang = "' . $this->language . '" AND type');
-        $this->email = $this->loadLib('email');
-
         $iOffset = 0;
         $iLimit  = 100;
 
@@ -4195,19 +4005,11 @@ class cronController extends bootstrap
                     $varMail['prenom_p']       = $aLender['prenom'];
                     $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                    $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $aLender['email'], $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($aLender['email']));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
+                    $message->setTo($aLender['email']);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
                     ++$iEmails;
                 }
@@ -4252,11 +4054,10 @@ class cronController extends bootstrap
 
         switch ($sFrequency) {
             case 'quotidienne':
-                $this->mails_text->get('nouveaux-projets-du-jour', 'lang = "' . $this->language . '" AND type');
+                $sMail = 'nouveaux-projets-du-jour';
                 break;
             case 'hebdomadaire':
-                $this->mails_text->get('nouveaux-projets-de-la-semaine', 'lang = "' . $this->language . '" AND type');
-                break;
+                $sMail = 'nouveaux-projets-de-la-semaine';
             default:
                 trigger_error('Unknown frequency for new projects summary email: ' . $sFrequency, E_USER_WARNING);
                 return;
@@ -4294,22 +4095,22 @@ class cronController extends bootstrap
                     }
 
                     if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
                     } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
                     } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
                     } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
@@ -4333,19 +4134,12 @@ class cronController extends bootstrap
                         'lien_tw'         => $this->twitter
                     );
 
-                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
+                    $message->setTo($oCustomer->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $oEmail->addRecipient($oCustomer->email);
-                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
                 } catch (\Exception $oException) {
                     $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
                 }
@@ -4366,9 +4160,6 @@ class cronController extends bootstrap
         $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
         $oLogger->addRecord(ULogger::DEBUG, 'Placed bids notifications start');
         $oLogger->addRecord(ULogger::DEBUG, 'Number of customer to process: ' . count($aCustomerId));
-
-        /** @var Email email */
-        $oEmail = $this->loadLib('email');
 
         /** @var bids $oBid */
         $oBid = $this->loadData('bids');
@@ -4393,7 +4184,7 @@ class cronController extends bootstrap
 
         switch ($sFrequency) {
             case 'quotidienne':
-                $this->mails_text->get('vos-offres-du-jour', 'lang = "' . $this->language . '" AND type');
+                $sMail = 'vos-offres-du-jour';
                 break;
             default:
                 trigger_error('Unknown frequency for placed bids summary email: ' . $sFrequency, E_USER_WARNING);
@@ -4446,12 +4237,12 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
                     } elseif (1 < $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
@@ -4474,19 +4265,12 @@ class cronController extends bootstrap
                         'lien_tw'         => $this->twitter
                     );
 
-                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
+                    $message->setTo($oCustomer->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $oEmail->addRecipient($oCustomer->email);
-                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
                 } catch (\Exception $oException) {
                     $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
                 }
@@ -4534,7 +4318,7 @@ class cronController extends bootstrap
 
         switch ($sFrequency) {
             case 'quotidienne':
-                $this->mails_text->get('synthese-quotidienne-offres-non-retenues', 'lang = "' . $this->language . '" AND type');
+                $sMail = 'synthese-quotidienne-offres-non-retenues';
                 break;
             default:
                 trigger_error('Unknown frequency for rejected bids summary email: ' . $sFrequency, E_USER_WARNING);
@@ -4587,12 +4371,12 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
                     } elseif (1 < $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
@@ -4615,19 +4399,12 @@ class cronController extends bootstrap
                         'lien_tw'         => $this->twitter
                     );
 
-                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
+                    $message->setTo($oCustomer->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $oEmail->addRecipient($oCustomer->email);
-                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
                 } catch (\Exception $oException) {
                     $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
                 }
@@ -4677,13 +4454,13 @@ class cronController extends bootstrap
 
         switch ($sFrequency) {
             case 'quotidienne':
-                $this->mails_text->get('synthese-quotidienne-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+               $sMail = 'synthese-quotidienne-offres-acceptees';
                 break;
             case 'hebdomadaire':
-                $this->mails_text->get('synthese-hebdomadaire-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                $sMail = 'synthese-hebdomadaire-offres-acceptees';
                 break;
             case 'mensuelle':
-                $this->mails_text->get('synthese-mensuelle-offres-acceptees', 'lang = "' . $this->language . '" AND type');
+                $sMail = 'synthese-mensuelle-offres-acceptees';
                 break;
             default:
                 trigger_error('Unknown frequency for accepted loans summary email: ' . $sFrequency, E_USER_WARNING);
@@ -4748,32 +4525,32 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
                     } elseif (1 < $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
                     } elseif (1 === $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
                     } elseif (1 < $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
                     } elseif (1 === $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
                     } elseif (1 < $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
                         $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
@@ -4797,19 +4574,12 @@ class cronController extends bootstrap
                         'lien_tw'          => $this->twitter
                     );
 
-                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
+                    $message->setTo($oCustomer->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $oEmail->addRecipient($oCustomer->email);
-                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
                 } catch (\Exception $oException) {
                     $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
                 }
@@ -4859,13 +4629,13 @@ class cronController extends bootstrap
 
         switch ($sFrequency) {
             case 'quotidienne':
-                $this->mails_text->get('synthese-quotidienne-remboursements', 'lang = "' . $this->language . '" AND type');
+               $sMail = 'synthese-quotidienne-remboursements';
                 break;
             case 'hebdomadaire':
-                $this->mails_text->get('synthese-hebdomadaire-remboursements', 'lang = "' . $this->language . '" AND type');
+                $sMail = 'synthese-hebdomadaire-remboursements';
                 break;
             case 'mensuelle':
-                $this->mails_text->get('synthese-mensuelle-remboursements', 'lang = "' . $this->language . '" AND type');
+                $sMail = 'synthese-mensuelle-remboursements';
                 break;
             default:
                 trigger_error('Unknown frequency for repayment summary email: ' . $sFrequency, E_USER_WARNING);
@@ -4955,27 +4725,27 @@ class cronController extends bootstrap
                         </tr>';
 
                     if (1 === $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                     } elseif (1 < $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
                     } elseif (1 === $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                     } elseif (1 < $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
                     } elseif (1 === $iRepaymentsCount && 'mensuelle' === $sFrequency) {
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
                     } elseif (1 < $iRepaymentsCount && 'mensuelle' === $sFrequency) {
-                        $this->mails_text->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
+                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
                         $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
                         $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
                     } else {
@@ -4999,19 +4769,12 @@ class cronController extends bootstrap
                         'annee'                  => date('Y')
                     );
 
-                    $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
+                    $message->setTo($oCustomer->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                    $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                    $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $oEmail->addRecipient($oCustomer->email);
-                        Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
                 } catch (\Exception $oException) {
                     $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
                 }
@@ -5090,7 +4853,7 @@ class cronController extends bootstrap
                     $parrains_filleuls_mouvements->create();
 
                     $destinataire = $parrain->email;
-                    $this->mails_text->get('confirmation-offre-parrain', 'lang = "' . $this->language . '" AND type');
+                    $this->mail_template->get('confirmation-offre-parrain', 'lang = "' . $this->language . '" AND type');
 
                     $varMail = array(
                         'surl'            => $this->surl,
@@ -5102,22 +4865,22 @@ class cronController extends bootstrap
                     );
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                    $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
                     $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setFrom($this->mail_template->exp_email, $exp_name);
 
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
                     if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $destinataire, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, $destinataire, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
                     } else {
                         $this->email->addRecipient(trim($destinataire));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
                     }
 
                     $lenders_accounts->get($pf['id_filleul'], 'id_client_owner');
@@ -5159,7 +4922,7 @@ class cronController extends bootstrap
                     $parrains_filleuls_mouvements->create();
 
                     $destinataire = $filleul->email;
-                    $this->mails_text->get('confirmation-offre-filleul', 'lang = "' . $this->language . '" AND type');
+                    $this->mail_template->get('confirmation-offre-filleul', 'lang = "' . $this->language . '" AND type');
 
                     $varMail = array(
                         'surl'            => $this->surl,
@@ -5172,22 +4935,22 @@ class cronController extends bootstrap
 
                     $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                    $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                    $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                    $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
                     $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                    $this->email->setFrom($this->mail_template->exp_email, $exp_name);
 
                     $this->email->setSubject(stripslashes($sujetMail));
                     $this->email->setHTMLBody(stripslashes($texteMail));
 
                     if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $destinataire, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, $destinataire, $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
                     } else {
                         $this->email->addRecipient(trim($destinataire));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                        Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
                     }
                 } else {// si limite depassé on rejet l'offre de parrainage
                     $parrains_filleuls->get($pf['id_parrain_filleul'], 'id_parrain_filleul');
@@ -5250,49 +5013,13 @@ class cronController extends bootstrap
                             $projects->get($e['id_project'], 'id_project');
                             $companies->get($projects->id_company, 'id_company');
 
-                            $this->mails_text->get('preteur-remboursement', 'lang = "' . $this->language . '" AND type');
-
                             $nbpret = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-
-                            if ($rembNet >= 2) {
-                                $euros = ' euros';
-                            } else {
-                                $euros = ' euro';
-                            }
+                            $euros  = ($rembNet >= 2) ? ' euros' : ' euro';
                             $rembNetEmail = $this->ficelle->formatNumber($rembNet) . $euros;
 
                             $getsolde = $transactions->getSolde($clients->id_client);
-                            if ($getsolde > 1) {
-                                $euros = ' euros';
-                            } else {
-                                $euros = ' euro';
-                            }
+                            $euros  = ($getsolde > 1) ? ' euros' : ' euro';
                             $solde = $this->ficelle->formatNumber($getsolde) . $euros;
-
-                            $varMail = array(
-                                'surl'                  => $this->surl,
-                                'url'                   => $this->furl,
-                                'prenom_p'              => $clients->prenom,
-                                'mensualite_p'          => $rembNetEmail,
-                                'mensualite_avantfisca' => $e['montant'] / 100,
-                                'nom_entreprise'        => $companies->name,
-                                'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
-                                'nbre_prets'            => $nbpret,
-                                'solde_p'               => $solde,
-                                'motif_virement'        => $clients->getLenderPattern($clients->id_client),
-                                'lien_fb'               => $this->like_fb,
-                                'lien_tw'               => $this->twitter
-                            );
-
-                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                            $this->email->setSubject(stripslashes($sujetMail));
-                            $this->email->setHTMLBody(stripslashes($texteMail));
 
                             $notifications->type       = \notifications::TYPE_REPAYMENT;
                             $notifications->id_lender  = $e['id_lender'];
@@ -5313,13 +5040,26 @@ class cronController extends bootstrap
                                 $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                 $this->clients_gestion_mails_notif->update();
 
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($clients->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
+                                $varMail = array(
+                                    'surl'                  => $this->surl,
+                                    'url'                   => $this->furl,
+                                    'prenom_p'              => $clients->prenom,
+                                    'mensualite_p'          => $rembNetEmail,
+                                    'mensualite_avantfisca' => $e['montant'] / 100,
+                                    'nom_entreprise'        => $companies->name,
+                                    'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
+                                    'nbre_prets'            => $nbpret,
+                                    'solde_p'               => $solde,
+                                    'motif_virement'        => $clients->getLenderPattern($clients->id_client),
+                                    'lien_fb'               => $this->like_fb,
+                                    'lien_tw'               => $this->twitter
+                                );
+
+                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                                $message->setTo($clients->email);
+                                $mailer = $this->get('mailer');
+                                $mailer->send($message);
                             }
                         }
                         $echeanciers->get($e['id_echeancier'], 'id_echeancier');
@@ -5460,8 +5200,6 @@ class cronController extends bootstrap
 
                         $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
 
-                        $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
-
                         $varMail = array(
                             'surl'            => $this->surl,
                             'url'             => $this->furl,
@@ -5480,23 +5218,23 @@ class cronController extends bootstrap
                             'montantRemb'     => $Total_rembNet
                         );
 
-                        $tabVars   = $this->tnmp->constructionVariablesServeur($varMail);
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                            $tabVars   = $this->tnmp->constructionVariablesServeur($varMail);
+                            $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
+                            $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+                            $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
 
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
+                            $this->email = $this->loadLib('email');
+                            $this->email->setFrom($this->mail_template->exp_email, $exp_name);
+                            $this->email->setSubject(stripslashes($sujetMail));
+                            $this->email->setHTMLBody(stripslashes($texteMail));
 
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($companies->email_facture));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
+                            if ($this->Config['env'] === 'prod') {
+                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, trim($companies->email_facture), $tabFiler);
+                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
+                            } else {
+                                $this->email->addRecipient(trim($companies->email_facture));
+                                Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
+                            }
 
                         $oInvoiceCounter            = $this->loadData('compteur_factures');
                         $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
@@ -5693,53 +5431,6 @@ class cronController extends bootstrap
         }
     }
 
-    // Passe toutes les 5 minutes la nuit de 3h à 4h
-    // copie données table -> enregistrement table backup -> suppression données table
-    public function _stabilisation_mails()
-    {
-        if ($this->startCron('stabilisationMail', 10)) {
-            $iStartTime     = time();
-            $iRetentionDays = 30;
-            $iLimit         = 2000;
-            $sMinimumDate   = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $iRetentionDays, date('Y')));
-
-            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $iRetentionDays . ' days: ' . $sMinimumDate, array('ID' => $iStartTime));
-
-            $this->bdd->query("
-                INSERT IGNORE INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`)
-                SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $sMinimumDate . "' ORDER BY m1.added ASC LIMIT " . $iLimit
-            );
-
-            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
-
-            $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
-
-            $iDeletedRows = mysql_affected_rows();
-            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
-
-            if ($iDeletedRows < $iLimit) {
-                $this->bdd->query('OPTIMIZE TABLE `mails_filer`');
-            }
-
-            $this->bdd->query("
-                INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
-                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $sMinimumDate . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $iLimit
-            );
-
-            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
-
-            $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
-
-            $iDeletedRows = mysql_affected_rows();
-            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
-
-            if ($iDeletedRows < $iLimit) {
-                $this->bdd->query('OPTIMIZE TABLE `nmp`');
-            }
-
-            $this->stopCron();
-        }
-    }
 
     private function deleteOldFichiers()
     {
@@ -5832,28 +5523,26 @@ class cronController extends bootstrap
     public function _RA_email()
     {
         if ($this->startCron('RAMail', 5)) {
-            $this->projects                        = $this->loadData('projects');
-            $this->echeanciers                     = $this->loadData('echeanciers');
-            $this->receptions                      = $this->loadData('receptions');
-            $this->echeanciers_emprunteur          = $this->loadData('echeanciers_emprunteur');
-            $this->transactions                    = $this->loadData('transactions');
-            $this->lenders_accounts                = $this->loadData('lenders_accounts');
-            $this->clients                         = $this->loadData('clients');
-            $this->wallets_lines                   = $this->loadData('wallets_lines');
-            $this->notifications                   = $this->loadData('notifications');
-            $this->clients_gestion_mails_notif     = $this->loadData('clients_gestion_mails_notif');
-            $this->projects_status_history         = $this->loadData('projects_status_history');
-            $this->clients_gestion_notifications   = $this->loadData('clients_gestion_notifications');
-            $this->mails_text                      = $this->loadData('mails_text');
-            $this->companies                       = $this->loadData('companies');
-            $this->loans                           = $this->loadData('loans');
-            $loans                                 = $this->loadData('loans');
-            $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+            $this->projects                         = $this->loadData('projects');
+            $this->echeanciers                      = $this->loadData('echeanciers');
+            $this->receptions                       = $this->loadData('receptions');
+            $this->echeanciers_emprunteur           = $this->loadData('echeanciers_emprunteur');
+            $this->transactions                     = $this->loadData('transactions');
+            $this->lenders_accounts                 = $this->loadData('lenders_accounts');
+            $this->clients                          = $this->loadData('clients');
+            $this->wallets_lines                    = $this->loadData('wallets_lines');
+            $this->notifications                    = $this->loadData('notifications');
+            $this->clients_gestion_mails_notif      = $this->loadData('clients_gestion_mails_notif');
+            $this->projects_status_history          = $this->loadData('projects_status_history');
+            $this->clients_gestion_notifications    = $this->loadData('clients_gestion_notifications');
+            $this->mail_template                    = $this->loadData('mail_templates');
+            $this->companies                        = $this->loadData('companies');
+            $this->loans                            = $this->loadData('loans');
+            $loans                                  = $this->loadData('loans');
+            $remboursement_anticipe_mail_a_envoyer  = $this->loadData('remboursement_anticipe_mail_a_envoyer');
 
             // recup des mails à envoyer pour les projets en ra en attente, 1 seul à la fois car traitement pouvant etre lourd
             $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0', 'added ASC', '', 1);
-
-            $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
@@ -5921,21 +5610,12 @@ class cronController extends bootstrap
                                 'lien_tw'              => $this->twitter,
                                 'annee'                => date('Y')
                             );
-                            $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
 
-                            $this->email = $this->loadLib('email');
-                            $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                            $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                            $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                            if ($this->Config['env'] === 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            } else {
-                                $this->email->addRecipient(trim($this->clients->email));
-                                $this->email->addBCCRecipient($this->sDestinatairesDebug);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                            }
+                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement-anticipe', $varMail);
+                            $message->setTo($this->clients->email);
+                            $mailer = $this->get('mailer');
+                            $mailer->send($message);
                         }
                     }
                 }
@@ -5998,78 +5678,68 @@ class cronController extends bootstrap
 
                         foreach ($this->projects->getReminders($iStatus, $iDaysSincePreviousReminder, $iReminderIndex - 1) as $iProjectId) {
                             try {
-                                if ($this->mails_text->get('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, 'lang = "' . $this->language . '" AND type')) {
-                                    $this->projects->get($iProjectId, 'id_project');
-                                    $this->companies->get($this->projects->id_company, 'id_company');
+                                $this->projects->get($iProjectId, 'id_project');
+                                $this->companies->get($this->projects->id_company, 'id_company');
 
-                                    if ($this->projects->id_prescripteur > 0) {
-                                        $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
-                                        $this->clients->get($this->prescripteurs->id_client, 'id_client');
-                                    } else {
-                                        $this->clients->get($this->companies->id_client_owner, 'id_client');
-                                    }
+                                if ($this->projects->id_prescripteur > 0) {
+                                    $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
+                                    $this->clients->get($this->prescripteurs->id_client, 'id_client');
+                                } else {
+                                    $this->clients->get($this->companies->id_client_owner, 'id_client');
+                                }
 
-                                    if (false === empty($this->clients->email) && 0 == $this->projects->stop_relances) {
-                                        $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
-                                        $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
+                                if (false === empty($this->clients->email) && 0 == $this->projects->stop_relances) {
+                                    $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+                                    $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
 
-                                        $oSubmissionDate = new \DateTime($this->projects->added);
+                                    $oSubmissionDate = new \DateTime($this->projects->added);
 
-                                        // @todo arbitrary default value
-                                        $iAverageFundingDuration = 15;
-                                        reset($aAverageFundingDurations);
-                                        foreach ($aAverageFundingDurations as $aAverageFundingDuration) {
-                                            if ($this->projects->amount >= $aAverageFundingDuration['min'] && $this->projects->amount <= $aAverageFundingDuration['max']) {
-                                                $iAverageFundingDuration = $aAverageFundingDuration['heures'] / 24;
-                                                break;
-                                            }
-                                        }
-
-                                        if (in_array($iStatus, array(7, 8))) {
-                                            $oCompletenessDate = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
-                                            $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
-                                        }
-
-                                        $aReplacements['liste_pieces']            = $this->projects_status_history->content;
-                                        $aReplacements['raison_sociale']          = $this->companies->name;
-                                        $aReplacements['prenom']                  = $this->clients->prenom;
-                                        $aReplacements['montant']                 = $this->ficelle->formatNumber($this->projects->amount, 0);
-                                        $aReplacements['delai_demande']           = $iDaysInterval;
-                                        $aReplacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
-                                        $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
-                                        $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
-                                        $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
-                                        $aReplacements['sujet']                   = htmlentities($this->mails_text->subject, null, 'UTF-8');
-                                        $aReplacements['annee']                   = date('Y');
-
-                                        $sRecipientEmail  = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
-                                        $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
-
-                                        $this->email = $this->loadLib('email');
-                                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                                        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-                                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
-
-                                        if ($this->Config['env'] === 'prod') {
-                                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $aNMPFilters);
-                                            $this->tnmp->sendMailNMP($aNMPFilters, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                        } else {
-                                            $this->email->addRecipient($sRecipientEmail);
-                                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                    // @todo arbitrary default value
+                                    $iAverageFundingDuration = 15;
+                                    reset($aAverageFundingDurations);
+                                    foreach ($aAverageFundingDurations as $aAverageFundingDuration) {
+                                        if ($this->projects->amount >= $aAverageFundingDuration['min'] && $this->projects->amount <= $aAverageFundingDuration['max']) {
+                                            $iAverageFundingDuration = $aAverageFundingDuration['heures'] / 24;
+                                            break;
                                         }
                                     }
 
-                                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                                    $oProjectManager = $this->get('unilend.service.project_manager');
-
-                                    /**
-                                     * When project is pending documents, abort status is not automatic and must be set manually in BO
-                                     */
-                                    if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                        $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $this->projects, $iReminderIndex, $this->projects_status_history->content);
-                                    } else {
-                                        $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $this->projects, $iReminderIndex, $this->projects_status_history->content);
+                                    if (in_array($iStatus, array(7, 8))) {
+                                        $oCompletenessDate                       = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
+                                        $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
                                     }
+
+                                    $aReplacements['liste_pieces']            = $this->projects_status_history->content;
+                                    $aReplacements['raison_sociale']          = $this->companies->name;
+                                    $aReplacements['prenom']                  = $this->clients->prenom;
+                                    $aReplacements['montant']                 = $this->ficelle->formatNumber($this->projects->amount, 0);
+                                    $aReplacements['delai_demande']           = $iDaysInterval;
+                                    $aReplacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
+                                    $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
+                                    $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
+                                    $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
+                                    $aReplacements['sujet']                   = htmlentities($this->mail_template->subject, null, 'UTF-8');
+                                    $aReplacements['annee']                   = date('Y');
+
+                                    $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
+
+                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $this->language, $aReplacements);
+                                    $message->setTo($sRecipientEmail);
+                                    $mailer = $this->get('mailer');
+                                    $mailer->send($message);
+                                }
+
+                                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                                $oProjectManager = $this->get('unilend.service.project_manager');
+
+                                /**
+                                 * When project is pending documents, abort status is not automatic and must be set manually in BO
+                                 */
+                                if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
+                                    $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $this->projects, $iReminderIndex, $this->projects_status_history->content);
+                                } else {
+                                    $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $this->projects, $iReminderIndex, $this->projects_status_history->content);
                                 }
                             } catch (\Exception $oException) {
                                 $this->oLogger->addRecord(ULogger::ALERT, 'Error trying to send reminded for project ' . $this->projects->id_client . '(' . $oException->getMessage() . ')');
@@ -6116,21 +5786,22 @@ class cronController extends bootstrap
                 $oEcheanciers           = $this->loadData('echeanciers');
                 $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
                 $oLoans                 = $this->loadData('loans');
-                $oMailsText             = $this->loadData('mails_text');
+                $oMailTemplate          = $this->loadData('mail_templates');
+                $oSettings              = $this->loadData('settings');
 
-                $oMailsText->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'lang = "' . $this->language . '" AND type');
+                $oMailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
 
-                $this->settings->get('Virement - BIC', 'type');
-                $sBIC = $this->settings->value;
+                $oSettings->get('Virement - BIC', 'type');
+                $sBIC = $oSettings->value;
 
-                $this->settings->get('Virement - IBAN', 'type');
-                $sIBAN = $this->settings->value;
+                $oSettings->get('Virement - IBAN', 'type');
+                $sIBAN = $oSettings->value;
 
-                $this->settings->get('Téléphone emprunteur', 'type');
-                $sBorrowerPhoneNumber = $this->settings->value;
+                $oSettings->get('Téléphone emprunteur', 'type');
+                $sBorrowerPhoneNumber = $oSettings->value;
 
-                $this->settings->get('Adresse emprunteur', 'type');
-                $sBorrowerEmail = $this->settings->value;
+                $oSettings->get('Adresse emprunteur', 'type');
+                $sBorrowerEmail = $oSettings->value;
 
                 $aCommonReplacements = array(
                     'url'              => $this->furl,
@@ -6152,7 +5823,7 @@ class cronController extends bootstrap
                     $aNextRepayment = $oEcheanciersEmprunteur->select('id_project = ' . $oProjects->id_project . ' AND date_echeance_emprunteur > DATE(NOW())', 'date_echeance_emprunteur ASC', 0, 1);
 
                     $aReplacements = $aCommonReplacements + array(
-                            'sujet'                              => htmlentities($oMailsText->subject, null, 'UTF-8'),
+                            'sujet'                              => htmlentities($oMailTemplate->subject, null, 'UTF-8'),
                             'entreprise'                         => htmlentities($oCompanies->name, null, 'UTF-8'),
                             'civilite_e'                         => $oClients->civilite,
                             'prenom_e'                           => htmlentities($oClients->prenom, null, 'UTF-8'),
@@ -6164,21 +5835,11 @@ class cronController extends bootstrap
                             'date_prochaine_echeance_emprunteur' => $this->dates->formatDate($aNextRepayment[0]['date_echeance_emprunteur'], 'd/m/Y'), // @todo Intl
                         );
 
-                    $aDYNReplacements                             = $this->tnmp->constructionVariablesServeur($aReplacements);
-                    $aDYNReplacements['[EMV DYN]sujet[EMV /DYN]'] = strtr($aReplacements['sujet'], $aDYNReplacements);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($oMailsText->exp_email, $oMailsText->exp_name);
-                    $this->email->setSubject(stripslashes(strtr(utf8_decode(html_entity_decode($aReplacements['sujet'], null, 'UTF-8')), $aDYNReplacements)));
-                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $aDYNReplacements)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, trim($oClients->email), $aNMPFilters);
-                        $this->tnmp->sendMailNMP($aNMPFilters, $aReplacements, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
-                    } else {
-                        $this->email->addRecipient(trim($oClients->email));
-                        Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $this->language, $aReplacements);
+                    $message->setTo(trim($oClients->email));
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             }
             $this->stopCron();
