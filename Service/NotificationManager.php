@@ -66,6 +66,8 @@ class NotificationManager
         $oNotification->amount     = $fAmount * 100;
         $oNotification->id_bid     = $iBidId;
         $oNotification->create();
+
+        return $oNotification->id_notification;
     }
 
     public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId)

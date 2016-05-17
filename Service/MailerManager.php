@@ -1043,8 +1043,10 @@ class MailerManager
     {
         /** @var \companies $oCompanies */
         $oCompanies = Loader::loadData('companies');
+
         /** @var \clients $oClients */
         $oClients = Loader::loadData('clients');
+
         $oCompanies->get($oProject->id_company);
         $this->oMailText->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
 
@@ -1096,5 +1098,202 @@ class MailerManager
         }
     }
 
+    public function sendLoanAccepted(\projects $project)
+    {
+        /** @var \loans $loans */
+        $loans = Loader::loadData('loans');
 
+        /** @var \companies $companies */
+        $companies = Loader::loadData('companies');
+        $companies->get($project->id_company, 'id_company');
+
+        /** @var \clients_gestion_notifications $clients_gestion_notifications */
+        $clientNotifications = Loader::loadData('clients_gestion_notifications');
+
+        $aLendersIds = $loans->getProjectLoansByLender($project->id_project);
+
+        foreach ($aLendersIds as $lendersId) {
+            $loans->get($lendersId['loans']);
+
+            /** @var \lenders_accounts $lender */
+            $lender = Loader::loadData('lenders_accounts');
+            $lender->get($loans->id_lender);
+
+            /** @var \clients $client */
+            $client = Loader::loadData('clients');
+            $client->get($lender->id_client_owner, 'id_client');
+
+            /** @var \echeanciers $paymentSchedule */
+            $paymentSchedule = Loader::loadData('echeanciers');
+
+            /** @var \clients_gestion_notifications $customerNotificationSettings  */
+            $customerNotificationSettings = Loader::loadData('clients_gestion_notifications');
+
+            /** @var \accepted_bids $acceptedBids */
+            $acceptedBids = Loader::loadData('accepted_bids');
+
+            if ($customerNotificationSettings->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
+                $bLenderIsNaturalPerson  = $lender->isNaturalPerson($lender->id_lender_account);
+                $aLoansOfLender          = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, '`id_type_contract` DESC');
+                $iNumberOfLoansForLender = count($aLoansOfLender);
+                $iSumMonthlyPayments     = $paymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND ordre = 1', 'montant');
+                $aFirstPayment           = $paymentSchedule->getPremiereEcheancePreteur($project->id_project, $lender->id_lender_account);
+                $sDateFirstPayment       = $aFirstPayment['date_echeance'];
+                $iNumberOfAcceptedBids   = $acceptedBids->getDistinctBidsForLenderAndProject($lender->id_lender_account, $project->id_project);
+                $sLoansDetails           = '';
+                $sLinkExplication        = '';
+                $sContract               = '';
+                $sStyleTD                = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
+
+                if ($bLenderIsNaturalPerson) {
+                    $aLoanIFP               = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
+                    $iNumberOfBidsInLoanIFP = $acceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
+
+                    if ($iNumberOfBidsInLoanIFP > 1) {
+                        $sContract        = '<br>L&rsquo;ensemble de vos offres &agrave; concurrence de 1 000 euros sont regroup&eacute;es sous la forme d&rsquo;un seul contrat de pr&ecirc;t. Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
+                        $sLinkExplication = '<br><br>Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
+                    }
+                }
+
+                if ($iNumberOfAcceptedBids > 1) {
+                    $sAcceptedOffers = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
+                    $sOffers         = 'vos offres';
+                } else {
+                    $sAcceptedOffers = 'votre offre a &eacute;t&eacute; accept&eacute;e';
+                    $sOffers         = 'votre offre';
+                }
+
+                if ($iNumberOfLoansForLender > 1) {
+                    $sContracts = 'Vos contrats sont disponibles';
+                    $sLoans     = 'vos pr&ecirc;ts';
+                } else {
+                    $sContracts = 'Votre contrat est disponible';
+                    $sLoans     = 'votre pr&ecirc;t';
+                }
+
+                foreach ($aLoansOfLender as $aLoan) {
+                    $aFirstPayment = $paymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
+                    switch ($aLoan['id_type_contract']) {
+                        case \loans::TYPE_CONTRACT_BDC:
+                            $sContractType = 'Bon de caisse';
+                            break;
+                        case \loans::TYPE_CONTRACT_IFP:
+                            $sContractType = 'Contrat de pr&ecirc;t';
+                            break;
+                        default:
+                            $sContractType = '';
+                            break;
+                    }
+
+                    $sLoansDetails .= '<tr>
+                                        <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aLoan['amount'] / 100) . ' &euro;</td>
+                                        <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aLoan['rate']) . ' %</td>
+                                        <td style="' . $sStyleTD . '">' . $project->period . ' mois</td>
+                                        <td style="' . $sStyleTD . '">' . $this->oFicelle->formatNumber($aFirstPayment['montant'] / 100) . ' &euro;</td>
+                                        <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
+
+                    if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
+                        $clientMailNotifications = Loader::loadData('clients_gestion_mails_notif');
+                        $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
+                        $clientMailNotifications->immediatement = 1;
+                        $clientMailNotifications->update();
+                    }
+
+                }
+
+                $this->oMailText->get('preteur-contrat', 'lang = "' . $this->sLanguage . '" AND type');
+
+                $sTimeAdd = strtotime($sDateFirstPayment);
+                $sMonth   = $this->oDate->tableauMois['fr'][date('n', $sTimeAdd)];
+
+                $varMail = array(
+                    'surl'               => $this->sSUrl,
+                    'url'                => $this->sFUrl,
+                    'offre_s_acceptee_s' => $sAcceptedOffers,
+                    'prenom_p'           => $client->prenom,
+                    'nom_entreprise'     => $companies->name,
+                    'offre_s'            => $sOffers,
+                    'pret_s'             => $sLoans,
+                    'valeur_bid'         => $this->oFicelle->formatNumber($iSumMonthlyPayments),
+                    'detail_loans'       => $sLoansDetails,
+                    'mensualite_p'       => $this->oFicelle->formatNumber($iSumMonthlyPayments),
+                    'date_debut'         => date('d', $sTimeAdd) . ' ' . $sMonth . ' ' . date('Y', $sTimeAdd),
+                    'contrat_s'          => $sContracts,
+                    'compte-p'           => $this->sFUrl,
+                    'projet-p'           => $this->sFUrl . '/projects/detail/' . $project->slug,
+                    'lien_fb'            => $this->getFacebookLink(),
+                    'lien_tw'            => $this->getTwitterLink(),
+                    'motif_virement'     => $client->getLenderPattern($client->id_client),
+                    'link_explication'   => $sLinkExplication,
+                    'contrat_pret'       => $sContract,
+                    'annee'              => date('Y')
+                );
+
+                $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
+
+                $this->oEmail->setFrom($this->oMailText->exp_email, strtr(utf8_decode($this->oMailText->exp_name), $tabVars));
+                $this->oEmail->setSubject(stripslashes(strtr(utf8_decode($this->oMailText->subject), $tabVars)));
+                $this->oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->oMailText->content), $tabVars)));
+
+                if ($this->aConfig['env'] === 'prod') {
+                    \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, trim($client->email), $tabFiler);
+                    $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
+                } else {
+                    $this->oEmail->addRecipient(trim($client->email));
+                    \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+                }
+            }
+        }
+    }
+
+    public function sendBorrowerBill(\projects $project)
+    {
+        $this->oMailText->get('facture-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
+
+        /** @var \companies $companies */
+        $companies   = Loader::loadData('companies');
+        $companies->get($project->id_company, 'id_company');
+
+        /** @var \clients $client */
+        $client = Loader::loadData('clients');
+        $client->get($companies->id_client_owner, 'id_client');
+
+        $varMail = array(
+            'surl'            => $this->sSUrl,
+            'url'             => $this->sLUrl,
+            'prenom'          => $client->prenom,
+            'entreprise'      => $companies->name,
+            'pret'            => $this->oFicelle->formatNumber($project->amount),
+            'projet-title'    => $project->title,
+            'compte-p'        => $this->sFUrl,
+            'projet-p'        => $this->sFUrl . '/projects/detail/' . $project->slug,
+            'link_facture'    => $this->sFUrl . '/pdf/facture_EF/' . $client->hash . '/' . $project->id_project . '/',
+            'datedelafacture' => date('d') . ' ' . $this->oDate->tableauMois['fr'][date('n')] . ' ' . date('Y'),
+            'mois'            => strtolower($this->oDate->tableauMois['fr'][date('n')]),
+            'annee'           => date('Y'),
+            'lien_fb'         => $this->getFacebookLink(),
+            'lien_tw'         => $this->getTwitterLink()
+        );
+
+        $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
+
+        $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+        $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
+        $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
+
+        $this->oEmail->setFrom($this->oMailText->exp_email, $exp_name);
+        if ($this->aConfig['env'] === 'prod') {
+            $this->oEmail->addBCCRecipient('nicolas.lesur@unilend.fr');
+        }
+        $this->oEmail->setSubject(stripslashes($sujetMail));
+        $this->oEmail->setHTMLBody(stripslashes($texteMail));
+
+        if ($this->aConfig['env'] === 'prod') {
+            \Mailer::sendNMP($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail, trim($companies->email_facture), $tabFiler);
+            $this->oTNMP->sendMailNMP($tabFiler, $varMail, $this->oMailText->nmp_secure, $this->oMailText->id_nmp, $this->oMailText->nmp_unique, $this->oMailText->mode);
+        } else {
+            $this->oEmail->addRecipient(trim($companies->email_facture));
+            \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+        }
+    }
 }
