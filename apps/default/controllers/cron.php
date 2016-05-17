@@ -241,8 +241,6 @@ class cronController extends bootstrap
 
             /** @var projects $oProject */
             $oProject = $this->loadData('projects');
-            /** @var \bids $oBid */
-            $oBid = $this->loadData('bids');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
             /** @var \Unilend\Service\MailerManager $oMailerManager */
