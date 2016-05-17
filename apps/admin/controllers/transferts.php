@@ -1215,12 +1215,17 @@ class transfertsController extends bootstrap
         if (
             isset($_POST['statut_pouvoir'])
             && isset($_POST['id_project'])
+            && $projects->get($_POST['id_project'])
             && isset($_POST['status_remb'])
             && 0 == $_POST['status_remb']
         ) {
+            /** @var \companies $companies */
+            $companies = $this->loadData('companies');
+            $companies->get($projects->id_company, 'id_company');
+
             /** @var \clients clients */
             $clients = $this->loadData('clients');
-            $clients->get($_POST['id_project'], 'id_client');
+            $clients->get($companies->id_client_owner, 'id_client');
 
             $aMandate = array_shift($mandate->select('id_project = ' . $_POST['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
             if ($aMandate != null) {
@@ -1255,12 +1260,12 @@ class transfertsController extends bootstrap
                         $bank_unilend = $this->loadData('bank_unilend');
                         /** @var \loans $loans */
                         $loans = $this->loadData('loans');
-                        /** @var \echeanciers $echeanciers */
-                        $echeanciers = $this->loadData('echeanciers');
-                        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-                        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-                        /** @var \projects_status_history $projects_status_history */
-                        $projects_status_history = $this->loadData('projects_status_history');
+                        /** @var \echeanciers $repaymentSchedule */
+                        $repaymentSchedule = $this->loadData('echeanciers');
+                        /** @var \echeanciers_emprunteur $paymentSchedule */
+                        $paymentSchedule = $this->loadData('echeanciers_emprunteur');
+                        /** @var \projects_status_history $projectsStatusHistory */
+                        $projectsStatusHistory = $this->loadData('projects_status_history');
                         /** @var \accepted_bids $acceptedBids */
                         $acceptedBids = $this->loadData('accepted_bids');
 
@@ -1269,10 +1274,6 @@ class transfertsController extends bootstrap
 
                         $projects->get($_POST['id_project'], 'id_project');
                         $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $projects);
-
-                        /** @var \companies $companies */
-                        $companies = $this->loadData('companies');
-                        $companies->get($projects->id_company, 'id_company');
 
                         /** @var \clients_adresses $clientsAddresses */
                         $clientsAddresses = $this->loadData('clients_adresses');
@@ -1333,14 +1334,14 @@ class transfertsController extends bootstrap
 
                             $prelevements = $this->loadData('prelevements');
 
-                            $echea = $echeanciers_emprunteur->select('id_project = ' . $projects->id_project);
+                            $echea = $paymentSchedule->select('id_project = ' . $projects->id_project);
 
                             foreach ($echea as $key => $e) {
                                 $dateEcheEmp = strtotime($e['date_echeance_emprunteur']);
                                 $result      = mktime(0, 0, 0, date("m", $dateEcheEmp), date("d", $dateEcheEmp) - 15, date("Y", $dateEcheEmp));
                                 $dateExec    = date('Y-m-d', $result);
 
-                                $montant = $echeanciers->getMontantRembEmprunteur($e['montant'], $e['commission'], $e['tva']);
+                                $montant = $repaymentSchedule->getMontantRembEmprunteur($e['montant'], $e['commission'], $e['tva']);
 
                                 $prelevements->id_client                          = $clients->id_client;
                                 $prelevements->id_project                         = $projects->id_project;
@@ -1379,7 +1380,7 @@ class transfertsController extends bootstrap
 
                         $oMailerManager->sendBorrowerBill($projects);
 
-                        $aRepaymentHistory = $projects_status_history->select('id_project = ' . $projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
+                        $aRepaymentHistory = $projectsStatusHistory->select('id_project = ' . $projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
 
                         if (false === empty($aRepaymentHistory)) {
                             $oInvoiceCounter = $this->loadData('compteur_factures');
@@ -1415,7 +1416,7 @@ class transfertsController extends bootstrap
                 }
             }
 
-            header('Location: ' . $this->lurl . '/dossiers/edit/' . $projects->id_project);
+            //header('Location: ' . $this->lurl . '/dossiers/edit/' . $projects->id_project);
             die;
         }
 
