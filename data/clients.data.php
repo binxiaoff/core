@@ -1005,6 +1005,18 @@ class clients extends clients_crud
         return $aClientsWithoutWelcomeOffer;
     }
 
+    /**
+     * PLEASE NOTE :
+     * If $bGroupBySiren = true, the result does not necessary provide the most recent
+     * value for any fields other than siren and count of siren.
+     * The only reliable information with this option is Siren and Count(Siren).
+     *
+     * @param DateTime $oStartDate
+     * @param DateTime $oEndDate
+     * @param bool $bGroupBySiren
+     *
+     * @return array
+     */
     public function getBorrowersContactDetailsAndSource(\DateTime $oStartDate, \DateTime $oEndDate, $bGroupBySiren)
     {
         $sGroupBy    = ($bGroupBySiren) ? 'GROUP BY com.siren ' : '';

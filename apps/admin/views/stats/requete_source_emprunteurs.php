@@ -171,6 +171,22 @@
                 <?php endforeach; ?>
                 </tbody>
             </table>
+        <?php if ($this->nb_lignes != '') : ?>
+            <table>
+                <tr>
+                    <td id="pager">
+                        <img src="<?= $this->surl ?>/images/admin/first.png" alt="Première" class="first"/>
+                        <img src="<?= $this->surl ?>/images/admin/prev.png" alt="Précédente" class="prev"/>
+                        <input type="text" class="pagedisplay"/>
+                        <img src="<?= $this->surl ?>/images/admin/next.png" alt="Suivante" class="next"/>
+                        <img src="<?= $this->surl ?>/images/admin/last.png" alt="Dernière" class="last"/>
+                        <select class="pagesize">
+                            <option value="<?= $this->nb_lignes ?>" selected="selected"><?= $this->nb_lignes ?></option>
+                        </select>
+                    </td>
+                </tr>
+            </table>
+        <?php endif; ?>
         </div>
     <?php endif; ?>
 </div>
