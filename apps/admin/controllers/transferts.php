@@ -1416,7 +1416,7 @@ class transfertsController extends bootstrap
                 }
             }
 
-            //header('Location: ' . $this->lurl . '/dossiers/edit/' . $projects->id_project);
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $projects->id_project);
             die;
         }
 
@@ -1427,9 +1427,9 @@ class transfertsController extends bootstrap
             $this->aProjects[$key] = $value;
 
             if ($aMandate = array_shift($mandate->select('id_project = ' . $this->aProjects[$key]['id_project'], 'added DESC', 0, 1))) {
-                $this->aProjects[$key]['bic']    = $aMandate['bic'];
-                $this->aProjects[$key]['iban']   = $aMandate['iban'];
-                $this->aProjects[$key]['mandat'] = $aMandate['name'];
+                $this->aProjects[$key]['bic']           = $aMandate['bic'];
+                $this->aProjects[$key]['iban']          = $aMandate['iban'];
+                $this->aProjects[$key]['mandat']        = $aMandate['name'];
                 $this->aProjects[$key]['status_mandat'] = $aMandate['status'];
             }
 
@@ -1440,8 +1440,10 @@ class transfertsController extends bootstrap
             }
 
             if ($aAttachments = $projects->getAttachments($this->aProjects[$key]['id_project'])) {
-                    $this->aProjects[$key]['kbis']    = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['path'] : '';
-                    $this->aProjects[$key]['id_kbis'] = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['id'] : '';
+                $this->aProjects[$key]['kbis']    = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['path'] : '';
+                $this->aProjects[$key]['id_kbis'] = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['id'] : '';
+                $this->aProjects[$key]['rib']     = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['path'] : '';
+                $this->aProjects[$key]['id_rib']  = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['id'] : '';
             }
         }
     }

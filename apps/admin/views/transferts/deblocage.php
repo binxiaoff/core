@@ -42,6 +42,7 @@
             <th>Montant</th>
             <th>BIC</th>
             <th>Iban</th>
+            <th>RIB</th>
             <th>Kbis</th>
             <th>Pouvoir</th>
             <th>Mandat</th>
@@ -57,6 +58,13 @@
                     <td><?= number_format($aProject['amount'], 0, '', '.') . '&nbsp€' ?></td>
                     <td><?= isset($aProject['bic']) ? $aProject['bic'] : '' ?></td>
                     <td><?= isset($aProject['iban']) ? $aProject['iban'] : '' ?></td>
+                    <td>
+                        <?php if (isset($aProject['rib']) && $aProject['rib'] != '') : ?>
+                            <a href="<?= $this->url ?>/attachment/download/id/<?= $aProject['id_rib'] ?>/file/<?= urlencode($aProject['rib']) ?>">
+                                <img src="<?= $this->surl ?>/images/admin/modif.png" alt="RIB"/>
+                            </a>
+                        <?php endif; ?>
+                    </td>
                     <td>
                         <?php if (isset($aProject['kbis']) && $aProject['kbis'] != '') : ?>
                             <a href="<?= $this->url ?>/attachment/download/id/<?= $aProject['id_kbis'] ?>/file/<?= urlencode($aProject['kbis']) ?>">
