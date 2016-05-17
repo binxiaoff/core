@@ -448,6 +448,40 @@ class clients extends clients_crud
         return $result;
     }
 
+    /**
+     * @param array $aLastStatus list of last status to use separated by a column
+     * @return array
+     */
+    public function selectLendersByLastStatus(array $aLastStatus = array())
+    {
+        $sSql = '
+            SELECT c.id_client, c.nom, c.prenom, c.nom_usage, c.naissance, c.email,
+                   ca.adresse1, ca.adresse2, ca.adresse3, ca.ville, ca.cp, p.iso, p.fr,
+                   la.id_lender_account, la.iban, la.bic,
+                   csh.added,
+                   cs.status, cs.label
+            FROM clients_status_history csh
+            INNER JOIN clients c ON c.id_client = csh.id_client
+            INNER JOIN clients_adresses ca ON c.id_client = ca.id_client
+            INNER JOIN pays_v2 p ON p.id_pays = ca.id_pays
+            INNER JOIN lenders_accounts la ON la.id_client_owner = csh.id_client
+            INNER JOIN clients_status cs ON cs.id_client_status = csh.id_client_status
+            WHERE csh.id_client_status_history = (
+                SELECT MAX(csh1.id_client_status_history)
+                FROM clients_status_history csh1
+                WHERE csh1.id_client = csh.id_client
+            )';
+        if (false === empty($aLastStatus)) {
+            $sSql .= ' AND cs.status IN (' . implode(', ', $aLastStatus) . ' ) ';
+        }
+        $oResult = $this->bdd->query($sSql);
+        $aResult = array();
+        while ($aRecord = $this->bdd->fetch_assoc($oResult)) {
+            $aResult[$aRecord['id_client']] = $aRecord;
+        }
+        return $aResult;
+    }
+
     public function update_added($date, $id_client)
     {
         $sql = "UPDATE clients SET added = '" . $date . "' WHERE id_client = " . $id_client;
@@ -971,25 +1005,97 @@ class clients extends clients_crud
         return $aClientsWithoutWelcomeOffer;
     }
 
-    public function getBorrowers($sWhere = null)
+    /**
+     * PLEASE NOTE :
+     * If $bGroupBySiren = true, the result does not necessary provide the most recent
+     * value for any fields other than siren and count of siren.
+     * The only reliable information with this option is Siren and Count(Siren).
+     *
+     * @param DateTime $oStartDate
+     * @param DateTime $oEndDate
+     * @param bool $bGroupBySiren
+     *
+     * @return array
+     */
+    public function getBorrowersContactDetailsAndSource(\DateTime $oStartDate, \DateTime $oEndDate, $bGroupBySiren)
     {
-        if (false === is_null($sWhere)) {
-            $sWhere = ' WHERE ' . $sWhere;
+        $sGroupBy    = ($bGroupBySiren) ? 'GROUP BY com.siren ' : '';
+        $sCountSiren = ($bGroupBySiren) ? 'count(com.siren) AS "countSiren", ' : '';
+
+        $sQuery = 'SELECT
+                        p.id_project,'
+                        . $sCountSiren . '
+                        com.siren,
+                        c.nom,
+                        c.prenom,
+                        c.email,
+                        c.mobile,
+                        c.telephone,
+                        c.source,
+                        c.source2,
+                        c.added,
+                        ps.label
+                    FROM
+                        projects p
+                        INNER JOIN companies com ON p.id_company = com.id_company
+                        INNER JOIN clients c ON com.id_client_owner = c.id_client
+                        INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE
+                        DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '"
+                        AND "'. $oEndDate->format('Y-m-d') . '" '
+                    . $sGroupBy . '
+                    ORDER BY com.siren DESC, c.added DESC';
+
+        $rQuery = $this->bdd->query($sQuery);
+        $aResult = array();
+        while ($record = $this->bdd->fetch_assoc($rQuery)) {
+            $aResult[] = $record;
         }
 
-        $sql = 'SELECT *
-                FROM `clients`
-                INNER JOIN companies ON companies.id_client_owner = clients.id_client
-                INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
-
-        $aClientsBorrower = array();
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aClientsBorrower[] = $record;
-        }
-
-        return $aClientsBorrower;
+        return $aResult;
     }
 
+    public function getFirstSourceForSiren($sSiren, \DateTime $oStartDate = null, \DateTime $oEndDate = null)
+    {
+        if (false === is_null($oStartDate) && false === is_null($oEndDate)) {
+            $oStartDate = new \DateTime('2013-01-01');
+            $oEndDate = new \DateTime('NOW');
+        }
+
+        $sQuery = 'SELECT
+                        c.source
+                    FROM
+                        clients c
+                        INNER JOIN companies com on c.id_client = com.id_client_owner
+                    WHERE
+                    com.siren = ' . $sSiren . '
+                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+                    ORDER BY c.added ASC LIMIT 1';
+
+        $rQuery = $this->bdd->query($sQuery);
+        return ($this->bdd->result($rQuery, 0));
+    }
+
+    public function getLastSourceForSiren($sSiren, \DateTime $oStartDate = null, \DateTime $oEndDate = null)
+    {
+        if (false === is_null($oStartDate) && false === is_null($oEndDate)) {
+            $oStartDate = new \DateTime('2013-01-01');
+            $oEndDate = new \DateTime('NOW');
+        }
+
+        $sQuery = 'SELECT
+                        c.source
+                    FROM
+                        clients c
+                        INNER JOIN companies com on c.id_client = com.id_client_owner
+                    WHERE
+                    com.siren = ' . $sSiren . '
+                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+                    ORDER BY c.added DESC LIMIT 1';
+
+        $rQuery = $this->bdd->query($sQuery);
+        return ($this->bdd->result($rQuery, 0));
+    }
 }
