@@ -105,7 +105,7 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = false;
 
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', 'fr_FR', $this->App);
 
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
@@ -260,7 +260,7 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', 'fr_FR', $this->App);
 
         $this->settings->get('Heure fin periode funding', 'type');
         $this->heureFinFunding = $this->settings->value;
@@ -452,7 +452,7 @@ class ajaxController extends bootstrap
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
 
-        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+        $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', 'fr_FR', $this->App);
 
         $this->projects->get($this->bdd->escape_string($_POST['id']), 'id_project');
 
@@ -499,7 +499,7 @@ class ajaxController extends bootstrap
         $this->echeanciers      = $this->loadData('echeanciers');
 
         //Recuperation des element de traductions
-        $this->lng['preteur-mouvement'] = $this->ln->selectFront('preteur-mouvement', $this->language, $this->App);
+        $this->lng['preteur-mouvement'] = $this->ln->selectFront('preteur-mouvement', 'fr_FR', $this->App);
 
         if (isset($_POST['year'])) {
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
@@ -618,7 +618,7 @@ class ajaxController extends bootstrap
             $this->echeanciers      = $this->loadData('echeanciers');
             $this->projects_status  = $this->loadData('projects_status');
 
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', 'fr_FR', $this->App);
 
             $year = $_POST['year'];
 
@@ -630,7 +630,7 @@ class ajaxController extends bootstrap
     {
         $this->autoFireView = true;
 
-        $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+        $this->lng['profile'] = $this->ln->selectFront('preteur-profile', 'fr_FR', $this->App);
 
         if (isset($_POST['year']) && isset($_POST['id_client'])) {
             $this->clients      = $this->loadData('clients');
@@ -639,7 +639,7 @@ class ajaxController extends bootstrap
             $this->projects     = $this->loadData('projects');
             $this->companies    = $this->loadData('companies');
 
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', 'fr_FR', $this->App);
 
             // Offre de bienvenue motif
             $this->settings->get('Offre de bienvenue motif', 'type');
@@ -1086,7 +1086,7 @@ class ajaxController extends bootstrap
     public function _syntheses_mouvements()
     {
         if ($this->clients->checkAccess() && isset($_POST['duree']) && in_array($_POST['duree'], array('mois', 'trimestres', 'annees')) || 5 == 5) {
-            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', 'fr_FR', $this->App);
 
             $this->echeanciers      = $this->loadData('echeanciers');
             $this->lenders_accounts = $this->loadData('lenders_accounts');
@@ -1336,9 +1336,9 @@ class ajaxController extends bootstrap
         $this->companies     = $this->loadData('companies');
         $this->loadData('transactions_types'); // Loaded for class constants
 
-        $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
-        $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-        $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
+        $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', 'fr_FR', $this->App);
+        $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', 'fr_FR', $this->App);
+        $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', 'fr_FR', $this->App);
 
         // On met en session les POST pour le PDF
         $_SESSION['filtre_vos_operations']['debut']            = $_POST['debut'];
@@ -1517,7 +1517,7 @@ class ajaxController extends bootstrap
     public function _operations_emprunteur()
     {
         $this->autoFireView = true;
-        $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', $this->language, $this->App);
+        $this->lng['espace-emprunteur'] = $this->ln->selectFront('espace-emprunteur', 'fr_FR', $this->App);
 
         $oClients   = $this->loadData('clients');
         $oCompanies = $this->loadData('companies');
@@ -1604,7 +1604,7 @@ class ajaxController extends bootstrap
 
         if (isset($this->params[0]) && isset($this->params[1]) && $this->oProject->get($this->params[0]) && $oClient->get($this->params[1], 'hash')) {
             $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
-            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
+            $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', 'fr_FR', $this->App);
             $this->aRejectedBids           = $oBids->select('id_project = ' . $this->oProject->id_project . ' AND id_lender_account = ' . $oLenderAccount->id_lender_account . ' AND status IN (' . implode(',', array(\bids::STATUS_BID_REJECTED)) . ')', 'id_bid DESC');
         }
     }
@@ -1651,7 +1651,7 @@ class ajaxController extends bootstrap
                 $oCachePool->save($oCachedItem);
             }
 
-            $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
+            $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', 'fr_FR', $this->App);
             $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
             /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */

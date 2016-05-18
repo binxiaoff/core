@@ -16,7 +16,7 @@ class bootstrap extends Controller
         $this->upload  = $this->loadLib('upload');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
 
-        $this->ln               = $this->loadData('textes');
+        $this->ln               = $this->loadData('translations');
         $this->settings         = $this->loadData('settings');
         $this->tree_elements    = $this->loadData('tree_elements');
         $this->blocs            = $this->loadData('blocs');

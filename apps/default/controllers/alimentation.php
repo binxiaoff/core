@@ -19,8 +19,8 @@ class alimentationController extends bootstrap
 
         $this->page = 'alimentation';
 
-        $this->lng['preteur-alimentation'] = $this->ln->selectFront('preteur-alimentation', $this->language, $this->App);
-        $this->lng['etape3']               = $this->ln->selectFront('inscription-preteur-etape-3', $this->language, $this->App);
+        $this->lng['preteur-alimentation'] = $this->ln->selectFront('preteur-alimentation', 'fr_FR', $this->App);
+        $this->lng['etape3']               = $this->ln->selectFront('inscription-preteur-etape-3', 'fr_FR', $this->App);
     }
 
     public function _default()

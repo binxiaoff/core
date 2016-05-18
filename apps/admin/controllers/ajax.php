@@ -1,5 +1,8 @@
 <?php
 
+use \Unilend\Bundle\TranslationBundle\Service\TranslationManager;
+
+
 class ajaxController extends bootstrap
 {
     public function initialize()
@@ -168,18 +171,21 @@ class ajaxController extends bootstrap
     /* Fonction AJAX chargement des noms de la section de traduction */
     public function _loadNomTexte()
     {
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translations');
+
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Recuperation de la liste des noms de la section
-            $this->lNoms = $this->ln->selectTexts($this->params[0]);
+            $this->lNoms = $translationManager->selectNamesForSection($this->params[0]);
         }
     }
 
     /* Fonction AJAX chargement des traductions de la section de traduction */
     public function _loadTradTexte()
     {
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translations');
         if (isset($this->params[0]) && $this->params[0] != '') {
-            // Recuperation de la liste traductions
-            $this->lTranslations = $this->ln->selectTranslations($this->params[1], $this->params[0]);
+            $this->lTranslations = $translationManager->selectTranslation($this->params[1], $this->params[0]);
         }
     }
 

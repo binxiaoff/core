@@ -16,8 +16,8 @@ class thickboxController extends bootstrap
 
     public function _openTraduc()
     {
-        $this->ln = $this->loadData('textes');
-        $this->ln->get($this->params[0], 'id_texte');
+        $this->ln = $this->loadData('translations');
+        $this->ln->get($this->params[0], 'id_translation');
     }
 
     public function _pop_up_upload_particulier()

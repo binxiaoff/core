@@ -12,13 +12,13 @@ use Unilend\Service\Simulator\EntityManager;
 class TranslationLoader implements LoaderInterface
 {
     /**
-     * @var \textes
+     * @var \translations
      */
     private $translationRepository;
 
     public function __construct(EntityManager $entityManager, $defaultLanguage)
     {
-        $this->translationRepository = $entityManager->getRepository('textes');
+        $this->translationRepository = $entityManager->getRepository('translations');
         $this->defaultLanguage       = $defaultLanguage;
 
     }
@@ -41,7 +41,7 @@ class TranslationLoader implements LoaderInterface
         $catalogue    = new MessageCatalogue($this->defaultLanguage);
 
         foreach ($translations as $translation) {
-            $catalogue->set($translation['section'] . '_' . $translation['nom'], $translation['texte'], $domain);
+            $catalogue->set($translation['section'] . '_' . $translation['name'], $translation['translation'], $domain);
         }
 
         return $catalogue;
