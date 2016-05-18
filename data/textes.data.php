@@ -88,9 +88,9 @@ class textes extends textes_crud
     //**************************************** AJOUTS ******************************************//
     //******************************************************************************************//
 
-    public function selectSections($langue = 'fr')
+    public function selectSections($langue = 'fr_FR')
     {
-        $sql      = 'SELECT DISTINCT section,(SELECT COUNT(*) FROM textes t2 WHERE t2.section = t1.section AND id_langue = "' . $langue . '") FROM textes t1 ORDER BY section ASC';
+        $sql      = 'SELECT DISTINCT section,(SELECT COUNT(*) FROM textes t2 WHERE t2.section = t1.section AND lang_ = "' . $langue . '") FROM textes t1 ORDER BY section ASC';
         $resultat = $this->bdd->query($sql);
         $result   = array();
 
@@ -114,12 +114,12 @@ class textes extends textes_crud
 
     public function selectTranslations($section, $text)
     {
-        $sql      = 'SELECT id_langue,texte FROM textes WHERE section = "' . $section . '" AND nom = "' . $text . '"';
+        $sql      = 'SELECT lang,texte FROM textes WHERE section = "' . $section . '" AND nom = "' . $text . '"';
         $resultat = $this->bdd->query($sql);
         $result   = array();
 
         while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[$record['id_langue']] = $record['texte'];
+            $result[$record['lang']] = $record['texte'];
         }
         return $result;
     }
@@ -127,13 +127,13 @@ class textes extends textes_crud
     public function updateTextTranslations($section, $text, $values)
     {
         foreach ($values as $language => $value) {
-            $sql    = 'SELECT COUNT(texte) FROM textes WHERE section = "' . $section . '" AND nom = "' . $text . '" AND id_langue = "' . $language . '"';
+            $sql    = 'SELECT COUNT(texte) FROM textes WHERE section = "' . $section . '" AND nom = "' . $text . '" AND lang = "' . $language . '"';
             $result = $this->bdd->query($sql);
 
             if ($this->bdd->result($result) > 0) {
-                $sql = 'UPDATE textes SET texte = "' . $value . '", updated = NOW() WHERE section = "' . $section . '" AND nom = "' . $text . '" AND id_langue = "' . $language . '"';
+                $sql = 'UPDATE textes SET texte = "' . $value . '", updated = NOW() WHERE section = "' . $section . '" AND nom = "' . $text . '" AND lang = "' . $language . '"';
             } else {
-                $sql = 'INSERT INTO textes(section,nom,id_langue,texte,added,updated) VALUES("' . $section . '","' . $text . '","' . $language . '","' . $value . '",NOW(),NOW())';
+                $sql = 'INSERT INTO textes(section,nom,lang,texte,added,updated) VALUES("' . $section . '","' . $text . '","' . $language . '","' . $value . '",NOW(),NOW())';
             }
             $this->bdd->query($sql);
         }
@@ -141,7 +141,11 @@ class textes extends textes_crud
 
     public function selectFront($section, $id_langue)
     {
-        $sql      = 'SELECT * FROM textes WHERE section = "' . $section . '" AND id_langue = "' . $id_langue . '"';
+        if ('fr' == $id_langue) {
+            $id_langue = 'fr_FR';
+        }
+
+        $sql      = 'SELECT * FROM textes WHERE section = "' . $section . '" AND lang = "' . $id_langue . '"';
         $resultat = $this->bdd->query($sql);
         $result   = array();
 
@@ -157,5 +161,17 @@ class textes extends textes_crud
     public function purgeTrad()
     {
         $this->bdd->query('TRUNCATE TABLE `textes`');
+    }
+
+    public function getAllTranslationMessages($sLanguage)
+    {
+        $sQuery = 'SELECT * FROM textes WHERE lang = ? ';
+        $oStatement = $this->bdd->executeQuery($sQuery, array($sLanguage));
+        $aTranslations = array();
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aTranslations[] = $aRow;
+        }
+
+        return $aTranslations;
     }
 }

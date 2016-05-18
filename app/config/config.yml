@@ -12,6 +12,11 @@ framework:
     assets:
         base_urls:
             - "https://%router.request_context.host%"
+    translator:
+        enabled: true
+        fallbacks: ["fr_FR"]
+        paths:
+            - "%kernel.root_dir%/../src/Unilend/Bundle/TranslationBundle/Resources/translations"
 
 # Twig Configuration
 twig:
