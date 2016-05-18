@@ -456,14 +456,9 @@ class pdfController extends bootstrap
 
     private function generateProxyUniversign($bInstantCreate = false)
     {
-        /**
-        /* On met a jour les dates d'echeances
-        /* en se basant sur la date de creation du pouvoir
-        */
         if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $bInstantCreate) {
-            $regenerationUniversign = '/NoUpdateUniversign'; // On crée pas de nouveau universign
-        } // Ici on creera un nouveau universign car la date est différente
-        else {
+            $regenerationUniversign = '/NoUpdateUniversign';
+        } else {
             $regenerationUniversign = '';
             $this->oProjectsPouvoir->update();
         }
