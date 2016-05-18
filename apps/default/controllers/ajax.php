@@ -71,7 +71,7 @@ class ajaxController extends bootstrap
             /** @var villes $oVille */
             $oVille = $this->loadData('villes');
 
-            if ($oVille->exist(urldecode($this->params[0]), 'ville')) {
+            if ($oVille->exist(str_replace(array(' ', '-'), '', urldecode($this->params[0])), 'REPLACE(REPLACE(ville, " ", ""), "-", "")')) {
                 $response = 'ok';
             }
             unset($oVille);
