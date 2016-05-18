@@ -154,7 +154,6 @@ class usersController extends bootstrap
     // on copie le traitement de default car on peut ne pas avoir les droits sur les users et modifier quand meme ses infos
     function _edit_perso_user()
     {
-        // Formulaire de modification d'un utilisateur
         if (isset($_POST['form_mod_users'])) {
             $this->users->get($this->params[0], 'id_user');
 
@@ -194,36 +193,24 @@ class usersController extends bootstrap
                 $this->retour_pass      = "";
 
                 if ($_POST['old_pass'] != "" && $_POST['new_pass'] != "" && $_POST['new_pass2'] != "") {
-                    // on va checker si l'ancien mot de passe est bien le mot de passe courant du user
                     if ($this->users->password == md5($_POST['old_pass'])) {
-                        // on check si le nouveau mot de passe est valide avec les regles en vigueurs
                         if ($this->ficelle->password_bo($_POST['new_pass'])) {
-                            //on check si les 2 nouveaux mots de passe sont identiques
                             if ($_POST['new_pass'] == $_POST['new_pass2']) {
-                                // tout est good donc on enregistre le nouveau passe.
                                 $this->users->password        = md5($_POST['new_pass']);
                                 $this->users->password_edited = date('Y-m-d H:i:s');
                                 $this->users->update();
 
-                                // on change le pass en session pour ne pas etre d�co
                                 $_SESSION['user']['password']        = md5($_POST['new_pass']);
                                 $_SESSION['user']['password_edited'] = date('Y-m-d H:i:s');
 
-                                //***********************************************//
-                                //*** ENVOI DU MAIL AVEC NEW PASSWORD NON EMT ***//
-                                //***********************************************//
-
-                                // Recuperation du modele de mail
                                 $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
-                                // Variables du mailing
                                 $cms      = $this->cms;
                                 $surl     = $this->surl;
                                 $url      = $this->lurl;
                                 $email    = trim($this->users->email);
                                 $password = $_POST['new_pass'];
 
-                                // Attribution des donn�es aux variables
                                 $sujetMail = $this->mails_text->subject;
                                 eval("\$sujetMail = \"$sujetMail\";");
 
@@ -236,12 +223,10 @@ class usersController extends bootstrap
                                 $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
                                 $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
 
-                                // Envoi du mail
                                 $this->email = $this->loadLib('email', array());
                                 $this->email->setFrom($this->mails_text->exp_email, $exp_name);
                                 $this->email->addRecipient(trim($this->users->email));
 
-                                // ajout du tracking
                                 $this->settings->get('alias_tracking_log', 'type');
                                 $this->alias_tracking_log = $this->settings->value;
                                 if ($this->alias_tracking_log != "") {
@@ -252,7 +237,6 @@ class usersController extends bootstrap
                                 $this->email->setHTMLBody($texteMail);
                                 Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
 
-                                // On enregistre la modif du mot de passe
                                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
                                 $this->loggin_connection_admin->nom_user       = $this->users->firstname . " " . $this->users->name;
@@ -270,7 +254,7 @@ class usersController extends bootstrap
                                 header('Location:' . $this->lurl);
                                 die;
                             } else {
-                                $this->retour_pass = "La confirmation du nouveau de passe doit �tre la m�me que votre nouveau mot de passe";
+                                $this->retour_pass = "La confirmation du nouveau de passe doit &ecirc;tre la m&ecirc;me que votre nouveau mot de passe";
                             }
                         } else {
                             $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et 1 caract&egrave;re sp&eacute;cial";
