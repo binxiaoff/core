@@ -368,7 +368,7 @@ function initAutocompleteCity()
                 search: function(event, ui) {
                     if ($(this).data('autocomplete') == 'birth_city'){
                         $("#insee_birth").val('');
-                        if ($('#group_identiy').find(".country").val() != 1) {
+                        if ($('#group_identiy').length && $('#group_identiy').find(".country").val() != 1) {
                             return false;
                         }
                     } else {
