@@ -385,7 +385,7 @@ class dossiersController extends bootstrap
                 }
 
                 if (false === $dates_valide && in_array(\projects_status::A_FUNDER, array($_POST['status'], $this->current_projects_status->status))) {
-                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h';
+                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus d\'1h';
                 } else {
                     $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
                     $_SESSION['freeow']['message'] = '';
