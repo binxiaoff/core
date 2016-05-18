@@ -787,18 +787,16 @@ class clients extends clients_crud
     private function getBorrowerOperationEarlyRefunding($aProjects, $sStartDate, $sEndDate)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                        `id_project`,
-                        montant/100 AS montant,
-                        DATE(added) as date,
-                        "remboursement-anticipe" AS type
-                    FROM
-                        `receptions`
-                    WHERE
-                        `remb_anticipe` = 1
-                        AND `id_project` IN (' . implode(',', $aProjects) . ')
-                        AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                    GROUP BY `id_project`';
+        $sql = '
+            SELECT id_project,
+                montant / 100 AS montant,
+                DATE(added) as date,
+                "remboursement-anticipe" AS type
+            FROM transactions
+            WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT . '
+                AND id_project IN (' . implode(', ', $aProjects) . ')
+                AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+            GROUP BY id_project';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -973,26 +971,21 @@ class clients extends clients_crud
                     companies.name,
                     DATE(c.added) AS date_creation,
                     (
-                    SELECT
-                            DATE(csh.added)
+                        SELECT MAX(DATE(csh.added))
                         FROM
                             clients_status_history csh
                             LEFT JOIN clients ON clients.id_client = csh.id_client
                             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
                         WHERE
-                            cs.status = ' . \clients_status::VALIDATED . '
+                            cs.status = '. \clients_status::VALIDATED . '
                             AND c.id_client = csh.id_client
-                        ORDER BY
-                            csh.added DESC
-                        LIMIT
-                            1
                     ) AS date_validation
                 FROM
                     clients c
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
                     NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
                     AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
