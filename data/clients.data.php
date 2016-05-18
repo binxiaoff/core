@@ -787,18 +787,16 @@ class clients extends clients_crud
     private function getBorrowerOperationEarlyRefunding($aProjects, $sStartDate, $sEndDate)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                        `id_project`,
-                        montant/100 AS montant,
-                        DATE(added) as date,
-                        "remboursement-anticipe" AS type
-                    FROM
-                        `receptions`
-                    WHERE
-                        `remb_anticipe` = 1
-                        AND `id_project` IN (' . implode(',', $aProjects) . ')
-                        AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                    GROUP BY `id_project`';
+        $sql = '
+            SELECT id_project,
+                montant / 100 AS montant,
+                DATE(added) as date,
+                "remboursement-anticipe" AS type
+            FROM transactions
+            WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT . '
+                AND id_project IN (' . implode(', ', $aProjects) . ')
+                AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+            GROUP BY id_project';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
