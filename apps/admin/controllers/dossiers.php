@@ -372,23 +372,20 @@ class dossiersController extends bootstrap
             }
 
             if (isset($_POST['send_form_dossier_resume'])) {
-                // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
-                /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $dates_valide = false;
                 if (false === empty($_POST['date_publication'])) {
-                    $tab_date_pub_post          = explode('/', $_POST['date_publication']);
-                    $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
-                    $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
-                    $date_retrait_full_test     = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
-                    $date_auj_plus_5min         = date("Y-m-d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
-                    $date_auj_plus_1jour        = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
-                    if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour) {
+                    $oPublicationDate                = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
+                    $oEndOfPublicationDate           = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                    $oPublicationLimitationDate      = new \DateTime('NOW + 5 minutes');
+                    $oEndOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
+
+                    if ($oPublicationDate > $oPublicationLimitationDate && $oEndOfPublicationDate > $oEndOfPublicationLimitationDate) {
                         $dates_valide = true;
                     }
                 }
 
                 if (false === $dates_valide && in_array(\projects_status::A_FUNDER, array($_POST['status'], $this->current_projects_status->status))) {
-                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h';
+                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus d\'1h';
                 } else {
                     $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
                     $_SESSION['freeow']['message'] = '';
