@@ -232,16 +232,16 @@ class emprunteursController extends bootstrap
                 $this->companies->name    = $_POST['societe'];
                 $this->companies->sector  = $_POST['secteur'];
                 $edited_rib               = false;
-                $sCurrent_Iban            = $this->companies->iban;
-                $sNew_Iban                = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
+                $sCurrentIban             = $this->companies->iban;
+                $sNewIban                = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
 
-                if ($this->companies->bic != str_replace(' ', '', strtoupper($_POST['bic'])) || $this->companies->iban != $sNew_Iban) {
-                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . $sNew_Iban . " / " . str_replace(' ', '', strtoupper($_POST['bic'])) . "</tr></td>";
+                if ($this->companies->bic != str_replace(' ', '', strtoupper($_POST['bic'])) || $sCurrentIban != $sNewIban) {
+                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . $sNewIban . " / " . str_replace(' ', '', strtoupper($_POST['bic'])) . "</tr></td>";
                     $edited_rib = true;
                 }
 
                 $this->companies->bic           = str_replace(' ', '', strtoupper($_POST['bic']));
-                $this->companies->iban          = $sNew_Iban;
+                $this->companies->iban          = $sNewIban;
                 $this->companies->email_facture = trim($_POST['email_facture']);
 
                 // on verif si le bic est good
@@ -300,18 +300,19 @@ class emprunteursController extends bootstrap
                 $this->clients_adresses->update();
 
                 if ($edited_rib) {
-                    $this->sendEmail($this->clients->id_client);
+                    $this->sendRibUpdateEmail($this->clients->id_client);
                 }
 
-                if (0 !== strcmp($sCurrent_Iban, $sNew_Iban)) {
-                    //Send email to the control team
-                    $this->sendIbanUpdateEmail($this->clients->id_client, $sCurrent_Iban, $sNew_Iban);
+                if ($sCurrentIban !== $sNewIban) {
+                    /** @var \Unilend\Service\MailerManager $oMailerManager */
+                    $oMailerManager = $this->get('MailerManager');
+                    $oMailerManager->sendIbanUpdateEmail($this->clients->id_client, $sCurrentIban, $sNewIban);
                 }
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
 
-                $_SESSION['freeow']['title']   = 'emprunteur mis a jour';
-                $_SESSION['freeow']['message'] = 'l\'emprunteur a &eacute;t&eacute; mis a jour !';
+                $_SESSION['freeow']['title']   = 'emprunteur mis à jour';
+                $_SESSION['freeow']['message'] = 'l\'emprunteur a été; mis à jour !';
 
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 die;
@@ -326,7 +327,7 @@ class emprunteursController extends bootstrap
     /**
      * @param int $iClientId
      */
-    private function sendEmail($iClientId)
+    private function sendRibUpdateEmail($iClientId)
     {
         /** @var \clients $client */
         $client = $this->loadData('clients');
@@ -334,14 +335,14 @@ class emprunteursController extends bootstrap
         /** @var \projects $project */
         $project = $this->loadData('projects');
 
-        /** @var companies $companie */
-        $companie = $this->loadData('companies');
+        /** @var companies $company */
+        $company = $this->loadData('companies');
 
         /** @var echeanciers_emprunteur $echeanciers_emprunteur */
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
 
-        foreach ($companie->select('id_client_owner = ' . $iClientId) as $company2) {
-            foreach ($project->select('id_company = ' . $company2['id_company']) as $projects) {
+        foreach ($company->select('id_client_owner = ' . $iClientId) as $CurrentCompany) {
+            foreach ($project->select('id_company = ' . $CurrentCompany['id_company']) as $projects) {
                 $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $iClientId . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
 
                 if (false === empty($aMandats)) {
@@ -367,8 +368,8 @@ class emprunteursController extends bootstrap
                     //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
                     //**********************************************//
                     $project->get($projects['id_project'], 'id_project');
-                    $companie->get($project->id_company, 'id_company');
-                    $client->get($companie->id_client_owner, 'id_client');
+                    $company->get($project->id_company, 'id_company');
+                    $client->get($company->id_client_owner, 'id_client');
                     $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
                     $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
                     $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
@@ -388,7 +389,7 @@ class emprunteursController extends bootstrap
                         'surl'                   => $this->surl,
                         'url'                    => $this->lurl,
                         'prenom_e'               => $client->prenom,
-                        'nom_e'                  => $companie->name,
+                        'nom_e'                  => $company->name,
                         'mensualite'             => $this->ficelle->formatNumber($mensualite),
                         'montant'                => $this->ficelle->formatNumber($project->amount, 0),
                         'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
@@ -404,7 +405,6 @@ class emprunteursController extends bootstrap
 
                     /** @var \Email email */
                     $email = $this->loadLib('email');
-
                     $email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
                     $email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
                     $email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
@@ -421,34 +421,6 @@ class emprunteursController extends bootstrap
         }
     }
 
-    /** @var Mailer $oEmail
-     * @param int $iClientId
-     * @param string $sCurrent_Iban
-     * @param string $sNew_Iban
-     * @return bool
-     */
-    private function sendIbanUpdateEmail($iClientId, $sCurrent_Iban, $sNew_Iban)
-    {
-        $sTo      = 'controle_interne@unilend.fr';
-        $sSubject = 'Modification du IBAN dans le BO';
-        $sBody    = '
-                <html>
-                    <body>Le IBAN du client : ' . $iClientId . ' vient d\'être modifié par : ' . $_SESSION['user']['firstname'] . ' ' . $_SESSION['user']['name'] . ' (identifiant:' . $_SESSION['user']['id_user'] . ')' .
-            '<ul>
-                            <li>Ancien IBAN : ' . $sCurrent_Iban . '</li>
-                            <li>Nouvel IBAN : ' . $sNew_Iban . '</li>
-                        </ul>
-                    </body>
-                </html>';
-        /** @var Mailer $oEmail */
-        $oEmail = $this->loadLib('email');
-
-        $oEmail->setFrom('admin_bo@unilend.fr', 'Admin BO');
-        $oEmail->setSubject(stripslashes($sSubject));
-        $oEmail->setHTMLBody(stripslashes($sBody));
-        $oEmail->addRecipient($sTo);
-        return Mailer::send($oEmail);
-    }
 
     public function _RIBlightbox()
     {

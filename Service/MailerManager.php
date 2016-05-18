@@ -1096,5 +1096,34 @@ class MailerManager
         }
     }
 
+    /**
+     * @param int $iClientId
+     * @param string $sCurrentIban
+     * @param string $sNewIban
+     * @return bool
+     */
+    public function sendIbanUpdateEmail($iClientId, $sCurrentIban, $sNewIban)
+    {
+        $this->oMailText->get('uninotification-modification-iban-bo', 'lang = "' . $this->sLanguage . '" AND type');
 
+        $aMail        = array(
+            'id_client'  => $iClientId,
+            'first_name' => $_SESSION['user']['firstname'],
+            'name'       => $_SESSION['user']['name'],
+            'user_id'    => $_SESSION['user']['id_user'],
+            'old_iban'   => $sCurrentIban,
+            'new_iban'   => $sNewIban
+        );
+        $aVars        = $this->oTNMP->constructionVariablesServeur($aMail);
+        $sMailSubject = strtr(utf8_decode($this->oMailText->subject), $aVars);
+        $sMailBody    = strtr(utf8_decode($this->oMailText->content), $aVars);
+        $sSender      = strtr(utf8_decode($this->oMailText->exp_name), $aVars);
+
+        $this->oEmail->setFrom($this->oMailText->exp_email, $sSender);
+        $this->oEmail->setSubject(stripslashes($sMailSubject));
+        $this->oEmail->setHTMLBody(stripslashes($sMailBody));
+
+        $this->oEmail->addRecipient('controle_interne@unilend.fr');
+        return \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
+    }
 }
