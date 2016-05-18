@@ -28,34 +28,17 @@
 
 class projects_pouvoir extends projects_pouvoir_crud
 {
+    const STATUS_PENDING   = 0;
+    const STATUS_SIGNED    = 1;
+    const STATUS_CANCELLED = 2;
+    const STATUS_FAILED    = 3;
 
-    function projects_pouvoir($bdd, $params = '')
+    public function projects_pouvoir($bdd, $params = '')
     {
         parent::projects_pouvoir($bdd, $params);
     }
 
-    function get($id, $field = 'id_pouvoir')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_pouvoir')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -63,7 +46,7 @@ class projects_pouvoir extends projects_pouvoir_crud
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `projects_pouvoir`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM projects_pouvoir' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
@@ -73,22 +56,19 @@ class projects_pouvoir extends projects_pouvoir_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `projects_pouvoir` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        $result = $this->bdd->query('SELECT COUNT(*) FROM projects_pouvoir' . $where);
+        return (int) $this->bdd->result($result);
     }
 
-    function exist($id, $field = 'id_pouvoir')
+    public function exist($id, $field = 'id_pouvoir')
     {
-        $sql    = 'SELECT * FROM `projects_pouvoir` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
+        $result = $this->bdd->query('SELECT * FROM projects_pouvoir WHERE ' . $field . ' = "' . $id . '"');
         return ($this->bdd->fetch_array($result) > 0);
     }
 }
