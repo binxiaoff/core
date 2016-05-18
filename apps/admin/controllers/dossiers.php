@@ -375,7 +375,7 @@ class dossiersController extends bootstrap
                 $dates_valide = false;
                 if (false === empty($_POST['date_publication'])) {
                     $oPublicationDate                = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
-                    $oEndOfPublicationDate           = new \DateTime(str_replace('/', '-', $_POST['date_retrait']) . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                    $oEndOfPublicationDate           = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
                     $oPublicationLimitationDate      = new \DateTime('NOW + 5 minutes');
                     $oEndOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
 
