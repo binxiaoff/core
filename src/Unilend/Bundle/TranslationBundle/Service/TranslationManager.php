@@ -14,17 +14,18 @@ class TranslationManager
     /** @var TranslationLoader  */
     private $translationLoader;
 
-    public function __construct(EntityManager $entityManager, TranslationLoader $translationLoader, $defaultLanguage)
+    public function __construct(EntityManager $entityManager, TranslationLoader $translationLoader, $defaultLanguage, $rootDirectory)
     {
         $this->entityManager     = $entityManager;
         $this->translationLoader = $translationLoader;
         $this->defaultLanguage   = $defaultLanguage;
+        $this->rootDirectory     = $rootDirectory;
     }
 
-    private function clearLanguageCache()
+    public function clearLanguageCache()
     {
-        $cacheDir = __DIR__ . '/../../../../var/cache';
-        $finder = new \Symfony\Component\Finder\Finder();
+        $cacheDir = $this->rootDirectory . '/../var/cache';
+        $finder   = new \Symfony\Component\Finder\Finder();
 
         $finder->in(array($cacheDir . '/dev/translations', $cacheDir . '/prod/translations'))->files();
 
@@ -32,6 +33,7 @@ class TranslationManager
             unlink($file->getRealpath());
         }
     }
+
 
     public function selectSections($sLanguage)
     {
@@ -55,8 +57,10 @@ class TranslationManager
     public function selectTranslation($sSection, $sName)
     {
         /** @var \translations $translations */
-        $translations  = $this->entityManager->getRepository('translations');
-        return $translations->selectTranslation($sSection, $sName);
+        $translations = $this->entityManager->getRepository('translations');
+        $sTranslation = $translations->selectTranslation($sSection, $sName);
+
+        return stripcslashes($sTranslation);
     }
 
     /**
@@ -119,10 +123,5 @@ class TranslationManager
 
         return $translations;
     }
-
-
-
-
-
 
 }

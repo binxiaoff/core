@@ -20,6 +20,8 @@
     <div class="btnDroite">
         <a href="<?= $this->lurl ?>/traductions/add" class="btn_link thickbox">Ajouter une traduction</a>&nbsp;&nbsp;
         <a href="<?=$this->lurl?>/traductions/export" class="btn_link">Export</a>&nbsp;&nbsp;
+        <a href="<?=$this->lurl?>/traductions/regenerateTranslationCache" class="btn_link">Appliquer les modifications des trads</a>&nbsp;&nbsp;
+
     </div>
     <?php
     if (count($this->lSections) > 0) : ?>

@@ -25,7 +25,7 @@ class traductionsController extends bootstrap
         if (isset($_POST['form_add_traduction'])) {
             $sSection     = $this->bdd->generateSlug($_POST['section']);
             $sName        = $this->bdd->generateSlug($_POST['name']);
-            $sTranslation = addslashes($_POST['translation']);
+            $sTranslation = $_POST['translation'];
 
             $translationManager->addTranslation($sSection, $sName, $sTranslation);
 
@@ -46,7 +46,7 @@ class traductionsController extends bootstrap
         }
 
         if (isset($_POST['form_mod_traduction']) && isset($_POST['send_traduction']) && $_POST['send_traduction'] == 'Modifier') {
-            $sTranslation = addslashes($_POST['translation']);
+            $sTranslation = $_POST['translation'];
             $translationManager->modifyTranslation($_POST['section'], $_POST['nom'], $sTranslation);
 
             $_SESSION['freeow']['title']   = 'Modification d\'une traduction';
@@ -74,18 +74,22 @@ class traductionsController extends bootstrap
 
     public function _export()
     {
-        // On masque les Head, header et footer originaux plus le debug
-        $this->autoFireHeader = false;
-        $this->autoFireHead   = false;
-        $this->autoFireFooter = false;
-        $this->autoFireDebug  = false;
-
-        // On place le redirect sur la home
+        $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        // Requete de l'export des traductions
-        $this->requete        = 'SELECT * FROM textes ORDER BY section ASC';
+        $this->requete        = 'SELECT * FROM translations ORDER BY section ASC';
         $this->requete_result = $this->bdd->query($this->requete);
+    }
+
+    public function _regenerateTranslationCache()
+    {
+        $this->hideDecoration();
+        $this->autoFireView = false;
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translations');
+        $translationManager->clearLanguageCache();
+        header('Location:' . $this->lurl . '/traductions');
+        die;
     }
 
 }
