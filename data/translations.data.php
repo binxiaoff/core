@@ -136,7 +136,7 @@ class translations extends translations_crud
         while ($record = $this->bdd->fetch_array($resultat)) {
             $start                  = (isset($_SESSION['user']['id_user'], $_SESSION['modification']) && $_SESSION['user']['id_user'] != "" && $_SESSION['modification'] == 1 ? "<trad onclick='openTraduc(" . $record['id_texte'] . "); return false;'>" : "");
             $end                    = (isset($_SESSION['user']['id_user'], $_SESSION['modification']) && $_SESSION['user']['id_user'] != "" && $_SESSION['modification'] == 1 ? "</trad>" : "");
-            $result[$record['nom']] = $start . $record['texte'] . $end;
+            $result[$record['name']] = $start . $record['translation'] . $end;
         }
 
         return $result;
