@@ -792,7 +792,7 @@ class projectsController extends bootstrap
 
                 while ($bidsList = $bids->select('id_project = ' . $projects->id_project, 'ordre ASC', $offset, $limit)) {
                     foreach ($bidsList as $bid) {
-                        echo $bid['ordre'] . ';' . $bid['rate'] . ' %;' . $bid['amount'] . ' €;"' . $bidStatus[$bid['status']] . '"' . PHP_EOL;
+                        echo $bid['ordre'] . ';' . $bid['rate'] . ' %;' . bcdiv($bid['amount'], 100) . ' €;"' . $bidStatus[$bid['status']] . '"' . PHP_EOL;
                     }
                     $offset += $limit;
                 }
