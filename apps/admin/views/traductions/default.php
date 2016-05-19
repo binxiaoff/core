@@ -17,11 +17,14 @@
         <li>Traductions</li>
     </ul>
     <h1>Liste des traductions</h1>
+    <div class="btnGauche">
+        <a href="<?= $this->lurl ?>/traductions/regenerateTranslationCache" class="btn_link" style="background-color: slateblue;">
+            Appliquer les modifications des trads
+        </a>
+    </div>
     <div class="btnDroite">
-        <a href="<?= $this->lurl ?>/traductions/add" class="btn_link thickbox">Ajouter une traduction</a>&nbsp;&nbsp;
-        <a href="<?=$this->lurl?>/traductions/export" class="btn_link">Export</a>&nbsp;&nbsp;
-        <a href="<?=$this->lurl?>/traductions/regenerateTranslationCache" class="btn_link">Appliquer les modifications des trads</a>&nbsp;&nbsp;
-
+        <a href="<?= $this->lurl ?>/traductions/add" class="btn_link thickbox">Ajouter une traduction</a>
+        <a href="<?= $this->lurl ?>/traductions/export" class="btn_link">Export</a>
     </div>
     <?php
     if (count($this->lSections) > 0) : ?>
@@ -47,7 +50,7 @@
                                 <?php foreach ($this->lNoms as $nom) : ?>
                                     <option value="<?= $nom['name'] ?>"
                                         <?= (isset($this->params[1]) && $this->params[1] == $nom['name'] ? ' selected="selected"' : '') ?>><?= $nom['name'] ?></option>
-                                    <?php endforeach; ?>
+                                <?php endforeach; ?>
                             </select>
                         <?php endif; ?>
                     </div>
@@ -55,7 +58,10 @@
                 <td>&nbsp;</td>
                 <th>
                     <a href="<?= $this->lurl ?>/traductions/add/<?= ((isset($this->params[0]) && $this->params[0] != '') ? $this->params[0] : '') ?>" id="btnAjouterTraduction"
-                       class="btn_link thickbox"<?= ((isset($this->params[0]) && $this->params[0] != '') ? ' style="display:block;"' : ' style="display:none;"') ?>>Ajouter une traduction pour la section</a></th>
+                       class="btn_link thickbox"<?= ((isset($this->params[0]) && $this->params[0] != '') ? ' style="display:block;"' : ' style="display:none;"') ?>>
+                        Ajouter une traduction pour la section
+                    </a>
+                </th>
             </tr>
         </table>
         <div id="elementTraduction">
@@ -84,8 +90,8 @@
                 </form>
             <?php endif; ?>
         </div>
-        <?php else :?>
+    <?php else : ?>
         <p>Il n'y a aucune section pour le moment.</p>
-        <?php endif; ?>
+    <?php endif; ?>
 </div>
 <?php unset($_SESSION['freeow']); ?>
