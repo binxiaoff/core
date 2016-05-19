@@ -148,8 +148,8 @@ if (strtotime($this->companies->added) >= $dateDepartControlPays) {
 
                     </div><!-- /.row -->
                     <div class="row">
-                        <input type="text" name="email_inscription" title="<?= $this->lng['etape1']['email'] ?>" value="<?= ($this->clients->email ? $this->clients->email : $this->lng['etape1']['email']) ?>" id="email_inscription" class="field field-large required" data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this.value,'conf_email_inscription')">
-                        <input type="text" name="conf_email_inscription" title="<?= $this->lng['etape1']['confirmation-email'] ?>" value="<?= ($this->clients->email ? $this->clients->email : $this->lng['etape1']['confirmation-email']) ?>" id="conf_email_inscription" class="field field-large required" data-validators="Confirmation,{ match: 'email_inscription' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}">
+                        <input type="text" name="email_inscription" title="<?= $this->lng['etape1']['email'] ?>" value="<?= ($this->clients->email ? $this->clients->email : $this->lng['etape1']['email']) ?>" id="email_inscription" class="field field-large required" data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" placeholder="<?= $this->lng['etape1']['email'] ?>" onkeyup="checkConf(this, this.value,'conf_email_inscription')">
+                        <input type="text" name="conf_email_inscription" title="<?= $this->lng['etape1']['confirmation-email'] ?>" value="<?= ($this->clients->email ? $this->clients->email : $this->lng['etape1']['confirmation-email']) ?>" id="conf_email_inscription" class="field field-large required" data-validators="Confirmation,{ match: 'email_inscription' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" placeholder="<?= $this->lng['etape1']['confirmation-email'] ?>" onkeyup="checkConf(this, this.value,'email_inscription')">
                     </div><!-- /.row -->
                 </div><!-- /.add-new-profile -->
 
