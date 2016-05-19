@@ -102,6 +102,24 @@ class TranslationManager
         $translations->update();
     }
 
+    public function getAllTranslationsForSection($sSection, $sLanguage = null)
+    {
+        if (is_null($sLanguage)) {
+            $sLanguage = $this->defaultLanguage;
+        }
+
+        /** @var \translations $translations */
+        $translations            = $this->entityManager->getRepository('translations');
+        $aTranslationsForSection = $translations->getAllTranslationsForSection($sSection, $sLanguage);
+        $aTranslations           = array();
+
+        foreach($aTranslationsForSection as $key => $translation){
+            $aTranslations[$translation['name']] = $translation['translation'];
+        }
+
+        return $translations;
+    }
+
 
 
 

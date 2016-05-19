@@ -234,8 +234,9 @@ class dossiersController extends bootstrap
 
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
-            $oTextes                  = $this->loadData('textes');
-            $aTranslations            = $oTextes->selectFront('projet', $this->language);
+            /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+            $translationManager = $this->get('unilend.service.translations');
+            $aTranslations      = $translationManager->getAllTranslationsForSection('projet');
 
             foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
                 if ($aAttachment['id'] == \attachment_type::PHOTOS_ACTIVITE) {

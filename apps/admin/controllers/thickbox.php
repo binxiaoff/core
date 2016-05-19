@@ -108,7 +108,9 @@ class thickboxController extends bootstrap
                 $this->bDecisionDate = false;
                 $this->bReceiver     = false;
 
-                $aProjectTexts = $this->ln->selectFront('projet', $this->language, $this->App);
+                /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+                $translationManager = $this->get('unilend.service.translations');
+                $aProjectTexts = $translationManager->getAllTranslationsForSection('projet');
                 $this->sInfoStatusChange = trim($aProjectTexts['info-passage-statut-probleme']);
 
                 break;

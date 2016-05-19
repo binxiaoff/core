@@ -166,8 +166,9 @@ class attachment_type extends attachment_type_crud
             );
         }
 
-        $oTextes = new \textes($this->bdd);
-        $aTranslations = $oTextes->selectFront('projet', $sLanguage);
+        //TODO service or any other way of using translation once front is migrated
+        $oTranslations = new \translations($this->bdd);
+        $aTranslations = $oTranslations->selectFront('projet', $sLanguage);
 
         $aTypes = array_map(
             function($aType) use ($aTranslations) {
@@ -209,8 +210,9 @@ class attachment_type extends attachment_type_crud
             );
         }
 
-        $oTextes = new \textes($this->bdd);
-        $aTranslations = $oTextes->selectFront('projet', $sLanguage);
+        //TODO service or any other way of using translation once front is migrated
+        $oTranslations = new \translations($this->bdd);
+        $aTranslations = $oTranslations->selectFront('projet', $sLanguage);
 
         $aTypes = array_map(
             function($aType) use ($aTranslations) {

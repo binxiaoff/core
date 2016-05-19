@@ -110,6 +110,38 @@ class translations extends translations_crud
         return $oStatement->fetchColumn(0);
     }
 
+    public function getAllTranslationsForSection($sSection, $sLanguage)
+    {
+        $sQuery = 'SELECT * FROM translations WHERE section = ? AND lang = ?';
+        $oStatement = $this->bdd->executeQuery($sQuery, array($sSection, $sLanguage));
+        $aTranslations  = array();
+        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
+            $aTranslations[] = $aRow;
+        }
+
+        return $aTranslations;
+    }
+
+    //TODO delete after front has been migrated completely AND function no longer used anyway
+    public function selectFront($section, $id_langue)
+    {
+        if ('fr' == $id_langue) {
+            $id_langue = 'fr_FR';
+        }
+
+        $sql      = 'SELECT * FROM translations WHERE section = "' . $section . '" AND lang = "' . $id_langue . '"';
+        $resultat = $this->bdd->query($sql);
+        $result   = array();
+
+        while ($record = $this->bdd->fetch_array($resultat)) {
+            $start                  = (isset($_SESSION['user']['id_user'], $_SESSION['modification']) && $_SESSION['user']['id_user'] != "" && $_SESSION['modification'] == 1 ? "<trad onclick='openTraduc(" . $record['id_texte'] . "); return false;'>" : "");
+            $end                    = (isset($_SESSION['user']['id_user'], $_SESSION['modification']) && $_SESSION['user']['id_user'] != "" && $_SESSION['modification'] == 1 ? "</trad>" : "");
+            $result[$record['nom']] = $start . $record['texte'] . $end;
+        }
+
+        return $result;
+    }
+
 
 
 }

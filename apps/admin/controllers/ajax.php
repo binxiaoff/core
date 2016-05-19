@@ -673,7 +673,9 @@ class ajaxController extends bootstrap
 
         if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
 
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+            /** @var TranslationManager $translationManager */
+            $translationManager   = $this->get('unilend.service.translations');
+            $this->lng['profile'] = $translationManager->getAllTranslationsForSection('preteur-profile');
 
             $year = $_POST['year'];
 

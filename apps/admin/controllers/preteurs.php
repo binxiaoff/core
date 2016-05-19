@@ -185,8 +185,10 @@ class preteursController extends bootstrap
         $this->aAvailableAttachments = $this->aIdentity + $this->aDomicile + $this->aRibAndFiscale + $this->aOther;
 
         //// transactions mouvements ////
-        $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-        $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translations');
+        $this->lng['profile']                           = $translationManager->getAllTranslationsForSection('preteur-profile');
+        $this->lng['preteur-operations-vos-operations'] = $translationManager->getAllTranslationsForSection('preteur-operations-vos-operations');
 
         $year = date('Y');
 
@@ -1481,8 +1483,9 @@ class preteursController extends bootstrap
 
         $this->getMessageAboutClientStatus();
 
-        $oTextes                   = $this->loadData('textes');
-        $this->lng['autobid']      = $oTextes->selectFront('autobid', $this->language, $this->App);
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translations');
+        $this->lng['autobid']      = $translationManager->getAllTranslationsForSection('autobid');
         /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Service\ClientManager $oClientManager */

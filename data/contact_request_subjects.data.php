@@ -16,8 +16,9 @@ class contact_request_subjects extends contact_request_subjects_crud
             $result[$record['id_contact_request_subject']] = $record;
         }
 
-        $oTextes = new \textes($this->bdd);
-        $aTranslations = $oTextes->selectFront('espace-emprunteur', $sLanguage);
+        //TODO service or any other way of using translation once front is migrated
+        $oTranslations = new \translations($this->bdd);
+        $aTranslations = $oTranslations->selectFront('espace-emprunteur', $sLanguage);
 
         $aSubjects = array_map(
             function($aSubject) use ($aTranslations) {

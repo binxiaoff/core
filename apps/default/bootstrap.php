@@ -64,15 +64,6 @@ class bootstrap extends Controller
         // Recuperation de la liste des langue disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];
 
-        // Formulaire de modification d'un texte de traduction
-        if (isset($_POST['form_mod_traduction'])) {
-            foreach ($this->lLangues as $key => $lng) {
-                $values[$key] = $_POST['texte-' . $key];
-            }
-
-            $this->ln->updateTextTranslations($_POST['section'], $_POST['nom'], $values);
-        }
-
         $this->loadCss('default/izicom');
         $this->loadCss('default/colorbox');
         $this->loadCss('default/fonts');
@@ -216,17 +207,21 @@ class bootstrap extends Controller
 
         if (false === $oCachedItem->isHit()) {
             $aElements = array(
-                'TradHeader' => $this->ln->selectFront('header', $this->language, $this->App),
-                'TradFooter' => $this->ln->selectFront('footer', $this->language, $this->App),
-                'TradHome'   => $this->ln->selectFront('home', $this->language, $this->App)
+                'TradHeader' => $this->ln->selectFront('header','fr_FR', $this->App),
+                'TradFooter' => $this->ln->selectFront('footer', 'fr_FR', $this->App),
+                'TradHome'   => $this->ln->selectFront('home', 'fr_FR', $this->App)
             );
+
 
             $oCachedItem->set($aElements)
                         ->expiresAfter(3600);
             $oCachePool->save($oCachedItem);
         } else {
-            $aElements   = $oCachedItem->get();
-        }
+            $aElements = array(
+                'TradHeader' => $this->ln->selectFront('header','fr_FR', $this->App),
+                'TradFooter' => $this->ln->selectFront('footer', 'fr_FR', $this->App),
+                'TradHome'   => $this->ln->selectFront('home', 'fr_FR', $this->App)
+            );        }
 
         $this->lng['header'] = $aElements['TradHeader'];
         $this->lng['footer'] = $aElements['TradFooter'];
@@ -727,8 +722,8 @@ class bootstrap extends Controller
         $this->companies_notifs = $this->loadData('companies');
         $this->loans            = $this->loadData('loans');
 
-        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', $this->language, $this->App);
-        $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', $this->language, $this->App);
+        $this->lng['preteur-synthese'] = $this->ln->selectFront('preteur-synthese', 'fr_FR', $this->App);
+        $this->lng['notifications']    = $this->ln->selectFront('preteur-notifications', 'fr_FR', $this->App);
 
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
