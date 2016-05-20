@@ -153,7 +153,7 @@ class ProjectManager
             $oBidLog->nb_bids_ko      = $nb_bids_ko;
             $oBidLog->total_bids      = $oBid->counter('id_project = ' . $oProject->id_project);
             $oBidLog->total_bids_ko   = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 2');
-            $oBidLog->rate_max        = $oBid->getProjectMaxRate($oProject->id_project);
+            $oBidLog->rate_max        = $oBid->getProjectMaxRate($oProject);
             $oBidLog->fin             = date('Y-m-d H:i:s');
             $oBidLog->create();
         }
@@ -260,7 +260,7 @@ class ProjectManager
 
         $oSettings->get('Auto-bid step', 'type');
         $fStep        = (float)$oSettings->value;
-        $fCurrentRate = (float)$oBid->getProjectMaxRate($oProject->id_project) - $fStep;
+        $fCurrentRate = $oBid->getProjectMaxRate($oProject) - $fStep;
 
         while ($aAutoBidList = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
             foreach ($aAutoBidList as $aAutobid) {

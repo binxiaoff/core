@@ -198,7 +198,7 @@ class projectsController extends bootstrap
                     $this->form_ok = false;
                 }
 
-                $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects->id_project);
+                $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects);
 
                 if ($this->soldeBid >= $this->projects->amount && $_POST['taux_pret'] >= $fMaxCurrentRate) {
                     $this->form_ok = false;
@@ -512,7 +512,7 @@ class projectsController extends bootstrap
                 $this->resteApayer          = 0;
                 $this->pourcentage          = 100;
                 $this->decimalesPourcentage = 0;
-                $this->txLenderMax          = $this->bids->getProjectMaxRate($this->projects->id_project);
+                $this->txLenderMax          = $this->bids->getProjectMaxRate($this->projects);
             } else {
                 $this->payer                = $this->soldeBid;
                 $this->resteApayer          = $this->projects->amount - $this->soldeBid;
