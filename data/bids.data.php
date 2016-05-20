@@ -284,7 +284,7 @@ class bids extends bids_crud
                     WHERE id_project = ' . $iProjectId . '
                     GROUP BY rate ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
-            while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
                 $aBidsByRate[] = $aRow;
             }
         }

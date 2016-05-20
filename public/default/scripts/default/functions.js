@@ -112,6 +112,10 @@
             el.addClass("expand");
         });
 
+        $doc.on("click", "#rejected-offers", function() {
+            $(".table-body.rejecteds").addClass("visible");
+            $("#rejected-offers").remove();
+        });
 
         $(".table-body").click(function() {
             var targ = $(this);
