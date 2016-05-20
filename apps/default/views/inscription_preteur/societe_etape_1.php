@@ -210,14 +210,14 @@
                 <input type="text" name="email_inscription" title="<?= $this->lng['etape1']['email'] ?>" placeholder="<?= $this->lng['etape1']['email'] ?>"
                        value="<?= $this->aForm['societe']['email_inscription'] ?>"
                        id="email_inscription" class="field field-large required"
-                       data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this.value,'conf_email_inscription')">
+                       data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this, this.value,'conf_email_inscription')">
                 <em><?= $this->lng['etape1']['info-email'] ?></em>
             </span>
             <span class="pass-field-holder">
                 <input type="text" name="conf_email_inscription" title="<?= $this->lng['etape1']['confirmation-email'] ?>" placeholder="<?= $this->lng['etape1']['confirmation-email'] ?>"
                        value="<?= $this->aForm['societe']['conf_email_inscription'] ?>"
                        id="conf_email_inscription" class="field field-large required"
-                       data-validators="Confirmation,{ match: 'email_inscription' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}">
+                       data-validators="Confirmation,{ match: 'email_inscription' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this, this.value,'email_inscription')">
             </span>
         </div>
         <div class="row">
