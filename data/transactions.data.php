@@ -82,28 +82,6 @@ class transactions extends transactions_crud
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    public function getSumDepotByMonths($id_client, $year)
-    {
-        $sql = '
-            SELECT SUM(montant / 100) AS montant,
-                LEFT(date_transaction, 7) AS date
-            FROM transactions
-            WHERE status = 1
-                AND etat = 1
-                AND YEAR(date_transaction) = ' . $year . '
-                AND type_transaction IN (' . implode(', ', array(\transactions_types::TYPE_LENDER_SUBSCRIPTION, \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT, \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT)) . ')
-                AND id_client = ' . $id_client . '
-            GROUP BY LEFT(date_transaction, 7)';
-
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $d          = explode('-', $rec['date']);
-            $res[$d[1]] = $rec['montant'];
-        }
-        return $res;
-    }
-
     public function sum($where = '', $champ)
     {
         if ($where != '') {

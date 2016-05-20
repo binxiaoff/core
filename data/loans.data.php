@@ -219,18 +219,6 @@ class loans extends loans_crud
         return $montant;
     }
 
-    public function getSumPretsByMonths($id_lender, $year)
-    {
-        $sql = 'SELECT SUM(amount/100) AS montant, LEFT(added,7) AS date FROM loans WHERE YEAR(added) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 0 GROUP BY LEFT(added,7)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $d          = explode('-', $rec['date']);
-            $res[$d[1]] = $rec['montant'];
-        }
-        return $res;
-    }
-
     public function sum($where = '', $champ)
     {
         if ($where != '') {

@@ -22,21 +22,6 @@ class ajaxController extends bootstrap
         $_SESSION['modification'] = $this->params[0];
     }
 
-    public function _session_etape2_lender()
-    {
-        $this->autoFireView = false;
-
-        unset($_SESSION['inscription_etape2']);
-
-        $_SESSION['inscription_etape2']['bic'] = str_replace(' ', '', $_POST['bic']);
-        for ($i = 1; $i <= 7; $i++) {
-            $_SESSION['inscription_etape2']['iban'] .= str_replace(' ', '', $_POST['iban' . $i]);
-        }
-        $_SESSION['inscription_etape2']['origine_des_fonds'] = $_POST['origine_des_fonds'];
-        $_SESSION['inscription_etape2']['cni_passeport']     = $_POST['cni_passeport'];
-        $_SESSION['inscription_etape2']['preciser']          = $_POST['preciser'];
-    }
-
     public function _checkPostCode()
     {
         $this->autoFireView = false;
@@ -489,37 +474,6 @@ class ajaxController extends bootstrap
         $this->status = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
     }
 
-    public function _loadGraph()
-    {
-        $this->autoFireView = true;
-
-        $this->transactions     = $this->loadData('transactions');
-        $this->lenders_accounts = $this->loadData('lenders_accounts');
-        $this->loans            = $this->loadData('loans');
-        $this->echeanciers      = $this->loadData('echeanciers');
-
-        //Recuperation des element de traductions
-        $this->lng['preteur-mouvement'] = $this->ln->selectFront('preteur-mouvement', $this->language, $this->App);
-
-        if (isset($_POST['year'])) {
-            $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
-
-            $sumVersParMois             = $this->transactions->getSumDepotByMonths($this->clients->id_client, $_POST['year']);
-            $sumPretsParMois            = $this->loans->getSumPretsByMonths($this->lenders_accounts->id_lender_account, $_POST['year']);
-            $sumRembParMois             = $this->echeanciers->getSumRembByMonths($this->lenders_accounts->id_lender_account, $_POST['year']);
-            $sumIntbParMois             = $this->echeanciers->getSumIntByMonths($this->lenders_accounts->id_lender_account, $_POST['year']);
-            $sumRevenuesfiscalesParMois = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account, $_POST['year']);
-
-            for ($i = 1; $i <= 12; $i++) {
-                $i                         = ($i < 10 ? '0' . $i : $i);
-                $this->sumVersParMois[$i]  = number_format(($sumVersParMois[$i] != '' ? $sumVersParMois[$i] : 0), 2, '.', '');
-                $this->sumPretsParMois[$i] = number_format(($sumPretsParMois[$i] != '' ? $sumPretsParMois[$i] : 0), 2, '.', '');
-                $this->sumRembParMois[$i]  = number_format(($sumRembParMois[$i] != '' ? $sumRembParMois[$i] - $sumRevenuesfiscalesParMois[$i] : 0), 2, '.', '');
-                $this->sumIntbParMois[$i]  = number_format(($sumIntbParMois[$i] != '' ? $sumIntbParMois[$i] - $sumRevenuesfiscalesParMois[$i] : 0), 2, '.', '');
-            }
-        }
-    }
-
     public function _changeMdp()
     {
         $this->autoFireView = false;
@@ -648,59 +602,6 @@ class ajaxController extends bootstrap
             echo 'ok';
         } else {
             echo 'nok';
-        }
-    }
-
-    public function _load_finances()
-    {
-        $this->autoFireView = true;
-
-        if (isset($_POST['year']) && isset($_POST['id_lender'])) {
-            $this->lenders_accounts = $this->loadData('lenders_accounts');
-            $this->companies        = $this->loadData('companies');
-            $this->loans            = $this->loadData('loans');
-            $this->projects         = $this->loadData('projects');
-            $this->echeanciers      = $this->loadData('echeanciers');
-            $this->projects_status  = $this->loadData('projects_status');
-
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-
-            $year = $_POST['year'];
-
-            $this->lLoans = $this->loans->select('id_lender = ' . $_POST['id_lender'] . ' AND YEAR(added) = ' . $year . ' AND status = 0', 'added DESC');
-        }
-    }
-
-    public function _load_transac()
-    {
-        $this->autoFireView = true;
-
-        $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-
-        if (isset($_POST['year'], $_POST['id_client'])) {
-            $this->clients      = $this->loadData('clients');
-            $this->transactions = $this->loadData('transactions');
-            $this->echeanciers  = $this->loadData('echeanciers');
-            $this->projects     = $this->loadData('projects');
-            $this->companies    = $this->loadData('companies');
-
-            $this->lng['profile'] = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
-
-            $this->settings->get('Offre de bienvenue motif', 'type');
-            $this->motif_offre_bienvenue = $this->settings->value;
-
-            $this->lesStatuts = array(
-                \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
-                \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $this->lng['profile']['alimentation-cb'],
-                \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $this->lng['profile']['alimentation-virement'],
-                \transactions_types::TYPE_LENDER_REPAYMENT            => $this->lng['profile']['remboursement'],
-                \transactions_types::TYPE_DIRECT_DEBIT                => $this->lng['profile']['alimentation-prelevement'],
-                \transactions_types::TYPE_LENDER_WITHDRAWAL           => $this->lng['profile']['retrait'],
-                \transactions_types::TYPE_WELCOME_OFFER               => $this->motif_offre_bienvenue,
-                \transactions_types::TYPE_WELCOME_OFFER_CANCELLATION  => 'Retrait offre de bienvenue'
-            );
-
-            $this->lTrans = $this->transactions->select('type_transaction IN (' . implode(', ', array_keys($this->lesStatuts)) . ') AND status = 1 AND etat = 1 AND id_client = ' . $_POST['id_client'] . ' AND YEAR(date_transaction) = ' . $_POST['year'], 'added DESC');
         }
     }
 
