@@ -427,7 +427,7 @@ class ficelle
         if (is_null($iDecimals)) {
             $iDecimals = 2;
         }
-        return number_format($fNumber, $iDecimals, ',', ' ');
+        return number_format((float) $fNumber, $iDecimals, ',', ' ');
     }
 
     /**

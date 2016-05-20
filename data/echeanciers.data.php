@@ -543,16 +543,14 @@ class echeanciers extends echeanciers_crud
 
     public function getDateDerniereEcheance($id_project)
     {
-        // premiere echeance
-        $derniereEcheance = $this->select('id_project = ' . $id_project, 'ordre DESC', 0, 1);
-        return $derniereEcheance[0]['date_echeance_emprunteur'];
+        $result = $this->bdd->query('SELECT MAX(date_echeance_emprunteur) FROM echeanciers WHERE id_project = ' . $id_project);
+        return $this->bdd->result($result);
     }
 
     public function getDateDerniereEcheancePreteur($id_project)
     {
-        // premiere echeance
-        $derniereEcheance = $this->select('id_project = ' . $id_project, 'ordre DESC', 0, 1);
-        return $derniereEcheance[0]['date_echeance'];
+        $result = $this->bdd->query('SELECT MAX(date_echeance) FROM echeanciers WHERE id_project = ' . $id_project);
+        return $this->bdd->result($result);
     }
 
     // retourne la sommes des remb du prochain mois d'un emprunteur

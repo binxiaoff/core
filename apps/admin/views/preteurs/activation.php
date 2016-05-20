@@ -68,8 +68,11 @@
                             $sBGColor = '#ff0100;';
                         }
                     }
-                } else {
+                } elseif (in_array($c['status_client'], array(clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION))) {
                     $sWaitingForGP = '&nbsp;<span style="font-weight: bold; color: #f79232;">Attente Green Point</span>';
+                    $sBGColor      = '';
+                } else {
+                    $sWaitingForGP = '';
                     $sBGColor      = '';
                 }
 

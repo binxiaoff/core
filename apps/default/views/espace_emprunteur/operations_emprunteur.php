@@ -324,13 +324,14 @@
              });
          });
 
+         $('#nbMois').change();
+
         $.datepicker.setDefaults($.extend({showMonthAfterYear: false}, $.datepicker.regional['fr']));
 
         $("#debut").datepicker({
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-            maxDate: '<?=$this->date_fin_display?>',
+            yearRange: '<?= (date('Y') - 40) ?>:<?= date('Y') ?>',
             onClose: function (selectedDate) {
                 $("#fin").datepicker("option", "minDate", selectedDate);
             }
@@ -339,8 +340,7 @@
         $("#fin").datepicker({
             changeMonth: true,
             changeYear: true,
-            yearRange: '<?=(date('Y')-40)?>:<?=(date('Y'))?>',
-            minDate: '<?=$this->date_debut_display?>',
+            yearRange: '<?= (date('Y') - 40) ?>:<?= date('Y') ?>',
             onClose: function (selectedDate) {
                 $("#debut").datepicker("option", "maxDate", selectedDate);
             }

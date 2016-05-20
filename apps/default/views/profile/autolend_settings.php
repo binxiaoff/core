@@ -108,7 +108,7 @@
                         <th scope="row"><?= str_replace('[#SEPARATOR#]', '<br />', $this->lng['autobid']['autobid-period-' . $iPeriodId]) ?></th>
                         <?php foreach ($aPeriodSettings as $aSetting) : ?>
                                 <td class="<?= (\autobid::STATUS_INACTIVE == $aSetting['status']) ? 'param-off' : '' ?>
-                                <?= ($aSetting['rate_min'] < $aSetting['AverageRateUnilend'] || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
+                                <?= ($aSetting['rate_min'] <= round($aSetting['AverageRateUnilend'], 1) || empty($aSetting['AverageRateUnilend'])) ? '' : 'param-over' ?>">
                                     <div class="cell-inner">
                                         <div class="param-advanced-switch" style="display: none;">
                                             <input type="checkbox" class="param-advanced-switch-input" name="<?= $aSetting['id_autobid'] ?>-param-advanced-switch"

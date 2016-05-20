@@ -226,7 +226,7 @@
                         <div id="tri" style="display:none;">bid-number</div>
                         <div id="direction" style="display:none;">1</div>
                         <?php endif; ?>
-                        <div class="tab" id="presentation" style="display:none">
+                        <div class="tab" id="presentation">
                             <article class="ex-article">
                                 <h3>
                                     <a href="#"><?= $this->lng['preteur-projets']['qui-sommes-nous'] ?></a><i class="icon-arrow-down"></i>
@@ -254,7 +254,7 @@
                                 </div>
                             </article>
                         </div>
-                        <div class="tab" id="infos" style="display:none">
+                        <div class="tab" id="infos">
                         <?php if (false === $this->bIsConnected) : ?>
                             <div>
                                 <?= $this->lng['preteur-projets']['contenu-comptes-financiers'] ?>
