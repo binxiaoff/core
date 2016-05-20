@@ -801,15 +801,15 @@
         <a href="<?= $this->lurl ?>/dossiers/export/<?= $this->projects->id_project ?>" class="btn_link">CSV données financières</a>
         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a>
     </div>
-    <?php if (count($this->lProjects_comments) > 0): ?>
         <div id="table_memo">
+            <?php if (count($this->lProjects_comments) > 0): ?>
             <table class="tablesorter">
                 <thead>
-                <tr>
-                    <th width="120" align="center">Date ajout</th>
-                    <th align="center">Contenu</th>
-                    <th width="50" align="center">&nbsp;</th>
-                </tr>
+                    <tr>
+                        <th width="120" align="center">Date ajout</th>
+                        <th align="center">Contenu</th>
+                        <th width="50" align="center">&nbsp;</th>
+                    </tr>
                 </thead>
                 <tbody>
                 <?php $i = 1; ?>
@@ -825,9 +825,9 @@
                 <?php endforeach; ?>
                 </tbody>
             </table>
+            <?php endif; ?>
         </div>
         <br/>
-    <?php endif; ?>
     <br/><br/>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $this->projects->id_project ?>" class="btn_link thickbox">Ajouter un mémo</a></div>
 
