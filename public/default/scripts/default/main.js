@@ -259,12 +259,14 @@ function checkEmail(email) {
     return re.test(email);
 }
 
-function checkConf(val, id2) {
+function checkConf(el, val, id2) {
     var val2 = $('#' + id2).val();
 
     if (val == val2) {
         $('#' + id2).removeClass('LV_invalid_field');
         $('#' + id2).addClass('LV_valid_field');
+        $(el).removeClass('LV_invalid_field');
+        $(el).addClass('LV_valid_field');
     } else {
         $('#' + id2).addClass('LV_invalid_field');
         $('#' + id2).removeClass('LV_valid_field');
