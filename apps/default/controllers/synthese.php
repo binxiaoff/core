@@ -117,9 +117,9 @@ class syntheseController extends bootstrap
         if ($lesFav == false) {
             $this->lProjetsFav = 0;
         } else {
-            $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')'); // todo : return projects status in order to calculate average interest rate
+            $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')'); // todo : optimize
             foreach ($this->lProjetsFav as $iKey => $aProject) {
-                $this->lProjetsFav[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
+                $this->lProjetsFav[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project']));
             }
         }
 
