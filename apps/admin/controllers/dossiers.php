@@ -1,7 +1,6 @@
 <?php
 
 use Unilend\librairies\Altares;
-use Unilend\librairies\ULogger;
 
 class dossiersController extends bootstrap
 {
@@ -744,11 +743,12 @@ class dossiersController extends bootstrap
                     ) {
                         $this->projects_pouvoir->status_remb = $_POST['statut_pouvoir'];
                         $this->projects_pouvoir->update();
-
-                        $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers');
+                        /** @var \Monolog\Logger $oLogger */
+                        $oLogger = $this->get('logger');
+                        
                         // si on a validé le pouvoir
                         if ($this->projects_pouvoir->status_remb == 1) {
-                            $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+                            $oLogger->info('Start control refund status id_project=' . $this->projects->id_project, array(__METHOD__));
 
                             // debut processe chagement statut remboursement //
                             // On recup le param
@@ -1095,8 +1095,7 @@ class dossiersController extends bootstrap
 
                                 $settingsControleRemb->value = 1;
                                 $settingsControleRemb->update();
-
-                                $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement est bien passe pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+                                $oLogger->info('End control refund status id_project=' . $this->projects->id_project, array(__METHOD__));
                             }
                         }
                     }

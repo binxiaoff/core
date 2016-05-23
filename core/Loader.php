@@ -31,7 +31,8 @@ class Loader
                     'dbname'   => $params['parameters']['database_name'],
                     'user'     => $params['parameters']['database_user'],
                     'password' => $params['parameters']['database_password'],
-                    'charset'  => 'utf8'
+                    'charset'  => 'utf8',
+                    'wrapperClass' => $params['parameters']['wrapper_class'],
                 ]
             );
         }

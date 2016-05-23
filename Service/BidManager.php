@@ -2,7 +2,7 @@
 namespace Unilend\Service;
 
 use Unilend\core\Loader;
-use Unilend\librairies\ULogger;
+use Symfony\Bridge\Monolog\Logger;
 use Unilend\Service\Simulator\EntityManager;
 
 /**
@@ -23,7 +23,7 @@ class BidManager
     /** @var array */
     private $aConfig;
 
-    /** @var ULogger */
+    /** @var Logger */
     private $oLogger;
 
     /** @var NotificationManager */
@@ -52,9 +52,9 @@ class BidManager
     }
 
     /**
-     * @param ULogger $oLogger
+     * @param Logger $oLogger
      */
-    public function setLogger(ULogger $oLogger)
+    public function setLogger(Logger $oLogger)
     {
         $this->oLogger = $oLogger;
     }

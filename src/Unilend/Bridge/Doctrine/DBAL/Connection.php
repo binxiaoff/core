@@ -133,12 +133,10 @@ class Connection extends BaseConnection
     public function controlSlug($table, $slug, $id_name, $id_value)
     {
         $params    = [
-            'table' => $table,
             'slug'  => $slug,
-            'colum' => $id_name,
             'value' => $id_value
         ];
-        $statement = $this->executeQuery('SELECT slug FROM :table WHERE slug = :slug AND :colum != :value', $params);
+        $statement = $this->executeQuery('SELECT slug FROM ' . $table . ' WHERE slug = :slug AND ' . $id_name . ' != :value', $params);
 
         if ($statement->rowCount() == 1 || $slug == "") {
             if ($table == 'tree' && $id_value == 1 && $slug == '') {

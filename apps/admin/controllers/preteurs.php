@@ -44,6 +44,21 @@ class preteursController extends bootstrap
 
     public function _default()
     {
+        $oLogger = $this->get('logger');
+        $res = $oLogger->info('test', array(__METHOD__));
+        var_dump($oLogger, $res);
+        die('toto');
+        /** @var \Symfony\Bridge\Monolog\Logger $oLogger */
+        $oLogger = $this->get('logger');
+        $oLogger->info('mesbah info', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $oLogger->debug('mesbah debug', array(__METHOD__));
+        $oLogger->warning('mesbah warning', array(__METHOD__));
+        $oLogger->error('mesbah error', array(__METHOD__));
+
+        die;
+
+
+
         // On remonte la page dans l'arborescence
         if (isset($this->params[0]) && $this->params[0] == 'up') {
             $this->tree->moveUp($this->params[1]);
