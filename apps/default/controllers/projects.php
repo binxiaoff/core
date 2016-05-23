@@ -759,25 +759,26 @@ class projectsController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
+
         /** @var \projects $projects */
         $projects = $this->loadData('projects');
+
         if (isset($this->params[0]) && $projects->get($this->params[0], 'slug')) {
             /** @var \projects_status $projectsStatus */
             $projectsStatus = $this->loadData('projects_status');
             $projectsStatus->getLastStatut($projects->id_project);
 
             if ($projectsStatus->status == \projects_status::EN_FUNDING) {
-                $objPHPExcel = new PHPExcel();
-                $column      = 0;
-                $row         = 1;
-                $activeSheet = $objPHPExcel->getActiveSheet();
-                $header      = array('N°', $this->lng['preteur-projets']['taux-dinteret'], $this->lng['preteur-projets']['montant'], $this->lng['preteur-projets']['statuts']);
-                foreach ($header as $index => $item) {
-                    $activeSheet->setCellValueByColumnAndRow($column, $row, $item);
-                    $column++;
-                }
-                $row++;
+                header('Content-Encoding: UTF-8');
+                header('Content-Type: text/csv; charset=UTF-8');
+                header('Content-Disposition: attachment;filename=' . $projects->slug . '_bids.csv');
+                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+                header('Expires: 0');
 
+                echo "\xEF\xBB\xBF";
+                echo '"N°";"' . $this->lng['preteur-projets']['taux-dinteret'] . '";"' . $this->lng['preteur-projets']['montant'] . '";"' .$this->lng['preteur-projets']['statuts'] . '"' . PHP_EOL;
+
+                /** @var \bids $bids */
                 $bids   = $this->loadData('bids');
                 $offset = 0;
                 $limit  = 1000;
@@ -790,25 +791,10 @@ class projectsController extends bootstrap
 
                 while ($bidsList = $bids->select('id_project = ' . $projects->id_project, 'ordre ASC', $offset, $limit)) {
                     foreach ($bidsList as $bid) {
-                        $column = 0;
-                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['ordre']);
-                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['rate'] . ' %');
-                        $activeSheet->setCellValueByColumnAndRow($column++, $row, $bid['amount'] . ' €');
-                        $activeSheet->setCellValueByColumnAndRow($column, $row, $bidStatus[$bid['status']]);
-                        $row++;
+                        echo $bid['ordre'] . ';' . $bid['rate'] . ' %;' . bcdiv($bid['amount'], 100) . ' €;"' . $bidStatus[$bid['status']] . '"' . PHP_EOL;
                     }
                     $offset += $limit;
                 }
-                header('Content-Type: text/csv');
-                header('Content-Disposition: attachment;filename=' . $projects->slug . '_bids.csv');
-                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-                header('Expires: 0');
-
-                /** @var PHPExcel_Writer_CSV $oWriter */
-                $oWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'CSV');
-                $oWriter->setUseBOM(true);
-                $oWriter->setDelimiter(';');
-                $oWriter->save('php://output');
             }
         }
     }

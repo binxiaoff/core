@@ -2,6 +2,7 @@
 
 use Unilend\librairies\greenPoint\greenPointStatus;
 use Unilend\librairies\greenPoint\greenPoint;
+use Unilend\librairies\ULogger;
 
 class apiController extends Controller
 {
@@ -10,6 +11,9 @@ class apiController extends Controller
      */
     private $aData;
 
+    /** @var ULogger */
+    private $oLogger;
+
     public function __construct($command, $config, $app)
     {
         parent::__construct($command, $config, $app);
@@ -17,7 +21,7 @@ class apiController extends Controller
         $this->hideDecoration();
 
         $this->catchAll = true;
-
+        $this->oLogger = new ULogger($_SERVER['REMOTE_ADDR'], $this->logPath, 'api.' . date('Ymd') . '.log');
         $this->checkIp();
         $this->init();
     }
@@ -59,6 +63,7 @@ class apiController extends Controller
                 $aAllowedIP[] = $aAllowedIPSettings['root'] . $iSuffix;
             }
         }
+        $this->oLogger->addRecord(ULogger::DEBUG, 'Allowed IP : ' . var_export($aAllowedIP, true) . ' Local IP : ' . $sLocalIp);
         if (false === in_array($_SERVER['REMOTE_ADDR'], $aAllowedIP) && false === in_array($_SERVER['REMOTE_ADDR'], explode(',', $sLocalIp))) {
             header('HTTP/1.0 403 Forbidden');
             echo 'Forbidden';
@@ -87,12 +92,15 @@ class apiController extends Controller
      */
     public function _update_status()
     {
+        $this->oLogger->addRecord(ULogger::DEBUG, '************************************* Begin GreenPoint Asynchronous return *************************************');
+
         /** @var \greenpoint_attachment $oGreenPointAttachment */
         $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
 
         /** @var \greenpoint_attachment $oGreenPointAttachmentDetail */
-        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment');
+        $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
 
+        $this->oLogger->addRecord(ULogger::DEBUG, 'Input parameters : ' . var_export($this->aData, true));
         $oGreenPointAttachment->get($this->aData['document'], 'id_attachment');
         $oGreenPointAttachmentDetail->get($oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
 
@@ -111,8 +119,10 @@ class apiController extends Controller
                 break;
         }
         if (empty($aGreenPointData)) {
+            $this->oLogger->addRecord(ULogger::ERROR, 'Wrong type value. Expected to be one of [1, 2, 3]');
             $this->_404();
         }
+        $this->oLogger->addRecord(ULogger::DEBUG, 'Parsed Data from input params : ' . var_export($aGreenPointData, true));
         foreach ($aGreenPointData['greenpoint_attachment'] as $sKey => $mValue) {
             if (false === is_null($mValue)) {
                 $oGreenPointAttachment->$sKey = $mValue;

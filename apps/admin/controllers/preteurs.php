@@ -1447,7 +1447,7 @@ class preteursController extends bootstrap
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
         $this->aAutoBidSettings = array();
-        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
         foreach ($aAutoBidSettings as $aSetting) {
             $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
             if ($aPeriod) {
