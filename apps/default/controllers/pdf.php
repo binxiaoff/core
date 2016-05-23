@@ -867,9 +867,9 @@ class pdfController extends bootstrap
             $repaymentBaseDate = date('Y-m-d H:i:00');
 
             for ($order = 1; $order <= $this->projects->period; $order++) {
-                $lenderRepaymentDate   = $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order);
+                $lenderRepaymentDate   = date('Y-m-d H:i:s', $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order));
                 $borrowerRepaymentDate = $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order);
-                $borrowerRepaymentDate = $jo->display_jours_ouvres($borrowerRepaymentDate, $daysOffset);
+                $borrowerRepaymentDate = date('Y-m-d H:i:s', $jo->display_jours_ouvres($borrowerRepaymentDate, $daysOffset));
 
                 $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate, $borrowerRepaymentDate);
                 $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate);
