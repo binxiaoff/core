@@ -337,14 +337,14 @@
     <?php if (count($this->lEncheres) > 0) : ?>
         <table class="tablesorter encheres">
             <thead>
-            <tr>
-                <th>Année</th>
-                <th>Projet</th>
-                <th>Montant Prêt (€)</th>
-                <th>Pourcentage</th>
-                <th>Nbre de mois</th>
-                <th>Remboursement (€)</th>
-                <th>Contrat</th>
+                <tr>
+                    <th>Année</th>
+                    <th>Projet</th>
+                    <th>Montant prêt (€)</th>
+                    <th>Pourcentage</th>
+                    <th>Nombre de mois</th>
+                    <th>Remboursement (€)</th>
+                    <th>Contrat</th>
             </tr>
             </thead>
             <tbody>
@@ -353,17 +353,17 @@
             foreach ($this->lEncheres as $e) :
                 $year = $this->dates->formatDate($e['added'], 'Y');
                 $this->projects->get($e['id_project'], 'id_project');
-                $sumMontant = $this->echeanciers->getSum($e['id_loan']);
+                $sumMontant = $this->echeanciers->getTotalAmount(array('id_loan' => $e['id_loan']));
             ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td align="center"><?= $year ?></td>
                     <td>
                         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>"><?= $this->projects->title_bo ?></a>
                     </td>
-                    <td align="center"><?= number_format($e['amount'] / 100, 2, '.', ' ') ?></td>
-                    <td align="center"><?= number_format($e['rate'], 2, '.', ' ') ?> %</td>
+                    <td align="center"><?= $this->ficelle->formatNumber($e['amount'] / 100, 0) ?></td>
+                    <td align="center"><?= $this->ficelle->formatNumber($e['rate'], 1) ?> %</td>
                     <td align="center"><?= $this->projects->period ?></td>
-                    <td align="center"><?= number_format($sumMontant, 2, '.', ' ') ?></td>
+                    <td align="center"><?= $this->ficelle->formatNumber($sumMontant, 2) ?></td>
                     <td align="center">
                         <a href="<?= $this->furl . '/pdf/contrat/' . $this->clients->hash . '/' . $e['id_loan'] ?>">PDF</a>
                     </td>

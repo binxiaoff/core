@@ -133,9 +133,9 @@ class operationsController extends bootstrap
             $oActiveSheet->setCellValue('F' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['debut'], 'd/m/Y'));
             $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y'));
             $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y'));
-            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), (string) round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'capital'), 2));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 1', 'interets'), 2));
-            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), round($this->echeanciers->sum('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project'] . ' AND status = 0', 'capital'), 2));
+            $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $this->echeanciers->getRepaidCapital(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $this->echeanciers->getRepaidInterets(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
+            $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $this->echeanciers->getOwedCapital(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
             $sNote = $this->getProjectNote($sRisk);
@@ -285,11 +285,6 @@ class operationsController extends bootstrap
     }
 
     public function _vos_prets()
-    {
-        $this->hideDecoration();
-    }
-
-    public function _histo_transac()
     {
         $this->hideDecoration();
     }

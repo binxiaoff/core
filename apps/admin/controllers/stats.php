@@ -1020,7 +1020,7 @@ class statsController extends bootstrap
                     e.ordre,
                     e.montant,
                     e.capital,
-                    (select sum(capital) FROM echeanciers e2 where e2.id_project = e.id_project and e2.id_lender = e.id_lender and e2.id_loan = e.id_loan and e2.ordre > e.ordre) as capitalRestant,
+                    (select sum(capital - capital_rembourse) FROM echeanciers e2 where e2.id_project = e.id_project and e2.id_lender = e.id_lender and e2.id_loan = e.id_loan and e2.ordre > e.ordre) as capitalRestant,
                     e.interets,
                     e.prelevements_obligatoires,
                     e.retenues_source,

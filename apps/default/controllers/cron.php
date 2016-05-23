@@ -4701,7 +4701,7 @@ class cronController extends bootstrap
                                 Important : le remboursement de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oTransaction->montant / 100) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span>.
                                 Comme le pr&eacute;voient les r&egrave;gles d'Unilend, <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
                                 <br/><br/>
-                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLenderRepayment->getSumRembByloan_remb_ra($oTransaction->id_loan_remb, 'interets')) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $oProject->id_project), 1) . " %.</span><br/><br/> ";
+                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLenderRepayment->getRepaidInterests(array('id_loan' => $oTransaction->id_loan_remb))) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $oProject->id_project), 1) . " %.</span><br/><br/> ";
                         } else {
                             $oLenderRepayment->get($oTransaction->id_echeancier);
 
@@ -5528,7 +5528,7 @@ class cronController extends bootstrap
                 foreach ($L_preteur_on_projet as $preteur) {
                     $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $preteur['id_lender'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
 
-                    $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 1 AND id_project = ' . $this->projects->id_project);
+                    $reste_a_payer_pour_preteur = $this->echeanciers->getEarlyRepaidCapital(array('id_loan' => $preteur['id_loan']));
 
                     $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
                     $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -5569,7 +5569,7 @@ class cronController extends bootstrap
                                 'nom_entreprise'       => $this->companies->name,
                                 'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
                                 'nbecheancesrestantes' => $sum_ech_restant,
-                                'interetsdejaverses'   => $this->ficelle->formatNumber($this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets')),
+                                'interetsdejaverses'   => $this->ficelle->formatNumber($this->echeanciers->getRepaidInterests(array('id_loan' => $preteur['id_loan']))),
                                 'crdpreteur'           => $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . (($reste_a_payer_pour_preteur >= 2) ? ' euros' : ' euro'),
                                 'Datera'               => date('d/m/Y'),
                                 'solde_p'              => $this->ficelle->formatNumber($getsolde) . (($getsolde >= 2) ? ' euros' : ' euro'),
@@ -5768,12 +5768,18 @@ class cronController extends bootstrap
             $aProjects = $oProjects->getProblematicProjectsWithUpcomingRepayment();
 
             if (false === empty($aProjects)) {
-                $oClients               = $this->loadData('clients');
-                $oCompanies             = $this->loadData('companies');
-                $oEcheanciers           = $this->loadData('echeanciers');
+                /** @var \clients $oClients */
+                $oClients = $this->loadData('clients');
+                /** @var \companies $oCompanies */
+                $oCompanies = $this->loadData('companies');
+                /** @var \echeanciers $oEcheanciers */
+                $oEcheanciers = $this->loadData('echeanciers');
+                /** @var \echeanciers_emprunteur $oEcheanciersEmprunteur */
                 $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
-                $oLoans                 = $this->loadData('loans');
-                $oMailsText             = $this->loadData('mails_text');
+                /** @var \loans $oLoans */
+                $oLoans = $this->loadData('loans');
+                /** @var \mails_text $oMailsText */
+                $oMailsText = $this->loadData('mails_text');
 
                 $oMailsText->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'lang = "' . $this->language . '" AND type');
 
@@ -5817,7 +5823,7 @@ class cronController extends bootstrap
                             'mensualite_e'                       => $this->ficelle->formatNumber(($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100),
                             'num_dossier'                        => $oProjects->id_project,
                             'nb_preteurs'                        => $oLoans->getNbPreteurs($oProjects->id_project),
-                            'CRD'                                => $this->ficelle->formatNumber($oEcheanciers->sum('id_project = ' . $oProjects->id_project . ' AND status = 0', 'capital')),
+                            'CRD'                                => $this->ficelle->formatNumber($oEcheanciers->getOwedCapital(array('id_project' => $oProjects->id_project))),
                             'date_prochaine_echeance_emprunteur' => $this->dates->formatDate($aNextRepayment[0]['date_echeance_emprunteur'], 'd/m/Y'), // @todo Intl
                         );
 

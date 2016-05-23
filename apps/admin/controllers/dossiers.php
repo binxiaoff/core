@@ -910,8 +910,8 @@ class dossiersController extends bootstrap
                                             $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
                                             $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
                                             $iNumberOfLoansForLender  = count($aLoansOfLender);
-                                            $iSumMonthlyPayments      = $oPaymentSchedule->sum('id_lender = ' . $oLender->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND ordre = 1', 'montant');
                                             $aFirstPayment            = $oPaymentSchedule->getPremiereEcheancePreteur($this->projects->id_project, $oLender->id_lender_account);
+                                            $iSumMonthlyPayments      = $aFirstPayment['montant'];
                                             $sDateFirstPayment        = $aFirstPayment['date_echeance'];
                                             $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
                                             $sLoansDetails            = '';
@@ -959,8 +959,8 @@ class dossiersController extends bootstrap
                                                         break;
                                                 }
                                                 $sLoansDetails .= '<tr>
-                                                                    <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['amount'] / 100) . ' &euro;</td>
-                                                                    <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
+                                                                    <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['amount'] / 100, 0) . ' &euro;</td>
+                                                                    <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['rate'], 1) . ' %</td>
                                                                     <td style="' . $sStyleTD . '">' . $this->projects->period . ' mois</td>
                                                                     <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aFirstPayment['montant'] / 100) . ' &euro;</td>
                                                                     <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
@@ -1350,11 +1350,12 @@ class dossiersController extends bootstrap
         }
 
         if (in_array($iStatus, array(\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+            /** @var \echeanciers $oLenderRepaymentSchedule */
             $oLenderRepaymentSchedule = $this->loadData('echeanciers');
-            $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->sum('id_project = ' . $this->projects->id_project . ' AND status = 0', 'capital'), 2);
+            $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project)));
 
             if (\projects_status::RECOUVREMENT == $iStatus) {
-                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND date_echeance < "' . date('Y-m-d') . '"', 'capital'), 2);
+                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->sum('id_project = ' . $this->projects->id_project . ' AND status IN (' . \echeanciers::STATUS_PENDING . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ') AND date_echeance < "' . date('Y-m-d') . '"', 'capital - capital_rembourse'));
             }
         }
 
@@ -2448,7 +2449,7 @@ class dossiersController extends bootstrap
                     $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
 
                     foreach ($L_preteur_on_projet as $preteur) {
-                        $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status = 0 AND id_project = ' . $this->projects->id_project);
+                        $reste_a_payer_pour_preteur = $this->echeanciers->getOwedCapital(array('id_loan' => $preteur['id_loan']));
 
                         $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
                         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -2482,7 +2483,7 @@ class dossiersController extends bootstrap
                         $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
                         // Récupération de la sommes des intérets deja versé au lender
-                        $sum_interet = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets');
+                        $sum_interet = $this->echeanciers->getRepaidInterests(array('id_loan' => $preteur['id_loan']));
 
                         // Remb net email
                         if ($reste_a_payer_pour_preteur >= 2) {
@@ -2636,8 +2637,7 @@ class dossiersController extends bootstrap
         $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
 
         if ($dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
-            //récupération du montant de la transaction du CRD pour afficher la ligne en fin d'échéancier
-            $this->montant_ra = $this->echeanciers->sum('id_project = ' . $this->params[0] . ' AND status_ra = 1 AND status = 1 AND id_loan = ' . $this->params[1], 'capital');
+            $this->montant_ra = $this->echeanciers->getEarlyRepaidCapital(array('id_loan' => $this->params[1]));
             $this->date_ra    = $dernierStatut[0]['added'];
         }
     }

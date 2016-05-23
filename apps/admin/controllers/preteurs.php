@@ -158,10 +158,9 @@ class preteursController extends bootstrap
         $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
 
         $this->echeanciers    = $this->loadData('echeanciers');
-        $this->sumRembInte    = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account, 'interets');
+        $this->sumRembInte    = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account));
         $this->nextRemb       = $this->echeanciers->getNextRemb($this->lenders_accounts->id_lender_account);
-        $sumRembMontant       = $this->echeanciers->getSumRembV2($this->lenders_accounts->id_lender_account);
-        $this->sumRembMontant = $sumRembMontant['montant'];
+        $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account));
 
         $this->bids           = $this->loadData('bids');
         $this->avgPreteur     = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');

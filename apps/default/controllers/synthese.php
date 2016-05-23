@@ -124,32 +124,18 @@ class syntheseController extends bootstrap
             $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')');
         }
 
-        // Liste des projets en cours (projets a decouvrir)
-        $aProjectsInFunding   = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
-        $this->lProjetEncours = $aProjectsInFunding;
-
-        $this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
-
-        // somme des bids en cours
-        $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
-
-        // somme Prêté
-        $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
-
-        // somme remboursé
-        $this->sumRembMontant = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account, 'capital');
-        // somme retant du (capital) (a rajouter en prod)
-        $ProblematicProjects    = $this->echeanciers->getProblematicProjects($this->lenders_accounts->id_lender_account);
-        $this->nbProblems       = $ProblematicProjects['projects'];
-        $this->sumProblems      = $ProblematicProjects['capital'];
-        $this->sumRestanteARemb = $this->echeanciers->getSumARemb($this->lenders_accounts->id_lender_account, 'capital') - $this->sumProblems;
-
-        // somme retenues fiscales remboursés
+        $aProjectsInFunding            = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
+        $this->lProjetEncours          = $aProjectsInFunding;
+        $this->nbLoan                  = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
+        $this->sumBidsEncours          = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
+        $this->sumPrets                = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
+        $this->sumRembMontant          = $this->echeanciers->getRepaidCapital(array('id_lender' => $this->lenders_accounts->id_lender_account));
+        $ProblematicProjects           = $this->echeanciers->getProblematicProjects($this->lenders_accounts->id_lender_account);
+        $this->nbProblems              = $ProblematicProjects['projects'];
+        $this->sumProblems             = $ProblematicProjects['capital'];
+        $this->sumRestanteARemb        = $this->echeanciers->getOwedCapital(array('id_lender' => $this->lenders_accounts->id_lender_account)) - $this->sumProblems;
         $this->sumRevenuesFiscalesRemb = $this->echeanciers->getSumRevenuesFiscalesRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0');
-
-        // somme des interets
-        $this->sumInterets = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0', 'interets');
-        $this->sumInterets -= $this->sumRevenuesFiscalesRemb; // interets net
+        $this->sumInterets             = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account)) - $this->sumRevenuesFiscalesRemb;
 
         $total = $this->solde + $this->sumBidsEncours + $this->sumRestanteARemb;
 
@@ -178,27 +164,19 @@ class syntheseController extends bootstrap
             '12' => 'DEC'
         );
 
-        // variables pour une boucle
         $c = 1;
         $d = 0;
 
-        // On parcourt toutes les années de la creation du compte a aujourd'hui
         for ($annee = $anneeCreationCompte; $annee <= date('Y'); $annee++) {
-            // Revenus mensuel
-            $tabSumRembParMois[$annee]             = $this->echeanciers->getSumRembByMonthsCapital($this->lenders_accounts->id_lender_account, $annee); // captial remboursé / mois
-            $tabSumIntbParMois[$annee]             = $this->echeanciers->getSumIntByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // intérets brut / mois
-            $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ',
-                $annee); // revenues fiscales / mois
+            $tabSumParMois[$annee]                 = $this->echeanciers->getMonthlyScheduleByYear(array('id_lender' => $this->lenders_accounts->id_lender_account), $annee); // captial remboursé / mois
+            $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // revenues fiscales / mois
 
-            // on fait le tour sur l'année
             for ($i = 1; $i <= 12; $i++) {
                 $a                                            = $i;
                 $a                                            = ($i < 10 ? '0' . $a : $a);
-                $this->sumRembParMois[$annee][$i]             = number_format(isset($tabSumRembParMois[$annee][$a]) ? $tabSumRembParMois[$annee][$a] : 0, 2, '.', ''); // capital remboursé / mois
-                $this->sumIntbParMois[$annee][$i]             = number_format(isset($tabSumIntbParMois[$annee][$a]) ? $tabSumIntbParMois[$annee][$a] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0,
-                    2, '.', ''); // interets net / mois
-                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.',
-                    ''); // prelevements fiscaux
+                $this->sumRembParMois[$annee][$i]             = number_format(isset($tabSumParMois[$annee][$i]['capital']) ? $tabSumParMois[$annee][$i]['capital'] : 0, 2, '.', ''); // capital remboursé / mois
+                $this->sumIntbParMois[$annee][$i]             = number_format(isset($tabSumParMois[$annee][$i]['interets']) ? $tabSumParMois[$annee][$i]['interets'] - $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // interets net / mois
+                $this->sumRevenuesfiscalesParMois[$annee][$i] = number_format(isset($tabSumRevenuesfiscalesParMois[$annee][$a]) ? $tabSumRevenuesfiscalesParMois[$annee][$a] : 0, 2, '.', ''); // prelevements fiscaux
 
                 // on organise l'affichage
                 if ($d == 3) {
