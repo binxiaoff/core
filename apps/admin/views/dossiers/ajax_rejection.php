@@ -9,7 +9,7 @@
         </select>
         <br/><br/>
         <div class="right">
-            <button onclick="parent.$.fn.colorbox.close();" class="btn btnDisabled">Annuler</button>
+            <button type="button" onclick="parent.$.fn.colorbox.close();" class="btn btnDisabled">Annuler</button>
             <?php if (0 == $this->iStep) : ?>
                 <input type="submit" class="btn_link" value="Valider"/>
             <?php elseif (1 == $this->iStep) : ?>
