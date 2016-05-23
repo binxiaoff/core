@@ -169,7 +169,7 @@
                                     </th>
                                 </tr>
                                 <?php if (in_array(0, (array_column($this->bidsStatistics, 'amount_active')))) : ?>
-                                    <tr id="rejected-offers">
+                                    <tr class="rejected-offers">
                                         <td colspan="4"><?= $this->lng['preteur-projets']['display-refused-offers'] ?></td>
                                     </tr>
                                 <?php endif; ?>

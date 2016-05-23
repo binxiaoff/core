@@ -44,7 +44,7 @@
             <span id="rate"><?= $this->lng['preteur-projets']['taux-dinteret'] ?></span>
         </th>
         <th width="25%">
-            <span id="amount"><?= $this->lng['preteur-projets']['slice-total-amount'] ?><small>><?= $this->lng['preteur-projets']['average-amount'] ?><?= $this->ficelle->formatNumber($this->meanBidAmount, 2) ?> €</small></span>
+            <span id="amount"><?= $this->lng['preteur-projets']['slice-total-amount'] ?><small><?= $this->lng['preteur-projets']['average-amount'] ?><?= $this->ficelle->formatNumber($this->meanBidAmount, 2) ?> €</small></span>
         </th>
         <th width="25%">
             <span id="offers"><?= $this->lng['preteur-projets']['nb-offer'] ?></span>
@@ -54,7 +54,7 @@
         </th>
     </tr>
 <?php if (in_array(0, (array_column($this->bidsStatistics, 'amount_active')))) : ?>
-    <tr id="rejected-offers">
+    <tr class="rejected-offers">
         <td colspan="4"><?= $this->lng['preteur-projets']['display-refused-offers'] ?></td>
     </tr>
 <?php endif; ?>

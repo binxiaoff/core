@@ -814,14 +814,13 @@ div[class*="single-project"] .table th:first-child { text-align:left; border-rad
 div[class*="single-project"] .table th:last-child { border-radius:0 3px 0 0; }
 div[class*="single-project"] .table .th-wrap { display:block; position:relative; }
 
-#rejected-offers > td { text-align:center;background-color:#fbf2f7;cursor:pointer;color:#d4d4d4; }
-#rejected-offers:hover > td { color:#8d8d8d; }
+div[class*="single-project"] .rejected-offers > td { text-align:center;background-color:#fbf2f7;cursor:pointer;color:#d4d4d4; }
+div[class*="single-project"] .rejected-offers:hover > td { color:#8d8d8d; }
 #bids .table-body.rejecteds, #bids_mobile .table-body.rejecteds{ display:none; }
 #bids .table-body.rejecteds.visible, #bids_mobile .table-body.rejecteds.visible{ display:table-row }
-#bids .table-body.rejecteds td, #bids_mobile .table-body.rejecteds td { background-color:#fbf2f7;color:#d4d4d4; }
+#bids .table-body.rejecteds td, #bids_mobile .table-body.rejecteds td { background-color:#fbf2f7;color:#989899; }
 #bids .table-body.rejecteds:last-of-type, #bids_mobile .table-body.rejecteds:last-of-type { border-bottom:8px solid #eceaed; }
 #amount > small { text-transform:none; }
-
 
 /* ===========================
     Info Table
