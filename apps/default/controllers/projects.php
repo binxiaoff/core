@@ -521,8 +521,6 @@ class projectsController extends bootstrap
                 $this->txLenderMax          = 10;
             }
 
-            $this->CountEnchere = $this->bids->counter('id_project = ' . $this->projects->id_project);
-            $this->avgAmount    = $this->bids->getAVGAmount($this->projects->id_project);
             $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction    = 1;

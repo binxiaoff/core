@@ -147,9 +147,6 @@
                     $decimales            = 0;
                     $decimalesPourcentage = 0;
                 }
-
-                $iSumbids = $this->bids->counter('id_project = ' . $f['id_project']);
-                $avgRate  = $this->projects->getAverageInterestRate($f['id_project'], $this->projects_status->status);
                 ?>
                 <div class="post-box clearfix">
                     <h3><?= $f['title'] ?>,
@@ -163,9 +160,9 @@
                         $reste = $this->lng['preteur-synthese']['reste'] . ' ';
                         ?>
                         <script>
-                            var cible<?=$f['id_project']?> = new Date('<?=$mois_jour?>, <?=$annee?> <?=$this->heureFinFunding?>:00');
-                            var letime<?=$f['id_project']?> = parseInt(cible<?=$f['id_project']?>.getTime() / 1000, 10);
-                            setTimeout('decompte(letime<?=$f['id_project']?>,"val<?=$f['id_project']?>")', 500);
+                            var cible<?= $f['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $this->heureFinFunding ?>:00');
+                            var letime<?= $f['id_project'] ?> = parseInt(cible<?= $f['id_project'] ?>.getTime() / 1000, 10);
+                            setTimeout('decompte(letime<?= $f['id_project'] ?>,"val<?= $f['id_project'] ?>")', 500);
                         </script>
                         <?
                     }
@@ -183,18 +180,9 @@
                             <li>
                                 <i class="icon-target"></i><?= $this->lng['preteur-synthese']['couvert-a'] ?> <?= $this->ficelle->formatNumber($pourcentage, $decimalesPourcentage) ?>%
                             </li>
-                            <?
-                            if ($iSumbids > 0) {
-                                ?>
-                                <li><i class="icon-graph-gray"></i><?= $this->ficelle->formatNumber($avgRate, 1) ?>%
-                                </li><?
-                            } else {
-                                ?>
-                                <li>
-                                <i class="icon-graph-gray"></i><?= ($f['target_rate'] == '-' ? '-' : $this->ficelle->formatNumber($f['target_rate']) . ' %') ?>
-                                </li><?
-                            }
-                            ?>
+                            <li>
+                                <i class="icon-graph-gray"></i><?= $this->ficelle->formatNumber($f['avgrate'], 1) ?>%
+                            </li>
                         </ul>
                         <a class="btn alone" href="<?= $this->lurl ?>/projects/detail/<?= $f['slug'] ?>"><?= $this->lng['preteur-synthese']['voir-le-projet'] ?></a>
                     </div>

@@ -124,11 +124,7 @@
                                 </li>
                                 <li>
                                     <span class="i-holder"><i class="icon-graph tooltip-anchor" data-placement="right" data-original-title="<?= $this->lng['preteur-projets']['info-taux-moyen'] ?>"></i></span>
-                                    <?php if ($this->CountEnchere > 0) : ?>
-                                        <span><?= $this->ficelle->formatNumber($this->avgRate, 1) ?>&nbsp;%</span>
-                                    <?php else : ?>
-                                        <span><?= $this->projects->target_rate . ($this->projects->target_rate == '-' ? '' : '&nbsp;%') ?></span>
-                                    <?php endif; ?>
+                                    <span><?= $this->ficelle->formatNumber($this->avgRate, 1) ?>&nbsp;%</span>
                                 </li>
                             </ul>
                         </div>
@@ -152,7 +148,6 @@
                     <div class="tabs">
                         <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                         <div class="tab tc" id="bids">
-                            <?php if ($this->CountEnchere > 0) : ?>
                             <table class="table orders-table">
                                 <tr class="global-tab-nav">
                                     <th width="25%">
@@ -219,9 +214,6 @@
                             <div id="bottom-nav">
                               <a class="csv-extract" href="<?= $this->lurl ?>/projects/bidsExport/<?= $this->projects->slug ?>"><?= $this->lng['preteur-projets']['export_bids'] ?></a>
                             </div>
-                        <?php else : ?>
-                            <p><?= $this->lng['preteur-projets']['aucun-enchere'] ?></p>
-                        <?php endif; ?>
                         </div>
                         <div id="tri" style="display:none;">bid-number</div>
                         <div id="direction" style="display:none;">1</div>

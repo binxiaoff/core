@@ -258,7 +258,7 @@
                 $this->projects_status->getLastStatut($f['id_project']);
 
                 $fast_ok = false;
-                if ($this->projects_status->status == projects_status::EN_FUNDING && $this->clients_status->status >= 60) {
+                if ($this->projects_status->status == \projects_status::EN_FUNDING && $this->clients_status->status >= \clients_status::VALIDATED) {
                     $fast_ok = true;
                 }
 
@@ -268,13 +268,10 @@
                 $mois_jour = $this->dates->formatDate($f['date_retrait'], 'F d');
                 $annee     = $this->dates->formatDate($f['date_retrait'], 'Y');
 
-                // la sum des encheres
                 $soldeBid = $this->bids->getSoldeBid($f['id_project']);
 
-                // solde payé
                 $payer = $soldeBid;
 
-                // Reste à payer
                 $resteApayer = ($f['amount'] - $soldeBid);
                 $pourcentage = ((1 - ($resteApayer / $f['amount'])) * 100);
 
@@ -289,45 +286,6 @@
                     $decimalesPourcentage = 0;
                 }
 
-                $CountEnchere = $this->bids->counter('id_project = ' . $f['id_project']);
-
-                // moyenne pondéré
-                $montantHaut = 0;
-                $montantBas  = 0;
-
-                switch ($this->projects_status->status) {
-                    case projects_status::REMBOURSEMENT:
-                    case projects_status::REMBOURSE:
-                    case projects_status::REMBOURSEMENT_ANTICIPE:
-                    case projects_status::PROBLEME:
-                    case projects_status::PROBLEME_J_X:
-                    case projects_status::RECOUVREMENT:
-                    case projects_status::PROCEDURE_SAUVEGARDE:
-                    case projects_status::REDRESSEMENT_JUDICIAIRE:
-                    case projects_status::LIQUIDATION_JUDICIAIRE:
-                    case projects_status::DEFAUT:
-                        foreach ($this->loans->select('id_project = ' . $f['id_project']) as $b) {
-                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                            $montantBas += ($b['amount'] / 100);
-                        }
-                        break;
-                    case projects_status::FUNDE:
-                    case projects_status::FUNDING_KO:
-                    case projects_status::PRET_REFUSE:
-                    case projects_status::EN_FUNDING:
-                        foreach ($this->bids->select('id_project = ' . $f['id_project'] . ' AND status = 1') as $b) {
-                            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-                            $montantBas += ($b['amount'] / 100);
-                        }
-                        break;
-                    default:
-                        $montantBas  = 0.0;
-                        $montantHaut = 0.0;
-                        trigger_error('Unknown project status. Could not calculate amounts', E_USER_WARNING);
-                        break;
-                }
-
-                $avgRate = $montantHaut > 0 && $montantBas > 0 ? ($montantHaut / $montantBas) : 0;
                 ?>
                 <div class="post-box clearfix">
                     <h3><?= $f['title'] ?>, <small><?= $this->companies->city ?><?= ($this->companies->city != '' ? ',' : '') ?> <?= $this->companies->zip ?></small></h3>
@@ -354,13 +312,7 @@
                             <li><i class="icon-pig-gray"></i><?= $this->ficelle->formatNumber($f['amount'], 0) ?> €</li>
                             <li><i class="icon-clock-gray"></i><?= ($reste == '' ? '' : $reste) ?><span id="valFav<?= $f['id_project'] ?>"><?= $dateRest ?></span></li>
                             <li><i class="icon-target"></i><?= $this->lng['preteur-synthese']['couvert-a'] ?> <?= $this->ficelle->formatNumber($pourcentage, $decimalesPourcentage) ?> %</li>
-                            <?php
-                            if ($CountEnchere > 0) {
-                                ?><li><i class="icon-graph-gray"></i><?= $this->ficelle->formatNumber($avgRate) ?> %</li><?php
-                            } else {
-                                ?><li><i class="icon-graph-gray"></i><?= ($f['target_rate'] == '-' ? '-' : $this->ficelle->formatNumber($f['target_rate']) . ' %') ?></li><?php
-                            }
-                            ?>
+                            <li><i class="icon-graph-gray"></i><?= $this->ficelle->formatNumber($f['avgrate'], 1) ?> %</li>
                         </ul>
                         <a class="btn <?= ($fast_ok == true ? '' : 'alone') ?>" href="<?= $this->lurl ?>/projects/detail/<?= $f['slug'] ?>"><?= $this->lng['preteur-synthese']['voir-le-projet'] ?></a>
                         <?php
