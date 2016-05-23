@@ -1,0 +1,26 @@
+{# Error page #}
+{% extends 'layouts/_page-simple.twig' %}
+
+{# Page information #}
+{% set page = {
+  id: 'page-error',
+  title: 'Error',
+  permalink: route('error')
+} %}
+
+{% block pageAsideBody %}
+  <div class="page-aside-body hide-xs hide-sm">
+    <img src="{{ siteurlmedia('error/icon-map.png') }}" alt="">
+  </div><!-- /.page-aside-body -->
+{% endblock %}
+
+{% block pageContentBody %}
+  <section class="page-section">
+    <h2>Vous semblez perdu&nbsp;?</h2>
+    <p>Désolé mais la page que vous recherchez n'existe pas&hellip;</p>
+    <p>Retournez à l'accueil pour poursuivre votre navigation ou posez nous une question.</p>
+    <div class="btn-toolbar text-align-left">
+      <a href="{{ route('/') }}" class="btn-primary">Accueil</a> <a href="{{ route('search') }}" class="btn-default ui-open-site-search">Une question&nbsp;?</a>
+    </div><!-- /.btn-toolbar -->
+  </section><!-- /.page-section -->
+{% endblock %}

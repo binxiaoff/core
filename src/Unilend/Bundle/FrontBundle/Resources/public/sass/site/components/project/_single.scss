@@ -1,0 +1,947 @@
+//
+// Unilend Project Single
+//
+
+// Base styles
+.project-single {
+  position: relative;
+}
+
+// Header wrap
+.project-single-header-wrap {
+  @include max-width-hero;
+  position: relative;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+// Map
+.project-single-map {
+  width: 100%;
+  height: 700px;
+  margin-bottom: -700px;
+
+  position: relative;
+  background-color: $c-bg2;
+  background-image: image-url('maps/map-generic-1600x1000.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+
+  transition: margin-bottom .5s;
+}
+
+.project-single-map-embed {
+  display: none;
+  width: 100%;
+  height: 100%;
+
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: ($depth-tooltip - 5);
+
+  opacity: 0;
+  transition: opacity .5s;
+
+  .btn-close {
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+
+  iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+}
+
+// Header
+.project-single-header-position {
+  padding-left: 20px;
+  padding-right: 20px;
+  box-sizing: border-box;
+}
+
+.project-single-header {
+  @include max-width-hero;
+  display: block;
+  position: relative;
+  text-align: center;
+
+  opacity: 1;
+  transition: opacity .5s;
+
+  // Navigation buttons
+  .btn-nav-left,
+  .btn-nav-back,
+  .btn-nav-previous,
+  .btn-nav-right,
+  .btn-nav-forward,
+  .btn-nav-next {
+    @include button-shape-sq-sm;
+    @include link-states(
+      $link: (
+        background-color: $c-bg3,
+        border-color: $c-bg3,
+        color: $c-t2
+      ),
+      $hover: (
+        background-color: $c-bg3,
+        border-color: $c-bg3,
+        color: $c-t1
+      ),
+      $active: (
+        background-color: $c-bg2,
+        border-color: $c-bg2,
+        color: $c-t1
+      )
+    );
+
+    position: absolute;
+    top: 50%;
+    margin-top: -($height-btn-sm * .5);
+  }
+
+  .btn-nav-left,
+  .btn-nav-back,
+  .btn-nav-previous {
+    left: 0;
+    margin-left: 0;
+  }
+
+  .btn-nav-right,
+  .btn-nav-forward,
+  .btn-nav-next {
+    right: 0;
+    margin-right: 0;
+  }
+}
+
+// Header positioning
+.project-single-header-position {
+  display: block;
+}
+
+// The actual window block of the header
+.project-single-header-inner {
+  display: inline-block;
+  padding: 30px;
+
+  position: relative;
+
+  background-color: $c-bg5;
+}
+
+// Category
+.project-single-category {
+  display: inline-block;
+  width: 80px;
+  height: 80px;
+
+  background-color: $c-bg5;
+  font-size: $fs-title;
+  line-height: 80px;
+  text-align: center;
+  vertical-align: middle;
+}
+
+// Title
+.project-single-title {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: $c-t1;
+  font-size: $fs-h3;
+}
+
+// Info
+.project-single-info-wrap {
+  @include max-width-site;
+  position: relative;
+}
+
+.project-single-info {
+  display: block;
+  padding: 30px 30px 15px;
+  margin-left: 20px;
+  margin-right: 20px;
+  background-color: $c-bg3;
+  box-sizing: border-box;
+
+  // List sharing
+  .list-sharing {
+    @include block-list;
+    @include clearfix;
+
+    > li {
+      display: block;
+      float: left;
+      width: 33.33%;
+      text-align: center;
+
+      > a {
+        display: block;
+        width: 100%;
+        background-color: transparent !important;
+        border-color: transparent !important;
+        font-size: 24px;
+
+        &.btn-facebook {
+          &,
+          &:link,
+          &:visited,
+          &:hover,
+          &:focus,
+          &:active {
+            color: $c-facebook;
+          }
+        }
+
+        &.btn-twitter {
+          &,
+          &:link,
+          &:visited,
+          &:hover,
+          &:focus,
+          &:active {
+            color: $c-twitter;
+          }
+        }
+
+        &.btn-email {
+          &,
+          &:link,
+          &:visited,
+          &:hover,
+          &:focus,
+          &:active {
+            color: $c-black;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Meta
+.project-single-meta {
+  color: $c-t2;
+  font-size: 16px;
+  line-height: 1.3em;
+
+  .icon {
+    color: $c-p1;
+  }
+}
+
+// Location
+.project-single-location {
+  color: $c-t2;
+  font-size: inherit;
+  line-height: inherit;
+
+  .icon {
+    display: none;
+  }
+
+  .label {
+    display: block;
+    font-style: italic;
+    margin-bottom: 6px;
+  }
+
+  a > .label {
+    display: inline;
+    font-style: normal;
+    margin: auto;
+  }
+}
+
+// Description
+.project-single-description {
+  margin-bottom: 20px;
+  color: $c-t2;
+  line-height: 1.5em;
+  text-align: left;
+}
+
+// Rating
+.project-single-rating {
+  width: 50%;
+
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+
+  color: $c-t3;
+  text-align: right;
+
+  .label {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-style: italic;
+  }
+}
+
+// Image
+.project-single-image {
+  display: none;
+}
+
+// Period
+.project-single-period {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.project-single-period-countdown {
+  margin-bottom: 10px;
+  line-height: 1.3em;
+
+  .icon {
+    color: $c-p1;
+    font-size: 26px;
+  }
+}
+
+.project-single-period-expires {
+  display: none;
+  color: $c-t3;
+  font-size: 16px;
+  line-height: 1.3em;
+}
+
+// Offers
+.project-single-offers {
+  text-align: left;
+}
+
+.project-single-useroffers-accepted,
+.project-single-useroffers-inprogress,
+.project-single-useroffers-rejected {
+  color: $c-p1;
+
+  &:before {
+    font-family: $ff-icon;
+  }
+}
+
+.project-single-useroffers-accepted {
+  // color: $c-success;
+
+  &:before {
+    content: '\f00c';
+  }
+}
+
+.project-single-useroffers-inprogress {
+  &:before {
+    content: '\f017';
+  }
+}
+
+.project-single-useroffers-rejected {
+  // color: $c-error;
+
+  &:before {
+    content: '\f00d';
+  }
+}
+
+.project-single-offers-total {
+  display: none;
+
+  strong {
+    font-size: 24px;
+  }
+}
+
+// Content
+.project-single-content {
+
+}
+
+// Cost
+.project-single-cost {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+.project-single-cost-total {
+  color: $c-black;
+  font-size: $fs-h2;
+  text-align: center;
+}
+
+.project-single-cost-progress {
+  display: block;
+  width: 100%;
+  height: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+
+  background-color: $c-bg2;
+
+  .project-single-cost-progress-funded {
+    display: block;
+    width: 0;
+    height: 100%;
+    background-color: $c-p1;
+  }
+}
+
+.project-single-cost-amount {
+  @include clearfix;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+.project-single-cost-amount-funded,
+.project-single-cost-amount-remaining {
+  width: 50%;
+  float: left;
+  color: $c-t3;
+  font-size: 14px;
+}
+
+.project-single-cost-amount-funded {
+  text-align: left;
+}
+
+.project-single-cost-amount-remaining {
+  text-align: right;
+}
+
+// Interest
+.project-single-interest {
+  width: 50%;
+  margin-bottom: 15px;
+  float: left;
+
+  color: $c-t3;
+  text-align: center;
+
+  .icon {
+    display: none;
+    color: $c-t3;
+    font-size: $fs-h3;
+  }
+
+  strong {
+    font-size: $fs-h2;
+    font-weight: normal;
+  }
+
+  .label {
+    font-size: 16px;
+    font-style: italic;
+    line-height: 1.3em;
+  }
+}
+
+// Duration
+.project-single-duration {
+  width: 50%;
+  margin-bottom: 15px;
+  float: left;
+
+  color: $c-t3;
+  text-align: center;
+
+  .icon {
+    display: none;
+    color: $c-t3;
+    font-size: $fs-h3;
+  }
+
+  strong {
+    font-size: $fs-h2;
+    font-weight: normal;
+  }
+
+  .label {
+    font-size: 16px;
+    font-style: italic;
+    line-height: 1.3em;
+  }
+}
+
+// Invest Form
+.project-single-form-invest {
+  .form-field {
+    margin-bottom: 10px;
+  }
+
+  .field-help {
+    text-align: center;
+  }
+
+  @include text-inputs {
+    @include input-size-lg($single-line: true);
+    background-color: $c-white;
+    border-color: $c-white;
+  }
+
+  .btn-toolbar {
+    > :first-child {
+      margin-left: 0;
+    }
+
+    > :last-child {
+      margin-left: 0;
+    }
+  }
+}
+
+// Content
+.project-single-content {
+  padding-top: 40px;
+}
+
+// Sticky Menu
+.project-single-menu {
+  display: none;
+
+  @include devices('md', 'lg') {
+    #{$js-project-single-menu-fixed} & {
+      display: block;
+      width: 100%;
+      height: $height-fixed-menu;
+
+      position: fixed;
+      left: 0;
+      top: 0;
+      right: 0;
+      z-index: ($depth-site-header + 1);
+
+      background-color: $c-bg3;
+      border-bottom: solid 2px $c-bg2;
+
+      .project-single-menu-inner {
+        @include max-width-site;
+        position: relative;
+      }
+
+      .project-single-nav .nav-anchors > li > a {
+        $padding-height: padding-height($height-fixed-menu, 21px, 3px);
+        padding-top: $padding-height;
+        padding-bottom: ($padding-height + 3px);
+        font-size: 18px;
+        line-height: 21px;
+      }
+
+      .project-single-menu-info {
+        display: block;
+        height: 100%;
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+      }
+
+      .project-single-menu-col {
+        float: left;
+        padding-left: 20px;
+        padding-right: 20px;
+        font-size: 18px;
+        line-height: 18px;
+      }
+
+      .project-single-menu-title {
+        @include background-image(-svg(linear-gradient('to left', $c-bg3 90%, fade-out($c-bg3, 1) 100%)));
+
+        $padding-height: padding-height($height-fixed-menu, 40px);
+        padding-top: $padding-height;
+        padding-bottom: $padding-height;
+        padding-left: 40px;
+        text-align: right;
+
+        .title {
+          height: 1.3em;
+          max-width: 300px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+        }
+
+        .rating {
+          margin-top: 4px;
+        }
+      }
+
+      .project-single-menu-period {
+        $padding-height: padding-height($height-fixed-menu, 18px);
+        padding-top: $padding-height;
+        padding-bottom: $padding-height;
+        min-width: 120px;
+
+        .icon {
+          color: $c-p1;
+          font-size: 1.3em;
+        }
+      }
+
+      .project-single-menu-top {
+        padding-left: 0;
+        padding-right: 0;
+      }
+
+      .btn-nav-top {
+        $padding-height: padding-height($height-fixed-menu, 24px);
+        height: $height-fixed-menu;
+        padding-top: $padding-height;
+        padding-bottom: $padding-height;
+        background-color: transparent !important;
+        border: solid 1px $c-bg2;
+        border-top: 0 !important;
+        border-bottom: 0 !important;
+        font-size: 32px;
+        line-height: 24px;
+      }
+    }
+
+    // Hide the menu if the site-search is open
+    #{$js-project-single-menu-fixed}#{$js-site-search-open} & {
+      height: 0;
+      overflow: hidden;
+    }
+  }
+}
+
+// Expired project
+#{$js-expired-project}.project-single {
+  .project-single-menu-period,
+  .project-single-period-countdown {
+    color: $c-t2;
+    font-style: italic;
+
+    .icon {
+      display: none;
+    }
+  }
+}
+
+// Tables
+.project-single table {
+  margin-bottom: 30px;
+}
+
+// Button toolbars
+.project-single .page-section .btn-toolbar {
+  text-align: right;
+
+  > * {
+    margin-left: 20px;
+    margin-right: 0;
+  }
+}
+
+// Charts
+.project-single .chart {
+  // background-color: $c-bg3;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+// Small devices
+@include devices('sm') {
+  .project-single-rating {
+    text-align: center;
+
+    .label {
+      font-size: inherit;
+      margin-bottom: 10px;
+    }
+
+    .rating {
+      transform: scale(2);
+    }
+  }
+}
+
+// Full header (for devices `md` and `lg`: tablet-l, laptop and computer)
+@mixin project-single-header-full {
+  // Header
+  .project-single-header {
+    text-align: center;
+    vertical-align: middle;
+
+    // Navigation buttons
+    .btn-nav-left,
+    .btn-nav-back,
+    .btn-nav-previous,
+    .btn-nav-right,
+    .btn-nav-forward,
+    .btn-nav-next {
+      @include button-shape-sq-hg;
+      margin-top: -($height-btn-hg * .5);
+    }
+
+    .btn-nav-left,
+    .btn-nav-back,
+    .btn-nav-previous {
+      margin-left: -($width-site-margin-md * 2);
+    }
+
+    .btn-nav-right,
+    .btn-nav-forward,
+    .btn-nav-next {
+      margin-right: -($width-site-margin-md * 2);
+    }
+  }
+
+  .project-single-header-position {
+    width: 100%;
+    height: 700px;
+    position: relative;
+  }
+
+  .project-single-header-inner {
+    display: inline-block;
+    width: 100%;
+    max-width: 800px;
+    margin-left: -80px;
+    margin-right: auto;
+    padding: 30px 30px 30px 160px;
+    text-align: left;
+
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  // Category
+  .project-single-category {
+    display: block;
+    width: 160px;
+    height: 160px;
+
+    position: absolute;
+    left: -30px;
+    top: 30px;
+
+    border: solid 2px $c-bg2;
+    border-radius: 4px;
+    line-height: 160px;
+  }
+
+  // Title
+  .project-single-title {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: $fs-h1;
+  }
+
+  // Image
+  .project-single-image {
+    display: block;
+    padding-right: 20px;
+  }
+
+  // Meta
+  .project-single-meta {
+    font-size: 16px;
+    line-height: 1.3em;
+  }
+
+  // Location
+  .project-single-location {
+    .icon {
+      display: inline-block;
+    }
+
+    .label {
+      display: inline-block;
+      margin-right: 10px;
+    }
+  }
+
+  // Rating
+  .project-single-rating {
+    width: auto;
+    position: relative;
+    right: auto;
+    bottom: auto;
+    text-align: center;
+
+    .label {
+      font-size: inherit;
+      margin-bottom: 10px;
+    }
+
+    .rating {
+      transform: scale(2);
+    }
+  }
+
+  // Period
+  .project-single-period {
+    text-align: left;
+  }
+
+  .project-single-period-countdown {
+    font-size: 21px;
+  }
+
+  .project-single-period-expires {
+    display: block;
+  }
+
+  // Offers
+  .project-single-offers {
+
+  }
+
+  .project-single-offers-total {
+    display: block;
+  }
+
+  // Info
+  .project-single-info-wrap {
+    position: relative;
+    // -webkit-backface-visibility: hidden;
+    // -webkit-transform-style: preserve-3d;
+  }
+
+  .project-single-info {
+    max-width: 360px;
+    padding: 30px 30px 15px;
+    margin-top: -450px;
+    margin-left: 0;
+    margin-right: 0;
+
+    position: absolute;
+    right: 0;
+    top: 0;
+    z-index: ($depth-tooltip - 5);
+
+    // View map transition
+    transition: margin-top .5s;
+    // -webkit-backface-visibility: hidden;
+    // -webkit-transform-style: preserve-3d;
+  }
+
+  // Interest / Duration
+  .project-single-interest,
+  .project-single-duration {
+    width: auto;
+    float: none;
+    text-align: left;
+
+    .icon {
+      display: inline-block;
+    }
+  }
+}
+
+// Apply the full header
+@include devices('md', 'lg') {
+  @include project-single-header-full;
+}
+
+@include devices('lg') {
+  .project-single-meta,
+  .project-single-location {
+    font-size: 18px;
+  }
+}
+
+// Adjustment for tablet-l
+@include devices('tablet-l') {
+  .project-single-header {
+    // Navigation buttons
+    .btn-nav-left,
+    .btn-nav-back,
+    .btn-nav-previous,
+    .btn-nav-right,
+    .btn-nav-forward,
+    .btn-nav-next {
+      @include button-shape-sq-md;
+      margin-top: -($height-btn-md * .5);
+    }
+
+    .btn-nav-left,
+    .btn-nav-back,
+    .btn-nav-previous {
+      margin-left: -($width-site-margin-md * 2);
+    }
+
+    .btn-nav-right,
+    .btn-nav-forward,
+    .btn-nav-next {
+      margin-right: -($width-site-margin-md * 2);
+    }
+  }
+
+  .project-single-header-inner {
+    max-width: 700px;
+    padding-left: 120px;
+    margin-left: 0;
+  }
+
+  .project-single-category {
+    width: 120px;
+    height: 120px;
+    line-height: 120px;
+    left: -20px;
+    top: 20px;
+  }
+
+  .project-single-description {
+    max-width: 80%;
+  }
+
+  .project-single-info {
+    max-width: 320px;
+    margin-right: 2%;
+  }
+
+  .project-single-interest,
+  .project-single-duration {
+    float: left;
+    width: 50%;
+    text-align: center;
+
+    .icon {
+      display: none;
+    }
+  }
+}
+
+// View map transitions
+// -- Opening
+#{$js-project-single-map-opening} {
+  .project-single-map {
+    margin-bottom: 0;
+  }
+
+  .project-single-map-embed {
+    display: block;
+    opacity: 0;
+  }
+}
+
+// -- Open
+#{$js-project-single-map-open} {
+  .project-single-map {
+    margin-bottom: 0;
+  }
+
+  .project-single-map-embed {
+    display: block;
+    opacity: 1;
+  }
+}
+
+// -- Closing
+#{$js-project-single-map-closing} {
+  .project-single-map-embed {
+    display: block;
+    opacity: 0;
+  }
+}

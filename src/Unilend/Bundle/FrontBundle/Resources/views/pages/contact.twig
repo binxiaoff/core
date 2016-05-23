@@ -1,0 +1,91 @@
+{# Contact page #}
+{% extends 'layouts/_page-simple.twig' %}
+
+{% set page = {
+  id: 'page-contact',
+  title: 'Contact',
+  permalink: route('contact')
+} %}
+
+{% block extendPageHeader %}
+  <div class="page-header-image">{{ svgimage('#header-contact', '', 300, 300) }}</div>
+{% endblock %}
+
+{% block pageAsideBody %}
+  <div class="page-aside-body h-card vcard">
+    <h4 class="p-name fn p-org org">Unilend</h4>
+    <address class="p-adr h-adr">
+      <span class="p-street-address">6 rue du Général Clergerie</span><br>
+      <span class="p-postal-code">75116</span> <span class="p-locality">Paris</span> &ndash; <span class="p-country-name">France</span>
+    </address>
+    <div><a href="mailto:contact@unilend.fr" title="Email" class="p-email">contact@unilend.fr</a></div>
+    <div>Tel. <a href="tel:+33182285120" title="Telephone" class="p-tel">01 82 28 51 20</a></div>
+    <div>Tel. <a href="tel:+33182836655" title="Telephone (emprunters)" class="p-tel">01 82 83 66 55</a> (emprunteurs)</div>
+  </div><!-- /.page-aside-body -->
+  <img src="{{ siteurlmedia('contact/officespace.jpg') }}" alt="">
+{% endblock %}
+
+{% block pageContentBody %}
+  <section class="page-section">
+    <h2 class="h4">Nous contacter</h2>
+    <p>Vous avez une question à propos d'Unilend ? Pensez à consulter nos questions fréquentes. Votre question n'y figure pas ? Ecrivez un message et un membre de l'équipe vous répondra.</p>
+    <p><a href="{{ route('faq') }}" class="btn-default">Consulter la FAQ</a></p>
+  </section><!-- /.page-section -->
+
+  <section class="page-section">
+    <form action="{{ route('contact/email') }}" method="post">
+      <div class="row row-multi-col">
+        <div class="col-lg-6 col-md-6 col-sm-4">
+          <div class="form-field">
+            <label for="contact-message-profession">Profession</label>
+            <select id="contact-message-profession" name="message[profession]" class="input-field">
+              <option value="">Choisir...</option>
+              <option>Profession 1</option>
+              <option>Profession 2</option>
+              <option>Profession 3</option>
+            </select>
+          </div><!-- /.form-field -->
+        </div>
+      </div>
+      <div class="row row-multi-col">
+        <div class="col-lg-6 col-md-6 col-sm-4">
+          <div class="form-field">
+            <label for="contact-message-lastname">Nom</label>
+            <input type="text" id="contact-message-lastname" name="message[lastname]" value="" class="input-field">
+          </div><!-- /.form-field -->
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-4">
+          <div class="form-field">
+            <label for="contact-message-firstname">Prénom</label>
+            <input type="text" id="contact-message-firstname" name="message[firstname]" value="" class="input-field">
+          </div><!-- /.form-field -->
+        </div>
+      </div>
+      <div class="row row-multi-col">
+        <div class="col-lg-6 col-md-6 col-sm-4">
+          <div class="form-field">
+            <label for="contact-message-email">Email</label>
+            <input type="text" id="contact-message-email" name="message[email]" value="" class="input-field">
+          </div><!-- /.form-field -->
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-4">
+          <div class="form-field">
+            <label for="contact-message-society">Société</label>
+            <input type="text" id="contact-message-society" name="message[society]" value="" class="input-field">
+          </div><!-- /.form-field -->
+        </div>
+      </div>
+      <div class="row row-multi-col">
+        <div class="col-lg-12 col-md-12">
+          <div class="form-field">
+            <label for="contact-message-body">Message</label>
+            <textarea id="contact-message-body" name="message[body]" value="" rows="8" class="input-field"></textarea>
+          </div><!-- /.form-field -->
+        </div>
+      </div>
+      <div class="row">
+        <button class="btn-primary">Envoyer</button>
+      </div>
+    </form>
+  </section><!-- /.page-section -->
+{% endblock %}

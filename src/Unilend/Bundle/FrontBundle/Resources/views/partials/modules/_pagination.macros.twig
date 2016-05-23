@@ -1,0 +1,140 @@
+{# Pagination Module #}
+{# @import 'partials/modules/_pagination.macros.twig' as pagination #}
+
+{# Render the pagination #}
+{# @macro render #}
+{# @param {Object} options The options to configure the pagination settings with #}
+{% macro render(options) %}
+  {% import _self as pagination %}
+
+  {# Default settings #}
+  {% set settings = {
+    itemLabelSingle: __('Page', 'paginationItemLabelSingle'),
+    itemLabelPlural: __('Pages', 'paginationItemLabelPlural'),
+    pageUrl: 'page/%index%',
+    totalItems: 0,
+    currentIndex: 1,
+    itemsPerPage: 20,
+    totalPages: 0,
+    includeWrap: true
+  } %}
+
+  {# Override defaults with options #}
+  {% if options is not empty %}
+    {% set settings = settings|merge(options) %}
+  {% endif %}
+
+  {# Calculate totalPages if not already set #}
+  {% if settings.totalPages == 0 %}
+    {% set settings = settings|merge({
+      totalPages: (settings.totalItems / settings.itemsPerPage)|round(0, 'ceil')
+    }) %}
+  {% endif %}
+
+  {# Calculate other values #}
+  {% if settings.totalPages > 0 %}
+    {% set settings = settings|merge({
+      currentIndexItems: settings.currentIndex * settings.itemsPerPage,
+      remainingItems: settings.totalItems - (settings.totalItems / settings.itemsPerPage)|round(0, 'ceil')
+    }) %}
+  {% endif %}
+
+  {# Don't show pagination if totalPages < 2 #}
+  {% if settings.totalPages > 1 %}
+    {# Index Plan #}
+    {# Generic index plan: 1, ..., index-1, index, index+1, ..., max #}
+    {% set indexPlan = [settings.currentIndex - 1, settings.currentIndex, settings.currentIndex + 1] %}
+
+    {# Index plan: 1, ..., max-3, max-2, max-1, max #}
+    {% if settings.currentIndex > settings.totalPages - 3 %}
+      {% set indexPlan = [settings.totalPages - 3, settings.totalPages - 2, settings.totalPages - 1] %}
+
+    {# Index plan: 1, ..., max-4, current, max-2, max-1, max #}
+    {% elseif settings.currentIndex == settings.totalPages - 3 %}
+      {% set indexPlan = [settings.totalPages - 4, settings.totalPages - 3, settings.totalPages - 2, settings.totalPages - 1] %}
+
+    {# Index plan: 1, 2, 3, current, 5, ... max #}
+    {% elseif settings.currentIndex == 4 %}
+      {% set indexPlan = [2, 3, 4, 5] %}
+
+    {# Index plan: 1, 2, 3, 4, ... max #}
+    {% elseif settings.currentIndex < 4 %}
+      {% set indexPlan = [2, 3, 4] %}
+    {% endif %}
+
+    {% if settings.includeWrap %}<div class="pagination-wrap">{% endif %}
+
+    <nav class="pagination">
+      <div class="row">
+        <div class="col-lg-4 col-md-4 col-sm-8 col-xs-4">
+          <div class="pagination-info">
+            <span class="pagination-location">{{ __('%d of %d', 'paginationInfoLocationLabel')|format(settings.currentIndexItems, settings.totalItems) }}</span>{% if settings.currentIndex < settings.totalPages %} <a href="{{ route(settings.pageUrl|replace({'%index%': settings.currentIndex + 1})) }}" class="link pagination-next">{{ __('View next %d %s', 'paginationInfoNextLabel')|format(settings.itemsPerPage, settings.itemLabelPlural) }}</a>{% endif %}
+          </div>
+        </div>
+        <div class="col-lg-8 col-md-8 col-sm-8 col-xs-4">
+          <ul class="pagination-index">
+            {% if settings.currentIndex > 1 %}
+            <li role="presentation"><a href="{{ route(settings.pageUrl|replace({'%index%': settings.currentIndex + 1})) }}"><span class="icon fa-angle-left"></span><span class="sr-only"> {{ __('Previous %d %s', 'paginationIndexPreviousLabel')|format(settings.itemsPerPage, settings.itemLabelPlural) }}</span></a></li>
+            {% endif %}
+
+            {{ pagination.renderIndex(indexPlan, settings) }}
+
+            {% if settings.currentIndex < settings.totalPages %}
+            <li role="presentation"><a href="{{ route(settings.pageUrl|replace({'%index%': settings.currentIndex + 1})) }}"><span class="sr-only">{{ __('View next %d %s', 'paginationIndexNextLabel')|format(settings.itemsPerPage, settings.itemLabelPlural) }} </span><span class="icon fa-angle-right"></span></a></li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav><!-- /.pagination -->
+
+    {% if settings.includeWrap %}</div><!-- /.pagination-wrap -->{% endif %}
+  {% endif %}
+{% endmacro %}
+
+{# Render the pagination index #}
+{# @macro renderIndex #}
+{# @param {Object} settings The settings object of the pagination module #}
+{% macro renderIndex(indexPlan, settings) %}
+  {% import _self as pagination %}
+
+  {# Track ellipses #}
+  {% set elidedBeforeCurrent = false %}
+  {% set elidedAfterCurrent = false %}
+
+  {# Always render the first... #}
+  <li role="presentation" class="{% if settings.currentIndex == 1 %}current{% endif %}"><a href="{{ route(settings.pageUrl|replace({'%index%': 1})) }}">1</a></li>
+
+  {# Render inbetween numbers #}
+  {% if settings.totalPages > 1 %}
+    {% for i in 2..(settings.totalPages - 1) %}
+      {# Current index #}
+      {% set classCurrent = '' %}
+      {% if settings.currentIndex == i %}
+        {% set classCurrent = 'current' %}
+      {% endif %}
+
+      {# Output a number to be displayed #}
+      {% if i in indexPlan %}
+        {% if i > 0 and i <= settings.totalPages %}
+        <li role="presentation" class="{{ classCurrent }}"><a href="{{ route(settings.pageUrl|replace({'%index%': i})) }}">{{ i }}</a></li>
+        {% endif %}
+
+      {# Elide the numbers between the very first and the next to be displayed #}
+      {% elseif i < indexPlan[0] and elidedBeforeCurrent == false %}
+        {% set elidedBeforeCurrent = true %}
+        <li role="presentation" class="pagination-more">...</li>
+
+      {# Elide the numbers between the very last and the next to be displayed #}
+      {% elseif i > indexPlan[2] and elidedAfterCurrent == false %}
+        {% set elidedAfterCurrent = true %}
+        <li role="presentation" class="pagination-more">...</li>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {# ... and the last (my everythiiiing~~~) #}
+  {% if settings.totalPages > 1 %}
+  <li role="presentation" class="{% if settings.currentIndex == settings.totalPages %}current{% endif %}"><a href="{{ route(settings.pageUrl|replace({'%index%': settings.totalPages})) }}">{{ settings.totalPages }}</a></li>
+  {% endif %}
+
+{% endmacro %}

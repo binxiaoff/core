@@ -1,0 +1,122 @@
+{# Test max hero new #}
+{% extends 'layouts/_layout.twig' %}
+
+{% block siteContent %}
+
+<article class="page page-new">
+  <header class="page-header-new">
+    <div class="hero-wrap-new bg-p1">
+      <div class="site-wrap-new c-bg5">
+        <h1 class="c-bg5">Page title</h1>
+      </div>
+
+      {% include '@UnilendFrontBundle/partials/components/list-socialmedia.twig' %}
+    </div>
+  </header>
+
+  <div class="page-content-new">
+    <div class="site-wrap-new">
+      <h1><a href="#">Example text et magnis dis parturient montes</a></h1>
+      <h2>Example text et magnis dis parturient montes</h2>
+      <h3>Example text et magnis dis parturient montes</h3>
+      <h4>Example text et magnis dis parturient montes</h4>
+      <h5>Example text et magnis dis parturient montes</h5>
+      <h6>Example text et magnis dis parturient montes</h6>
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam imperdiet ultricies felis et pulvinar. <i>Donec sollicitudin</i> dui quis turpis vulputate, nec vulputate diam viverra. <a href="#">Cras posuere</a>, augue a sagittis aliquam, enim diam lacinia orci, <del>dignissim gravida tellus</del>.</p>
+      <blockquote>
+        <p>Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus.</p>
+      </blockquote>
+
+      <h1 class="h1">Example title (.h1)</h1>
+      <ul>
+        <li>One item</li>
+        <li>One item, two items</li>
+        <li>One item, two items, three items</li>
+        <li>One item, two items, three items, four items</li>
+        <li>One item, two items, three items, four items, five items</li>
+        <li>One item, two items, three items, four items, five items, six items</li>
+        <li>One item, two items, three items, four items, five items, six items, seven items!
+          <ul>
+            <li>Inner item one</li>
+            <li>Inner item one, inner item two</li>
+            <li>Inner item one, inner item two, inner item three
+              <ul>
+                <li>Inner item one</li>
+                <li>Inner item one, inner item two</li>
+                <li>Inner item one, inner item two, inner item three</li>
+              </ul>
+            </li>
+          </ul>
+        </li>
+      </ul>
+
+      <h2 class="h2">Example title (.h2)</h2>
+      <p>Velit sit amet felis. <code>Praesent accumsan, metus eu congue mattis</code>, erat turpis sollicitudin tellus, a dapibus odio ante a ipsum. <strong>Nullam volutpat quam orci</strong>, <em>a elementum felis condimentum ac</em>. <strong><em>Duis vulputate urna a tellus ullamcorper viverra. Aenean cursus urna blandit libero <del>lobortis sollicitudin</del> ut eget felis.</em></strong></p>
+      <blockquote class="pullquote">
+        <p>Duis vulputate urna a tellus ullamcorper viverra. Aenean cursus urna blandit libero.</p>
+      </blockquote>
+
+      <h3 class="h3">Example title (.h3)</h3>
+      <ol>
+        <li>One item</li>
+        <li>One item, two items</li>
+        <li>One item, two items, three items</li>
+        <li>One item, two items, three items, four items</li>
+        <li>One item, two items, three items, four items, five items</li>
+        <li>One item, two items, three items, four items, five items, six items</li>
+        <li>One item, two items, three items, four items, five items, six items, seven items!
+          <ol>
+            <li>Inner item one</li>
+            <li>Inner item one, inner item two</li>
+            <li>Inner item one, inner item two, inner item three
+              <ol>
+                <li>Inner item one</li>
+                <li>Inner item one, inner item two</li>
+                <li>Inner item one, inner item two, inner item three</li>
+              </ol>
+            </li>
+          </ol>
+        </li>
+      </ol>
+    </div>
+  </div>
+</article>
+
+<article class="page page-new">
+  <div class="bg-bg1" style="padding: 40px 0">
+    <div class="hero-wrap-new c-bg5 bg-p1">
+      <div class="row">
+        <div class="col-lg-4 col-md-4 col-sm-3 col-xs-4" style="padding: 20px 40px">
+          <h1><code>.hero-wrap</code></h1>
+          <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Quisque ornare augue a rhoncus mattis. In vitae mollis enim. Nam bibendum neque vitae purus ultricies mollis.</p>
+        </div>
+        <div class="col-lg-8 col-md-8 col-sm-5 col-xs-4" style="background-image:url('{{ site.assets.media }}promos/homepre-video-hero-1690x1070.jpg'); background-repeat: no-repeat; background-position: center center; background-size: cover;">
+          <img src="{{ site.assets.media }}promos/homepre-video-hero-1690x1070.jpg" class="constrain-max-width hidden">
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="bg-bg1" style="padding: 40px 0">
+    <div class="site-wrap-new bg-bg5" style="padding: 20px 40px">
+      <div class="row">
+        <div class="col-lg-6 col-md-7 col-sm-4 col-xs-4">
+          <h3><code>.site-wrap</code></h3>
+          <p>Sed aliquet, lorem varius pretium ultricies, velit orci ultricies neque, ut euismod ipsum orci a erat. Sed posuere quam congue magna efficitur, vitae viverra quam varius. Etiam dapibus ipsum sapien, id ultricies nibh hendrerit bibendum. Proin at enim imperdiet, efficitur ex quis, vehicula nunc. Donec et nibh at risus varius condimentum. Morbi mattis, dolor eget sollicitudin mollis, metus sapien condimentum erat, in porttitor turpis nisl quis turpis. Aenean posuere, purus in viverra tincidunt, odio metus vulputate dui, non feugiat turpis mauris ut odio. Vestibulum ornare ultricies placerat. Ut feugiat, felis sit amet ultrices tincidunt, ante mauris pulvinar odio, a convallis ligula mi sed magna. Pellentesque ullamcorper, metus sit amet pretium tristique, augue dui imperdiet dolor, in semper nunc metus vitae nisl. Donec condimentum suscipit lorem ut ultrices. Nunc vitae malesuada odio. Nulla facilisis tortor id turpis pharetra fringilla. Sed a urna orci. In tellus turpis, gravida et rhoncus vel, tincidunt ac eros. Aliquam erat volutpat.</p>
+          <p>Etiam tincidunt, orci vel sodales tempus, odio risus malesuada magna, id faucibus nulla justo sed risus. Mauris at vulputate velit. Donec in dui ac lacus fermentum sollicitudin vel quis est. Donec vitae placerat nibh. Pellentesque vitae ultricies tortor, vel bibendum ligula. Praesent vehicula, tellus non fermentum condimentum, lorem mi rutrum metus, eu euismod nisi lectus et diam. In hac habitasse platea dictumst. Aenean aliquam vulputate tortor, id dignissim quam. Aenean bibendum ac metus vitae tristique. Proin in felis quis augue tristique bibendum. Donec volutpat velit varius felis aliquam porta. Praesent sed blandit nisi. Suspendisse sagittis ex non mi porta egestas. Vestibulum vel elit molestie, sagittis leo in, laoreet nunc. Fusce quis quam eros. Sed ex justo, facilisis sed erat at, vehicula lobortis elit.</p>
+          <p>Nulla dictum imperdiet lacus, ac maximus leo aliquam commodo. Sed faucibus eu enim vel ornare. Fusce dictum commodo molestie. In massa erat, sagittis ac tortor id, posuere tempor turpis. Praesent sed ullamcorper orci. Nam commodo pellentesque elementum. Nulla fermentum faucibus augue, ut malesuada lectus interdum id. Sed vestibulum libero quis efficitur mattis. Ut aliquet maximus augue, et venenatis felis imperdiet aliquam. Curabitur mollis consectetur varius. Vivamus fringilla congue semper.</p>
+        </div>
+        <aside class="col-lg-4 push-lg-2 col-md-4 push-md-1 col-sm-3 push-sm-1 col-xs-4" style="padding: 20px">
+          <h4>Related</h4>
+          <ul class="list-block">
+            <li><a href="#" class="link">Link 1</a></li>
+            <li><a href="#" class="link">Link 2</a></li>
+            <li><a href="#" class="link">Link 3</a></li>
+            <li><a href="#" class="link">Link 4</a></li>
+          </ul>
+        </aside>
+      </div>
+    </div>
+  </div>
+</article>
+
+{% endblock %}

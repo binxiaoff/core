@@ -1,0 +1,248 @@
+{# Homepage Acquisition #}
+{% extends 'layouts/_layout.twig' %}
+{% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
+
+{# Page data #}
+{% set page = {
+  title: 'Home',
+  permalink: route('/')
+} %}
+
+{# Placeholder data until connected to backend #}
+{% set placeholderData = {
+  promoBattenbergPeople: [{
+    type: 'emprunter',
+    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+    name: 'Jean-Marc',
+    location: 'Marseille',
+    quote: '"J&quot;ai pu emprunter 15&nbsp;000€ en quelques semaines et relancer la croissance de mon entreprise."',
+    urlTestimonial: route('emprunter/testimonials'),
+    urlProject: route('project/12345'),
+    labelCta: 'Présenter un projet',
+    urlCta: route('projects/new')
+  },{
+    type: 'preter',
+    image: siteurlmedia('promos/homeacq-promo-preter-600x400.jpg'),
+    name: 'Jane',
+    location: 'Avignon',
+    quote: '"En 2 ans, j&#39;ai multiplié par 3 mon portefeuille de prêt. Et mes intérêts sont à +8%."',
+    urlTestimonial: route('preter/testimonials'),
+    urlProject: false,
+    labelCta: 'Devenir prêteur',
+    urlCta: route('preter')
+  }]
+} %}
+
+{% block siteContent %}
+  <article id="homeacq" class="page">
+
+    <section id="homeacq-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
+      <div class="video-hero-wrapper">
+        <div id="homeacq-video-hero-swiper" class="video-hero-slideshow swiper-container" data-swiper-autoplay="5000" data-swiper-speed="500">
+          <div class="swiper-wrapper">
+            <div class="video-hero swiper-slide" data-preter-name="Julie" data-emprunter-name="Didier">
+              <div class="video-hero-image">&nbsp;</div>
+              <div class="caption caption-align-left">
+                <div class="caption-name">Julie &mdash; 36 ans</div>
+                <div class="caption-info">540€ prêtes, 5% de bénefices</div>
+                <div class="caption-links"><a href="{{ route('preter/testimonials') }}" class="link">Voir son témoignage</a></div>
+              </div><!-- /.caption -->
+              <div class="caption caption-align-right">
+                <div class="caption-name">Didier &mdash; 43 ans</div>
+                <div class="caption-info">10&nbsp;000€ empruntés, une entreprise relancée</div>
+                <div class="caption-links"><a href="{{ route('emprunter/testimonials') }}" class="link">Voir son témoignage</a></div>
+              </div><!-- /.caption -->
+            </div>
+            <div class="video-hero swiper-slide" data-preter-name="Julie" data-emprunter-name="Patrick">
+              <div class="video-hero-image">&nbsp;</div>
+              <div class="caption caption-align-left">
+                <div class="caption-name">Julie &mdash; 36 ans</div>
+                <div class="caption-info">300€ prêtes, 5% de bénefices</div>
+                <div class="caption-links"><a href="{{ route('preter/testimonials') }}" class="link">Voir son témoignage</a></div>
+              </div><!-- /.caption -->
+              <div class="caption caption-align-right">
+                <div class="caption-name">Patrick &mdash; 38 ans</div>
+                <div class="caption-info">20&nbsp;000€ empruntés, une entreprise relancée</div>
+                <div class="caption-links"><a href="{{ route('emprunter/testimonials') }}" class="link">Voir son témoignage</a></div>
+              </div><!-- /.caption -->
+            </div>
+            <div class="video-hero swiper-slide" data-preter-name="Julien" data-emprunter-name="Patrick">
+              <div class="video-hero-image">&nbsp;</div>
+              <div class="caption caption-align-left">
+                <div class="caption-name">Julien &mdash; 31 ans</div>
+                <div class="caption-info">300€ prêtes, 5% de bénefices</div>
+                <div class="caption-links"><a href="{{ route('preter/testimonials') }}" class="link">Voir son témoignage</a></div>
+              </div><!-- /.caption -->
+              <div class="caption caption-align-right">
+                <div class="caption-name">Patrick &mdash; 38 ans</div>
+                <div class="caption-info">20&nbsp;000€ empruntés, une entreprise relancée</div>
+                <div class="caption-links"><a href="{{ route('emprunter/testimonials') }}" class="link">Voir son témoignage</a></div>
+              </div><!-- /.caption -->
+            </div>
+          </div>
+          <!-- <div class="swiper-button-prev"></div>
+          <div class="swiper-button-next"></div> -->
+        </div>
+
+        <div class="video-hero-cta">
+          <div class="btn-media-wrapper">
+            <a href="https://www.youtube.com/watch?v=Fmtz6vI65GY" class="btn-media fancybox-media fancybox-embed-videojs">
+              <span class="icon fa-play"><span class="sr-only">Play</span></span>
+            </a>
+          </div>
+          <h5 class="c-p1"><span class="ui-preter-name">Julie</span> prête son argent à <span class="ui-emprunter-name c-p2">Didier</span></h5>
+          <h3>Vos intérêts se rencontrent</h3>
+        </div><!-- /.video-hero-cta -->
+
+        {% include '@UnilendFrontBundle//partials/components/list-socialmedia.twig' %}
+
+        <div class="btn-toolbar row">
+          <div class="col-lg-6 col-md-6">
+            <a href="{{ route('preter') }}" class="btn-cta btn-color-primary text-align-right"><span class="icon fa-angle-right"></span> Prêter aux entreprises</a>
+          </div>
+          <div class="col-lg-6 col-md-6">
+            <a href="{{ route('emprunter') }}" class="btn-cta btn-color-alternate text-align-left"><span class="icon fa-angle-right"></span> Emprunter auprès des particuliers</a>
+          </div>
+        </div><!-- /.btn-toolbar.row -->
+      </div><!-- /.video-hero-wrapper -->
+    </section><!-- /.cta-video-hero -->
+
+    <section id="homeacq-section-statistics" class="page-section">
+      <div class="site-wrap">
+        <h1 class="h2">Unilend en Chiffres</h1>
+        <div class="row">
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-projects', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="223" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">223</span></h3>
+              <p>projets déjà traités vulputate eleifend telluse aenean leo.</p>
+            </div><!-- /.promo -->
+          </div>
+
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-money', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="16" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">16</span> M€</h3>
+              <p>empruntés aenean vulputate eleifend telluse aenean leo.</p>
+            </div><!-- /.promo -->
+          </div>
+
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-people', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="23582" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">23 582</span></h3>
+              <p>membres présents au sein de notre communauté.</p>
+            </div><!-- /.promo -->
+          </div>
+        </div><!-- /.row -->
+      </div><!-- /.site-wrap -->
+    </section><!-- /.promos -->
+
+    <section id="homeacq-section-testimonials" class="page-section">
+      <div class="site-wrap">
+        <h1 class="h2">Ils nous ont fait confiance</h1>
+
+        {{ promoBattenberg.render({
+          classCtaButton: 'btn-color-primary',
+          labelCtaButton: '12 projets en cours',
+          urlCtaButton: route('projets'),
+          people: placeholderData.promoBattenbergPeople
+        }) }}
+
+      </div><!-- /.site-wrap -->
+    </section><!-- /.page-section -->
+
+    <section id="homeacq-section-join" class="page-section bg-bg3">
+      <div class="site-wrap">
+        <h2 class="h2">Les + Unilend</h2>
+        <div class="cta-cards">
+          <div class="row">
+            <div class="col-lg-5 push-lg-1 col-md-5 push-md-1">
+              <div class="card card-preter">
+                <h4>Rejoignez notre communauté <br>de <strong>22&nbsp;584 prêteurs</strong></h4>
+                <div class="card-text">
+                  <ul class="list-checked">
+                    <li>Percevez des revenus mensuels</li>
+                    <li>Controlez vous-même votre épargne</li>
+                    <li>Ne payez aucus frais</li>
+                  </ul>
+                </div><!-- /.card-text -->
+                <a href="{{ route('preter/register') }}" class="btn-primary btn-shape-md">Je deviens prêteur</a>
+                <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                  <span class="lg">20<sup>€</sup><br/></span>
+                  <span class="md">offerts<br/></span>
+                  <span class="sm">pour toute<br/>
+                  ouverture<br/>
+                  de compte<sup>*</sup></span>
+                </div><!-- /.stamp -->
+              </div><!-- /.card -->
+            </div>
+            <div class="col-lg-5 col-md-5">
+              <div class="card card-emprunter">
+                <h4><strong>Empruntez</strong> directment <br>auprès du grand public</h4>
+                <div class="card-text">
+                  <ul class="list-checked">
+                    <li>Obtenez vos fonds en 15 jours</li>
+                    <li>Empruntez jusqu'à 500&nbsp;000€</li>
+                    <li>Tout type de projet accepté</li>
+                  </ul>
+                </div><!-- /.card-text -->
+                <a href="{{ route('emprunter/register') }}" class="btn-alternate btn-shape-md">Tester mon éligibilité</a>
+              </div><!-- /.card -->
+            </div>
+          </div><!-- .row -->
+        </div><!-- /.cta-cards -->
+      </div><!-- /.site-wrap -->
+    </section><!-- /.page-section -->
+
+    <section id="homeacq-section-ethics" class="page-section">
+      <div class="site-wrap">
+        <h2 class="h2">Notre charte de déontologie</h2>
+        <div class="row">
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-transparancy', '', 190, 190, 'none') }}
+              </div>
+              <h3>Transparence</h3>
+              <p>Aucun intérêt économique direct ou indirect des employés d’Unilend</p>
+            </div><!-- /.promo -->
+          </div>
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-balance', '', 190, 190, 'none') }}
+              </div>
+              <h3>Égalité</h3>
+              <p>Tous les prêteurs ont accès aux mêmes informations</p>
+            </div>
+          </div><!-- /.promo -->
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-protection', '', 190, 190, 'none') }}
+              </div>
+              <h3>Protection</h3>
+              <p>Les données des clients sont hébergées sur des serveurs sécurisés en France</p>
+            </div><!-- /.promo -->
+          </div>
+        </div>
+        <div class="row page-section-footer">
+          <div class="btn-toolbar">
+            <a href="{{ route('about/our-ethics') }}" class="btn-primary">Lire l’intégralité de la charte</a>
+          </div><!-- /.btn-toolbar -->
+        </div>
+      </div><!-- /.site-wrap -->
+    </section><!-- /.page-section -->
+
+    {% include '@UnilendFrontBundle/partials/home/reviews.twig' %}
+
+  </article><!-- /.page -->
+
+{% endblock %}

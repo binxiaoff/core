@@ -1,0 +1,304 @@
+{# Homepage Preter #}
+{% extends 'layouts/_layout.twig' %}
+{% import 'partials/modules/_project-list.macros.twig' as projectList %}
+
+{# Page data #}
+{% set page = {
+  title: 'Prêter',
+  permalink: route('preter')
+} %}
+
+{# Placeholder Data (temp until hooked into backend) #}
+{% set placeholderData = {
+  filterItems: [{
+    column: 'category',
+    sortBy: 'categoryId',
+    label: __('Category', 'projectListFilterCategory')
+  },{
+    column: 'info',
+    sortBy: 'cost',
+    label: __('Cost', 'projectListFilterCost')
+  },{
+    column: 'stats',
+    sortBy: 'interest',
+    label: __('Interest', 'projectListFilterInterest')
+  },{
+    column: 'rating',
+    sortBy: 'rating',
+    label: __('Rating', 'projectListFilterRating')
+  },{
+    column: 'period',
+    sortBy: 'daysLeft',
+    label: __('Time Remaining', 'projectListFilterPeriod')
+  },{
+    column: 'view',
+    sortBy: false,
+    label: '&nbsp;'
+  }],
+
+  listItems: [{
+    id: '12345',
+    title: 'Example project',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
+    permalink: route('project/12345'),
+    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+    locationCity: 'Paris',
+    locationPostCode: '75002',
+    categoryId: 1,
+    cost: 150000.12,
+    interest: 7.2,
+    totalOffers: 1500,
+    rating: 3.5,
+    dateExpires: 'now'|date_modify('+4 days')|date('d F Y H:i:s'),
+    daysLeft: 4,
+    currentUserInvolved: false,
+    currentUserTotalOffers: 0
+  },{
+    id: '12345',
+    title: 'User has made an offer',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
+    permalink: route('project/12345'),
+    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+    locationCity: 'Paris',
+    locationPostCode: '75872',
+    categoryId: 1,
+    cost: 150000,
+    interest: 7.2,
+    totalOffers: 1500,
+    rating: 2,
+    dateExpires: 'now'|date_modify('+1 week')|date('d F Y H:i:s'),
+    daysLeft: 8,
+    currentUserInvolved: true,
+    currentUserTotalOffers: 5,
+    currentUserOffers: {
+      inProgress: 5,
+      accepted: 0,
+      rejected: 0
+    }
+  },{
+    id: '12345',
+    title: '48 hours left',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
+    permalink: route('project/12345'),
+    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+    locationCity: 'Paris',
+    locationPostCode: '75995',
+    categoryId: 3,
+    cost: 140000,
+    interest: 6.5,
+    totalOffers: 1200,
+    rating: 4,
+    dateExpires: 'now'|date_modify('+1 day 12 hours')|date('d F Y H:i:s'),
+    daysLeft: 1.5,
+    currentUserInvolved: false,
+    currentUserTotalOffers: 0
+  },{
+    id: '12345',
+    title: 'Less than 48 hours left',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
+    permalink: route('project/12345'),
+    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+    locationCity: 'Paris',
+    locationPostCode: '75995',
+    categoryId: 3,
+    cost: 140000,
+    interest: 6.5,
+    totalOffers: 1200,
+    rating: 4,
+    dateExpires: 'now'|date_modify('+3 hours')|date('d F Y H:i:s'),
+    daysLeft: 0.01,
+    currentUserInvolved: false,
+    currentUserTotalOffers: 0
+  },{
+    id: '12345',
+    title: 'Example project title',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
+    permalink: route('project/12345'),
+    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+    locationCity: 'Paris',
+    locationPostCode: '75009',
+    categoryId: 9,
+    cost: 210000,
+    interest: 7.1,
+    totalOffers: 12345,
+    rating: 4,
+    dateExpires: 'now'|date_modify('+1 week')|date('d F Y H:i:s'),
+    daysLeft: 7,
+    currentUserInvolved: false,
+    currentUserTotalOffers: 0
+  },{
+    id: '12345',
+    title: 'Current user has made offers that have been accepted and in progress',
+    description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
+    permalink: route('project/12345'),
+    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+    locationCity: 'Paris',
+    locationPostCode: '75021',
+    categoryId: 9,
+    cost: 140000,
+    interest: 5.5,
+    totalOffers: 987,
+    rating: 3.5,
+    dateExpires: 'now'|date_modify('+2 week')|date('d F Y H:i:s'),
+    daysLeft: 14,
+    currentUserInvolved: true,
+    currentUserTotalOffers: 5,
+    currentUserOffers: {
+      inProgress: 5
+    }
+  }]
+} %}
+
+{% block siteContent %}
+
+  <article id="homepre" class="page">
+
+    <section id="homepre-video-hero" class="cta-video-hero" aria-hidden="true" data-set-device-height="xs">
+      <div class="video-hero-wrapper">
+        <div class="video-hero">
+          <div class="caption caption-align-left">
+            <div class="caption-name">Julie &mdash; 36 ans</div>
+            <div class="caption-info">540€ prêtes, 5% de bénefices</div>
+            <div class="caption-links"><a href="{{ route('preter/testimonials') }}" class="link">Voir son témoignage</a></div>
+          </div><!-- /.caption -->
+        </div><!-- /.video-hero -->
+
+        <div class="video-hero-cta">
+          <div class="btn-media-wrapper">
+            <a href="https://www.youtube.com/watch?v=Fmtz6vI65GY" class="btn-media fancybox-media fancybox-embed-videojs">
+              <span class="icon fa-play"><span class="sr-only">Play</span></span>
+            </a>
+          </div>
+          <h3>Les finances de Julie vont mieux depuis qu'elle prête son argent&hellip;</h3>
+        </div><!-- /.video-hero-cta -->
+
+        {% include 'partials/components/list-socialmedia.twig' %}
+
+        <div class="btn-toolbar">
+          <a href="#homepre-section-steps" class="btn-cta btn-color-primary"><span class="icon fa-angle-right"></span> Prêter aux entreprises</a>
+        </div>
+      </div><!-- /.video-hero-wrapper -->
+    </section><!-- /.cta-video-hero -->
+
+    <section id="homepre-section-steps" class="page-section">
+      <div class="site-wrap">
+        <h1 class="h2">Prêter en 3 Étapes</h1>
+        <div class="row">
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-profile', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="round-number">1</h3>
+              <p>Créez votre compte sur Unilend en quelques minutes seulement</p>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-projects', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="round-number">2</h3>
+              <p>Choisissez un projet et faites une offre de prêt en proposant un taux et un montant</p>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-money', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="round-number">3</h3>
+              <p>Recevez vos remboursements et vos intérêts tous les mois</p>
+            </div>
+          </div>
+        </div><!-- /.row -->
+        <div class="row">
+          <div class="btn-toolbar">
+            <a href="{{ route('preter/help') }}" class="btn-default ui-open-site-search">Une question&nbsp;?</a>
+            <a href="{{ route('preter/new') }}" class="btn-primary">Créer mon compte</a>
+          </div><!-- /.btn-toolbar -->
+
+          <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+            <span class="lg">20<sup>€</sup><br/></span>
+            <span class="md">offerts<br/></span>
+            <span class="sm">pour toute<br/>
+            ouverture<br/>
+            de compte<sup>*</sup></span>
+          </div><!-- /.stamp -->
+        </div>
+      </div><!-- /.site-wrap -->
+    </section><!-- /.page-section -->
+
+    <section id="homepre-project-list" class="page-section bg-bg3">
+      <div class="site-wrap">
+        <h2 class="h2">{{ __('%d projects en cours', 'homepagePreterProjectListTitle')|format(placeholderData.listItems.length) }}</h2>
+
+        {{ projectList.render(
+          'homepre-project-list-module',
+          [],
+          placeholderData.listItems,
+          {
+            showFilters: false,
+            showPagination: false,
+            markInvolved: false
+          })
+        }}
+
+        <div class="btn-toolbar">
+          <a href="{{ route('projets') }}" class="btn-primary">Voir tous les projets</a>
+        </div><!-- /.btn-toolbar -->
+      </div><!-- /.site-wrap -->
+    </section><!-- /.page-section -->
+
+    <section id="homepre-section-whylend" class="page-section">
+      <div class="site-wrap">
+        <h2 class="h2">Pourquoi prêter avec Unilend&nbsp;?</h2>
+
+        <div class="row">
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-saving', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="90" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint">90</span><sup>%</sup></h3>
+              <p>90<sup>%</sup> des campagnes sont remboursées entièrement</p>
+            </div><!-- /.promo -->
+          </div>
+
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-linechart', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="8.84" data-total-time="3000" data-tween-count="easeOutQuint">8,84</span><sup>%</sup></h3>
+              <p>Tax d'intérêt moyen des prêts 8,84&nbsp;%&nbsp;/&nbsp;an</p>
+            </div>
+          </div><!-- /.promo -->
+
+          <div class="col-lg-4 col-md-4">
+            <div class="promo">
+              <div class="promo-image">
+                {{ svgimage('#promo-clock', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="promo-highlight">5</h3>
+              <p>5 minutes seulement pour effectuer son premier prêt</p>
+            </div><!-- /.promo -->
+          </div>
+        </div>
+
+        <div class="row page-section-footer">
+          <div class="btn-toolbar">
+            <a href="#" class="btn-primary">Vous souhaitez prêter&nbsp;?</a>
+          </div>
+          <p><a href="#" class="link c-p2">Vous êtes une entreprise et souhaitez emprunter&nbsp;?</a></p>
+        </div>
+      </div><!-- /.site-wrap -->
+    </section><!-- /.promos -->
+
+    {% include '@UnilendFrontBundle/partials/home/reviews.twig' %}
+
+  </article>
+
+{% endblock %}

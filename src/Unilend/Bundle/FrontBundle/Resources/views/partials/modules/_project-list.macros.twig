@@ -1,0 +1,238 @@
+{# Project List Module #}
+{# @import 'partials/modules/_project-list.macros.twig' as projectList #}
+
+{# Render project list #}
+{# @macro render #}
+{# @param {String} id The ID attribute of the project list #}
+{# @param {Array} filterItems A list of filterItem to use (see @macro filterItem for schema) #}
+{# @param {Array} listItems A list of listItem to use (see @macro listItem for schema) #}
+{# @param {Object} options Project list options to customise further #}
+{# @param {Object} paginationOptions Object to configure pagination output with #}
+{% macro render(id, filterItems, listItems, options, paginationOptions) %}
+  {% import _self as projectList %}
+  {% import 'partials/modules/_pagination.macros.twig' as pagination %}
+
+  {# Default Settings #}
+  {% set settings = {
+    showMap: true,
+    showFilters: true,
+    showPagination: true,
+
+    markExpired: true,
+    markInvolved: true
+  } %}
+
+  {# Set options to settings #}
+  {% if options is not empty %}
+    {% set settings = settings|merge(options) %}
+  {% endif %}
+
+  {# Default Pagination Settings #}
+  {# See 'partials/modules/_pagination.macros.twig' for more details #}
+  {% set paginationSettings = {
+    itemLabelSingle: __('Project', 'projectListItemTypeSingle'),
+    itemLabelPlural: __('Projects', 'projectListItemTypePlural'),
+    pageUrl: 'page/%index%',
+    totalItems: listItems|length,
+    currentIndex: 1,
+    itemsPerPage: 20,
+    totalPages: 0,
+    includeWrap: true
+  } %}
+
+  {# Set paginationOptions #}
+  {% if paginationOptions is not empty %}
+    {% set paginationSettings = paginationSettings|merge(paginationOptions) %}
+
+    {# Merge into settings so we only transfer one settings object between all module's macros #}
+    {% set settings = settings|merge({'paginationSettings': paginationSettings }) %}
+  {% endif %}
+
+  <div id="{{ id|default('project-list')|e('html_attr') }}" class="project-list">
+    <div class="tabs">
+      {% if settings.showMap %}
+      <div class="project-list-nav">
+        <ul class="nav nav-tabs">
+          <li role="presentation" class="active">
+            <a href="#project-list-view" role="tab" data-toggle="tab"><span class="icon fa-list"></span><span class="sr-only">{{ __('List View', 'projectListViewListLabel') }}</span></a>
+          </li>
+          <li role="presentation">
+            <a href="#project-list-map" role="tab" data-toggle="tab"><span class="icon fa-map-marker"></span><span class="sr-only">{{ __('Map View', 'projectListViewMapLabel') }}</span></a>
+          </li>
+        </ul>
+      </div><!-- /.project-list-nav -->
+      {% endif %}
+      <div class="project-list-content tab-content">
+        <div id="project-list-view" role="tabpanel" class="tab-pane active">
+          {% if settings.showFilters == true and filterItems is not empty %}
+            {{ projectList.renderFilterItems(filterItems, settings) }}
+            {{ projectList.renderListItems(listItems, filterItems, settings) }}
+          {% else %}
+            {{ projectList.renderListItems(listItems, false, settings) }}
+          {% endif %}
+
+          {% if settings.showPagination == true %}
+            {{ pagination.render(paginationSettings) }}
+          {% endif %}
+        </div><!-- /#project-list-view.tab-pane -->
+        {% if settings.showMap %}
+        <div id="project-list-map" role="tabpanel" class="tab-pane">
+          {{ projectList.renderMap(settings) }}
+        </div><!-- /#project-list-map.tab-pane -->
+        {% endif %}
+      </div><!-- /.project-list-content -->
+    </div><!-- /.tabs -->
+  </div><!-- /.project-list -->
+{% endmacro %}
+
+{# Render list of project list filters #}
+{# @macro renderFilterItems #}
+{# @param {Array} filtersItems A list of filters to use, e.g. projectList.defaults.filterItems #}
+{# @param {Object} settings the Project List's settings #}
+{% macro renderFilterItems(filterItems, settings) %}
+  {% import _self as projectList %}
+
+  {# Use default filterItems #}
+  {% if settings.showFilters == true and filterItems is not empty %}
+  <div class="project-list-filters">
+    {# Render each filter item #}
+    {% for filterItem in filterItems %}
+      {{ projectList.renderFilterItem(filterItem, settings) }}
+    {% endfor %}
+  </div><!-- /.project-list-filters -->
+  {% endif %}
+{% endmacro %}
+
+{# Render a single project list filter #}
+{# @macro renderfilterItem #}
+{# @param {Object} filterItem The filter item to display #}
+{# @param {Object} settings the Project List's settings #}
+{% macro renderFilterItem(filterItem, settings) %}
+    <div class="project-list-item-{{ filterItem.column|e('html_attr') }} project-list-filter"{% if filterItem.sortBy != false %} data-sort-by="{{ filterItem.column|e('html_attr') }}"{% endif %}>
+      <a href="javascript:;">{{ filterItem.label }}{% if filterItem.sortBy != false %} <span class="project-list-filter-order"></span>{% endif %}
+      </a>
+    </div><!-- /.project-list-filter -->
+{% endmacro %}
+
+{# Display project list map view #}
+{# @macro renderMap #}
+{# @param {Object} settings the Project List's settings #}
+{% macro renderMap(settings) %}
+  <div class="project-list-map">
+    @TODO
+  </div><!-- /.project-list-map -->
+{% endmacro %}
+
+{# Display project list items #}
+{# @macro renderListItems #}
+{# @param {Array} listItems The list of items to display #}
+{# @param {Array} filterItems The list of filters to display #}
+{# @param {Object} settings the Project List's settings #}
+{% macro renderListItems(listItems, filterItems, settings) %}
+  {% import _self as projectList %}
+
+  <div class="project-list-items">
+    {% for listItem in listItems %}
+      {# Only show list item if settings support it #}
+      {{ projectList.renderListItem(listItem, filterItems, settings) }}
+    {% endfor %}
+  </div><!-- /.project-list-items -->
+{% endmacro %}
+
+{# Display a single project list item #}
+{# @macro renderListItem #}
+{# @param {Object} listItem The list item to display #}
+{# @param {Object} filterItems The list of filterItems to generate data-sort-{x} attributes with #}
+{# @param {Object} settings the Project List's settings #}
+{% macro renderListItem(listItem, filterItems, settings) %}
+  {% import _self as projectList %}
+  {% import 'extensions/_general.macros.twig' as general %}
+
+  {# Build data-sort-{column} attributes #}
+  {% set sortAttrs = '' %}
+  {% if settings.showFilters == true and filterItems is not empty %}
+    {% for filterItem in filterItems %}
+      {% if filterItem.sortBy != false %}
+        {% set sortAttrs = sortAttrs ~ ' data-sort-' ~ (filterItem.column|e('html_attr')) ~ '="' ~ (listItem[filterItem.sortBy]|e('html_attr') ~ '"') %}
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {# Set the rating class for the .rating element #}
+  {% set classRating = listItem.rating|tostring|split('.')|join('-') %}
+
+  {# Set CSS class to show expired project #}
+  {% set classProjectExpired = '' %}
+  {% if settings.markExpired == true and listItem.daysLeft == 0 %}
+  {% set classProjectExpired = 'ui-project-expired' %}
+  {% endif %}
+
+  {# Set CSS class to show current user is involved in the project #}
+  {% set classUserInvolved = '' %}
+  {% if settings.markInvolved == true and listItem.currentUserInvolved == true %}
+  {% set classUserInvolved = 'ui-current-user-involved' %}
+  {% endif %}
+
+  <article class="project-list-item {{ classProjectExpired }} {{ classUserInvolved }}"{{ sortAttrs }}>
+    <div class="project-list-item-category">
+      {{ general.projectCategoryIcon(listItem.categoryId) }}
+      {% if listItem.image is not empty %}
+        <div class="project-list-item-image" style="background-image:url('{{ listItem.image|escape('html_attr') }}')">
+          <img src="{{ listItem.image }}" alt="">
+        </div>
+      {% endif %}
+    </div>
+    <div class="project-list-item-info">
+      <h3 class="project-list-item-title"><a href="{{ listItem.permalink }}">{{ listItem.title }}</a></h3>
+      <div class="project-list-item-meta">
+        <h4 class="project-list-item-location"><span class="icon fa-map-marker"></span> {{ listItem.locationCity }}, {{ listItem.locationPostCode }}</h4>
+        <h5 class="project-list-item-cost">{{ listItem.cost|__num|nbsp }}€</h5>
+      </div>
+      <div class="project-list-item-description">
+        <p>{{ listItem.description|slice(0, 100) }}&hellip;</p>
+      </div>
+    </div>
+    <div class="project-list-item-stats">
+      <div class="project-list-item-interest">{{ listItem.interest }}%</div>
+      <div class="project-list-item-offers">
+        <strong>{{ listItem.totalOffers|__num|nbsp }}</strong> {% if listItem.totalOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %}
+      </div><!-- /.project-list-item-offers -->
+      {% if listItem.currentUserTotalOffers > 0 and listItem.currentUserOffers is not empty %}
+      <div class="project-list-item-useroffers">
+        {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 %}
+          {% if statusOffer == 'accepted' %}
+            <div class="project-list-item-useroffers-accepted">
+              {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('accepted', 'projectListItemOffersUserStatusAccepted') }}
+            </div><!-- /.project-list-item-useroffers-accepted -->
+          {% elseif statusOffer == 'rejected' %}
+            <div class="project-list-item-useroffers-rejected">
+              {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('rejected', 'projectListItemOffersUserStatusRejected') }}
+            </div><!-- /.project-list-item-useroffers-rejected -->
+          {% elseif statusOffer == 'inProgress' %}
+            <div class="project-list-item-useroffers-inprogress">
+              {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('in progress', 'projectListItemOffersUserStatusInProgress') }}
+            </div><!-- /.project-list-item-useroffers-inprogress -->
+          {% endif %}
+        {% endfor %}
+      </div><!-- /.project-list-item-useroffers -->
+      {% endif %}
+    </div><!-- /.project-list-item-stats -->
+    <div class="project-list-item-rating">
+      <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectListItemRatingLabel')|format(listItem.rating) }}</span></span>
+    </div>
+    <div class="project-list-item-period">
+      {% if listItem.daysLeft > 0 and listItem.daysLeft <= 2 %}
+        <span class="icon fa-clock-o"></span> <span class="ui-time-count" data-time-count-to="{{ listItem.dateExpires|escape('html_attr') }}">&hellip;</span>
+      {% elseif listItem.daysLeft == 0 %}
+        {{ __('Project expired', 'projectListItemPeriodExpired') }}
+      {% else %}
+        {{ __('%d days left', 'projectListItemPeriodLabel')|format(listItem.daysLeft) }}
+      {% endif %}
+    </div>
+    <div class="project-list-item-view">
+      <a href="{{ listItem.permalink }}"><span class="icon fa-angle-right"></span><span class="sr-only">{{ __('Read more information about this project', 'projectListItemViewLabel') }}</span></a>
+    </div>
+    {# Feel free to do something better here #}
+    <a href="{{ listItem.permalink }}" class="project-list-item-hotspot"></a>
+  </article><!-- /.project-list-item -->
+{% endmacro %}

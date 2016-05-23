@@ -1,0 +1,350 @@
+//
+// Unilend Typography
+//
+
+// @TODO put in common/site or common/responsive
+$max-readable-width: 800px;
+
+// Font size and line heights of titles
+$fs-h1: $fs-title * 1;
+$lh-h1: $lh-title;
+$fs-h2: $fs-title * .8;
+$lh-h2: $lh-title;
+$fs-h3: $fs-title * .6;
+$lh-h3: $lh-title;
+$fs-h4: $fs-title * .5;
+$lh-h4: $lh-title * 1.25;
+$fs-h5: $fs-title * .4;
+$lh-h5: $lh-title * 1.5;
+$fs-h6: $fs-title * .3;
+$lh-h6: $lh-title * 1.5;
+
+h1, h2, h3, h4, h5, h6 {
+  @include font-title;
+  margin-top: 1em;
+  margin-bottom: 1em;
+
+  color: $c-p1;
+  font-weight: normal;
+}
+
+h1 {
+  font-size: $fs-h1;
+  line-height: $lh-h1;
+}
+
+h2 {
+  font-size: $fs-h2;
+  line-height: $lh-h2;
+}
+
+h3 {
+  font-size: $fs-h3;
+  line-height: $lh-h3;
+}
+
+h4 {
+  font-size: $fs-h4;
+  line-height: $lh-h4;
+}
+
+h5 {
+  font-size: $fs-h5;
+  line-height: $lh-h5;
+}
+
+h6 {
+  font-size: $fs-h6;
+  line-height: $lh-h6;
+}
+
+.h1 {
+  @include font-title(42px, .8em);
+  color: $c-p1;
+  font-weight: normal;
+  letter-spacing: 2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.h2 {
+  @include font-title(16px, 1.5em);
+  color: $c-p1;
+  font-weight: bold;
+  letter-spacing: 3px;
+  margin-top: 40px;
+  margin-bottom: 60px;
+  text-align: center;
+  text-transform: uppercase;
+
+  @include devices('lg') {
+    margin-top: 80px;
+  }
+}
+
+.h3 {
+  @include font-title(30px, 1.2em);
+  color: $c-p1;
+  font-weight: normal;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.h4 {
+  color: $c-p1;
+  font-weight: normal;
+  margin-top: 0;
+  margin-bottom: 30px;
+
+  &:after {
+    content: ' ';
+    display: block;
+    width: 120px;
+    height: 2px;
+    margin-top: 20px;
+    overflow: hidden;
+    background-color: $c-p1;
+  }
+}
+
+.text-align-left {
+  text-align: left;
+}
+
+.text-align-center {
+  text-align: center;
+}
+
+.text-align-right {
+  text-align: right;
+}
+
+// Hide element but still keep it visible for screen readers
+.sr-only {
+  @include hide-accessible;
+}
+
+// Links
+a {
+  @include link-states(
+    $link: (
+      background-color: transparent,
+      color: $c-p1,
+      text-decoration: none
+    ),
+    $hover: (
+      text-decoration: underline
+    ),
+    $active: (
+      color: $c-p2
+    )
+  );
+}
+
+// Specific links
+.link,
+.link-1,
+.link-2 {
+  &:before {
+    content: '\f105';
+    display: inline-block;
+    font-family: $ff-icon;
+    padding-right: 5px;
+    text-decoration: none !important;
+  }
+
+  @include link-states(
+    $link: (
+      text-decoration: none
+    ),
+    $hover: (
+      text-decoration: underline
+    )
+  )
+}
+
+.link-1 {
+  font-size: 18px;
+}
+
+.link-2 {
+  font-size: 16px;
+}
+
+// Paragraph
+p {
+  margin: 1em 0;
+}
+
+em {
+  font-style: italic;
+}
+
+strong {
+  font-weight: 700;
+}
+
+sup {
+  font-size: .6em;
+  vertical-align: top;
+}
+
+sub {
+  font-size: .7em;
+  vertical-align: bottom;
+}
+
+// Small text
+.small {
+  font-size: .8em;
+  line-height: 1.3em;
+
+  @include devices('lg') {
+    font-size: .9em;
+    line-height: 1.5em;
+  }
+}
+
+// Code
+code {
+  font-family: 'Andale Mono', 'Courier New', mono;
+  background-color: #eee;
+  border: solid 1px #ccc;
+  color: #6789AB;
+  padding: 4px 6px;
+  font-size: .8em;
+  -webkit-font-smoothing: normal;
+  -moz-osx-font-smoothing: normal;
+}
+
+pre {
+  font-family: 'Andale Mono', 'Courier New', mono;
+  background-color: #333;
+  color: #ccc;
+  display: block;
+  padding: 0;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+pre code {
+  background-color: transparent;
+  border-color: transparent;
+  color: inherit;
+  display: block;
+  padding: 20px;
+  overflow: auto;
+  line-height: 1.2em;
+}
+
+// Round numbers
+.round-number {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+
+  border: solid 3px $c-p1;
+  border-radius: 32px;
+  box-sizing: border-box;
+  line-height: 26px;
+  text-align: center;
+  vertical-align: middle;
+
+  &.c-p1 {
+    border-color: $c-p1;
+  }
+
+  &.c-p2 {
+    border-color: $c-p2;
+  }
+}
+
+h1.round-number {
+  width: $fs-h3 * 1.5;
+  height: $fs-h3 * 1.5;
+  // font-size: $fs-h3 * .7;
+  line-height: ($fs-h3 * 1.5) - 6px;
+}
+
+h2.round-number {
+  width: $fs-h3 * 1.5;
+  height: $fs-h3 * 1.5;
+  // font-size: $fs-h3 * .7;
+  line-height: ($fs-h3 * 1.5) - 6px;
+}
+
+h3.round-number {
+  width: $fs-h3 * 1.5;
+  height: $fs-h3 * 1.5;
+  // font-size: $fs-h3 * .7;
+  line-height: ($fs-h3 * 1.5) - 6px;
+}
+
+// Funky stamp
+.stamp {
+  box-sizing: border-box;
+  border-radius: 90px;
+
+  width: 90px;
+  height: 90px;
+  padding: 12px 0;
+
+  background-color: $c-white;
+  border: solid 2px $c-p1;
+  color: $c-p1;
+  font-weight: bold;
+  text-align: center;
+  text-transform: uppercase;
+  vertical-align: middle;
+
+  transform: rotate(-20deg);
+
+  .lg {
+    display: block;
+    font-size: $fs-title;
+    line-height: 1em;
+  }
+
+  .md {
+    display: block;
+    font-size: 16px;
+    line-height: 1em;
+  }
+
+  .sm {
+    display: none;
+    font-size: 11px;
+    line-height: 1em;
+  }
+
+  // Animate stamp when visible
+  @include devices('md', 'lg') {
+    width: 124px;
+    height: 124px;
+    border-radius: 126px;
+
+    .sm {
+      display: block;
+    }
+
+    .has-cssanimations & {
+      opacity: 0;
+
+      &.ui-is-visible {
+        animation: .2s linear .5s 1 stampisvisible;
+        animation-fill-mode: forwards;
+      }
+    }
+  }
+}
+
+@include keyframes(stampisvisible) {
+  0% {
+    opacity: 0;
+    transform: rotate(-90deg) scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-20deg) scale(1);
+  }
+}

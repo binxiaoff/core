@@ -14,9 +14,17 @@ class LegalController extends Controller
      */
     public function infoAction()
     {
-        return $this->render('UnilendFrontBundle:Legal:info.html.twig', array(
-            // ...
+        return $this->render('UnilendFrontBundle:pages:legal.html.twig', array(
+            'lang' => 'fr_FR',
+            'site' => '',
+            'env' => 'dev',
+            'page' => array(
+                'id' => 'id',
+                'classNames' => 'classNames',
+                'displayTitle' => 'displayTitle'
+            )
         ));
     }
 
 }
+

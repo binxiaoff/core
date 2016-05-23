@@ -17,16 +17,21 @@ framework:
         fallbacks: ["fr_FR"]
         paths:
             - "%kernel.root_dir%/../src/Unilend/Bundle/TranslationBundle/Resources/translations"
+        logging : true
 
 # Twig Configuration
 twig:
     strict_variables: "%kernel.debug%"
+    paths:
+        "%kernel.root_dir%/../src/Unilend/Bundle/FrontBundle/Resources/views" : UnilendFrontBundle
     exception_controller:  UnilendFrontBundle:Compatibility:dispatch
 
 assetic:
     debug:          '%kernel.debug%'
     use_controller: '%kernel.debug%'
+    bundles: [UnilendFrontBundle]
     write_to: '%kernel.root_dir%/../public'
+    read_from : '%kernel.root_dir%/../public/bundles/unilendfront'
 
 doctrine:
     dbal:

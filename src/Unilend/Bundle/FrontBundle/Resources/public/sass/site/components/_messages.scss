@@ -1,0 +1,116 @@
+//
+// Unilend Messages
+//
+
+@mixin message($bg-color: $c-purple-l2, $text-color: $c-t1, $icon-color: $c-p1, $show-icon: false) {
+  display: block;
+  padding: 20px;
+  margin-bottom: 20px;
+  position: relative;
+
+  background-color: $bg-color;
+  color: $text-color;
+  font-size: 16px;
+  line-height: 1.4em;
+  text-align: left;
+
+  > :first-child {
+    margin-top: 0;
+  }
+
+  > :last-child {
+    margin-bottom: 0;
+  }
+
+  @include devices('md', 'lg') {
+    padding: 30px;
+  }
+
+  @if $show-icon {
+    &:before {
+      display: block;
+      padding: 0 0 10px;
+
+      color: $icon-color;
+      font-family: $ff-icon;
+      font-size: 45px;
+      line-height: 45px;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    @include devices('md', 'lg') {
+      padding-left: 120px;
+
+      &:before {
+        width: 50px;
+        padding: 30px 0 30px 40px;
+
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+
+        text-align: left;
+      }
+    }
+  }
+}
+
+// Generic
+.message {
+  @include message;
+}
+
+// Info
+.message-info {
+  @include message($show-icon: true);
+
+  &:before {
+    content: '\f05a';
+  }
+}
+
+// Alert
+.message-alert {
+  @include message($show-icon: true);
+
+  &:before {
+    content: '\f06a';
+  }
+}
+
+// Success
+.message-success {
+  @include message($bg-color: lighten($c-success, 30%), $icon-color: darken($c-success, 30%), $show-icon: true);
+
+  &:before {
+    content: '\f00c';
+  }
+}
+
+// Error
+.message-error {
+  @include message($bg-color: $c-error, $text-color: $c-white, $icon-color: $c-white, $show-icon: true);
+
+  &:before {
+    content: '\f00d';
+  }
+
+  a {
+    @include link-states(
+      $link: (
+        color: $c-white,
+        text-decoration: underline
+      ),
+      $hover: (
+        color: $c-white,
+        text-decoration: underline
+      ),
+      $active: (
+        color: $c-white,
+        text-decoration: underline
+      )
+    );
+  }
+}

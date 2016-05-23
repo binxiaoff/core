@@ -1,0 +1,143 @@
+//
+// Unilend Tables
+//
+
+// Table scroll
+.table-scroll {
+  width: 100%;
+  margin-bottom: 20px;
+  overflow: auto;
+
+  > table {
+    margin-bottom: 0;
+  }
+}
+
+// Base table
+table {
+  display: table;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+tr {
+  display: table-row;
+  padding: 0;
+  margin: 0;
+}
+
+th {
+  display: table-cell;
+  padding: 5px 15px;
+  margin: 0;
+  color: $c-t3;
+  font-size: 11px;
+  letter-spacing: 2px;
+  line-height: 1em;
+  text-transform: uppercase;
+
+  @include devices('sm', 'laptop', 'lg') {
+    font-size: 13px;
+    padding: 10px 30px;
+  }
+}
+
+td {
+  display: table-cell;
+  padding: 5px 15px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.3em;
+
+  @include devices('sm', 'laptop', 'lg') {
+    padding: 10px 30px;
+    font-size: 16px;
+  }
+}
+
+// Generic table
+.table {
+  border: solid 8px $c-bg2;
+  background-color: $c-white;
+
+  thead {
+    background-color: $c-bg2;
+
+    th {
+      padding-top: 10px;
+      padding-bottom: 18px;
+    }
+  }
+
+  tbody {
+    tr {
+      background-color: $c-white;
+      color: $c-t1;
+
+      // Color alternative rows
+      &:nth-of-type(2n+1) {
+        background-color: $c-bg4;
+      }
+
+      // Any row that the current user is involved with
+      &#{$js-current-user-involved} {
+        background-color: $c-purple-l2;
+        color: $c-p1;
+      }
+
+      &.table-item-title {
+        background-color: $c-bg3;
+        color: $c-t2;
+
+        td {
+          font-weight: bold;
+        }
+      }
+
+      &.table-item-total {
+        background-color: $c-bg2;
+        color: $c-p1;
+        font-weight: bold;
+        text-transform: uppercase;
+
+        td {
+          font-weight: bold;
+        }
+      }
+    }
+  }
+}
+
+// Sortable table columns
+thead.table-sortable-columns {
+  display: none;
+
+  @include devices('sm', 'md', 'lg') {
+    display: table-header-group;
+  }
+}
+
+.table-sortable-column {
+  cursor: pointer;
+
+  // Currently sorted column
+  &#{$js-current-sortable-column} {
+    color: $c-t1;
+  }
+
+  // Sort order icon
+  &:after {
+    font-family: $ff-icon;
+    content: '\f0dc';
+  }
+
+  // Ascending
+  &#{$js-sortable-direction-asc}:after {
+    content: '\f0de';
+  }
+
+  // Descending
+  &#{$js-sortable-direction-desc}:after {
+    content: '\f0dd';
+  }
+}

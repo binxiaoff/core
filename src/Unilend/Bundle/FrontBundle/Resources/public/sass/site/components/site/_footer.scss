@@ -1,0 +1,207 @@
+//
+// Unilend Site Footer
+//
+
+.site-footer {
+  background-color: $c-p1;
+  color: $c-purple-l;
+  padding-top: 40px;
+  padding-bottom: 30px;
+
+  h1, h2, h3, h4, h5, h6 {
+    color: $c-white;
+  }
+
+  a {
+    @include link-states(
+      $link: (
+        color: $c-purple-l3,
+        text-decoration: none
+      ),
+      $hover: (
+        color: $c-purple-l3,
+        text-decoration: underline
+      ),
+      $active: (
+        color: $c-white,
+        text-decoration: underline
+      )
+    );
+  }
+
+  .list-block {
+    margin-bottom: 50px;
+
+    a {
+      display: block;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+  }
+
+  .list-socialmedia {
+    @include inline-block-list;
+    margin-bottom: 30px;
+
+    > li {
+      margin-right: 10px;
+
+      > a {
+        @include button;
+        @include button-shape-round-md;
+        @include link-states(
+          $link: (
+            background-color: $c-purple-l3,
+            border-color: $c-purple-l3,
+            color: $c-purple,
+            text-decoration: none
+          ),
+          $hover: (
+            background-color: $c-white,
+            border-color: $c-white,
+            color: $c-purple-d,
+            text-decoration: none
+          ),
+          $active: (
+            background-color: $c-black,
+            border-color: $c-black,
+            color: $c-white,
+            text-decoration: none
+          )
+        );
+
+        > .icon {
+          font-family: $ff-icon;
+        }
+
+        @include devices('lg') {
+          @include button-shape-round-lg;
+        }
+      }
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+
+  .list-awards {
+    @include inline-block-list;
+    display: none;
+    margin-bottom: 10px;
+    text-align: center;
+
+    > li {
+      margin-right: 30px;
+
+      &:last-child {
+        margin-right: 0;
+      }
+    }
+  }
+
+  .list-site-admin {
+    @include inline-block-list;
+
+    clear: both;
+
+    > li {
+      > a {
+        display: inline-block;
+        padding: 0 8px;
+        border-right: solid 1px fade-out($c-purple-l, .5);
+        text-decoration: none !important;
+      }
+
+      &:first-child {
+        > a {
+          padding-left: 0;
+        }
+      }
+
+      &:last-child {
+        > a {
+          padding-right: 0;
+          border-right-width: 0;
+        }
+      }
+    }
+  }
+
+  // Responsive: xs, sm
+  @include devices('xs', 'sm') {
+    text-align: center;
+  }
+
+  // Responsive: md, lg
+  @include devices('md', 'lg') {
+    padding-bottom: 30px;
+
+    .row {
+      margin-bottom: 50px;
+    }
+
+    .list-block {
+      margin-bottom: 0;
+    }
+
+    .list-awards {
+      display: block;
+    }
+
+    .list-site-admin {
+      @include clearfix;
+      float: right;
+
+      > li {
+        float: left;
+      }
+    }
+  }
+}
+
+.site-admin-nav {
+  font-size: 16px;
+  color: mix($c-purple-l, $c-purple, 50%);
+
+  > a {
+    display: inline-block;
+    padding: 0 5px;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+  }
+
+  @include devices('xs', 'sm') {
+    font-size: 14px;
+  }
+
+  @include devices('md') {
+    font-size: 14px;
+  }
+
+  @include devices('md', 'lg') {
+    text-align: right;
+  }
+}
+
+.site-copyright {
+  margin-top: 10px;
+  color: mix($c-purple-l, $c-p1, 50%);
+  font-size: 14px;
+
+  @include devices('md', 'lg') {
+    text-align: right;
+  }
+}
+
+.site-tagline {
+  color: mix($c-purple-l, $c-p1, 50%);
+  font-size: 14px;
+  text-align: center;
+}

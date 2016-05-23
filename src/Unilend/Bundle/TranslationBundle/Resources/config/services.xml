@@ -10,7 +10,6 @@
             <argument type="service" id="unilend.service.translation_loader" />
             <argument>%kernel.default_locale%</argument>
             <argument>%kernel.root_dir%</argument>
-
         </service>
 
         <service id="unilend.service.translation_loader" class="Unilend\Bundle\TranslationBundle\Service\TranslationLoader">

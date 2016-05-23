@@ -1,0 +1,92 @@
+{# Fiscalite / Taxation Page #}
+{% extends 'layouts/_page-simple.twig' %}
+
+{% set page = {
+  id: 'fiscalite',
+  title: 'Fiscalité',
+  permalink: route('fiscalite')
+} %}
+
+{% block extendPageHeader %}
+  <div class="page-header-image">{{ svgimage('#header-fiscalite', '', 300, 300) }}</div>
+{% endblock %}
+
+{% block pageAsideBody %}
+  <div class="page-aside-body">
+    <nav class="page-navigation">
+      <ul class="list-links">
+        <li role="presentation"><a href="#fiscalite-section-1">Fiscalité des intérêts reçus pour les particuliers</a></li>
+        <li role="presentation"><a href="#fiscalite-section-2">Comment ça marche&nbsp;?</a></li>
+        <li role="presentation"><a href="#fiscalite-section-3">Dispense de prélèvement de l'acompte d'impôt sur le revenu</a></li>
+        <li role="presentation"><a href="#fiscalite-section-4">Imputation des pertes en capital</a></li>
+        <li role="presentation"><a href="#fiscalite-section-5">Imprimé fiscal unique</a></li>
+        <li role="presentation"><a href="#fiscalite-section-6">Résidents fiscaux à l'étranger</a></li>
+        <li role="presentation"><a href="#fiscalite-section-7">Fiscalité des intérêts reçus pour les personnes morales</a></li>
+        <li role="presentation"><a href="#fiscalite-section-8">Imprimé fiscal unique</a></li>
+      </ul>
+    </nav><!-- /.page-navigation -->
+  </div><!-- /.page-aside-body -->
+{% endblock %}
+
+{% block pageContentBody %}
+  <section class="page-section">
+    <div id="fiscalite-section-1">
+      <h2 class="h4">Fiscalité des intérêts reçus pour les particuliers</h2>
+      <p>Les intérêts que vous recevez chaque mois sont imposés dans la catégorie des "produits de placement à revenu fixe", comme par exemple les intérêts des livrets bancaires ou les coupons d'obligations.</p>
+      <p>A ce titre, ils sont imposables au barème progressif de l’impôt sur le revenu et sont soumis aux prélèvements sociaux.</p>
+    </div>
+
+    <div id="fiscalite-section-2">
+      <h3>Comment ça marche&nbsp;?</h3>
+      <p>Chaque mois, les emprunteurs vous remboursent et Unilend prélève sur les intérêts une retenue à la source forfaitaire de 24 % (il s’agit d’un acompte sur votre impôt sur le revenu), à laquelle s'ajoutent les prélèvements sociaux (correspondant à 15,5 % des intérêts). L’année suivante, cet acompte est ajusté par l’administration fiscale en fonction de votre taux d’imposition à l’impôt sur le revenu : en cas de trop perçu, il vous est remboursé, sinon, vous êtes imposé sur le solde.</p>
+      <p>Si vous percevez moins de 2 000 € par an de produits de placement à revenu fixe, vous pourrez demander, sur votre déclaration de revenus, à être soumis à une imposition forfaitaire libératoire de 24 % au titre de l’impôt sur le revenu : c’est intéressant si votre taux marginal d'imposition est supérieur à 24 %. Dans ce cas, vous n’aurez donc pas de sommes supplémentaires à verser au Trésor Public.</p>
+    </div>
+
+    <div id="fiscalite-section-3">
+      <h3>Dispense de prélèvement de l'acompte d'impôt sur le revenu</h3>
+      <p>Vous pouvez demander à être dispensé du règlement de l'acompte d'impôt sur le revenu, si le revenu fiscal de référence de votre foyer fiscal de l'année précédente (indiqué sur votre avis d'imposition) est :</p>
+      <ul>
+        <li>inférieur à 25 000 € si vous êtes célibataire, divorcé ou veuf,</li>
+        <li>inférieur à 50 000 € si vous êtes soumis à une imposition commune.</li>
+      </ul>
+      <p>Dans cette situation, Unilend vous versera vos intérêts après une retenue à la source constituée uniquement des prélèvements sociaux (soit 15,5% des intérêts).</p>
+      <p>A noter également pour les foyers fiscaux dans cette situation : une fraction des prélèvements sociaux, la CSG, est déductible du revenu imposable de l'année du versement, à hauteur de 5,1 %. Ce montant sera calculé et déduit automatiquement de votre revenu imposable par l’administration fiscale.</p>
+      <p><strong>Attention</strong> : toute fausse attestation de votre part engagerait votre responsabilité. Cette dispense d'acompte sur les revenus de 2016 ne pourra s'appliquer que sur les revenus perçus après la réception et le traitement par Unilend d’une attestation sur l'honneur indiquant que vous remplissez les conditions requises par la loi (date de limite légale de réception de l'attestation pour les revenus de 2016 : 30 novembre 2015).</p>
+      <p><a href="#todo" class="link">En savoir</a></p>
+    </div>
+
+    <div id="fiscalite-section-4">
+      <h3>Imputation des pertes en capital</h3>
+      <p>Pour tous les prêts réalisés à partir du 1er janvier 2016, les éventuelles pertes en capital sont déductibles au titre de l’impôt sur le revenu des intérêts reçus au cours de la même année ou au cours de 5 années suivantes sur des prêts de même nature jusqu’à 1 000 euros par prêt. Cette disposition concerne tous les projets mis en ligne sur Unilend à partir du 28 décembre 2015, en savoir plus.</p>
+      <p>En prêtant sur Unilend, vous prenez un risque de perte en capital dans le cas où l’entreprise à laquelle vous avez prêté fait défaut. Si une perte en capital définitive due à l’arrêt définitif du remboursement des échéances par une entreprise ayant été financée après le 1er janvier 2016 est constatée, vous pourrez la répercuter sur vos éventuels intérêts reçus sur d’autres projets lors des 5 années suivantes, dans la limite des 1 000 premiers euros prêtés par projet (en savoir plus sur les cas légaux d’irrécouvrabilité). C’est un mécanisme voisin de celui applicable aux moins-values de cessions de valeurs mobilières, par exemple les actions.</p>
+      <p>Cette disposition fiscale vous permet de payer des impôts uniquement sur vos gains nets. Cela ne signifie en aucun cas que l’Etat compense vos pertes. </p>
+      <p>Vous pouvez bien entendu prêter plus de 1000 euros par projet : en revanche, la déductibilité ne s’applique pas au-delà de 1 000 euros prêtés par projet.</p>
+      <p>Par exemple, imaginons que vous prêtez à deux entreprises différentes : 2 000 euros à l’entreprise 1 et 12 000 euros à l’entreprise 2. Dans le cas où l’entreprise 1 fait défaut, vous pouvez déduire fiscalement les pertes en capital constatées sur les 1 000 premiers euros prêtés à l’entreprise 1 des intérêts versés par l’entreprise 2 pendant cinq ans.</p>
+      <p>Pour bénéficier au mieux de cette disposition fiscale, il est très important de répartir vos prêts sur un grand nombre d’entreprises.</p>
+      <p><strong>Attention</strong> : le mécanisme d’imputation des pertes ne s’applique qu’au titre de l’impôt sur le revenu, pas sur les prélèvements sociaux.</p>
+    </div>
+
+    <div id="fiscalite-section-5">
+      <h3>Imprimé fiscal unique</h3>
+      <p>Pour vous accompagner lors de votre déclaration annuelle de revenus, chaque début d’année suivant la fin de l’année fiscale correspondante, Unilend met à votre disposition un imprimé fiscal unique (IFU) dans votre espace personnel sécurisé. Il atteste de vos revenus perçus sur Unilend et des prélèvements fiscaux et sociaux déjà opérés. Toutes les informations qui y figurent ont été transmises à l’administration fiscale. Vous les retrouverez sur votre déclaration de revenus pré-remplie.</p>
+    </div>
+
+    <div id="fiscalite-section-6">
+      <h3>Résidents fiscaux à l’étranger</h3>
+      <p>Si votre résidence fiscale n’est pas en France, les intérêts de vos contrats de prêt ne sont soumis à aucun prélèvement de la part de l’administration fiscale française.</p>
+    </div>
+  </section>
+
+  <section class="page-section">
+    <div id="fiscalite-section-7">
+      <h2 class="h4">Fiscalité des intérêts reçus pour les personnes morales</h2>
+      <p>Les intérêts que vous recevez chaque mois sont imposés à l'impôt sur les sociétés après un acompte de 15 % retenu à la source.</p>
+      <p>Dans le cas des personnes morales, les pertes constatées peuvent être déduites ; vous pouvez passer cet actif en perte. Pour justifier cette opération de régularisation comptable, vous pouvez faire la demande d’un certificat d’irrécouvrabilité auprès du liquidateur.</p>
+    </div>
+
+    <div id="fiscalite-section-8">
+      <h3>Imprimé fiscal unique</h3>
+      <p>Pour vous accompagner lors de votre déclaration annuelle de revenus, chaque début d’année suivant la fin de l’année fiscale correspondante, Unilend met à votre disposition un imprimé fiscal unique (IFU) dans votre espace personnel sécurisé. Il atteste de vos revenus perçus sur Unilend et des prélèvements fiscaux déjà opérés. Toutes les informations qui y figurent ont été transmises à l’administration fiscale.</p>
+    </div>
+  </section><!-- /.page-section -->
+{% endblock %}

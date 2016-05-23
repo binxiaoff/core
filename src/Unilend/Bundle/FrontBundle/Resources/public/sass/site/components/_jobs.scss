@@ -1,0 +1,121 @@
+//
+// Unilend Jobs
+//
+
+.job-title {
+  color: $c-t1;
+}
+
+.job-description {
+  color: $c-t1;
+  font-size: 16px;
+}
+
+// List of jobs
+.list-jobs {
+  @include block-list;
+
+  border: solid 8px $c-bg2;
+  background-color: $c-white;
+
+  .job {
+    border-bottom: solid 8px $c-bg2;
+    background-color: $c-white;
+
+    &:last-child {
+      border-bottom: 0;
+    }
+  }
+
+  a.job-toggle {
+    box-sizing: border-box;
+    display: block;
+    padding-right: 32px;
+    position: relative;
+    color: $c-t1;
+    text-decoration: none !important;
+
+    &:after {
+      display: block;
+      width: 32px;
+      height: 32px;
+      margin-top: -16px;
+      content: '\f107'; // Angle down
+
+      position: absolute;
+      right: 0;
+      top: 50%;
+
+      color: $c-t2;
+      font-family: $ff-icon;
+      font-size: 32px;
+      line-height: 32px;
+      text-align: center;
+      vertical-align: middle;
+
+      transform: rotate(0deg);
+      transform-origin: center center;
+      transition: transform .2s;
+    }
+  }
+
+  // Toggled open
+  a.job-toggle#{$js-collapse-open}:after {
+    transform: rotate(180deg);
+  }
+
+  .job-header,
+  .job-description {
+    padding: 20px;
+  }
+
+  .job-title {
+    margin: 0;
+    font-size: $fs-h3;
+  }
+
+  .job-description {
+    border-top: solid 2px $c-bg2;
+
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    margin-left: -28px;
+    margin-right: -28px;
+  }
+
+  @include devices('lg') {
+    margin-top: 20px;
+    margin-left: -38px;
+    margin-right: -38px;
+
+    .job-header,
+    .job-description {
+      padding: 30px;
+    }
+
+    .job-title {
+      font-size: $fs-h4;
+
+      @include devices('md', 'lg') {
+        font-size: $fs-h3 + 6px;
+      }
+    }
+
+    .job-description {
+      font-size: 18px;
+      // line-height: 1.5em;
+    }
+
+    a.job-toggle:after {
+      font-size: 42px;
+    }
+  }
+}

@@ -1,0 +1,877 @@
+//
+// Unilend Buttons
+//
+
+// Base button
+@mixin button {
+  box-sizing: border-box;
+  display: inline-block;
+  border-style: solid;
+  font-family: $ff-button;
+  font-weight: normal;
+  text-align: center;
+  text-decoration: none !important;
+  // white-space: nowrap;
+  vertical-align: middle;
+}
+
+// Button Shapes
+// -- Default / Small
+@mixin button-shape-sm {
+  min-height: $height-btn-sm;
+  padding: padding-height($height-btn-sm, 26px) 20px;
+  font-size: 16px;
+  line-height: 24px;
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+// -- Default / Medium
+@mixin button-shape-md {
+  min-height: $height-btn-md;
+  padding: padding-height($height-btn-md, 26px) 30px;
+  font-size: 18px;
+  line-height: 24px;
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+// -- Default / Large
+@mixin button-shape-lg {
+  min-height: $height-btn-lg;
+  padding: padding-height($height-btn-lg, 26px) 50px;
+  font-size: 22px;
+  line-height: 26px;
+  border-width: 2px;
+  border-radius: 4px;
+}
+
+// -- Default - responsive
+@mixin button-shape-default {
+  @include button-shape-md;
+  min-width: 150px;
+
+  // @include devices('xs', 'sm') {
+  //   @include button-shape-sm;
+  // }
+
+  @include devices('lg') {
+    @include button-shape-lg;
+  }
+}
+
+// -- Huge - xs
+@mixin button-shape-huge-xs {
+  height: 70px;
+  padding: padding-height(70px, 18px) 20px;
+  font-size: 18px;
+  line-height: 18px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Huge - sm
+@mixin button-shape-huge-sm {
+  height: 70px;
+  padding: padding-height(70px, 18px) 30px;
+  font-size: 18px;
+  line-height: 18px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Huge - md
+@mixin button-shape-huge-md {
+  height: 80px;
+  padding: padding-height(80px, 22px) 45px;
+  font-size: 20px;
+  line-height: 22px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Huge - lg
+@mixin button-shape-huge-lg {
+  height: 110px;
+  padding: padding-height(110px, 26px) 50px;
+  font-size: 26px;
+  line-height: 26px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Huge - responsive
+@mixin button-shape-huge {
+  @include button-shape-huge-xs;
+
+  @include devices('sm') {
+    @include button-shape-huge-sm;
+  }
+
+  @include devices('md') {
+    @include button-shape-huge-md;
+  }
+
+  @include devices('lg') {
+    @include button-shape-huge-lg;
+  }
+}
+
+// -- Round Small
+@mixin button-shape-round-sm {
+  min-width: $height-btn-sm;
+  height: $height-btn-sm;
+  padding: padding-height($height-btn-sm, 22px) 0;
+  font-size: 18px;
+  line-height: 22px;
+  border-width: 2px;
+  border-radius: $height-btn-sm;
+}
+
+// -- Round Medium
+@mixin button-shape-round-md {
+  min-width: $height-btn-md;
+  height: $height-btn-md;
+  padding: padding-height($height-btn-md, 24px) 0;
+  font-size: 21px;
+  line-height: 24px;
+  border-width: 2px;
+  border-radius: $height-btn-md;
+}
+
+// -- Round Large
+@mixin button-shape-round-lg {
+  min-width: $height-btn-lg;
+  height: $height-btn-lg;
+  padding: padding-height($height-btn-lg, 24px) 0;
+  font-size: 24px;
+  line-height: 24px;
+  border-width: 2px;
+  border-radius: $height-btn-lg;
+}
+
+// -- round (responsive)
+@mixin button-shape-round {
+  @include button-shape-round-sm;
+
+  @include devices('md') {
+    @include button-shape-round-md;
+  }
+
+  @include devices('lg') {
+    @include button-shape-round-lg;
+  }
+}
+
+// -- Media button (play, pause, etc.)
+@mixin button-shape-media {
+  border-radius: $size-btn-media;
+  min-width: none;
+
+  width: $size-btn-media;
+  height: $size-btn-media;
+  padding: 0;
+  margin: ($size-btn-media-hover - $size-btn-media) * .5;
+  font-size: $fs-btn-media;
+  line-height: $size-btn-media;
+  border-width: 0 !important;
+
+  transition: width .2s, height .2s, line-height .2s, margin .2s;
+
+  @include link-states(
+    $link: (
+      width: $size-btn-media,
+      height: $size-btn-media,
+      line-height: $size-btn-media,
+      margin: ($size-btn-media-hover - $size-btn-media) * .5
+    ),
+    $hover: (
+      width: $size-btn-media-hover,
+      height: $size-btn-media-hover,
+      line-height: $size-btn-media-hover,
+      margin: 0
+    )
+  );
+
+  @include devices('md', 'lg') {
+    width: $size-btn-media-md;
+    height: $size-btn-media-md;
+    margin: ($size-btn-media-md-hover - $size-btn-media-md) * .5;
+    font-size: $fs-btn-media-md;
+    line-height: $size-btn-media-md;
+
+    @include link-states(
+      $link: (
+        width: $size-btn-media-md,
+        height: $size-btn-media-md,
+        line-height: $size-btn-media-md,
+        margin: ($size-btn-media-md-hover - $size-btn-media-md) * .5
+      ),
+      $hover: (
+        width: $size-btn-media-md-hover,
+        height: $size-btn-media-md-hover,
+        line-height: $size-btn-media-md-hover,
+        margin: 0
+      )
+    );
+  }
+}
+
+// -- Square - sm
+@mixin button-shape-sq-sm {
+  min-width: $height-btn-sm;
+  height: $height-btn-sm;
+  padding: padding-height($height-btn-sm, 22px) 0;
+  font-size: 16px;
+  line-height: 22px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Square - md
+@mixin button-shape-sq-md {
+  min-width: $height-btn-md;
+  height: $height-btn-md;
+  padding: padding-height($height-btn-md, 22px) 0;
+  font-size: 18px;
+  line-height: 24px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Square - lg
+@mixin button-shape-sq-lg {
+  min-width: $height-btn-lg;
+  height: $height-btn-lg;
+  padding: padding-height($height-btn-lg, 24px) 0;
+  font-size: 22px;
+  line-height: 24px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Square - hg
+@mixin button-shape-sq-hg {
+  min-width: $height-btn-hg;
+  height: $height-btn-hg;
+  padding: padding-height($height-btn-hg, 32px) 0;
+  font-size: 32px;
+  line-height: 32px;
+  border-width: 2px;
+  border-radius: 0;
+}
+
+// -- Square - responsive
+@mixin button-shape-sq {
+  @include button-shape-sq-sm;
+
+  // Only use-case of button-shape-sq-lg button so far is `.project-list-nav .nav.nav-tabs > li > a`
+  @include devices('md') {
+    @include button-shape-sq-md;
+  }
+
+  @include devices('lg') {
+    @include button-shape-sq-lg;
+  }
+}
+
+// Button colours
+// -- Default - grey
+@mixin button-color-default {
+  @include link-states(
+    $link: (
+      background-color: $c-bg2,
+      border-color: $c-bg2,
+      color: $c-t1
+    ),
+    $hover: (
+      background-color: $c-bg1,
+      border-color: $c-bg1,
+      color: $c-t1
+    ),
+    $active: (
+      background-color: darken( $c-bg1, 10% ),
+      border-color: darken( $c-bg1, 10% ),
+      color: $c-t1
+    )
+  );
+}
+
+// -- Primary - p1
+@mixin button-color-primary {
+  @include link-states(
+    $link: (
+      background-color: $c-p1,
+      border-color: $c-p1,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: $c-p1-hover,
+      border-color: $c-p1-hover,
+      color: $c-white
+    ),
+    $active: (
+      background-color: darken( $c-p1-hover, 5% ),
+      border-color: darken( $c-p1-hover, 5% ),
+      color: $c-white
+    )
+  );
+}
+
+// -- Alternate - p2
+@mixin button-color-alternate {
+  @include link-states(
+    $link: (
+      background-color: $c-p2,
+      border-color: $c-p2,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: $c-p2-hover,
+      border-color: $c-p2-hover,
+      color: $c-white
+    ),
+    $active: (
+      background-color: darken( $c-p2-hover, 5% ),
+      border-color: darken( $c-p2-hover, 5% ),
+      color: $c-white
+    )
+  );
+}
+
+// -- Clear / Transparent
+@mixin button-color-clear {
+  @include link-states(
+    $link: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1
+    ),
+    $hover: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1
+    ),
+    $active: (
+      background-color: $c-black,
+      border-color: $c-black,
+      color: $c-white
+    )
+  );
+}
+
+// Button types (assumes default shape for all)
+@mixin button-type-default {
+  @include button;
+  @include button-color-default;
+  @include button-shape-default;
+}
+
+@mixin button-type-primary {
+  @include button;
+  @include button-color-primary;
+  @include button-shape-default;
+}
+
+@mixin button-type-alternate {
+  @include button;
+  @include button-color-alternate;
+  @include button-shape-default;
+}
+
+@mixin button-type-clear {
+  @include button;
+  @include button-color-clear;
+  @include button-shape-default;
+}
+
+// Base class
+.btn {
+  @include button;
+}
+
+// Media button (play video)
+.btn-media {
+  @include button;
+  @include button-shape-media;
+  @include button-color-primary;
+
+  // Special adjustment for play icon
+  > .icon.fa-play {
+    margin-left: 6px;
+  }
+}
+
+// Special wrapper so margin transitions don't affect items around .btn-media
+.btn-media-wrapper {
+  display: block;
+  width: $size-btn-media-hover;
+  height: $size-btn-media-hover;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+  position: relative;
+
+  > .btn-media {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translateX(-50%) translateY(-50%);
+
+    &:link,
+    &:visited,
+    &:hover,
+    &:focus,
+    &:active {
+      margin: 0;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    width: $size-btn-media-md-hover;
+    height: $size-btn-media-md-hover;
+  }
+}
+
+//
+// Social media share buttons
+//
+@mixin button-sharing {
+  @include button;
+  @include button-shape-sq-sm;
+
+  @include devices('md') {
+    @include button-shape-sq-md;
+  }
+
+  @include devices('lg') {
+    @include button-shape-sq-lg;
+  }
+}
+
+// Facebook
+.btn-facebook {
+  @include button-sharing;
+  @include link-states(
+    $link: (
+      background-color: #3b5998,
+      border-color: #3b5998,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: darken(#3b5998, 10%),
+      border-color: darken(#3b5998, 10%),
+      color: $c-white
+    ),
+    $active: (
+      background-color: $c-black,
+      border-color: $c-black,
+      color: $c-white
+    )
+  );
+
+  &:before {
+    content: '\f09a';
+    display: inline-block;
+    font-family: $ff-icon;
+    // font-size: 21px;
+  }
+}
+
+// Twitter
+.btn-twitter {
+  @include button-sharing;
+  @include link-states(
+    $link: (
+      background-color: #55acee,
+      border-color: #55acee,
+      color: $c-white
+    ),
+    $hover: (
+      background-color: darken(#55acee, 10%),
+      border-color: darken(#55acee, 10%),
+      color: $c-white
+    ),
+    $active: (
+      background-color: $c-black,
+      border-color: $c-black,
+      color: $c-white
+    )
+  );
+
+  &:before {
+    content: '\f099';
+    display: inline-block;
+    font-family: $ff-icon;
+    // font-size: 21px;
+  }
+}
+
+// Email
+.btn-email {
+  @include button-sharing;
+  @include link-states(
+    $link: (
+      background-color: $c-bg3,
+      border-color: $c-bg3,
+      color: $c-black
+    ),
+    $hover: (
+      background-color: $c-bg2,
+      border-color: $c-bg2,
+      color: $c-black
+    ),
+    $active: (
+      background-color: $c-black,
+      border-color: $c-black,
+      color: $c-white
+    )
+  );
+
+  &:before {
+    content: '\f0e0';
+    display: inline-block;
+    font-family: $ff-icon;
+    // font-size: 21px;
+  }
+}
+
+// Close button
+@mixin button-close {
+  @include button;
+  @include button-shape-sq;
+  @include link-states(
+    $link: (
+      color: $c-t2,
+      background-color: $c-bg2,
+      border-color: $c-bg2
+    ),
+    $hover: (
+      color: $c-t1,
+      background-color: $c-bg3,
+      border-color: $c-bg3
+    ),
+    $active: (
+      color: $c-t1,
+      background-color: $c-t3,
+      border-color: $c-t3
+    )
+  );
+
+  background-image: none;
+
+  &:before {
+    content: '\f00d';
+    font-family: $ff-icon;
+    font-size: 24px;
+  }
+}
+
+.btn-close {
+  @include button-close;
+}
+
+// Navigation buttons
+.btn-nav-left,
+.btn-nav-previous,
+.btn-nav-back,
+.btn-nav-right,
+.btn-nav-next,
+.btn-nav-forward,
+.btn-nav-up,
+.btn-nav-top,
+.btn-nav-down,
+.btn-nav-bottom {
+  @include button;
+  @include button-color-default;
+  @include button-shape-sq-lg;
+
+  &:before {
+    font-family: $ff-icon;
+    // font-size: 24px;
+  }
+}
+
+.btn-nav-left,
+.btn-nav-previous,
+.btn-nav-back {
+  &:before {
+    content: '\f104';
+  }
+}
+
+.btn-nav-right,
+.btn-nav-next,
+.btn-nav-forward {
+  &:before {
+    content: '\f105';
+  }
+}
+
+.btn-nav-up,
+.btn-nav-top {
+  &:before {
+    content: '\f106';
+  }
+}
+
+.btn-nav-down,
+.btn-nav-bottom {
+  &:before {
+    content: '\f107';
+  }
+}
+
+// Buttons used in call-to-actions
+.btn-cta {
+  @include button;
+  @include button-color-default;
+  @include button-shape-huge;
+
+  width: 100%;
+  text-align: center;
+
+  &.text-align-right {
+    text-align: right;
+  }
+
+  &.text-align-left {
+    text-align: left;
+  }
+}
+
+// Search button
+.btn-search {
+  @include button;
+  @include button-shape-round-sm;
+  @include link-states(
+    $link: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1,
+      text-decoration: none
+    ),
+    $hover: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1,
+      text-decoration: none
+    ),
+    $active: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1,
+      text-decoration: none
+    )
+  );
+
+  &:before {
+    content: '\f002';
+    font-family: $ff-icon;
+  }
+}
+
+.btn-settings {
+  @include button;
+  @include link-states(
+    $link: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1,
+      text-decoration: none
+    ),
+    $hover: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1,
+      text-decoration: none
+    ),
+    $active: (
+      background-color: transparent,
+      border-color: transparent,
+      color: $c-t1,
+      text-decoration: none
+    )
+  );
+
+  &:before {
+    content: '\f1de';
+    font-family: $ff-icon;
+  }
+}
+
+//
+// Button Overrides (must be at end of file)
+//
+
+// Types
+.btn-default {
+  @include button-type-default;
+}
+
+.btn-primary {
+  @include button-type-primary;
+}
+
+.btn-alternate {
+  @include button-type-alternate;
+}
+
+.btn-clear {
+  @include button-type-clear;
+}
+
+// Shapes
+.btn-shape-default {
+  @include button-shape-default;
+}
+
+.btn-shape-sm {
+  @include button-shape-sm;
+}
+
+.btn-shape-md {
+  @include button-shape-md;
+}
+
+.btn-shape-lg {
+  @include button-shape-lg;
+}
+
+.btn-shape-huge {
+  @include button-shape-huge;
+}
+
+.btn-shape-huge-sm {
+  @include button-shape-huge-sm;
+}
+
+.btn-shape-huge-md {
+  @include button-shape-huge-md;
+}
+
+.btn-shape-huge-lg {
+  @include button-shape-huge-lg;
+}
+
+.btn-shape-round {
+  @include button-shape-round;
+}
+
+.btn-shape-round-lg {
+  @include button-shape-round-lg;
+}
+
+.btn-shape-round-md {
+  @include button-shape-round-md;
+}
+
+.btn-shape-round-sm {
+  @include button-shape-round-sm;
+}
+
+.btn-shape-sq {
+  @include button-shape-sq;
+}
+
+.btn-shape-sq-sm {
+  @include button-shape-sq-sm;
+}
+
+.btn-shape-sq-md {
+  @include button-shape-sq-md;
+}
+
+.btn-shape-sq-lg {
+  @include button-shape-sq-lg;
+}
+
+.btn-shape-sq-hg {
+  @include button-shape-sq-hg;
+}
+
+.btn-shape-media {
+  @include button-shape-media;
+}
+
+// Colors
+.btn-color-default {
+  @include button-color-default;
+}
+
+.btn-color-primary {
+  @include button-color-primary;
+}
+
+.btn-color-alternate {
+  @include button-color-alternate;
+}
+
+.btn-color-clear {
+  @include button-color-clear;
+}
+
+// Full width
+.btn-size-full {
+  width: 100% !important;
+}
+
+//
+// Button Containers
+//
+
+// Button group merges all buttons into single shape
+.btn-group {
+  @include clearfix;
+  vertical-align: middle;
+
+  // @TODO when use-case present
+}
+
+// Button toolbar contains buttons and button groups
+.btn-toolbar {
+  @include clearfix;
+  vertical-align: middle;
+
+  text-align: center;
+
+  &.text-align-left {
+    text-align: left;
+  }
+
+  &.text-align-right {
+    text-align: right;
+  }
+
+  > * {
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+
+  @include devices('xs', 'sm') {
+    > * {
+      margin-bottom: 20px;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    > :first-child {
+      margin-left: 0;
+    }
+
+    > :last-child {
+      margin-right: 0;
+    }
+  }
+}
+
+// Another group of buttons, just distinguish different to toolbar
+.btn-controls {
+  margin-top: 0;
+
+  > .btn-default,
+  > .btn-primary,
+  > .btn-alternate {
+    margin-top: 20px;
+  }
+}

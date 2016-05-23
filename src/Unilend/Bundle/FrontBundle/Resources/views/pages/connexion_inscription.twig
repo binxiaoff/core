@@ -1,0 +1,97 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.twig' %}
+{% import 'partials/modules/_project-list.macros.twig' as projectList %}
+
+{# Page data #}
+{% set page = {
+  title: 'Inscription / Connexion',
+  permalink: route('user/access')
+} %}
+
+{% block siteContent %}
+  <article id="connexion-inscription" class="page">
+
+    <header class="page-header">
+      <div class="site-wrap">
+        <h1>Connexion / Inscription</h1>
+      </div><!-- /.site-wrap -->
+    </header><!-- /.page-header -->
+
+    <section class="page-content">
+      <div class="hero-wrap">
+        <div class="site-wrap">
+          <div class="row">
+
+            <div class="col-connect col-lg-4 col-md-4">
+              <h2 class="h3 text-align-left">Déjà client&nbsp;?</h2>
+              <form action="{{ route('user/connect') }}" method="post" class="form-connect">
+                <div class="panel panel-connect">
+                  <div class="panel-inner" data-equal-height="md lg">
+                    <div class="form-field">
+                      <label for="connect-access-email">E-mail</label>
+                      <div class="input-group set-left">
+                        <div class="btn-group">
+                          <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
+                        </div>
+                        <input type="text" id="connect-access-email" name="access[email]" value="" class="input-field">
+                      </div><!-- /.input-group -->
+                    </div><!-- /.form-field -->
+
+                    <div class="form-field">
+                      <label for="connect-access-password">Mot de passe</label>
+                      <div class="input-group set-left">
+                        <div class="btn-group">
+                          <label for="connect-access-password"><span class="icon fa-lock"></span></label>
+                        </div>
+                        <input type="password" id="connect-access-password" name="access[password]" value="" class="input-field">
+                      </div><!-- /.input-group -->
+                      <div class="field-help">
+                        <p><a href="{{ route('user/forgotpassword') }}" class="link">Mot de passe oublié?</a></p>
+                      </div>
+                    </div><!-- /.form-field -->
+                  </div><!-- /.panel-inner -->
+                  <div class="btn-controls">
+                    <button type="submit" class="btn-primary">Se connecter</button>
+                  </div>
+                </div><!-- /.panel -->
+              </form><!-- /.form-connect -->
+            </div><!-- /.col-connect -->
+
+            <div class="col-register col-lg-8 col-md-8">
+              <h2 class="h3 text-align-left">Pas encore inscrit&nbsp;?</h2>
+              <div class="row">
+                <div class="col-emprunter col-lg-6 col-md-6">
+                  <div class="panel panel-emprunter">
+                    <div class="panel-inner" data-equal-height="md lg">
+                      <h3>Déposer un projet</h3>
+                      <p>Empruntez jusqu’à 500K€ auprès de notre communauté pour financer vos projets de développement professionnels.</p>
+                      <p><a href="{{ route('emprunter') }}" class="link">En savoir +</a></p>
+                    </div><!-- /.panel-inner -->
+                    <div class="btn-controls">
+                      <a href="{{ route('projet/new') }}" class="btn-alternate">Déposer un projet</a>
+                    </div>
+                  </div><!-- /.panel -->
+                </div>
+                <div class="col-preter col-lg-6 col-md-6">
+                  <div class="panel panel-preter">
+                    <div class="panel-inner" data-equal-height="md lg">
+                      <h3>Devenir prêteur</h3>
+                      <p>Prêtez aux petites et moyennes entreprises françaises et recevez jusqu’à 10% d'intérêts tous les mois.</p>
+                      <p><a href="{{ route('preter') }}" class="link">En savoir +</a></p>
+                    </div><!-- /.panel-inner -->
+                    <div class="btn-controls">
+                      <a href="{{ route('preter/new') }}" class="btn-primary">Devenir prêteur</a>
+                    </div>
+                  </div><!-- /.panel -->
+                </div>
+              </div>
+            </div><!-- /.col-register -->
+          </div>
+        </div><!-- /.site-wrap -->
+
+        {% include '@UnilendFrontBundle/partials/components/list-socialmedia.twig' %}
+      </div><!-- /.hero-wrap -->
+    </section><!-- /.page-content -->
+
+  </article><!-- /.page -->
+{% endblock %}

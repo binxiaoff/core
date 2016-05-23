@@ -1,0 +1,117 @@
+//
+// Unilend Fonts
+//
+
+$base-font-size:    18px;
+$base-line-height:  30px;
+
+$fs-base:           $base-font-size; // Font Size - Base
+$fs-title:          42px; // Font Size - Title
+$fs-input:          16px; // Font Size - Input
+$fs-button:         16px; // Font Size - Button
+$fs-mono:           $fs-base; // Font Size - Mono
+$fs-icon:           $fs-base; // Font Size - Icon
+
+$lh-base:           1.67em; // Line Height - Base
+$lh-title:          1.1em; // Line Height - Title
+$lh-input:          1.2em; // Line Height - Input
+$lh-button:         1.2em; // Line Height - Button
+$lh-mono:           1.2em; // Line Height - Mono
+$lh-icon:           1em; // Line Height - Icon
+
+$ff-base:           'Cabin', 'Helvetica Neue', Helvetica, Arial, sans-serif; // Font Family - Base
+$ff-title:          'Cabin', 'Helvetica Neue', Helvetica, Arial, sans-serif; // Font Family - Title
+$ff-alternate:      'Raleway', 'Cabin', 'Helvetica Neue', Helvetica, Arial, sans-serif; // Font Family - Alternate
+$ff-input:          $ff-base; // Font Family - Input
+$ff-button:         $ff-base; // Font Family - Button
+$ff-mono:           'Andale Mono', 'Courier New', Courier, mono; // Font Family - Mono
+$ff-icon:           'FontAwesome'; // Font Family - Icon
+
+// Set the font size
+@mixin font-size ($font-size, $line-height) {
+  @if $font-size {
+    font-size: $font-size;
+  }
+
+  @if $line-height {
+    line-height: $line-height;
+  }
+}
+
+// Shorthand to set the font base and sizing
+@mixin font-base ($size: $fs-base, $line-height: $lh-base) {
+  // Default font-size for base
+  @if $size or $line-height {
+    @if $size and unit($size) != 'px' and unit($size) != 'em' {
+      $size: $size * $fs-base;
+    }
+  }
+
+  @include font-size($size, $line-height);
+  font-family: $ff-base;
+}
+
+// Shorthand to set the font title and sizing
+@mixin font-title ($size: $fs-title, $line-height: $lh-title) {
+  // Default font-size for title
+  @if $size or $line-height {
+    @if $size and unit($size) != 'px' and unit($size) != 'em' {
+      $size: $size * $fs-title;
+    }
+  }
+
+  @include font-size($size, $line-height);
+  font-family: $ff-title;
+}
+
+// Shorthand to set the font button and sizing
+@mixin font-input ($size: $fs-input, $line-height: $lh-input) {
+  // Default font-size for button
+  @if $size or $line-height {
+    @if $size and unit($size) != 'px' and unit($size) != 'em' {
+      $size: $size * $fs-input;
+    }
+  }
+
+  @include font-size($size, $line-height);
+  font-family: $ff-input;
+}
+
+// Shorthand to set the font button and sizing
+@mixin font-button ($size: $fs-button, $line-height: $lh-button) {
+  // Default font-size for button
+  @if $size or $line-height {
+    @if $size and unit($size) != 'px' and unit($size) != 'em' {
+      $size: $size * $fs-button;
+    }
+  }
+
+  @include font-size($size, $line-height);
+  font-family: $ff-button;
+}
+
+// Shorthand to set the font mono and sizing
+@mixin font-mono ($size: $fs-mono, $line-height: $lh-mono) {
+  // Default font-size for mono
+  @if $size or $line-height {
+    @if $size and unit($size) != 'px' and unit($size) != 'em' {
+      $size: $size * $fs-mono;
+    }
+  }
+
+  @include font-size($size, $line-height);
+  font-family: $ff-mono;
+}
+
+// Shorthand to set the font icon and sizing
+@mixin font-icon ($size: $fs-icon, $line-height: $lh-icon) {
+  // Default font-size for icon
+  @if $size or $line-height {
+    @if $size and unit($size) != 'px' and unit($size) != 'em' {
+      $size: $size * $fs-icon;
+    }
+  }
+
+  @include font-size($size, $line-height);
+  font-family: $ff-icon;
+}

@@ -1,0 +1,26 @@
+//
+// Unilend Sortable
+//
+
+// Sortable columns
+.sortable-columns {
+
+}
+
+// Column
+.sortable-column {
+
+  // Icons
+  &:after {
+    font-family: $ff-icon;
+    content: '\f0dc'; // Both
+  }
+
+  &#{$js-sortable-direction-asc}:after {
+    content: '\f0de'; // Asc
+  }
+
+  &#{$js-sortable-direction-desc}:after {
+    content: '\f0dd'; // Desc
+  }
+}

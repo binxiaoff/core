@@ -1,0 +1,270 @@
+//
+// Unilend Responsive Breakpoints
+//
+
+$breakpoints: ('xs', 'sm', 'md', 'lg', 'mobile', 'mobile-p', 'mobile-l', 'tablet', 'tablet-p', 'tablet-l', 'computer', 'laptop', 'desktop');
+
+// Single media query
+@mixin media( $min-width: 0, $max-width: false, $media: 'screen' ) {
+  $media-query: '#{$media}';
+
+  @if $min-width >= 0 {
+    $media-query: '#{$media-query} and (min-width: #{$min-width})';
+  }
+
+  @if $max-width and $max-width >= 0 {
+    $media-query: '#{$media-query} and (max-width: #{$max-width})';
+  }
+
+  @media #{$media-query} {
+    @content;
+  }
+}
+
+// Multiple media queries (using only device names; see device-#{$device} )
+// @example @include devices(mobile, tablet) { @content; }
+@mixin devices($devices...) {
+  $media-query: '';
+  $i: 0;
+  $total-devices: length($devices);
+
+  @if $total-devices > 0 {
+    // Generate media query
+    @each $device in $devices {
+      $i: $i + 1;
+
+      // Add multiple
+      @if $i > 1 {
+        $media-query: '#{$media-query},';
+      }
+
+      // Desktop
+      @if $device == 'desktop' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-desktop})';
+
+      // Laptop
+      } @else if $device == 'laptop' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-laptop}) and (max-width: #{$width-laptop-max})';
+
+      // Computer
+      } @else if $device == 'computer' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-tablet-l})';
+
+      // Tablet (Landscape)
+      } @else if $device == 'tablet-l' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-tablet-l}) and (max-width: #{$width-tablet-l-max})';
+
+      // Tablet (Portrait)
+      } @else if $device == 'tablet-p' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-tablet-p}) and (max-width: #{$width-tablet-p-max})';
+
+      // Tablet
+      } @else if $device == 'tablet' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-tablet-p}) and (max-width: #{$width-tablet-l-max})';
+
+      // Mobile (Landscape)
+      } @else if $device == 'mobile-l' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-mobile-l}) and (max-width: #{$width-mobile-l-max})';
+
+      // Mobile (Portrait)
+      } @else if $device == 'mobile-p' {
+        $media-query: '#{$media-query} screen and (max-width: #{$width-mobile-p-max})';
+
+      // Mobile
+      } @else if $device == 'mobile' {
+        $media-query: '#{$media-query} screen and (max-width: #{$width-mobile-l-max})';
+
+      // XS - Mobile P
+      } @else if $device == 'xs' {
+        $media-query: '#{$media-query} screen and (max-width: #{$width-xs-max})';
+
+      // SM - Mobile Landscape, Tablet Portrait
+      } @else if $device == 'sm' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-sm}) and (max-width: #{$width-sm-max})';
+
+      // MD - Tablet Landscape, Laptop
+      } @else if $device == 'md' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-md}) and (max-width: #{$width-md-max})';
+
+      // LG - Desktop
+      } @else if $device == 'lg' {
+        $media-query: '#{$media-query} screen and (min-width: #{$width-lg})';
+      }
+    }
+
+    // Doits!
+    @media #{$media-query} {
+      // Set content
+      @content;
+    }
+  }
+}
+
+// Retina pixel density
+@mixin retina($pixel-ratio: 2) {
+  $dpi: $pixel-ratio * 96;
+  @media (-webkit-min-device-pixel-ratio: $pixel-ratio), (min-resolution: #{$dpi}dpi) {
+    @content;
+  }
+}
+
+// Wraps contain areas to a certain width
+// Site wrap is the main consistant width of the site
+@mixin site-wrap($enable-padding: true, $padding-xs: $width-site-margin-xs, $padding-sm: $width-site-margin-sm, $padding-md: $width-site-margin-md, $padding-lg: $width-site-margin-lg) {
+  box-sizing: border-box;
+  max-width: $width-site-wrap-xs;
+  margin-left: auto;
+  margin-right: auto;
+  @if $enable-padding {
+    padding-left: $padding-xs;
+    padding-right: $padding-xs;
+  }
+
+  @include devices('sm') {
+    max-width: $width-site-wrap-sm;
+    @if $enable-padding {
+      padding-left: $padding-sm;
+      padding-right: $padding-sm;
+    }
+  }
+
+  @include devices('md') {
+    max-width: $width-site-wrap-md;
+    @if $enable-padding {
+      padding-left: $padding-md;
+      padding-right: $padding-md;
+    }
+  }
+
+  @include devices('lg') {
+    max-width: $width-site-wrap-lg;
+    @if $enable-padding {
+      padding-left: $padding-lg;
+      padding-right: $padding-lg;
+    }
+  }
+}
+
+// Hero wrap has a larger maximum width than site wrap, often used for hero images,
+// and large display titles and elements (video-hero, etc.)
+@mixin hero-wrap($enable-padding: true, $padding-xs: $width-site-margin-xs, $padding-sm: $width-site-margin-sm, $padding-md: $width-site-margin-md, $padding-lg: $width-site-margin-lg) {
+  box-sizing: border-box;
+  position: relative;
+  max-width: $width-hero-wrap-xs;
+  margin-left: auto;
+  margin-right: auto;
+  @if $enable-padding {
+    padding-left: $padding-xs;
+    padding-right: $padding-xs;
+  }
+
+  @include devices('sm') {
+    max-width: $width-hero-wrap-sm;
+    @if $enable-padding {
+      padding-left: $padding-sm;
+      padding-right: $padding-sm;
+    }
+  }
+
+  @include devices('md') {
+    max-width: $width-hero-wrap-md;
+    @if $enable-padding {
+      padding-left: $padding-md;
+      padding-right: $padding-md;
+    }
+  }
+
+  @include devices('lg') {
+    max-width: $width-hero-wrap-lg;
+    @if $enable-padding {
+      padding-left: $padding-lg;
+      padding-right: $padding-lg;
+    }
+  }
+
+  // List sharing/socialmedia
+  > .list-socialmedia,
+  > .list-sharing {
+    display: none;
+    padding: 0;
+    margin: 0;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 9;
+
+    list-style-type: none;
+
+    li {
+      display: block;
+      padding: 0;
+      margin: 0;
+      list-style-type: none;
+    }
+
+    @include devices('md') {
+      display: block;
+      right: -($height-btn-md);
+    }
+
+    @include devices('lg') {
+      display: block;
+      right: -($height-btn-lg);
+    }
+  }
+}
+
+// Using this mixin is "same but different" than site-wrap. With this you can add your own padding,
+// instead of the breakpoint specific padding specified in the wraps
+@mixin max-width-site {
+  box-sizing: border-box;
+  max-width: $width-site-wrap-xs;
+  margin-left: auto;
+  margin-right: auto;
+
+  @include devices('sm') {
+    max-width: $width-site-wrap-sm;
+  }
+
+  @include devices('md') {
+    max-width: $width-site-wrap-md;
+  }
+
+  @include devices('lg') {
+    max-width: $width-site-wrap-lg;
+  }
+}
+
+// Same as above for this one
+@mixin max-width-hero {
+  box-sizing: border-box;
+  max-width: $width-hero-wrap-xs;
+  margin-left: auto;
+  margin-right: auto;
+
+  @include devices('sm') {
+    max-width: $width-hero-wrap-sm;
+  }
+
+  @include devices('md') {
+    max-width: $width-hero-wrap-md;
+  }
+
+  @include devices('lg') {
+    max-width: $width-hero-wrap-lg;
+  }
+}
+
+// Default wrap classes
+// Please note that depending on use-case there are specific overrides of these classes
+// due to the volatile nature of the designer's indifference to design standards
+.hero-wrap {
+  @include hero-wrap;
+  position: relative;
+}
+
+.site-wrap {
+  @include site-wrap;
+  position: relative;
+}

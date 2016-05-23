@@ -1,0 +1,69 @@
+{# Securite / Security Page #}
+{% extends 'layouts/_page-simple.twig' %}
+
+{% set page = {
+  id: 'page-security',
+  title: 'Securité',
+  permalink: route('securite')
+} %}
+
+{% block extendPageHeader %}
+  <div class="page-header-image">{{ svgimage('#header-securite', '', 300, 300) }}</div>
+{% endblock %}
+
+{% block pageAsideBody %}
+  <div class="page-aside-body" data-sticky>
+    <nav class="page-navigation">
+      <ul class="list-links">
+        <li role="presentation"><a href="#securite-section-1">Gardez vos codes secrets en lieu sûr</a></li>
+        <li role="presentation"><a href="#securite-section-2">Ne divulguez jamais vos informations</a></li>
+        <li role="presentation"><a href="#securite-section-3">N’oubliez pas de vous déconnecter</a></li>
+        <li role="presentation"><a href="#securite-section-4">Veillez à l’adresse du site dans la barre d’adresse</a></li>
+        <li role="presentation"><a href="#securite-section-5">Mettez à jour votre navigateur</a></li>
+        <li role="presentation"><a href="#securite-section-6">Ayez un anti-virus et pare-feu à jour</a></li>
+      </ul>
+    </nav><!-- /.page-navigation -->
+  </div><!-- /.page-aside-body -->
+{% endblock %}
+
+{% block pageContentBody %}
+  <section id="securite-section-1" class="page-section">
+    <h2 class="h4">Gardez vos codes secrets en lieu sûr</h2>
+    <p>Le site Unilend est édité par la Société française pour le financement des PME - SFFPME - SAS au capital de 515 350 euros .Le directeur de la publication est Monsieur François Prioux, en sa qualité de président de la Société française pour le financement des PME - SFF PME SAS.</p>
+  </section><!-- /.page-section -->
+
+  <section id="securite-section-2" class="page-section">
+    <h2 class="h4">Ne divulguez jamais vos informations</h2>
+    <p>Méfiez-vous des emails, courrier ou appels téléphoniques vous demandant votre identifiant, votre code secret ou des informations bancaires comme votre RIB. Les membres de l’équipe Unilend n’entreront jamais en communication pour obtenir directement des données sensibles sauf si vous rencontrez des difficultés pour vous inscrire ou si les informations que vous nous avez transmises sont fausses ou insuffisantes.</p>
+    <p>Nous pouvons en revanche vous demander de vous connecter sur votre compte pour mettre à jour vos informations.</p>
+    <p>De manière générale, soyez vigilants pour repérer les emails contenants des fautes d’orthographes, des logos approximatifs, voire des promesses fantaisistes.</p>
+    <p>En ce cas nous vous invitons vivement à ne pas répondre et à nous contacter dans les plus brefs délais pour nous informer de la tentative dont vous avez fait l’objet.</p>
+  </section><!-- /.page-section -->
+
+  <section id="securite-section-3" class="page-section">
+    <h2 class="h4">N’oubliez pas de vous déconnecter</h2>
+    <p>Votre compte sera mis hors ligne au bout de 20 minutes d’inactivité. Néanmoins, avant de quitter Unilend, veillez à vous déconnecter en cliquant sur « Déconnexion » qui apparaît en haut droite au passage de votre souris.</p>
+  </section><!-- /.page-section -->
+
+  <section id="securite-section-4" class="page-section">
+    <h2 class="h4">Veillez à l’adresse du site dans la barre d’adresse</h2>
+    <p>Si vous cliquez sur un lien dans un mail ou un autre site internet pour vous diriger vers Unilend, regardez l’URL qui s’affiche dans la barre d’adresse et veillez à ne pas atterrir sur un site clandestin.
+    <p>Pour garantir la sécurité de vos opérations, nous veillons à ce que les données échangées entre votre  navigateur (Firefox, Safari, Chrome, Internet Explorer, etc.) et Unilend soient protégées par chiffrement des données (Certificat SSL EV 128 bits). </p>
+    <p>Lorsque vous approvisionnez votre compte par carte bancaire, voici la page que vous devez voir apparaître :</p>
+    <a href="{{ siteurlmedia('security/payline-diagram.jpg') }}" class="fancybox"><img src="{{ siteurlmedia('security/payline-diagram.jpg') }}" alt=""></a>
+    <p>Vous noterez qu’elle contient les logos Payline (la solution de paiement choisie par Unilend), Unilend, Verisign (partenaire d’Unilend qui certifie la sécurité du site) et celui de votre carte bancaire (MasterCard, Visa, etc.).</p>
+  </section><!-- /.page-section -->
+
+  <section id="securite-section-5" class="page-section">
+    <h2 class="h4">Mettez à jour votre navigateur</h2>
+    <p>Méfiez-vous des emails, courrier ou appels téléphoniques vous demandant votre identifiant, votre code secret ou des informations bancaires comme votre RIB. Les membres de l’équipe Unilend n’entreront jamais en communication pour obtenir directement des données sensibles sauf si vous rencontrez des difficultés pour vous inscrire ou si les informations que vous nous avez transmises sont fausses ou insuffisantes.</p>
+    <p>Nous pouvons en revanche vous demander de vous connecter sur votre compte pour mettre à jour vos informations.</p>
+    <p>De manière générale, soyez vigilants pour repérer les emails contenants des fautes d’orthographes, des logos approximatifs, voire des promesses fantaisistes.</p>
+    <p>En ce cas nous vous invitons vivement à ne pas répondre et à nous contacter dans les plus brefs délais pour nous informer de la tentative dont vous avez fait l’objet.</p>
+  </section><!-- /.page-section -->
+
+  <section id="securite-section-6" class="page-section">
+    <h2 class="h4">Ayez un anti-virus et pare-feu à jour</h2>
+    <p>Vous vous prémunirez ainsi des intrusions et protégerez les informations que vous envoyez ou recevez.</p>
+  </section><!-- /.page-section -->
+{% endblock %}

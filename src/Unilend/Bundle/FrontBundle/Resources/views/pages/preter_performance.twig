@@ -1,0 +1,78 @@
+{# Preter - Performance de vos prêts #}
+{% extends 'layouts/_page-single.twig' %}
+
+{# Page data #}
+{% set page = {
+  id: 'preter-performance',
+  title: 'Performance de vos prêts',
+  permalink: route('preter/performance'),
+  classNames: 'page-single-preter'
+} %}
+
+{% block extendPageHeader %}
+  <nav class="page-navigation">
+    <ul>
+      <li role="presentation"><a href="{{ route('preter/guide') }}">Guide du prêteur</a></li>
+      <li role="presentation"><a href="{{ route('preter/fiscalite') }}">Fiscalité</a></li>
+      <li role="presentation" class="active"><a href="{{ route('preter/performance') }}">Performance de vos prêts</a></li>
+      <li role="presentation"><a href="{{ route('preter/documents') }}">Documents à fournir</a></li>
+      <li role="presentation" class="c-p1"><a href="{{ route('preter/new') }}">Devenir prêteur</a></li>
+    </ul>
+  </nav>
+{% endblock %}
+
+{% block pageContentInner %}
+<section class="page-section">
+  <div class="site-wrap">
+    <div class="row">
+      <div class="col-lg-6 col-md-6">
+        <header class="block-header">
+          <h1 class="h4"></h1>
+        </header>
+
+        <div class="block-image">
+          <img src="{{ siteurlmedia('') }}" alt="" />
+        </div>
+      </div>
+      <div class="col-lg-6 col-md-6">
+        <div class="block-text">
+          <h3></h3>
+          <p></p>
+          <p><a href="{{ route('preter/new') }}" class="btn-primary">Devenir prêteur</a></p>
+        </div>
+      </div>
+    </div>
+    <div class="row reverse">
+      <div class="col-lg-6 col-mg-6">
+        <header class="block-header">
+          <h2 class="h4"></h2>
+        </header>
+
+        <div class="block-image">
+          <img src="{{ siteurlmedia('pages/preter-/.jpg') }}" alt="" />
+        </div>
+      </div>
+      <div class="col-lg-6 col-mg-6">
+        <div class="block-text">
+          <p></p>
+        </div>
+      </div>
+    </div>
+  </div><!-- /.site-wrap -->
+</section><!-- /.page-section -->
+{% endblock %}
+
+{% block pageFooter %}
+<footer class="page-footer">
+  <div class="page-navigate-next-page" style="background-image: url('{{ siteurlmedia('pages/preter-performance/page-footer.jpg') }}');">
+    <a href="{{ route('preter/documents') }}">
+      <div class="site-wrap">
+        <div class="label">
+          <div class="small">Lire la suite</div>
+          <div class="big">Documents à fournir</div>
+        </div>
+      </div><!-- /.site-wrap -->
+    </a>
+  </div><!-- /.page-navigate-next-page -->
+</footer><!-- /.page-footer -->
+{% endblock %}

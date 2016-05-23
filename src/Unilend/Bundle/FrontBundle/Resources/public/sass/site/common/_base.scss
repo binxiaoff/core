@@ -1,0 +1,20 @@
+//
+// Unilend Base
+// @description Base styles for all media types
+
+body {
+  background-color: $c-bg5;
+  color: $c-t1;
+  font-family: $ff-base;
+  font-size: 18px;
+  line-height: $base-line-height;
+
+  // Reduce thickness of fonts across whole site
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img,
+svg {
+  @include constrain-size-by-width;
+}

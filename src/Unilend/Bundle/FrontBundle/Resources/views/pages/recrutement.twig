@@ -1,0 +1,72 @@
+{# Recrutement page #}
+{% extends 'layouts/_page-simple.twig' %}
+
+{# Page information #}
+{% set page = {
+  id: 'page-recruitment',
+  title: 'Recrutement',
+  permalink: route('recrutement')
+} %}
+
+{# Placeholder data #}
+{% set placeholderData = {
+  jobs: [{
+    id: 12345,
+    title: "CDI / Développeur full stack",
+    permalink: route('recrutement/job/12345'),
+    description: "Sous la responsabilité du CTO et en collaboration avec tous les départements de l’entreprise, vous participez à la forte dynamique de croissance de celle-ci. Vous avez en charge de mener à bien le développement du site et des outils associés et de suivre toutes les phases des projets de développement jusqu’à leur exploitation."
+  },{
+    id: 12346,
+    title: "CDI / Another job title",
+    permalink: route('recrutement/job/12346'),
+    description: "Fusce eleifend lacus congue sem porta pulvinar. Aliquam condimentum imperdiet metus eget molestie. Vestibulum at venenatis arcu. Quisque vehicula sem vel nibh semper gravida. Praesent tellus nulla, efficitur vitae elit id, sagittis varius neque. Nulla aliquam nunc quis mi congue, sagittis mollis justo tincidunt. Donec ut nulla lectus. Pellentesque lacus risus, aliquam malesuada sodales a, faucibus sed orci. In id felis semper, sagittis ex vel, tincidunt nunc. Nulla metus nisi, mollis in lorem eu, auctor rutrum odio. Fusce auctor lorem vitae quam placerat cursus."
+  }]
+} %}
+{% set jobs = placeholderData.jobs %}
+
+{% block extendPageHeader %}
+  <div class="page-header-image">{{ svgimage('#header-recrutement', '', 300, 300) }}</div>
+{% endblock %}
+
+{% block pageAsideBody %}
+  <div class="page-aside-body">
+    <h4>Avant-propos</h4>
+    <p>Unilend est une entreprise avec de fortes perspectives de développement. Notre ambition ? Devenir rapidement incontournable dans l'univers du financement des entreprises et de l'épargne. Bien entendu, cela suppose de s'appuyer sur des talents variés. Vous pouvez être un acteur de la croissance d'Unilend.</p>
+  </div><!-- /.page-aside-body -->
+{% endblock %}
+
+{% block pageContentBody %}
+  <section class="page-section">
+    <h2 class="h4">Les postes à pourvoir</h2>
+
+    <div id="list-jobs" class="panel-group list-jobs" role="tablist" aria-multiselectable="true">
+      {% for i, job in jobs %}
+      <article class="panel job">
+        <header class="panel-heading job-header" role="tab">
+          <h2 class="panel-title job-title">
+            <a href="#job-{{ job.id }}" role="button" data-toggle="collapse" data-parent="#list-jobs" aria-controls="job-{{ job.id }}" class="job-toggle">{{ job.title }}</a></h2>
+        </header>
+        <div id="job-{{ job.id }}" class="panel-collapse job-content collapse">
+          <div class="panel-body job-description">
+            <p>{{ job.description|nl2br }}</p>
+            <p><a href="{{ route('recrutement/job/' ~ job.id ~ '/apply') }}" class="btn-primary">Je postule</a></p>
+          </div>
+        </div>
+      </article><!-- /.accordian -->
+      {% endfor %}
+    </div><!-- /.list-jobs -->
+  </section><!-- /.page-section -->
+
+  <section class="page-section">
+    <h2 class="h4">Les profiles que nous recherchons</h2>
+    <p>Les membres d'Unilend ont le sens de l’engagement et n'ont pas d'idées préconçues. Si vous êtes tenace, que vous faites preuve d’excellence dans votre travail et que vous êtes autant que nous prêt à faire bouger les lignes, nous attendons votre candidature.</p>
+  </section><!-- /.page-section -->
+
+  <section class="page-section">
+    <h2 class="h4">Le processus de recrutement</h2>
+    <p>Dites-nous qui vous êtes et faites-nous part de vos motivations.</p>
+    <p>Nous examinons toutes les demandes qui nous parviennent et répondons toujours après les avoir étudiées, qu’elles soient ou non adaptées à nos besoins du moment.</p>
+    <p>Si nous pensons que vous avez quelque chose de significatif à nous apporter, nous prendrons contact avec vous pour convenir d’un rendez-vous. Vous rencontrerez alors un des membres de l'équipe et, éventuellement, l'un des fondateurs d’Unilend.</p>
+    <p><a href="#todo" class="btn-primary">Candidature spontannée</a></p>
+  </section><!-- /.page-section -->
+{% endblock %}

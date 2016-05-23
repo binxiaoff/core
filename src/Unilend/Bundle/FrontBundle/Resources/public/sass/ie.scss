@@ -1,0 +1,30 @@
+//
+// Unilend IE fixes
+//
+
+.ie9 {
+  .page-header-hero,
+  .cta-video-hero {
+    .list-sharing {
+      text-align: right;
+
+      > li {
+        text-align: right;
+      }
+    }
+  }
+
+  .project-list-item {
+    height: 100%;
+  }
+
+  .project-list-item-category {
+    overflow: auto;
+    height: 100%;
+  }
+
+  .project-list-item-image {
+    zoom: 1;
+    height: 100%;
+  }
+}

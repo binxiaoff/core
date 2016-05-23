@@ -1,0 +1,347 @@
+//
+// Unilend Dashboard Panel
+//
+
+$height-panel-header-sm: ((15px * 2) + $fs-h5);
+$height-panel-footer-sm: ((15px * 2) + $fs-base);
+$height-panel-header-md: ((20px * 2) + $fs-h4);
+$height-panel-footer-md: ((20px * 2) + $fs-base);
+$height-panel-header-lg: ((30px * 2) + $fs-h3);
+$height-panel-footer-lg: ((30px * 2) + $fs-base);
+
+@mixin dashboard-panel {
+  color: $c-t2;
+  font-size: $fs-base * .9;
+  line-height: 1.3em;
+
+  transition: background-color .2s;
+
+  .dashboard-panel-header {
+    box-sizing: border-box;
+    position: relative;
+    margin-left: 10px;
+    margin-top: 10px;
+    margin-right: 10px;
+    margin-bottom: 0;
+  }
+
+  .dashboard-panel-title {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    height: 1.5em;
+  }
+
+  .dashboard-panel-controls {
+    display: block;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    vertical-align: middle;
+
+    a {
+      display: inline-block;
+      box-sizing: border-box;
+      padding: 0 10px;
+
+      background-color: transparent;
+      border-color: transparent;
+      font-size: $fs-base;
+      vertical-align: middle;
+
+      @include link-states(
+        $link: (
+          color: $c-t2,
+          text-decoration: none
+        ),
+        $hover: (
+          color: $c-t1,
+          text-decoration: none
+        ),
+        $active: (
+          color: $c-t1,
+          text-decoration: none
+        )
+      );
+    }
+  }
+
+  .dashboard-panel-content {
+    box-sizing: border-box;
+    background-color: $c-white;
+    margin-left: 10px;
+    margin-top: 0;
+    margin-right: 10px;
+    margin-bottom: 0;
+  }
+
+  .dashboard-panel-footer {
+    box-sizing: border-box;
+    text-align: center;
+    background-color: $c-white;
+    margin-left: 10px;
+    margin-top: 0;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+
+  // UI
+  &.ui-dashboard-panel-hidden {
+    display: none;
+  }
+
+  // Add extra margins for larger screens
+  @include devices('md', 'lg') {
+    .dashboard-panel-header {
+      margin-left: 20px;
+      margin-top: 20px;
+      margin-right: 20px;
+      margin-bottom: 0;
+    }
+
+    .dashboard-panel-content {
+      margin-left: 20px;
+      margin-top: 0;
+      margin-right: 20px;
+      margin-bottom: 0;
+    }
+
+    .dashboard-panel-footer {
+      margin-left: 20px;
+      margin-top: 0;
+      margin-right: 20px;
+      margin-bottom: 20px;
+    }
+  }
+}
+
+// Small panel (notifications)
+@mixin dashboard-panel-sm {
+  @include dashboard-panel;
+  .dashboard-panel-header {
+    height: $height-panel-header-sm;
+    padding: 15px 20px;
+
+    background-color: $c-bg3;
+    color: $c-t1;
+    line-height: 1em;
+  }
+
+  .dashboard-panel-controls {
+    padding-right: 10px;
+    @include background-image(-svg(linear-gradient(to left, $c-bg3 75%, fade-out($c-bg3, 1) 100%)));
+
+    a {
+      height: $height-panel-header-sm;
+      line-height: $height-panel-header-sm;
+    }
+  }
+
+  .dashboard-panel-title {
+    margin: 0;
+    color: inherit;
+    font-size: $fs-h5;
+    line-height: 1em;
+  }
+
+  .dashboard-panel-content {
+    padding: 20px;
+  }
+
+  .dashboard-panel-footer {
+    height: $height-panel-footer-sm;
+    padding: 15px 20px;
+    background-color: $c-t3;
+    color: $c-t1;
+    line-height: 1em;
+
+    a {
+      @include link-states(
+        $link: (
+          color: $c-t1,
+          text-decoration: none
+        )
+      );
+    }
+  }
+}
+
+// Medium
+@mixin dashboard-panel-md {
+  @include dashboard-panel;
+
+  .dashboard-panel-header {
+    height: $height-panel-header-md;
+    padding: 20px;
+
+    background-color: $c-white;
+    border-bottom: solid 1px $c-bg2;
+    color: $c-t1;
+    line-height: 1em;
+  }
+
+  .dashboard-panel-controls {
+    padding-left: 2em;
+    @include background-image(-svg(linear-gradient(to left, $c-white 75%, fade-out($c-white, 1) 100%)));
+
+    a {
+      height: $height-panel-header-md;
+      line-height: $height-panel-header-md;
+    }
+  }
+
+  .dashboard-panel-title {
+    margin: 0;
+    font-size: $fs-h4;
+    color: $c-p1;
+  }
+
+  .dashboard-panel-content {
+    padding: 20px;
+  }
+
+  .dashboard-panel-footer {
+    height: $height-panel-footer-md;
+    padding: 20px;
+
+    color: $c-t2;
+    line-height: 1em;
+
+    a {
+      @include link-states(
+        $link: (
+          color: $c-p1
+        )
+      );
+    }
+  }
+}
+
+// Large
+@mixin dashboard-panel-lg {
+  @include dashboard-panel;
+  @include dashboard-panel-md;
+  font-size: $fs-base;
+
+  .dashboard-panel-header {
+    height: $height-panel-header-lg;
+    padding: 30px;
+  }
+
+  .dashboard-panel-title {
+    font-size: $fs-h3;
+  }
+
+  .dashboard-panel-controls {
+    a {
+      height: $height-panel-header-lg;
+      line-height: $height-panel-header-lg;
+    }
+  }
+
+  .dashboard-panel-content {
+    padding: 30px;
+  }
+
+  .dashboard-panel-footer {
+    height: $height-panel-footer-lg;
+    padding: 30px;
+  }
+}
+
+// Base class
+.dashboard-panel {
+  @include dashboard-panel-sm;
+
+  @include devices('md') {
+    @include dashboard-panel-md;
+  }
+
+  @include devices('lg') {
+    @include dashboard-panel-lg;
+  }
+}
+
+// Small class
+.dashboard-panel-sm {
+  @include dashboard-panel-sm;
+}
+
+// Draggable
+[data-draggable].dashboard-panel {
+  .dashboard-panel-title {
+    cursor: move;
+    cursor: grab;
+    user-select: none;
+
+    &:before {
+      content: '\f047';
+      margin-right: 5px;
+      color: $c-t3;
+      font-family: $ff-icon;
+      font-size: $fs-base;
+      vertical-align: middle;
+    }
+  }
+
+  &.is-pointer-down {
+    z-index: 999999;
+    background-color: fade-out(#000, .9);
+
+    .dashboard-panel-title {
+      cursor: move;
+      cursor: grabbing;
+    }
+  }
+}
+
+// Overview
+.dashboard-panel-overview {
+  text-align: center;
+  margin-bottom: 20px;
+
+  .label {
+    display: block;
+    margin-bottom: 10px;
+    color: $c-t2;
+  }
+
+  .value {
+    display: block;
+    color: $c-p1;
+    font-size: $fs-h2;
+  }
+}
+
+// Chart
+.dashboard-panel-chart {
+  text-align: center;
+
+  .chart {
+    min-height: none;
+  }
+}
+
+// Summary
+.dashboard-panel-summary {
+  margin: 20px 0;
+  text-align: center;
+
+  .label {
+    color: $c-t1;
+  }
+
+  .value {
+    color: $c-p1;
+  }
+
+  .primary {
+    color: $c-t1;
+  }
+
+  .secondary {
+    color: $c-t2;
+  }
+}
+

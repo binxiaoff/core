@@ -1,0 +1,54 @@
+{# Dashboard #}
+{% extends 'layouts/_layout.twig' %}
+
+{# {% block siteHeader %}
+  {% embed 'partials/site/header.twig' %}
+    {% block siteHeaderMobileMenuOpen %} {% endblock %}
+    {% block siteHeaderNav %} {% endblock %}
+
+    {% block siteHeaderControls %}
+    <div class="site-user">
+      <p>@TODO logged in user</p>
+    </div><!-- /.site-user -->
+    {% endblock %}
+  {% endembed %}
+{% endblock %} #}
+
+{# {% block siteFooter %}
+  {% embed 'partials/site/footer.twig' %}
+    {% block siteMobileMenu %} {% endblock %}
+  {% endembed %}
+{% endblock %} #}
+
+{% block siteContent %}
+<section class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
+  <div class="hero-wrap">
+    <div class="site-wrap">
+      <div class="col-menu">
+        <nav class="dashboard-nav">
+        {% block dashboardNav %}
+          <ul>
+            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/dashboard'), page.permalink) }}><a href="#todo"><span class="icon fa-th-large"></span><span class="label">Tableau de bord</span></a></li>
+            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/balance'), page.permalink) }}><a href="#todo"><span class="icon fa-euro"></span><span class="label">Apport – Retrait</span></a></li>
+            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/projects'), page.permalink) }}><a href="#todo"><span class="icon fa-file-text-o"></span><span class="label">Projets</span></a></li>
+            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/operations'), page.permalink) }}><a href="#todo"><span class="icon fa-exchange"></span><span class="label">Opérations</span></a></li>
+            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/profile'), page.permalink) }}><a href="#todo"><span class="icon fa-user"></span><span class="label">Profil</span></a></li>
+            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/autolend'), page.permalink) }}><a href="#todo"><span class="icon fa-cogs"></span><span class="label">Autolend</span></a></li>
+          </ul>
+        {% endblock %}
+        </nav>
+
+        {% block dashboardNotifications %}
+          {% include '@UnilendFrontBundle/partials/components/dashboard-panel-notifications.twig' %}
+        {% endblock %}
+
+      </div><!-- /.col-menu -->
+      <div class="col-content">
+        {% block dashboardContent %}
+          <p>Nothing here</p>
+        {% endblock %}
+      </div><!-- /.col-content -->
+    </div>
+  </div>
+</section><!-- /.dashboard -->
+{% endblock %}

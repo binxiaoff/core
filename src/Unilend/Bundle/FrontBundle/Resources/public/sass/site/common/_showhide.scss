@@ -1,0 +1,107 @@
+//
+// Unilend Show/Hide
+//
+
+// Show/hide display types depending on keyword
+$display-types: ('inline', 'block', 'inline-block', 'table', 'table-cell', 'list-item');
+
+@mixin show-hide-display-types($keywords...) {
+  // Default is empty
+  @if length($keywords) == 0 {
+    $keywords: ('');
+  }
+
+  // Go through each class name
+  @each $keyword in $keywords {
+    @if $keyword != '' {
+      $keyword: '-#{$keyword}';
+    }
+
+    // Default is block
+    .show#{$keyword} {
+      display: block;
+    }
+
+    // Show/hide each display type
+    @each $display-type in $display-types {
+      // Set specific .show class for display-type
+      .show#{$display-type}-#{$display-type} {
+        display: $display-type;
+      }
+    }
+
+    .hide#{$keyword} {
+      display: none;
+    }
+  }
+}
+
+// Hide display types depending on keywords
+@mixin hide-display-types($keywords...) {
+  $hide-selector: '';
+  $i: 0;
+
+  @each $keyword in $keywords {
+    $i: $i + 1;
+
+    // Add comma for multiple keywords
+    @if $i > 1 {
+      $hide-selector: '#{$hide-selector},';
+    }
+
+    // Add the generic show keyword for each
+    $hide-selector: '#{$hide-selector} .show-#{$keyword}';
+    $j: 1;
+
+    @each $display-type in $display-types {
+      $j: $j + 1;
+
+      // Add comma for multiple devices
+      @if $j > 1 {
+        $hide-selector: '#{$hide-selector},';
+      }
+
+      // Add $device-type
+      $hide-selector: '#{$hide-selector} .show-#{$keyword}-#{$display-type}';
+    }
+  }
+
+  #{$hide-selector} {
+    display: none;
+  }
+}
+
+// Default non-device specific show/hide classes, e.g. .show, .hide, etc.
+@include show-hide-display-types();
+
+// Show/hide elements based on @media device breakpoints
+// See `components/grid` for show/hide based on grid
+@include devices('mobile-p') {
+  @include show-hide-display-types('mobile', 'mobile-p');
+  @include hide-display-types('computer', 'desktop', 'laptop', 'tablet', 'tablet-p', 'tablet-l', 'mobile-l');
+}
+
+@include devices('mobile-l') {
+  @include show-hide-display-types('mobile', 'mobile-l');
+  @include hide-display-types('computer', 'desktop', 'laptop', 'tablet', 'tablet-p', 'tablet-l', 'mobile-p');
+}
+
+@include devices('tablet-p') {
+  @include show-hide-display-types('tablet', 'tablet-p');
+  @include hide-display-types('computer', 'desktop', 'laptop', 'mobile', 'mobile-p', 'mobile-l', 'tablet-l');
+}
+
+@include devices('tablet-l') {
+  @include show-hide-display-types('tablet', 'tablet-l');
+  @include hide-display-types('computer', 'desktop', 'laptop', 'mobile', 'mobile-p', 'mobile-l', 'tablet-p');
+}
+
+@include devices('laptop') {
+  @include show-hide-display-types('computer', 'laptop');
+  @include hide-display-types('tablet', 'tablet-p', 'tablet-l', 'mobile', 'mobile-p', 'mobile-l', 'desktop');
+}
+
+@include devices('desktop') {
+  @include show-hide-display-types('computer', 'desktop');
+  @include hide-display-types('tablet', 'tablet-p', 'tablet-l', 'mobile', 'mobile-p', 'mobile-l', 'laptop');
+}

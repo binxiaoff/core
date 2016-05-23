@@ -1,0 +1,1042 @@
+{# Projet Single #}
+{% extends 'layouts/_layout.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+{% import 'partials/modules/_list-sharing.macros.twig' as listSharing %}
+
+{# Placeholder Data #}
+{% set project = {
+  id: '12345',
+  title: 'Example project with a longer name',
+  description: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor.',
+  permalink: route('project/12345'),
+  image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
+  locationCity: 'Paris',
+  locationPostCode: '75002',
+  categoryId: 1,
+  cost: 150000,
+  costFunded: 100000,
+  costRemaining: 50000,
+  percentFunded: 0.67,
+  interest: 7.2,
+  loanDuration: 36,
+  totalOffers: 1500,
+  rating: 3.5,
+  dateExpires: 'now'|date_modify('+1 week')|date('d F Y H:i:s'),
+  daysLeft: 14,
+  currentUserInvolved: true,
+  currentUserTotalOffers: 5,
+  currentUserOffers: {
+    accepted: 5
+  },
+  author: {
+    name: 'John Citizen',
+    company: 'Example Company Name'
+  }
+} %}
+
+{# Placeholder Data #}
+{# `status` values:
+    1: inprogress
+    2: accepted
+    3: rejected
+ #}
+{% set placeholderData = {
+  myoffers: {
+    schema: [{
+      name: 'id',
+      type: 'int',
+      label: 'No'
+    },{
+      name: 'interest',
+      type: 'float',
+      label: "Taux d'intérêt"
+    },{
+      name: 'amount',
+      type: 'float',
+      label: 'Montant'
+    },{
+      name: 'status',
+      type: 'string',
+      label: 'Statut'
+    },{
+      name: 'view',
+      type: 'string',
+      label: 'View'
+    }],
+    data: [
+      [6, 6.0, 1000, 3, '#todo'],
+      [24, 6.5, 400, 1, '#todo'],
+      [25, 6.5, 200, 2, '#todo'],
+      [1000, 8.0, 1000, 3, '#todo'],
+      [1001, 7.5, 1000, 3, '#todo'],
+      [1002, 7.0, 1000, 3, '#todo'],
+      [1003, 6.8, 1000, 3, '#todo'],
+      [2502, 6.8, 400, 2, '#todo']
+    ]
+  },
+
+  alloffers: {
+    schema: [{
+      name: 'id',
+      type: 'int',
+      label: 'No'
+    },{
+      name: 'interest',
+      type: 'float',
+      label: "Taux d'intérêt"
+    },{
+      name: 'amount',
+      type: 'float',
+      label: 'Montant'
+    },{
+      name: 'status',
+      type: 'int',
+      label: 'Statut'
+    }],
+    data: [
+      [1, 6.5, 200, 2],
+      [2, 6.8, 400, 2],
+      [3, 7.0, 150, 2],
+      [4, 8.0, 120, 1],
+      [5, 6.8, 300, 1],
+      [6, 6.0, 1000, 3],
+      [7, 6.8, 500, 3],
+      [8, 7.2, 650, 2],
+      [9, 6.3, 290, 3],
+      [10, 6.0, 300, 2],
+      [11, 7.2, 500, 2],
+      [12, 7.1, 500, 1],
+      [13, 6.8, 500, 1],
+      [14, 7.7, 500, 2],
+      [15, 8.5, 150, 2],
+      [16, 7.2, 500, 2],
+      [17, 6.2, 4000, 3],
+      [18, 10.1, 2000, 3],
+      [19, 6.2, 500, 2],
+      [20, 7.0, 600, 1],
+      [21, 5.2, 1000, 2],
+      [22, 5.7, 900, 2],
+      [23, 5.0, 1200, 2],
+      [24, 6.5, 400, 1],
+      [25, 6.5, 200, 2]
+    ]
+  },
+
+  income: {
+    schema: [{
+      name: 'name',
+      type: 'string',
+      label: 'Name'
+    },{
+      name: 'year-2015',
+      type: 'float',
+      label: '2015'
+    },{
+      name: 'diff-2015',
+      type: 'float',
+      label: false
+    },{
+      name: 'year-2014',
+      type: 'float',
+      label: '2014'
+    },{
+      name: 'diff-2014',
+      type: 'float',
+      label: false
+    },{
+      name: 'year-2013',
+      type: 'float',
+      label: '2013'
+    },{
+      name: 'diff-2013',
+      type: 'float',
+      label: false
+    }],
+    data: [
+      ["Chiffre d'affaires", 842020, 5.2, 508340, 3.1, 732245, -0.12],
+      ["Résultats bruts d'exposition", 42020, 12, 18340, 8.8, 2245, 5],
+      ["Résultats d'exploitation", 32020, 1, 12340, 3, 1245, 5],
+      ["Investissement", 1020, 10, 8340, 0, 2245, -3.1415]
+    ],
+    highcharts: {
+      chart: {
+        type: 'column'
+      },
+      title: {
+        text: ''
+      },
+      xAxis: [{
+        categories: ['2015', '2014', '2013'],
+        crosshair: true
+      }],
+      yAxis: [{
+        title: {
+          text: 'Montant'
+        },
+        units: '€'
+      },{
+        title: {
+          text: 'Difference',
+          style: {
+            color: '#b20066'
+          },
+        },
+        labels: {
+          style: {
+            color: '#b20066'
+          }
+        },
+        units: '%',
+        opposite: true
+      }],
+      series: [{
+        type: 'column',
+        name: "Chiffre d'affaires",
+        data: [842020, 508340, 732245],
+        yAxis: 0
+      },{
+        type: 'line',
+        name: "Chiffre d'affaires difference",
+        data: [5.2, 3.1, -0.12],
+        showInLegend: false,
+        yAxis: 1
+      },{
+        type: 'column',
+        name: "Résultats bruts d'exposition",
+        data: [42020, 18340, 2245],
+        yAxis: 0
+      },{
+        type: 'line',
+        name: "Résultats bruts d'exposition difference",
+        data: [12, 8.8, 5],
+        showInLegend: false,
+        yAxis: 1
+      },{
+        type: 'column',
+        name: "Résultats d'exploitation",
+        data: [32020, 12340, 1245],
+        yAxis: 0
+      },{
+        type: 'line',
+        name: "Résultats d'exploitation difference",
+        data: [1, 3, 5],
+        showInLegend: false,
+        yAxis: 1
+      },{
+        type: 'column',
+        name: "Investissement",
+        data: [1020, 8340, 2245],
+        yAxis: 0
+      },{
+        type: 'line',
+        name: "Investissement difference",
+        data: [10, 0, -3.1415],
+        showInLegend: false,
+        yAxis: 1
+      }]
+    },
+    exportUrl: route('project/12345/export/income')
+  },
+
+  balance: {
+    schema: [{
+      name: 'type',
+      values: ['title', '', 'total'],
+      label: false
+    },{
+      name: 'name',
+      type: 'string',
+      label: 'Name'
+    },{
+      name: 'year-2015',
+      type: 'float',
+      label: '2015'
+    },{
+      name: 'diff-2015',
+      type: 'float',
+      label: false
+    },{
+      name: 'year-2014',
+      type: 'float',
+      label: '2014'
+    },{
+      name: 'diff-2014',
+      type: 'float',
+      label: false
+    },{
+      name: 'year-2013',
+      type: 'float',
+      label: '2013'
+    },{
+      name: 'diff-2013',
+      type: 'float',
+      label: false
+    }],
+    data: [
+      ['title', 'Actif', '', '', ''],
+      ['', 'Immobilisations corporelles', 842020, 5.2, 508340, 4.3, 732245, 8.5],
+      ['', 'Immobilisations incorporelles', 42020, 6.2, 18340, 5.0, 2245, -2],
+      ['', 'Immobilisations financières', 32020, 8, 12340, -4.3, 1245, 5.0],
+      ['', 'Stocks', 1020, 9.2, 8340, -21.2, 3745, 33.333],
+      ['', 'Créances (clients & autres)', 842020, 3, 508340, -2.2, 732245, 4.5],
+      ['', 'Disponibilités', 42020, 9.2, 18340, 7.4, 2245, 6.5],
+      ['', 'Valeur mobilières de placement', 32020, -4.2, 12340, 6.8, 1245, 9.1],
+      ['total', 'Total actif', 4807975, 11, 4237129, 10, 4137892, 8],
+      ['title', 'Passif', '', '', '', '', '', ''],
+      ['', 'Capitaux propres', 842020, 5, 508340, 3.34, 732245, 6.7],
+      ['', 'Provisions pour risques & charges', 42020, 3, 18340, -9.2, 2245, 10.1],
+      ['', 'Amortissement sur immobilisations', 32020, -6, 12340, 9.9, 1245, -11.23],
+      ['', 'Dettes financières', 1020, 4, 8340, 6.6, 3745, 7.2],
+      ['', 'Dettes fournissers', 842020, -22, 508340, -15.67, 732245, -12.5],
+      ['', 'Autres dettes', 42020, 5, 18340, 2, 2245, 12],
+      ['total', 'Total passif', 4207975, 0, 4137129, 0.2, 4037892, 4.4]
+    ],
+    highcharts: {
+      chart: {
+        type: 'column'
+      },
+      title: {
+        text: ''
+      },
+      xAxis: [{
+        categories: ['2015', '2014', '2013'],
+        crosshair: true
+      }],
+      yAxis: [{
+        title: {
+          text: 'Montant'
+        },
+        units: '€'
+      },{
+        title: {
+          text: 'Total Montant',
+          style: {
+            color: '#b20066'
+          },
+        },
+        labels: {
+          style: {
+            color: '#b20066'
+          }
+        },
+        units: '€',
+        opposite: true
+      }],
+      plotOptions: {
+        column: {
+          stacking: 'normal'
+        }
+      },
+      series: [{
+        type: 'column',
+        name: 'Immobilisations corporelles',
+        data: [842020, 508340, 732245],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'column',
+        name: 'Immobilisations incorporelles',
+        data: [42050, 18380, 2215],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'column',
+        name: 'Immobilisations financières',
+        data: [32020, 12340, 1245],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'column',
+        name: 'Stocks',
+        data: [1020, 8340, 3745],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'column',
+        name: 'Créances (clients & autres)',
+        data: [840020, 500340, 730245],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'column',
+        name: 'Disponibilités',
+        data: [41020, 18040, 2045],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'column',
+        name: 'Valeur mobilières de placement',
+        data: [30020, 12040, 1205],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'column',
+        name: 'Stocks',
+        data: [1220, 8200, 4745],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'actif'
+      },{
+        type: 'line',
+        name: 'Total Actif',
+        data: [4807975, 4237129, 4137892],
+        yAxis: 1
+      },
+
+      {
+        type: 'column',
+        name: 'Capitaux propres',
+        data: [642020, 208340, 132245],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'passif'
+      },{
+        type: 'column',
+        name: 'Provisions pour risques & charges',
+        data: [32020, 19340, 3245],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'passif'
+      },{
+        type: 'column',
+        name: 'Amortissement sur immobilisations',
+        data: [12020, 16340, 1335],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'passif'
+      },{
+        type: 'column',
+        name: 'Dettes financières',
+        data: [2020, 6340, 8745],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'passif'
+      },{
+        type: 'column',
+        name: 'Dettes fournissers',
+        data: [542020, 208340, 532245],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'passif'
+      },{
+        type: 'column',
+        name: 'Autres dettes',
+        data: [22020, 16340, 1245],
+        showInLegend: false,
+        yAxis: 0,
+        stack: 'passif'
+      },{
+        type: 'line',
+        name: 'Total Passif',
+        data: [4207975, 4137129, 4037892],
+        yAxis: 1
+      }]
+    },
+    exportUrl: route('project/12345/export/balance')
+  }
+} %}
+
+{# Put the data into the page for Highcharts (would ideally be done via AJAX?) #}
+{% block extendHead %}
+<script type="text/javascript">
+var chartJSON = {
+  income: '{{ placeholderData.income.highcharts|json_encode|escape('js') }}',
+  balance: '{{ placeholderData.balance.highcharts|json_encode|escape('js') }}'
+}
+</script>
+{% endblock %}
+
+{# Page data #}
+{% set page = page|merge({
+  title: project.title,
+  permalink: project.permalink
+}) %}
+
+{# View data #}
+{# Set the rating class for the .rating element #}
+{% set classRating = project.rating|tostring|split('.')|join('-') %}
+
+{% block siteContent %}
+
+  <article id="project-single" class="page project-single project-category-{{ project.categoryId }}">
+    <header class="project-single-header-wrap">
+      <div class="project-single-map">
+        <div class="project-single-map-embed">
+          <a href="javascript:;" class="btn-close ui-project-single-map-toggle"><span class="label sr-only">Close Map</span></a>
+          <div id="project-map">Mapbox @TODO</div>
+        </div>
+      </div><!-- /.project-single-map -->
+
+      <div class="project-single-header">
+        <div class="project-single-header-position">
+          <div class="project-single-header-inner">
+            <div class="project-single-category">
+              {{ general.projectCategoryIcon(project.categoryId) }}
+            </div><!-- /.project-single-category -->
+
+            <div class="row">
+              <div class="col-lg-8 col-md-8">
+                <div class="project-single-details">
+                  <h1 class="project-single-title">{{ project.title }}</h1>
+                  <div class="project-single-meta">
+                    <h4 class="project-single-location"><span class="icon fa-map-marker"></span> <span class="label">{{ project.locationCity }}, {{ project.locationPostCode }}</span> <a href="javascript:;" class="link ui-project-single-map-toggle"><span class="label">{{ __('View map', 'projectSingleMapShowLabel') }}</span></a></h4>
+                  </div><!-- /.project-single-meta -->
+                </div><!-- /.project-single-details -->
+              </div>
+
+              <div class="col-lg-4 col-md-4">
+                <div class="project-single-rating">
+                  <div class="label">La note Unilend</div>
+                  <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectSingleRatingLabel')|format(project.rating) }}</span></span>
+                </div><!-- /.project-single-rating -->
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-lg-10 col-md-9">
+                <div class="project-single-description">
+                  {{ project.description|nl2br }}
+                </div><!-- /.project-single-description -->
+              </div>
+            </div>
+
+            <div class="row">
+              {% if project.image is not empty %}
+              <div class="col-lg-5 col-md-4 hide-tablet-l hide-sm hide-xs">
+                <div class="project-single-image">
+                  <img src="{{ project.image }}" alt="">
+                </div><!-- /.project-single-image -->
+              </div>
+              {% endif %}
+
+              <div class="col-lg-5 col-md-5 col-sm-6 col-xs-3">
+                <div class="project-single-period">
+                  <div class="project-single-period-countdown"><span class="icon fa-clock-o"></span> <span class="ui-time-count" data-time-count-to="{{ project.dateExpires|escape('html_attr') }}">&hellip;</span></div>
+                  <div class="project-single-period-expires">Fin des offres {{ project.dateExpires|date('l j F Y à H:i') }}</div>
+                </div><!-- /.project-single-period -->
+
+                <div class="project-single-offers">
+                  {% for statusOffer, numOffers in project.currentUserOffers if numOffers > 0 %}
+                    {% if statusOffer == 'accepted' %}
+                      <div class="project-single-useroffers-accepted">
+                        {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectSingleOffersLabelSingle') }}{% else %}{{ __('offers', 'projectSingleOffersLabelPlural') }}{% endif %} {{ __('accepted', 'projectSingleOffersUserStatusAccepted') }}
+                      </div><!-- /.project-single-useroffers-accepted -->
+                    {% elseif statusOffer == 'rejected' %}
+                      <div class="project-single-useroffers-rejected">
+                        {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectSingleOffersLabelSingle') }}{% else %}{{ __('offers', 'projectSingleOffersLabelPlural') }}{% endif %} {{ __('rejected', 'projectSingleOffersUserStatusRejected') }}
+                      </div><!-- /.project-single-useroffers-rejected -->
+                    {% elseif statusOffer == 'inProgress' %}
+                      <div class="project-single-useroffers-inprogress">
+                        {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectSingleOffersLabelSingle') }}{% else %}{{ __('offers', 'projectSingleOffersLabelPlural') }}{% endif %} {{ __('in progress', 'projectSingleOffersUserStatusInProgress') }}
+                      </div><!-- /.project-single-useroffers-inprogress -->
+                    {% endif %}
+                  {% endfor %}
+
+                  <div class="project-single-offers-total">
+                    <strong>{{ project.totalOffers|__num|nbsp }}</strong> personnes ont fait une offre
+                  </div>
+                </div><!-- /.project-single-offers -->
+              </div>
+            </div>
+          </div><!-- /.project-single-header-inner -->
+        </div><!-- /.project-single-header-position -->
+
+        <a href="#" class="btn-nav-previous" title="Name of previous project" data-toggle="tooltip" data-placement="right"><span class="sr-only">View previous project</span></a>
+
+        <a href="#" class="btn-nav-next" title="Name of next project" data-toggle="tooltip" data-placement="left"><span class="sr-only">View next project</span></a>
+      </div><!-- /.project-single-header -->
+
+      {% include '@UnilendFrontBundle/partials/components/list-socialmedia.twig' %}
+    </header><!-- /.project-single-header-wrap -->
+
+    <aside class="project-single-info-wrap">
+      <div class="project-single-info">
+        <div class="project-single-cost">
+          <div class="project-single-cost-total"><span class="sr-only">Total cost of project is </span>{{ project.cost|__price|nbsp }}</div>
+          <div class="project-single-cost-progress" title="Project is currently {{ (100 * project.percentFunded)|__num(0) }}% funded" data-toggle="tooltip">
+            <div class="project-single-cost-progress-funded" style="width: {{ 100 * project.percentFunded }}%">
+              <span class="sr-only">Project is currently {{ (100 * project.percentFunded)|__num }}% funded</span>
+            </div>
+          </div><!-- /.project-single-cost-progress -->
+          <div class="project-single-cost-amount">
+            <div class="project-single-cost-amount-funded">{{ project.costFunded|__price(0)|nbsp }} prêtés</div>
+            <div class="project-single-cost-amount-remaining">{{ project.costRemaining|__price(0)|nbsp }} restants</div>
+          </div><!-- /.project-single-cost-amount -->
+        </div><!-- /.project-single-cost -->
+
+        <div class="row">
+          <div class="project-single-interest">
+            <span class="icon fa-line-chart"></span> <span class="c-p1"><strong>{{ project.interest|__num(1) }}</strong>%</span>
+            <div class="label">Taux Moyen</div>
+          </div><!-- /.project-single-interest -->
+
+          <div class="project-single-duration">
+            <span class="icon fa-calendar"></span> <span class="c-p1"><strong>{{ project.loanDuration }}</strong> mois</span>
+            <div class="label">Durée du prêt</div>
+          </div><!-- /.project-single-duration -->
+        </div>
+
+        {# When user is logged in #}
+        <form action="{{ siteurlajax('project/invest') }}" method="post" class="project-single-form-invest">
+          <div class="form-field">
+            <label><span class="sr-only">Montant en euros</span>
+              <input type="number" name="invest[amount]" value="" placeholder="Montant en euros" class="input-field" />
+            </label>
+          </div><!-- /.form-field -->
+          <div class="form-field">
+            <label><span class="sr-only">Taux</span>
+              <input type="number" name="invest[interest]" value="" placeholder="Taux" class="input-field" />
+            </label>
+          </div><!-- /.form-field -->
+          <div class="btn-toolbar">
+            <button class="btn-primary btn-size-full">Prêter</button>
+          </div><!-- /.btn-toolbar -->
+          <div class="field-help">
+            <p>Choisissez un taux compris entre 4 et 10%, avec une précision de 0,1%.</p>
+          </div>
+        </form><!-- /.project-single-invest -->
+
+        {{ listSharing.render({
+          className: 'list-sharing',
+          shareUrl: project.permalink,
+          shareTitle: project.title,
+          shareText: __('Check out "%shareTitle%" on Unilend', 'listSharingShareTextDefault'),
+          links: [{
+            className: 'facebook',
+            label: __('Share on Facebook', 'listSharingLinkFacebookShareLabel'),
+            url: 'http://www.facebook.com/sharer.php?u=%shareUrl%'
+          },{
+            className: 'twitter',
+            label: __('Share on Twitter', 'listSharingLinkTwitterShareLabel'),
+            url: 'http://twitter.com/share?url=%shareUrl%&amp;text=%shareText%'
+          },{
+            className: 'email',
+            label: __('Email to a friend', 'listSharingLinkEmailShareLabel'),
+            url: 'mailto:?subject=%shareText%&body=%shareUrl%'
+          }]
+        }) }}
+
+      </div><!-- /.project-single-info -->
+    </aside><!-- /.project-single-info-wrap -->
+
+    <div class="project-single-content page-content">
+      <div class="site-wrap">
+        <div class="row">
+          <div class="col-lg-7 col-md-7">
+
+            <nav class="project-single-nav">
+              <ul class="nav nav-anchors">
+                <li role="presentation"><a href="#offers">Offres en cours</a></li>
+                <li role="presentation"><a href="#presentation">Présentation</a></li>
+                <li role="presentation"><a href="#history">Comptes financiers</a></li>
+              </ul>
+            </nav><!-- /.project-single-nav -->
+
+            <div class="project-single-menu">
+              <div class="project-single-menu-inner">
+                <nav class="project-single-nav">
+                  <ul class="nav nav-anchors">
+                    <li role="presentation"><a href="#offers">Offres en cours</a></li>
+                    <li role="presentation"><a href="#presentation">Présentation</a></li>
+                    <li role="presentation"><a href="#history">Comptes financiers</a></li>
+                  </ul>
+                </nav><!-- /.project-single-nav -->
+                <div class="project-single-menu-info">
+                  <div class="project-single-menu-col project-single-menu-title">
+                    <div class="title">{{ project.title }}</div>
+                    <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectSingleRatingLabel')|format(project.rating) }}</span></span>
+                  </div><!-- /.project-single-menu-title -->
+                  <div class="project-single-menu-col project-single-menu-period">
+                    <span class="icon fa-clock-o"></span> <span class="ui-time-count" data-time-count-to="{{ project.dateExpires|escape('html_attr') }}">&hellip;</span>
+                  </div><!-- /.project-single-menu-period -->
+                  <div class="project-single-menu-col project-single-menu-top">
+                    <a href="#top" class="btn-nav-top"><span class="sr-only">Back to top</span></a>
+                  </div><!-- /.project-single-menu-top -->
+                </div><!-- /.project-single-menu-info -->
+              </div><!-- /.project-single-nav-inner -->
+            </div><!-- /.project-single-menu -->
+
+            <div id="offers" data-watchscroll-nav>
+              <section id="project-section-myoffers" class="page-section">
+                <div class="tabs">
+                  <div class="section-tabs-nav">
+                    <header>
+                      <h3 id="project-myoffers" class="h3">Mes offres</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                      <li id="project-myoffers-inprogress" role="presentation" class="active"><a href="#myoffers-inprogress" role="tab" data-toggle="tab">En cours</a></li>
+                      <li id="project-myoffers-rejected" role="presentation"><a href="#myoffers-rejected" role="tab" data-toggle="tab">Refusées</a></li>
+                    </ul>
+                  </div>
+                  <div class="section-tabs-content tab-content">
+                    {# My Offers - In Progress / Accepted #}
+                    {% set myoffers = placeholderData.myoffers %}
+                    {% set myoffersIds = [] %}
+                    <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
+
+                      <table class="table-myoffers">
+                        <tbody>
+                          {% for i, item in myoffers.data if item[3] == 1 or item[3] == 2 %}
+                            {# Mark that the current user was involved with the offer with the id #}
+                            {% set myoffersIds = myoffersIds|merge([item[0]]) %}
+
+                            <tr>
+                              <td class="table-myoffers-item-id">{{ item[0] }}</td>
+                              <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
+                              <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
+                              <td class="table-myoffers-item-view"><a href="{{ item[4] }}"><span class="icon fa-eye"><span class="sr-only">View your offer</span></span></a></td>
+                            </tr>
+                          {% else %}
+                            <tr>
+                              <td class="table-empty" colspan="4">
+                                <p>You haven't made any offers yet</p>
+                                <a href="#" class="btn-primary">Prêter</a>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table><!-- /.table-myoffers -->
+
+                    </div><!-- /.tab-pane -->
+
+                    {# My Offers - Rejected #}
+                    <div id="myoffers-rejected" role="tabpanel" class="tab-pane" aria-labelledby="project-myoffers-rejected project-myoffers">
+
+                      <table class="table-myoffers">
+                        <tbody>
+                          {% for i, item in myoffers.data if item[3] == 3 %}
+                            {# Mark that the current user was involved with the offer with the id #}
+                            {% set myoffersIds = myoffersIds|merge([item[0]]) %}
+
+                            <tr>
+                              <td class="table-myoffers-item-id">{{ item[0] }}</td>
+                              <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
+                              <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
+                              <td class="table-myoffers-item-view"><a href="{{ item[4] }}"><span class="icon fa-eye"><span class="sr-only">View your offer</span></span></a></td>
+                            </tr>
+                          {% else %}
+                            <tr>
+                              <td class="table-empty" colspan="4">
+                                <p>Nothing to see here</p>
+                              </td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table><!-- /.table-myoffers -->
+
+                    </div><!-- /.tab-pane -->
+                  </div><!-- /.section-tabs-content -->
+                </div><!-- /tabs -->
+              </section><!-- /.page-section -->
+
+              <section id="project-single-alloffers" class="page-section">
+
+                <div class="tabs">
+                  <div class="section-tabs-nav">
+                    <header>
+                      <h3 id="project-alloffers" class="h3">Toutes les offres</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                      <li id="project-alloffers-inprogress" role="presentation" class="active"><a href="#alloffers-list" role="tab" data-toggle="tab">Liste Complète</a></li>
+                      <li id="project-alloffers-table" role="presentation"><a href="#alloffers-table" role="tab" data-toggle="tab">Tableau</a></li>
+                      <li id="project-alloffers-graph" role="presentation"><a href="#alloffers-graph" role="tab" data-toggle="tab">Graphique</a></li>
+                    </ul>
+                  </div>
+                  <div class="section-tabs-content tab-content">
+                    {# All offers #}
+                    {% set alloffers = placeholderData.alloffers %}
+
+                    <div id="alloffers-list" role="tabpanel" class="tab-pane active" aria-labelledby="project-alloffers-all project-alloffers">
+
+                      <div class="table-scroll">
+                        <table class="table table-alloffers" data-sortable>
+                          <thead class="table-sortable-columns">
+                            <tr>
+                              <th class="table-sortable-column table-alloffers-item-id" data-sortable-by="id">
+                                <span class="sr-only">Sort by column </span>No</span>
+                              </th>
+                              <th class="table-sortable-column table-alloffers-item-interest" data-sortable-by="interest">
+                                <span class="sr-only">Sort by column </span>Taux d'intérêt</span>
+                              </th>
+                              <th class="table-sortable-column table-alloffers-item-amount" data-sortable-by="amount">
+                                <span class="sr-only">Sort by column </span>Montant</span>
+                              </th>
+                              <th class="table-sortable-column table-alloffers-item-status" data-sortable-by="status">
+                                <span class="sr-only">Sort by column </span>Statut</span>
+                              </th>
+                            </tr>
+                          </thead>
+
+                          <tbody data-sortable-content>
+                            {% for i, item in alloffers.data if item[3] > 0 %}
+                              {# Mark if the current user is involved with the offer #}
+                              {% set classCurrentUserInvolved = '' %}
+                              {% if item[0] in myoffersIds %}
+                                {% set classCurrentUserInvolved = 'ui-current-user-involved' %}
+                              {% endif %}
+
+                              <tr data-sortable-id="{{ item[0] }}" data-sortable-interest="{{ item[1] }}" data-sortable-amount="{{ item[2] }}" data-sortable-status="{{ item[3] }}" class="{{ classCurrentUserInvolved }}">
+                                <td class="table-alloffers-item-id">{{ item[0] }}</td>
+                                <td class="table-alloffers-item-interest">{{ item[1]|__num(2) }}%</td>
+                                <td class="table-alloffers-item-amount">{{ item[2]|__num(2) }}€</td>
+                                <td class="table-alloffers-item-status">
+                                  {# In progress #}
+                                  {% if item[3] == 1 %}
+                                  <span class="icon fa-clock-o"></span><span class="sr-only"> In progress</span></td>
+                                  {# Accepted #}
+                                  {% elseif item[3] == 2 %}
+                                  <span class="icon fa-check"></span><span class="sr-only"> Accepted</span></td>
+                                  {# Rejected #}
+                                  {% elseif item[3] == 3 %}
+                                  <span class="icon fa-ban"></span><span class="sr-only"> Rejected</span></td>
+                                  {% endif %}
+                              </tr>
+                            {% else %}
+                              <tr>
+                                <td class="table-empty">
+                                  <p>No offers have been made yet</p>
+                                  <a href="#todo" class="btn-primary">Prétêr</a>
+                                </td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table><!-- /.table-alloffers -->
+                      </div><!-- /.table-scroll -->
+
+                    </div><!-- /.tab-pane -->
+
+                    <div id="alloffers-table" role="tabpanel" class="tab-pane" aria-labelledby="project-alloffers-table project-alloffers">
+                      <div class="chart">@TODO</div>
+                    </div><!-- /.tab-pane -->
+
+                    <div id="alloffers-graph" role="tabpanel" class="tab-pane">
+                      <div class="chart">@TODO</div>
+                    </div>
+
+                  </div><!-- /.section-tabs-content -->
+                </div><!-- /tabs -->
+              </section><!-- /.page-section -->
+            </div>
+
+            <div id="presentation" data-watchscroll-nav>
+              <section id="project-section-who" class="page-section">
+                <h3 class="h3">Qui sommes-nous&nbsp;?</h3>
+                <p>La SARL Toniol (SIREN : 488 320 615) a été créée en 2006 et est enregistrée auprès du greffe du tribunal de commerce de Toulouse. Ses gérants actuels, M. Jean-Luc Toniol et M. Eric Toniol, sont deux frères nés respectivement en 1966 et 1970. Localisée à Toulouse (31200), la société est une carrosserie spécialisée dans l’entretien et la réparation de véhicules automobiles.</p>
+                <p>L’entreprise opère sous l’enseigne Axial. Il s’agit d’un réseau de carrossiers qui compte plus de 400 implantations en Europe. La société emploie actuellement 5 personnes.</p>
+                <p><a href="#TODO" class="link">Découvrir le site</a></p>
+
+                <div class="row">
+                  <div class="col-lg-6 col-md-6 col-sm-4">
+                    <img src="{{ siteurlmedia('placeholder/projet-single-1.jpg') }}" alt="">
+                  </div>
+                  <div class="col-lg-6 col-md-6 col-sm-4">
+                    <img src="{{ siteurlmedia('placeholder/projet-single-2.jpg') }}" alt="">
+                  </div>
+                </div>
+              </section>
+
+              <section id="project-section-what" class="page-section">
+                <h3 class="h3">Quel est notre projet&nbsp;?</h3>
+                <p>SMI Informatique sollicite 30 000€ auprès de la communauté Unilend afin de financer la rénovation et l'aménagement de son nouveau local situé à hauteur d’un carrefour très fréquenté de l’agglomération. Cela permettra à la société de continuer sa croissance.</p>
+              </section><!-- /.page-section -->
+            </div>
+
+            <div id="history" data-watchscroll-nav>
+              {# Income history #}
+              {% set income = placeholderData.income %}
+
+              <section id="project-section-income" class="page-section">
+                <div class="tabs">
+                  <div class="section-tabs-nav">
+                    <header>
+                      <h3 id="project-income" class="h3">Compte de résultats</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                      <li id="project-income-table" role="presentation" class="active"><a href="#income-table" role="tab" data-toggle="tab">Tableau</a></li>
+                      <li id="project-income-graph" role="presentation"><a href="#income-graph" role="tab" data-toggle="tab">Graphique</a></li>
+                    </ul>
+                  </div><!-- /.section-tabs-nav -->
+
+                  <div class="section-tabs-content tab-content">
+                    <div id="income-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-income-table project-income">
+
+                      <div class="table-scroll">
+                        <table id="income-table-data" class="table table-finance table-income">
+                          <thead>
+                            <tr>
+                              <th class="table-income-item-name">&nbsp;</th>
+                              <th class="table-income-item-year">2015</th>
+                              <th class="table-income-item-year">2014</th>
+                              <th class="table-income-item-year">2013</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {% for i, item in income.data %}
+                              <tr class="table-item">
+                                <td class="table-income-item-name">{{ item[0] }}</td>
+                                <td class="table-income-item-year">
+                                  <span class="amount">{{ item[1]|__num(2)|nbsp }}€</span>
+                                  <span class="diff">{{ item[2]|__num(2) }}%</span>
+                                </td>
+                                <td class="table-income-item-year">
+                                  <span class="amount">{{ item[3]|__num(2)|nbsp }}€</span>
+                                  <span class="diff">{{ item[4]|__num(2) }}%</span>
+                                </td>
+                                <td class="table-income-item-year">
+                                  <span class="amount">{{ item[5]|__num(2)|nbsp }}€</span>
+                                  <span class="diff">{{ item[6]|__num(2) }}%</span>
+                                </td>
+                              </tr><!-- /.table-item -->
+                            {% endfor %}
+                          </tbody>
+                        </table><!-- /.table-income -->
+                      </div><!-- /.table-scroll -->
+
+                    </div><!-- /.tab-pane -->
+
+                    <div id="income-graph" role="tabpanel" class="tab-pane">
+                      <div class="chart" data-chart="income">Loading...</div>
+                    </div>
+
+                  </div><!-- /.section-tabs-content -->
+                </div><!-- /tabs -->
+
+                <div class="btn-toolbar">
+                  <a href="{{ income.exportUrl }}" class="btn-default"><span class="icon fa-table"></span> Export CSV</a>
+                </div><!-- /.btn-toolbar -->
+
+              </section><!-- /.page-section -->
+
+              {# Balance history #}
+              {% set balance = placeholderData.balance %}
+              <section id="project-section-balance" class="page-section">
+                <div class="tabs">
+                  <div class="section-tabs-nav">
+                    <header>
+                      <h3 id="project-balance" class="h3">Bilan</h3>
+                    </header>
+
+                    <ul class="nav nav-tabs">
+                      <li id="project-balance-table" role="presentation" class="active"><a href="#balance-table" role="tab" data-toggle="tab">Tableau</a></li>
+                      <li id="project-balance-graph" role="presentation"><a href="#balance-graph" role="tab" data-toggle="tab">Graphique</a></li>
+                    </ul>
+                  </div><!-- /.section-tabs-nav -->
+
+                  <div class="section-tabs-content tab-content">
+                    <div id="balance-table" role="tabpanel" class="tab-pane active" aria-labelledby="project-balance-table project-balance">
+
+                      <div class="table-scroll">
+                        <table id="balance-table-data" class="table table-finance table-balance">
+                          <thead>
+                            <tr>
+                              <th class="table-balance-item-name">&nbsp;</th>
+                              <th class="table-balance-item-year">2015</th>
+                              <th class="table-balance-item-year">2014</th>
+                              <th class="table-balance-item-year">2013</th>
+                            </tr>
+                          </thead>
+
+                          <tbody>
+                            {% for i, item in balance.data %}
+                              {# Entry which displays a title #}
+                              {% if item[0] == 'title' %}
+                                <tr class="table-item-title">
+                                  <td colspan="4">{{ item[1] }}</td>
+                                </tr><!-- /.table-item-title -->
+
+                              {# Entry which shows a total amount #}
+                              {% elseif item[0] == 'total' %}
+                                <tr class="table-item-total">
+                                  <td class="table-income-item-name">{{ item[1] }}</td>
+                                  <td class="table-income-item-year">
+                                    <span class="amount">{{ item[2]|__num(2)|nbsp }}€</span>
+                                    <span class="diff">{{ item[3]|__num(2) }}%</span>
+                                  </td>
+                                  <td class="table-income-item-year">
+                                    <span class="amount">{{ item[4]|__num(2)|nbsp }}€</span>
+                                    <span class="diff">{{ item[5]|__num(2) }}%</span>
+                                  </td>
+                                  <td class="table-income-item-year">
+                                    <span class="amount">{{ item[6]|__num(2)|nbsp }}€</span>
+                                    <span class="diff">{{ item[7]|__num(2) }}%</span>
+                                  </td>
+                                </tr><!-- /.table-item-total -->
+
+                              {# Normal entry #}
+                              {% else %}
+                                <tr class="table-item">
+                                  <td class="table-income-item-name">{{ item[1] }}</td>
+                                  <td class="table-income-item-year">
+                                    <span class="amount">{{ item[2]|__num(2)|nbsp }}€</span>
+                                    <span class="diff">{{ item[3]|__num(2) }}%</span>
+                                  </td>
+                                  <td class="table-income-item-year">
+                                    <span class="amount">{{ item[4]|__num(2)|nbsp }}€</span>
+                                    <span class="diff">{{ item[5]|__num(2) }}%</span>
+                                  </td>
+                                  <td class="table-income-item-year">
+                                    <span class="amount">{{ item[6]|__num(2)|nbsp }}€</span>
+                                    <span class="diff">{{ item[7]|__num(2) }}%</span>
+                                  </td>
+                                </tr><!-- /.table-item -->
+                              {% endif %}
+                            {% endfor %}
+                          </tbody>
+                        </table><!-- /.table-balance -->
+                      </div><!-- /.table-scroll -->
+
+                    </div><!-- /.tab-pane -->
+
+                    <div id="balance-graph" role="tabpanel" class="tab-pane">
+                      <div class="chart" data-chart="balance">Loading...</div>
+                    </div>
+                  </div><!-- /.section-tabs-content -->
+                </div><!-- /tabs -->
+
+                <div class="btn-toolbar">
+                  <a href="{{ balance.exportUrl }}" class="btn-default"><span class="icon fa-table"></span> Export CSV</a>
+                </div><!-- /.btn-toolbar -->
+
+              </section><!-- /.page-section -->
+            </div>
+
+            <section id="project-section-help" class="page-section">
+              <h3 class="h3">Pourquoi nous allons vous rembourser&nbsp;?</h3>
+              <p>Les derniers comptes approuvés au 31 décembre 2014 font apparaître un chiffre d’affaires en progression de 3% par rapport à l’année précédente, à 30 138 000 euros. L’excédent brut d’exploitation régresse de 7% sur le même exercice, à 1 515 000 euros. Il représente 5% du chiffre d’affaires.</p>
+              <p>La société dispose de 10 344 000 euros de fonds propres ainsi que de 3 975 000 euros de comptes courants d’associés. Les ressources stables de la société représentent donc 55% du total du bilan net de la société.
+L’endettement de 6 630 000 euros est réparti entre 430 000 euros de dettes à moyen terme et 6 200 000 euros de dettes à court terme. La part des dettes à rembourser dans l’année est de 175 000 euros. 60% des dettes court terme correspondent à de l'escompte et de la mobilisation de créance, les autres encours correspondants à du découvert bancaire.</p>
+              <p>Enfin, la capacité d’autofinancement de la société sur le dernier exercice comptable est de 1 076 000 euros, ce qui permet d’amortir la charge maximale du financement Unilend de 84 000 euros ainsi que les charges actuelles de remboursement des emprunts en cours.</p>
+
+              <div class="message-alert">
+                <p><strong>Prêter présente un risque de non-remboursement:</strong> répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</p>
+                <a href="#" class="link">En savoir plus</a>
+              </div>
+
+              <div class="message-alert">
+                <p>Les personnes physiques peuvent bénéficier des dispositions fiscales de déduction des pertes en capital jusqu'à 1 0t00 euros prêtés par projet.</p>
+                <a href="#" class="link">En savoir plus</a>
+              </div>
+            </section><!-- /.page-section -->
+
+            <div class="project-single-info-position-end"></div>
+
+          </div><!-- /.col -->
+        </div><!-- /.row -->
+
+      </div><!-- /.site-wrap -->
+    </div><!-- /.project-single-content -->
+
+  </article>
+
+{% endblock %}

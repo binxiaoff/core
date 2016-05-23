@@ -1,0 +1,44 @@
+//
+// Unilend Fancybox
+//
+
+.fancybox {
+
+}
+
+.fancybox-skin {
+  padding: 0 !important;
+  background-color: transparent;
+}
+
+.fancybox-close {
+  @include button-close;
+
+  position: absolute;
+  top: -($height-btn-sm);
+  right: 0;
+
+  @include devices('sm') {
+    top: 0;
+    right: -($height-btn-sm);
+  }
+
+  @include devices('md') {
+    top: 0;
+    right: -($height-btn-md);
+  }
+
+  @include devices('lg') {
+    top: 0;
+    right: -($height-btn-lg);
+  }
+}
+
+.fancybox-overlay {
+  &.fancybox-loading {
+    .fancybox-wrap,
+    .fancybox-close {
+      visibility: hidden;
+    }
+  }
+}

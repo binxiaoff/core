@@ -1,0 +1,133 @@
+{# Basic Page Layout #}
+<!DOCTYPE html>
+<!--[if lt IE 9]>
+<html lang="{{ lang }}" class="lt-ie9 no-js"><![endif]-->
+<!--[if IE 9]>
+<html lang="{{ lang }}" class="ie9 no-js"><![endif]-->
+<!--[if gt IE 9]><!-->
+<html lang="{{ lang }}" class="no-js"><!--<![endif]-->
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if page.title is defined %}{{ page.title }} — {% endif %}{{ site.title|default('Unilend') }}</title>
+
+    {% block extendMeta %}
+        <!-- Canonical -->
+        <!-- OpenGraph and Twitter meta tags will go here -->
+    {% endblock %}
+    {% block cssDependencies %}
+        <!-- Fonts -->
+        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic|Raleway:400,400italic" media="all">
+        <!-- CSS Dependencies -->
+        <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.css" media="all">
+        <link rel="stylesheet" type="text/css" href="{{ asset('vendor/videojs/video-js.min.css') }}" media="all">
+        <link rel="stylesheet" type="text/css" href="{{ asset('vendor/swiper/css/swiper.min.css') }}" media="all">
+        <link rel="stylesheet" type="text/css" href="{{ asset('vendor/fancybox/css/jquery.fancybox.css') }}" media="all">
+        {# <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}dependencies{% if env != 'dev' %}.min{% endif %}.css" media="all"> #}
+    {% endblock %}
+
+    <!-- CSS Site -->
+    {% block cssFiles %}
+        <link rel="stylesheet" type="text/css" href="{{ asset('screen') }}{% if env != 'dev' %}.min{% endif %}.css" media="screen,projection">
+        <link rel="stylesheet" type="text/css" href="{{ asset('print') }}{% if env != 'dev' %}.min{% endif %}.css" media="print">
+        <!--[if IE]><link rel="stylesheet" type="text/css" href="{{ asset('ie') }}{% if env != 'dev' %}.min{% endif %}.css" media="screen,projection"><![endif]-->
+    {% endblock %}
+
+    <!-- JS -->
+    <script type="text/javascript">
+        {#var site = JSON.parse('{{ site|json_encode }}')#}
+    </script>
+
+    {% block extendHead %}{% endblock %}
+</head>
+<body>
+
+<div id="top" class="site">
+    {% block siteHeader %}
+        {% include '@UnilendFrontBundle/partials/site/header.html.twig' %}
+    {% endblock %}
+
+    <div class="site-content">
+        {% block siteContent %}
+            {% include '@UnilendFrontBundle/partials/error/not-found.twig' %}
+        {% endblock %}
+    </div>
+
+    {% block siteFooter %}
+        {% include '@UnilendFrontBundle/partials/site/footer.twig' %}
+    {% endblock %}
+</div>
+
+{% block debug %}
+    {% if env == 'dev' %}
+        <div class="debug" aria-hidden="true">
+            <div>
+        <span class="show-mobile-inline">
+          <code>mobile</code>
+          <span class="show-mobile-p-inline"><code>mobile-p</code></span>
+          <span class="show-mobile-l-inline"><code>mobile-l</code></span>
+        </span>
+        <span class="show-tablet-inline">
+          <code>tablet</code>
+          <span class="show-tablet-p-inline"><code>tablet-p</code></span>
+          <span class="show-tablet-l-inline"><code>tablet-l</code></span>
+        </span>
+        <span class="show-computer-inline">
+          <code>computer</code>
+          <span class="show-laptop-inline"><code>laptop</code></span>
+          <span class="show-desktop-inline"><code>desktop</code></span>
+        </span>
+                <span class="show-lg-inline"><code>lg</code></span>
+                <span class="show-md-inline"><code>md</code></span>
+                <span class="show-sm-inline"><code>sm</code></span>
+                <span class="show-xs-inline"><code>xs</code></span>
+            </div>
+            <div class="breakpoint-visualiser">
+                <div style="position: relative; border-top: solid 1px #000;">
+                    <div class="width-desktop"></div>
+                    <div class="bpv-wrap">
+                        <div class="width-laptop"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="width-tablet-l"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="width-tablet-p"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="width-mobile-l"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="width-mobile-p"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="hero-wrap" title=".hero-wrap"></div>
+                    </div>
+                </div>
+                <div style="position: relative; border-top: solid 1px #000;">
+                    <div class="width-lg"></div>
+                    <div class="bpv-wrap">
+                        <div class="width-md"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="width-sm"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="width-xs"></div>
+                    </div>
+                    <div class="bpv-wrap">
+                        <div class="site-wrap" title=".site-wrap"></div>
+                    </div>
+                </div>
+            </div><!-- /.breakpoint-visualiser -->
+        </div><!-- /.debug -->
+    {% endif %}
+{% endblock %}
+
+<script type="text/javascript" src="{{ asset('js/dependencies.js') }}{% if env != 'dev' %}.min{% endif %}.js"></script>
+<script type="text/javascript" src="{{ asset('js/main.js') }}{% if env != 'dev' %}.min{% endif %}.js"></script>
+{% block extendFoot %}{% endblock %}
+
+</body>
+</html>

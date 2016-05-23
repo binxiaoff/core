@@ -1,0 +1,127 @@
+//
+// Unilend Ratings
+//
+
+@mixin rating-big($size-factor: 2) {
+  width: 70px * $size-factor;
+  height: 10px * $size-factor;
+
+  &.rating-0-5:before {
+    width: 5px * $size-factor;
+  }
+
+  &.rating-1:before {
+    width: 10px * $size-factor;
+  }
+
+  &.rating-1-5:before {
+    width: 20px * $size-factor;
+  }
+
+  &.rating-2:before {
+    width: 30px * $size-factor;
+  }
+
+  &.rating-2-5:before {
+    width: 35px * $size-factor;
+  }
+
+  &.rating-3:before {
+    width: 40px * $size-factor;
+  }
+
+  &.rating-3-5:before {
+    width: 50px * $size-factor;
+  }
+
+  &.rating-4:before {
+    width: 60px * $size-factor;
+  }
+
+  &.rating-4-5:before {
+    width: 65px * $size-factor;
+  }
+
+  &.rating-5:before {
+    width: 70px * $size-factor;
+  }
+}
+
+@mixin rating {
+  display: inline-block;
+  width: 70px;
+  height: 10px;
+  overflow: hidden;
+  position: relative;
+
+  background-image: inline-svg-code('<svg width="70" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 10" preserveAspectRatio="xMidYMid keep"><g id="circle" fill="none" stroke="#{$c-bg1}" stroke-width="2"><circle cx="5" cy="5" r="3.5"/><circle cx="20" cy="5" r="3.5"/><circle cx="35" cy="5" r="3.5"/><circle cx="50" cy="5" r="3.5"/><circle cx="65" cy="5" r="3.5"/></g></svg>');
+  background-position: left top;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  &:before {
+    content: ' ';
+    display: block;
+    width: 0;
+    height: 100%;
+    overflow: hidden;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    background-image: inline-svg-code('<svg width="70" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 10" preserveAspectRatio="xMidYMid keep"><g id="rating" fill="none" stroke="#{$c-p1}" stroke-width="2"><circle id="rating-point-1" cx="5" cy="5" r="3.5"/><circle id="rating-point-2" cx="20" cy="5" r="3.5"/><circle id="rating-point-3" cx="35" cy="5" r="3.5"/><circle id="rating-point-4" cx="50" cy="5" r="3.5"/><circle id="rating-point-5" cx="65" cy="5" r="3.5"/></g></svg>');
+    background-position: left top;
+    background-repeat: no-repeat;
+    background-size: cover;
+  }
+
+  &.rating-0-5:before {
+    width: 5px;
+  }
+
+  &.rating-1:before {
+    width: 10px;
+  }
+
+  &.rating-1-5:before {
+    width: 20px;
+  }
+
+  &.rating-2:before {
+    width: 30px;
+  }
+
+  &.rating-2-5:before {
+    width: 35px;
+  }
+
+  &.rating-3:before {
+    width: 40px;
+  }
+
+  &.rating-3-5:before {
+    width: 50px;
+  }
+
+  &.rating-4:before {
+    width: 60px;
+  }
+
+  &.rating-4-5:before {
+    width: 65px;
+  }
+
+  &.rating-5:before {
+    width: 70px;
+  }
+
+  &.rating-big {
+    @include rating-big;
+  }
+}
+
+.rating {
+  @include rating;
+}

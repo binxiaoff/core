@@ -1,0 +1,75 @@
+//
+// Unilend Page - Homepage Acquisition
+//
+
+#homeacq.page {
+
+  // Video Hero
+  #homeacq-video-hero.cta-video-hero {
+    .swiper-wrapper {
+      width: 100%;
+      height: 100%;
+    }
+
+    .swiper-slide {
+      width: 100%;
+      height: 100%;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+
+      img {
+        display: none;
+      }
+    }
+
+    .swiper-slide:nth-of-type(1) {
+      background-image: image-url('promos/homeacq-video-hero-1682x700-1.jpg');
+
+      @include devices('xs') {
+        background-position: left center;
+      }
+    }
+
+    .swiper-slide:nth-of-type(2) {
+      background-image: image-url('promos/homeacq-video-hero-1682x700-2.jpg');
+
+      @include devices('xs') {
+        background-position: left center;
+      }
+    }
+
+    .swiper-slide:nth-of-type(3) {
+      background-image: image-url('promos/homeacq-video-hero-1682x700-3.jpg');
+
+      @include devices('xs') {
+        background-position: left center;
+      }
+    }
+
+    .video-hero-cta {
+      @include devices('xs', 'sm') {
+        margin-top: -($size-btn-media-hover * .75);
+      }
+
+      @include devices('md') {
+        margin-top: -($size-btn-media-md-hover * .75);
+      }
+
+      @include devices('lg') {
+        margin-top: -($size-btn-media-md-hover * .75);
+      }
+    }
+  }
+
+  // Statistics
+  #homeacq-section-statistics.page-section {
+    padding-bottom: 0;
+  }
+
+  // Ethics
+  #homeacq-section-ethics.page-section {
+
+  }
+
+}

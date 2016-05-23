@@ -1,0 +1,17 @@
+//
+// Dashboard Panel - Notifications
+//
+
+.dashboard-panel-sm.dashboard-notifications {
+  width: 100%;
+
+  .dashboard-panel-header,
+  .dashboard-panel-footer {
+    margin: 0 !important;
+  }
+
+  .dashboard-panel-content {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+}

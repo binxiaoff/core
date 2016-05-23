@@ -1,0 +1,386 @@
+//
+// Unilend Page Single
+//
+
+@mixin block {
+  padding: 20px;
+  margin-top: 30px;
+  margin-bottom: 30px;
+
+  @include devices('md', 'lg') {
+    padding: $width-site-margin-md;
+    margin-top: $width-site-margin-md;
+    margin-bottom: $width-site-margin-md;
+  }
+}
+
+.page-single {
+  .page-header {
+    padding-top: 0;
+    padding-bottom: 0;
+    overflow: hidden;
+
+    .hero-wrap {
+      @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+      background-color: $c-t2;
+      color: $c-white;
+
+      h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+        color: $c-white;
+        text-transform: uppercase;
+      }
+
+      > .site-wrap {
+        @include site-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+      }
+    }
+
+    .site-wrap {
+      height: auto;
+      padding-top: $width-site-margin-xs;
+      position: relative;
+
+      @include devices('sm') {
+        height: 200px;
+        padding-top: 0;
+        padding-bottom: 30px;
+      }
+
+      @include devices('md') {
+        height: 300px;
+        padding-top: 0;
+        padding-bottom: 30px;
+      }
+
+      @include devices('lg') {
+        height: 400px;
+        padding-top: 0;
+        padding-bottom: 30px;
+      }
+    }
+
+    .page-navigation {
+      display: block;
+      box-sizing: border-box;
+      width: 100%;
+
+      // Because this is absolutely positioned, it'll go to the edge of the site-wrap's padding instead of
+      // stay inside, so I'm adding the padding to this element (see the resp devices padding at the bottom of this class)
+      padding-left: $width-site-margin-xs;
+      padding-right: $width-site-margin-xs;
+
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+
+      ul {
+        display: table;
+        width: 100%;
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+
+        li {
+          display: table-cell;
+          padding: 0;
+          margin: 0;
+          background-color: $c-bg2;
+          box-sizing: border-box;
+          list-style-type: none;
+          text-align: center;
+          vertical-align: middle;
+
+          &.active {
+            background-color: $c-white;
+
+            a {
+              color: $c-t1;
+            }
+          }
+
+          &.c-p1,
+          &.bg-p1 {
+            background-color: $c-p1;
+
+            a {
+              @include link-states(
+                $link: (
+                  color: $c-white,
+                  text-decoration: none
+                ),
+                $hover: (
+                  color: $c-white,
+                  text-decoration: none
+                ),
+                $visited: (
+                  color: $c-white,
+                  text-decoration: none
+                )
+              );
+            }
+          }
+        }
+
+        a {
+          display: block;
+          padding: 15px 10px;
+          font-size: 16px;
+          line-height: 1.3em;
+
+          @include link-states(
+            $link: (
+              color: $c-t2,
+              text-decoration: none
+            ),
+            $hover: (
+              color: $c-t2,
+              text-decoration: none
+            ),
+            $active: (
+              color: $c-p1,
+              text-decoration: none
+            )
+          );
+
+          @include devices('lg') {
+            font-size: 18px;
+            padding: 20px 10px;
+          }
+        }
+      }
+
+      @include devices('sm') {
+        padding-left: $width-site-margin-sm;
+        padding-right: $width-site-margin-sm;
+      }
+
+      @include devices('md') {
+        padding-left: $width-site-margin-md;
+        padding-right: $width-site-margin-md;
+      }
+
+      @include devices('lg') {
+        padding-left: $width-site-margin-lg;
+        padding-right: $width-site-margin-lg;
+      }
+    }
+  }
+}
+
+// @TODO lots of responsive work
+.page-content {
+
+  // Blocks
+  .block-header {
+    @include block;
+
+    max-width: 600px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+
+    @include devices('md', 'lg') {
+      padding-left: $width-site-margin-md;
+      padding-right: $width-site-margin-md;
+    }
+  }
+
+  // Text
+  .block-text {
+    @include block;
+
+    max-width: $width-tablet-p;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+
+    ul, ol {
+      li {
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+    }
+
+    @include devices('md', 'lg') {
+      padding-left: $width-site-margin-md;
+      padding-right: $width-site-margin-md;
+    }
+  }
+
+  // Image
+  .block-image {
+    @include block;
+
+    max-width: 600px;
+    padding-left: 0;
+    padding-right: 0;
+    margin-left: auto;
+    margin-right: auto;
+
+    img,
+    svg {
+      @include constrain-size-to-width;
+    }
+
+    @include devices('md', 'lg') {
+      padding-left: $width-site-margin-md;
+      padding-right: $width-site-margin-md;
+    }
+  }
+
+  // Testimonial
+  .block-testimonial {
+    max-width: 600px;
+    padding: 0;
+    margin-top: 30px;
+    margin-bottom: 30px;
+    margin-left: auto;
+    margin-right: auto;
+
+    background-color: $c-p1;
+    color: $c-white;
+
+    @include devices('md', 'lg') {
+      margin-top: $width-site-margin-md;
+      margin-bottom: $width-site-margin-md;
+    }
+
+    .block-testimonial-quote {
+      padding: 30px;
+
+      @include devices('md', 'lg') {
+        padding: $width-site-margin-md;
+      }
+    }
+
+    .quote {
+      color: $c-white;
+      font-size: 1.4em;
+
+      > :first-child {
+        margin-top: 0;
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .credit {
+      margin-top: 15px;
+      color: $c-purple-l;
+      font-style: italic;
+    }
+  }
+
+  // Blockquote
+  blockquote,
+  .block-quote {
+    @include block;
+    padding-left: $width-site-margin-xs;
+    padding-right: $width-site-margin-xs;
+
+    background-color: $c-purple-l2;
+    color: $c-p2;
+    font-size: 1.2em;
+
+    ul, ol {
+      li {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+    }
+
+    dl {
+      dt, dd {
+        margin-top: 15px;
+        margin-bottom: 15px;
+      }
+    }
+
+    @include devices('sm') {
+      padding-left: $width-site-margin-sm;
+      padding-right: $width-site-margin-sm;
+    }
+
+    @include devices('md') {
+      padding-left: $width-site-margin-md;
+      padding-right: $width-site-margin-md;
+    }
+
+    @include devices('lg') {
+      padding-left: $width-site-margin-lg;
+      padding-right: $width-site-margin-lg;
+
+      // Ratings
+      .list-2col .rating {
+        @include rating-big(1.5);
+      }
+    }
+  }
+}
+
+.page-footer {
+  .page-navigate-next-page {
+    background-color: $c-t2;
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: cover;
+
+    a {
+      display: block;
+      text-align: center;
+      transition: background-color .2s;
+
+      @include link-states(
+        $link: (
+          background-color: fade-out($c-black, .4),
+          color: $c-white,
+          text-decoration: none
+        ),
+        $hover: (
+          background-color: fade-out($c-black, .5),
+          color: $c-white,
+          text-decoration: none
+        ),
+        $active: (
+          background-color: fade-out($c-black, .3),
+          color: $c-white,
+          text-decoration: none
+        )
+      );
+    }
+
+    .site-wrap {
+      @include vertical-align-inline-block;
+      height: 200px;
+    }
+
+    .label {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .small {
+      font-size: 14px;
+      font-style: italic;
+    }
+
+    .big {
+      font-size: $fs-h3;
+    }
+
+    @include devices('lg') {
+      .small {
+        font-size: 16px;
+      }
+
+      .big {
+        font-size: $fs-h2;
+      }
+    }
+  }
+}

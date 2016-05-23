@@ -1,0 +1,13 @@
+{% extends 'layouts/_test.base.template.twig' %}
+
+{% block header %}
+  {% embed 'layouts/_test.header.twig' %}
+    {% block headerTitle %}Sub: header.headerTitle{% endblock %}
+  {% endembed %}
+{% endblock %}
+
+{% block content %}
+  {% block mainContent %}
+    <p>Sub: content.mainContent</p>
+  {% endblock %}
+{% endblock %}

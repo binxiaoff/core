@@ -1,0 +1,19 @@
+//
+// Unilend Sitemap Page
+
+#page-sitemap.page {
+  .page-content {
+    .list-links {
+      margin-left: 1em;
+      margin-bottom: 2em;
+
+      li {
+        margin-bottom: .5em;
+      }
+
+      a {
+        color: $c-t1;
+      }
+    }
+  }
+}

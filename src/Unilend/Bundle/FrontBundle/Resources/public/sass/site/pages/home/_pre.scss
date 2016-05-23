@@ -1,0 +1,59 @@
+//
+// Unilend Page - Homepage Preter
+//
+
+#homepre.page {
+
+  // Video Hero
+  #homepre-video-hero.cta-video-hero {
+    .video-hero-wrapper .video-hero {
+      background-image: image-url('promos/homepre-video-hero-1690x1070.jpg');
+
+      @include devices('xs') {
+        background-position: left center;
+      }
+    }
+  }
+
+  // Steps
+  #homepre-section-steps.page-section {
+    .row {
+      position: relative;
+      text-align: center;
+    }
+
+    @include devices('xs', 'sm') {
+      .stamp {
+        display: inline-block !important;
+      }
+    }
+
+    @include devices('md', 'lg') {
+      .stamp {
+        position: absolute;
+        top: 0;
+        right: 15%;
+      }
+    }
+  }
+
+  // Why lend
+  #homepre-section-whylend.page-section {
+    .promo-image {
+      height: 140px;
+    }
+
+    .promo-highlight {
+      font-size: 70px;
+      margin-top: -20px;
+    }
+  }
+
+  // Project list section
+  #homepre-project-list.page-section {
+    .h2 {
+      margin-bottom: 30px;
+    }
+  }
+
+}

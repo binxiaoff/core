@@ -1,0 +1,256 @@
+//
+// Unilend Video
+//
+
+// Using video.js
+// @modified http://codepen.io/heff/pen/EarCt
+
+@mixin video-big-play-button {
+  width: $size-btn-media;
+  height: $size-btn-media;
+  margin-left: -($size-btn-media * .5);
+  margin-top: -($size-btn-media * .5);
+
+  position: absolute;
+  left: 50%;
+  top: 50%;
+
+  background-color: $c-p1;
+  border: 0;
+  border-radius: $size-btn-media;
+  color: $c-white;
+  font-size: $fs-btn-media;
+  line-height: $size-btn-media;
+
+  transition: width .2s, height .2s, line-height .2s, margin .2s !important;
+
+  &:before {
+    color: $c-white;
+    content: '\f04b';
+    font-family: $ff-icon;
+    font-size: $fs-btn-media;
+    text-indent: 6px;
+  }
+}
+
+@mixin video-big-play-button-hover {
+  width: $size-btn-media-hover;
+  height: $size-btn-media-hover;
+  margin-left: -($size-btn-media-hover * .5);
+  margin-top: -($size-btn-media-hover * .5);
+
+  background-color: $c-p1-hover;
+  color: $c-white;
+  line-height: $size-btn-media-hover;
+}
+
+.video-js {
+  color: $c-grey;
+  font-size: 16px;
+
+  &,
+  &.vjs-default {
+    .vjs-big-play-button {
+      @include video-big-play-button;
+
+      &:hover,
+      &:active,
+      &:focus {
+        @include video-big-play-button-hover;
+      }
+    }
+
+    &:hover,
+    &:focus {
+      .vjs-big-play-button {
+        @include video-big-play-button-hover;
+      }
+    }
+  }
+
+  .vjs-control-bar,
+  .vjs-menu-button .vjs-menu-content {
+    background-color: $c-grey-l3;
+  }
+
+  .vjs-control-bar {
+    height: 50px;
+    line-height: 50px;
+  }
+
+  .vjs-slider {
+    background-color: $c-grey-l2;
+  }
+
+  .vjs-menu-button-inline {
+    width: 11em;
+
+    .vjs-menu {
+      display: block;
+      opacity: 1;
+    }
+  }
+
+  .vjs-volume-level,
+  .vjs-play-progress,
+  .vjs-slider-bar {
+    border-radius: 10px;
+  }
+
+  .vjs-volume-bar.vjs-slider-horizontal .vjs-volume-level,
+  .vjs-play-progress {
+    background-color: $c-p1;
+  }
+
+  // Slider Bar handle
+  .vjs-volume-level:before,
+  .vjs-slider-bar:before {
+    transition: opacity .2s;
+    color: $c-p1;
+    line-height: 16px;
+  }
+
+  .vjs-volume-level:before {
+    opacity: 0;
+  }
+
+  .vjs-progress-control {
+    margin-left: 1em;
+    margin-right: 1em;
+  }
+
+  .vjs-progress-holder {
+    height: 6px;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .vjs-progress-control {
+    .vjs-slider-bar:before {
+      opacity: 0;
+    }
+
+    &:hover {
+      .vjs-progress-holder {
+        font-size: 1em;
+      }
+
+      .vjs-slider-bar:before {
+        opacity: 1;
+      }
+
+      .vjs-mouse-display:after,
+      .vjs-play-progress:after {
+        font-family: $ff-base;
+        font-size: 16px;
+        line-height: 24px;
+      }
+
+      .vjs-play-progress:after {
+        background-color: $c-black;
+        color: $c-white;
+      }
+    }
+  }
+
+  .vjs-volume-menu-button {
+    width: 11em !important;
+    float: right;
+  }
+
+  .vjs-control {
+    &:hover {
+      .vjs-volume-level:before {
+        opacity: 1;
+      }
+    }
+  }
+
+  .vjs-progress-holder {
+    .vjs-play-progress,
+    .vjs-load-progress,
+    .vjs-load-progress div {
+      height: 6px;
+    }
+  }
+
+  .vjs-slider-horizontal .vjs-volume-level,
+  .vjs-volume-bar.vjs-slider-horizontal {
+    height: 6px;
+  }
+
+  .vjs-load-progress {
+    background: $c-bg1;
+
+    div {
+      background: $c-bg1;
+    }
+  }
+
+  button {
+    &:hover {
+      background-color: $c-bg1;
+      color: $c-black;
+    }
+  }
+
+  .vjs-play-control {
+    float: left;
+    border-right: solid 1px $c-bg1;
+  }
+
+  .vjs-progress-control {
+    float: left;
+  }
+
+  .vjs-volume-menu-button {
+    border-left: solid 1px $c-bg1;
+    border-right: solid 1px $c-bg1;
+  }
+
+  .vjs-current-time,
+  .vjs-time-control,
+  .vjs-duration {
+    float: left;
+    display: block;
+  }
+
+  .vjs-remaining-time {
+    display: none;
+  }
+
+  .vjs-time-control {
+    min-width: 0;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  .vjs-duration {
+    padding-right: 1em;
+  }
+
+  &.vjs-paused {
+    &:before {
+      display: block;
+      content: ' ';
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      z-index: 5;
+      background-color: fade-out(#000, .5);
+    }
+
+    &.vjs-has-started {
+      &:before {
+        bottom: 50px;
+      }
+    }
+
+    .vjs-big-play-button {
+      display: block;
+      z-index: 6;
+    }
+  }
+}

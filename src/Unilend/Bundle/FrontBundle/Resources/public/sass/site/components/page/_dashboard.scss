@@ -1,0 +1,150 @@
+//
+// Unilend Dashboard Page
+//
+
+.dashboard {
+
+  > .hero-wrap {
+    @include background-image(-svg(linear-gradient(to bottom, $c-bg1 0%, $c-bg2 20%)));
+    margin-bottom: 50px;
+    padding-top: 50px;
+    padding-bottom: 50px;
+
+    > .site-wrap {
+      @include clearfix;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    .col-menu,
+    .col-content {
+      float: left;
+    }
+
+    .col-menu {
+      width: 20%;
+      padding-right: 20px;
+    }
+
+    .col-content {
+      width: 80%;
+      margin-right: -40px;
+    }
+  }
+}
+
+.dashboard-nav {
+  margin-bottom: 40px;
+
+  a {
+    display: block;
+    padding: 10px 0;
+    border-bottom: solid 1px $c-bg1;
+
+    .icon {
+      display: inline-block;
+      width: 30px;
+      margin-right: 10px;
+
+      color: $c-t3;
+      line-height: 1em;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    @include link-states(
+      $link: (
+        color: $c-t1,
+        text-decoration: none
+      ),
+      $hover: (
+        color: $c-p1,
+        text-decoration: none
+      ),
+      $active: (
+        color: $c-t1,
+        text-decoration: none
+      )
+    );
+  }
+
+  ul, ol {
+    @include block-list;
+
+    > :last-child {
+      a {
+        border-bottom: 0;
+      }
+    }
+
+    > li.active {
+      a {
+        color: $c-p1;
+
+        .icon {
+          color: inherit;
+        }
+      }
+    }
+  }
+}
+
+.dashboard-panels-nav {
+
+}
+
+.dashboard-panel-toggle {
+  display: none;
+  padding: 10px 20px;
+  margin: 0 0 10px 20px;
+
+  @include link-states(
+    $link: (
+      color: $c-t1,
+      background-color: $c-bg3,
+      text-decoration: none
+    ),
+    $hover: (
+      color: $c-t1,
+      background-color: $c-bg4,
+      text-decoration: none
+    ),
+    $active: (
+      color: $c-t1,
+      background-color: $c-bg2,
+      text-decoration: none
+    )
+  );
+
+  &:after {
+    content: '\f06e';
+    margin-left: 5px;
+    color: $c-t3;
+    font-family: $ff-icon;
+    font-size: 21px;
+  }
+
+  // UI
+  &.ui-dashboard-panel-hidden {
+    display: inline-block; // Opposite to same class on panel
+  }
+}
+
+.dashboard-panels-content {
+  @include clearfix;
+
+  .dashboard-panel {
+    float: left;
+    margin: 0;
+  }
+
+  .dashboard-panel-sizer {
+    height: 500px;
+  }
+
+  .packery-drop-placeholder {
+    outline: 3px dashed fade-out(#000, .9);
+    outline-offset: -6px;
+    transition: transform .2s;
+  }
+}

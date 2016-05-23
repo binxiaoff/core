@@ -1,0 +1,23 @@
+//
+// Unilend Preter Single Pages
+//
+
+.page-single-preter {
+  .page-header {
+
+    .hero-wrap {
+      background-image: image-url('headers/projets-index-header-1680x790.jpg');
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: cover;
+    }
+
+    .page-title {
+      @include hide-accessible;
+    }
+
+    .page-navigation li {
+      width: 20%;
+    }
+  }
+}

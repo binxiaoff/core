@@ -1,0 +1,77 @@
+//
+// Unilend Page Header
+//
+
+.page-header {
+  @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
+
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  // Constrains text content to the site wrap
+  .site-wrap {
+    @include vertical-align-inline-block;
+    height: 200px;
+    position: relative;
+  }
+
+  .page-title {
+    font-size: $fs-h2;
+
+    @include devices('sm', 'md', 'lg') {
+      font-size: $fs-h1;
+    }
+  }
+
+  // A page header with this class means it has a background image on the .hero-wrap element
+  &.page-header-hero {
+    margin-bottom: -200px;
+
+    .hero-wrap {
+      height: 400px;
+      padding-top: $width-site-margin-xs;
+      padding-bottom: $width-site-margin-xs;
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: cover;
+
+      @include devices('sm') {
+        padding-top: $width-site-margin-sm;
+        padding-bottom: $width-site-margin-sm;
+      }
+
+      @include devices('md', 'lg') {
+        padding-top: $width-site-margin-md;
+        padding-bottom: $width-site-margin-md;
+      }
+
+      @include devices('lg') {
+        padding-top: $width-site-margin-lg;
+        padding-bottom: $width-site-margin-lg;
+      }
+    }
+
+    @include devices('sm') {
+      margin-bottom: -300px;
+
+      .hero-wrap {
+        height: 500px;
+      }
+    }
+
+    @include devices('md', 'lg') {
+      margin-bottom: -400px;
+
+      .hero-wrap {
+        height: 600px;
+      }
+    }
+  }
+}
+
+.page-title {
+  color: $c-p1;
+  font-size: $fs-h1;
+}

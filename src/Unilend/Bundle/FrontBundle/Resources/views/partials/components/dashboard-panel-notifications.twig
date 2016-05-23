@@ -1,0 +1,76 @@
+{# Dashboard Panel Notifications #}
+{% import 'partials/modules/_list-notifications.macros.twig' as listNotifications %}
+
+{# Placeholder data #}
+{% set placeholderData = {
+  notifications: [{
+    type: 'offer-rejected',
+    title: 'Offre refusée',
+    datetime: 'now'|date_modify('-5 minutes')|time_diff,
+    content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
+    image: svgimage('#notification-offer-rejected', 'Offre refusée', 100, 100, 'none')
+  },{
+    type: 'remboursement',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-2 hours')|time_diff,
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none')
+  },{
+    type: 'offer-accepted',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-3 days')|date('j F, H:i'),
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-offer-accepted', 'Offre acceptée', 100, 100, 'none')
+  },{
+    type: 'account',
+    title: 'Solde bas',
+    datetime: 'now'|date_modify('-4 days')|date('j F, H:i'),
+    content: '',
+    image: svgimage('#notification-account-lowbalance', 'Solde bas', 100, 100, 'none')
+  },{
+    type: 'remboursement',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-5 days 8 hours 35 minutes')|date('j F, H:i'),
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none')
+  },{
+    type: 'remboursement',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-5 days 15 hours 20 minutes')|date('j F, H:i'),
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none')
+  },{
+    type: 'project-added',
+    title: 'Nouveau projet',
+    datetime: 'now'|date_modify('-6.5 days')|date('j F, H:i'),
+    content: 'Created a new project.',
+    image: svgimage('#notification-project-added', 'Nouveau projet', 100, 100, 'none')
+  }]
+} %}
+
+{# Inherit from dashboard-panel component #}
+{% embed 'partials/components/dashboard-panel.twig' %}
+  {# Panel classes #}
+  {% block panelClassNames %}dashboard-panel-sm dashboard-notifications{% endblock %}
+
+  {# Panel Title #}
+  {% block panelTitle %}Notifications{% endblock %}
+
+  {# Panel controls #}
+  {% block panelControls %}
+  <a href="#todo" class="btn-settings"><span class="sr-only">Settings</span></a>
+  {% endblock %}
+
+  {# Panel content #}
+  {% block panelContent %}
+  {{ listNotifications.render({
+    notifications: placeholderData.notifications
+  }) }}
+  {% endblock %}
+
+  {# Panel footer #}
+  {% block panelFooter %}
+  <a href="#todo">Voir plus</a>
+  {% endblock %}
+
+{% endembed %}

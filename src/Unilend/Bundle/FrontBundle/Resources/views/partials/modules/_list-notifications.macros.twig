@@ -1,0 +1,45 @@
+{# Notifications List #}
+{#% import 'partials/modules/_list-notifications.macros.twig' as listNotifications %#}
+
+{# Render the list of notifications #}
+{# @macro render #}
+{% macro render(options) %}
+
+  {# Default options #}
+  {% set settings = {
+    id: 'notifications',
+    classNames: '',
+    notifications: []
+  } %}
+
+  {# Override defaults #}
+  {% if options is not empty %}
+    {% set settings = settings|merge(options) %}
+  {% endif %}
+
+  <ul {% if settings.id is not empty %}id="{{ settings.id|escape('html_attr') }}" {% endif %}class="list-notifications {% if settings.classNames is not empty %}{{ settings.classNames|escape('html_attr') }}{% endif %}">
+    {% for i, item in settings.notifications %}
+    <li class="notification notification-type-{{ item.type|default('message')|escape('html_attr') }}">
+      <header class="notification-header">
+        {% if item.datetime is not empty %}
+          <h5 class="notification-datetime">{{ item.datetime }}</h5>
+        {% endif %}
+        {% if item.title is not empty %}<h4 class="notification-title">{{ item.title }}</h4>{% endif %}
+        {% if item.image is not empty %}<div class="notification-image">
+          {{ item.image }}
+        </div>{% endif %}
+      </header>
+      {% if item.content is not empty %}<div class="notification-content">
+        <p>{{ item.content|nl2br }}</p>
+      </div>{% endif %}
+    </li><!-- /.notification -->
+    {% else %}
+    <li class="notification notification-type-empty">
+      <div class="notification-content">
+        <p>No recent activity</p>
+      </div>
+    </li>
+    {% endfor %}
+  </ul><!-- /.list-notifications -->
+
+{% endmacro %}

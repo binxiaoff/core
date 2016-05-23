@@ -1,0 +1,194 @@
+//
+// Unilend Utility Classes
+//
+
+// Hide elements (without removing from DOM)
+.hidden {
+  visibility: hidden;
+}
+
+// Breakpoint Visualiser
+.breakpoint-visualiser {
+  position: relative;
+  text-align: center;
+  overflow: auto;
+
+  .width-mobile-p,
+  .width-mobile-l,
+  .width-tablet-p,
+  .width-tablet-l,
+  .width-laptop,
+  .width-desktop,
+  .width-xs,
+  .width-sm,
+  .width-md,
+  .width-lg,
+  .hero-wrap,
+  .site-wrap {
+    box-sizing: border-box;
+    border-left: solid 1px $c-black;
+    border-right: solid 1px $c-black;
+    border-top: none;
+    border-bottom: none;
+    padding: 10px;
+  }
+
+  .hero-wrap {
+    background-color: $c-p1;
+  }
+
+  .site-wrap {
+    background-color: $c-p2;
+  }
+
+  // Largest have no left/right borders
+  .width-desktop,
+  .width-lg {
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .bpv-wrap {
+    display: block;
+    border-bottom: solid 1px $c-black;
+
+    .width-mobile-p,
+    .width-mobile-l,
+    .width-tablet-p,
+    .width-tablet-l,
+    .width-laptop,
+    .width-desktop,
+    .width-xs,
+    .width-sm,
+    .width-md,
+    .width-lg, {
+      margin-left: auto;
+      margin-right: auto;
+    }
+  }
+}
+
+.width-mobile-p {
+  background-color: lighten($c-black, 100%);
+  min-width: $width-mobile-p;
+  max-width: $width-mobile-p-max;
+}
+
+.width-mobile-l {
+  background-color: lighten($c-black, 80%);
+  min-width: $width-mobile-l;
+  max-width: $width-mobile-l-max;
+}
+
+.width-tablet-p {
+  background-color: lighten($c-black, 60%);
+  min-width: $width-tablet-p;
+  max-width: $width-tablet-p-max;
+}
+
+.width-tablet-l {
+  background-color: lighten($c-black, 40%);
+  min-width: $width-tablet-l;
+  max-width: $width-tablet-l-max;
+}
+
+.width-laptop {
+  color: $c-bg5;
+  background-color: lighten($c-black, 20%);
+  min-width: $width-laptop;
+  max-width: $width-laptop-max;
+}
+
+.width-desktop {
+  color: $c-bg5;
+  background-color: $c-black;
+  min-width: $width-desktop;
+  width: 100%;
+}
+
+.width-xs {
+  background-color: lighten($c-black, 100%);
+  min-width: $width-xs;
+  max-width: $width-xs-max;
+}
+
+.width-sm {
+  background-color: lighten($c-black, 66%);
+  min-width: $width-sm;
+  max-width: $width-sm-max;
+}
+
+.width-md {
+  color: $c-bg5;
+  background-color: lighten($c-black, 33%);
+  min-width: $width-md;
+  max-width: $width-md-max;
+}
+
+.width-lg {
+  color: $c-bg5;
+  background-color: $c-black;
+  min-width: $width-lg;
+  width: 100%;
+}
+
+// Debug
+.debug {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 99999;
+
+  .breakpoint-visualiser {
+    height: 22px;
+    overflow: hidden;
+
+    .width-mobile-p,
+    .width-mobile-l,
+    .width-tablet-p,
+    .width-tablet-l,
+    .width-laptop,
+    .width-desktop,
+    .width-xs,
+    .width-sm,
+    .width-md,
+    .width-lg,
+    .hero-wrap,
+    .site-wrap {
+      height: 10px;
+      padding: 0;
+    }
+
+    .hero-wrap,
+    .site-wrap {
+      opacity: .3;
+    }
+
+    .bpv-wrap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1;
+      width: 100%;
+      height: 10px;
+    }
+  }
+}
+
+.test-watchscroll-visible {
+  background-color: red;
+}
+
+.test-watchscroll-hidden {
+  background-color: green;
+}
+
+.test-watchscroll-enter {
+  background-color: blue;
+}
+
+.test-watchscroll-leave {
+  background-color: yellow;
+}

@@ -1,0 +1,82 @@
+//
+// Unilend Form Validation
+//
+
+// Validation UI modifies on the whole form field, not just the input
+.form-field {
+  &.ui-formvalidation-success,
+  &.ui-formvalidation-error {
+    .input-group {
+      &:after {
+        display: block;
+        width: 2em;
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+
+        font-family: $ff-icon;
+        line-height: $height-input; // height of input minus total border height
+        text-align: center;
+
+        transition: width .2s;
+        user-select: none;
+      }
+    }
+
+    &:hover {
+      &:after {
+        width: 0;
+      }
+    }
+  }
+
+  // Form field validated successfully
+  &.ui-formvalidation-success {
+    .input-group:after {
+      content: '\f00c'; // Check / Tick
+      color: $c-success;
+    }
+  }
+
+  // Errors
+  &.ui-formvalidation-error {
+    // label {
+    //   color: $c-error;
+    // }
+
+    // Show input content has error
+    @include text-inputs {
+      background-color: $c-white;
+      border-color: $c-error;
+      color: $c-error;
+    }
+
+    .input-group:after {
+      content: '\f12a'; // Exclamation mark
+      color: $c-error;
+    }
+  }
+}
+
+.ui-formvalidation-messages {
+  @include block-list;
+
+  padding: 5px 10px;
+  font-size: 14px;
+  line-height: 1.3em;
+  clear: both;
+
+  li {
+    padding: 5px 10px;
+  }
+
+  .ui-formvalidation-error & {
+    background-color: lighten($c-error, 40%);
+  }
+
+  .ui-formvalidation-success & {
+    background-color: lighten($c-success, 40%);
+  }
+}

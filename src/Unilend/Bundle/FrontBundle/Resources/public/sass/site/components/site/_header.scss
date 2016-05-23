@@ -1,0 +1,623 @@
+//
+// Unilend Site Header
+// I apologise for the messiness of this file, as lots of things changed throughout
+// development. It needs refactoring, so if you see this message I haven't had the
+// time to do it yet! --Matt
+
+// Site header
+.site-header {
+  // Default is mobile
+  display: block;
+  width: 100%;
+  // Main buttons are 60px high and in the site-mobile-menu
+  height: $height-site-header;
+
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  z-index: $depth-site-header; // Fancybox overlay is 8010
+
+  background-color: $c-white;
+  text-align: center;
+
+  // Site Band
+  // The line at the top of the page
+  .site-band {
+    display: none;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    height: 8px;
+
+    // Background image is linear gradient
+    background-image: -svg(linear-gradient(to right, $c-p1, $c-p2));
+    @include background-size(cover);
+  }
+
+  // Updated site wrapping
+  .site-header-inner {
+    @include site-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
+
+    > .site-wrap {
+      @include site-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+      position: relative;
+    }
+  }
+
+  // Site title
+  .site-title {
+    display: inline-block;
+    padding: 15px 0 0;
+    margin: 0;
+  }
+
+  // Site Logo
+  .site-logo {
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-position: left top;
+    display: inline-block;
+    overflow: hidden;
+    text-align: left;
+    text-indent: -9999em;
+    vertical-align: top;
+
+    // Change artwork based on breakpoints
+    @include devices('xs', 'sm') {
+      $image-path: 'logo/logo-and-type-unilend-132x25-purple.png';
+      $image: get-image-url($image-path);
+      $width: image-width($image);
+      $height: image-height($image);
+
+      background-image: image-url($image-path);
+      width: $width;
+      height: $height;
+      line-height: $height;
+
+      @include retina {
+        $image-path: 'logo/logo-and-type-unilend-132x25-purple@2x.png';
+        background-image: image-url($image-path);
+        @include background-size(contain);
+      }
+    }
+
+    @include devices('md') {
+      $image-path: 'logo/logo-and-type-unilend-209x44-purple.png';
+      $image: get-image-url($image-path);
+      $width: image-width($image);
+      $height: image-height($image);
+
+      background-image: image-url($image-path);
+      width: $width;
+      height: $height;
+      line-height: $height;
+
+      @include retina {
+        $image-path: 'logo/logo-and-type-unilend-209x44-purple@2x.png';
+        background-image: image-url($image-path);
+        @include background-size(contain);
+      }
+    }
+
+    @include devices('lg') {
+      $image-path: 'logo/logo-and-type-unilend-245x52-purple.png';
+      $image: get-image-url($image-path);
+      $width: image-width($image);
+      $height: image-height($image);
+
+      background-image: image-url($image-path);
+      width: $width;
+      height: $height;
+      line-height: $height;
+
+      @include retina {
+        $image-path: 'logo/logo-and-type-unilend-245x52-purple@2x.png';
+        background-image: url($image-path);
+        @include background-size(contain);
+      }
+    }
+  }
+
+  // Open site mobile menu button
+  .site-mobile-menu-open {
+    @include button;
+    @include button-shape-sq-lg;
+    @include link-states(
+      $link: (
+        background-color: transparent,
+        border-color: transparent,
+        color: $c-p1,
+        text-decoration: none
+      ),
+      $hover: (
+        background-color: transparent,
+        border-color: transparent,
+        color: $c-p1,
+        text-decoration: none
+      ),
+      $visited: (
+        background-color: transparent,
+        border-color: transparent,
+        color: $c-p1,
+        text-decoration: none
+      )
+    );
+
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: $depth-site-header;
+  }
+
+  // Site wrap
+  .site-wrap {
+    @include clearfix;
+    overflow: visible;
+    position: relative;
+  }
+
+  // Site nav is hidden and only accessible through mobile menu: `./src/sass/components/site/mobile-menu`
+  .site-nav {
+    display: none;
+  }
+
+  // Site controls: search and user (login)
+  .site-controls {
+    box-sizing: border-box;
+    display: block;
+
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: $depth-site-header;
+    vertical-align: top;
+
+    .site-search,
+    .site-user {
+      float: left;
+    }
+  }
+
+  // Mobile site search is displayed within `components/site/mobile-menu`
+  .site-search {
+    display: none;
+  }
+
+  // Site user info
+  .site-user {
+    display: block;
+    vertical-align: top;
+
+    .btn-site-login {
+      @include button;
+      @include button-shape-sq-lg;
+      @include link-states(
+        $link: (
+          background-color: transparent,
+          border-color: transparent,
+          color: $c-p1
+        ),
+        $hover: (
+          background-color: transparent,
+          border-color: transparent,
+          color: $c-p1-hover
+        ),
+        $active: (
+          background-color: transparent,
+          border-color: transparent,
+          color: $c-p2
+        )
+      );
+
+      > .icon {
+        margin: 0;
+        padding: 0;
+      }
+
+      // This is a special case for responsive stuff here
+      @include devices('xs', 'sm') {
+        > .label {
+          @include hide-accessible;
+        }
+      }
+    }
+  }
+}
+
+// Modifications to display full site header
+@mixin site-header-full {
+  position: relative;
+  height: $height-site-header-full;
+
+  // Hide the mobile menu open button
+  .site-mobile-menu-open {
+    display: none;
+  }
+
+  // Show the funky band
+  .site-band {
+    display: block;
+  }
+
+  .site-title {
+    display: block;
+    padding: 50px 20px 0 0;
+  }
+
+  .site-title,
+  .site-nav {
+    float: left;
+  }
+
+  .site-nav {
+    display: block;
+  }
+
+  .site-nav-menu {
+    @include inline-block-list();
+
+    a {
+      @include link-states(
+        $link: (
+          color: $c-t1,
+          text-decoration: none
+        ),
+        $hover: (
+          color: $c-p1,
+          text-decoration: none
+        ),
+        $active: (
+          color: $c-p2
+        )
+      );
+
+      display: block;
+      padding: 65px 1em 25px;
+      font-size: 18px;
+    }
+  }
+
+  // Site controls (search, user)
+  .site-controls {
+    right: 0;
+    padding-top: 54px;
+  }
+
+  // Site search
+  .site-search {
+    transition: width .2s;
+
+    display: block;
+    width: $height-btn;
+    margin-right: 20px;
+    font-size: 18px;
+    line-height: $height-btn - 4px;
+
+    // Hide the btn-group and show the site-search-toggle
+    .site-search-toggle {
+      display: block;
+
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+
+      &:before {
+        content: '\f002';
+        font-family: $ff-icon;
+        line-height: $height-btn;
+      }
+    }
+
+    .form-field-inline {
+      > .btn-group {
+        display: none;
+        line-height: $height-btn - 4px;
+      }
+
+      > .input-field {
+        width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        font-size: 16px;
+
+        @include input-placeholder {
+          color: transparent;
+        }
+      }
+    }
+
+    // Site search is open or fixed menu is active
+    #{$js-site-header-fixed} &,
+    #{$js-site-search-open} & {
+      .site-search-toggle {
+        display: none;
+      }
+
+      .form-field-inline {
+        > .btn-group {
+          display: block;
+        }
+
+        > .input-field {
+          padding-left: $height-btn;
+
+          @include input-placeholder {
+            color: $c-t1;
+          }
+        }
+      }
+    }
+
+    // Site search is open
+    #{$js-site-search-open} & {
+      transform: translateY(0);
+      width: 350px;
+    }
+  }
+
+  // Site user
+  .site-user {
+
+    // Login button
+    .btn-site-login {
+      @include button-shape-sm;
+      @include button-color-primary;
+      height: auto;
+      font-size: 16px;
+
+      > .icon {
+        padding-right: 12px;
+      }
+
+      > .label {
+        display: inline;
+      }
+    }
+  }
+
+  // Fixed header modifications
+  #{$js-site-header-fixed} & {
+    height: $height-fixed-menu;
+
+    position: fixed;
+    left: 0;
+    top: 0;
+    right: 0;
+
+    border-bottom: solid 2px $c-bg2;
+
+    .site-band {
+      display: none;
+    }
+
+    .site-title {
+      padding-top: 0;
+    }
+
+    .site-logo {
+      $image-path: 'logo/logo-unilend-65x65-white.png';
+      $image: get-image-url($image-path);
+      $width: image-width($image);
+      $height: image-height($image);
+
+      width: $width;
+      height: $width;
+
+      background-image: image-url($image-path);
+      background-position: center center;
+
+      @include retina {
+        $image-path: 'logo/logo-unilend-65x65-white@2x.png';
+        background-image: image-url($image-path);
+        @include background-size(contain);
+      }
+    }
+
+    .site-nav-menu {
+      a {
+        padding: 0 20px;
+        line-height: $height-fixed-menu;
+        vertical-align: middle;
+      }
+    }
+
+    .site-controls {
+      padding-top: 0;
+    }
+
+    .site-search {
+      width: 200px;
+      height: $height-fixed-menu;
+      margin-right: 0;
+
+      .form-field-inline {
+        > .btn-group {
+          line-height: $height-fixed-menu;
+        }
+
+        > .input-field {
+          border-radius: 0;
+          height: $height-fixed-menu;
+          padding-left: $height-btn;
+          padding-right: 10px;
+
+          border-top-width: 0;
+          border-bottom-width: 0;
+          border-right-width: 0;
+          line-height: $height-fixed-menu;
+        }
+      }
+    }
+
+    .site-user {
+      .btn-site-login {
+        border-radius: 0;
+        height: $height-fixed-menu;
+        padding: padding-height($height-fixed-menu, 25px) 20px;
+        line-height: 25px;
+        border-width: 2px;
+      }
+    }
+  }
+
+  // Fixed header and open site search
+  #{$js-site-header-fixed}#{$js-site-search-open} & {
+    .site-search {
+      width: 350px;
+    }
+  }
+
+  // Fixed header hides when other fixed menus come into view
+  // @note the other menu just gets displayed over the top now
+  // #{$js-project-single-menu-fixed}#{$js-site-header-fixed} & {
+  //   opacity: 0;
+  //   height: 0;
+  //   overflow: hidden;
+  // }
+}
+
+// Further modifications to the site header for medium devices
+@mixin site-header-full-md {
+  @include site-header-full;
+
+  // Site controls (search, user)
+  // .site-controls {
+  //   padding-top: 50px; // Accounts for change in button/input heights
+  // }
+
+  // Search
+  .site-search {
+    width: 200px;
+
+    .site-search-toggle {
+      display: none;
+    }
+
+    .form-field-inline {
+      > .btn-group {
+        display: block;
+      }
+
+      > .input-field {
+        padding-left: $height-btn;
+
+        @include input-placeholder {
+          color: $c-t1;
+        }
+      }
+    }
+  }
+
+  // Fixed header modifications
+  #{$js-site-header-fixed} & {
+    .site-search {
+      width: 250px;
+    }
+
+    .site-user {
+      .btn-site-login {
+        padding-left: 30px;
+        padding-right: 30px;
+      }
+    }
+  }
+}
+
+// Further modifications to the site header for large devices
+@mixin site-header-full-lg {
+  @include site-header-full;
+  @include site-header-full-md;
+
+  // Site controls (search, user)
+  .site-controls {
+    padding-top: 50px; // Accounts for change in button/input heights
+  }
+
+  .site-title {
+    padding-right: 25px;
+  }
+
+  .site-nav-menu {
+    a {
+      padding: 72px 1em 25px;
+      font-size: 20px;
+    }
+  }
+
+  .site-search {
+    width: 250px;
+
+    .form-field-inline {
+      > .btn-group {
+        width: $height-input-lg;
+        line-height: $height-input-lg - 4px;
+      }
+
+      > .input-field {
+        @include input-size-lg;
+        font-size: 18px;
+        padding-left: $height-input-lg;
+      }
+    }
+  }
+
+  .site-user {
+    .btn-site-login {
+      @include button-shape-md;
+      font-size: 18px;
+    }
+  }
+
+  // Fixed header modifications
+  #{$js-site-header-fixed} & {
+    .site-search {
+      width: 250px;
+
+      .form-field-inline {
+        > .btn-group {
+          line-height: $height-fixed-menu;
+        }
+
+        > .input-field {
+          padding-left: $height-input-lg;
+        }
+      }
+    }
+
+    .site-user {
+      // Keep same font-size, line-height as input-size-lg
+      .btn-site-login {
+        $padding-height: padding-height($height-fixed-menu, 24px);
+        padding-top: $padding-height;
+        padding-bottom: $padding-height;
+        font-size: 18px;
+        line-height: 24px;
+      }
+    }
+  }
+}
+
+// Enable the full site header with certain modifications for the following devices...
+@include devices('tablet-l') {
+  .site-header {
+    @include site-header-full;
+  }
+}
+
+@include devices('laptop') {
+  .site-header {
+    @include site-header-full-md;
+  }
+}
+
+@include devices('desktop') {
+  .site-header {
+    @include site-header-full-lg;
+  }
+}
