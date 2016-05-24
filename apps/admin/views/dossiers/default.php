@@ -153,6 +153,11 @@
                         <td style="padding-top:23px;">
                             <select name="duree" id="duree" class="select" style="width:80px;">
                                 <option value="">Durée</option>
+                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '3' ? 'selected' : '') ?> value="3">3 mois</option>
+                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '6' ? 'selected' : '') ?> value="6">6 mois</option>
+                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '9' ? 'selected' : '') ?> value="9">9 mois</option>
+                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '12' ? 'selected' : '') ?> value="12">12 mois</option>
+                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '18' ? 'selected' : '') ?> value="18">18 mois</option>
                                 <option <?= (isset($_POST['duree']) && $_POST['duree'] == '24' ? 'selected' : '') ?> value="24">24 mois</option>
                                 <option <?= (isset($_POST['duree']) && $_POST['duree'] == '36' ? 'selected' : '') ?> value="36">36 mois</option>
                                 <option <?= (isset($_POST['duree']) && $_POST['duree'] == '48' ? 'selected' : '') ?> value="48">48 mois</option>
