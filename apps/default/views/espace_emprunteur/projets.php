@@ -115,7 +115,7 @@
                                 <br> <?= $aProject['period'] ?> <?= $this->lng['espace-emprunteur']['mois'] ?></td>
                             <td><?= $this->dates->formatDateMysqltoFr($aProject['date_retrait']) ?></td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['funding-progress']) ?> %</td>
-                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['AverageIR']) ?> %</td>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['AverageIR'], 1) ?> %</td>
                             <td style="white-space: nowrap;">
                                 <?php
                                 if ($aProject['funding-progress'] >= 100 && $aProject['oInterval'] >= 0 && isset($_SESSION['cloture_anticipe']) === false) : ?>
@@ -157,7 +157,7 @@
                                 <br> <?= $aProject['period'] ?> <?= $this->lng['espace-emprunteur']['mois'] ?></td>
                             <td><?= $this->dates->formatDateMysqltoFr($aProject['date_retrait']) ?></td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['MonthlyPayment']) ?> €</td>
-                            <td style="white-space: nowrap;"><?= $aProject['AverageIR'] ?> %</td>
+                            <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['AverageIR'], 1) ?> %</td>
                             <td style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aProject['RemainingDueCapital']) ?> €</td>
                             <td><?= ($aProject['RemainingDueCapital'] == 0) ? $this->lng['espace-emprunteur']['rembourse-integralement'] : $this->dates->formatDateMysqltoFr_HourOut($aProject['DateNextMonthlyPayment']) ?></td>
                             <td>
