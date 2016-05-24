@@ -64,7 +64,7 @@
         continue;
     }
 ?>
-    <tr class="table-body <?= ($bidsForRate['amount_active'] == 0) ? "rejecteds" : ""?>" data-rate="<?=$bidsForRate['rate']?>" data-project="<?=$this->projects->id_project?>">
+    <tr class="table-body <?= ($bidsForRate['amount_active'] == 0) ? "rejected_bids" : ""?>" data-rate="<?=$bidsForRate['rate']?>" data-project="<?=$this->projects->id_project?>">
         <td class="rate-cell">
             <span class="order-rate"><?=number_format((float) $bidsForRate['rate'], 1, ',', ' ')?> %<i class="icon-grey icon-simple-arrow"></i></span>
         </td>
@@ -78,7 +78,7 @@
             <span class="offers-rate"><?=number_format($bidsForRate['amount_active'] * 100 / $bidsForRate['amount_total'], 1, ',', ' ')?> %</span>
         </td>
     </tr>
-    <tr class="detail-nav <?= ($bidsForRate['amount_active'] == 0) ? "rejecteds" : ""?>">
+    <tr class="detail-nav <?= ($bidsForRate['amount_active'] == 0) ? "rejected_bids" : ""?>">
         <th>
             <span class="bid-number">
                 N°

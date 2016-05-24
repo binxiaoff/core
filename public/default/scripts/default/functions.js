@@ -114,7 +114,7 @@
 
         $doc.on("click", ".rejected-offers", function() {
             $(".rejected-offers").remove();
-            $(".table-body.rejecteds").addClass("visible");
+            $(".table-body.rejected_bids").addClass("visible");
         });
 
         $(".table-body").click(function() {
