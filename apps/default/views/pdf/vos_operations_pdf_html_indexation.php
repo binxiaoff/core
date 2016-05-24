@@ -279,7 +279,7 @@
     <tr>
         <th colspan="2" class="pdfSolde"><?=$this->lng['preteur-operations-pdf']['solde-du-compte']?></th>
         <td style="font-size: 17px;font-weight:bold;"><?= str_replace('[#TOTAL#]', $this->ficelle->formatNumber($soldetotal), $this->lng['preteur-operations-pdf']['solde-de-votre-compte'])  ?></td>
-        <td><?= $this->date_fin ?></td>
+        <td><?= $this->date_fin > date('Y-m-d') ? date('d/m/Y') : date('d/m/Y', strtotime($this->date_fin)) ?></td>
         <td></td>
         <td><?= $soldetotal ?></td>
     </tr>
