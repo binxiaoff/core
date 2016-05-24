@@ -53,7 +53,7 @@
 <br /><br />
 
 <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
-    <tr>
+    <tr class="tab_head">
         <th width="200px" id="order_operations" class="col1">
             <div align="left" class="th-wrap" style='top:-3px;width:300px;'>
                 <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['operations'] ?>&nbsp;
@@ -277,18 +277,18 @@
         <td colspan="7" ></td>
     </tr>
     <tr>
-        <th colspan="2" class="pdfSolde"><?=$this->lng['preteur-operations-pdf']['solde-du-compte']?></th>
-        <td style="font-size: 17px;font-weight:bold;"><?= str_replace('[#TOTAL#]', $this->ficelle->formatNumber($soldetotal), $this->lng['preteur-operations-pdf']['solde-de-votre-compte'])  ?></td>
+        <th colspan="2" class="pdfSolde"><?= str_replace('[#TOTAL#]', $this->ficelle->formatNumber($soldetotal), $this->lng['preteur-operations-pdf']['solde-de-votre-compte'])  ?></th>
+        <td></td>
         <td><?= $this->date_fin > date('Y-m-d') ? date('d/m/Y') : date('d/m/Y', strtotime($this->date_fin)) ?></td>
         <td></td>
-        <td><?= $soldetotal ?></td>
+        <td><?= $soldetotal ?> €</td>
     </tr>
 </table>
 
 <?php
 if($asterix_on) {
     ?>
-    <div style="padding-left: 10px;">* <?=$this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-pdf']?></div>
+    <div style="padding-left: 10px;margin-top:20px;">* <?=$this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-pdf']?></div>
     <?
 }
 ?>
