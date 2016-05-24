@@ -21,17 +21,28 @@
         <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic|Raleway:400,400italic" media="all">
         <!-- CSS Dependencies -->
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.css" media="all">
-        <link rel="stylesheet" type="text/css" href="{{ asset('vendor/videojs/video-js.min.css') }}" media="all">
-        <link rel="stylesheet" type="text/css" href="{{ asset('vendor/swiper/css/swiper.min.css') }}" media="all">
-        <link rel="stylesheet" type="text/css" href="{{ asset('vendor/fancybox/css/jquery.fancybox.css') }}" media="all">
-        {# <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}dependencies{% if env != 'dev' %}.min{% endif %}.css" media="all"> #}
+        {% stylesheets
+            '@UnilendFrontBundle/Resources/public/js/vendor/videojs/video-js.min.css'
+            '@UnilendFrontBundle/Resources/public/js/vendor/swiper/css/swiper.min.css'
+            '@UnilendFrontBundle/Resources/public/js/vendor/fancybox/css/jquery.fancybox.css' %}
+        <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="all">
+        {% endstylesheets %}
     {% endblock %}
 
     <!-- CSS Site -->
     {% block cssFiles %}
-        <link rel="stylesheet" type="text/css" href="{{ asset('screen') }}{% if env != 'dev' %}.min{% endif %}.css" media="screen,projection">
-        <link rel="stylesheet" type="text/css" href="{{ asset('print') }}{% if env != 'dev' %}.min{% endif %}.css" media="print">
-        <!--[if IE]><link rel="stylesheet" type="text/css" href="{{ asset('ie') }}{% if env != 'dev' %}.min{% endif %}.css" media="screen,projection"><![endif]-->
+        {#{% stylesheets '@UnilendFrontBundle/Resources/public/css/*' filter ='cssrewrite' %}#}
+        {#<link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">#}
+        {#{% endstylesheets %}#}
+
+        {% stylesheets filter='cssrewrite' '%kernel.root_dir%/../public/bundles/unilendfront/css/*'  %}
+        <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">
+        {% endstylesheets %}
+
+        {#{% stylesheets  filter ='cssrewrite'%}#}
+        {#<link rel="stylesheet" type="text/css" href="{{ asset('bundles/unilendfront/css/screeen.css') }}" media="screen,projection">#}
+        {#{% endstylesheets %}#}
+
     {% endblock %}
 
     <!-- JS -->
@@ -124,9 +135,15 @@
         </div><!-- /.debug -->
     {% endif %}
 {% endblock %}
+{% javascripts
+    '@UnilendFrontBundle/Resources/public/js/dependencies.js'
+    '@UnilendFrontBundle/Resources/public/js/main.js' %}
 
-<script type="text/javascript" src="{{ asset('js/dependencies.js') }}{% if env != 'dev' %}.min{% endif %}.js"></script>
-<script type="text/javascript" src="{{ asset('js/main.js') }}{% if env != 'dev' %}.min{% endif %}.js"></script>
+<script type="text/javascript" src="{{ asset_url }}"></script>
+<script type="text/javascript" src="{{ asset_url }}"></script>
+
+{% endjavascripts %}
+
 {% block extendFoot %}{% endblock %}
 
 </body>
