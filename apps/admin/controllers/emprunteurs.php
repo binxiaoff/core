@@ -302,7 +302,7 @@ class emprunteursController extends bootstrap
                 $this->clients_adresses->update();
 
                 if ($edited_rib) {
-                    $this->sendRibUpdateEmail($this->clients->id_client);
+                    $this->sendRibUpdateEmail($this->clients);
                 }
 
                 if ($sCurrentIban !== $sNewIban) {
@@ -327,13 +327,10 @@ class emprunteursController extends bootstrap
     }
 
     /**
-     * @param int $iClientId
+     * @param \clients $client
      */
-    private function sendRibUpdateEmail($iClientId)
+    private function sendRibUpdateEmail($client)
     {
-        /** @var \clients $client */
-        $client = $this->loadData('clients');
-
         /** @var \projects $project */
         $project = $this->loadData('projects');
 
@@ -343,9 +340,9 @@ class emprunteursController extends bootstrap
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
 
-        foreach ($company->select('id_client_owner = ' . $iClientId) as $currentCompany) {
+        foreach ($company->select('id_client_owner = ' . $client->id_client) as $currentCompany) {
             foreach ($project->select('id_company = ' . $currentCompany['id_company']) as $projects) {
-                $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $iClientId . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
+                $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $client->id_client . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
 
                 if (false === empty($aMandats)) {
                     foreach ($aMandats as $aMandatToArchive) {
@@ -408,7 +405,7 @@ class emprunteursController extends bootstrap
                     /** @var \Email email */
                     $email = $this->loadLib('email');
                     $email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                    $email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                    $email->setSubject(stripslashes($this->mails_text->subject));
                     $email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
                     if ($this->Config['env'] === 'prod') {

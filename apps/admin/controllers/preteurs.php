@@ -2016,7 +2016,7 @@ class preteursController extends bootstrap
         $iClientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
 
         if (false === $iClientId) {
-            echo json_encode(array('text' => 'Une erreur est survenue', 'color' => 'red'));
+            echo json_encode(array('text' => 'Une erreur est survenue', 'severity' => 'error'));
             return;
         }
         /** @var \lenders_accounts $oLendersAccounts */
@@ -2029,7 +2029,7 @@ class preteursController extends bootstrap
 
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
-                echo json_encode(array('text' => 'IBAN incorrect', 'color' => 'red'));
+                echo json_encode(array('text' => 'IBAN incorrect', 'severity' => 'error'));
                 return;
             }
             $sIban .= strtoupper($_POST['iban' . $i]);
