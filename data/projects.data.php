@@ -266,7 +266,7 @@ class projects extends projects_crud
     public function countSelectProjectsByStatus($status, $where = '', $bUseCache = false)
     {
         if (true === $bUseCache) {
-            $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, __METHOD__);
+            $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
         } else {
             $oQCProfile = null;
         }
@@ -274,7 +274,7 @@ class projects extends projects_crud
         $aType = array('status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
 
         $sQuery = '
-            SELECT COUNT(*) as nb_project
+            SELECT COUNT(*) AS nb_project
             FROM projects p
             LEFT JOIN projects_last_status_history ON p.id_project = projects_last_status_history.id_project
             LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
@@ -282,11 +282,10 @@ class projects extends projects_crud
             WHERE projects_status.status IN (:status)' . $where;
 
         try {
-            $result = $this->bdd->executeQuery($sQuery, $aBind, $aType, $oQCProfile)->fetchColumn(0);
+            return $this->bdd->executeQuery($sQuery, $aBind, $aType, $oQCProfile)->fetchColumn(0);
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return 0;
         }
-        return $result;
     }
 
     public function searchDossiersByStatus(array $aStatus, $siren = null, $societe = null, $nom = null, $prenom = null, $projet = null, $email = null, $start = null, $nb = null)
@@ -442,9 +441,9 @@ class projects extends projects_crud
 
     public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit)
     {
-        $aProjects = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, array(), $iStart, $iLimit);
-        $anbProjects      = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0', true);
-        $aElements        = array(
+        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, array(), $iStart, $iLimit);
+        $anbProjects = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0', true);
+        $aElements   = array(
             'lProjectsFunding' => $aProjects,
             'nbProjects'       => $anbProjects
         );
@@ -702,24 +701,26 @@ class projects extends projects_crud
         $sWhereRisk        = '';
         $sWhereDurationMin = '';
         $sWhereDurationMax = '';
-        $aBind = array();
-        $aType = array();
+        $aBind             = array();
+        $aType             = array();
+
         if (null !== $sRisk) {
-            $sWhereRisk = ' AND p.risk = :risk ';
+            $sWhereRisk    = ' AND p.risk = :risk ';
             $aBind['risk'] = $sRisk;
             $aType['risk'] = \PDO::PARAM_STR;
         }
+
         if (null !== $sDurationMin) {
-            $aBind['p_min'] = $sDurationMin;
-            $aType['p_min'] = \PDO::PARAM_INT;
+            $aBind['p_min']    = $sDurationMin;
+            $aType['p_min']    = \PDO::PARAM_INT;
             $sWhereDurationMin = ' AND p.period >= :p_min';
         }
+
         if (null !== $sDurationMax) {
-            $aBind['p_max'] = $sDurationMax;
-            $aType['p_max'] = \PDO::PARAM_INT;
+            $aBind['p_max']    = $sDurationMax;
+            $aType['p_max']    = \PDO::PARAM_INT;
             $sWhereDurationMax = ' AND p.period <= :p_max';
         }
-
         $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
                         FROM (
                           SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
@@ -736,13 +737,11 @@ class projects extends projects_crud
                           GROUP BY t.id_project
                         ) t1
                         ';
-
         try {
-            $result = $this->bdd->executeQuery($sQuery, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)))->fetchColumn(0);
+            return $this->bdd->executeQuery($sQuery, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)))->fetchColumn(0);
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return false;
         }
-        return $result;
     }
 
     public function getAutoBidProjectStatistic(\DateTime $oDateFrom, \DateTime $oDateTo)

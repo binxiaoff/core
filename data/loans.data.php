@@ -362,21 +362,21 @@ class loans extends loans_crud
     }
 
     /**
-     * @param null $iProjectId
+     * @param int $projectId
      * @return bool|int
      */
-    public function getMonthNb($iProjectId = null)
+    public function getMonthNb($projectId = null)
     {
-        if (null === $iProjectId) {
-            $iProjectId = $this->id_project;
+        if (null === $projectId) {
+            $projectId = $this->id_project;
         }
 
-        if ($iProjectId) {
-            $sQuery = 'SELECT period FROM projects WHERE id_project = :iProjectId';
+        if ($projectId) {
+            $sQuery = 'SELECT period FROM projects WHERE id_project = :projectId';
 
             try {
-                $result = $this->bdd->executeQuery($sQuery, array('iProjectId' => $iProjectId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                    ->fetchAll(PDO::FETCH_ASSOC);
+                $result = $this->bdd->executeQuery($sQuery, array('projectId' => $projectId), array('projectId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetchColumn(0);
 
                 if (empty($result)) {
                     return false;
@@ -384,8 +384,7 @@ class loans extends loans_crud
             } catch (\Doctrine\DBAL\DBALException $ex) {
                 return false;
             }
-
-            return (int)$result[0]['period'];
+            return (int)$result;
         }
         return false;
     }

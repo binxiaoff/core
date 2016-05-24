@@ -227,10 +227,10 @@ class bids extends bids_crud
                         INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
                         INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
                         INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-                        WHERE ps.status >= :iFunded
-                        AND ps.status != :iFundingKo GROUP BY b.rate ORDER BY b.rate DESC';
+                        WHERE ps.status >= :funded
+                        AND ps.status != :fundingKo GROUP BY b.rate ORDER BY b.rate DESC';
         try {
-            $result = $this->bdd->executeQuery($sQuery, array('iFunded' => \projects_status::FUNDE, 'iFundingKo' => \projects_status::FUNDING_KO), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+            $result = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
                 ->fetchAll(PDO::FETCH_ASSOC);
         } catch (\Doctrine\DBAL\DBALException $ex) {
             return false;

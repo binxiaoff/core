@@ -195,45 +195,45 @@ class lenders_accounts extends lenders_accounts_crud
     }
 
     /**
-     * @param null $iLenderId
+     * @param null $lenderId
      * @return bool
      */
-    public function isFrenchResident($iLenderId = null)
+    public function isFrenchResident($lenderId = null)
     {
         $bResult = false;
 
-        if (null === $iLenderId) {
-            $iLenderId = $this->id_lender_account;
+        if (null === $lenderId) {
+            $lenderId = $this->id_lender_account;
         }
 
-        if ($iLenderId) {
-            $sQuery = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = :iLenderId";
+        if ($lenderId) {
+            $sQuery = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = :lenderId";
             try {
-                $result = $this->bdd->executeQuery($sQuery, array('iLenderId' => $iLenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                    ->fetchAll(PDO::FETCH_ASSOC);
+                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array('lenderId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetch(PDO::FETCH_ASSOC);
 
-                if (empty($result) || '0' === $result[0]['resident_etranger']) {
+                if (empty($result) || '0' === $result['resident_etranger']) {
                     $bResult = true;
                 }
             } catch (\Doctrine\DBAL\DBALException $ex) {
-                return false;
+                return null;
             }
         }
         return $bResult;
     }
 
-    public function isNaturalPerson($iLenderId = null)
+    public function isNaturalPerson($lenderId = null)
     {
         $bResult = false;
 
-        if (null === $iLenderId) {
-            $iLenderId = $this->id_lender_account;
+        if (null === $lenderId) {
+            $lenderId = $this->id_lender_account;
         }
 
-        if ($iLenderId) {
-            $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = :iLenderId";
+        if ($lenderId) {
+            $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = :lenderId";
             try {
-                $result = $this->bdd->executeQuery($sQuery, array('iLenderId' => $iLenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
                     ->fetchAll(PDO::FETCH_ASSOC);
 
                 if (isset($result[0]['type']) && in_array($result[0]['type'], array(1, 3))) {

@@ -81,12 +81,12 @@ class autobid_periods extends autobid_periods_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getDurations($iPeriodId)
+    public function getDurations($periodId)
     {
-        $sQuery     = 'SELECT min, max FROM  `autobid_periods` WHERE id_period = :iPeriodId';
+        $sQuery = 'SELECT min, max FROM autobid_periods WHERE id_period = :periodId';
         try {
-            $mDurations = $this->bdd->executeQuery($sQuery, array('iPeriodId' => $iPeriodId), array(\PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
-                ->fetchAll(PDO::FETCH_ASSOC);
+            $mDurations = $this->bdd->executeQuery($sQuery, array('periodId' => $periodId), array('periodId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                ->fetch(PDO::FETCH_ASSOC);
 
             if (true === empty($mDurations)) {
                 return false;
@@ -95,7 +95,7 @@ class autobid_periods extends autobid_periods_crud
             return false;
         }
 
-        return $mDurations[0];
+        return $mDurations;
     }
 
     public function getPeriod($iDuration, $iStatus = self::STATUS_ACTIVE)
