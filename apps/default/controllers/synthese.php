@@ -117,24 +117,22 @@ class syntheseController extends bootstrap
         if ($lesFav == false) {
             $this->lProjetsFav = 0;
         } else {
-            $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')'); // todo : optimize
+            $this->lProjetsFav = $this->projects->select('id_project IN (' . $lesFav . ')');
             foreach ($this->lProjetsFav as $iKey => $aProject) {
                 $this->lProjetsFav[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project']));
             }
         }
 
-        $this->lProjetEncours   = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
+        $this->lProjetEncours = $this->projects->selectProjectsByStatus(\projects_status::EN_FUNDING, null, 'p.date_retrait ASC', 0, 30);
         foreach ($this->lProjetEncours as $iKey => $aProject) {
             $this->lProjetEncours[$iKey]['avgrate'] = $this->ficelle->formatNumber($this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']), 1);
         }
 
-        $this->nbLoan = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
-
+        $this->nbLoan         = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
         $this->sumBidsEncours = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
-
-        $this->sumPrets = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
-
+        $this->sumPrets       = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
         $this->sumRembMontant = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account, 'capital');
+
         // somme retant du (capital) (a rajouter en prod)
         $ProblematicProjects    = $this->echeanciers->getProblematicProjects($this->lenders_accounts->id_lender_account);
         $this->nbProblems       = $ProblematicProjects['projects'];

@@ -126,25 +126,16 @@
                 $mois_jour = $this->dates->formatDate($f['date_retrait'], 'F d');
                 $annee     = $this->dates->formatDate($f['date_retrait'], 'Y');
 
-                // la sum des encheres
-                $soldeBid = $this->bids->getSoldeBid($f['id_project']);
-
-                // solde payé
-                $payer = $soldeBid;
-
-                // Reste a payer
-                $resteApayer = ($f['amount'] - $soldeBid);
-
-                $pourcentage = ((1 - ($resteApayer / $f['amount'])) * 100);
-
-                $decimales            = 2;
+                $soldeBid             = $this->bids->getSoldeBid($f['id_project']);
+                $payer                = $soldeBid;
+                $resteApayer          = ($f['amount'] - $soldeBid);
+                $pourcentage          = ((1 - ($resteApayer / $f['amount'])) * 100);
                 $decimalesPourcentage = 1;
 
                 if ($soldeBid >= $f['amount']) {
                     $payer                = $f['amount'];
                     $resteApayer          = 0;
                     $pourcentage          = 100;
-                    $decimales            = 0;
                     $decimalesPourcentage = 0;
                 }
                 ?>

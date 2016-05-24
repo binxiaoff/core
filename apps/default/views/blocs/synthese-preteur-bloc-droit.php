@@ -263,26 +263,20 @@
                 }
 
                 // date fin 21h a chaque fois
-                $inter     = $this->dates->intervalDates(date('Y-m-d H:i:s'), $f['date_retrait'] . ' ' . $this->heureFinFunding . ':00');
-                $dateRest  = $inter['mois'] > 0 ? $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'] : '';
-                $mois_jour = $this->dates->formatDate($f['date_retrait'], 'F d');
-                $annee     = $this->dates->formatDate($f['date_retrait'], 'Y');
-
-                $soldeBid = $this->bids->getSoldeBid($f['id_project']);
-
-                $payer = $soldeBid;
-
-                $resteApayer = ($f['amount'] - $soldeBid);
-                $pourcentage = ((1 - ($resteApayer / $f['amount'])) * 100);
-
-                $decimales            = 2;
+                $inter                = $this->dates->intervalDates(date('Y-m-d H:i:s'), $f['date_retrait'] . ' ' . $this->heureFinFunding . ':00');
+                $dateRest             = $inter['mois'] > 0 ? $inter['mois'] . ' ' . $this->lng['preteur-projets']['mois'] : '';
+                $mois_jour            = $this->dates->formatDate($f['date_retrait'], 'F d');
+                $annee                = $this->dates->formatDate($f['date_retrait'], 'Y');
+                $soldeBid             = $this->bids->getSoldeBid($f['id_project']);
+                $payer                = $soldeBid;
+                $resteApayer          = ($f['amount'] - $soldeBid);
+                $pourcentage          = ((1 - ($resteApayer / $f['amount'])) * 100);
                 $decimalesPourcentage = 2;
 
                 if ($soldeBid >= $f['amount']) {
                     $payer                = $f['amount'];
                     $resteApayer          = 0;
                     $pourcentage          = 100;
-                    $decimales            = 0;
                     $decimalesPourcentage = 0;
                 }
 

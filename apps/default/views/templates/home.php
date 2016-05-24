@@ -99,10 +99,9 @@
                     $this->loans = $this->loadData('loans');
                     foreach ($this->lProjetsFunding as $pf) {
                         $this->projects_status->getLastStatut($pf['id_project']);
-
                         $this->companies->get($pf['id_company'], 'id_company');
-
                         $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait'] . ' 23:59:59');
+
                         if ($inter['mois'] > 0)
                             $dateRest = $inter['mois'] . ' mois';
                         else
@@ -114,7 +113,6 @@
                         $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
                         $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
                         ?>
-
                         <tr class="unProjet" id="project<?= $pf['id_project'] ?>">
                             <td>
                                 <?php
@@ -167,13 +165,11 @@
             ?>
         </div><!-- /.section projects landing -->
         <div class="section-projects-mobile">
-            <?php
-            foreach ($this->lProjetsFunding as $pf) {
+            <?php foreach ($this->lProjetsFunding as $pf) :
                 $this->projects_status->getLastStatut($pf['id_project']);
-
                 $this->companies->get($pf['id_company'], 'id_company');
-
                 $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait'] . ' 23:59:59');
+
                 if ($inter['mois'] > 0)
                     $dateRest = $inter['mois'] . ' mois';
                 else
@@ -185,7 +181,6 @@
                 $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
                 $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
                 ?>
-
                 <div class="project-mobile">
                     <div class="project-mobile-image">
                         <?php
@@ -205,13 +200,10 @@
                             ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>"></a><?php
                         }
 
-                        //Gestion des étoiles
                         $nb_etoile_on = $this->lNotes[$pf['risk']];
-
                         if ($nb_etoile_on == 1) {
                             $nb_etoile_on = 3;
                         }
-
                         $nb_etoile_off = 5;
                         $nb_etoile_restant_afficher = $nb_etoile_on;
                         $html_etoile = "";
@@ -239,22 +231,16 @@
                             <strong id="min_val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong>
                         </h5>
                         <p>
-                            <?php
-                            if ($this->projects_status->status >= \projects_status::FUNDE) {
-                                ?>
+                            <?php if ($this->projects_status->status >= \projects_status::FUNDE) : ?>
                                 <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['home']['cta-voir-le-projet'] ?></a>
-                                <?php
-                            } else {
-                                ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a><?php
-                            }
-                            ?>
+                            <?php else : ?>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a>
+                            <?php endif; ?>
                             <?= $pf['nature_project'] ?>
                         </p>
                     </div><!-- /.project-mobile-content -->
                 </div><!-- /.project-mobile -->
-                <?php
-            }
-            ?>
+                <?php endforeach; ?>
         </div><!-- /.section-projects-mobile -->
     </div><!-- /.shell -->
 </div><!-- /.main -->

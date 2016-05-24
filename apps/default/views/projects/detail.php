@@ -131,17 +131,15 @@
                     </div>
                     <nav class="tabs-nav">
                         <ul>
-                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) :  ?>
+                            <?php if ($this->projects_status->status == \projects_status::EN_FUNDING) : ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['carnet-dordres'] ?></a></li>
                                 <li><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
                             <?php else : ?>
                                 <li class="active"><a href="#"><?= $this->lng['preteur-projets']['presentation'] ?></a></li>
                             <?php endif; ?>
                             <li><a href="#"><?= $this->lng['preteur-projets']['comptes'] ?></a></li>
-                            <?php if ($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) : ?>
-                                <?php if (isset($_SESSION['client']) && $this->bIsLender) : ?>
-                                    <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
-                                <?php endif;?>
+                            <?php if (($this->projects_status->status == \projects_status::FUNDE || $this->projects_status->status >= \projects_status::REMBOURSEMENT) && isset($_SESSION['client']) && $this->bIsLender) : ?>
+                                <li><a href="#"><?= $this->lng['preteur-projets']['suivi-projet'] ?></a></li>
                             <?php endif; ?>
                         </ul>
                     </nav>

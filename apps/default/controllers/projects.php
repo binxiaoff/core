@@ -521,14 +521,13 @@ class projectsController extends bootstrap
                 $this->txLenderMax          = 10;
             }
 
-            $this->avgRate      = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
-            $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
-            $this->direction    = 1;
+            $this->avgRate   = $this->projects->getAverageInterestRate($this->projects->id_project, $this->projects_status->status);
+            $this->status    = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
+            $this->direction = 1;
 
             /** @var \Unilend\Service\ProjectManager $projectManager */
             $projectManager       = $this->get('ProjectManager');
             $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
-
 
             if (false === empty($this->clients->id_client)) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);
