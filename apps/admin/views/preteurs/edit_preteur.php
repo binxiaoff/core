@@ -1018,12 +1018,24 @@
 
         $.post(add_url + "/preteurs/change_bank_account", rib).done(function (data) {
             oJson = JSON.parse(data);
-            if (typeof oJson.text !== 'undefined' && typeof oJson.color !== 'undefined') {
+            var color = 'red';
+            if (typeof oJson.text !== 'undefined' && typeof oJson.severity !== 'undefined') {
+                switch (oJson.severity) {
+                    case 'valid':
+                        color = 'green';
+                        break;
+                    case 'warning':
+                        color = 'orange';
+                        break;
+                    case 'error':
+                        color = 'red';
+                        break;
+                }
                 $('#iban_ok').text(oJson.text);
-                $('#iban_ok').css("color", oJson.color);
+                $('#iban_ok').css("color", color);
             } else {
                 $('#iban_ok').text('Une erreur est survenue');
-                $('#iban_ok').css("color", 'red');
+                $('#iban_ok').css("color", color);
             }
         });
     });

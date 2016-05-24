@@ -233,14 +233,16 @@ class emprunteursController extends bootstrap
                 $this->companies->sector  = $_POST['secteur'];
                 $edited_rib               = false;
                 $sCurrentIban             = $this->companies->iban;
-                $sNewIban                = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
+                $sCurrentBic              = $this->companies->bic;
+                $sNewIban                 = str_replace(' ', '', strtoupper($_POST['iban1'] . $_POST['iban2'] . $_POST['iban3'] . $_POST['iban4'] . $_POST['iban5'] . $_POST['iban6'] . $_POST['iban7']));
+                $sNewBic = str_replace(' ', '', strtoupper($_POST['bic']));
 
-                if ($this->companies->bic != str_replace(' ', '', strtoupper($_POST['bic'])) || $sCurrentIban != $sNewIban) {
-                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . $sNewIban . " / " . str_replace(' ', '', strtoupper($_POST['bic'])) . "</tr></td>";
+                if ($sCurrentBic != $sNewBic || $sCurrentIban != $sNewIban) {
+                    $this->clients->history .= "<tr><td><b>RIB modifi&eacute; par Unilend</b> (" . $_SESSION['user']['firstname'] . " " . $_SESSION['user']['name'] . "<!-- User ID: " . $_SESSION['user']['id_user'] . "-->) le " . date('d/m/Y') . " &agrave; " . date('H:i') . "<br><u>Ancienne valeur:</u> " . $this->companies->iban . " / " . $this->companies->bic . "<br><u>Nouvelle valeur:</u> " . $sNewIban . " / " . $sNewBic . "</tr></td>";
                     $edited_rib = true;
                 }
 
-                $this->companies->bic           = str_replace(' ', '', strtoupper($_POST['bic']));
+                $this->companies->bic           = $sNewBic;
                 $this->companies->iban          = $sNewIban;
                 $this->companies->email_facture = trim($_POST['email_facture']);
 
@@ -306,13 +308,13 @@ class emprunteursController extends bootstrap
                 if ($sCurrentIban !== $sNewIban) {
                     /** @var \Unilend\Service\MailerManager $oMailerManager */
                     $oMailerManager = $this->get('MailerManager');
-                    $oMailerManager->sendIbanUpdateEmail($this->clients->id_client, $sCurrentIban, $sNewIban);
+                    $oMailerManager->sendIbanUpdateToStaff($this->clients->id_client, $sCurrentIban, $sNewIban);
                 }
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
                 $this->users_history->histo(6, 'edit emprunteur', $_SESSION['user']['id_user'], $serialize);
 
                 $_SESSION['freeow']['title']   = 'emprunteur mis à jour';
-                $_SESSION['freeow']['message'] = 'l\'emprunteur a été; mis à jour !';
+                $_SESSION['freeow']['message'] = 'L\'emprunteur a été mis à jour';
 
                 header('Location: ' . $this->lurl . '/emprunteurs/edit/' . $this->clients->id_client);
                 die;
@@ -335,14 +337,14 @@ class emprunteursController extends bootstrap
         /** @var \projects $project */
         $project = $this->loadData('projects');
 
-        /** @var companies $company */
+        /** @var \companies $company */
         $company = $this->loadData('companies');
 
-        /** @var echeanciers_emprunteur $echeanciers_emprunteur */
+        /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
 
-        foreach ($company->select('id_client_owner = ' . $iClientId) as $CurrentCompany) {
-            foreach ($project->select('id_company = ' . $CurrentCompany['id_company']) as $projects) {
+        foreach ($company->select('id_client_owner = ' . $iClientId) as $currentCompany) {
+            foreach ($project->select('id_company = ' . $currentCompany['id_company']) as $projects) {
                 $aMandats = $this->clients_mandats->select('id_project = ' . $projects['id_project'] . ' AND id_client = ' . $iClientId . ' AND status != ' . \clients_mandats::STATUS_ARCHIVED);
 
                 if (false === empty($aMandats)) {

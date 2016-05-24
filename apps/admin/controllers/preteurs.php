@@ -2013,11 +2013,11 @@ class preteursController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
+        $iClientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
 
-        $iClientId = $_POST['id_client'];
-        if (false === is_numeric($iClientId)) {
+        if (false === $iClientId) {
             echo json_encode(array('text' => 'Une erreur est survenue', 'color' => 'red'));
-            return 0;
+            return;
         }
         /** @var \lenders_accounts $oLendersAccounts */
         $oLendersAccounts = $this->loadData('lenders_accounts');
@@ -2030,7 +2030,7 @@ class preteursController extends bootstrap
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
                 echo json_encode(array('text' => 'IBAN incorrect', 'color' => 'red'));
-                return 0;
+                return;
             }
             $sIban .= strtoupper($_POST['iban' . $i]);
         }
@@ -2041,38 +2041,38 @@ class preteursController extends bootstrap
 
         if ($sCurrrentBic !== $sNewBic && $sCurrentIban !== $sNewIban) {
             if ($this->validateBic($sNewBic, $oLendersAccounts) && $this->validateIban($sNewIban, $oLendersAccounts)) {
-                $oMailerManager->sendIbanUpdateEmail($iClientId, $sCurrentIban, $sNewIban);
+                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
                 $sMessage = 'Bic et IBAN modifiés';
-                $sColor   = 'green';
+                $sSeverity   = 'valid';
                 $oLendersAccounts->update();
             } else {
                 $sMessage = 'BIC / IBAN incorrect';
-                $sColor   = 'red';
+                $sSeverity   = 'error';
             }
         } elseif ($sCurrrentBic !== $sNewBic) {
             if ($this->validateBic($sNewBic, $oLendersAccounts)) {
                 $sMessage = 'BIC modifié';
-                $sColor   = 'green';
+                $sSeverity   = 'valid';
                 $oLendersAccounts->update();
             } else {
                 $sMessage = 'BIC incorrect';
-                $sColor   = 'red';
+                $sSeverity   = 'error';
             }
         } elseif ($sCurrentIban !== $sNewIban) {
             if ($this->validateIban($sNewIban, $oLendersAccounts)) {
-                $oMailerManager->sendIbanUpdateEmail($iClientId, $sCurrentIban, $sNewIban);
+                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
                 $sMessage = 'IBAN modifié';
-                $sColor   = 'green';
+                $sSeverity   = 'valid';
                 $oLendersAccounts->update();
             } else {
                 $sMessage = 'IBAN incorrect';
-                $sColor   = 'red';
+                $sSeverity   = 'error';
             }
         } else {
-            echo json_encode(array('text' => 'Aucune modification', 'color' => 'orange'));
-            return 0;
+            echo json_encode(array('text' => 'Aucune modification', 'severity' => 'warning'));
+            return;
         }
-        echo json_encode(array('text' => $sMessage, 'color' => $sColor));
+        echo json_encode(array('text' => $sMessage, 'severity' => $sSeverity));
     }
 
     /**
