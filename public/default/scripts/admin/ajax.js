@@ -254,9 +254,16 @@ function addMemo(id, type) {
 
 function deleteMemo(id_project_comment, id_project) {
     if (confirm('Etes vous sur de vouloir supprimer ?') == true) {
+        var memoRows = $("#table_memo .tablesorter tbody tr");
+        var targetedMemoRow = event.target;
         var val = {id_project_comment: id_project_comment, id_project: id_project};
-        $.post(add_url + '/ajax/deleteMemo', val).done(function (data) {
-            $("#table_memo").html(data);
+        $.post(add_url + '/ajax/deleteMemo', val).done(function() {
+            if(memoRows.length == 1) {
+                 $("#table_memo *").remove();
+            }
+            else {
+                $(targetedMemoRow).closest("tr").remove();
+            }
         });
     }
 }
