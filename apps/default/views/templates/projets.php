@@ -82,7 +82,6 @@
                         $mois_jour = $this->dates->formatDate($aProject['date_retrait'], 'F d');
                         $annee = $this->dates->formatDate($aProject['date_retrait'], 'Y');
 
-                        $iSumbids = $this->bids->counter('id_project = ' . $aProject['id_project']);
                         $avgRate = $this->projects->getAverageInterestRate($aProject['id_project'], $this->projects_status->status);
                         ?>
                         <tr class="unProjet" id="project<?= $aProject['id_project'] ?>">
@@ -130,11 +129,7 @@
                             </td>
                             <td>
                                 <a class="lien" href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>">
-                                    <?php if ($iSumbids > 0) { ?>
-                                        <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
-                                    <?php } else { ?>
-                                        <?= ($aProject['target_rate'] == '-' ? $aProject['target_rate'] : number_format($aProject['target_rate'], 1, ',', ' %')) ?>
-                                    <?php } ?>
+                                    <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
                                 </a>
                             </td>
                             <td>
@@ -177,7 +172,6 @@
                 else
                     $dateRest = '';
 
-                $iSumbids = $this->bids->counter('id_project = ' . $project['id_project']);
                 $avgRate  = $this->projects->getAverageInterestRate($project['id_project'], $this->projects_status->status);
 
                 // dates pour le js
@@ -204,12 +198,7 @@
 
                         <div class="project-mobile-image-caption">
                             <?= $this->ficelle->formatNumber($project['amount'], 0) ?>€ | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$project['risk']] ?>"></div></div> |
-                            <?php if ($iSumbids > 0) { ?>
-                                <?= $this->ficelle->formatNumber($avgRate, 1) ?>%
-                            <?php } else { ?>
-                                <?= ($project['target_rate'] == '-' ? $project['target_rate'] : number_format($project['target_rate'], 1, ',', ' %')) ?>
-                            <?php } ?>
-                            | <?= ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
+                            <?= $this->ficelle->formatNumber($avgRate, 1) ?>% | <?= ($project['period'] == 1000000 ? $this->lng['preteur-projets']['je-ne-sais-pas'] : $project['period'] . ' ' . $this->lng['preteur-projets']['mois']) ?>
                         </div>
                     </div>
                     <div class="project-mobile-content">
