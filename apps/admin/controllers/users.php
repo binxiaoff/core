@@ -46,7 +46,7 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location:' . $this->lurl . '/zones');
+            header('Location: ' . $this->lurl . '/zones');
             die;
         }
 
@@ -73,6 +73,7 @@ class usersController extends bootstrap
             $lZones = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
 
             foreach ($lZones as $zone) {
+                $users_zones->unsetData();
                 $users_zones->id_user = $this->users->id_user;
                 $users_zones->id_zone = $zone['id_zone'];
                 $users_zones->create();
@@ -81,7 +82,7 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location:' . $this->lurl . '/users');
+            header('Location: ' . $this->lurl . '/users');
             die;
         }
 
@@ -97,7 +98,7 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Suppression d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; supprim&eacute; !';
 
-            header('Location:' . $this->lurl . '/users');
+            header('Location: ' . $this->lurl . '/users');
             die;
         }
 
@@ -113,7 +114,7 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Statut d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'Le statut de l\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location:' . $this->lurl . '/users');
+            header('Location: ' . $this->lurl . '/users');
             die;
         }
 
@@ -171,7 +172,7 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
     }
@@ -182,7 +183,7 @@ class usersController extends bootstrap
         $this->users->get($this->params[0], 'id_user');
 
         if ($this->users->id_user != $_SESSION['user']['id_user']) {
-            header('Location:' . $this->lurl);
+            header('Location: ' . $this->lurl);
             die;
         }
 
@@ -251,7 +252,7 @@ class usersController extends bootstrap
                                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                                 $_SESSION['freeow']['message'] = 'Votre mot de passe a bien &eacute;t&eacute; modifi&eacute; !';
 
-                                header('Location:' . $this->lurl);
+                                header('Location: ' . $this->lurl);
                                 die;
                             } else {
                                 $this->retour_pass = "La confirmation du nouveau de passe doit &ecirc;tre la m&ecirc;me que votre nouveau mot de passe";
@@ -266,7 +267,7 @@ class usersController extends bootstrap
                     $this->retour_pass = "Tous les champs sont obligatoires";
                 }
             } else {
-                header('Location:' . $this->lurl);
+                header('Location: ' . $this->lurl);
                 die;
             }
         }

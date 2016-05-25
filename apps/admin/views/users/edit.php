@@ -6,18 +6,17 @@
         <fieldset>
             <table class="formColor">
                 <tr>
-                    <th><label for="firstname">Pr&eacute;nom :</label></th>
+                    <th><label for="firstname">Prénom :</label></th>
                     <td>
                         <input type="text" name="firstname" id="firstname" value="<?= $this->users->firstname ?>" class="input_large"/>
                     </td>
                 </tr>
                 <tr>
                     <th><label for="name">Nom :</label></th>
-                    <td><input type="text" name="name" id="name" value="<?= $this->users->name ?>" class="input_large"/>
-                    </td>
+                    <td><input type="text" name="name" id="name" value="<?= $this->users->name ?>" class="input_large"/></td>
                 </tr>
                 <tr>
-                    <th><label for="phone">T&eacute;l&eacute;phone :</label></th>
+                    <th><label for="phone">Téléphone :</label></th>
                     <td>
                         <input type="text" name="phone" id="phone" value="<?= $this->users->phone ?>" class="input_large"/>
                     </td>
@@ -35,13 +34,13 @@
                     </td>
                 </tr>
                 <tr>
-                    <th><label for="password">R&eacute;initialiser le mot de passe :</label></th>
+                    <th><label for="password">Réinitialiser le mot de passe :</label></th>
                     <td>
                         <input type="password" name="password" id="password" value="" autocomplete="off" class="input_large"/>
                     </td>
                 </tr>
                 <tr>
-                    <th><label for="id_tree">Rubrique d'arriv&eacute;e :</label></th>
+                    <th><label for="id_tree">Rubrique d'arrivée :</label></th>
                     <td>
                         <select name="id_tree" id="id_tree" class="select">
                             <option value="0">Choisir un lien</option>
