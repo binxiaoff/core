@@ -4181,7 +4181,7 @@ class cronController extends bootstrap
                 $this->notifications->id_project = $id_project;
                 $this->notifications->create();
 
-                if (false === $oBids->exist($id_project . '" AND id_lender_account = ' . $aLender['id_lender'] . ' AND id_autobid > 0', 'id_project')) {
+                if (false === $oBids->exist($id_project . '" AND id_lender_account = ' . $aLender['id_lender'] . ' AND id_autobid > "0', 'id_project')) {
                     $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
                     $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
