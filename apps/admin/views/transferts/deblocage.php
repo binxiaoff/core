@@ -1,7 +1,5 @@
 <script type="text/javascript">
     $(function() {
-        $(".tablesorter").tablesorter({headers: {5: {sorter: false}}});
-
         $(".inline").colorbox({inline: true, width: "50%"});
 
         <?php if (isset($_SESSION['freeow'])): ?>
@@ -39,8 +37,7 @@
         </thead>
         <tbody>
         <?php foreach ($this->aProjects as $aProject) : ?>
-            <tr>
-                <form method="post" id="statut_pouvoir" name="deblocage" onsubmit="return confirm('Voulez-vous vraiment débloquer les fonds pour le projet <?= $aProject['id_project'] ?> ?');">
+                <tr>
                     <td><?= $aProject['id_project'] ?></td>
                     <td><?= $aProject['title'] ?></td>
                     <td><?= $this->ficelle->formatNumber($aProject['amount']) . '&nbsp€' ?></td>
@@ -71,15 +68,21 @@
                         <?php endif; ?>
                     </td>
                     <td>
-                        <?php if (isset($aProject['status_remb']) && 0 == $aProject['status_remb'] && $aProject['status_mandat'] == \clients_mandats::STATUS_SIGNED && $aProject['authority_status'] == 1) : ?>
-                            <input type="hidden" name="status_remb" value="<?= $aProject['status_remb'] ?>"/>
-                            <input type="hidden" name="statut_pouvoir" class="btn" value="1" />
-                            <input type="submit" class="btn" value="Débloquer les fonds" />
-                            <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>
-                        <?php endif; ?>
+                        <form method="post" id="statut_pouvoir" name="deblocage" onsubmit="return confirm('Voulez-vous vraiment débloquer les fonds pour le projet <?= $aProject['id_project'] ?> ?');">
+                            <?php if (
+                                isset($aProject['status_remb'])
+                                && $aProject['status_remb'] == \projects_pouvoir::STATUS_PENDING_VALIDATION
+                                && $aProject['status_mandat'] == \clients_mandats::STATUS_SIGNED
+                                && $aProject['authority_status'] == \projects_pouvoir::STATUS_SIGNED
+                            ) : ?>
+                                <input type="hidden" name="status_remb" value="<?= $aProject['status_remb'] ?>"/>
+                                <input type="hidden" name="statut_pouvoir" class="btn" value="1" />
+                                <input type="submit" class="btn" value="Débloquer les fonds" />
+                                <input type="hidden" name="id_project" value="<?= $aProject['id_project'] ?>"/>
+                            <?php endif; ?>
+                        </form>
                     </td>
-                </form>
-            </tr>
+                </tr>
         <?php endforeach; ?>
         </tbody>
     </table>

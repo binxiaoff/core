@@ -1166,7 +1166,7 @@ class MailerManager
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = Loader::loadData('accepted_bids');
 
-            if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
+            if ($clientNotifications->getNotif($lender->id_client_owner, \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, 'id_type_contract DESC');
                 $iSumMonthlyPayments = $paymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND ordre = 1', 'montant');
                 $aFirstPayment       = $paymentSchedule->getPremiereEcheancePreteur($project->id_project, $lender->id_lender_account);

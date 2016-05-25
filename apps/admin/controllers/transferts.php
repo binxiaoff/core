@@ -1233,7 +1233,7 @@ class transfertsController extends bootstrap
 
                 $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers.log');
 
-                if ($proxy->status_remb == 1) {
+                if ($proxy->status_remb == \projects_pouvoir::STATUS_VALIDATED) {
                     $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $_POST['id_project'] . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
 
                     $paymentInspectionStopped = $this->loadData('settings');
@@ -1431,10 +1431,10 @@ class transfertsController extends bootstrap
                 $this->aProjects[$iProject]['status_mandat'] = $aMandate['status'];
             }
 
-            if ($aAuthority = array_shift($proxy->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = 1'))) {
-                $this->aProjects[$iProject]['url_pdf']          = $aAuthority['name'];
-                $this->aProjects[$iProject]['status_remb']      = $aAuthority['status_remb'];
-                $this->aProjects[$iProject]['authority_status'] = $aAuthority['status'];
+            if ($aProxy = array_shift($proxy->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = ' . \projects_pouvoir::STATUS_SIGNED))) {
+                $this->aProjects[$iProject]['url_pdf']          = $aProxy['name'];
+                $this->aProjects[$iProject]['status_remb']      = $aProxy['status_remb'];
+                $this->aProjects[$iProject]['authority_status'] = $aProxy['status'];
             }
 
             if ($aAttachments = $projects->getAttachments($this->aProjects[$iProject]['id_project'])) {
