@@ -53,7 +53,7 @@ class AppExtension extends \Twig_Extension
 
     public function siteurlmediaFunction($sURL)
     {
-        return $sURL;
+        return 'frontbundle/media/' . $sURL;
     }
 
 

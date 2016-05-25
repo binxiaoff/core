@@ -37,120 +37,101 @@
 
   {# Default settings #}
   {% set settings = {
-    classColor: 'p1',
-    animate: true,
+  classColor: 'p1',
+  animate: true,
 
-    showCtaButton: true,
-    classCtaButton: 'btn-color-primary',
-    urlCtaButton: siteurl(''),
-    labelCtaButton: 'Find out more',
-    alignCtaButton: 'right',
+  showCtaButton: true,
+  classCtaButton: 'btn-color-primary',
+  urlCtaButton: route(''),
+  labelCtaButton: 'Find out more',
+  alignCtaButton: 'right',
 
-    people: [{
-      type: 'emprunter',
-      image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
-      name: 'Jean-Marc',
-      vocation: false,
-      location: 'Marseille',
-      quote: '"J\'ai pu emprunter 15&nbsp;000€ en quelques semaines et relancer la croissance de mon entreprise."',
-      urlTestimonial: route('emprunter/testimonials'),
-      urlProject: route('project/12345'),
-      labelCta: 'Présenter un projet',
-      urlCta: route('projects/create')
-    },{
-      type: 'preter',
-      image: siteurlmedia('promos/homeacq-promo-preter-600x400.jpg'),
-      name: 'Jane',
-      vocation: false,
-      location: 'Avignon',
-      quote: '"En 2 ans, j\'ai multiplié par 3 mon portefeuille de prêt. Et mes intérêts sont à +8%."',
-      urlTestimonial: route('preter/testimonials'),
-      urlProject: false,
-      labelCta: 'Devenir prêteur',
-      urlCta: route('preter')
-    }]
   } %}
 
   {# Override default settings with options #}
   {% if options is not empty %}
-    {% set settings = settings|merge(options) %}
+      {% set settings = settings|merge(options) %}
   {% endif %}
 
-  <div class="promo-battenberg"{% if settings.animate %} data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible"{% endif %}>
+<div class="promo-battenberg"{% if settings.animate %} data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible"{% endif %}>
 
     {% for i, person in settings.people %}
-      {{ promoBattenberg.renderPerson(person, i, settings) }}
+        {{ promoBattenberg.renderPerson(person, i, settings) }}
     {% endfor %}
 
     {% if settings.showCtaButton %}
     <div class="row{% if settings.animate %} ui-animate-fade-in{% endif %}">
-      {% if settings.alignCtaButton == 'right' %}
-      <div class="col-lg-5 push-lg-6 col-md-5 push-md-6">
-      {% else %}
-      <div class="col-lg-5 push-lg-1 col-md-5 push-md-1">
-      {% endif %}
-        <a href="{{ settings.urlCtaButton }}" class="btn-cta {{ settings.classCtaButton }}"><span class="icon fa-angle-right"></span> {{ settings.labelCtaButton }}</a>
-      </div>
-    </div>
-    {% endif %}
-
-  </div><!-- /.promo-battenberg -->
-{% endmacro %}
-
-{# Render a person within the promo #}
-{# @macro renderPerson #}
-{# @param {Object} person The information about the person to render #}
-{# @param {Int} index The index number of the person in the list #}
-{# @param {Object} settings The battenberg's settings object #}
-{% macro renderPerson(person, index, settings) %}
-  {# Default classColor #}
-  {% set classColor = settings.classColor %}
-
-  {# Set class color based on person type #}
-  {% if person.type == 'preter' %}
-    {% set classColor = 'p1' %}
-  {% elseif person.type == 'emprunter' %}
-    {% set classColor = 'p2' %}
-  {% endif %}
-
-  {# Position based on index #}
-  {# Right (odd) #}
-  {% if index % 2 == 1 %}
-    {% set classPosition = 'promo-align-right' %}
-    {% set classAnimatePosition = 'ui-animate-from-left' %}
-    {% set classRow = 'row reverse' %}
-    {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
-    {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
-
-  {# Left (even) #}
-  {% elseif index % 2 == 0 %}
-    {% set classPosition = 'promo-align-left' %}
-    {% set classAnimatePosition = 'ui-animate-from-right' %}
-    {% set classRow = 'row' %}
-    {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
-    {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
-  {% endif %}
-
-  <div class="promo-{{ person.type }} {{ classRow }}">
-    <div class="{{ classColumnsImage }}">
-      <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ person.image }}')">
-        &nbsp;
-        <a href="{{ person.urlCta }}" class="promo-image-cta">
-          <div><span class="link">{{ person.labelCta }}</span></div>
-        </a>
-      </div><!-- /.promo-image -->
-    </div>
-    <div class="{{ classColumnsSlide }} vertical-align-content">
-      <div class="promo-slide promo-{{ classColor }} {{ classPosition }}{% if settings.animate %} {{ classAnimatePosition }}"{% endif %}>
-        <p class="quote">{{ person.quote }}</p>
-        {% if person.name is not empty %}
-        <p class="source"><cite>{{ person.name }}{% if person.vocation is not empty %}, {{ person.vocation }}{% endif %}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite></p>
-        {% endif %}
-        <div class="promo-links">
-          {% if person.urlTestimonial is not empty %}<a href="{{ person.urlTestimonial }}" class="link">Lire le témoignage</a>{% endif %}
-          {% if person.urlProject is not empty %}<a href="{{ person.urlProject }}" class="link">Voir le projet</a>{% endif %}
+        {% if settings.alignCtaButton == 'right' %}
+        <div class="col-lg-5 push-lg-6 col-md-5 push-md-6">
+            {% else %}
+            <div class="col-lg-5 push-lg-1 col-md-5 push-md-1">
+                {% endif %}
+                <a href="{{ settings.urlCtaButton }}" class="btn-cta {{ settings.classCtaButton }}"><span class="icon fa-angle-right"></span> {{ settings.labelCtaButton }}
+                </a>
+            </div>
         </div>
-      </div><!-- /.promo-slide -->
-    </div>
-  </div><!-- /.promo-emprunter -->
-{% endmacro %}
+        {% endif %}
+
+    </div><!-- /.promo-battenberg -->
+    {% endmacro %}
+
+    {# Render a person within the promo #}
+    {# @macro renderPerson #}
+    {# @param {Object} person The information about the person to render #}
+    {# @param {Int} index The index number of the person in the list #}
+    {# @param {Object} settings The battenberg's settings object #}
+    {% macro renderPerson(person, index, settings) %}
+        {# Default classColor #}
+        {% set classColor = settings.classColor %}
+
+        {# Set class color based on person type #}
+        {% if person.type == 'preter' %}
+            {% set classColor = 'p1' %}
+        {% elseif person.type == 'emprunter' %}
+            {% set classColor = 'p2' %}
+        {% endif %}
+
+        {# Position based on index #}
+        {# Right (odd) #}
+        {% if index % 2 == 1 %}
+            {% set classPosition = 'promo-align-right' %}
+            {% set classAnimatePosition = 'ui-animate-from-left' %}
+            {% set classRow = 'row reverse' %}
+            {% set classColumnsImage = 'col-lg-5 pull-lg-1 col-md-5 pull-md-1' %}
+            {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
+
+            {# Left (even) #}
+        {% elseif index % 2 == 0 %}
+            {% set classPosition = 'promo-align-left' %}
+            {% set classAnimatePosition = 'ui-animate-from-right' %}
+            {% set classRow = 'row' %}
+            {% set classColumnsImage = 'col-lg-5 push-lg-1 col-md-5 push-md-1' %}
+            {% set classColumnsSlide = 'col-lg-6 col-md-6' %}
+        {% endif %}
+
+        <div class="promo-{{ person.type }} {{ classRow }}">
+            <div class="{{ classColumnsImage }}">
+                <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ person.image }}')">
+                    &nbsp;
+                    <a href="{{ person.urlCta }}" class="promo-image-cta">
+                        <div><span class="link">{{ person.labelCta }}</span></div>
+                    </a>
+                </div><!-- /.promo-image -->
+            </div>
+            <div class="{{ classColumnsSlide }} vertical-align-content">
+                <div class="promo-slide promo-{{ classColor }} {{ classPosition }}{% if settings.animate %} {{ classAnimatePosition }}"{% endif %}>
+                    <p class="quote">{{ person.quote }}</p>
+                    {% if person.name is not empty %}
+                        <p class="source">
+                            <cite>{{ person.name }}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite>
+                        </p>
+                    {% endif %}
+                    <div class="promo-links">
+                        {% if person.urlTestimonial is not empty %}<a href="{{ person.urlTestimonial | raw }}" class="link">
+                            {% trans %} site-general_testimonial-section-link-lender-title {% endtrans %}</a>{% endif %}
+                        {% if person.urlProject is not empty %}<a href="{{ person.urlProject }}" class="link">{% trans %} site-general_testimonial-section-link-borrower-title {% endtrans %}</a>{% endif %}
+                    </div>
+                </div><!-- /.promo-slide -->
+            </div>
+        </div><!-- /.promo-emprunter -->
+    {% endmacro %}

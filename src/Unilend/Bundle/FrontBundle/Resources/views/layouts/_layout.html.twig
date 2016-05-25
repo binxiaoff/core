@@ -1,11 +1,11 @@
 {# Basic Page Layout #}
 <!DOCTYPE html>
 <!--[if lt IE 9]>
-<html lang="{{ lang }}" class="lt-ie9 no-js"><![endif]-->
+<html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
 <!--[if IE 9]>
-<html lang="{{ lang }}" class="ie9 no-js"><![endif]-->
+<html lang="{{ app.request.locale  }}" class="ie9 no-js"><![endif]-->
 <!--[if gt IE 9]><!-->
-<html lang="{{ lang }}" class="no-js"><!--<![endif]-->
+<html lang="{{ app.request.locale  }}" class="no-js"><!--<![endif]-->
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
@@ -31,13 +31,13 @@
 
     <!-- CSS Site -->
     {% block cssFiles %}
-        {#{% stylesheets '@UnilendFrontBundle/Resources/public/css/*' filter ='cssrewrite' %}#}
-        {#<link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">#}
-        {#{% endstylesheets %}#}
-
-        {% stylesheets filter='cssrewrite' '%kernel.root_dir%/../public/bundles/unilendfront/css/*'  %}
+        {% stylesheets '@UnilendFrontBundle/Resources/public/css/*' filter ='cssrewrite' %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">
         {% endstylesheets %}
+
+        {#{% stylesheets filter='cssrewrite' '%kernel.root_dir%/../public/bundles/unilendfront/css/*'  %}#}
+        {#<link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">#}
+        {#{% endstylesheets %}#}
 
         {#{% stylesheets  filter ='cssrewrite'%}#}
         {#<link rel="stylesheet" type="text/css" href="{{ asset('bundles/unilendfront/css/screeen.css') }}" media="screen,projection">#}
@@ -71,7 +71,8 @@
 </div>
 
 {% block debug %}
-    {% if env == 'dev' %}
+    {{ app.environment }}
+    {% if true %} if {{ app.environment }} == 'dev'
         <div class="debug" aria-hidden="true">
             <div>
         <span class="show-mobile-inline">

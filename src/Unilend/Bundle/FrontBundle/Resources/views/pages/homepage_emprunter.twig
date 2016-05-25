@@ -72,7 +72,7 @@
             <div class="promo">
               <div class="promo-image">
                 {% if caniuse_svg() == true %}
-                {{ svgimage('#promo-projects', '', 190, 190, 'none') }}
+                {{ svgimage('#promo-projects', '', 190, 190, 'none') | raw }}
                 {% else %}
                 <img src="{{ siteurlmedia('promos/promo-projects-118x92.png') }}" alt="">
                 {% endif %}
@@ -86,7 +86,7 @@
             <div class="promo">
               <div class="promo-image">
                 {% if caniuse_svg() == true %}
-                {{ svgimage('#promo-money', '', 190, 190, 'none') }}
+                {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
                 {% else %}
                 <img src="{{ siteurlmedia('promos/promo-money-133x108.png') }}" alt="">
                 {% endif %}
@@ -100,7 +100,7 @@
             <div class="promo">
               <div class="promo-image">
                 {% if caniuse_svg() == true %}
-                {{ svgimage('#promo-people', '', 190, 190, 'none') }}
+                {{ svgimage('#promo-people', '', 190, 190, 'none') | raw }}
                 {% else %}
                 <img src="{{ siteurlmedia('promos/promo-people-158x95.png') }}" alt="">
                 {% endif %}
@@ -283,7 +283,7 @@
             <div class="promo">
               <div class="promo-image">
                 {% if caniuse_svg() == true %}
-                {{ svgimage('#promo-piggybank', '', 190, 190, 'none') }}
+                {{ svgimage('#promo-piggybank', '', 190, 190, 'none')  | raw }}
                 {% else %}
                 <img src="{{ siteurlmedia('promos/promo-piggybank-190x190.png') }}" alt="">
                 {% endif %}
@@ -296,7 +296,7 @@
             <div class="promo">
               <div class="promo-image">
                 {% if caniuse_svg() == true %}
-                {{ svgimage('#promo-calendarweek', '', 190, 190, 'none') }}
+                {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')  | raw }}
                 {% else %}
                 <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
                 {% endif %}
@@ -309,7 +309,7 @@
             <div class="promo">
               <div class="promo-image">
                 {% if caniuse_svg() == true %}
-                {{ svgimage('#promo-verified', '', 190, 190, 'none') }}
+                {{ svgimage('#promo-verified', '', 190, 190, 'none')  | raw }}
                 {% else %}
                 <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
                 {% endif %}

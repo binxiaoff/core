@@ -8,7 +8,7 @@
 } %}
 
 {% block extendPageHeader %}
-  <div class="page-header-image">{{ svgimage('#header-fiscalite', '', 300, 300) }}</div>
+  <div class="page-header-image">{{ svgimage('#header-fiscalite', '', 300, 300) | raw }}</div>
 {% endblock %}
 
 {% block pageAsideBody %}

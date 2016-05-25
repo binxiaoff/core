@@ -8,5 +8,9 @@
         <service id="unilend_app.twig_extension" class="Unilend\Bundle\FrontBundle\Twig\AppExtension" public="false">
             <tag name="twig.extension" />
         </service>
+
+        <service id="unilend.service.testimonial" class="Unilend\Bundle\FontBundle\Service\TestimonialManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
     </services>
 </container>
