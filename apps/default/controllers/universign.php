@@ -409,21 +409,21 @@ class universignController extends bootstrap
         $projects         = $this->loadData('projects');
 
         // on check les id et si le pdf n'est pas deja signé
-        if ($projects_pouvoir->get($this->params[0], 'id_pouvoir') && $projects_pouvoir->status != 1) {
+        if ($projects_pouvoir->get($this->params[0], 'id_pouvoir') && $projects_pouvoir->status != \projects_pouvoir::STATUS_SIGNED) {
             // on check si deja existant en bdd avec l'url universign et si encore en cours
-            if (isset($this->params[1]) && $this->params[1] == 'NoUpdateUniversign' && $projects_pouvoir->url_universign != '' && $projects_pouvoir->status == 0) {// si le meme jour alors on regenere pas le pdf universign
+            if (isset($this->params[1]) && $this->params[1] == 'NoUpdateUniversign' && $projects_pouvoir->url_universign != '' && $projects_pouvoir->status == \projects_pouvoir::STATUS_PENDING) { // si le meme jour alors on regenere pas le pdf universign
                 $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir not signed but flag bdd exist. Redirection to universign.', array($projects_pouvoir->id_project));
                 header('Location: ' . $projects_pouvoir->url_universign);
                 die;
             } else {// Sinon on crée
                 switch ($projects_pouvoir->status) {
-                    case 0:
+                    case \projects_pouvoir::STATUS_PENDING:
                         $sPouvoirStatus = 'not signed';
                         break;
-                    case 2:
+                    case \projects_pouvoir::STATUS_CANCELLED:
                         $sPouvoirStatus = 'cancel';
                         break;
-                    case 3:
+                    case \projects_pouvoir::STATUS_FAILED:
                         $sPouvoirStatus = 'fail';
                         break;
                 }
@@ -505,7 +505,7 @@ class universignController extends bootstrap
 
                     $projects_pouvoir->id_universign  = $id;
                     $projects_pouvoir->url_universign = $url;
-                    $projects_pouvoir->status         = 0;
+                    $projects_pouvoir->status         = \projects_pouvoir::STATUS_PENDING;
                     $projects_pouvoir->update();
                     $this->oLogger->addRecord(ULogger::INFO, 'Pouvoir response generation from universign : OK. Redirection to universign to sign.', array($projects_pouvoir->id_project));
                     header('Location: ' . $url);

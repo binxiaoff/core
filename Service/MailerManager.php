@@ -631,6 +631,8 @@ class MailerManager
 
     public function sendAutoBidBalanceInsufficient(\notifications $oNotification)
     {
+        return;//TMA-656
+
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
@@ -676,6 +678,8 @@ class MailerManager
 
     public function sendAutoBidBalanceLow(\notifications $oNotification)
     {
+        return; //TMA-656
+
         /** @var \clients $oClient */
         $oClient = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLenderAccount */
