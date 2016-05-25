@@ -253,10 +253,14 @@ class BidManager
         $oLenderAccount = Loader::loadData('lenders_accounts');
         /** @var \clients $oClient */
         $oClient = Loader::loadData('clients');
-        
+
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
-            if ($oAutoBid->rate_min <= $fCurrentRate
-                && $oLenderAccount->get($oBid->id_lender_account) && $oClient->get($oLenderAccount->id_client_owner) && $oClient->status == \clients::STATUS_ONLINE) { //check online/offline instead of LenderManager::canBid() because of the performance issue.
+            if (
+                bccomp($oAutoBid->rate_min, $fCurrentRate) >= 0
+                && $oLenderAccount->get($oBid->id_lender_account)
+                && $oClient->get($oLenderAccount->id_client_owner)
+                && $oClient->status == \clients::STATUS_ONLINE
+            ) { //check online/offline instead of LenderManager::canBid() because of the performance issue.
                 if (self::MODE_REBID_AUTO_BID_CREATE === $iMode) {
                     $iBidOrder = $oBid->counter('id_project = ' . $oBid->id_project) + 1;
 

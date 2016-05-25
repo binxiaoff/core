@@ -35,8 +35,8 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    const BID_RATE_MIN = 4;
-    const BID_RATE_MAX = 10;
+    const BID_RATE_MIN = 4.0;
+    const BID_RATE_MAX = 10.0;
 
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
@@ -57,7 +57,7 @@ class bids extends bids_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -163,10 +163,20 @@ class bids extends bids_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    public function getProjectMaxRate($iProjectId)
+    public function getProjectMaxRate(\projects $project)
     {
-        $result = $this->bdd->query('SELECT MAX(rate) FROM bids WHERE id_project = ' . $iProjectId . ' AND status = 0');
-        return round($this->bdd->result($result, 0, 0), 1);
+        $amount        = 0;
+        $projectAmount = (int) ($project->amount * 100);
+        $validBids     = $this->select('id_project = ' . $project->id_project . ' AND status = ' . self::STATUS_BID_PENDING, 'rate ASC, ordre ASC');
+
+        foreach ($validBids as $bid) {
+            $amount += (int) $bid['amount'];
+            if ($amount > $projectAmount) {
+                return round($bid['rate'], 1);
+            }
+        }
+
+        return self::BID_RATE_MAX;
     }
 
     public function getLenders($iProjectId, $aStatus = array())
@@ -275,7 +285,7 @@ class bids extends bids_crud
                     WHERE id_project = ' . $iProjectId . '
                     GROUP BY rate ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
-            while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
                 $aBidsByRate[] = $aRow;
             }
         }
