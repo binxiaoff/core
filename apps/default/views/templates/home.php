@@ -68,7 +68,7 @@
 <div class="main">
     <div class="shell">
         <div class="section-projects-landing">
-            <?php if (count($this->lProjetsFunding) > 0) { ?>
+            <?php if (count($this->lProjetsFunding) > 0) : ?>
                 <a href="<?= $this->lurl . '/' . $this->tree->getSlug(4, $this->language) ?>" class="view-projects-link"><i class="arrow-right"></i><?= $this->lng['home']['decouvrez-tous-les-projets'] ?></a>
                 <h1><?= $this->lng['home']['les-projets-en-cours'] ?></h1>
                 <table class="table">
@@ -97,89 +97,85 @@
                     </tr>
                     <?php
                     $this->loans = $this->loadData('loans');
-                    foreach ($this->lProjetsFunding as $pf) {
-                        $this->projects_status->getLastStatut($pf['id_project']);
-                        $this->companies->get($pf['id_company'], 'id_company');
-                        $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait'] . ' 23:59:59');
+                    foreach ($this->lProjetsFunding as $aProject) :
+                        $this->projects_status->getLastStatut($aProject['id_project']);
+                        $this->companies->get($aProject['id_company'], 'id_company');
+                        $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait'] . ' 23:59:59');
 
                         if ($inter['mois'] > 0)
                             $dateRest = $inter['mois'] . ' mois';
                         else
                             $dateRest = '';
 
-                        $avgRate = $this->projects->getAverageInterestRate($pf['id_project'], $pf['status']);
+                        $avgRate = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']);
 
                         // dates pour le js
-                        $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
-                        $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
+                        $mois_jour = $this->dates->formatDate($aProject['date_retrait'], 'F d');
+                        $annee     = $this->dates->formatDate($aProject['date_retrait'], 'Y');
                         ?>
-                        <tr class="unProjet" id="project<?= $pf['id_project'] ?>">
+                        <tr class="unProjet" id="project<?= $aProject['id_project'] ?>">
                             <td>
                                 <?php
                                 if ($this->projects_status->status >= \projects_status::FUNDE) {
                                     $dateRest = $this->lng['home']['termine'];
                                 } else {
-                                    $tab_date_retrait = explode(' ', $pf['date_retrait_full']);
+                                    $tab_date_retrait = explode(' ', $aProject['date_retrait_full']);
                                     $tab_date_retrait = explode(':', $tab_date_retrait[1]);
-                                    $heure_retrait = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
+                                    $heure_retrait    = $tab_date_retrait[0] . ':' . $tab_date_retrait[1];
                                     ?>
                                     <script>
-                                        var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
-                                        var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                                        setTimeout('decompte(letime<?= $pf['id_project'] ?>,"val<?= $pf['id_project'] ?>")', 500);
+                                        var cible<?= $aProject['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
+                                        var letime<?= $aProject['id_project'] ?> = parseInt(cible<?= $aProject['id_project'] ?>.getTime() / 1000, 10);
+                                        setTimeout('decompte(letime<?= $aProject['id_project'] ?>,"val<?= $aProject['id_project'] ?>")', 500);
                                     </script>
                                     <?php
                                 }
 
-                                if ($pf['photo_projet'] != '') {
-                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>" class="thumb"></a><?php
+                                if ($aProject['photo_projet'] != '') {
+                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/72/<?= $aProject['photo_projet'] ?>" alt="<?= $aProject['photo_projet'] ?>" class="thumb"></a><?php
                                 }
                                 ?>
                                 <div class="description">
-                                    <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><?= $pf['title'] ?></a></h5>
+                                    <h5><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>"><?= $aProject['title'] ?></a></h5>
                                     <h6><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h6>
-                                    <p><?= $pf['nature_project'] ?></p>
+                                    <p><?= $aProject['nature_project'] ?></p>
                                 </div><!-- /.description -->
                             </td>
-                            <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div></td>
-                            <td style="white-space:nowrap;"><?= $this->ficelle->formatNumber($pf['amount'], 0) ?>&euro;</td>
-                            <td style="white-space:nowrap;"><?= $pf['period'] ?> mois</td>
+                            <td><div class="cadreEtoiles"><div class="etoile <?= $this->lNotes[$aProject['risk']] ?>"></div></div></td>
+                            <td style="white-space:nowrap;"><?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>&euro;</td>
+                            <td style="white-space:nowrap;"><?= $aProject['period'] ?> mois</td>
                             <td><?= $this->ficelle->formatNumber($avgRate, 1) ?>&nbsp;%</td>
-                            <td><strong id="val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong></td>
+                            <td><strong id="val<?= $aProject['id_project'] ?>"><?= $dateRest ?></strong></td>
                             <td>
                                 <?php
                                 if ($this->projects_status->status >= \projects_status::FUNDE) {
-                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn grise1 btn-info btn-small multi btn-grise"><?= $this->lng['home']['cta-voir-le-projet'] ?></a><?php
+                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn grise1 btn-info btn-small multi btn-grise"><?= $this->lng['home']['cta-voir-le-projet'] ?></a><?php
                                 } else {
-                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['home']['cta-pretez'] ?></a><?php
+                                    ?><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn btn-info btn-small"><?= $this->lng['home']['cta-pretez'] ?></a><?php
                                 }
                                 ?>
                             </td>
                         </tr>
-                        <?php
-                    }
-                    ?>
+                    <?php endforeach; ?>
                 </table><!-- /.table -->
-                <?php
-            }
-            ?>
+            <?php endif; ?>
         </div><!-- /.section projects landing -->
         <div class="section-projects-mobile">
-            <?php foreach ($this->lProjetsFunding as $pf) :
-                $this->projects_status->getLastStatut($pf['id_project']);
-                $this->companies->get($pf['id_company'], 'id_company');
-                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $pf['date_retrait'] . ' 23:59:59');
+            <?php foreach ($this->lProjetsFunding as $aProject) :
+                $this->projects_status->getLastStatut($aProject['id_project']);
+                $this->companies->get($aProject['id_company'], 'id_company');
+                $inter = $this->dates->intervalDates(date('Y-m-d h:i:s'), $aProject['date_retrait'] . ' 23:59:59');
 
                 if ($inter['mois'] > 0)
                     $dateRest = $inter['mois'] . ' mois';
                 else
                     $dateRest = '';
 
-                $avgRate = $this->projects->getAverageInterestRate($pf['id_project'], $pf['status']);
+                $avgRate = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['status']);
 
                 // dates pour le js
-                $mois_jour = $this->dates->formatDate($pf['date_retrait'], 'F d');
-                $annee = $this->dates->formatDate($pf['date_retrait'], 'Y');
+                $mois_jour = $this->dates->formatDate($aProject['date_retrait'], 'F d');
+                $annee     = $this->dates->formatDate($aProject['date_retrait'], 'Y');
                 ?>
                 <div class="project-mobile">
                     <div class="project-mobile-image">
@@ -187,20 +183,20 @@
                         if ($this->projects_status->status >= \projects_status::FUNDE) {
                             $dateRest = $this->lng['home']['termine'];
                         } else {
-                            $heure_retrait = date('H:i', strtotime($pf['date_retrait_full']));
+                            $heure_retrait = date('H:i', strtotime($aProject['date_retrait_full']));
                             ?>
                             <script>
-                                var cible<?= $pf['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
-                                var letime<?= $pf['id_project'] ?> = parseInt(cible<?= $pf['id_project'] ?>.getTime() / 1000, 10);
-                                setTimeout('decompte(letime<?= $pf['id_project'] ?>,"min_val<?= $pf['id_project'] ?>")', 500);
+                                var cible<?= $aProject['id_project'] ?> = new Date('<?= $mois_jour ?>, <?= $annee ?> <?= $heure_retrait ?>');
+                                var letime<?= $aProject['id_project'] ?> = parseInt(cible<?= $aProject['id_project'] ?>.getTime() / 1000, 10);
+                                setTimeout('decompte(letime<?= $aProject['id_project'] ?>,"min_val<?= $aProject['id_project'] ?>")', 500);
                             </script>
                             <?php
                         }
-                        if ($pf['photo_projet'] != '') {
-                            ?><a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $pf['photo_projet'] ?>" alt="<?= $pf['photo_projet'] ?>"></a><?php
+                        if ($aProject['photo_projet'] != '') {
+                            ?><a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>"><img src="<?= $this->surl ?>/images/dyn/projets/169/<?= $aProject['photo_projet'] ?>" alt="<?= $aProject['photo_projet'] ?>"></a><?php
                         }
 
-                        $nb_etoile_on = $this->lNotes[$pf['risk']];
+                        $nb_etoile_on = $this->lNotes[$aProject['risk']];
                         if ($nb_etoile_on == 1) {
                             $nb_etoile_on = 3;
                         }
@@ -220,23 +216,23 @@
                         $pourcent_affichage = $this->ficelle->formatNumber($avgRate, 1) . '%';
                         ?>
                         <div class="project-mobile-image-caption">
-                            <?= $this->ficelle->formatNumber($pf['amount'], 0) ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$pf['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $pf['period'] ?> mois
+                            <?= $this->ficelle->formatNumber($aProject['amount'], 0) ?>&euro; | <div class="cadreEtoiles" style="display: inline-block; top:7px;left: -1px;"><div class="etoile <?= $this->lNotes[$aProject['risk']] ?>"></div></div> | <?= $pourcent_affichage ?> | <?= $aProject['period'] ?> mois
                         </div>
                     </div>
                     <div class="project-mobile-content">
-                        <h3><?= $pf['title'] ?></h3>
+                        <h3><?= $aProject['title'] ?></h3>
                         <h4><?= $this->companies->city . ($this->companies->zip != '' ? ', ' : '') . $this->companies->zip ?></h4>
                         <h5>
                             <i class="ico-clock"></i>
-                            <strong id="min_val<?= $pf['id_project'] ?>"><?= $dateRest ?></strong>
+                            <strong id="min_val<?= $aProject['id_project'] ?>"><?= $dateRest ?></strong>
                         </h5>
                         <p>
                             <?php if ($this->projects_status->status >= \projects_status::FUNDE) : ?>
-                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['home']['cta-voir-le-projet'] ?></a>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn btn-info btn-small multi  grise1 btn-grise" style="line-height: 14px;padding: 4px 11px;"><?= $this->lng['home']['cta-voir-le-projet'] ?></a>
                             <?php else : ?>
-                                <a href="<?= $this->lurl ?>/projects/detail/<?= $pf['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a>
+                                <a href="<?= $this->lurl ?>/projects/detail/<?= $aProject['slug'] ?>" class="btn"><?= $this->lng['home']['cta-pretez'] ?></a>
                             <?php endif; ?>
-                            <?= $pf['nature_project'] ?>
+                            <?= $aProject['nature_project'] ?>
                         </p>
                     </div><!-- /.project-mobile-content -->
                 </div><!-- /.project-mobile -->
