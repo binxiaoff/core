@@ -3,15 +3,30 @@
 <head>
     <meta charset="UTF-8"/>
     <title>{% block title %}Welcome!{% endblock %}</title>
-    {% block stylesheets %}{% endblock %}
-    <p>
-        {% trans %} anna-test_anna-pdo-test {% endtrans %}
-    </p>
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
+    {% stylesheets '@UnilendFrontBundle/Resources/public/css/*' %}
+    <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">
+
+
+    {% endstylesheets %}
+
+    {#<link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>#}
+    {#<link rel="stylesheet" type="text/css" href="{{ ('../bundles/css/screen') }}{% if env != 'dev' %}.min{% endif %}.css" media="screen,projection">#}
 </head>
 <body>
 {% block body %}
     Hello world
+    <p>
+        {% trans %} anna-test_anna-pdo-test {% endtrans %}
+    </p>
+    <p>
+        {% trans %} anna-test_anna-pdo-category-1 {% endtrans %}
+    </p>
+    <p>
+        {{ 'anna-test_anna-pdo-category-' ~ project.sector | trans }}
+    </p>
+    <p>
+        {{ "anna-test_anna-pdo-category-#{project.sector}" | trans }}
+    </p>
 {% endblock %}
 {% block javascripts %}{% endblock %}
 </body>

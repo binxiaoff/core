@@ -22,6 +22,9 @@ class LegalController extends Controller
                 'id' => 'id',
                 'classNames' => 'classNames',
                 'displayTitle' => 'displayTitle'
+            ),
+            'project' => array(
+                'sector' => 1
             )
         ));
     }

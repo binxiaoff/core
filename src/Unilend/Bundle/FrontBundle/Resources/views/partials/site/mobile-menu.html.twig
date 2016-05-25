@@ -1,0 +1,30 @@
+{# Site Mobile Menu #}
+
+<div id="site-mobile-menu" class="site-mobile-menu" role="dialog" aria-hidden="true">
+    <a href="javascript:;" tabindex="-1" class="site-mobile-menu-close" role="button"><span class="icon fa-close"></span>
+        <span class="sr-only">{% trans %} header_mobile-menu-close {% endtrans %}</span>
+    </a>
+
+    <form action="{{ route('search') }}" method="get" class="site-mobile-search" role="search">
+        <label for="site-mobile-search-input" class="site-mobile-search-toggle" role="button"><span class="sr-only">{% trans %} site-general_search-label {% endtrans %}</span></label>
+        <div class="site-mobile-search-inner">
+            <div class="form-field-inline">
+                <div class="btn-group">
+                    <button class="btn-search" tabindex="-1"><span class="sr-only">{% trans %}site-general_search-submit {% endtrans %}</span></button>
+                </div>
+                <input id="site-mobile-search-input" type="text" name="s" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}" value="" tabindex="1" class="input-field site-mobile-search-input">
+            </div>
+        </div><!-- /.site-mobile-search-inner -->
+    </form><!-- /.site-mobile-search -->
+
+    <nav class="site-nav" role="navigation">
+        <ul class="site-nav-menu">
+            <li role="presentation"><a href="{{ route('/') }}" tabindex="-1">{% trans %} header_mobile-menu-home {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ route('preter') }}" tabindex="-1">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ route('emprunter') }}" tabindex="-1">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ route('projects') }}" tabindex="-1">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
+            <li role="presentation"><a href="{{ route('about') }}" tabindex="-1">{% trans %} header_menu-item-about {% endtrans %}</a></li>
+        </ul>
+        {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+    </nav><!-- /.site-nav -->
+</div><!-- /.site-mobile-menu -->

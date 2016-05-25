@@ -1,0 +1,104 @@
+{# Site Footer #}
+
+<footer class="site-footer">
+    <div class="site-wrap">
+        <div class="row">
+            <div class="col-lg-3 col-md-3 col-sm-4">
+                <h4>{% trans %} footer_menu-item-lend {% endtrans %}</h4>
+                <ul class="list-block">
+                    <li><a href="{{ route('preter') }}">{% trans %} footer_lend-submenu-item-become-lender {% endtrans %}</a></li>
+                    <li><a href="{{ route('preter/faq') }}">{% trans %} footer_lend-submenu-item-lender-FAQ {% endtrans %}</a></li>
+                    <li><a href="{{ route('preter/guide') }}">{% trans %} footer_lend-submenu-item-lender-guide {% endtrans %}</a></li>
+                    <li><a href="{{ route('preter/fiscalite') }}">{% trans %} footer_lend-submenu-item-fiscal {% endtrans %}</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-4">
+                <h4>{% trans %} footer_menu-item-borrow {% endtrans %}</h4>
+                <ul class="list-block">
+                    <li><a href="{{ route('projet/new') }}">{% trans %} footer_borrow-submenu-item-project-submission {% endtrans %}</a></li>
+                    <li><a href="{{ route('emprunter/faq') }}">{% trans %} footer_borrow-submenu-item-borrower-FAQ {% endtrans %}</a></li>
+                    <li><a href="{{ route('emprunter/guide') }}">{% trans %} footer_borrow-submenu-item-borrower-guide {% endtrans %}</a></li>
+                    <li><a href="{{ route('emprunter/testimonials') }}">{% trans %} footer_borrow-submenu-item-testimonials {% endtrans %}</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-4">
+                <h4>{% trans %} footer_menu-item-about {% endtrans %}</h4>
+                <ul class="list-block">
+                    <li><a href="{{ route('about/unilend') }}">{% trans %} footer_about-submenu-who-is {% endtrans %}</a></li>
+                    <li><a href="{{ route('about/how-it-works') }}">{% trans %} footer_about-submenu-how-it-works {% endtrans %}</a></li>
+                    <li><a href="{{ route('about/our-ethics') }}">{% trans %} footer_about-submenu-ethics {% endtrans %}</a></li>
+                    <li><a href="{{ route('about/statistics') }}">{% trans %} footer_about-submenu-statistics {% endtrans %}</a></li>
+                </ul>
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-4">
+                <h4>{% trans %}footer_menu-item-unilend{% endtrans %}</h4>
+                <ul class="list-block">
+                    <li><a href="{{ route('projets') }}">{% trans %} footer_unilend-submenu-tiem-projects {% endtrans %}</a></li>
+                    <li><a href="{{ route('press') }}">{% trans %} footer_unilend-submenu-item-press {% endtrans %}</a></li>
+                    <li><a href="{{ route('recrutement') }}">{% trans %} footer_unilend-submenu-item-recruitment {% endtrans %}</a></li>
+                    <li><a href="{{ route('contact') }}">{% trans %} footer_unilend-submenu-item-contact {% endtrans %}</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-4 col-md-4">
+                {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <ul class="list-awards">
+                    <li>
+                        {#{% image '@UnilendFrontBundle/Resources/public/media/awards/award-bpifrance-150x70.png' %}#}
+                        <img src="{{ asset('bundles/unilendfrontbundle/media/awards/award-bpifrance-150x70.png') }}" alt="BPI France 2014"/>{# svgimage('award-bpi', 'BPI France', 153, 70) #}
+                        {#{% endimage %}#}
+                    </li>
+                    <li>
+                        {#{% image '@UnilendFrontBundle/Resources/public/media/awards/award-fr-70x70.png' %}#}
+                        {#<img src="{{ asset_url }}" alt="IFP France"/>#}{# svgimage('award-ifp', 'IFP France', 70, 70) #}
+                        {#{% endimage %}#}
+                    </li>
+                </ul>
+                <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
+            </div>
+            <div class="col-lg-4 col-md-4">
+                <div class="site-admin-nav">
+                    <a href="{{ route('legal') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a> | <a href="{{ route('cgu') }}">{% trans %} footer_small-mandatory-menu-terms {% endtrans %}</a> |
+                    <a href="{{ route('securite') }}">{% trans %} footer_small-mandatory-menu-security {% endtrans %}</a> | <a href="{{ route('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
+                </div>
+                <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}</p>
+            </div>
+        </div>
+    </div><!-- /.site-wrap -->
+</footer><!-- /.site-footer -->
+
+{% block siteMobileMenu %}
+    {% include '@UnilendFrontBundle/partials/site/mobile-menu.html.twig' %}
+{% endblock %}
+
+{% block siteWarnings %}
+    <!-- Site Warning: No JS enabled -->
+    <noscript>
+        <div class="site-warning">
+            <div class="site-wrap">
+                <h1>{% trans %} site-general_warning-no-javascript-title {% endtrans %}</h1>
+                <p>{% trans %} site-general_warning-no-javascript-text {% endtrans %}</p>
+                <div class="btn-toolbar">
+                    <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_reload-website {% endtrans %}</a>
+                </div>
+            </div>
+        </div>
+    </noscript>
+
+    <!-- Site Warning: Unsupported IE -->
+    <!--[if lt IE 9]>
+    <div class="site-warning">
+        <div class="site-wrap">
+            <h1>{% trans %} site-general_warning-unsupported-browser-title {% endtrans %}</h1>
+            <p>{% trans %} site-general_warning-unsupported-browser-text {% endtrans %}</p>
+            <div class="btn-toolbar">
+                <a href="{{ route('/') }}" class="btn-default">{% trans %} site-general_warning-unsupported-browser-confirmation {% endtrans %}</a>
+                <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">{% trans %} site-general_warning-unsupported-browser-new-browser {% endtrans %}</a>
+            </div>
+        </div>
+    </div>
+    <![endif]-->
+{% endblock %}
