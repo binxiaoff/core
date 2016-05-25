@@ -1213,10 +1213,8 @@ class transfertsController extends bootstrap
         $proxy = $this->loadData('projects_pouvoir');
 
         if (
-            isset($_POST['statut_pouvoir'])
-            && isset($_POST['id_project'])
+            isset($_POST['statut_pouvoir'], $_POST['id_project'], $_POST['status_remb'])
             && $projects->get($_POST['id_project'])
-            && isset($_POST['status_remb'])
             && 0 == $_POST['status_remb']
         ) {
             /** @var \companies $companies */
@@ -1233,7 +1231,7 @@ class transfertsController extends bootstrap
                 $proxy->status_remb = $_POST['statut_pouvoir'];
                 $proxy->update();
 
-                $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers');
+                $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers.log');
 
                 if ($proxy->status_remb == 1) {
                     $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $_POST['id_project'] . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
@@ -1284,7 +1282,7 @@ class transfertsController extends bootstrap
 
                         $montant = $loans->sumPretsProjet($projects->id_project);
 
-                        $partUnilend = ($montant * $PourcentageUnilend);
+                        $partUnilend = $montant * $PourcentageUnilend;
 
                         $montant -= $partUnilend;
 
@@ -1423,27 +1421,27 @@ class transfertsController extends bootstrap
         $aProjects = $projects->selectProjectsByStatus(\projects_status::FUNDE, '', '', array(), '', '', false);
 
         $this->aProjects = array();
-        foreach ($aProjects as $key => $value) {
-            $this->aProjects[$key] = $value;
+        foreach ($aProjects as $iProject => $aProject) {
+            $this->aProjects[$iProject] = $aProject;
 
-            if ($aMandate = array_shift($mandate->select('id_project = ' . $this->aProjects[$key]['id_project'], 'added DESC', 0, 1))) {
-                $this->aProjects[$key]['bic']           = $aMandate['bic'];
-                $this->aProjects[$key]['iban']          = $aMandate['iban'];
-                $this->aProjects[$key]['mandat']        = $aMandate['name'];
-                $this->aProjects[$key]['status_mandat'] = $aMandate['status'];
+            if ($aMandate = array_shift($mandate->select('id_project = ' . $this->aProjects[$iProject]['id_project'], 'added DESC', 0, 1))) {
+                $this->aProjects[$iProject]['bic']           = $aMandate['bic'];
+                $this->aProjects[$iProject]['iban']          = $aMandate['iban'];
+                $this->aProjects[$iProject]['mandat']        = $aMandate['name'];
+                $this->aProjects[$iProject]['status_mandat'] = $aMandate['status'];
             }
 
-            if ($aAuthority = array_shift($proxy->select('id_project = ' . $this->aProjects[$key]['id_project'] . ' AND status = 1'))) {
-                $this->aProjects[$key]['url_pdf']          = $aAuthority['name'];
-                $this->aProjects[$key]['status_remb']      = $aAuthority['status_remb'];
-                $this->aProjects[$key]['authority_status'] = $aAuthority['status'];
+            if ($aAuthority = array_shift($proxy->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = 1'))) {
+                $this->aProjects[$iProject]['url_pdf']          = $aAuthority['name'];
+                $this->aProjects[$iProject]['status_remb']      = $aAuthority['status_remb'];
+                $this->aProjects[$iProject]['authority_status'] = $aAuthority['status'];
             }
 
-            if ($aAttachments = $projects->getAttachments($this->aProjects[$key]['id_project'])) {
-                $this->aProjects[$key]['kbis']    = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['path'] : '';
-                $this->aProjects[$key]['id_kbis'] = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['id'] : '';
-                $this->aProjects[$key]['rib']     = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['path'] : '';
-                $this->aProjects[$key]['id_rib']  = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['id'] : '';
+            if ($aAttachments = $projects->getAttachments($this->aProjects[$iProject]['id_project'])) {
+                $this->aProjects[$iProject]['kbis']    = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['path'] : '';
+                $this->aProjects[$iProject]['id_kbis'] = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['id'] : '';
+                $this->aProjects[$iProject]['rib']     = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['path'] : '';
+                $this->aProjects[$iProject]['id_rib']  = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['id'] : '';
             }
         }
     }

@@ -1131,6 +1131,10 @@ class MailerManager
 
         return \Mailer::send($this->oEmail, $this->oMailFiler, $this->oMailText->id_textemail);
     }
+
+    /**
+     * @param \projects $project
+     */
     public function sendLoanAccepted(\projects $project)
     {
         /** @var \loans $loans */
@@ -1143,13 +1147,13 @@ class MailerManager
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
         $clientNotifications = Loader::loadData('clients_gestion_notifications');
 
+        /** @var \lenders_accounts $lender */
+        $lender = Loader::loadData('lenders_accounts');
+
         $aLendersIds = $loans->getProjectLoansByLender($project->id_project);
 
         foreach ($aLendersIds as $lendersId) {
             $loans->get($lendersId['loans']);
-
-            /** @var \lenders_accounts $lender */
-            $lender = Loader::loadData('lenders_accounts');
             $lender->get($loans->id_lender);
 
             /** @var \clients $client */
@@ -1159,26 +1163,20 @@ class MailerManager
             /** @var \echeanciers $paymentSchedule */
             $paymentSchedule = Loader::loadData('echeanciers');
 
-            /** @var \clients_gestion_notifications $customerNotificationSettings  */
-            $customerNotificationSettings = Loader::loadData('clients_gestion_notifications');
-
             /** @var \accepted_bids $acceptedBids */
             $acceptedBids = Loader::loadData('accepted_bids');
 
-            if ($customerNotificationSettings->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
-                $bLenderIsNaturalPerson  = $lender->isNaturalPerson($lender->id_lender_account);
-                $aLoansOfLender          = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, '`id_type_contract` DESC');
-                $iNumberOfLoansForLender = count($aLoansOfLender);
-                $iSumMonthlyPayments     = $paymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND ordre = 1', 'montant');
-                $aFirstPayment           = $paymentSchedule->getPremiereEcheancePreteur($project->id_project, $lender->id_lender_account);
-                $sDateFirstPayment       = $aFirstPayment['date_echeance'];
-                $iNumberOfAcceptedBids   = $acceptedBids->getDistinctBidsForLenderAndProject($lender->id_lender_account, $project->id_project);
-                $sLoansDetails           = '';
-                $sLinkExplication        = '';
-                $sContract               = '';
-                $sStyleTD                = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
+            if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
+                $lenderLoans         = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, 'id_type_contract DESC');
+                $iSumMonthlyPayments = $paymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND ordre = 1', 'montant');
+                $aFirstPayment       = $paymentSchedule->getPremiereEcheancePreteur($project->id_project, $lender->id_lender_account);
+                $sDateFirstPayment   = $aFirstPayment['date_echeance'];
+                $sLoansDetails       = '';
+                $sLinkExplication    = '';
+                $sContract           = '';
+                $sStyleTD            = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
 
-                if ($bLenderIsNaturalPerson) {
+                if ($lender->isNaturalPerson($lender->id_lender_account)) {
                     $aLoanIFP               = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
                     $iNumberOfBidsInLoanIFP = $acceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
 
@@ -1188,7 +1186,7 @@ class MailerManager
                     }
                 }
 
-                if ($iNumberOfAcceptedBids > 1) {
+                if ($acceptedBids->getDistinctBidsForLenderAndProject($lender->id_lender_account, $project->id_project) > 1) {
                     $sAcceptedOffers = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
                     $sOffers         = 'vos offres';
                 } else {
@@ -1196,7 +1194,7 @@ class MailerManager
                     $sOffers         = 'votre offre';
                 }
 
-                if ($iNumberOfLoansForLender > 1) {
+                if (count($lenderLoans) > 1) {
                     $sContracts = 'Vos contrats sont disponibles';
                     $sLoans     = 'vos pr&ecirc;ts';
                 } else {
@@ -1204,7 +1202,7 @@ class MailerManager
                     $sLoans     = 'votre pr&ecirc;t';
                 }
 
-                foreach ($aLoansOfLender as $aLoan) {
+                foreach ($lenderLoans as $aLoan) {
                     $aFirstPayment = $paymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
                     switch ($aLoan['id_type_contract']) {
                         case \loans::TYPE_CONTRACT_BDC:
@@ -1265,7 +1263,7 @@ class MailerManager
                 $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
 
                 $this->oEmail->setFrom($this->oMailText->exp_email, strtr(utf8_decode($this->oMailText->exp_name), $tabVars));
-                $this->oEmail->setSubject(stripslashes(strtr(utf8_decode($this->oMailText->subject), $tabVars)));
+                $this->oEmail->setSubject(stripslashes(utf8_decode($this->oMailText->subject)));
                 $this->oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->oMailText->content), $tabVars)));
 
                 if ($this->aConfig['env'] === 'prod') {
@@ -1310,7 +1308,7 @@ class MailerManager
 
         $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
 
-        $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
+        $sujetMail = utf8_decode($this->oMailText->subject);
         $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
         $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
 

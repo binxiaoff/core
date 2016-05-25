@@ -49,6 +49,14 @@ class NotificationManager
         }
     }
 
+    /**
+     * @param $iNotificationType
+     * @param $iClientId
+     * @param null|int $iProjectId
+     * @param null|float $fAmount
+     * @param null|int $iBidId
+     * @return string
+     */
     public function createNotification($iNotificationType, $iClientId, $iProjectId = null, $fAmount = null, $iBidId = null)
     {
         /** @var \lenders_accounts $oLenderAccount */
@@ -56,12 +64,12 @@ class NotificationManager
         /** @var \notifications $oNotification */
         $oNotification = Loader::loadData('notifications');
 
-        $iLenderId = '';
+        $sLenderId = '';
         if ($oLenderAccount->get($iClientId, 'id_client_owner')) {
-            $iLenderId = $oLenderAccount->id_lender_account;
+            $sLenderId = $oLenderAccount->id_lender_account;
         }
         $oNotification->type       = $iNotificationType;
-        $oNotification->id_lender  = $iLenderId;
+        $oNotification->id_lender  = $sLenderId;
         $oNotification->id_project = $iProjectId;
         $oNotification->amount     = $fAmount * 100;
         $oNotification->id_bid     = $iBidId;
@@ -70,6 +78,12 @@ class NotificationManager
         return $oNotification->id_notification;
     }
 
+    /**
+     * @param $iNotificationId
+     * @param $iMailType
+     * @param $iClientId
+     * @param $iTransactionId
+     */
     public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId)
     {
         /** @var \clients_gestion_mails_notif $oMailNotification */
