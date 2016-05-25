@@ -259,13 +259,13 @@ class ProjectManager
         $oBid = Loader::loadData('bids');
 
         $oSettings->get('Auto-bid step', 'type');
-        $fStep        = (float)$oSettings->value;
-        $fCurrentRate = $oBid->getProjectMaxRate($oProject) - $fStep;
+        $fStep       = (float)$oSettings->value;
+        $currentRate = bcsub($oBid->getProjectMaxRate($oProject), $fStep);
 
         while ($aAutoBidList = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
             foreach ($aAutoBidList as $aAutobid) {
                 if ($oBid->get($aAutobid['id_bid'])) {
-                    $this->oBidManager->reBidAutoBidOrReject($oBid, $fCurrentRate, $iMode);
+                    $this->oBidManager->reBidAutoBidOrReject($oBid, $currentRate, $iMode);
                 }
             }
         }

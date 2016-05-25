@@ -180,7 +180,7 @@ class bids extends bids_crud
 
         foreach ($validBids as $bid) {
             $amount += (int) $bid['amount'];
-            if ($amount > $projectAmount) {
+            if ($amount >= $projectAmount) {
                 return round($bid['rate'], 1);
             }
         }
