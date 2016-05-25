@@ -1308,7 +1308,7 @@ class MailerManager
 
         $tabVars = $this->oTNMP->constructionVariablesServeur($varMail);
 
-        $sujetMail = utf8_decode($this->oMailText->subject);
+        $sujetMail = strtr(utf8_decode($this->oMailText->subject), $tabVars);
         $texteMail = strtr(utf8_decode($this->oMailText->content), $tabVars);
         $exp_name  = strtr(utf8_decode($this->oMailText->exp_name), $tabVars);
 
