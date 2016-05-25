@@ -97,7 +97,7 @@ class apiController extends Controller
         /** @var \greenpoint_attachment $oGreenPointAttachment */
         $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
 
-        /** @var \greenpoint_attachment $oGreenPointAttachmentDetail */
+        /** @var \greenpoint_attachment_detail $oGreenPointAttachmentDetail */
         $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
 
         $this->oLogger->addRecord(ULogger::DEBUG, 'Input parameters : ' . var_export($this->aData, true));

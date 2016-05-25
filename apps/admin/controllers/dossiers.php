@@ -40,6 +40,9 @@ class dossiersController extends bootstrap
         $this->oUserAnalyst     = $this->loadData('users');
         $this->oUserSalesPerson = $this->loadData('users');
 
+        $this->settings->get('Durée des prêts autorisées', 'type');
+        $this->fundingTimeValues = explode(',', $this->settings->value);
+
         if (isset($_POST['form_search_dossier'])) {
             if ($_POST['date1'] != '') {
                 $d1    = explode('/', $_POST['date1']);
