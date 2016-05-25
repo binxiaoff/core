@@ -104,8 +104,9 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            $this->settings->get('Liste deroulante secteurs', 'type');
-            $this->lSecteurs = explode(';', $this->settings->value);
+            /** @var \Unilend\Service\CompanyManager $companyManager */
+            $companyManager  = $this->get('unilend.service.company_manager');
+            $this->lSecteurs = $companyManager->getTranslatedCompanySectorList();
 
             $this->settings->get('Cabinet de recouvrement', 'type');
             $this->cab = $this->settings->value;

@@ -807,8 +807,9 @@ class rootController extends bootstrap
         $companies = $this->loadData('companies');
         $bids      = $this->loadData('bids');
 
-        $this->settings->get('Liste deroulante secteurs', 'type'); // added 19/06/2015
-        $this->tabSecteurs = explode(';', $this->settings->value); // added 19/06/2015
+        /** @var \Unilend\Service\CompanyManager $companyManager */
+        $companyManager  = $this->get('unilend.service.company_manager');
+        $this->tabSecteurs = $companyManager->getTranslatedCompanySectorList();
 
         $lProjets = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)));
 

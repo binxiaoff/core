@@ -121,13 +121,9 @@ class projectsController extends bootstrap
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
 
-            $this->settings->get('Liste deroulante secteurs', 'type');
-            $lSecteurs = explode(';', $this->settings->value);
-            $i         = 1;
-            foreach ($lSecteurs as $s) {
-                $this->lSecteurs[$i] = $s;
-                $i++;
-            }
+            /** @var \Unilend\Service\CompanyManager $companyManager */
+            $companyManager  = $this->get('unilend.service.company_manager');
+            $this->lSecteurs = $companyManager->getTranslatedCompanySectorList();
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->projects_status->getLastStatut($this->projects->id_project);

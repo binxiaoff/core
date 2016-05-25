@@ -69,6 +69,11 @@
             <argument type="service" id="database_connection"/>
         </service>
 
+        <service id="unilend.service.company_manager" class="Unilend\Service\CompanyManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.translations" />
+        </service>
+
         <service id="unilend.service.salesforce" class="Unilend\Service\SalesforceManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>%kernel.root_dir%</argument>

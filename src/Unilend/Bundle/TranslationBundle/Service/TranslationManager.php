@@ -106,6 +106,11 @@ class TranslationManager
         $translations->update();
     }
 
+    /**
+     * @param string $sSection
+     * @param string|null $sLanguage
+     * @return array
+     */
     public function getAllTranslationsForSection($sSection, $sLanguage = null)
     {
         if (is_null($sLanguage)) {
@@ -121,7 +126,7 @@ class TranslationManager
             $aTranslations[$translation['name']] = $translation['translation'];
         }
 
-        return $translations;
+        return $aTranslations;
     }
 
 }
