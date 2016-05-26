@@ -4142,8 +4142,6 @@ class cronController extends bootstrap
         $this->companies                     = $this->loadData('companies');
         // Loaded for class constants
         $this->loadData('clients_status');
-        /** @var \bids $oBids */
-        $oBids = $this->loadData('bids');
 
         $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
         $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $id_project);
@@ -4181,38 +4179,36 @@ class cronController extends bootstrap
                 $this->notifications->id_project = $id_project;
                 $this->notifications->create();
 
-                if (false === $oBids->exist($id_project . '" AND id_lender_account = ' . $aLender['id_lender'] . ' AND id_autobid > "0', 'id_project')) {
-                    $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
-                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_project      = $id_project;
-                    $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
+                $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
+                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
+                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                $this->clients_gestion_mails_notif->id_project      = $id_project;
+                $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
 
-                    if ($this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
-                        $this->clients_gestion_mails_notif->immediatement = 1;
+                if ($this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
+                    $this->clients_gestion_mails_notif->immediatement = 1;
 
-                        $varMail['prenom_p']       = $aLender['prenom'];
-                        $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
+                    $varMail['prenom_p']       = $aLender['prenom'];
+                    $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
 
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                        $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                        $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
+                    $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
+                    $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
+                    $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
 
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $aLender['email'], $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($aLender['email']));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
-
-                        ++$iEmails;
+                    if ($this->Config['env'] === 'prod') {
+                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $aLender['email'], $tabFiler);
+                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                    } else {
+                        $this->email->addRecipient(trim($aLender['email']));
+                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
                     }
 
-                    $this->clients_gestion_mails_notif->create();
+                    ++$iEmails;
                 }
+
+                $this->clients_gestion_mails_notif->create();
             }
 
             $oLogger->addRecord(ULogger::DEBUG, 'Emails sent: ' . $iEmails);
@@ -4282,6 +4278,7 @@ class cronController extends bootstrap
                         $oMailNotification->update();
 
                         $oProject->get($aMailNotification['id_project']);
+
                         /** @var \projects_status $oProjectStatus */
                         $oProjectStatus = $this->loadData('projects_status');
                         $oProjectStatus->getLastStatut($oProject->id_project);
