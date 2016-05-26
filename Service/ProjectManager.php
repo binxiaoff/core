@@ -260,7 +260,7 @@ class ProjectManager
 
         $oSettings->get('Auto-bid step', 'type');
         $fStep       = (float)$oSettings->value;
-        $currentRate = bcsub($oBid->getProjectMaxRate($oProject), $fStep);
+        $currentRate = bcsub($oBid->getProjectMaxRate($oProject), $fStep, 1);
 
         while ($aAutoBidList = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
             foreach ($aAutoBidList as $aAutobid) {
