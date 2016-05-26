@@ -180,7 +180,7 @@ class BidManager
 
         $this->oNotificationManager->create(
             \notifications::TYPE_BID_PLACED,
-            \clients_gestion_type_notif::TYPE_BID_PLACED,
+            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
             $iClientId,
             'sendBidConfirmation',
             $oBid->id_project,
@@ -362,7 +362,7 @@ class BidManager
         if ($oLenderAccount->get($oBid->id_lender_account)) {
             $this->oNotificationManager->create(
                 \notifications::TYPE_BID_REJECTED,
-                \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
                 $oLenderAccount->id_client_owner,
                 'sendBidRejected',
                 $oBid->id_project,
