@@ -68,6 +68,25 @@ class AppExtension extends \Twig_Extension
 
     }
 
+    public function nbspFilter($sString)
+    {
+        return preg_replace('/[ ](?=[^>]*(?:<|$))/', '&nbsp', $sString);
+    }
+
+    public function numFilter($sString)
+    {
+        return $sString;
+    }
+
+    public function getFilters()
+    {
+        return array(
+            new \Twig_SimpleFilter('nbsp', array($this, 'nbspFilter')),
+            new \Twig_SimpleFilter('__num', array($this, 'numFilter'))
+
+        );
+    }
+
 
 
 }

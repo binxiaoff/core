@@ -90,7 +90,7 @@
   {# Output an SVG image which coincides with the projectCategory #}
   {% set projectCategory = projectCategories[categoryId] %}
   {% if projectCategory is not empty %}
-  {{ svgimage('#category-' ~ projectCategory.name, projectCategory.label, 160, 160) }}
+  {{ svgimage('#category-' ~ projectCategory.name, projectCategory.label, 160, 160) | raw }}
   {% else %}
   <span class="icon fa-question-circle" title="Incorrect category ID given"></span><span class="sr-only">Incorrect category ID given</span>
   {% endif %}
