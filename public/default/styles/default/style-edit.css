@@ -88,10 +88,6 @@ a.header_account_name{color:#919396;text-decoration:none;}
 .tabs-nav li{padding: 0 2px;}
 .tabs-nav li a{padding:0 4px 0px 4px;}
 
-.tabs-nav .navProfile li{padding: 0 5px;padding-left:0px;}
-.tabs-nav .navProfile li a{padding: 0 4px 1px;}
-.tabs-nav .navProfile li a:hover , .tabs-nav .navProfile li.active a {padding: 0 3px 0;}
-
 .form-choose.fixed .radio-holder{width:155px;}
 
 .form-table .field-holder{display:inline-block;}

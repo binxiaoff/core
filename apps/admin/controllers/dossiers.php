@@ -40,6 +40,9 @@ class dossiersController extends bootstrap
         $this->oUserAnalyst     = $this->loadData('users');
         $this->oUserSalesPerson = $this->loadData('users');
 
+        $this->settings->get('Durée des prêts autorisées', 'type');
+        $this->fundingTimeValues = explode(',', $this->settings->value);
+
         if (isset($_POST['form_search_dossier'])) {
             if ($_POST['date1'] != '') {
                 $d1    = explode('/', $_POST['date1']);
@@ -372,23 +375,20 @@ class dossiersController extends bootstrap
             }
 
             if (isset($_POST['send_form_dossier_resume'])) {
-                // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
-                /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $dates_valide = false;
                 if (false === empty($_POST['date_publication'])) {
-                    $tab_date_pub_post          = explode('/', $_POST['date_publication']);
-                    $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
-                    $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
-                    $date_retrait_full_test     = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
-                    $date_auj_plus_5min         = date("Y-m-d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
-                    $date_auj_plus_1jour        = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
-                    if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour) {
+                    $oPublicationDate                = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
+                    $oEndOfPublicationDate           = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                    $oPublicationLimitationDate      = new \DateTime('NOW + 5 minutes');
+                    $oEndOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
+
+                    if ($oPublicationDate > $oPublicationLimitationDate && $oEndOfPublicationDate > $oEndOfPublicationLimitationDate) {
                         $dates_valide = true;
                     }
                 }
 
                 if (false === $dates_valide && in_array(\projects_status::A_FUNDER, array($_POST['status'], $this->current_projects_status->status))) {
-                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h';
+                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus d\'1h';
                 } else {
                     $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
                     $_SESSION['freeow']['message'] = '';
@@ -2453,27 +2453,22 @@ class dossiersController extends bootstrap
                 header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->params[0]);
                 die;
             }
-            // REMB ANTICIPE
-            //on gère ici la réception du formulaire qui déclenche le remb anticipe aux preteurs
+
+            // Early repayment
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception        = $_POST['id_reception'];
-                $montant_crd_preteur = ($_POST['montant_crd_preteur'] * 100);
+                $montant_crd_preteur = (int) ($_POST['montant_crd_preteur'] * 100);
 
-                $this->projects                      = $this->loadData('projects');
-                $this->echeanciers                   = $this->loadData('echeanciers');
-                $this->receptions                    = $this->loadData('receptions');
-                $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
-                $this->transactions                  = $this->loadData('transactions');
-                $this->lenders_accounts              = $this->loadData('lenders_accounts');
-                $this->clients                       = $this->loadData('clients');
-                $this->wallets_lines                 = $this->loadData('wallets_lines');
-                $this->notifications                 = $this->loadData('notifications');
-                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                $this->mails_text                    = $this->loadData('mails_text');
-                $this->companies                     = $this->loadData('companies');
-                $this->loans                         = $this->loadData('loans');
-                $loans                               = $this->loadData('loans');
+                $this->projects               = $this->loadData('projects');
+                $this->echeanciers            = $this->loadData('echeanciers');
+                $this->receptions             = $this->loadData('receptions');
+                $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+                $this->transactions           = $this->loadData('transactions');
+                $this->lenders_accounts       = $this->loadData('lenders_accounts');
+                $this->clients                = $this->loadData('clients');
+                $this->wallets_lines          = $this->loadData('wallets_lines');
+                $this->mails_text             = $this->loadData('mails_text');
+                $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
                 $oProjectManager                     = $this->get('ProjectManager');
 
@@ -2481,49 +2476,42 @@ class dossiersController extends bootstrap
                 $this->projects->get($this->receptions->id_project);
                 $this->companies->get($this->projects->id_company, 'id_company');
 
-
                 // on fait encore un dernier controle sur le montant
                 if ($montant_crd_preteur == $this->receptions->montant) {
-                    // REMB ECHEANCES EMPRUNTEUR ------------------------------------------------------------------
-                    // on rembourse les échéances que l'emprunteur devait regler
-                    $sql = 'UPDATE `echeanciers_emprunteur` SET `status_emprunteur`="1", `status_ra`="1",`updated`=NOW(), `date_echeance_emprunteur_reel`=NOW() WHERE id_project="' . $this->projects->id_project . '" AND status_emprunteur = 0';
-                    // UPDATE  `unilend-dev`.`echeanciers_emprunteur` SET  `status_emprunteur` =  '0' WHERE  id_project = 610 AND ordre > 13
-                    $this->bdd->query($sql);
+                    $this->bdd->query('
+                        UPDATE echeanciers_emprunteur SET
+                            status_emprunteur = 1,
+                            status_ra = 1,
+                            updated = NOW(),
+                            date_echeance_emprunteur_reel = NOW()
+                        WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
+                    );
+                    $this->bdd->query('
+                        UPDATE echeanciers SET
+                            status_emprunteur = 1,
+                            updated = NOW(),
+                            status_ra = 1,
+                            date_echeance_emprunteur_reel = NOW()
+                        WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
+                    );
 
-                    // on signe que l'emprunteur à remb les echeances sur l'échéancier preteur
-                    $sql = 'UPDATE `echeanciers` SET `status_emprunteur`="1",`updated`=NOW(), `status_ra`="1",  `date_echeance_emprunteur_reel`=NOW() WHERE id_project="' . $this->projects->id_project . '" AND status_emprunteur = 0';
-                    // UPDATE  `unilend-dev`.`echeanciers_emprunteur` SET  `status_emprunteur` =  '0' WHERE  id_project = 610 AND ordre > 13
-                    $this->bdd->query($sql);
-
-                    // On supprime les prélèvements futures
                     $this->prelevements = $this->loadData('prelevements');
                     $this->prelevements->delete($this->projects->id_project, 'type_prelevement = 1 AND type = 2 AND status = 0 AND id_project');
 
-                    // on ajoute ici le projet dans la file d'attente des mails de RA a envoyer
-                    $remboursement_anticipe_mail_a_envoyer               = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                    $remboursement_anticipe_mail_a_envoyer->id_reception = $id_reception;
-                    $remboursement_anticipe_mail_a_envoyer->statut       = 0;
-                    $remboursement_anticipe_mail_a_envoyer->create();
+                    /** @var \remboursement_anticipe_mail_a_envoyer $earlyRepaymentEmail */
+                    $earlyRepaymentEmail               = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+                    $earlyRepaymentEmail->id_reception = $id_reception;
+                    $earlyRepaymentEmail->statut       = 0;
+                    $earlyRepaymentEmail->create();
 
-                    //on change le statut du projet
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
 
-                    // on recupere les preteurs de ce projet (par loans)
-                    $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
-                    $montant_total       = 0;
+                    $montant_total = 0;
 
-                    // on veut recup le nb d'echeances restantes
-                    $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
-
-                    // par loan
-                    foreach ($L_preteur_on_projet as $preteur) {
-                        // pour chaque preteur on calcule le total qui restait à lui payer (sum capital par loan)
+                    foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $preteur) {
                         $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status = 0 AND id_project = ' . $this->projects->id_project);
 
-                        // on rembourse le preteur
-                        // On recup lenders_accounts
                         $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
-                        // On recup le client
                         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
                         // On enregistre la transaction
@@ -2551,84 +2539,22 @@ class dossiersController extends bootstrap
                         $this->wallets_lines->amount                   = ($reste_a_payer_pour_preteur * 100);
                         $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
 
-                        /////////////////// EMAIL PRETEURS REMBOURSEMENTS //////////////////
-                        //*******************************************//
-                        //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
-                        //*******************************************//
-                        // Recuperation du modele de mail
-                        $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
-
-                        // Récupération de la sommes des intérets deja versé au lender
-                        $sum_interet = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets');
-
-                        // Remb net email
-                        if ($reste_a_payer_pour_preteur >= 2) {
-                            $euros = ' euros';
-                        } else {
-                            $euros = ' euro';
-                        }
-
-                        $rembNetEmail = $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . $euros;
-
-                        // Solde preteur
-                        $getsolde = $this->transactions->getSolde($this->clients->id_client);
-                        if ($getsolde > 1) {
-                            $euros = ' euros';
-                        } else {
-                            $euros = ' euro';
-                        }
-                        $solde = $this->ficelle->formatNumber($getsolde) . $euros;
-
-                        // FB
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        // Twitter
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        $loans->get($preteur['id_loan'], 'id_loan');
-
-                        $varMail = array(
-                            'surl'                 => $this->surl,
-                            'url'                  => $this->furl,
-                            'prenom_p'             => $this->clients->prenom,
-                            'nomproject'           => $this->projects->title,
-                            'nom_entreprise'       => $this->companies->name,
-                            'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
-                            'nbecheancesrestantes' => $sum_ech_restant,
-                            'interetsdejaverses'   => $this->ficelle->formatNumber($sum_interet),
-                            'crdpreteur'           => $rembNetEmail,
-                            'Datera'               => date('d/m/Y'),
-                            'solde_p'              => $solde,
-                            'motif_virement'       => $this->clients->getLenderPattern($this->clients->id_client),
-                            'lien_fb'              => $lien_fb,
-                            'lien_tw'              => $lien_tw
-                        );
-
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        //on ajoute la somme pour le total plus bas
                         $montant_total += $reste_a_payer_pour_preteur;
                     }
 
-                    // on met à jour toutes les echeances du preteur pour dire qu'elles sont remb
-                    $sql = 'UPDATE `echeanciers` SET `status`="1",`updated`=NOW(), `date_echeance_reel`=NOW(), `date_echeance_emprunteur_reel`=NOW(), status_email_remb = 1 WHERE id_project="' . $this->projects->id_project . '" AND status = 0';
-                    $this->bdd->query($sql);
+                    $this->bdd->query('
+                        UPDATE echeanciers SET
+                            status = 1,
+                            updated = NOW(),
+                            date_echeance_reel = NOW(),
+                            date_echeance_emprunteur_reel = NOW(),
+                            status_email_remb = 1
+                        WHERE id_project = ' . $this->projects->id_project . ' AND status = 0'
+                    );
 
                     // partie a retirer de bank unilend
                     // On evite de créer une ligne qui sert a rien
                     if ($montant_total != 0) {
-
                         // On enregistre la transaction
                         $this->transactions->montant                  = 0;
                         $this->transactions->id_echeancier            = 0; // on reinitialise
@@ -2645,8 +2571,7 @@ class dossiersController extends bootstrap
                         $this->transactions->transaction              = 2; // transaction virtuelle
                         $this->transactions->id_loan_remb             = 0;
                         $this->transactions->id_project               = $this->projects->id_project;
-
-                        $this->transactions->id_transaction = $this->transactions->create();
+                        $this->transactions->create();
 
                         // bank_unilend (on retire l'argent redistribué)
                         $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
@@ -2666,11 +2591,6 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->get($r['id_unilend'], 'id_unilend');
                         $this->bank_unilend->status = 1;
                         $this->bank_unilend->update();
-                    }
-
-                    // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
-                    if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
                     }
 
                     header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);

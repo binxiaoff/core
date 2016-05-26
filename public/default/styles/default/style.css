@@ -814,7 +814,13 @@ div[class*="single-project"] .table th:first-child { text-align:left; border-rad
 div[class*="single-project"] .table th:last-child { border-radius:0 3px 0 0; }
 div[class*="single-project"] .table .th-wrap { display:block; position:relative; }
 
-
+div[class*="single-project"] .rejected-offers > td { text-align:center;background-color:#fbf2f7;cursor:pointer;color:#d4d4d4; }
+div[class*="single-project"] .rejected-offers:hover > td { color:#8d8d8d; }
+#bids .table-body.rejected_bids, #bids_mobile .table-body.rejected_bids{ display:none; }
+#bids .table-body.rejected_bids.visible, #bids_mobile .table-body.rejected_bids.visible{ display:table-row }
+#bids .table-body.rejected_bids td, #bids_mobile .table-body.rejected_bids td { background-color:#fbf2f7;color:#989899; }
+#bids .table-body.rejected_bids:last-of-type, #bids_mobile .table-body.rejected_bids:last-of-type { border-bottom:8px solid #eceaed; }
+#amount > small { text-transform:none; }
 
 /* ===========================
     Info Table
@@ -1236,3 +1242,11 @@ table#bids td {
     z-index: 98;
     width: 220px;
 }
+#current-offer .orders-table-wrapper { margin-top:0; }
+#current-offer #lOffres .orders-table > thead { top:0;position:static;line-height:32px; }
+#current-offer thead tr th { background-color:#b10366;padding:0;text-transform:none;font-weight:700;text-align:center;font-size:11px; }
+#current-offer table { border:none;width:calc(100% - 2px);}
+#current-offer tbody { background-color:#f4f4f4;border:1px solid #dbdcdd;border-radius:3px;box-sizing:border-box; }
+#current-offer tbody tr td { text-align:center;padding:0;line-height:33px; }
+#current-offer .autobid { line-height:15px;padding:0;font-size:12px;border-radius:50%;width:15px;height:15px;color:#d9aa34;background-color:#f1f1f1; }
+#current-offer .no_autobid { display:none; }

@@ -241,8 +241,6 @@ class cronController extends bootstrap
 
             /** @var projects $oProject */
             $oProject = $this->loadData('projects');
-            /** @var \bids $oBid */
-            $oBid = $this->loadData('bids');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
             /** @var \Unilend\Service\MailerManager $oMailerManager */
@@ -3801,8 +3799,8 @@ class cronController extends bootstrap
                 $xml .= '<ville><![CDATA["' . utf8_encode($oCompanies->city) . '"]]></ville>';
                 $xml .= '<titre><![CDATA["' . $oCompanies->name . '"]]></titre>';
                 $xml .= '<description><![CDATA["' . $aProject['nature_project'] . '"]]></description>';
-                $xml .= '<url><![CDATA["' . $this->lurl . '/projects/detail/' . $aProject['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
-                $xml .= '<url_photo><![CDATA["' . $this->surl . '/images/dyn/projets/169/' . $aProject['photo_projet'] . '"]]></url_photo>';
+                $xml .= '<url><![CDATA[' . $this->lurl . '/projects/detail/' . $aProject['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent]]></url>';
+                $xml .= '<url_photo><![CDATA[' . $this->surl . '/images/dyn/projets/169/' . $aProject['photo_projet'] . ']]></url_photo>';
                 $xml .= '<date_debut_collecte>' . $aProject['date_publication'] . '</date_debut_collecte>';
                 $xml .= '<date_fin_collecte>' . $aProject['date_retrait'] . '</date_fin_collecte>';
                 $xml .= '<montant_recherche>' . $aProject['amount'] . '</montant_recherche>';
@@ -5544,151 +5542,6 @@ class cronController extends bootstrap
         }
     }
 
-    public function _indexation()
-    {
-        return; // @todo Waiting for confirmation that cron is useless following TMA-38 changes
-
-        if (true === $this->startCron('indexation', 60)) {
-            ini_set('max_execution_time', 3600);
-            ini_set('memory_limit', '4096M');
-
-            $indexage_1jour                = true; // Si true, on n'indexe que les clients avec une date de derniere indexation plus vieille de Xh.
-            $heure_derniere_indexation     = 24;
-            $liste_id_a_forcer             = 0;  // force l'indexation juste pour ces id.  (Ex: 12,1,2), si on veut pas on met 0
-            $limit_client                  = 200;
-            $uniquement_ceux_jamais_indexe = true;
-            $nb_maj                        = 0;
-            $nb_creation                   = 0;
-
-            $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-            $this->transactions            = $this->loadData('transactions');
-            $this->clients                 = $this->loadData('clients');
-            $this->echeanciers             = $this->loadData('echeanciers');
-            $this->indexage_suivi          = $this->loadData('indexage_suivi');
-
-            $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
-            $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
-            $this->lng['preteur-operations']                = $this->ln->selectFront('preteur-operations', $this->language, $this->App);
-
-            $array_type_transactions = array(
-                1  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-                2  => array(
-                    1 => $this->lng['preteur-operations-vos-operations']['offre-en-cours'],
-                    2 => $this->lng['preteur-operations-vos-operations']['offre-rejetee'],
-                    3 => $this->lng['preteur-operations-vos-operations']['offre-acceptee']
-                ),
-                3  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-                4  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-                5  => $this->lng['preteur-operations-vos-operations']['remboursement'],
-                7  => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-                8  => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
-                16 => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
-                17 => $this->lng['preteur-operations-vos-operations']['retrait-offre'],
-                19 => $this->lng['preteur-operations-vos-operations']['gain-filleul'],
-                20 => $this->lng['preteur-operations-vos-operations']['gain-parrain'],
-                22 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe'],
-                23 => $this->lng['preteur-operations-vos-operations']['remboursement-anticipe-preteur'],
-                26 => $this->lng['preteur-operations-vos-operations']['remboursement-recouvrement-preteur']
-            );
-
-            $sql_forcage_id_client = "";
-            if ($liste_id_a_forcer != 0) {
-                $sql_forcage_id_client = " AND id_client IN(" . $liste_id_a_forcer . ")";
-            }
-
-            if ($uniquement_ceux_jamais_indexe) {
-                $this->L_clients = $this->clients->select(' etape_inscription_preteur = 3 ' . $sql_forcage_id_client . ' AND id_client NOT IN (SELECT id_client FROM indexage_suivi WHERE deja_indexe = 1)', '', '', $limit_client);
-            } else {
-                $this->L_clients = $this->clients->select(' etape_inscription_preteur = 3 ' . $sql_forcage_id_client, '', '', $limit_client);
-            }
-
-            foreach ($this->L_clients as $clt) {
-                $client_a_indexer = true;
-                if ($indexage_1jour) {
-                    $time_ya_xh_stamp = mktime(date('H') - $heure_derniere_indexation, date('i'), date('s'), date("m"), date('d'), date("Y"));
-                    $time_ya_xh       = date('Y-m-d H:i:s', $time_ya_xh_stamp);
-                    if ($this->indexage_suivi->get($clt['id_client'], 'date_derniere_indexation > "' . $time_ya_xh . '" AND deja_indexe = 1 AND id_client')) {
-                        $client_a_indexer = false;
-                    }
-                }
-                if ($client_a_indexer) {
-                    if ($this->clients->get($clt['id_client'], 'id_client')) {
-                        $this->lTrans = $this->transactions->selectTransactionsOp($array_type_transactions, 't.type_transaction IN (1,2,3,4,5,7,8,16,17,19,20,22,23,26)
-                            AND t.status = 1
-                            AND t.etat = 1
-                            AND t.display = 0
-                            AND t.id_client = ' . $this->clients->id_client . '
-                            AND DATE(t.date_transaction) >= "2013-01-01"', 'id_transaction DESC');
-
-                        $sql = 'DELETE FROM `indexage_vos_operations` WHERE id_client =' . $this->clients->id_client;
-                        $this->bdd->query($sql);
-
-                        $nb_entrees = count($this->lTrans);
-                        foreach ($this->lTrans as $t) {
-                            $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
-                            if (! $this->indexage_vos_operations->get($t['id_transaction'], ' id_client = ' . $t['id_client'] . ' AND type_transaction = "' . $t['type_transaction_alpha'] . '"  AND id_transaction')) {
-                                $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-
-                                $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-
-                                $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['prelevements-fiscaux-et-sociaux'];
-
-                                // on check si il s'agit d'une PM ou PP
-                                if ($this->clients->type == 1 or $this->clients->type == 3) {
-                                    $this->lenders_imposition_history = $this->loadData('lenders_imposition_history');
-                                    $exoneration                      = $this->lenders_imposition_history->is_exonere_at_date($this->lenders_accounts->id_lender_account, $t['date_transaction']);
-                                    if ($exoneration) {
-                                        $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
-                                    }
-                                } else {// PM
-                                    $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['retenues-a-la-source'];
-                                }
-
-                                $this->indexage_vos_operations->id_client           = $t['id_client'];
-                                $this->indexage_vos_operations->id_transaction      = $t['id_transaction'];
-                                $this->indexage_vos_operations->id_echeancier       = $t['id_echeancier'];
-                                $this->indexage_vos_operations->id_projet           = $t['le_id_project'];
-                                $this->indexage_vos_operations->type_transaction    = $t['type_transaction'];
-                                $this->indexage_vos_operations->libelle_operation   = $t['type_transaction_alpha'];
-                                $this->indexage_vos_operations->bdc                 = $t['bdc'];
-                                $this->indexage_vos_operations->libelle_projet      = $t['title'];
-                                $this->indexage_vos_operations->date_operation      = $t['date_tri'];
-                                $this->indexage_vos_operations->solde               = $t['solde'] * 100;
-                                $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
-                                $this->indexage_vos_operations->montant_capital     = $this->echeanciers->capital;
-                                $this->indexage_vos_operations->montant_interet     = $this->echeanciers->interets;
-                                $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
-                                $this->indexage_vos_operations->montant_prelevement = $retenuesfiscals * 100;
-                                $this->indexage_vos_operations->create();
-                            }
-                        }
-
-                        $this->indexage_suivi = $this->loadData('indexage_suivi');
-                        if ($this->indexage_suivi->get($clt['id_client'], 'id_client')) {
-                            $this->indexage_suivi->date_derniere_indexation = date("Y-m-d H:i:s");
-                            $this->indexage_suivi->deja_indexe              = 1;
-                            $this->indexage_suivi->nb_entrees               = $nb_entrees;
-                            $this->indexage_suivi->update();
-                            $nb_maj++;
-                        } else {
-                            $this->indexage_suivi->id_client                = $clt['id_client'];
-                            $this->indexage_suivi->date_derniere_indexation = date("Y-m-d H:i:s");
-                            $this->indexage_suivi->deja_indexe              = 1;
-                            $this->indexage_suivi->nb_entrees               = $nb_entrees;
-                            $this->indexage_suivi->create();
-                            $nb_creation++;
-                        }
-                    } else {
-                        // on get pas le client donc erreur
-                        mail($this->sDestinatairesDebug, 'UNILEND - Erreur cron indexage', 'Erreur de get sur le client :' . $clt['id_client'], $this->sHeadersDebug);
-                    }
-                }
-            }
-
-            $this->stopCron();
-        }
-    }
-
     // Passe toutes les 5 minutes la nuit de 3h à 4h
     // copie données table -> enregistrement table backup -> suppression données table
     public function _stabilisation_mails()
@@ -5835,34 +5688,65 @@ class cronController extends bootstrap
             $this->transactions                    = $this->loadData('transactions');
             $this->lenders_accounts                = $this->loadData('lenders_accounts');
             $this->clients                         = $this->loadData('clients');
-            $this->wallets_lines                   = $this->loadData('wallets_lines');
-            $this->notifications                   = $this->loadData('notifications');
             $this->clients_gestion_mails_notif     = $this->loadData('clients_gestion_mails_notif');
-            $this->projects_status_history         = $this->loadData('projects_status_history');
             $this->clients_gestion_notifications   = $this->loadData('clients_gestion_notifications');
             $this->mails_text                      = $this->loadData('mails_text');
             $this->companies                       = $this->loadData('companies');
-            $this->loans                           = $this->loadData('loans');
             $loans                                 = $this->loadData('loans');
-            $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+            /** @var \transactions $transaction */
+            $transaction = $this->loadData('transactions');
+            /** @var \remboursement_anticipe_mail_a_envoyer $earlyRepaymentEmail */
+            $earlyRepaymentEmail = $this->loadData('remboursement_anticipe_mail_a_envoyer');
 
-            // recup des mails à envoyer pour les projets en ra en attente, 1 seul à la fois car traitement pouvant etre lourd
-            $L_mail_ra_en_attente = $remboursement_anticipe_mail_a_envoyer->select('statut = 0', 'added ASC', '', 1);
-
-            $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+            $L_mail_ra_en_attente = $earlyRepaymentEmail->select('statut = 0', 'added ASC', '', 1);
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
                 $this->oLogger->addRecord(ULogger::INFO, 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
 
-                // Tout se base sur cette variable !
-                $id_reception = $ra_email['id_reception'];
-
-                $this->receptions->get($id_reception);
+                $this->receptions->get($ra_email['id_reception']);
                 $this->projects->get($this->receptions->id_project);
                 $this->companies->get($this->projects->id_company, 'id_company');
+                $this->clients->get($this->companies->id_client_owner);
+                $transaction->get($this->projects->id_project . '" AND type_transaction = "' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT, 'id_project');
 
                 $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
                 $sum_ech_restant     = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
+                $fundingStartDate    = new \DateTime($this->projects->date_publication_full);
+
+                $this->mails_text->get('emprunteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
+
+                $keywords = array(
+                    'surl'               => $this->surl,
+                    'url'                => $this->furl,
+                    'sujet'              => htmlentities($this->mails_text->subject, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+                    'prenom'             => htmlentities($this->clients->prenom, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+                    'date_financement'   => $this->dates->formatDate($transaction->added, 'd/m/Y'),
+                    'raison_sociale'     => htmlentities($this->companies->name, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+                    'montant'            => $this->ficelle->formatNumber($this->projects->amount, 0),
+                    'duree'              => $this->projects->period,
+                    'duree_financement'  => $fundingStartDate->diff(new \DateTime($this->projects->date_retrait_full))->d,
+                    'nb_preteurs'        => count($L_preteur_on_projet),
+                    'date_remboursement' => $this->dates->formatDate($this->receptions->added, 'd/m/Y'),
+                    'annee'              => date('Y')
+                );
+
+                $dynamicVariables = $this->tnmp->constructionVariablesServeur($keywords);
+
+                $this->email = $this->loadLib('email');
+                $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $dynamicVariables));
+                $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $dynamicVariables)));
+                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $dynamicVariables)));
+
+                if ($this->Config['env'] === 'prod') {
+                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                    $this->tnmp->sendMailNMP($tabFiler, $keywords, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                } else {
+                    $this->email->addRecipient(trim($this->clients->email));
+                    $this->email->addBCCRecipient($this->sDestinatairesDebug);
+                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                }
+
+                $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
                 foreach ($L_preteur_on_projet as $preteur) {
                     $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $preteur['id_lender'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
@@ -5890,8 +5774,6 @@ class cronController extends bootstrap
                         $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                         $this->clients_gestion_mails_notif->create();
 
-                        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-
                         if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
                             $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                             $this->clients_gestion_mails_notif->immediatement = 1;
@@ -5917,7 +5799,8 @@ class cronController extends bootstrap
                                 'lien_tw'              => $this->twitter,
                                 'annee'                => date('Y')
                             );
-                            $tabVars  = $this->tnmp->constructionVariablesServeur($varMail);
+
+                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
                             $this->email = $this->loadLib('email');
                             $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
@@ -5936,10 +5819,9 @@ class cronController extends bootstrap
                     }
                 }
 
-                $remboursement_anticipe_mail_a_envoyer = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                $remboursement_anticipe_mail_a_envoyer->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);
-                $remboursement_anticipe_mail_a_envoyer->statut = 1;
-                $remboursement_anticipe_mail_a_envoyer->update();
+                $earlyRepaymentEmail->get($ra_email['id_remboursement_anticipe_mail_a_envoyer']);
+                $earlyRepaymentEmail->statut = 1;
+                $earlyRepaymentEmail->update();
 
                 $this->oLogger->addRecord(ULogger::INFO, 'End email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
             }
