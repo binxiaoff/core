@@ -251,6 +251,8 @@ class dossiersController extends bootstrap
             if (isset($_POST['problematic_status']) && $this->current_projects_status->status != $_POST['problematic_status']) {
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
 
+                $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+                $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
