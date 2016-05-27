@@ -74,6 +74,10 @@
             <argument type="service" id="unilend.service.translations" />
         </service>
 
+        <service id="unilend.service.statistics_manager" class="Unilend\Service\StatisticsManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+        </service>
+
         <service id="unilend.service.salesforce" class="Unilend\Service\SalesforceManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>%kernel.root_dir%</argument>

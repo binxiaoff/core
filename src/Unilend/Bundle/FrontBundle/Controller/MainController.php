@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
 use Unilend\Service\ProjectManager;
+use Unilend\Service\StatisticsManager;
 
 class MainController extends Controller
 {
@@ -17,8 +18,8 @@ class MainController extends Controller
      */
     public function homeAction()
     {
-
-        //TODO replace mock data par stats from StatsService
+        /** @var StatisticsManager $statsService */
+        $statsService = $this->get('unilend.service.statistics_manager');
 
         /** @var TestimonialManager $testimonialService */
         $testimonialService    = $this->get('unilend.service.testimonial');
@@ -28,9 +29,9 @@ class MainController extends Controller
 
         return $this->render('UnilendFrontBundle:pages:homepage_acquisition.html.twig', array(
             'stats'             => array(
-                'numberProjects'           => 233,
-                'numberLenders'            => 22548,
-                'amountBorrowedInMillions' => 16
+                'numberProjects'           => $statsService->getNumberOfProjects(),
+                'numberLenders'            => $statsService->getNumberOfLenders(),
+                'amountBorrowedInMillions' => bcdiv($statsService->getAmountBorrowed(), 1000000)
             ),
             'testimonialPeople' => $aBattenbergPeople,
             'videoHeroes'       => array('Lenders' => $aVideoHeroesLenders, 'Borrowers' => $aVideoHeroesBorrowers)
@@ -50,7 +51,6 @@ class MainController extends Controller
         /** @var ProjectManager $projectManager */
         $projectManager = $this->get('unilend.service.project_manager');
         $aProjectsInFunding = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC');
-        var_dump($aProjectsInFunding);die;
 
         return $this->render('UnilendFrontBundle:pages:homepage_preter.html.twig', array(
             'stats' => array(

@@ -368,4 +368,26 @@ class lenders_accounts extends lenders_accounts_crud
 
         return $this->bdd->executeQuery($sQuery);
     }
+
+    /**
+     * @param bool $bOnlyActive
+     * if true only lenders activated at least once (active lenders)
+     * if false all online lender (Community)
+     */
+    public function countLenders($bOnlyActive = false)
+    {
+        $sClientStatus = $bOnlyActive ? ' AND csh.id_client_status = 6' : '';
+
+        $sQuery = 'SELECT COUNT(DISTINCT(c.id_client))
+                    FROM clients c
+                    INNER JOIN clients_status_history csh ON (csh.id_client = c.id_client '. $sClientStatus .')
+                    WHERE c.status = ' . \clients::STATUS_ONLINE;
+        $statement = $this->bdd->executeQuery($sQuery);
+
+        return $statement->fetchColumn(0);
+    }
+
+
+
+
 }

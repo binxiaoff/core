@@ -73,6 +73,23 @@ class projects_status extends projects_status_crud
         self::LIQUIDATION_JUDICIAIRE
     );
 
+    /**
+     * List of project status after repayment
+     * @var array
+     */
+    public static $afterRepayment = array(
+        self::REMBOURSEMENT,
+        self::REMBOURSE,
+        self::REMBOURSEMENT_ANTICIPE,
+        self::PROBLEME,
+        self::PROBLEME_J_X,
+        self::RECOUVREMENT,
+        self::PROCEDURE_SAUVEGARDE,
+        self::REDRESSEMENT_JUDICIAIRE,
+        self::LIQUIDATION_JUDICIAIRE,
+        self::DEFAUT
+    );
+
     public function __construct($bdd, $params = '')
     {
         parent::projects_status($bdd, $params);
