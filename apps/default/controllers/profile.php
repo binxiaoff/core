@@ -168,22 +168,6 @@ class profileController extends bootstrap
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                 )
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
-                'title'           => $this->lng['gestion-alertes']['autobid-balance-low'],
-                'info'            => $this->lng['gestion-alertes']['autobid-balance-low-info'],
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
-                'title'           => $this->lng['gestion-alertes']['autobid-balance-insufficient'],
-                'info'            => $this->lng['gestion-alertes']['autobid-balance-insufficient-info'],
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
             )
         );
         $this->infosNotifs['vos-remboursements'] = array(
@@ -942,22 +926,6 @@ class profileController extends bootstrap
             \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
                 'title'           => $this->lng['gestion-alertes']['autobid-accepted-rejected-bid'],
                 'info'            => $this->lng['gestion-alertes']['autobid-accepted-rejected-bid-info'],
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
-                'title'           => $this->lng['gestion-alertes']['autobid-balance-low'],
-                'info'            => $this->lng['gestion-alertes']['autobid-balance-low-info'],
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
-                'title'           => $this->lng['gestion-alertes']['autobid-balance-insufficient'],
-                'info'            => $this->lng['gestion-alertes']['autobid-balance-insufficient-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL

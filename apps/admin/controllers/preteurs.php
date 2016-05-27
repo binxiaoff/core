@@ -1407,20 +1407,6 @@ class preteursController extends bootstrap
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
                 )
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
-                'title'           => 'Autolend : solde faible',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
-                'title'           => 'Autolend : solde insuffisant',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                )
             )
         );
         $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';

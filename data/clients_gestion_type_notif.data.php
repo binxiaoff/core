@@ -38,8 +38,8 @@ class clients_gestion_type_notif extends clients_gestion_type_notif_crud
     const TYPE_DEBIT                         = 8;
     const TYPE_PROJECT_PROBLEM               = 9;
     const TYPE_AUTOBID_BALANCE_LOW           = 10;
-    const TYPE_AUTOBID_BALANCE_INSUFFICIENT  = 11;
-    const TYPE_AUTOBID_FIRST_ACTIVATION      = 12;
+    const TYPE_AUTOBID_BALANCE_INSUFFICIENT  = 11; // @deprecated
+    const TYPE_AUTOBID_FIRST_ACTIVATION      = 12; // @deprecated
     const TYPE_AUTOBID_ACCEPTED_REJECTED_BID = 13;
 
     public function __construct($bdd, $params = '')

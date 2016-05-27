@@ -57,6 +57,7 @@ class NotificationManager
             }
 
             $oMailNotification->id_client       = $iClientId;
+            $oMailNotification->id_project      = $iProjectId;
             $oMailNotification->id_notif        = $iMailType;
             $oMailNotification->date_notif      = date('Y-m-d H:i:s');
             $oMailNotification->id_notification = $oNotification->id_notification;

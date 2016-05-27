@@ -85,7 +85,6 @@ class ProjectManager
 
     public function prePublish(\projects $oProject)
     {
-        $this->checkAutoBidBalance($oProject);
         $this->autoBid($oProject);
 
         if ($this->isFunded($oProject)) {
@@ -189,7 +188,7 @@ class ProjectManager
         if (false === empty($aPeriod)) {
             $iOffset = 0;
             $iLimit  = 100;
-            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE), null, $iLimit, $iOffset)) {
+            while ($aAutoBidList = $this->oAutoBidSettingsManager->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE), 'id_autobid', $iLimit, $iOffset)) {
                 $iOffset += $iLimit;
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
