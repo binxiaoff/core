@@ -78,11 +78,17 @@ class AppExtension extends \Twig_Extension
         return $sString;
     }
 
+    public function convertProjectRiskFilter($sProjectRating)
+    {
+        return constant('\projects::RISK_' . $sProjectRating);
+    }
+
     public function getFilters()
     {
         return array(
             new \Twig_SimpleFilter('nbsp', array($this, 'nbspFilter')),
-            new \Twig_SimpleFilter('__num', array($this, 'numFilter'))
+            new \Twig_SimpleFilter('__num', array($this, 'numFilter')),
+            new \Twig_SimpleFilter('convertRisk', array($this, 'convertProjectRiskFilter'))
 
         );
     }

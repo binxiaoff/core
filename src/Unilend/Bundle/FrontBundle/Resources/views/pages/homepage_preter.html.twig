@@ -92,12 +92,12 @@ permalink: route('preter')
 
         <section id="homepre-project-list" class="page-section bg-bg3">
             <div class="site-wrap">
-                <h2 class="h2"> {% trans with { '%numberProjects%' : listItems|length } %} home-lender_ongoing-projects-table-title {% endtrans %}</h2>
+                <h2 class="h2"> {% transchoice projects|length with { '%numberProjects%' : projects|length } %} project-list_title-ongoing-projects  {% endtranschoice %}</h2>
 
                 {{ projectList.render(
                 'homepre-project-list-module',
                 [],
-                listItems,
+                projects,
                 {
                     showFilters: false,
                     showPagination: false,

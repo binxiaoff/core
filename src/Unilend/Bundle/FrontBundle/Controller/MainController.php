@@ -49,7 +49,7 @@ class MainController extends Controller
         $aVideoHeroesBorrowers = $testimonialService->getActiveVideoHeroes('emprunter');
 
         /** @var ProjectManager $projectManager */
-        $projectManager = $this->get('unilend.service.project_manager');
+        $projectManager     = $this->get('unilend.service.project_manager');
         $aProjectsInFunding = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC');
 
         return $this->render('UnilendFrontBundle:pages:homepage_preter.html.twig', array(
@@ -59,7 +59,7 @@ class MainController extends Controller
 
             ),
             'videoHeroes' => array('Lenders' => $aVideoHeroesLenders, 'Borrowers' => $aVideoHeroesBorrowers),
-            'projectList' => $aProjectsInFunding,
+            'projects' => $aProjectsInFunding,
             'filterItems' => array(
                 array(
                     'column' => 'category',
@@ -86,85 +86,7 @@ class MainController extends Controller
                     'sortBy' => 'daysLeft',
                     'label' => 'Time Remaining, projectListFilterPeriod'
                 )
-            ),
-            'listItems' => array(
-                array(
-                    'id' => '12345',
-                    'title' => 'Example project',
-                    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
-                    'permalink' => 'project/12345',
-                    'image' => ('frontbundle/media/promos/homeacq-promo-emprunter-600x400.jpg'),
-                    'locationCity' => 'Paris',
-                    'locationPostCode' => '75002',
-                    'categoryId' => 1,
-                    'cost' => 150000.12,
-                    'interest' => 7.2,
-                    'totalOffers' => 1500,
-                    'rating' => 3.5,
-                    'dateExpires' => date('d F Y H:i:s'),
-                    'daysLeft' => 4,
-                    'currentUserInvolved' => false,
-                    'currentUserTotalOffers' => 0
-                ),
-                array(
-                    'id' => '12345',
-                    'title' => 'Example project',
-                    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
-                    'permalink' => 'project/12345',
-                    'image' => ('frontbundle/media/promos/homeacq-promo-emprunter-600x400.jpg'),
-                    'locationCity' => 'Paris',
-                    'locationPostCode' => '75002',
-                    'categoryId' => 2,
-                    'cost' => 150000.12,
-                    'interest' => 7.2,
-                    'totalOffers' => 1500,
-                    'rating' => 3.5,
-                    'dateExpires' => date('d F Y H:i:s'),
-                    'daysLeft' => 4,
-                    'currentUserInvolved' => false,
-                    'currentUserTotalOffers' => 0
-                ),
-                array(
-                    'id' => '12345',
-                    'title' => 'Example project',
-                    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
-                    'permalink' => 'project/12345',
-                    'image' => ('frontbundle/media/promos/homeacq-promo-emprunter-600x400.jpg'),
-                    'locationCity' => 'Paris',
-                    'locationPostCode' => '75002',
-                    'categoryId' => 3,
-                    'cost' => 150000.12,
-                    'interest' => 7.2,
-                    'totalOffers' => 1500,
-                    'rating' => 3.5,
-                    'dateExpires' => date('d F Y H:i:s'),
-                    'daysLeft' => 4,
-                    'currentUserInvolved' => false,
-                    'currentUserTotalOffers' => 0
-                ),
-                array(
-                    'id' => '12345',
-                    'title' => 'Example project',
-                    'description' => 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce vel dolor a ipsum consectetur vulputate. Proin viverra sodales sem facilisis aliquet. Integer tincidunt congue iaculis. Sed vel massa ex. Nam cursus scelerisque ligula, id ullamcorper neque elementum et. Quisque quis nisi tortor. Phasellus id dolor ut eros scelerisque pharetra at non tellus. Cras lacinia ex egestas eros gravida, ut porta lorem dignissim. Mauris tristique nulla tortor, eget mattis lorem dapibus in. Sed sed interdum neque. Ut semper eleifend urna, et hendrerit purus volutpat vitae. Quisque rutrum ex lectus, rutrum tempus mauris mollis quis. Duis et lacinia turpis. Praesent condimentum vitae erat ultrices mollis. Phasellus eget condimentum libero. Aenean accumsan viverra mauris, vel euismod ipsum consequat non.',
-                    'permalink' => 'project/12345',
-                    'image' => ('frontbundle/media/promos/homeacq-promo-emprunter-600x400.jpg'),
-                    'locationCity' => 'Paris',
-                    'locationPostCode' => '75002',
-                    'categoryId' => 4,
-                    'cost' => 150000.12,
-                    'interest' => 7.2,
-                    'totalOffers' => 1500,
-                    'rating' => 3.5,
-                    'dateExpires' => date('d F Y H:i:s'),
-                    'daysLeft' => 4,
-                    'currentUserInvolved' => false,
-                    'currentUserTotalOffers' => 0
-                )
-
             )
-
-
-
         ));
     }
 

@@ -8,7 +8,7 @@
 {# @param {Array} listItems A list of listItem to use (see @macro listItem for schema) #}
 {# @param {Object} options Project list options to customise further #}
 {# @param {Object} paginationOptions Object to configure pagination output with #}
-{% macro render(id, filterItems, listItems, options, paginationOptions) %}
+{% macro render(id, filterItems, projects, options, paginationOptions) %}
     {% import _self as projectList %}
     {% import '@UnilendFrontBundle/partials/modules/_pagination.macros.twig' as pagination %}
 
@@ -33,7 +33,7 @@
     itemLabelSingle: __('Project', 'projectListItemTypeSingle'),
     itemLabelPlural: __('Projects', 'projectListItemTypePlural'),
     pageUrl: 'page/%index%',
-    totalItems: listItems|length,
+    totalItems: projects|length,
     currentIndex: 1,
     itemsPerPage: 20,
     totalPages: 0,
@@ -54,10 +54,10 @@
                 <div class="project-list-nav">
                     <ul class="nav nav-tabs">
                         <li role="presentation" class="active">
-                            <a href="#project-list-view" role="tab" data-toggle="tab"><span class="icon fa-list"></span><span class="sr-only">{{ __('List View', 'projectListViewListLabel') }}</span></a>
+                            <a href="#project-list-view" role="tab" data-toggle="tab"><span class="icon fa-list"></span><span class="sr-only">{% trans %} project-list_view-list-label {% endtrans %}</span></a>
                         </li>
                         <li role="presentation">
-                            <a href="#project-list-map" role="tab" data-toggle="tab"><span class="icon fa-map-marker"></span><span class="sr-only">{{ __('Map View', 'projectListViewMapLabel') }}</span></a>
+                            <a href="#project-list-map" role="tab" data-toggle="tab"><span class="icon fa-map-marker"></span><span class="sr-only">{% trans %} project-list_view-map-label {% endtrans %}</span></a>
                         </li>
                     </ul>
                 </div><!-- /.project-list-nav -->
@@ -66,9 +66,9 @@
                 <div id="project-list-view" role="tabpanel" class="tab-pane active">
                     {% if settings.showFilters == true and filterItems is not empty %}
                         {{ projectList.renderFilterItems(filterItems, settings) }}
-                        {{ projectList.renderListItems(listItems, filterItems, settings) }}
+                        {{ projectList.renderListItems(projects, filterItems, settings) }}
                     {% else %}
-                        {{ projectList.renderListItems(listItems, false, settings) }}
+                        {{ projectList.renderListItems(projects, false, settings) }}
                     {% endif %}
 
                     {% if settings.showPagination == true %}
@@ -129,13 +129,13 @@
 {# @param {Array} listItems The list of items to display #}
 {# @param {Array} filterItems The list of filters to display #}
 {# @param {Object} settings the Project List's settings #}
-{% macro renderListItems(listItems, filterItems, settings) %}
+{% macro renderListItems(projects, filterItems, settings) %}
     {% import _self as projectList %}
 
     <div class="project-list-items">
-        {% for listItem in listItems %}
+        {% for project in projects %}
             {# Only show list item if settings support it #}
-            {{ projectList.renderListItem(listItem, filterItems, settings) }}
+            {{ projectList.renderListItem(project, filterItems, settings) }}
         {% endfor %}
     </div><!-- /.project-list-items -->
 {% endmacro %}
@@ -145,7 +145,7 @@
 {# @param {Object} listItem The list item to display #}
 {# @param {Object} filterItems The list of filterItems to generate data-sort-{x} attributes with #}
 {# @param {Object} settings the Project List's settings #}
-{% macro renderListItem(listItem, filterItems, settings) %}
+{% macro renderListItem(project, filterItems, settings) %}
     {% import _self as projectList %}
     {% import '@UnilendFrontBundle/extensions/_general.macros.twig' as general %}
 
@@ -160,60 +160,60 @@
     {% endif %}
 
     {# Set the rating class for the .rating element #}
-    {% set classRating = listItem.rating|split('.')|join('-') %}
+    {% set classRating = project.risk|convertRisk|split('.')|join('-') %}
 
     {# Set CSS class to show expired project #}
     {% set classProjectExpired = '' %}
-    {% if settings.markExpired == true and listItem.daysLeft == 0 %}
+    {% if settings.markExpired == true and project.daysLeft == 0 %}
         {% set classProjectExpired = 'ui-project-expired' %}
     {% endif %}
 
     {# Set CSS class to show current user is involved in the project #}
     {% set classUserInvolved = '' %}
-    {% if settings.markInvolved == true and listItem.currentUserInvolved == true %}
+    {% if settings.markInvolved == true and project.currentUserInvolved == true %}
         {% set classUserInvolved = 'ui-current-user-involved' %}
     {% endif %}
 
     <article class="project-list-item {{ classProjectExpired }} {{ classUserInvolved }}"{{ sortAttrs }}>
         <div class="project-list-item-category">
-            {{ general.projectCategoryIcon(listItem.categoryId) }}
-            {% if listItem.image is not empty %}
-                <div class="project-list-item-image" style="background-image:url('{{ listItem.image|escape('html_attr') }}')">
-                    <img src="{{ listItem.image }}" alt="">
+            {{ general.projectCategoryIcon(project.sector) }}
+            {% if project.photo_projet is not empty %}
+                <div class="project-list-item-image" style="background-image:url('{{ project.photo_projet|escape('html_attr') }}')">
+                    <img src="{{ project.photo_projet }}" alt="">
                 </div>
             {% endif %}
         </div>
         <div class="project-list-item-info">
-            <h3 class="project-list-item-title"><a href="{{ listItem.permalink }}">{{ listItem.title }}</a></h3>
+            <h3 class="project-list-item-title"><a href="{{ project.slug }}">{{ project.title}}</a></h3>
             <div class="project-list-item-meta">
                 <h4 class="project-list-item-location">
-                    <span class="icon fa-map-marker"></span> {{ listItem.locationCity }}, {{ listItem.locationPostCode }}
+                    <span class="icon fa-map-marker"></span> {{ project.city }}, {{ project.zip }}
                 </h4>
-                <h5 class="project-list-item-cost">{{ listItem.cost }}€</h5>
+                <h5 class="project-list-item-cost">{{ project.amount }}€</h5>
             </div>
             <div class="project-list-item-description">
-                <p>{{ listItem.description|slice(0, 100) }}&hellip;</p>
+                <p>{{ project.objectif_loan|raw|slice(0, 100) }}&hellip;</p>
             </div>
         </div>
         <div class="project-list-item-stats">
-            <div class="project-list-item-interest">{{ listItem.interest }}%</div>
+            <div class="project-list-item-interest">{{ project.currentInterestRate }}%</div>
             <div class="project-list-item-offers">
-                <strong>{{ listItem.totalOffers }}</strong> {% if listItem.totalOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %}
+                <strong>{{ project.number_bids }}</strong>{% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
             </div><!-- /.project-list-item-offers -->
-            {% if listItem.currentUserTotalOffers > 0 and listItem.currentUserOffers is not empty %}
+            {% if project.currentUserTotalOffers is defined and project.currentUserTotalOffers > 0 and project.currentUserOffers is not empty %}
                 <div class="project-list-item-useroffers">
-                    {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 %}
-                        {% if statusOffer == 'accepted' %}
+                    {% for statusOffer, numOffers in project.currentUserOffers if numOffers > 0 %}
+                        {% if statusOffer == constant('\bids::STATUS_BID_ACCEPTED') %}
                             <div class="project-list-item-useroffers-accepted">
-                                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('accepted', 'projectListItemOffersUserStatusAccepted') }}
+                                {{ numOffers|__num|nbsp }} {% transchoice project.number_bids %} project-list_accepted-bids-label {% endtranschoice %}
                             </div><!-- /.project-list-item-useroffers-accepted -->
-                        {% elseif statusOffer == 'rejected' %}
+                        {% elseif statusOffer == constant('\bids::STATUS_BID_REJECTED') %}
                             <div class="project-list-item-useroffers-rejected">
-                                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('rejected', 'projectListItemOffersUserStatusRejected') }}
+                                {{ numOffers|__num|nbsp }} {% transchoice project.number_bids %} project-list_rejected-bids-label {% endtranschoice %}
                             </div><!-- /.project-list-item-useroffers-rejected -->
-                        {% elseif statusOffer == 'inProgress' %}
+                        {% elseif statusOffer == constant('\bids::STATUS_BID_PENDING') %}
                             <div class="project-list-item-useroffers-inprogress">
-                                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('in progress', 'projectListItemOffersUserStatusInProgress') }}
+                                {{ numOffers|__num|nbsp }} {% transchoice project.number_bids %} project-list_pending-bids-label {% endtranschoice %}
                             </div><!-- /.project-list-item-useroffers-inprogress -->
                         {% endif %}
                     {% endfor %}
@@ -221,22 +221,23 @@
             {% endif %}
         </div><!-- /.project-list-item-stats -->
         <div class="project-list-item-rating">
-            <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectListItemRatingLabel')|format(listItem.rating) }}</span></span>
+            <span class="rating rating-{{ classRating }}"><span class="sr-only"></span></span>
+            {#__('Rated %d out of 5', 'projectListItemRatingLabel')|convertRisk|format(project.risk)#}
         </div>
         <div class="project-list-item-period">
-            {% if listItem.daysLeft > 0 and listItem.daysLeft <= 2 %}
+            {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
                 <span class="icon fa-clock-o"></span>
-                <span class="ui-time-count" data-time-count-to="{{ listItem.dateExpires|escape('html_attr') }}">&hellip;</span>
-            {% elseif listItem.daysLeft == 0 %}
-                {{ __('Project expired', 'projectListItemPeriodExpired') }}
+                <span class="ui-time-count" data-time-count-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
+            {% elseif project.daysLeft == 0 %}
+                {% trans %} project-list_project-finished {% endtrans %}
             {% else %}
-                {{ __('%d days left', 'projectListItemPeriodLabel')|format(listItem.daysLeft) }}
+                {% trans with {'%remainingDays%' : project.daysLeft } %} project-list_remaining-days {% endtrans %}
             {% endif %}
         </div>
         <div class="project-list-item-view">
-            <a href="{{ listItem.permalink }}"><span class="icon fa-angle-right"></span><span class="sr-only">{{ __('Read more information about this project', 'projectListItemViewLabel') }}</span></a>
+            <a href="{{ project.slug }}"><span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span></a>
         </div>
         {# Feel free to do something better here #}
-        <a href="{{ listItem.permalink }}" class="project-list-item-hotspot"></a>
+        <a href="{{ project.slug }}" class="project-list-item-hotspot"></a>
     </article><!-- /.project-list-item -->
 {% endmacro %}

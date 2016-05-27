@@ -789,7 +789,7 @@ class ProjectManager
      * @param \projects $project
      * @return string
      */
-    public static function getBorrowerBankTransferLabel(\projects $project)
+    public function getBorrowerBankTransferLabel(\projects $project)
     {
         /** @var \companies $company */
         $company = $this->oEntityManager->getRepository('companies');
@@ -808,5 +808,27 @@ class ProjectManager
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
         return $oBid->getBidsStatistics($oProject->id_project);
+    }
+
+    public function getProjectsForDisplay(array $aProjectStatus, $sOrderBy)
+    {
+        /** @var \projects $projects */
+        $projects           = $this->oEntityManager->getRepository('projects');
+        $aProjectsInFunding = $projects->getProjectsForDisplay($aProjectStatus, $sOrderBy);
+        $aProjectsInFunding = $this->addCurrentInterestRateToProject($aProjectsInFunding);
+
+        return $aProjectsInFunding;
+    }
+
+    private function addCurrentInterestRateToProject(array $aProjectsInFunding)
+    {
+        /** @var \projects $project */
+        $project = $this->oEntityManager->getRepository('projects');
+
+        foreach ($aProjectsInFunding as $iKey => $aProject) {
+            $aProjectsInFunding[$iKey]['currentInterestRate'] = $project->getAverageInterestRate($aProject['id_project']);
+        }
+
+        return $aProjectsInFunding;
     }
 }
