@@ -8,6 +8,8 @@ class operationsController extends bootstrap
     {
         parent::__construct($command, $config, $app);
 
+        $this->loadJs('default/ui.datepicker-fr');
+
         $this->catchAll = true;
         // On prend le header account
         $this->setHeader('header_account');

@@ -374,7 +374,7 @@ class echeanciers extends echeanciers_crud
         }
 
         for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format(($res[$i] != '' ? $res[$i] : 0), 2, '.', '');
+            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
         }
 
         return $resultat;
@@ -391,7 +391,7 @@ class echeanciers extends echeanciers_crud
         }
 
         for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format(($res[$i] != '' ? $res[$i] : 0), 2, '.', '');
+            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
         }
 
         return $resultat;
@@ -422,7 +422,7 @@ class echeanciers extends echeanciers_crud
             $res[$record['date']] = $retenues;
         }
         for ($i = $debut; $i <= $fin; $i++) {
-            $resultat[$i] = number_format(($res[$i] != '' ? $res[$i] : 0), 2, '.', '');
+            $resultat[$i] = number_format((false === empty($res[$i]) ? $res[$i] : 0), 2, '.', '');
         }
 
         return $resultat;

@@ -6,6 +6,9 @@ class syntheseController extends bootstrap
     {
         parent::__construct($command, $config, $app);
 
+        $this->loadJs('default/highcharts.src');
+        $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
+
         $this->catchAll = true;
 
         $this->setHeader('header_account');

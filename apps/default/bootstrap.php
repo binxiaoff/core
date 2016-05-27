@@ -87,14 +87,15 @@ class bootstrap extends Controller
 
         $this->loadJs('default/jquery/jquery-1.10.2.min');
         $this->loadJs('default/bootstrap-tooltip');
-        $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
+        //$this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
         $this->loadJs('default/jquery.c2selectbox');
         $this->loadJs('default/livevalidation_standalone.compressed');
         $this->loadJs('default/jquery.colorbox-min');
-        $this->loadJs('default/jquery-ui-1.10.3.custom.min');
-        $this->loadJs('default/jquery-ui-1.10.3.custom2');
-        $this->loadJs('default/ui.datepicker-fr');
-        $this->loadJs('default/highcharts.src');
+        //$this->loadJs('default/jquery-ui-1.10.3.custom.min');
+        //$this->loadJs('default/jquery-ui-1.10.3.custom2');
+        /*added*/$this->loadJs('default/jqueryui-1.10.3.min');
+        //$this->loadJs('default/ui.datepicker-fr');
+        //$this->loadJs('default/highcharts.src');
         $this->loadJs('default/functions', 0, date('Ymd'));
         $this->loadJs('default/main', 0, date('YmdH'));
         $this->loadJs('default/ajax', 0, date('Ymd'));

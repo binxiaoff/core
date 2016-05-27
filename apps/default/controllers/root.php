@@ -10,6 +10,7 @@ class rootController extends bootstrap
 
     public function _default()
     {
+        
         $this->fireCache();
 
         // ajout du slash car capital rajout un Get
@@ -44,6 +45,10 @@ class rootController extends bootstrap
                 if (! $this->clients->checkAccess()) {
                     $this->etatLogin = false;
                 }
+            }
+
+            if ($this->tree->id_tree == 1) {
+                $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
             }
 
             // Redirection inscription preteur
