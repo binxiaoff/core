@@ -223,7 +223,7 @@ class bids extends bids_crud
 
         $rQuery = $this->bdd->query($sQuery);
         $aBids  = array();
-        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aBids[] = $aRow;
         }
 
@@ -300,5 +300,30 @@ class bids extends bids_crud
         }
 
         return $aBidsByRate;
+    }
+
+    /**
+     * @param int $projectId
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function getLastProjectBidsByLender($projectId, $limit = 100, $offset = 0)
+    {
+        $bids = array();
+
+        // This only works with MySQL as long as non-agregated columns could not be use on other DB systems
+        $query = $this->bdd->query('
+            SELECT *
+            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_lender_account ASC, id_bid DESC) bids
+            GROUP BY id_lender_account
+            LIMIT ' . $limit . ' OFFSET ' . $offset
+        );
+
+        while ($row = $this->bdd->fetch_assoc($query)) {
+            $bids[] = $row;
+        }
+
+        return $bids;
     }
 }

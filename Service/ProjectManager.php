@@ -91,16 +91,45 @@ class ProjectManager
             $this->markAsFunded($oProject);
         }
 
-        $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
+        $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, false);
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::AUTO_BID_PLACED, $oProject);
     }
 
-    public function publish(\projects $oProjects)
+    /**
+     * @param \projects $project
+     */
+    public function publish(\projects $project)
     {
-        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $oProjects);
+        /** @var \bids $bidData */
+        $bidData = Loader::loadData('bids');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = Loader::loadData('lenders_accounts');
+
+        $offset = 0;
+        $limit  = 100;
+
+        while ($bids = $bidData->getLastProjectBidsByLender($project->id_project, $limit, $offset)) {
+            foreach ($bids as $bid) {
+                if ($lenderAccount->get($bid['id_lender_account'])) {
+                    $this->oNotificationManager->create(
+                        $bid['status'] == \bids::STATUS_BID_PENDING ? \notifications::TYPE_BID_PLACED : \notifications::TYPE_BID_REJECTED,
+                        $bid['id_autobid'] > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : ($bid['status'] == \bids::STATUS_BID_PENDING ? \clients_gestion_type_notif::TYPE_BID_PLACED : \clients_gestion_type_notif::TYPE_BID_REJECTED),
+                        $lenderAccount->id_client_owner,
+                        $bid['status'] == \bids::STATUS_BID_PENDING ? 'sendBidConfirmation' : 'sendBidRejected',
+                        $project->id_project,
+                        $bid['amount'] / 100,
+                        $bid['id_bid']
+                    );
+                }
+            }
+
+            $offset += $limit;
+        }
+
+        $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::EN_FUNDING, $project);
     }
 
-    public function checkBids(\projects $oProject)
+    public function checkBids(\projects $oProject, $bSendNotification)
     {
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
@@ -109,7 +138,7 @@ class ProjectManager
 
         $aLogContext      = array();
         $bBidsLogs        = false;
-        $nb_bids_ko       = 0;
+        $iRejectedBids    = 0;
         $iBidsAccumulated = 0;
         $iBorrowAmount    = $oProject->amount;
         $iBidTotal        = $oBid->getSoldeBid($oProject->id_project);
@@ -125,13 +154,13 @@ class ProjectManager
                     $oBid->get($aBid['id_bid']);
 
                     if (0 == $oBid->id_autobid) { // non-auto-bid
-                        $this->oBidManager->reject($oBid);
+                        $this->oBidManager->reject($oBid, $bSendNotification);
                     } else {
                         // For a autobid, we don't send reject notification, we don't create payback transaction, either. So we just flag it here as reject temporarily
                         $oBid->status = \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY;
                     }
 
-                    $nb_bids_ko++;
+                    $iRejectedBids++;
                     $oBid->update();
                 }
 
@@ -143,19 +172,20 @@ class ProjectManager
 
             $aLogContext['Project ID']    = $oProject->id_project;
             $aLogContext['Balance']       = $iBidTotal;
-            $aLogContext['Rejected bids'] = $nb_bids_ko;
+            $aLogContext['Rejected bids'] = $iRejectedBids;
         }
 
         if ($bBidsLogs == true) {
             $oBidLog->id_project      = $oProject->id_project;
             $oBidLog->nb_bids_encours = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 0');
-            $oBidLog->nb_bids_ko      = $nb_bids_ko;
+            $oBidLog->nb_bids_ko      = $iRejectedBids;
             $oBidLog->total_bids      = $oBid->counter('id_project = ' . $oProject->id_project);
             $oBidLog->total_bids_ko   = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 2');
             $oBidLog->rate_max        = $oBid->getProjectMaxRate($oProject);
             $oBidLog->fin             = date('Y-m-d H:i:s');
             $oBidLog->create();
         }
+
         if ($this->oLogger instanceof ULogger) {
             $this->oLogger->addRecord(ULogger::INFO, 'Project ID: ' . $oProject->id_project, $aLogContext);
         }
@@ -174,7 +204,7 @@ class ProjectManager
             if ($oProjectStatus->status == \projects_status::A_FUNDER) {
                 $this->bidAllAutoBid($oProject);
             } elseif ($oProjectStatus->status == \projects_status::EN_FUNDING) {
-                $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
+                $this->reBidAutoBid($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
             }
         }
     }
@@ -192,7 +222,7 @@ class ProjectManager
                 $iOffset += $iLimit;
                 foreach ($aAutoBidList as $aAutoBidSetting) {
                     if ($oAutoBid->get($aAutoBidSetting['id_autobid'])) {
-                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, \bids::BID_RATE_MAX);
+                        $this->oBidManager->bidByAutoBidSettings($oAutoBid, $oProject, \bids::BID_RATE_MAX, false);
                     }
                 }
             }
@@ -250,7 +280,7 @@ class ProjectManager
         }
     }
 
-    private function reBidAutoBid(\projects $oProject, $iMode)
+    private function reBidAutoBid(\projects $oProject, $iMode, $bSendNotification)
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
@@ -264,21 +294,21 @@ class ProjectManager
         while ($aAutoBidList = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY)) {
             foreach ($aAutoBidList as $aAutobid) {
                 if ($oBid->get($aAutobid['id_bid'])) {
-                    $this->oBidManager->reBidAutoBidOrReject($oBid, $fCurrentRate, $iMode);
+                    $this->oBidManager->reBidAutoBidOrReject($oBid, $fCurrentRate, $iMode, $bSendNotification);
                 }
             }
         }
     }
 
-    private function reBidAutoBidDeeply(\projects $oProject, $iMode)
+    private function reBidAutoBidDeeply(\projects $oProject, $iMode, $bSendNotification)
     {
         /** @var \bids $oBid */
         $oBid = Loader::loadData('bids');
-        $this->checkBids($oProject);
+        $this->checkBids($oProject, $bSendNotification);
         $aRefusedAutoBid = $oBid->getAutoBids($oProject->id_project, \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY, 1);
         if (false === empty($aRefusedAutoBid)) {
-            $this->reBidAutoBid($oProject, $iMode);
-            $this->reBidAutoBidDeeply($oProject, $iMode);
+            $this->reBidAutoBid($oProject, $iMode, $bSendNotification);
+            $this->reBidAutoBidDeeply($oProject, $iMode, $bSendNotification);
         }
     }
 
@@ -291,7 +321,7 @@ class ProjectManager
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = Loader::loadData('lenders_accounts');
 
-        $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE);
+        $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->oLogger instanceof ULogger) {
@@ -323,7 +353,7 @@ class ProjectManager
                 }
             } else { // Pour les encheres qui depassent on rend l'argent
                 // On regarde si on a pas deja un remb pour ce bid
-                $this->oBidManager->reject($oBid);
+                $this->oBidManager->reject($oBid, true);
             }
             $iTreatedBitNb++;
             if ($this->oLogger instanceof ULogger) {
@@ -425,7 +455,7 @@ class ProjectManager
 
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid'], 'id_bid');
-            $this->oBidManager->reject($oBid);
+            $this->oBidManager->reject($oBid, true);
             $iTreatedBitNb++;
             if ($this->oLogger instanceof ULogger) {
                 $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated.');

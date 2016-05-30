@@ -182,10 +182,12 @@ class cronController extends bootstrap
         if (true === $this->startCron('pre_publish_project', 15)) {
             ini_set('max_execution_time', '900');
             ini_set('memory_limit', '1G');
+
             /** @var \projects $oProject */
-            $oProject        = $this->loadData('projects');
+            $oProject = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
+
             $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= (NOW() + INTERVAL 15 MINUTE)", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
@@ -204,13 +206,12 @@ class cronController extends bootstrap
     {
         if (true === $this->startCron('check_projet_a_funder', 5)) {
             /** @var \projects $oProject */
-            $oProject        = $this->loadData('projects');
+            $oProject = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('ProjectManager');
 
             $bHasProjectPublished = false;
-
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
+            $aProjectToFund       = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
@@ -222,6 +223,7 @@ class cronController extends bootstrap
                     $this->sendNewProjectEmail($oProject->id_project);
                 }
             }
+
             if ($bHasProjectPublished) {
                 $sKey = $this->oCache->makeKey(Cache::LIST_PROJECTS, $this->tabProjectDisplay);
                 $this->oCache->delete($sKey);
@@ -263,7 +265,7 @@ class cronController extends bootstrap
 
                     if ($oEndDate > $oNow) {
                         $oProjectManager->setLogger($this->oLogger);
-                        $oProjectManager->checkBids($oProject);
+                        $oProjectManager->checkBids($oProject, true);
                         $oProjectManager->autoBid($oProject);
                     } else {
                         $oProjectManager->setLogger($oLoggerEndProject);
