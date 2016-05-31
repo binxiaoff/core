@@ -15,5 +15,8 @@
         <service id="unilend.command.salesforce_extraction" class="Unilend\Bundle\CommandBundle\Command\SalesforceExtractionCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\SendBPIXMLStream">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
