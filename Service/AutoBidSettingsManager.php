@@ -196,6 +196,8 @@ class AutoBidSettingsManager
      * @param int    $iAutoBidPeriodId
      * @param array  $aStatus
      * @param string $sOrder
+     * @param int    $iLimit
+     * @param int    $iOffset
      *
      * @return array
      */

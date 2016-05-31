@@ -45,7 +45,7 @@ class NotificationManager
                 $oMailNotification->immediatement = 0;
             }
 
-            $this->createEmailNotification($oNotification->id_notification, $iMailType, $iClientId, $iTransactionId);
+            $this->createEmailNotification($oNotification->id_notification, $iMailType, $iClientId, $iTransactionId, $iProjectId);
         }
     }
 
@@ -84,12 +84,13 @@ class NotificationManager
      * @param $iClientId
      * @param $iTransactionId
      */
-    public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId)
+    public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId, $iProjectId = null)
     {
         /** @var \clients_gestion_mails_notif $oMailNotification */
         $oMailNotification = Loader::loadData('clients_gestion_mails_notif');
 
         $oMailNotification->id_client       = $iClientId;
+        $oMailNotification->id_project      = $iProjectId;
         $oMailNotification->id_notif        = $iMailType;
         $oMailNotification->date_notif      = date('Y-m-d H:i:s');
         $oMailNotification->id_notification = $iNotificationId;
