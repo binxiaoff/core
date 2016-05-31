@@ -611,16 +611,21 @@ class MailerManager
 
                 if ($oEndDate <= $oNow) {
                     $sMailTemplate = 'preteur-autobid-ko-apres-fin-de-periode-projet';
-                } else {
+                } elseif ($oBid->getProjectMaxRate($oProject) > \bids::BID_RATE_MIN) {
                     $sMailTemplate = 'preteur-autobid-ko';
+                } else {
+                    $sMailTemplate = 'preteur-autobid-ko-minimum-rate';
                 }
             } else {
                 if ($oEndDate <= $oNow) {
                     $sMailTemplate = 'preteur-bid-ko-apres-fin-de-periode-projet';
-                } else {
+                } elseif ($oBid->getProjectMaxRate($oProject) > \bids::BID_RATE_MIN) {
                     $sMailTemplate = 'preteur-bid-ko';
+                } else {
+                    $sMailTemplate = 'preteur-bid-ko-minimum-rate';
                 }
             }
+
             $this->oMailText->get($sMailTemplate, 'lang = "' . $this->sLanguage . '" AND type');
             $iAddedBid = strtotime($oBid->added);
             $sMonthFr  = $this->oDate->tableauMois['fr'][date('n', $iAddedBid)];
@@ -629,8 +634,8 @@ class MailerManager
                 'surl'             => $this->sSUrl,
                 'url'              => $this->sLUrl,
                 'prenom_p'         => $oClient->prenom,
-                'valeur_bid'       => $this->oFicelle->formatNumber($oBid->amount / 100),
-                'taux_bid'         => $this->oFicelle->formatNumber($oBid->rate),
+                'valeur_bid'       => $this->oFicelle->formatNumber($oBid->amount / 100, 0),
+                'taux_bid'         => $this->oFicelle->formatNumber($oBid->rate, 1),
                 'autobid_rate_min' => $oAutoBid->rate_min,
                 'nom_entreprise'   => $oCompany->name,
                 'projet-p'         => $this->sLUrl . '/projects/detail/' . $oProject->slug,
@@ -857,7 +862,7 @@ class MailerManager
             if (!count($format)) {
                 return 'moins d\'une minute';
             } else {
-                $format[] = "%s " . self::plural($interval->s, "second");
+                $format[] = "%s " . self::plural($interval->s, "seconde");
             }
         }
 
