@@ -40,7 +40,7 @@
             <tr>
                 <td><?= $aProject['id_project'] ?></td>
                 <td><?= $aProject['title'] ?></td>
-                <td><?= $this->ficelle->formatNumber($aProject['amount']) . '&nbsp€' ?></td>
+                <td><?= $this->ficelle->formatNumber($aProject['amount'], 0) . '&nbsp€' ?></td>
                 <td><?= isset($aProject['bic']) ? $aProject['bic'] : '' ?></td>
                 <td><?= isset($aProject['iban']) ? $aProject['iban'] : '' ?></td>
                 <td>
