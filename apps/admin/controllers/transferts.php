@@ -1226,7 +1226,7 @@ class transfertsController extends bootstrap
             $clients->get($companies->id_client_owner, 'id_client');
 
             $aMandate = array_shift($mandate->select('id_project = ' . $_POST['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
-            if ($aMandate != null) {
+            if ($aMandate != null && $_POST['statut_pouvoir'] == \projects_pouvoir::STATUS_SIGNED) {
                 $proxy->get($_POST['id_project'], 'id_project');
                 $proxy->status_remb = $_POST['statut_pouvoir'];
                 $proxy->update();
