@@ -245,7 +245,12 @@ class BidManager
         }
     }
 
-    public function reBidAutoBidOrReject(\bids $oBid, $fCurrentRate, $iMode)
+    /**
+     * @param \bids $oBid
+     * @param string $currentRate
+     * @param int $iMode
+     */
+    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode)
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
@@ -256,7 +261,8 @@ class BidManager
 
         if (false === empty($oBid->id_autobid) && false === empty($oBid->id_bid) && $oAutoBid->get($oBid->id_autobid)) {
             if (
-                bccomp($oAutoBid->rate_min, $fCurrentRate) >= 0
+                bccomp($currentRate, \bids::BID_RATE_MIN, 1) > 0
+                && bccomp($currentRate, $oAutoBid->rate_min, 1) >= 0
                 && $oLenderAccount->get($oBid->id_lender_account)
                 && $oClient->get($oLenderAccount->id_client_owner)
                 && $oClient->status == \clients::STATUS_ONLINE
@@ -266,14 +272,14 @@ class BidManager
 
                     $oNewBid         = clone $oBid;
                     $oNewBid->ordre  = $iBidOrder;
-                    $oNewBid->rate   = $fCurrentRate;
+                    $oNewBid->rate   = $currentRate;
                     $oNewBid->status = \bids::STATUS_BID_PENDING;
                     $oNewBid->create();
 
                     $oBid->status = \bids::STATUS_BID_REJECTED;
                     $oBid->update();
                 } else {
-                    $oBid->rate   = $fCurrentRate;
+                    $oBid->rate   = $currentRate;
                     $oBid->status = \bids::STATUS_BID_PENDING;
                     $oBid->update();
                 }
