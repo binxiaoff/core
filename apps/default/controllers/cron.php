@@ -217,10 +217,10 @@ class cronController extends bootstrap
                 if ($oProject->get($aProject['id_project'])) {
                     $bHasProjectPublished = true;
 
-                    $oProjectManager->publish($oProject);
+                   $oProjectManager->publish($oProject);
 
                     $this->zippage($oProject->id_project);
-                    $this->sendNewProjectEmail($oProject->id_project);
+                    $this->sendNewProjectEmail($oProject);
                 }
             }
 
@@ -4132,7 +4132,7 @@ class cronController extends bootstrap
     }
 
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    private function sendNewProjectEmail($id_project)
+    private function sendNewProjectEmail(\projects $oProject)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -4142,11 +4142,17 @@ class cronController extends bootstrap
         $this->companies                     = $this->loadData('companies');
         // Loaded for class constants
         $this->loadData('clients_status');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = $this->loadData('lenders_accounts');
+        /** @var \transactions $oTransaction */
+        $oTransaction = $this->loadData('transactions');
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutobidSettingsManager */
+        $oAutobidSettingsManager = $this->get('AutoBidSettingsManager');
 
         $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $id_project);
+        $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $oProject->id_project);
 
-        $this->projects->get($id_project, 'id_project');
+        $this->projects->get($oProject->id_project, 'id_project');
         $this->companies->get($this->projects->id_company, 'id_company');
 
         $varMail = array(
@@ -4158,11 +4164,27 @@ class cronController extends bootstrap
             'duree'           => $this->projects->period,
             'gestion_alertes' => $this->lurl . '/profile',
             'lien_fb'         => $this->like_fb,
-            'lien_tw'         => $this->twitter
+            'lien_tw'         => $this->twitter,
+            'annee'           => date('Y')
         );
 
         $this->mails_text->get('nouveau-projet', 'lang = "' . $this->language . '" AND type');
         $this->email = $this->loadLib('email');
+
+        $this->lng['email-nouveau-projet'] = $this->ln->selectFront('email-nouveau-projet', $this->language, $this->App);
+
+        /** @var \autobid_periods $oAutobidPeriods */
+        $oAutobidPeriods = $this->loadData('autobid_periods');
+        $aPeriod         = $oAutobidPeriods->getPeriod($oProject->period);
+
+        /** @var \autobid $oAutobid */
+        $oAutobid    = $this->loadData('autobid');
+        $aAutobiders = array_column($oAutobid->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
+
+        /** @var \bids $oBids */
+        $oBids            = $this->loadData('bids');
+        $aBids            = $oBids->getLenders($oProject->id_project);
+        $aNoAutobidPlaced = array_diff(array_keys($aAutobiders), array_column($aBids, 'id_lender_account'));
 
         $iOffset = 0;
         $iLimit  = 100;
@@ -4176,21 +4198,38 @@ class cronController extends bootstrap
             foreach ($aLenders as $aLender) {
                 $this->notifications->type       = \notifications::TYPE_NEW_PROJECT;
                 $this->notifications->id_lender  = $aLender['id_lender'];
-                $this->notifications->id_project = $id_project;
+                $this->notifications->id_project = $oProject->id_project;
                 $this->notifications->create();
 
-                if (false === $this->clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
+                if (false === $this->clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $oProject->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
                     $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
                     $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                     $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_project      = $id_project;
+                    $this->clients_gestion_mails_notif->id_project      = $oProject->id_project;
                     $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
 
-                    if ($this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
+                    if (empty($sAutobidInsufficientBalance) && $this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
                         $this->clients_gestion_mails_notif->immediatement = 1;
 
-                        $varMail['prenom_p']       = $aLender['prenom'];
-                        $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
+                        $sAutobidInsufficientBalance = '';
+
+                        if (
+                            in_array($aLender['id_lender'], $aNoAutobidPlaced)
+                            && $oLenderAccount->get($aLender['id_lender'])
+                            && $oAutobidSettingsManager->isOn($oLenderAccount)
+                            && $oTransaction->getSolde($oLenderAccount->id_client_owner) < $aAutobiders[$oLenderAccount->id_lender_account]
+                        ) {
+                            $sAutobidInsufficientBalance = '
+                                    <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
+                                        <tr>
+                                            <td align="center" style="color: #b20066">' . $this->lng['email-nouveau-projet']['solde-insuffisant-nouveau-projet'] . '</td>
+                                        </tr>
+                                    </table>';
+                        }
+
+                        $varMail['autobid_insufficient_balance'] = $sAutobidInsufficientBalance;
+                        $varMail['prenom_p']                     = $aLender['prenom'];
+                        $varMail['motif_virement']               = $this->clients->getLenderPattern($aLender['id_client']);
 
                         $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
