@@ -139,8 +139,8 @@ class SendBPIXMLStream extends ContainerAwareCommand
             $xml .= '<ville><![CDATA["' . utf8_encode($companies->city) . '"]]></ville>';
             $xml .= '<titre><![CDATA["' . $companies->name . '"]]></titre>';
             $xml .= '<description><![CDATA["' . $aProject['nature_project'] . '"]]></description>';
-            $xml .= '<url><![CDATA[' . $this->aConfig['static_url'][$this->aConfig['env']] . '/projects/detail/' . $aProject['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent]]></url>';
-            $xml .= '<url_photo><![CDATA[' . $this->aConfig['static_url'][$this->aConfig['env']] . '/images/dyn/projets/169/' . $aProject['photo_projet'] . ']]></url_photo>';
+            $xml .= '<url><![CDATA["' . $this->aConfig['static_url'][$this->aConfig['env']] . '/projects/detail/' . $aProject['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent"]]></url>';
+            $xml .= '<url_photo><![CDATA["' . $this->aConfig['static_url'][$this->aConfig['env']] . '/images/dyn/projets/169/' . $aProject['photo_projet'] . '"]]></url_photo>';
             $xml .= '<date_debut_collecte>' . $aProject['date_publication'] . '</date_debut_collecte>';
             $xml .= '<date_fin_collecte>' . $aProject['date_retrait'] . '</date_fin_collecte>';
             $xml .= '<montant_recherche>' . $aProject['amount'] . '</montant_recherche>';
