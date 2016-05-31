@@ -38,6 +38,7 @@ class MailerManager
     private $sSUrl;
     private $sLUrl;
     private $sFUrl;
+    private $sAUrl;
 
     public function __construct()
     {
@@ -61,7 +62,7 @@ class MailerManager
         $this->sSUrl = $this->aConfig['static_url'][$this->aConfig['env']];
         $this->sLUrl = $this->aConfig['url'][$this->aConfig['env']]['default'] . ($this->aConfig['multilanguage']['enabled'] ? '/' . $this->sLanguage : '');
         $this->sFUrl = $this->aConfig['url'][$this->aConfig['env']]['default'];
-
+        $this->sAUrl = $this->aConfig['url'][$this->aConfig['env']]['admin'];
     }
 
     /**
@@ -977,7 +978,8 @@ class MailerManager
     {
         $this->oMailText->get('uninotification-modification-iban-bo', 'lang = "' . $this->sLanguage . '" AND type');
 
-        $aMail        = array(
+        $aMail = array(
+            'aurl'       => $this->sAUrl,
             'id_client'  => $iClientId,
             'first_name' => $_SESSION['user']['firstname'],
             'name'       => $_SESSION['user']['name'],
