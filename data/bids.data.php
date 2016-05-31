@@ -196,17 +196,23 @@ class bids extends bids_crud
             $sStatus = implode(',', $aStatus);
             $sStatus = $this->bdd->escape_string($sStatus);
         }
-        $sQuery = 'SELECT id_lender_account, count(*) as bid_nb, SUM(amount) as amount_sum FROM `bids` WHERE id_project = ' . $iProjectId;
+        $sQuery = '
+            SELECT id_lender_account,
+                COUNT(*) AS bid_nb,
+                SUM(amount) AS amount_sum
+            FROM bids
+            WHERE id_project = ' . $iProjectId;
 
         if ('' !== $sStatus) {
-            $sQuery .= ' AND status in (' . $sStatus . ')';
+            $sQuery .= ' AND status IN (' . $sStatus . ')';
         }
 
-        $sQuery .= 'Group BY id_lender_account';
+        $sQuery .= '
+            GROUP BY id_lender_account';
 
         $rQuery   = $this->bdd->query($sQuery);
         $aLenders = array();
-        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aLenders[] = $aRow;
         }
 
@@ -223,7 +229,7 @@ class bids extends bids_crud
 
         $rQuery = $this->bdd->query($sQuery);
         $aBids  = array();
-        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aBids[] = $aRow;
         }
 
@@ -300,5 +306,30 @@ class bids extends bids_crud
         }
 
         return $aBidsByRate;
+    }
+
+    /**
+     * @param int $projectId
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function getLastProjectBidsByLender($projectId, $limit = 100, $offset = 0)
+    {
+        $bids = array();
+
+        // This only works with MySQL as long as non-agregated columns could not be use on other DB systems
+        $query = $this->bdd->query('
+            SELECT *
+            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_lender_account ASC, id_bid DESC) bids
+            GROUP BY id_lender_account
+            LIMIT ' . $limit . ' OFFSET ' . $offset
+        );
+
+        while ($row = $this->bdd->fetch_assoc($query)) {
+            $bids[] = $row;
+        }
+
+        return $bids;
     }
 }

@@ -72,7 +72,7 @@ class BidManager
         $this->oLogger = $oLogger;
     }
 
-    public function bid(\bids $oBid)
+    public function bid(\bids $oBid, $bSendNotification)
     {
         /** @var \settings $oSettings */
         $oSettings = Loader::loadData('settings');
@@ -178,16 +178,18 @@ class BidManager
             }
         }
 
-        $this->oNotificationManager->create(
-            \notifications::TYPE_BID_PLACED,
-            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
-            $iClientId,
-            'sendBidConfirmation',
-            $oBid->id_project,
-            $fAmount,
-            $oBid->id_bid,
-            $oTransaction->id_transaction
-        );
+        if ($bSendNotification) {
+            $this->oNotificationManager->create(
+                \notifications::TYPE_BID_PLACED,
+                $oBid->id_autobid > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_PLACED,
+                $iClientId,
+                'sendBidConfirmation',
+                $oBid->id_project,
+                $fAmount,
+                $oBid->id_bid,
+                $oTransaction->id_transaction
+            );
+        }
 
         return true;
     }
@@ -196,8 +198,9 @@ class BidManager
      * @param \autobid  $oAutoBid
      * @param \projects $oProject
      * @param float     $fRate
+     * @param bool      $bSendNotification
      */
-    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate)
+    public function bidByAutoBidSettings(\autobid $oAutoBid, \projects $oProject, $fRate, $bSendNotification)
     {
         if ($oAutoBid->rate_min <= $fRate) {
             /** @var \bids $oBid */
@@ -211,19 +214,24 @@ class BidManager
                 $oBid->id_project        = $oProject->id_project;
                 $oBid->amount            = $oAutoBid->amount * 100;
                 $oBid->rate              = $fRate;
-                $this->bid($oBid);
+                $this->bid($oBid, $bSendNotification);
             }
         }
     }
 
     /**
      * @param \bids $oBid
+     * @param bool  $bSendNotification
      */
-    public function reject(\bids $oBid)
+    public function reject(\bids $oBid, $bSendNotification)
     {
         if ($oBid->status == \bids::STATUS_BID_PENDING || $oBid->status == \bids::STATUS_AUTOBID_REJECTED_TEMPORARILY) {
             $oTransaction = $this->creditRejectedBid($oBid, $oBid->amount / 100);
-            $this->notificationRejection($oBid, $oTransaction);
+
+            if ($bSendNotification) {
+                $this->notificationRejection($oBid, $oTransaction);
+            }
+
             $oBid->status = \bids::STATUS_BID_REJECTED;
             $oBid->update();
         }
@@ -231,7 +239,7 @@ class BidManager
 
     /**
      * @param \bids $oBid
-     * @param       $fRepaymentAmount
+     * @param float $fRepaymentAmount
      */
     public function rejectPartially(\bids $oBid, $fRepaymentAmount)
     {
@@ -246,11 +254,12 @@ class BidManager
     }
 
     /**
-     * @param \bids $oBid
+     * @param \bids  $oBid
      * @param string $currentRate
-     * @param int $iMode
+     * @param int    $iMode
+     * @param bool   $bSendNotification
      */
-    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode)
+    public function reBidAutoBidOrReject(\bids $oBid, $currentRate, $iMode, $bSendNotification)
     {
         /** @var \autobid $oAutoBid */
         $oAutoBid = Loader::loadData('autobid');
@@ -284,7 +293,7 @@ class BidManager
                     $oBid->update();
                 }
             } else {
-                $this->reject($oBid);
+                $this->reject($oBid, $bSendNotification);
             }
         }
     }
@@ -368,7 +377,7 @@ class BidManager
         if ($oLenderAccount->get($oBid->id_lender_account)) {
             $this->oNotificationManager->create(
                 \notifications::TYPE_BID_REJECTED,
-                \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID,
+                $oBid->id_autobid > 0 ? \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID : \clients_gestion_type_notif::TYPE_BID_REJECTED,
                 $oLenderAccount->id_client_owner,
                 'sendBidRejected',
                 $oBid->id_project,
