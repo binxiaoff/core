@@ -978,9 +978,14 @@ class MailerManager
     {
         $this->oMailText->get('uninotification-modification-iban-bo', 'lang = "' . $this->sLanguage . '" AND type');
 
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount->get($iClientId, 'id_client_owner');
+
         $aMail = array(
             'aurl'       => $this->sAUrl,
             'id_client'  => $iClientId,
+            'id_lender'  => $oLenderAccount->id_lender_account,
             'first_name' => $_SESSION['user']['firstname'],
             'name'       => $_SESSION['user']['name'],
             'user_id'    => $_SESSION['user']['id_user'],
