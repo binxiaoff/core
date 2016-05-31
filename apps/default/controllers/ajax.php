@@ -71,7 +71,7 @@ class ajaxController extends bootstrap
             /** @var villes $oVille */
             $oVille = $this->loadData('villes');
 
-            if ($oVille->exist(urldecode($this->params[0]), 'ville')) {
+            if ($oVille->exist(str_replace(array(' ', '-'), '', urldecode($this->params[0])), 'REPLACE(REPLACE(ville, " ", ""), "-", "")')) {
                 $response = 'ok';
             }
             unset($oVille);
@@ -1584,9 +1584,9 @@ class ajaxController extends bootstrap
 
         $_SESSION['operations-filter'] = array('projects' =>$aClientProjectIDs, 'start' => $oStartTime, 'end'=>$oEndTime, 'transaction'=>$iTransaction);
 
-        $this->aBorrowerOperations = $oClients->getDataForBorrowerOperations($aClientProjectIDs, $oStartTime, $oEndTime, $iTransaction, $oClients->id_client);
+        $this->aBorrowerOperations   = $oClients->getDataForBorrowerOperations($aClientProjectIDs, $oStartTime, $oEndTime, $iTransaction, $oClients->id_client);
         $this->sDisplayDateTimeStart = $oStartTime->format('d/m/Y');
-        $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
+        $this->sDisplayDateTimeEnd   = $oEndTime->format('d/m/Y');
     }
 
     public function _rejectedBids()

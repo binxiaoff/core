@@ -28,8 +28,88 @@
         </div>
     </div>
 </div>
+<div id="lightbox-overlay">
+    <div>
+        <p class="lightbox-message" id="confirm-ON-message"><?= $this->lng['autobid']['autolend-on-confirmation'] ?></p>
+        <p class="lightbox-message" id="confirm-OFF-message"><?= $this->lng['autobid']['autolend-off-confirmation'] ?></p>
+        <div id="lightbox-validation">
+            <button class="btn" name="cancel">
+                <?= $this->lng['autobid']['cancel-autolend-lightbox'] ?>
+            </button>
+            <button class="btn" name="confirm">
+                <?= $this->lng['autobid']['confirm-autolend-lightbox'] ?>
+            </button>
+        </div>
+    </div>
+</div>
 <script>
     $(window).load(function () {
+        // novice two steps validation
+        $("button[name='send-form-autobid-param-simple']").click(function(e) {
+            e.preventDefault();
+            var autobidSwitch = $("#autobid-switch-1").val();
+            if(autobidSwitch == 0) {
+                $("#lightbox-overlay").show().addClass("activating");
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").click(function() {
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay").hide().removeClass("activating");
+                });
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").click(function() {
+                    $("button[name='send-form-autobid-param-simple']").unbind().click();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
+                    $("#lightbox-overlay").hide().removeClass("activating");
+                });
+           }
+            else {
+                $("button[name='send-form-autobid-param-simple']").unbind().click();
+           }
+        });
+
+        // expert two steps validation
+        $("#validate_settings_expert").click(function() {
+            var autobidSwitch = $("#autobid-switch-1").val();
+            if(autobidSwitch == 0) {
+                $("#lightbox-overlay").show().addClass("activating");
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").click(function() {
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay").hide().removeClass("activating");
+                });
+                $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").click(function() {
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='confirm']").unbind();
+                    $("#lightbox-overlay.activating #lightbox-validation > button[name='cancel']").unbind();
+                    validateExpert();
+                    $("#lightbox-overlay").hide().removeClass("activating");
+                });
+            }
+            else {
+                validateExpert();
+            }
+        });
+
+        // autobid switch two steps cancel validation
+        $("#autobid-switch-1").click(function() {
+           if($(this).val() == 1) {
+               $("#lightbox-overlay").show().addClass("disactivating");
+               $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").click(function() {
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").unbind();
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").unbind();
+                   $("#lightbox-overlay").hide().removeClass("disactivating");
+               });
+               $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").click(function() {
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='cancel']").unbind();
+                   $("#lightbox-overlay.disactivating #lightbox-validation > button[name='confirm']").unbind();
+                   $("#lightbox-overlay").hide().removeClass("disactivating");
+                   switchChange();
+               });
+           }
+            else{
+               switchChange();
+           }
+        });
+
         $('#notification').click(function () {
             window.location.replace("<?= $this->lurl ?>/profile");
         });
@@ -68,7 +148,7 @@
         tab.trigger("click");
 
         // Switch On/Off handler
-        $('.switch-input').on('change', function () {
+        function switchChange() {
             var Settings = {
                 setting: $('#autobid-switch-1').val(),
                 id_lender: "<?= $this->oLendersAccounts->id_lender_account ?>"
@@ -90,7 +170,7 @@
                     expertModification();
                 }
             }
-        });
+        }
 
         $.ajax({
             url: "<?= $this->lurl ?>/profile/autobidDetails/<?= $this->oLendersAccounts->id_lender_account ?>",
@@ -161,7 +241,7 @@
             expertModification();
         });
 
-        $('#validate_settings_expert').click(function () {
+        function validateExpert() {
             var Settings = {
                 id_client: "<?= $this->clients->id_client ?>"
             };
@@ -177,7 +257,7 @@
                     $('#switch-notice-lender-inactive').hide();
                 }
             })
-        });
+        }
 
         function noviceConsultation(){
             $('#settings_instructions_novice').hide();

@@ -116,10 +116,10 @@
                             <input class="field field-medium required" type="text" value="<?= (isset($_POST['prenom']) ? $_POST['prenom'] : '') ?>" placeholder="<?= $this->lng['landing-page']['prenom'] ?>" name="prenom" id="signup-last-name" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">
                         </div>
                         <div class="row">
-                            <input class="field field-medium required" type="text" value="<?= (isset($_POST['email']) ? $_POST['email'] : '') ?>" placeholder="<?= $this->lng['landing-page']['email'] ?>" name="email" id="email" data-validators="Presence&amp;Email" oncopy="return false;" oncut="return false;" onkeyup="checkConf(this.value,'conf_email')">
+                            <input class="field field-medium required" type="text" value="<?= (isset($_POST['email']) ? $_POST['email'] : '') ?>" placeholder="<?= $this->lng['landing-page']['email'] ?>" name="email" id="email" data-validators="Presence&amp;Email" oncopy="return false;" oncut="return false;" onkeyup="checkConf(this, this.value,'conf_email')">
                         </div>
                         <div class="row">
-                            <input class="field field-medium required" type="text" value="<?= (isset($_POST['email-confirm']) ? $_POST['email-confirm'] : '') ?>" placeholder="<?= $this->lng['landing-page']['confirmation-email'] ?>" name="conf_email" id="conf_email" data-validators="Confirmation,{ match: 'email' }" onpast="return false;">
+                            <input class="field field-medium required" type="text" value="<?= (isset($_POST['email-confirm']) ? $_POST['email-confirm'] : '') ?>" placeholder="<?= $this->lng['landing-page']['confirmation-email'] ?>" name="conf_email" id="conf_email" data-validators="Confirmation,{ match: 'email' }" onpast="return false;" onkeyup="checkConf(this, this.value,'email')">
                         </div>
                         <input type="hidden" name="send_inscription_project_detail"/>
                     </form>

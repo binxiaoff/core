@@ -787,18 +787,16 @@ class clients extends clients_crud
     private function getBorrowerOperationEarlyRefunding($aProjects, $sStartDate, $sEndDate)
     {
         $aDataForBorrowerOperations = array();
-        $sql = 'SELECT
-                        `id_project`,
-                        montant/100 AS montant,
-                        DATE(added) as date,
-                        "remboursement-anticipe" AS type
-                    FROM
-                        `receptions`
-                    WHERE
-                        `remb_anticipe` = 1
-                        AND `id_project` IN (' . implode(',', $aProjects) . ')
-                        AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
-                    GROUP BY `id_project`';
+        $sql = '
+            SELECT id_project,
+                montant / 100 AS montant,
+                DATE(added) as date,
+                "remboursement-anticipe" AS type
+            FROM transactions
+            WHERE type_transaction = ' . \transactions_types::TYPE_BORROWER_ANTICIPATED_REPAYMENT . '
+                AND id_project IN (' . implode(', ', $aProjects) . ')
+                AND added BETWEEN ' . $sStartDate . ' AND ' . $sEndDate. '
+            GROUP BY id_project';
 
         $result = $this->bdd->query($sql);
         while ($record = $this->bdd->fetch_assoc($result)) {
@@ -973,14 +971,13 @@ class clients extends clients_crud
                     companies.name,
                     DATE(c.added) AS date_creation,
                     (
-                    SELECT
-                            DATE(csh.added)
+                        SELECT MAX(DATE(csh.added))
                         FROM
                             clients_status_history csh
                             LEFT JOIN clients ON clients.id_client = csh.id_client
                             INNER JOIN clients_status cs ON csh.id_client_status = cs.id_client_status
                         WHERE
-                            cs.status = ' . \clients_status::VALIDATED . '
+                            cs.status = '. \clients_status::VALIDATED . '
                             AND c.id_client = csh.id_client
                         ORDER BY
                             csh.added DESC
@@ -992,7 +989,7 @@ class clients extends clients_crud
                     LEFT JOIN companies ON c.id_client = companies.id_client_owner
                 WHERE
                     NOT EXISTS (SELECT * FROM offres_bienvenues_details obd WHERE c.id_client = obd.id_client)
-                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.id_type = ' . \transactions_types::TYPE_WELCOME_OFFER . ')
+                    AND NOT EXISTS (SELECT * FROM transactions t WHERE t.type_transaction = ' . \transactions_types::TYPE_WELCOME_OFFER . ' AND t.id_client = c.id_client)
                     AND DATE(c.added) BETWEEN DATE("' . $sStartDate . '") AND DATE(' . $sEndDate . ') ' . $sWhereID;
 
         $resultat = $this->bdd->query($sql);
@@ -1005,92 +1002,97 @@ class clients extends clients_crud
         return $aClientsWithoutWelcomeOffer;
     }
 
-    public function getBorrowers($sWhere = null)
+    /**
+     * PLEASE NOTE :
+     * If $bGroupBySiren = true, the result does not necessary provide the most recent
+     * value for any fields other than siren and count of siren.
+     * The only reliable information with this option is Siren and Count(Siren).
+     *
+     * @param DateTime $oStartDate
+     * @param DateTime $oEndDate
+     * @param bool $bGroupBySiren
+     *
+     * @return array
+     */
+    public function getBorrowersContactDetailsAndSource(\DateTime $oStartDate, \DateTime $oEndDate, $bGroupBySiren)
     {
-        if (false === is_null($sWhere)) {
-            $sWhere = ' WHERE ' . $sWhere;
-        }
+        $sGroupBy    = ($bGroupBySiren) ? 'GROUP BY com.siren ' : '';
+        $sCountSiren = ($bGroupBySiren) ? 'count(com.siren) AS "countSiren", ' : '';
 
-        $sql = 'SELECT *
-                FROM `clients`
-                INNER JOIN companies ON companies.id_client_owner = clients.id_client
-                INNER JOIN projects ON companies.id_company = projects.id_company' . $sWhere;
-
-        $aClientsBorrower = array();
-
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_assoc($result)) {
-            $aClientsBorrower[] = $record;
-        }
-
-        return $aClientsBorrower;
-    }
-    public function getBorrowersSalesForce()
-    {
-        $sQuery = "SELECT
-                      c.id_client as 'IDClient',
-                      c.id_client as 'IDClient_2',
-                      c.id_langue as 'Langue',
-                      REPLACE(c.civilite,',','') as 'Civilite',
-                      REPLACE(c.nom,',','') as 'Nom',
-                      REPLACE(c.nom_usage,',','') as 'Nom_usage',
-                      REPLACE(c.prenom,',','') as 'Prenom',
-                      CONVERT(REPLACE(c.fonction,',','') USING utf8) as 'Fonction',
-                      CASE c.naissance
-                      WHEN '0000-00-00' then '2001-01-01'
-                      ELSE
-                        CASE SUBSTRING(c.naissance,1,1)
-                        WHEN '0' then '2001-01-01'
-                        ELSE c.naissance
-                        END
-                      END as 'DateNaissance',
-                      REPLACE(ville_naissance,',','') as 'VilleNaissance',
-                      ccountry.fr as 'PaysNaissance',
-                      nv2.fr_f as 'Nationalite',
-                      REPLACE(c.telephone,'\t','') as 'Telephone',
-                      c.mobile as 'Mobile',
-                      REPLACE(c.email,',','') as 'Email',
-                      c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
-                      CASE c.type
-                      WHEN 1 THEN 'Physique'
-                      WHEN 2 THEN 'Morale'
-                      WHEN 3 THEN 'Physique'
-                      ELSE 'Morale'
-                      END as 'TypeContact',
-                      CASE c.status
-                      WHEN 1 THEN 'oui'
-                      ELSE 'non'
-                      END as 'Valide',
-                      CASE c.added
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.added
-                      END as 'date_inscription',
-                      CASE c.updated
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.updated
-                      END as 'DateMiseJour',
-                      CASE c.lastlogin
-                      WHEN '0000-00-00 00:00:00' then ''
-                      ELSE c.lastlogin
-                      END as 'DateDernierLogin',
-                      REPLACE(ca.adresse1,',','') as 'Adresse1',
-                      REPLACE(ca.adresse2,',','') as 'Adresse2',
-                      REPLACE(ca.adresse3,',','') as 'Adresse3',
-                      REPLACE(ca.cp,',','') as 'CP',
-                      REPLACE(ca.ville,',','') as 'Ville',
-                      acountry.fr as 'Pays',
-                      '012240000002G4e' as 'Sfcompte'
+        $sQuery = 'SELECT
+                        p.id_project,'
+                        . $sCountSiren . '
+                        com.siren,
+                        c.nom,
+                        c.prenom,
+                        c.email,
+                        c.mobile,
+                        c.telephone,
+                        c.source,
+                        c.source2,
+                        c.added,
+                        ps.label
                     FROM
-                      clients c
-                      INNER JOIN companies co on c.id_client = co.id_client_owner
-                      INNER JOIN projects p ON p.id_company = co.id_company
-                      LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
-                      LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
-                      LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
-                      LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
-                    group by
-                      c.id_client";
+                        projects p
+                        INNER JOIN companies com ON p.id_company = com.id_company
+                        INNER JOIN clients c ON com.id_client_owner = c.id_client
+                        INNER JOIN projects_last_status_history plsh ON p.id_project = plsh.id_project
+                        INNER JOIN projects_status_history psh ON plsh.id_project_status_history = psh.id_project_status_history
+                        INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE
+                        DATE(p.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '"
+                        AND "'. $oEndDate->format('Y-m-d') . '" '
+                    . $sGroupBy . '
+                    ORDER BY com.siren DESC, c.added DESC';
 
-        return $this->bdd->executeQuery($sQuery);
+        $rQuery = $this->bdd->query($sQuery);
+        $aResult = array();
+        while ($record = $this->bdd->fetch_assoc($rQuery)) {
+            $aResult[] = $record;
+        }
+
+        return $aResult;
+    }
+
+    public function getFirstSourceForSiren($sSiren, \DateTime $oStartDate = null, \DateTime $oEndDate = null)
+    {
+        if (false === is_null($oStartDate) && false === is_null($oEndDate)) {
+            $oStartDate = new \DateTime('2013-01-01');
+            $oEndDate = new \DateTime('NOW');
+        }
+
+        $sQuery = 'SELECT
+                        c.source
+                    FROM
+                        clients c
+                        INNER JOIN companies com on c.id_client = com.id_client_owner
+                    WHERE
+                    com.siren = ' . $sSiren . '
+                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+                    ORDER BY c.added ASC LIMIT 1';
+
+        $rQuery = $this->bdd->query($sQuery);
+        return ($this->bdd->result($rQuery, 0));
+    }
+
+    public function getLastSourceForSiren($sSiren, \DateTime $oStartDate = null, \DateTime $oEndDate = null)
+    {
+        if (false === is_null($oStartDate) && false === is_null($oEndDate)) {
+            $oStartDate = new \DateTime('2013-01-01');
+            $oEndDate = new \DateTime('NOW');
+        }
+
+        $sQuery = 'SELECT
+                        c.source
+                    FROM
+                        clients c
+                        INNER JOIN companies com on c.id_client = com.id_client_owner
+                    WHERE
+                    com.siren = ' . $sSiren . '
+                    AND DATE(c.added) BETWEEN "'. $oStartDate->format('Y-m-d') . '" AND "'. $oEndDate->format('Y-m-d') . '"
+                    ORDER BY c.added DESC LIMIT 1';
+
+        $rQuery = $this->bdd->query($sQuery);
+        return ($this->bdd->result($rQuery, 0));
     }
 }
