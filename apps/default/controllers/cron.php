@@ -39,7 +39,7 @@ class cronController extends bootstrap
 
         $this->hideDecoration();
         $this->autoFireView = false;
-        $this->oLogger      = $this->get('monolog.logger.console');
+        $this->oLogger = $this->get('monolog.logger.console');
 
         $this->settings->get('DebugMailFrom', 'type');
         $debugEmail = $this->settings->value;
@@ -58,7 +58,6 @@ class cronController extends bootstrap
     private function startCron($sName, $iDelay)
     {
         $this->iStartTime = time();
-        $this->oLogger    = new ULogger($sName, $this->logPath, 'cron.' . date('Ymd') . '.log');
         $this->oSemaphore = $this->loadData('settings');
         $this->oSemaphore->get('Controle cron ' . $sName, 'type');
 

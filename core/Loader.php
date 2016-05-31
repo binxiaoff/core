@@ -26,12 +26,12 @@ class Loader
             $connectionFactory = new ConnectionFactory([]);
             $db                = $connectionFactory->createConnection(
                 [
-                    'driver'   => $params['parameters']['database_driver'],
-                    'host'     => $params['parameters']['database_host'],
-                    'dbname'   => $params['parameters']['database_name'],
-                    'user'     => $params['parameters']['database_user'],
-                    'password' => $params['parameters']['database_password'],
-                    'charset'  => 'utf8',
+                    'driver'       => $params['parameters']['database_driver'],
+                    'host'         => $params['parameters']['database_host'],
+                    'dbname'       => $params['parameters']['database_name'],
+                    'user'         => $params['parameters']['database_user'],
+                    'password'     => $params['parameters']['database_password'],
+                    'charset'      => 'utf8',
                     'wrapperClass' => $params['parameters']['wrapper_class'],
                 ]
             );

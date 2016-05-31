@@ -130,23 +130,23 @@ class Connection extends BaseConnection
         return null;
     }
 
-    public function controlSlug($table, $slug, $id_name, $id_value)
+    public function controlSlug($table, $slug, $idName, $idValue)
     {
         $params    = [
             'slug'  => $slug,
-            'value' => $id_value
+            'value' => $idValue
         ];
-        $statement = $this->executeQuery('SELECT slug FROM ' . $table . ' WHERE slug = :slug AND ' . $id_name . ' != :value', $params);
+        $statement = $this->executeQuery('SELECT slug FROM ' . $table . ' WHERE slug = :slug AND ' . $idName . ' != :value', $params);
 
         if ($statement->rowCount() == 1 || $slug == "") {
-            if ($table == 'tree' && $id_value == 1 && $slug == '') {
+            if ($table == 'tree' && $idValue == 1 && $slug == '') {
                 $slug = '';
             } else {
-                $slug = $slug . '-' . $id_value;
+                $slug = $slug . '-' . $idValue;
             }
         }
 
-        $this->update($table, ['slug' => $slug], [$id_name => $id_value]);
+        $this->update($table, ['slug' => $slug], [$idName => $idValue]);
     }
 
     public function controlSlugMulti($table, $slug, $id_value, $list_field_value, $id_langue)

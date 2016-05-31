@@ -48,11 +48,6 @@ class depot_de_dossierController extends bootstrap
 
     public function _default()
     {
-        /** @var \Unilend\Service\MailerManager $oLM */
-        $oLM = $this->get('unilend.service.project_manager');
-        $lm = $this->loadData('projects');
-        $oLM->setLogger($this->get('logger'));
-        echo $oLM->checkBids($lm);die;
         $this->checkProjectHash('default');
     }
 
