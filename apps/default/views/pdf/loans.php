@@ -20,11 +20,11 @@
             <b><?= $this->lng['preteur-operations-pdf']['paris-le'] ?> <?= (date('d/m/Y')) ?></b>
             <br/><br/><br/>
             <?
-            if (isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0) {
-
-                $this->companies->get($this->oLendersAccounts->id_company, 'id_company');
+            if (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner != 0) {
+                $this->companies->get($this->lenders_accounts->id_company_owner);
                 ?>
                 <b><?= $this->companies->name ?></b><br/>
+                <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
                 <?= $this->companies->adresse1 ?><br/>
                 <?= $this->companies->zip . ' ' . $this->companies->city ?>
                 <?
@@ -41,10 +41,10 @@
         <div style="clear:both;"></div>
         <br/>
         <strong>Historique des projets financés par votre compte Unilend n°<?= $this->clients->id_client ?></strong><br/>
-        <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0 ? $this->companies->name : $this->clients->prenom . ' ' . $this->clients->nom) ?>
+        <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner!= 0 ? $this->companies->name : $this->clients->prenom . ' ' . $this->clients->nom) ?>
         <br/>
-        <?php if (isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0): ?>
-            <?= $this->lng['preteur-operations-pdf']['Representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?><br/>
+        <?php if (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner != 0): ?>
+            <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?><br/>
         <?php endif; ?>
     </div>
 
