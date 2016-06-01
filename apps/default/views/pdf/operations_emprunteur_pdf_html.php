@@ -1,12 +1,10 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
     <title>Vos operations</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8"/>
     </head>
 <body>
-
 <div class="pdfHeader">
     <div class="logo"></div>
     <br/><br/>
@@ -17,10 +15,9 @@
         75116 Paris
     </div>
 
-    <div style="float: left;padding:0 0 0 300px;">
+    <div style="float: right;">
         <b><?= $this->lng['preteur-operations-pdf']['paris-le'] ?> <?= (date('d/m/Y')) ?></b>
         <br/><br/><br/>
-
         <b><?= $this->companies->name ?></b>
         <br/>
         <?= $this->companies->adresse1 ?>
@@ -40,7 +37,6 @@
 </div>
 <br/>
 <br/>
-
 <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
     <thead>
     <tr>
@@ -71,40 +67,33 @@
     </tr>
     </thead>
     <tbody>
-
     <?php foreach ($this->aBorrowerOperations as $aOperation) : ?>
-
-    <tr>
-        <td><?= $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ] ?></td>
-        <td style="text-align: center;"><?= $aOperation['id_project'] ?></td>
-        <td style="text-align: right;"><?= $this->dates->formatDateMysqltoShortFR($aOperation['date']) ?></td>
-        <td style="text-align: right;"><?= $this->ficelle->formatnumber($aOperation['montant']) ?> &euro;</td>
-    </tr>
-
-    <?php if ($aOperation['type'] == 'commission-mensuelle') : ?>
-    <tr>
-        <td style="text-align: right"><?= $this->lng['espace-emprunteur']['operations-type-commission-ht'] ?></td>
-        <td></td>
-        <td></td>
-        <td style="text-align: right;"><?=  $this->ficelle->formatnumber($aOperation['commission']) ?> &euro;</td>
-        <td></td>
-    </tr>
-    <tr>
-        <td style="text-align: right"><?=  $this->lng['espace-emprunteur']['operations-type-tva'] ?></td>
-        <td></td>
-        <td></td>
-        <td style="text-align: right;"><?=   $this->ficelle->formatnumber($aOperation['tva']) ?> &euro;</td>
-        <td></td
-    </tr>
-    <?php endif;
-    endforeach; ?>
+        <tr>
+            <td><?= $this->lng['espace-emprunteur'][ 'operations-type-' . $aOperation['type'] ] ?></td>
+            <td style="text-align: center;"><?= $aOperation['id_project'] ?></td>
+            <td style="text-align: right;"><?= $this->dates->formatDateMysqltoShortFR($aOperation['date']) ?></td>
+            <td style="text-align: right;"><?= $this->ficelle->formatnumber($aOperation['montant']) ?> &euro;</td>
+        </tr>
+        <?php if ($aOperation['type'] == 'commission-mensuelle') : ?>
+        <tr>
+            <td style="text-align: right"><?= $this->lng['espace-emprunteur']['operations-type-commission-ht'] ?></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;"><?=  $this->ficelle->formatnumber($aOperation['commission']) ?> &euro;</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="text-align: right"><?=  $this->lng['espace-emprunteur']['operations-type-tva'] ?></td>
+            <td></td>
+            <td></td>
+            <td style="text-align: right;"><?=   $this->ficelle->formatnumber($aOperation['tva']) ?> &euro;</td>
+            <td></td
+        </tr>
+        <?php endif; ?>
+    <?php endforeach; ?>
     </tbody>
 </table>
 <div class="pdfFooter">
-
     <?= $this->lng['preteur-operations-pdf']['prestataire-de-services-de-paiement'] ?><br/>
     <?= $this->lng['preteur-operations-pdf']['agent-prestataire-de-services-de-paiement'] ?><br/>
-
-
 </div>
-
