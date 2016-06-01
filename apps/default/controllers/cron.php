@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\librairies\Cache;
-use Unilend\librairies\ULogger;
+use Symfony\Bridge\Monolog\Logger;
 use Unilend\librairies\greenPoint\greenPoint;
 use Unilend\librairies\greenPoint\greenPointStatus;
 
@@ -27,9 +27,7 @@ class cronController extends bootstrap
      */
     private $oSemaphore;
 
-    /**
-     * @var ULogger
-     */
+    /** @var  Logger */
     private $oLogger;
 
     public function initialize()
@@ -41,7 +39,7 @@ class cronController extends bootstrap
 
         $this->hideDecoration();
         $this->autoFireView = false;
-
+        $this->oLogger = $this->get('monolog.logger.console');
 
         $this->settings->get('DebugMailFrom', 'type');
         $debugEmail = $this->settings->value;
@@ -60,7 +58,6 @@ class cronController extends bootstrap
     private function startCron($sName, $iDelay)
     {
         $this->iStartTime = time();
-        $this->oLogger    = new ULogger($sName, $this->logPath, 'cron.' . date('Ymd') . '.log');
         $this->oSemaphore = $this->loadData('settings');
         $this->oSemaphore->get('Controle cron ' . $sName, 'type');
 
@@ -77,13 +74,11 @@ class cronController extends bootstrap
         if ($this->oSemaphore->value == 1) {
             $this->oSemaphore->value = 0;
             $this->oSemaphore->update();
-
-            $this->oLogger->addRecord(ULogger::INFO, 'Start cron', array('ID' => $this->iStartTime));
+            $this->oLogger->info('Started cron ' . $sName . ' - Cron ID=' . $this->iStartTime, array('class' => __CLASS__, 'function' => __FUNCTION__));
 
             return true;
         }
-
-        $this->oLogger->addRecord(ULogger::INFO, 'Semaphore locked', array('ID' => $this->iStartTime));
+        $this->oLogger->info('Semaphore locked', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         return false;
     }
@@ -92,8 +87,7 @@ class cronController extends bootstrap
     {
         $this->oSemaphore->value = 1;
         $this->oSemaphore->update();
-
-        $this->oLogger->addRecord(ULogger::INFO, 'End cron', array('ID' => $this->iStartTime));
+        $this->oLogger->info('End cron ID=' . $this->iStartTime, array('class' => __CLASS__, 'function' => __FUNCTION__));
     }
 
     public function _default()
@@ -168,7 +162,7 @@ class cronController extends bootstrap
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
-                    $this->oLogger->addRecord(ULogger::INFO, 'Do process pre-publish on project ID: ' . $oProject->id_project);
+                    $this->oLogger->info('Do process pre-publish on project ID: ' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                     $oProjectManager->prePublish($oProject);
                 }
             }
@@ -225,7 +219,7 @@ class cronController extends bootstrap
             $oMailerManager = $this->get('unilend.service.email_manager');
 
             $bHasProjectFinished = false;
-            $oLoggerEndProject   = new ULogger('cron', $this->logPath, 'cron_check_projet_en_funding.' . date('Ymd') . '.log');
+            $oLoggerEndProject = $this->get('monolog.logger.console');
 
             $aProjectsList = $oProject->selectProjectsByStatus(\projects_status::EN_FUNDING, '', '', array(), '', '', false);
             foreach ($aProjectsList as $aProject) {
@@ -1407,7 +1401,7 @@ class cronController extends bootstrap
                 $lien = 'ssh2.sftp://' . $sftp . '/home/sfpmei/receptions';
 
                 if (false === file_exists($lien)) {
-                    $this->oLogger->addRecord(ULogger::ERROR, __METHOD__ . ': SFTP connection error');
+                    $this->oLogger->error('SFTP connection error', array('class' => __CLASS__, 'function' => __FUNCTION__));
                     mail($this->sDestinatairesDebug, '[Alert] Unilend SFTP connection error', '[Alert] Unilend SFTP connection error - cron reception', $this->sHeadersDebug);
                     $this->stopCron();
                     die;
@@ -1526,7 +1520,7 @@ class cronController extends bootstrap
 
                         // Si on a un virement unilend offre de bienvenue
                         if (isset($r['unilend_bienvenue'])) {
-                            $this->oLogger->addRecord(ULogger::INFO, __METHOD__ . ' virement offre de bienvenue');
+                            $this->oLogger->info('Bank transfer welcome offer (offre de bienvenue)', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
                             $transactions->id_prelevement   = 0;
                             $transactions->id_client        = 0;
@@ -3958,8 +3952,7 @@ class cronController extends bootstrap
         // Loaded for class constants
         $this->loadData('clients_status');
 
-        $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'Project ID: ' . $id_project);
+        $this->oLogger->debug('Sending new project email : id_project=' . $id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
 
         $this->projects->get($id_project, 'id_project');
         $this->companies->get($this->projects->id_company, 'id_company');
@@ -3983,7 +3976,7 @@ class cronController extends bootstrap
             $iEmails = 0;
             $iOffset += $iLimit;
 
-            $oLogger->addRecord(ULogger::DEBUG, 'Lenders retrieved: ' . count($aLenders));
+             $this->oLogger->debug('Lenders retrieved: ' . count($aLenders), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
 
             foreach ($aLenders as $aLender) {
                 $this->notifications->type       = \notifications::TYPE_NEW_PROJECT;
@@ -4015,7 +4008,7 @@ class cronController extends bootstrap
                 $this->clients_gestion_mails_notif->create();
             }
 
-            $oLogger->addRecord(ULogger::DEBUG, 'Emails sent: ' . $iEmails);
+            $this->oLogger->debug('New project notification emails sent: ' . $iEmails, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
         }
     }
 
@@ -4026,9 +4019,8 @@ class cronController extends bootstrap
      */
     private function sendNewProjectsSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'New projects notifications start');
-        $oLogger->addRecord(ULogger::DEBUG, 'Number of customer to process: ' . count($aCustomerId));
+        $this->oLogger->debug('New projects notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->oLogger->debug('Number of customers to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         /** @var Email email */
         $oEmail = $this->loadLib('email');
@@ -4139,7 +4131,7 @@ class cronController extends bootstrap
                     $mailer->send($message);
 
                 } catch (\Exception $oException) {
-                    $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
+                    $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
             }
         }
@@ -4155,10 +4147,9 @@ class cronController extends bootstrap
      */
     private function sendPlacedBidsSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'Placed bids notifications start');
-        $oLogger->addRecord(ULogger::DEBUG, 'Number of customer to process: ' . count($aCustomerId));
-        
+        $this->oLogger->debug('Placed bids notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
+
         /** @var bids $oBid */
         $oBid = $this->loadData('bids');
         /** @var clients $oCustomer */
@@ -4270,7 +4261,7 @@ class cronController extends bootstrap
                     $mailer->send($message);
 
                 } catch (\Exception $oException) {
-                    $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
+                    $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
             }
         }
@@ -4286,9 +4277,8 @@ class cronController extends bootstrap
      */
     private function sendRejectedBidsSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'Rejected bids notifications start');
-        $oLogger->addRecord(ULogger::DEBUG, 'Number of customer to process: ' . count($aCustomerId));
+        $this->oLogger->debug('Rejected bids notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         /** @var Email email */
         $oEmail = $this->loadLib('email');
@@ -4404,7 +4394,7 @@ class cronController extends bootstrap
                     $mailer->send($message);
 
                 } catch (\Exception $oException) {
-                    $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
+                    $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
             }
         }
@@ -4420,9 +4410,8 @@ class cronController extends bootstrap
      */
     private function sendAcceptedLoansSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'Accepted loans notifications start');
-        $oLogger->addRecord(ULogger::DEBUG, 'Number of customer to process: ' . count($aCustomerId));
+        $this->oLogger->debug('Accepted loans notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         /** @var Email email */
         $oEmail = $this->loadLib('email');
@@ -4579,7 +4568,7 @@ class cronController extends bootstrap
                     $mailer->send($message);
 
                 } catch (\Exception $oException) {
-                    $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
+                    $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
             }
         }
@@ -4595,9 +4584,8 @@ class cronController extends bootstrap
      */
     private function sendRepaymentsSummaryEmail(array $aCustomerId, $sFrequency)
     {
-        $oLogger = new ULogger($this->oLogger->getChannel(), $this->logPath, 'email_notifications.log');
-        $oLogger->addRecord(ULogger::DEBUG, 'Repayments notifications start');
-        $oLogger->addRecord(ULogger::DEBUG, 'Number of customer to process: ' . count($aCustomerId));
+        $this->oLogger->debug('Repayments notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         /** @var Email email */
         $oEmail = $this->loadLib('email');
@@ -4774,7 +4762,7 @@ class cronController extends bootstrap
                     $mailer->send($message);
 
                 } catch (\Exception $oException) {
-                    $oLogger->addRecord(ULogger::ERROR, 'Could not send email for customer ' . $iCustomerId);
+                    $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
             }
         }
@@ -5419,7 +5407,7 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
-    
+
     private function deleteOldFichiers()
     {
         $path  = $this->path . 'protected/sftp_groupama/';
@@ -5531,7 +5519,7 @@ class cronController extends bootstrap
             $L_mail_ra_en_attente = $earlyRepaymentEmail->select('statut = 0', 'added ASC', '', 1);
 
             foreach ($L_mail_ra_en_attente as $ra_email) {
-                $this->oLogger->addRecord(ULogger::INFO, 'Start email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
+                $this->oLogger->info('Start email : ' . $ra_email['id_reception'] . ' - Cron ID=' . $this->iStartTime . ' - Time=' . time() - $this->iStartTime, array('class' => __CLASS__, 'function' => __FUNCTION__));
 
                 $this->receptions->get($ra_email['id_reception']);
                 $this->projects->get($this->receptions->id_project);
@@ -5579,7 +5567,7 @@ class cronController extends bootstrap
                 $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
 
                 foreach ($L_preteur_on_projet as $preteur) {
-                    $this->oLogger->addRecord(ULogger::INFO, 'Lender ' . $preteur['id_lender'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
+                    $this->oLogger->info('Processing id_lender=' . $preteur['id_lender'] . ' - Cron ID=' . $this->iStartTime . ' - Time=' . time() - $this->iStartTime, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
 
                     $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 1 AND id_project = ' . $this->projects->id_project);
 
@@ -5643,7 +5631,7 @@ class cronController extends bootstrap
                 $earlyRepaymentEmail->statut = 1;
                 $earlyRepaymentEmail->update();
 
-                $this->oLogger->addRecord(ULogger::INFO, 'End email ' . $ra_email['id_reception'], array('ID' => $this->iStartTime, 'time' => time() - $this->iStartTime));
+                $this->oLogger->info('End email ' . $ra_email['id_reception'] . ' - Cron ID=' . $this->iStartTime . ' - Time=' . time() - $this->iStartTime, array('class' => __CLASS__, 'function' => __FUNCTION__));
             }
 
             $this->stopCron();
@@ -5760,7 +5748,7 @@ class cronController extends bootstrap
                                     $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $this->projects, $iReminderIndex, $this->projects_status_history->content);
                                 }
                             } catch (\Exception $oException) {
-                                $this->oLogger->addRecord(ULogger::ALERT, 'Error trying to send reminded for project ' . $this->projects->id_client . '(' . $oException->getMessage() . ')');
+                                $this->oLogger->error('Cannot send reminder for project id_project=' . $this->projects->id_project . '(Exception message : ' . $oException->getMessage() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
                             }
                         }
 
@@ -5876,9 +5864,7 @@ class cronController extends bootstrap
         exec('java -cp ' . $this->Config['dataloader_path'][$this->Config['env']] . 'dataloader-26.0.0-uber.jar -Dsalesforce.config.dir=' . $this->Config['path'][$this->Config['env']] . 'dataloader/conf/ com.salesforce.dataloader.process.ProcessRunner process.name=' . escapeshellarg($sType), $aReturnDataloader, $sReturn);
 
         $iTimeEndDataloader = microtime(true) - $iTimeStartDataloader;
-        $oLogger            = new ULogger('SendDataloader', $this->logPath, 'cron.' . date('Ymd') . '.log');
-        $oLogger->addRecord(ULogger::INFO, 'Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),
-            array(__FILE__ . ' on line ' . __LINE__));
+        $this->oLogger->info('Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),array('class' => __CLASS__, 'function' => __FUNCTION__));
     }
 
     /**
@@ -5899,10 +5885,9 @@ class cronController extends bootstrap
 
             $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 300;
             $fTimeStart              = microtime(true);
-            $oLoggerIRR              = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
             /** @var \Unilend\Service\IRRManager $oIRRManager */
-            $oIRRManager             = $this->get('unilend.service.irr_manager');
-            $oIRRManager->setLogger($oLoggerIRR);
+            $oIRRManager = $this->get('unilend.service.irr_manager');
+            $oIRRManager->setLogger($this->oLogger);
 
             /** @var lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
             $oLendersAccountsStatsQueue = $this->loadData('lenders_accounts_stats_queue');
@@ -5919,11 +5904,11 @@ class cronController extends bootstrap
                     $aIRRsCalculated += 1;
 
                 } catch (Exception $e) {
-                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage());
+                    $this->oLogger->error('Could not calculate TRI for lender id_lender_account=' . $aLender['id_lender_account'] . ' Exception message: '  . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
             }
             $this->emptyProjectLastStatusMaterialized();
-            $oLoggerIRR->addRecord(ULogger::INFO, 'Calculation time for ' . $aIRRsCalculated . ' lenders : ' . round((microtime(true) - $fTimeStart)/60, 2) . ' minutes');
+            $oLoggerIRR->info('Calculation time for ' . $aIRRsCalculated . ' lenders : ' . round((microtime(true) - $fTimeStart)/60, 2) . ' minutes', array('class' => __CLASS__, 'function' => __FUNCTION__));
             $this->stopCron();
         }
     }
@@ -5990,7 +5975,7 @@ class cronController extends bootstrap
                     $iNumberOfUnusedWelcomeOffers +=1;
                 }
             }
-            $this->oLogger->addRecord(ULogger::INFO, 'Nombre d\'offres de Bienvenue retirées : ' . $iNumberOfUnusedWelcomeOffers);
+            $this->oLogger->info('Number of withdrawn welcome offers : ' . $iNumberOfUnusedWelcomeOffers);
 
             $this->stopCron();
         }
@@ -6003,11 +5988,10 @@ class cronController extends bootstrap
     {
         if (true === $this->startCron('UnilendStats', 5)) {
             set_time_limit(2000);
-            $oLoggerIRR = new ULogger('Calculate IRR', $this->logPath, 'IRR.' . date('Ymd') . '.log');
 
             /** @var \Unilend\Service\IRRManager $oIRRManager */
             $oIRRManager = $this->get('unilend.service.irr_manager');
-            $oIRRManager->setLogger($oLoggerIRR);
+            $oIRRManager->setLogger($this->oLogger);
             $sYesterday = date('Y-m-d', strtotime('-1 day'));
 
             $this->fillProjectLastStatusMaterialized();
@@ -6016,7 +6000,7 @@ class cronController extends bootstrap
                 try {
                     $oIRRManager->updateIRRUnilend();
                 } catch (Exception $e) {
-                    $oLoggerIRR->addRecord(ULogger::WARNING, 'Caught Exception: ' . $e->getMessage());
+                    $this->oLogger->error('Could not update Unilend IRR: -ExceptionMessage: ' . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
             }
             $this->emptyProjectLastStatusMaterialized();
@@ -6054,10 +6038,8 @@ class cronController extends bootstrap
 
             $bDebug = true;
             if ($bDebug) {
-                $oLogger = new ULogger('Validate attachments', $this->logPath, 'greenPoint.' . date('Ymd') . '.log');
-                $oLogger->addRecord(ULogger::DEBUG, '************************************* Begin GreenPoint Validation *************************************');
+                $this->oLogger->info('************************************* Begin GreenPoint Validation *************************************', array('class' => __CLASS__, 'function' => __FUNCTION__));
             }
-
             $aStatusToCheck = array(
                 \clients_status::TO_BE_CHECKED,
                 \clients_status::COMPLETENESS_REPLY,
@@ -6102,7 +6084,7 @@ class cronController extends bootstrap
 
                             if (false == $sFullPath) {
                                 if ($bDebug) {
-                                    $oLogger->addRecord(ULogger::ERROR, 'Attachment not found - ID=' . $aAttachment['id']);
+                                    $this->oLogger->error('Attachment not found - ID=' . $aAttachment['id'], array('class' => __CLASS__, 'function' => __FUNCTION__));
                                 }
                                 continue;
                             }
@@ -6134,12 +6116,12 @@ class cronController extends bootstrap
                             }
                         }
                         if ($bDebug && false === empty($aError)) {
-                            $oLogger->addRecord(ULogger::ERROR, 'CLIENT_ID=' . $iClientId . ' - Catched Exceptions : ' . var_export($aError, 1));
+                            $this->oLogger->error('CLIENT_ID=' . $iClientId . ' - Catched Exceptions : ' . var_export($aError, 1), __METHOD__);
                         }
                         if (false === empty($aQueryID) && is_array($aQueryID)) {
                             $aResult = $oGreenPoint->sendRequests();
                             if ($bDebug) {
-                                $oLogger->addRecord(ULogger::DEBUG, 'CLIENT_ID=' . $iClientId . ' - Request Details : ' . var_export($aResult, 1));
+                                $this->oLogger->info('CLIENT_ID=' . $iClientId . ' - Request Details : ' . var_export($aResult, 1), array('class' => __CLASS__, 'function' => __FUNCTION__));
                             }
                             $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $aAttachmentsToRevalidate);
                             unset($aResult, $aQueryID);
@@ -6149,7 +6131,7 @@ class cronController extends bootstrap
                 }
             }
             if ($bDebug) {
-                $oLogger->addRecord(ULogger::DEBUG, '************************************* End GreenPoint Validation *************************************');
+                $this->oLogger->info('************************************* End GreenPoint Validation *************************************', array('class' => __CLASS__, 'function' => __FUNCTION__));
             }
             $this->stopCron();
         }

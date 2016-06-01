@@ -1,7 +1,7 @@
 <?php
 
 use Knp\Snappy\Pdf;
-use Unilend\librairies\ULogger;
+use Symfony\Bridge\Monolog\Logger;
 
 class pdfController extends bootstrap
 {
@@ -20,9 +20,7 @@ class pdfController extends bootstrap
      */
     private $oSnapPdf;
 
-    /**
-     * @var ULogger
-     */
+    /** @var  Logger */
     private $oLogger;
 
     /**
@@ -67,7 +65,7 @@ class pdfController extends bootstrap
         $this->autoFireDebug  = false;
 
         $this->oSnapPdf = new Pdf('/usr/bin/wkhtmltopdf');
-        $this->oLogger  = new ULogger('PdfManagement', $this->logPath, self::NAME_LOG);
+        $this->oLogger  = $this->get('logger');
     }
 
     /**
@@ -138,9 +136,7 @@ class pdfController extends bootstrap
         $this->oSnapPdf->generateFromHtml($this->sDisplay, $sPathPdf, array(), true);
 
         $iTimeEndPdf = microtime(true) - $iTimeStartPdf;
-
-        $this->oLogger->addRecord(ULogger::INFO, 'End generation of ' . $sTypePdf . ' pdf in ' . round($iTimeEndPdf, 2),
-            array(__FILE__ . ' on line ' . __LINE__));
+        $this->oLogger->info($sTypePdf . ' pdf successfully generated in: ' . round($iTimeEndPdf, 2), array('class' => __CLASS__, 'function' => __FUNCTION__));
     }
 
     /**
@@ -156,8 +152,7 @@ class pdfController extends bootstrap
         header("Content-disposition: attachment; filename=" . $sNamePdf . ".pdf");
         header("Content-Type: application/force-download");
         if (!readfile($sPathPdf)) {
-            $this->oLogger->addRecord(ULogger::DEBUG, 'File : ' . $sPathPdf . ' not readable.',
-                array(__FILE__ . ' on line ' . __LINE__));
+            $this->oLogger->error('File : ' . $sPathPdf . ' not readable', array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
     }
 
@@ -336,8 +331,8 @@ class pdfController extends bootstrap
                 // Deleting authority, not necessary (Double authority)
                 if (is_array($aProjectPouvoir) && 0 < count($aProjectPouvoir)) {
                     foreach ($aProjectPouvoir as $aProjectPouvoirToDelete) {
-                        $this->oLogger->addRecord(ULogger::INFO, 'Deleting Pouvoir id : ' . $aProjectPouvoirToDelete['id_pouvoir'], array(__FILE__ . ' at line ' . __LINE__));
-                        $this->oProjectsPouvoir->delete($aProjectPouvoirToDelete['id_pouvoir'], 'id_pouvoir'); // plus de doublons comme ca !
+                        $this->oLogger->info('Deleting Pouvoir id : ' . $aProjectPouvoirToDelete['id_pouvoir'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
+                        $this->oProjectsPouvoir->delete($aProjectPouvoirToDelete['id_pouvoir'], 'id_pouvoir');
                     }
                 }
 
@@ -374,7 +369,7 @@ class pdfController extends bootstrap
                 if (false === $bSigned) {
                     if (file_exists($sPath . $sFileName) && filesize($sPath . $sFileName) > 0 && date('Y-m-d', filemtime($sPath . $sFileName)) != date('Y-m-d')) {
                         unlink($sPath . $sFileName);
-                        $this->oLogger->addRecord(ULogger::INFO, 'File : ' . $sPath . $sFileName . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
+                        $this->oLogger->info('File : ' . $sPath . $sFileName . ' deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
                         $this->GenerateProxyHtml();
                         $this->WritePdf($sPath . $sFileName, 'authority');

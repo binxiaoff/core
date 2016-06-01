@@ -5,6 +5,7 @@ parameters:
     database_name:                  unilend
     database_user:                  root
     database_password:              ROOTPASSWORD
+    wrapper_class:                  Unilend\Bridge\Doctrine\DBAL\Connection
 
     secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
     locale:                         fr_FR

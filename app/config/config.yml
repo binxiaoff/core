@@ -53,7 +53,7 @@ monolog:
         console:
             type: stream
             path: "%kernel.logs_dir%/console-%kernel.environment%.log"
-            path: info
+            level: info
             max_files: 10
             channels: [console]
 
