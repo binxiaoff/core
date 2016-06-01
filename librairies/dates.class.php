@@ -365,7 +365,7 @@ class dates
         $nbJours = max(0, intval($nbJours));
         $date    = strtotime($date);
 
-        $date_start_of_month = mktime(date("h", $date), date("i", $date), date("s", $date), date("m", $date), 1, date("Y", $date));
+        $date_start_of_month = mktime(date("H", $date), date("i", $date), date("s", $date), date("m", $date), 1, date("Y", $date));
         $date_plus_months    = strtotime("+$nbMois month", $date_start_of_month);
         $date                = strtotime('+' . (min(date('t', $date_plus_months), date("d", $date)) + $nbJours - 1) . ' day', $date_plus_months);
 
