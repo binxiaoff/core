@@ -1,0 +1,216 @@
+//
+// Unilend - Dashboard Panel - My Wallet
+//
+
+@mixin colorize-mywallet($set-color: $c-level-1) {
+  // Set user level colours
+  @include user-level-colors($to-color: $set-color) {
+    @include devices('xs', 'sm') {
+      .dashboard-mywallet-nav {
+        ul > li {
+          &.active {
+            background-image: inline-svg-code('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="20" viewBox="0 0 20 20"><path fill="#{$c-level}" d="M0 20 L 10 0 L 20 20 L 0 20" /></svg>');
+          }
+        }
+      }
+    }
+
+    @include devices('md', 'lg') {
+      .dashboard-mywallet-nav {
+        ul > li {
+          &.active {
+            background-image: inline-svg-code('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="20" viewBox="0 0 20 20"><path fill="#{$c-level}" d="M5 10 L 20 0 L 20 20 L 5 10" /></svg>');
+          }
+        }
+      }
+    }
+
+    .dashboard-mywallet-content {
+      background-color: $c-level;
+      color: $c-white;
+
+      h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+        color: $c-white;
+      }
+
+      dt {
+        color: $c-level-d2;
+      }
+
+      dd {
+        color: $c-white;
+      }
+    }
+  }
+}
+
+.dashboard-panel.dashboard-mywallet {
+  // .dashboard-panel-content {
+  //   min-height: 500px - $height-panel-header-md - $height-panel-footer-md;
+  // }
+
+  .dashboard-panel-footer {
+    display: none;
+  }
+
+  #{$js-user-level-1} & {
+    @include colorize-mywallet($c-level-1);
+  }
+
+  #{$js-user-level-2} & {
+    @include colorize-mywallet($c-level-2);
+  }
+
+  #{$js-user-level-3} & {
+    @include colorize-mywallet($c-level-3);
+  }
+
+  #{$js-user-level-4} & {
+    @include colorize-mywallet($c-level-4);
+  }
+
+  #{$js-user-level-5} & {
+    @include colorize-mywallet($c-level-5);
+  }
+}
+
+.dashboard-mywallet-nav {
+  ul {
+    @include block-list;
+
+    > li {
+      a {
+        box-sizing: border-box;
+        display: block;
+        line-height: 1.3em;
+        vertical-align: middle;
+
+        @include link-states(
+          $link: (
+            color: $c-t2,
+            text-decoration: none
+          ),
+          $hover: (
+            color: $c-t2,
+            text-decoration: none
+          ),
+          $active: (
+            color: $c-p1,
+            text-decoration: none
+          )
+        );
+      }
+
+      &.active {
+        background-color: transparent;
+        background-repeat: no-repeat;
+
+        a {
+          color: $c-p1;
+        }
+      }
+    }
+  }
+
+  @include devices('xs', 'sm') {
+    ul {
+      @include clearfix;
+
+      > li {
+        box-sizing: border-box;
+        width: 33.33%;
+        padding-bottom: 20px;
+        float: left;
+
+        &.active {
+          background-position: center bottom;
+        }
+
+        a {
+          padding-left: 10px;
+          padding-right: 10px;
+          border-right: solid 1px $c-bg2;
+          text-align: center;
+        }
+
+        &:last-child {
+          a {
+            border-right: 0;
+          }
+        }
+      }
+    }
+  }
+
+  @include devices('xs') {
+    ul > li {
+      min-height: 100px;
+    }
+  }
+
+  @include devices('sm') {
+    ul > li {
+      min-height: 80px;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    ul {
+      > li {
+        padding-right: 20px;
+
+        &.active {
+          background-position: right center;
+        }
+
+        a {
+          padding-top: 50px;
+          padding-bottom: 50px;
+          border-bottom: solid 1px $c-bg2;
+        }
+
+        &:last-child {
+          a {
+            border-bottom: 0;
+          }
+        }
+      }
+    }
+  }
+}
+
+.dashboard-mywallet-content {
+  padding: 20px;
+  min-height: 500px;
+
+  .col-info {
+    > :first-child {
+      margin-top: 0;
+    }
+
+    > :last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .col-graph {
+    padding-left: 20px;
+  }
+
+  p {
+    font-size: $fs-base * .9;
+    line-height: 1.5em;
+  }
+
+  dt {
+    font-size: $fs-base * .9;
+    line-height: 1.2em;
+    margin-bottom: 5px;
+  }
+
+  dd {
+    font-size: $fs-base * 2;
+    line-height: 1em;
+    margin-bottom: 20px;
+  }
+}

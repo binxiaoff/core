@@ -1,0 +1,119 @@
+//
+// Unilend Form Validation
+//
+
+// Validation UI modifies on the whole form field, not just the input
+.form-field {
+  &.ui-formvalidation-success,
+  &.ui-formvalidation-error {
+    .input-group {
+      &:after {
+        display: block;
+        width: 2em;
+
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+
+        font-family: $ff-icon;
+        line-height: $height-input; // height of input minus total border height
+        text-align: center;
+
+        transition: width .2s;
+        user-select: none;
+      }
+    }
+
+    &:hover {
+      &:after {
+        width: 0;
+      }
+    }
+  }
+
+  // Form field validated successfully
+  &.ui-formvalidation-success {
+    .input-group:after {
+      content: '\f00c'; // Check / Tick
+      color: $c-success;
+    }
+
+    // Hide the messages on success
+    .ui-formvalidation-messages {
+      display: none;
+    }
+  }
+
+  // Errors
+  &.ui-formvalidation-error {
+    // label {
+    //   color: $c-error;
+    // }
+
+    // Show input content has error
+    @include text-inputs {
+      background-color: $c-white;
+      border-color: $c-error;
+      color: $c-error;
+    }
+
+    .input-group:after {
+      content: '\f12a'; // Exclamation mark
+      color: $c-error;
+    }
+  }
+}
+
+.ui-formvalidation-messages {
+  @include block-list;
+
+  padding: 5px 10px;
+  position: relative;
+  clear: both;
+  font-size: 14px;
+  line-height: 1.3em;
+
+  li {
+    padding: 5px 10px;
+  }
+
+  &:before {
+    content: '';
+    display: none;
+    width: 20px;
+    height: 10px;
+    margin-left: 15px;
+    margin-top: -10px;
+    overflow: hidden;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: 5;
+
+    background-position: center center;
+    background-repeat: no-repeat;
+  }
+
+  .ui-formvalidation-error & {
+    $c-message-bg: lighten($c-error, 40%);
+    background-color: $c-message-bg;
+
+    &:before {
+      display: block;
+      background-image: inline-svg-code('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="10" viewBox="0 0 20 10"><path fill="#{$c-message-bg}" d="M0 10 L 10 0 L 20 10 L 0 10" /></svg>');
+    }
+  }
+
+  // Don't need an arrow for success
+  // .ui-formvalidation-success & {
+  //   $c-message-bg: lighten($c-success, 40%);
+  //   background-color: $c-message-bg;
+
+  //   &:before {
+  //     display: block;
+  //     background-image: inline-svg-code('<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="20" height="10" viewBox="0 0 20 10"><path fill="#{$c-message-bg}" d="M0 10 L 10 0 L 20 10 L 0 10" /></svg>');
+  //   }
+  // }
+}

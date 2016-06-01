@@ -1,0 +1,148 @@
+//
+// Unilend Colors
+//
+
+$colors: (
+  'purple':    #b20066,
+  'purple-d':  #9a1d5a,
+  'purple-d2': #6d1f4f,
+  'purple-d3': #4e203c,
+  'purple-l':  #FCD4EB,
+  'purple-l2': #FDF4FA,
+  'purple-l3': #ffd0eb,
+
+  'green':     #85C085,
+  'green-l':   #B8CEB9,
+  'teal':      #2cbaa4,
+  'orange':    #f47070,
+  'red':       #DE2F4C,
+  'red-l':     #ECA2AF,
+  'red-l2':    #F5D5DB,
+
+  'black':     #302a32,
+  'black-r':   #000000, // Rich black
+  'grey':      #787679,
+  'grey-l':    #9f9d9f,
+  'grey-l2':   #dedcdf,
+  'grey-l3':   #eceaed,
+  'grey-l4':   #f8f6f8,
+  'grey-l5':   #fdfcfe,
+  'white':     #fff,
+
+  'facebook':  #3b5998,
+  'twitter':   #55acee,
+
+  // Notifications
+  'rejected':  #f8524e,
+  'accepted':  #2cbaa4,
+  'account':   #ffa210,
+
+  // Levels
+  'level-1':   #2cbaa4,
+  'level-2':   #4378c6,
+  'level-3':   #f78e61,
+  'level-4':   #f55150,
+  'level-5':   #1e4155
+);
+
+// Shorthand reference to colours (SCSS doesn't support dynamic variable setting)
+// Shorthand makes it easier than always typing `map-get(..)`
+$c-purple:    map-get($colors, 'purple');
+$c-purple-d:  map-get($colors, 'purple-d');
+$c-purple-d2: map-get($colors, 'purple-d2');
+$c-purple-d3: map-get($colors, 'purple-d3');
+$c-purple-l:  map-get($colors, 'purple-l');
+$c-purple-l2: map-get($colors, 'purple-l2');
+$c-purple-l3: map-get($colors, 'purple-l3');
+$c-green:     map-get($colors, 'green');
+$c-green-l:   map-get($colors, 'green-l');
+$c-teal:      map-get($colors, 'teal');
+$c-orange:    map-get($colors, 'orange');
+$c-red:       map-get($colors, 'red');
+$c-red-l:     map-get($colors, 'red-l');
+$c-red-l2:    map-get($colors, 'red-l2');
+$c-black:     map-get($colors, 'black');
+$c-black-r:   map-get($colors, 'black-r');
+$c-grey:      map-get($colors, 'grey');
+$c-grey-l:    map-get($colors, 'grey-l');
+$c-grey-l2:   map-get($colors, 'grey-l2');
+$c-grey-l3:   map-get($colors, 'grey-l3');
+$c-grey-l4:   map-get($colors, 'grey-l4');
+$c-grey-l5:   map-get($colors, 'grey-l5');
+$c-white:     map-get($colors, 'white');
+$c-facebook:  map-get($colors, 'facebook');
+$c-twitter:   map-get($colors, 'twitter');
+$c-rejected:  map-get($colors, 'rejected');
+$c-accepted:  map-get($colors, 'accepted');
+$c-account:   map-get($colors, 'account');
+$c-level-1:   map-get($colors, 'level-1');
+$c-level-2:   map-get($colors, 'level-2');
+$c-level-3:   map-get($colors, 'level-3');
+$c-level-4:   map-get($colors, 'level-4');
+$c-level-5:   map-get($colors, 'level-5');
+
+// Colours for the site (primary, text, backgrounds, validation messages)
+$colors-site: (
+  'p1':        $c-purple,       // Color Primary 1
+  'p1-hover':  $c-purple-d,     // Color Primary 1 Hover
+  'p2':        $c-purple-d2,    // Color Primary 2
+  'p2-hover':  $c-purple-d3,    // Color Primary 2 Hover
+
+  't1':        $c-black,        // Color Text 1
+  't2':        $c-grey,         // Color Text 2
+  't3':        $c-grey-l,       // Color Text 3
+
+  'bg1':       $c-grey-l2,      // Color BG 1
+  'bg2':       $c-grey-l3,      // Color BG 2
+  'bg3':       $c-grey-l4,      // Color BG 3
+  'bg4':       $c-grey-l5,      // Color BG 4
+  'bg5':       $c-white,        // Color BG 5
+
+  'success':   $c-green,        // Color Success
+  'error':     $c-red           // Color Error
+);
+
+// Shorthand variables are used throughout the SCSS
+$c-p1:        map-get($colors-site, 'p1');
+$c-p1-hover:  map-get($colors-site, 'p1-hover');
+$c-p2:        map-get($colors-site, 'p2');
+$c-p2-hover:  map-get($colors-site, 'p2-hover');
+$c-t1:        map-get($colors-site, 't1');
+$c-t2:        map-get($colors-site, 't2');
+$c-t3:        map-get($colors-site, 't3');
+$c-bg1:       map-get($colors-site, 'bg1');
+$c-bg2:       map-get($colors-site, 'bg2');
+$c-bg3:       map-get($colors-site, 'bg3');
+$c-bg4:       map-get($colors-site, 'bg4');
+$c-bg5:       map-get($colors-site, 'bg5');
+$c-success:   map-get($colors-site, 'success');
+$c-error:     map-get($colors-site, 'error');
+
+// Preset globals
+$c-level:    $c-level-1;
+$c-level-l:  lighten($c-level-1, 10%);
+$c-level-l2: lighten($c-level-1, 20%);
+$c-level-l3: lighten($c-level-1, 30%);
+$c-level-l4: lighten($c-level-1, 40%);
+$c-level-l5: lighten($c-level-1, 50%);
+$c-level-d:  darken($c-level-1, 10%);
+$c-level-d2: darken($c-level-1, 20%);
+$c-level-d3: darken($c-level-1, 30%);
+$c-level-d4: darken($c-level-1, 40%);
+$c-level-d5: darken($c-level-1, 50%);
+
+// User Level colors change globals
+@mixin user-level-colors($to-color: $c-level-1) {
+  $c-level:    $to-color !global;
+  $c-level-l:  lighten($to-color, 10%) !global;
+  $c-level-l2: lighten($to-color, 20%) !global;
+  $c-level-l3: lighten($to-color, 30%) !global;
+  $c-level-l4: lighten($to-color, 40%) !global;
+  $c-level-l5: lighten($to-color, 50%) !global;
+  $c-level-d:  darken($to-color, 10%) !global;
+  $c-level-d2: darken($to-color, 20%) !global;
+  $c-level-d3: darken($to-color, 30%) !global;
+  $c-level-d4: darken($to-color, 40%) !global;
+  $c-level-d5: darken($to-color, 50%) !global;
+  @content;
+}

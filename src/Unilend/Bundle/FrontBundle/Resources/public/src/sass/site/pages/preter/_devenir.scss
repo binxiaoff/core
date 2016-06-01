@@ -1,0 +1,164 @@
+//
+// Unilend Devenir Preter Page
+//
+
+#devenir-preteur.page {
+  @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
+
+  .page-header {
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+    height: auto !important;
+    padding-top: 0;
+    padding-bottom: 0;
+
+    .h1 {
+      margin-top: 20px;
+      margin-bottom: 20px;
+    }
+
+    .site-wrap {
+      height: auto !important;
+    }
+  }
+
+  > .hero-wrap {
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+
+    padding-top: 50px;
+    padding-bottom: 50px;
+    margin-bottom: 50px;
+
+    background-color: $c-bg3;
+    background-image: image-url('backgrounds/bg-guy.jpg');
+    background-position: top center;
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+
+  .form-preter-nav {
+    .nav.nav-progress {
+      > li {
+        width: 33.33%;
+
+        &.complete {
+          .preter-create-progress-point {
+            display: none;
+          }
+        }
+      }
+    }
+  }
+
+  // Support the tabs spanning multiple forms
+  .tab-content > form > .tab-pane {
+    display: none;
+
+    &.active {
+      display: block;
+    }
+  }
+
+  .col-form {
+    @include devices('xs', 'sm') {
+      width: 100%;
+    }
+  }
+
+  .col-promos {
+    display: none;
+
+    @include devices('md', 'lg') {
+      display: block;
+    }
+  }
+
+  fieldset .h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+  }
+
+  .panel {
+    padding: 20px;
+    margin-bottom: 3px;
+    background-color: $c-white;
+
+    @include devices('md', 'lg') {
+      padding: 30px;
+    }
+  }
+
+  .btn-controls {
+    margin-top: 30px;
+
+    > * {
+      text-align: center;
+    }
+
+    @include devices('tablet-l', 'laptop', 'lg') {
+      > :nth-of-type(1) {
+        text-align: left;
+      }
+
+      > :nth-of-type(2) {
+        text-align: right;
+      }
+    }
+  }
+
+  .promo-highlight {
+    font-size: 50px;
+    margin-top: -20px;
+  }
+
+  .iban-info-details {
+    border: solid 1px $c-bg2;
+    padding: 30px;
+
+    label {
+      display: block;
+      margin-bottom: 0;
+    }
+
+    p {
+      margin-top: 0;
+      color: $c-t2;
+      font-style: italic;
+    }
+  }
+
+  .unilend-iban-info {
+    border: solid 1px $c-bg2;
+    padding: 20px;
+    position: relative;
+
+    .btn-print {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+
+      @include link-states(
+        $link: (
+          color: $c-t2,
+          text-decoration: none
+        ),
+        $hover: (
+          color: $c-t2,
+          text-decoration: none
+        ),
+        $active: (
+          color: $c-t2,
+          text-decoration: none
+        )
+      );
+
+      .icon {
+        font-size: 24px;
+      }
+    }
+
+    dd {
+      color: $c-t2;
+      font-style: italic;
+    }
+  }
+}

@@ -1,0 +1,368 @@
+//
+// Unilend Dashboard Page
+//
+
+@mixin dashboard-nav-mobile {
+  display: block;
+
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  top: auto;
+  right: 0;
+  z-index: $depth-site-header;
+
+  background-color: $c-bg3;
+
+  ul {
+    @include clearfix;
+    @include block-list;
+
+    > li {
+      display: block;
+      float: left;
+      width: 20%;
+
+      > a {
+        display: block;
+        padding: 25px;
+        font-size: 26px;
+        line-height: 1em;
+        text-align: center;
+
+        @include link-states(
+          $link: (
+            color: $c-t3,
+            text-decoration: none
+          ),
+          $hover: (
+            color: $c-t3,
+            text-decoration: none
+          ),
+          $active: (
+            color: $c-t1,
+            text-decoration: none
+          )
+        );
+
+        .label {
+          @include hide-accessible;
+        }
+      }
+
+      &.active > a {
+        color: $c-p1;
+      }
+    }
+  }
+
+  // Hide computer specific items
+  .dashboard-nav-profile,
+  .dashboard-nav-autolend {
+    display: none;
+  }
+}
+
+@mixin dashboard-nav-computer {
+  margin-bottom: 40px;
+
+  a {
+    display: block;
+    padding: 10px 0;
+    border-bottom: solid 1px $c-bg1;
+
+    .icon {
+      display: inline-block;
+      width: 30px;
+      margin-right: 10px;
+
+      color: $c-t3;
+      line-height: 1em;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    @include link-states(
+      $link: (
+        color: $c-t1,
+        text-decoration: none
+      ),
+      $hover: (
+        color: $c-p1,
+        text-decoration: none
+      ),
+      $active: (
+        color: $c-t1,
+        text-decoration: none
+      )
+    );
+  }
+
+  ul, ol {
+    @include block-list;
+
+    > :last-child {
+      a {
+        border-bottom: 0;
+      }
+    }
+
+    > li.active {
+      a {
+        color: $c-p1;
+
+        .icon {
+          color: inherit;
+        }
+      }
+    }
+  }
+
+  // Hide mobile specific items
+  .dashboard-nav-notifications {
+    display: none;
+  }
+}
+
+@mixin dashboard-content-panel {
+  padding: 20px;
+
+  @include devices('laptop') {
+    padding: 30px;
+  }
+
+  @include devices('lg') {
+    padding: 40px;
+  }
+
+  background: $c-white;
+  border-bottom: solid 2px $c-bg2;
+}
+
+.dashboard {
+  @include clearfix;
+  @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
+
+  > .dashboard-inner {
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
+    padding-top: $width-site-margin-sm;
+    padding-bottom: $width-site-margin-sm;
+    background-color: $c-bg2;
+
+    > .site-wrap {
+      @include clearfix;
+      @include site-wrap;
+    }
+  }
+
+  // Responsive: xs, sm
+  @include devices('xs', 'sm') {
+    .dashboard-panels-nav,
+    .dashboard-panel-alt.dashboard-notifications {
+      display: none;
+    }
+  }
+
+  // Responsive: tablet-l
+  @include devices('tablet-l') {
+    padding-left: 0;
+    padding-right: 0;
+  }
+
+  // Responsive: md, lg
+  @include devices('md', 'lg') {
+    > .dashboard-inner {
+      margin-bottom: $width-site-margin-md;
+      padding-top: $width-site-margin-md;
+      padding-bottom: $width-site-margin-md;
+    }
+
+    .col-menu,
+    .col-content {
+      box-sizing: border-box;
+      float: left;
+    }
+
+    .col-menu {
+      width: 18%;
+      padding-right: 20px;
+    }
+
+    .col-content {
+      width: 82%;
+      margin-right: -40px;
+    }
+  }
+
+  // Responsive: lg
+  @include devices('lg') {
+    .col-menu {
+      width: 16%;
+    }
+
+    .col-content {
+      width: 84%;
+    }
+  }
+}
+
+.dashboard-nav {
+  @include devices('xs', 'sm') {
+    @include dashboard-nav-mobile;
+  }
+
+  @include devices('md', 'lg') {
+    @include dashboard-nav-computer;
+  }
+}
+
+.dashboard-panels-nav {
+
+}
+
+.dashboard-panel-toggle {
+  display: none;
+  padding: 10px 20px;
+  margin: 0 0 10px 20px;
+
+  @include link-states(
+    $link: (
+      color: $c-t1,
+      background-color: $c-bg3,
+      text-decoration: none
+    ),
+    $hover: (
+      color: $c-t1,
+      background-color: $c-bg4,
+      text-decoration: none
+    ),
+    $active: (
+      color: $c-t1,
+      background-color: $c-bg2,
+      text-decoration: none
+    )
+  );
+
+  &:after {
+    content: '\f06e';
+    margin-left: 5px;
+    color: $c-t3;
+    font-family: $ff-icon;
+    font-size: 21px;
+  }
+
+  // UI
+  &.ui-dashboard-panel-hidden {
+    display: inline-block; // Opposite to same class on panel
+  }
+}
+
+.dashboard-panels-content {
+  @include devices('md', 'lg') {
+    @include clearfix;
+
+    .dashboard-panel {
+      float: left;
+      margin: 0;
+    }
+  }
+}
+
+/*
+ * Dashboard Tabbed Area
+ */
+.dashboard-tabs {
+  color: $c-t1;
+  margin: 0;
+
+  @include devices('md', 'lg') {
+    margin-left: 20px;
+  }
+}
+
+.dashboard-tabs-nav {
+  background-color: $c-bg3;
+
+  .nav.nav-dashboard-tabs {
+    @include clearfix;
+    display: table;
+    width: 100%;
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+
+    > li {
+      display: table-cell;
+      text-align: center;
+      vertical-align: middle;
+
+      > a {
+        display: block;
+        padding: 20px;
+        font-size: $fs-base;
+        line-height: 1.3em;
+        text-align: center;
+
+        @include link-states(
+          $link: (
+            color: $c-t2,
+            text-decoration: none
+          ),
+          $hover: (
+            color: $c-t2,
+            text-decoration: none
+          ),
+          $active: (
+            color: $c-t2,
+            text-decoration: none
+          )
+        );
+
+        @include devices('lg') {
+          padding: 20px 30px;
+        }
+      }
+
+      &.active {
+        background-color: $c-white;
+        > a {
+          @include link-states(
+            $link: (
+              color: $c-t1,
+              text-decoration: none
+            ),
+            $hover: (
+              color: $c-t1,
+              text-decoration: none
+            ),
+            $active: (
+              color: $c-t1,
+              text-decoration: none
+            )
+          );
+        }
+      }
+    }
+
+    // Turn into a dropdown-menu for mobile devices
+    @include devices('mobile') {
+      &#{$js-nav-dropdown-menu} {
+        @include nav-dropdown-menu($show-icon: true, $height: 63px);
+        border-bottom: solid 2px $c-bg2;
+
+        > li {
+          width: 100% !important;
+        }
+      }
+    }
+  }
+}
+
+.dashboard-tabs-content {
+  .dashboard-tab-pane {
+    .panel {
+      @include dashboard-content-panel;
+    }
+  }
+}
+

@@ -1,0 +1,78 @@
+//
+// Unilend Table My Operations
+// As seen on the `user-preter-operations` page
+//
+
+.table-myoperations {
+  th, td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  // Columns
+  .table-myoperations-item-type {
+    width: 20%;
+  }
+
+  .table-myoperations-item-contract {
+    width: 10%;
+  }
+
+  .table-myoperations-item-project {
+    width: 25%;
+
+    .text-crop {
+      max-width: 150px;
+    }
+  }
+
+  .table-myoperations-item-date {
+    width: 10%;
+  }
+
+  .table-myoperations-item-amount {
+    width: 10%;
+    text-align: right;
+  }
+
+  .table-myoperations-item-balance {
+    width: 10%;
+    text-align: right;
+  }
+}
+
+.table-myoperations-item {
+  // Amount
+  &.ui-amount-positive {
+    .table-myoperations-item-amount {
+      color: $c-teal;
+    }
+  }
+
+  &.ui-amount-negative {
+    .table-myoperations-item-amount {
+      color: $c-error;
+    }
+  }
+
+  // Balance
+  // &.ui-balance-positive {
+  //   .table-myoperations-item-balance {
+  //     color: $c-success;
+  //   }
+  // }
+
+  &.ui-balance-negative {
+    .table-myoperations-item-balance {
+      color: $c-error;
+    }
+  }
+
+  .table-myoperations-item-amount {
+    text-align: right;
+  }
+
+  .table-myoperations-item-balance {
+    text-align: right;
+  }
+}

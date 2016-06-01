@@ -1,0 +1,51 @@
+//
+// Unilend Maintenance
+//
+
+#maintenance {
+  .site {
+    padding-top: 0;
+  }
+
+  .page {
+    padding-top: $width-site-margin-xs;
+    padding-bottom: $width-site-margin-xs;
+
+    .col-image {
+      display: none;
+      vertical-align: middle;
+    }
+
+    .col-text {
+      @include vertical-align-table;
+      padding: 0 $width-site-margin-xs;
+      vertical-align: middle;
+
+      .inner {
+        display: inline-block;
+        width: 100%;
+      }
+    }
+
+    @include devices('sm') {
+      .col-text {
+        padding: 0 $width-site-margin-sm;
+      }
+    }
+
+    @include devices('md', 'lg') {
+      padding-top: $width-site-margin-md;
+      padding-bottom: $width-site-margin-md;
+
+      .col-image,
+      .col-text {
+        @include vertical-align-table;
+        padding: 0 $width-site-margin-md;
+      }
+
+      .col-image {
+        text-align: center;
+      }
+    }
+  }
+}

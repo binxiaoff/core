@@ -1,0 +1,189 @@
+//
+// Unilend User Preter Balance
+//
+
+#user-preter-balance.dashboard {
+  .nav.nav-dashboard-tabs > li {
+    width: 50%;
+  }
+
+  @include devices('tablet-l') {
+    #balance-deposit,
+    #balance-withdraw {
+      .dashboard-tab-pane-content {
+        padding-right: 20px;
+      }
+    }
+  }
+
+  @include devices('laptop') {
+    #balance-deposit,
+    #balance-withdraw {
+      .dashboard-tab-pane-content {
+        padding-right: 30px;
+      }
+    }
+  }
+
+  @include devices('lg') {
+    #balance-deposit,
+    #balance-withdraw {
+      .dashboard-tab-pane-content {
+        padding-right: 40px;
+      }
+    }
+  }
+}
+
+.dashboard-balance {
+  padding: 20px;
+  position: relative;
+  background-color: $c-bg1;
+  color: $c-white;
+  overflow: hidden;
+
+  dl {
+    dt {
+      font-size: $fs-base * .8;
+      line-height: 1.3em;
+      margin-bottom: 10px;
+    }
+
+    dd {
+      color: $c-white;
+      font-size: $fs-h2;
+      line-height: 1em;
+    }
+  }
+
+  &#{$js-balance-positive} {
+    background-color: $c-teal;
+
+    dl {
+      dt {
+        color: darken($c-teal, 20%);
+      }
+    }
+  }
+
+  &#{$js-balance-low} {
+    background-color: $c-orange;
+
+    dl {
+      dt {
+        color: $c-t1;
+        opacity: .7;
+      }
+    }
+  }
+
+  &#{$js-balance-negative} {
+    background-color: $c-red;
+
+    dl {
+      dt {
+        color: darken($c-red, 20%);
+      }
+    }
+  }
+
+  .dashboard-balance-image {
+    position: absolute;
+    right: -20px;
+    bottom: -40px;
+    opacity: .5;
+    user-select: none;
+
+    > svg {
+      width: 160px;
+      height: 160px;
+    }
+  }
+
+  @include devices('md') {
+    padding: 20px;
+  }
+
+  @include devices('lg') {
+    padding: 30px;
+  }
+}
+
+.balance-payment-details {
+  padding: 20px;
+  position: relative;
+  border: solid 1px $c-bg2;
+
+  font-size: $fs-base;
+  line-height: 1.3em;
+
+  .btn-print {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin-top: 20px;
+    margin-right: 20px;
+
+    @include link-states(
+      $link: (
+        color: $c-t2,
+        text-decoration: none
+      ),
+      $hover: (
+        color: $c-t2,
+        text-decoration: none
+      ),
+      $active: (
+        color: $c-t2,
+        text-decoration: none
+      )
+    );
+
+    .icon {
+      font-size: 24px;
+    }
+  }
+
+  @include devices('lg') {
+    padding: 30px;
+
+    .btn-print {
+      margin-top: 30px;
+      margin-right: 30px;
+    }
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    margin-top: 0;
+  }
+
+  ul {
+    @include block-list;
+
+    li {
+      position: relative;
+      margin-bottom: 20px;
+
+      &.ui-has-btn-copy {
+        padding-right: 80px;
+      }
+
+      .btn-default {
+        position: absolute;
+        top: 0;
+        right: 0;
+      }
+
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+
+    .label {
+      display: block;
+      color: $c-t3;
+      font-size: $fs-base * .9;
+      line-height: 1.3em;
+    }
+  }
+}

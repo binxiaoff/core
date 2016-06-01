@@ -1,0 +1,221 @@
+//
+// Unilend Mixins
+// @description General use mixins
+
+@function get-image-url ($input) {
+  $image-url: image-url($input, true, false);
+  // @debug $image-url;
+  @return $image-url;
+  // @return '#{$media-url}#{$input}';
+}
+
+@function svg-url($input) {
+  @return url('data:image/svg+xml;#{$input}');
+}
+
+// Calculate top/bottom padding from full height
+// Used mainly with button and input elements
+@function padding-height($height: $btn-height, $line-height: $lh-base, $border-width: 2px) {
+  @return ($height - ($border-width * 2) - $line-height) * .5;
+}
+
+// Clearfix
+@mixin clearfix {
+  &:before,
+  &:after {
+    content: ' ';
+    display: table;
+  }
+
+  &:after {
+    clear: both;
+  }
+}
+
+// Hide an element accessibly (i.e. screen readers should still be able to read it)
+// @usage Use when hiding labels of buttons, or other interactive functionality that you
+//        want to only have an icon or image to display in the UI
+@mixin hide-accessible {
+  position: absolute !important;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
+  clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
+  clip: rect(1px, 1px, 1px, 1px);
+}
+
+.hide-accessible {
+  @include hide-accessible;
+}
+
+// Adds styles by extending the class with a list of properties
+@mixin add-styles($list) {
+  @each $style, $value in $list {
+    #{$style}: #{$value};
+  }
+}
+
+// Adds styles per link state: :link, :visited, :hover, :active
+@mixin link-states($link, $visited: false, $hover: false, $active: false) {
+  // :link
+  @if $link and $visited {
+    &,
+    &:link {
+      @include add-styles($link);
+    }
+  } @else {
+    &,
+    &:link,
+    &:visited {
+      @include add-styles($link);
+    }
+  }
+
+  // :visited
+  @if $visited {
+    &:visited {
+      @include add-styles($visited);
+    }
+  }
+
+  // :hover
+  @if $hover {
+    &:hover,
+    &:focus {
+      @include add-styles($hover);
+    }
+  }
+
+  // :active
+  @if $active {
+    &:active {
+      @include add-styles($active);
+    }
+  }
+}
+
+// Vertical align using table method
+@mixin vertical-align-table {
+  display: table;
+
+  > * {
+    display: table-cell;
+    vertical-align: middle;
+  }
+}
+
+// Vertically align the contents
+.vertical-align-content {
+  @include vertical-align-table;
+}
+
+// Vertical align using inline block method
+@mixin vertical-align-inline-block {
+  vertical-align: middle;
+
+  &:before {
+    content: "";
+    display: inline-block;
+    width: 0;
+    height: 100%;
+    margin-left: 0;
+    vertical-align: middle;
+    overflow: hidden;
+    clear: none;
+  }
+
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+// Show a gradient to hide cropped text
+@mixin text-overflow-gradient ($bg-color: $c-white, $width: 50%, $height: $lh-base, $direction: 'to left') {
+  position: relative;
+
+  &:after {
+    content: '';
+    display: block;
+    width: $width;
+    height: $height;
+    position: absolute;
+    bottom: 0;
+
+    @if str-index($direction, 'left') {
+      right: 0;
+    } @else if str-index($direction, 'right') {
+      left: 0;
+    }
+    @include background-image(-svg(linear-gradient(#{$direction}, $bg-color 0%, fade-out($bg-color, 1) 100%)));
+  }
+}
+
+// Style only text inputs
+@mixin text-inputs($textarea: true, $inheritance: '') {
+  // Supported input types
+  $text-inputs: ('text', 'search', 'email', 'password', 'url', 'color', 'number', 'range', 'tel', 'date', 'datetime', 'datetime-local', 'week', 'month', 'year');
+
+  // Build the selector to cover supported input types
+  $selector : '';
+  $i: 0;
+  @each $text-input in $text-inputs {
+    // Add a comma if more than one input supported
+    $i: $i + 1;
+    @if $i > 1 {
+      $selector: '#{$selector},';
+    }
+
+    // Append the supported input type to the selector string
+    $selector: '#{$selector} #{$inheritance} input[type="#{$text-input}"]';
+  }
+
+  // Support textarea too
+  @if $textarea {
+    $selector: '#{$selector}, #{$inheritance} textarea';
+  }
+
+  // Apply the content to the selector
+  #{$selector} {
+    @content;
+  }
+}
+
+// Size image to width of parent
+@mixin constrain-size-by-width($width: false) {
+  @if $width {
+    width: $width;
+  }
+  max-width: 100%;
+  height: auto;
+  min-height: 0;
+  max-height: none;
+}
+
+// Alias
+@mixin constrain-size-to-width($width: false) {
+  @include constrain-size-by-width($width);
+}
+
+.constrain-max-width {
+  @include constrain-size-by-width;
+}
+
+@mixin constrain-size-by-height($height: false) {
+  @if $height {
+    height: $height;
+  }
+  max-height: 100%;
+  width: auto;
+  min-width: 0;
+  max-width: none;
+}
+
+// Alias
+@mixin constrain-size-to-height($height: false) {
+  @include constrain-size-by-height($height);
+}
+
+.constrain-max-height {
+  @include constrain-size-by-height;
+}

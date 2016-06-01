@@ -1,0 +1,66 @@
+//
+// Unilend User Preter Operations
+//
+
+#user-preter-operations.dashboard {
+  .nav-dashboard-tabs {
+    > li {
+      width: 50%;
+    }
+  }
+
+  .panel-header {
+    @include clearfix;
+    position: relative;
+    margin-bottom: 20px;
+
+    .panel-title {
+      margin-top: 0;
+      margin-bottom: 15px;
+    }
+
+    .panel-controls {
+      .btn-default {
+        margin-right: 20px;
+      }
+    }
+
+    @include devices('md', 'lg') {
+      .panel-title {
+        padding-top: 15px;
+        margin-bottom: 0;
+        float: left;
+      }
+
+      .panel-controls {
+        float: right;
+
+        .btn-default {
+          margin-right: 0;
+          margin-left: 20px;
+        }
+      }
+    }
+
+    @include devices('desktop') {
+      margin-bottom: 30px;
+    }
+  }
+
+  .form-filters {
+    padding: 20px;
+    margin-bottom: 20px;
+    background-color: $c-bg3;
+
+    @include devices('lg') {
+      padding: 30px;
+    }
+
+    .input-field {
+      padding-left: 10px;
+      padding-right: 10px;
+      background-color: $c-white;
+      border-color: $c-bg1;
+    }
+  }
+}

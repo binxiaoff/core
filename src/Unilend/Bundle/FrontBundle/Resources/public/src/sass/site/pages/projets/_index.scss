@@ -1,0 +1,44 @@
+//
+// Unilend Page - Projets Index
+//
+
+#projets-index.page {
+
+  // Page Header
+  .page-header {
+    .hero-wrap {
+      background-image: image-url('headers/projets-index-header-1680x790.jpg');
+      background-position: top center;
+
+      @include devices('md', 'lg') {
+        background-position: right center;
+      }
+    }
+
+    .page-title {
+      max-width: 70%;
+
+      @include devices('xs') {
+        margin-bottom: 30px;
+      }
+
+      @include devices('xs', 'sm') {
+        max-width: 95%;
+      }
+    }
+  }
+
+  .page-section-footer {
+    padding-top: 50px;
+  }
+
+}
+
+@include devices('xs') {
+  #projets-index-project-list {
+    > .site-wrap {
+      padding-left: 10px;
+      padding-right: 10px;
+    }
+  }
+}
