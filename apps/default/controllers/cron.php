@@ -205,6 +205,9 @@ class cronController extends bootstrap
     public function _check_projet_a_funder()
     {
         if (true === $this->startCron('check_projet_a_funder', 5)) {
+            ini_set('max_execution_time', '300');
+            ini_set('memory_limit', '1G');
+
             /** @var \projects $oProject */
             $oProject = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
