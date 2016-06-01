@@ -32,7 +32,7 @@
     <br/>
     <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= $this->companies->name ?>
     <br/>
-    <?= $this->lng['preteur-operations-pdf']['Representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?>
+    <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?>
     <br/>
 </div>
 <br/>
@@ -40,30 +40,10 @@
 <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
     <thead>
     <tr>
-        <th width="200px" id="order_operations" align="center" class="col1" style="padding-left: 0px;">
-            <div class="th-wrap" style='top:-3px;width: 300px;'>
-                <div class="title-ope" style="color: black"><?= $this->lng['espace-emprunteur']['operation'] ?>&nbsp;
-                </div>
-            </div>
-        </th>
-        <th width="200px" id="order_id_projet" align="center" class="col1" style="padding-left: 0px;">
-            <div class="th-wrap" style='top:-3px;width: 100px;'>
-                <div class="title-ope" style="color: black"><?= $this->lng['espace-emprunteur']['projet'] ?>&nbsp;
-                </div>
-            </div>
-        </th>
-        <th width="140px" id="order_date">
-            <div class="th-wrap">
-                <div class="title-ope" style="color: black"><?= $this->lng['espace-emprunteur']['date-de-loperation'] ?>&nbsp;
-                </div>
-            </div>
-        </th>
-        <th width="180px" id="order_montant">
-            <div class="th-wrap" style="top:-2px;">
-                <div class="title-ope" style="color: black"><?= $this->lng['espace-emprunteur']['montant-de-loperation'] ?>&nbsp;
-                </div>
-            </div>
-        </th>
+        <th><?= $this->lng['espace-emprunteur']['operation'] ?></th>
+        <th><?= $this->lng['espace-emprunteur']['projet'] ?></th>
+        <th><?= $this->lng['espace-emprunteur']['date-de-loperation'] ?></th>
+        <th><?= $this->lng['espace-emprunteur']['montant-de-loperation'] ?></th>
     </tr>
     </thead>
     <tbody>
