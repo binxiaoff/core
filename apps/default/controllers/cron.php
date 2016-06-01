@@ -3115,8 +3115,11 @@ class cronController extends bootstrap
     public function _etat_fiscal()
     {
         if (true === $this->startCron('etat_fiscal', 5)) {
-            $echeanciers  = $this->loadData('echeanciers');
+            /** @var \echeanciers $echeanciers */
+            $echeanciers = $this->loadData('echeanciers');
+            /** @var \bank_unilend $bank_unilend */
             $bank_unilend = $this->loadData('bank_unilend');
+            /** @var \transactions $transactions */
             $transactions = $this->loadData('transactions');
 
             $this->settings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
