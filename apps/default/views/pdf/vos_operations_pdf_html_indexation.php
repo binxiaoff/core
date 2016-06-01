@@ -43,43 +43,13 @@
     <br /><br />
 
     <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
-        <tr class="tab_head">
-            <th width="200px" id="order_operations" class="col1">
-                <div align="left" class="th-wrap" style='top:-3px;width:300px;'>
-                    <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['operations'] ?>&nbsp;
-                    </div>
-                </div>
-            </th>
-            <th width="180px" id="order_date">
-                <div align="left" class="th-wrap">
-                    <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?>&nbsp;
-                    </div>
-                </div>
-            </th>
-            <th width="180px" id="order_date">
-                <div align="left" class="th-wrap">
-                    <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>&nbsp;
-                    </div>
-                </div>
-            </th>
-            <th width="180px" id="order_date">
-                <div align="left" class="th-wrap">
-                    <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?>&nbsp;
-                    </div>
-                </div>
-            </th>
-            <th width="180px" id="order_montant">
-                <div align="left" class="th-wrap" style="top:-2px;">
-                    <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?>&nbsp;
-                    </div>
-                </div>
-            </th>
-            <th width="140px" id="solde">
-                <div align="left" class="th-wrap" style="top:-2px;">
-                    <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['info-titre-solde-compte'] ?>&nbsp;
-                    </div>
-                </div>
-            </th>
+        <tr>
+            <th><?= $this->lng['preteur-operations-pdf']['operations'] ?>&nbsp;</th>
+            <th><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?>&nbsp;</th>
+            <th><?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>&nbsp;</th>
+            <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?>&nbsp;</th>
+            <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?>&nbsp;</th>
+            <th><?= $this->lng['preteur-operations-pdf']['info-titre-solde-compte'] ?>&nbsp;</th>
         </tr>
 
         <?
