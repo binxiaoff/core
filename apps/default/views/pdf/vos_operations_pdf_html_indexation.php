@@ -1,5 +1,5 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<html lang="fr-FR" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
     <title>Vos operations</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
@@ -44,20 +44,20 @@
 
     <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
         <tr>
-            <th><?= $this->lng['preteur-operations-pdf']['operations'] ?>&nbsp;</th>
-            <th><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?>&nbsp;</th>
-            <th><?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>&nbsp;</th>
-            <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?>&nbsp;</th>
-            <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?>&nbsp;</th>
-            <th><?= $this->lng['preteur-operations-pdf']['info-titre-solde-compte'] ?>&nbsp;</th>
+            <th><?= $this->lng['preteur-operations-pdf']['operations'] ?></th>
+            <th><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?></th>
+            <th><?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?></th>
+            <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
+            <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
+            <th><?= $this->lng['preteur-operations-pdf']['info-titre-solde-compte'] ?></th>
         </tr>
+        <?php
 
-        <?
-        $i=1;
+        $i          = 1;
         $asterix_on = false;
-        if(isset($this->lTrans)) {
-            foreach ($this->lTrans as $t) {
 
+        if (isset($this->lTrans)) {
+            foreach ($this->lTrans as $t) {
                 $t['solde']               = ($t['solde'] / 100);
                 $t['montant_prelevement'] = ($t['montant_prelevement'] / 100);
 
@@ -77,10 +77,8 @@
 
                 // Remb preteur
                 if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
-
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                     $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-
                     ?>
                     <!-- debut transasction remb -->
                     <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
@@ -133,11 +131,9 @@
                         </td>
                     </tr>
                     <!-- fin transasction remb -->
-                    <?
+                    <?php
                     $i++;
                 } elseif (in_array($t['type_transaction'], array(8, 1, 3, 4, 16, 17, 19, 20))) {
-
-
                     // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
                     switch ($t['type_transaction']) {
                         case 8:
@@ -166,16 +162,6 @@
                             break;
                     }
 
-                    // ajout KLE 03/03/15 , pour un client à a du lui faire un retrait positif car :
-                    /*
-
-                    Dans le fichier BNP Paribas, nous constatons en date du 25/02/2015 un rejet de virement de EUR 350,00 avec le libellé Christophe Voliotis au motif suivant « Compte clos ».
-
-                    Rep :
-                    -	La régularisation devra s’effectuer en date du jour (et non pas en corrigeant la ligne correspondant à la date où avait été demandé ce virement).
-
-                    */
-
                     $type = "";
                     if ($t['type_transaction'] == 8 && $t['montant_operation'] > 0) {
                         $type = "Annulation retrait des fonds - compte bancaire clos";
@@ -192,7 +178,7 @@
                         <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
                         <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                     </tr>
-                    <?
+                    <?php
                     $i++;
                 } elseif (in_array($t['type_transaction'], array(2))) {
                     $bdc = $t['bdc'];
@@ -219,7 +205,7 @@
                         <td <?= (!$offre_accepte ? $couleur : '') ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) . ' €' ?></td>
                         <td><?= $this->ficelle->formatNumber($t['solde']) ?> €<?= $asterix ?></td>
                     </tr>
-                    <?
+                    <?php
                     $i++;
                 }
             }
