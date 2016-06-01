@@ -16,34 +16,26 @@
             6 Rue du général Clergerie<br/>
             75116 Paris
         </div>
-        <div style="float: left;padding:0 0 0 300px;">
-            <b><?= $this->lng['preteur-operations-pdf']['paris-le'] ?> <?= (date('d/m/Y')) ?></b>
+        <div style="float: right;">
+            <b><?= $this->lng['preteur-operations-pdf']['paris-le'] ?> <?= date('d/m/Y') ?></b>
             <br/><br/><br/>
-            <?
-            if (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner != 0) {
-                $this->companies->get($this->lenders_accounts->id_company_owner);
-                ?>
+            <?php if (false === empty($this->lenders_accounts->id_company_owner)) : ?>
+                <?php $this->companies->get($this->lenders_accounts->id_company_owner); ?>
                 <b><?= $this->companies->name ?></b><br/>
                 <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
                 <?= $this->companies->adresse1 ?><br/>
                 <?= $this->companies->zip . ' ' . $this->companies->city ?>
-                <?
-            } else {
-                ?>
+            <?php else : ?>
                 <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
                 <?= $this->clients_adresses->adresse1 ?><br/>
                 <?= $this->clients_adresses->cp . ' ' . $this->clients_adresses->ville ?>
-                <?
-            }
-            ?>
+            <? endif; ?>
         </div>
-
         <div style="clear:both;"></div>
         <br/>
         <strong>Historique des projets financés par votre compte Unilend n°<?= $this->clients->id_client ?></strong><br/>
-        <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner!= 0 ? $this->companies->name : $this->clients->prenom . ' ' . $this->clients->nom) ?>
-        <br/>
-        <?php if (isset($this->lenders_accounts->id_company_owner) && $this->lenders_accounts->id_company_owner != 0): ?>
+        <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= empty($this->lenders_accounts->id_company_owner) ? $this->clients->prenom . ' ' . $this->clients->nom : $this->companies->name ?><br/>
+        <?php if (false === empty($this->lenders_accounts->id_company_owner)) : ?>
             <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?><br/>
         <?php endif; ?>
     </div>
