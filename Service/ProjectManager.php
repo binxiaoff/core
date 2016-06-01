@@ -143,7 +143,7 @@ class ProjectManager
             $oBidLog->create();
         }
         if ($this->oLogger instanceof Logger) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' Check bid info: ' . var_export($aLogContext), array(__METHOD__));
+            $this->oLogger->info('id_project=' . $oProject->id_project . ' Check bid info: ' . var_export($aLogContext), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
     }
 
@@ -281,7 +281,7 @@ class ProjectManager
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->oLogger instanceof Logger) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' is now changed to status funded', array(__METHOD__));
+            $this->oLogger->info('id_project=' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         $aBidList    = $oBid->select('id_project = ' . $oProject->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'rate ASC, ordre ASC');
@@ -290,7 +290,7 @@ class ProjectManager
         $iBidNbTotal   = count($aBidList);
         $iTreatedBitNb = 0;
         if ($this->oLogger instanceof Logger) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . ' bids in total', array(__METHOD__));
+            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . ' bids in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid']);
@@ -305,7 +305,7 @@ class ProjectManager
                     $oBid->update();
                 }
                 if ($this->oLogger instanceof Logger) {
-                    $this->oLogger->info('id_project=' . $oProject->id_project . ' : The bid (' . $aBid['id_bid'] . ') status has been updated to 1', array(__METHOD__));
+                    $this->oLogger->info('id_project=' . $oProject->id_project . ' : The bid (' . $aBid['id_bid'] . ') status has been updated to 1', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             } else { // Pour les encheres qui depassent on rend l'argent
                 // On regarde si on a pas deja un remb pour ce bid
@@ -313,7 +313,7 @@ class ProjectManager
             }
             $iTreatedBitNb++;
             if ($this->oLogger instanceof Logger) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated', array(__METHOD__));
+                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
 
@@ -406,7 +406,7 @@ class ProjectManager
         $iTreatedBitNb = 0;
 
         if ($this->oLogger instanceof Logger) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . 'bids in total', array(__METHOD__));
+            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . 'bids in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         foreach ($aBidList as $aBid) {
@@ -414,7 +414,7 @@ class ProjectManager
             $this->oBidManager->reject($oBid);
             $iTreatedBitNb++;
             if ($this->oLogger instanceof Logger) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated', array(__METHOD__));
+                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -475,7 +475,7 @@ class ProjectManager
             $iLoanNbTotal   = count($lLoans);
             $iTreatedLoanNb = 0;
             if ($this->oLogger instanceof Logger) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iLoanNbTotal . ' in total', array(__METHOD__));
+                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iLoanNbTotal . ' in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
 
             // on parcourt les loans du projet en remboursement
@@ -608,7 +608,7 @@ class ProjectManager
                 if ($this->oLogger instanceof Logger) {
                     $this->oLogger->info(
                         'id_project=' . $oProject->id_project . ' : ' . $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated. ' . $k . ' repayment schedules created',
-                        array(__METHOD__)
+                        array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
                     );
                 }
             }
@@ -640,7 +640,7 @@ class ProjectManager
         $iTreatedPaymentNb = 0;
 
         if ($this->oLogger instanceof Logger) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iPaymentsNbTotal . ' in total', array(__METHOD__));
+            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iPaymentsNbTotal . ' in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         foreach ($aPaymentList as $iIndex => $aPayment) {
@@ -665,7 +665,7 @@ class ProjectManager
             if ($this->oLogger instanceof Logger) {
                 $this->oLogger->info(
                     'id_project=' . $oProject->id_project . ' : borrower echeance (' . $oPaymentSchedule->id_echeancier_emprunteur . ') has been created. ' . $iTreatedPaymentNb . '/' . $iPaymentsNbTotal . 'traited',
-                    array(__METHOD__)
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
                 );
             }
         }

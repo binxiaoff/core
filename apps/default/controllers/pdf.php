@@ -136,7 +136,7 @@ class pdfController extends bootstrap
         $this->oSnapPdf->generateFromHtml($this->sDisplay, $sPathPdf, array(), true);
 
         $iTimeEndPdf = microtime(true) - $iTimeStartPdf;
-        $this->oLogger->info($sTypePdf . ' pdf successfully generated in: ' . round($iTimeEndPdf, 2), array(__METHOD__));
+        $this->oLogger->info($sTypePdf . ' pdf successfully generated in: ' . round($iTimeEndPdf, 2), array('class' => __CLASS__, 'function' => __FUNCTION__));
     }
 
     /**
@@ -152,7 +152,7 @@ class pdfController extends bootstrap
         header("Content-disposition: attachment; filename=" . $sNamePdf . ".pdf");
         header("Content-Type: application/force-download");
         if (!readfile($sPathPdf)) {
-            $this->oLogger->error('File : ' . $sPathPdf . ' not readable', array(__METHOD__));
+            $this->oLogger->error('File : ' . $sPathPdf . ' not readable', array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
     }
 
@@ -331,7 +331,7 @@ class pdfController extends bootstrap
                 // Deleting authority, not necessary (Double authority)
                 if (is_array($aProjectPouvoir) && 0 < count($aProjectPouvoir)) {
                     foreach ($aProjectPouvoir as $aProjectPouvoirToDelete) {
-                        $this->oLogger->info('Deleting Pouvoir id : ' . $aProjectPouvoirToDelete['id_pouvoir'], array(__METHOD__));
+                        $this->oLogger->info('Deleting Pouvoir id : ' . $aProjectPouvoirToDelete['id_pouvoir'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
                         $this->oProjectsPouvoir->delete($aProjectPouvoirToDelete['id_pouvoir'], 'id_pouvoir');
                     }
                 }
@@ -369,7 +369,7 @@ class pdfController extends bootstrap
                 if (false === $bSigned) {
                     if (file_exists($sPath . $sFileName) && filesize($sPath . $sFileName) > 0 && date('Y-m-d', filemtime($sPath . $sFileName)) != date('Y-m-d')) {
                         unlink($sPath . $sFileName);
-                        $this->oLogger->info('File : ' . $sPath . $sFileName . ' deleted', array(__METHOD__));
+                        $this->oLogger->info('File : ' . $sPath . $sFileName . ' deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
                         $this->GenerateProxyHtml();
                         $this->WritePdf($sPath . $sFileName, 'authority');

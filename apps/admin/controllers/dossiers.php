@@ -747,7 +747,7 @@ class dossiersController extends bootstrap
                         
                         // si on a validé le pouvoir
                         if ($this->projects_pouvoir->status_remb == 1) {
-                            $oLogger->info('Start control refund status id_project=' . $this->projects->id_project, array(__METHOD__));
+                            $oLogger->info('Start control refund status id_project=' . $this->projects->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
 
                             // debut processe chagement statut remboursement //
                             // On recup le param
@@ -1094,7 +1094,7 @@ class dossiersController extends bootstrap
 
                                 $settingsControleRemb->value = 1;
                                 $settingsControleRemb->update();
-                                $oLogger->info('End control refund status id_project=' . $this->projects->id_project, array(__METHOD__));
+                                $oLogger->info('End control refund status id_project=' . $this->projects->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
                             }
                         }
                     }

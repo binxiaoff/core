@@ -61,7 +61,7 @@ class LoanManager
                 }
                 $this->oLogger->info(
                     'project : ' . $oLoan->id_project . ' : bid (' . $aAcceptedBid['bid_id'] . ') has been transferred to ' . $sType . ' contract loan (' . $oLoan->id_loan . ') with amount ' . $aAcceptedBid['amount'],
-                    array(__METHOD__)
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oLoan->id_project)
                 );
             }
         }

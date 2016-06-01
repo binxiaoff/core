@@ -188,7 +188,7 @@ class MailerManager
 
         // EMAIL EMPRUNTEUR FUNDE //
         if ($this->oLogger instanceof Logger) {
-            $this->oLogger->info('Project funded - sending email to borrower. id_project=' . $oProject->id_project, array(__METHOD__));
+            $this->oLogger->info('Project funded - sending email to borrower. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         $this->oSettings->get('Heure fin periode funding', 'type');
@@ -258,7 +258,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $varMail, false);
-        $message->setTo(explode(';', preg_replace('/\s+/', '', $destinataire)));
+        $message->setTo(explode(';', str_replace(' ', '', $destinataire)));
         $this->mailer->send($message);
     }
 
@@ -309,7 +309,7 @@ class MailerManager
             $this->mailer->send($message);
 
             if ($this->oLogger instanceof Logger) {
-                $this->oLogger->info('Email emprunteur-dossier-funde-et-termine sent. id_project=' . $oProject->id_project, array(__METHOD__));
+                $this->oLogger->info('Email emprunteur-dossier-funde-et-termine sent. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -348,7 +348,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $varMail, false);
-        $message->setTo(explode(';', preg_replace('/\s+/', '', $sRecipient)) );
+        $message->setTo(explode(';', str_replace(' ', '', $sRecipient)) );
         $this->mailer->send($message);
 
     }
@@ -372,7 +372,7 @@ class MailerManager
         $iNbLenders        = count($aLendersIds);
         $iNbTreatedLenders = 0;
         if ($this->oLogger instanceof Logger) {
-            $this->oLogger->info($iNbLenders . ' lenders to send email for. id_project=' . $oProject->id_project, array(__METHOD__));
+            $this->oLogger->info($iNbLenders . ' lenders to send email for. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         foreach ($aLendersIds as $aLenderId) {
@@ -461,12 +461,12 @@ class MailerManager
                 $this->mailer->send($message);
 
                 if ($this->oLogger instanceof Logger) {
-                    $this->oLogger->info('id_project=' . $oProject->id_project . ' - Email preteur-bid-ok sent for lender (' . $oLenderAccount->id_lender_account . ')', array(__METHOD__));
+                    $this->oLogger->info('id_project=' . $oProject->id_project . ' - Email preteur-bid-ok sent for lender (' . $oLenderAccount->id_lender_account . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             }
             $iNbTreatedLenders++;
             if ($this->oLogger instanceof Logger) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' - Loan notification email sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lender', array(__METHOD__));
+                $this->oLogger->info('id_project=' . $oProject->id_project . ' - Loan notification email sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lender', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -580,7 +580,7 @@ class MailerManager
             $this->mailer->send($message);
 
             if ($this->oLogger instanceof Logger) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : email emprunteur-dossier-funding-ko sent', array(__METHOD__));
+                $this->oLogger->info('id_project=' . $oProject->id_project . ' : email emprunteur-dossier-funding-ko sent', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -625,7 +625,7 @@ class MailerManager
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
         $message->setTo($oClient->email);
-        $this->mailer->send(explode(';', preg_replace('/\s+/', '', $sRecipient)));
+        $this->mailer->send(explode(';', str_replace(' ', '', $sRecipient)));
 
     }
 
@@ -849,7 +849,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($sNotificationType, $aReplacements, false);
-        $message->setTo(explode(';', preg_replace('/\s+/', '', $sRecipient)));
+        $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
         $this->mailer->send($message);
     }
 
