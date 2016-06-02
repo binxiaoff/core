@@ -21,7 +21,14 @@
         <service id="unilend.command.projects_pre_publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPrePublishCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\BPIStream">
+        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\BPIStreamCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.IRR.lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
+        <service id="unilend.command.projects_pre_publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPrePublishCommand">
             <tag name="console.command"/>
         </service>
     </services>
