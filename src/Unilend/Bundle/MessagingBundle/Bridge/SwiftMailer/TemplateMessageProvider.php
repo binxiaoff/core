@@ -36,7 +36,7 @@ class TemplateMessageProvider
         /** @var \mail_templates $mailTemplate */
         $mailTemplate = $this->entityManager->getRepository('mail_templates');
         if (false === $mailTemplate->get($template, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->defaultLanguage . '" AND type')) {
-            throw new \InvalidArgumentException('The mail template ' . $template . ' for the language ' . $this->defaultLanguage . 'is not found.');
+            throw new \InvalidArgumentException('The mail template ' . $template . ' for the language ' . $this->defaultLanguage . ' is not found.');
         }
 
         if ($wrapVariables) {

@@ -282,6 +282,8 @@ class BidManager
         $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
+        // Loaded for class constants
+        $this->oEntityManager->getRepository('transactions_types');
 
         $oLenderAccount->get($oBid->id_lender_account, 'id_lender_account');
         $fAmountX100 = $fAmount * 100;
@@ -293,7 +295,7 @@ class BidManager
         $oTransaction->status           = \transactions::PAYMENT_STATUS_OK;
         $oTransaction->etat             = \transactions::STATUS_VALID;
         $oTransaction->id_project       = $oBid->id_project;
-        $oTransaction->ip_client        = $_SERVER['REMOTE_ADDR'];
+        $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
         $oTransaction->id_bid_remb      = $oBid->id_bid;
         $oTransaction->transaction      = \transactions::VIRTUAL;

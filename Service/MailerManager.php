@@ -892,7 +892,7 @@ class MailerManager
         );
 
         /** @var TemplateMessage $message */
-        $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteure', $aMail);
+        $message = $this->messageProvider->newMessage('annonce-mise-en-ligne-emprunteur', $aMail);
         $message->setTo($sMailClient);
         $this->mailer->send($message);
     }
