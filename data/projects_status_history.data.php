@@ -200,7 +200,7 @@ class projects_status_history extends projects_status_history_crud
                         INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
                     WHERE
                         DATE(psh.added) = ' . $sDateAdded . '
-                        AND ps.status IN ' . implode(',', $aProjectStatus);
+                        AND ps.status IN (' . implode(',', $aProjectStatus) . ')';
 
         $aProjectStatusCount = array();
         $rQuery              = $this->bdd->query($sQuery);
