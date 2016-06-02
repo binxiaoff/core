@@ -138,6 +138,7 @@ class projects extends projects_crud
                             COUNT(*)
                         FROM
                             projects p
+                            LEFT JOIN companies co ON p.id_company = co.id_company
                             LEFT JOIN projects_last_status_history plsh on plsh.id_project = p.id_project
                             LEFT JOIN projects_status_history psh on psh.id_project_status_history = plsh.id_project_status_history
                             LEFT JOIN projects_status ps on ps.id_project_status = psh.id_project_status

@@ -34,27 +34,6 @@ class settings extends settings_crud
         parent::settings($bdd, $params);
     }
 
-    function get($id, $field = 'id_setting')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_setting')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
     function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {

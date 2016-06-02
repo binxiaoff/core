@@ -1,10 +1,10 @@
 <?php
 namespace Unilend\Service;
 
+use Symfony\Bridge\Monolog\Logger;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider;
 use Unilend\core\Loader;
-use Unilend\librairies\ULogger;
 use Unilend\Service\Simulator\EntityManager;
 
 class MailerManager
@@ -15,7 +15,7 @@ class MailerManager
     /** @var \mail_templates */
     private $oMailTemplate;
 
-    /** @var ULogger */
+    /** @var Logger */
     private $oLogger;
 
     /** @var \ficelle */
@@ -66,9 +66,9 @@ class MailerManager
     }
 
     /**
-     * @param ULogger $oLogger
+     * @param Logger $oLogger
      */
-    public function setLogger(ULogger $oLogger)
+    public function setLogger(Logger $oLogger)
     {
         $this->oLogger = $oLogger;
     }
@@ -187,8 +187,8 @@ class MailerManager
         $oBorrower = $this->oEntityManager->getRepository('clients');
 
         // EMAIL EMPRUNTEUR FUNDE //
-        if ($this->oLogger instanceof ULogger) {
-            $this->oLogger->addRecord(ULogger::INFO, 'Project funded - send email to borrower', array('Project ID' => $oProject->id_project));
+        if ($this->oLogger instanceof Logger) {
+            $this->oLogger->info('Project funded - sending email to borrower. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         $this->oSettings->get('Heure fin periode funding', 'type');
@@ -258,7 +258,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $varMail, false);
-        $message->setTo($destinataire);
+        $message->setTo(explode(';', str_replace(' ', '', $destinataire)));
         $this->mailer->send($message);
     }
 
@@ -308,8 +308,8 @@ class MailerManager
             $message->setTo($oBorrower->email);
             $this->mailer->send($message);
 
-            if ($this->oLogger instanceof ULogger) {
-                $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' : email emprunteur-dossier-funde-et-termine sent');
+            if ($this->oLogger instanceof Logger) {
+                $this->oLogger->info('Email emprunteur-dossier-funde-et-termine sent. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -348,7 +348,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('notification-projet-funde-a-100', $varMail, false);
-        $message->setTo($sRecipient);
+        $message->setTo(explode(';', str_replace(' ', '', $sRecipient)) );
         $this->mailer->send($message);
 
     }
@@ -371,8 +371,8 @@ class MailerManager
         $aLendersIds       = $oLoan->getProjectLoansByLender($oProject->id_project);
         $iNbLenders        = count($aLendersIds);
         $iNbTreatedLenders = 0;
-        if ($this->oLogger instanceof ULogger) {
-            $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $iNbLenders . ' lenders to send email');
+        if ($this->oLogger instanceof Logger) {
+            $this->oLogger->info($iNbLenders . ' lenders to send email for. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         foreach ($aLendersIds as $aLenderId) {
@@ -460,13 +460,13 @@ class MailerManager
                 $message->setTo($oClient->email);
                 $this->mailer->send($message);
 
-                if ($this->oLogger instanceof ULogger) {
-                    $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' : email preteur-bid-ok sent for lender (' . $oLenderAccount->id_lender_account . ')');
+                if ($this->oLogger instanceof Logger) {
+                    $this->oLogger->info('id_project=' . $oProject->id_project . ' - Email preteur-bid-ok sent for lender (' . $oLenderAccount->id_lender_account . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             }
             $iNbTreatedLenders++;
-            if ($this->oLogger instanceof ULogger) {
-                $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' : ' . $iNbTreatedLenders . '/' . $iNbLenders . ' loan notification mail sent');
+            if ($this->oLogger instanceof Logger) {
+                $this->oLogger->info('id_project=' . $oProject->id_project . ' - Loan notification email sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lender', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -579,8 +579,8 @@ class MailerManager
             $message->setTo($oClient->email);
             $this->mailer->send($message);
 
-            if ($this->oLogger instanceof ULogger) {
-                $this->oLogger->addRecord(ULogger::INFO, 'project : ' . $oProject->id_project . ' : email emprunteur-dossier-funding-ko sent');
+            if ($this->oLogger instanceof Logger) {
+                $this->oLogger->info('id_project=' . $oProject->id_project . ' : email emprunteur-dossier-funding-ko sent', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -625,7 +625,7 @@ class MailerManager
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
         $message->setTo($oClient->email);
-        $this->mailer->send($sRecipient);
+        $this->mailer->send(explode(';', str_replace(' ', '', $sRecipient)));
 
     }
 
@@ -849,7 +849,7 @@ class MailerManager
 
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($sNotificationType, $aReplacements, false);
-        $message->setTo($sRecipient);
+        $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
         $this->mailer->send($message);
     }
 

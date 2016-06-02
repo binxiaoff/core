@@ -1,8 +1,8 @@
 <?php
 namespace Unilend\Service;
 
+use Symfony\Bridge\Monolog\Logger;
 use Unilend\Service\Simulator\EntityManager;
-use Unilend\librairies\ULogger;
 
 /**
  * Class LoanManager
@@ -10,7 +10,7 @@ use Unilend\librairies\ULogger;
  */
 class LoanManager
 {
-    /** @var  ULogger */
+    /** @var  Logger */
     private $oLogger;
     /** @var EntityManager  */
     private $oEntityManager;
@@ -20,9 +20,9 @@ class LoanManager
         $this->oEntityManager = $oEntityManager;
     }
     /**
-     * @param ULogger $oLogger
+     * @param Logger $oLogger
      */
-    public function setLogger(ULogger $oLogger)
+    public function setLogger(Logger $oLogger)
     {
         $this->oLogger = $oLogger;
     }
@@ -47,7 +47,7 @@ class LoanManager
             $oAcceptedBid->amount  = $aAcceptedBid['amount'] * 100;
             $oAcceptedBid->create();
 
-            if ($oAcceptedBid->id_accepted_bid > 0 && $this->oLogger instanceof ULogger) {
+            if ($oAcceptedBid->id_accepted_bid > 0 && $this->oLogger instanceof Logger) {
                 switch ($oLoan->id_type_contract) {
                     case \loans::TYPE_CONTRACT_BDC:
                         $sType = 'BDC';
@@ -59,9 +59,9 @@ class LoanManager
                         $sType = 'UNKNOWN';
                         break;
                 }
-                $this->oLogger->addRecord(
-                    ULogger::INFO,
-                    'project : ' . $oLoan->id_project . ' : bid (' . $aAcceptedBid['bid_id'] . ') has been transferred to ' . $sType . ' contract loan (' . $oLoan->id_loan . ') with amount ' . $aAcceptedBid['amount']
+                $this->oLogger->info(
+                    'project : ' . $oLoan->id_project . ' : bid (' . $aAcceptedBid['bid_id'] . ') has been transferred to ' . $sType . ' contract loan (' . $oLoan->id_loan . ') with amount ' . $aAcceptedBid['amount'],
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oLoan->id_project)
                 );
             }
         }

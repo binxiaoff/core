@@ -1,5 +1,4 @@
 <?php
-use Unilend\librairies\ULogger;
 
 class lenders_account_stats extends lenders_account_stats_crud
 {
