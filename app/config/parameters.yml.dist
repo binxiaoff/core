@@ -31,3 +31,5 @@ parameters:
 
     router.request_context.host:    dev.www.unilend.fr
     router.request_context.scheme:  https
+
+    path.sftp:                      /srv/sites/unilend/protected/sftp/
