@@ -17,11 +17,8 @@ nb-configuration.xml
 protected/
 log/
 logs/
-backup2/
-backup3/
 tmp/
 public/admin/.htaccess
-public/default/var
 public/default/.htaccess
 data/crud/*
 route.php
