@@ -5666,52 +5666,6 @@ class cronController extends bootstrap
         $this->oLogger->info('Send to dataloader type ' . $sType . ' in ' . round($iTimeEndDataloader, 2),array('class' => __CLASS__, 'function' => __FUNCTION__));
     }
 
-    /**
-     * Documentation of IRR confluence (https://unilend.atlassian.net/wiki/display/DF/IRR)
-     */
-    public function _calculateIRRForAllLenders()
-    {
-        if (true === $this->startCron('LendersStats', 30)) {
-            set_time_limit(2000);
-            $this->fillProjectLastStatusMaterialized();
-
-            /** @var \Unilend\Service\LenderManager $oLenderManager */
-            $oLenderManager           = $this->get('unilend.service.lender_manager');
-            /** @var \lenders_account_stats $oLendersAccountsStats */
-            $oLendersAccountsStats    = $this->loadData('lenders_account_stats');
-            $aLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
-            $oLenderManager->addLendersToLendersAccountsStatQueue($aLendersWithLatePayments);
-
-            $iAmountOfLenderAccounts = isset($this->params[0]) ? $this->params[0] : 300;
-            $fTimeStart              = microtime(true);
-            /** @var \Unilend\Service\IRRManager $oIRRManager */
-            $oIRRManager = $this->get('unilend.service.irr_manager');
-            $oIRRManager->setLogger($this->oLogger);
-
-            /** @var lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
-            $oLendersAccountsStatsQueue = $this->loadData('lenders_accounts_stats_queue');
-            $aIRRsCalculated            = 0;
-
-            foreach ($oLendersAccountsStatsQueue->select(null, 'added DESC', null, $iAmountOfLenderAccounts) as $aLender) {
-                try {
-                    $oLendersAccountsStats->id_lender_account = $aLender['id_lender_account'];
-                    $oLendersAccountsStats->tri_date          = date('Y-m-d H:i:s');
-                    $oLendersAccountsStats->tri_value         = $oIRRManager->calculateIRRForLender($aLender['id_lender_account'], $bUseProjectLastStatusMaterialized = true);
-                    $oLendersAccountsStats->create();
-
-                    $oLendersAccountsStatsQueue->delete($aLender['id_lender_account'], 'id_lender_account');
-                    $aIRRsCalculated += 1;
-
-                } catch (Exception $e) {
-                    $this->oLogger->error('Could not calculate TRI for lender id_lender_account=' . $aLender['id_lender_account'] . ' Exception message: '  . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-            }
-            $this->emptyProjectLastStatusMaterialized();
-            $oLoggerIRR->info('Calculation time for ' . $aIRRsCalculated . ' lenders : ' . round((microtime(true) - $fTimeStart)/60, 2) . ' minutes', array('class' => __CLASS__, 'function' => __FUNCTION__));
-            $this->stopCron();
-        }
-    }
-
     /***
      * Removes welcome offers not used by lenders
      * Executed once per night, at 2am
@@ -5780,47 +5734,9 @@ class cronController extends bootstrap
         }
     }
 
-    /**
-     * Documentation of IRR confluence (https://unilend.atlassian.net/wiki/display/DF/IRR)
-     */
-    public function _calculateIRRForUnilend()
-    {
-        if (true === $this->startCron('UnilendStats', 5)) {
-            set_time_limit(2000);
 
-            /** @var \Unilend\Service\IRRManager $oIRRManager */
-            $oIRRManager = $this->get('unilend.service.irr_manager');
-            $oIRRManager->setLogger($this->oLogger);
-            $sYesterday = date('Y-m-d', strtotime('-1 day'));
 
-            $this->fillProjectLastStatusMaterialized();
 
-            if ($oIRRManager->IRRUnilendNeedsToBeRecalculated($sYesterday)) {
-                try {
-                    $oIRRManager->updateIRRUnilend();
-                } catch (Exception $e) {
-                    $this->oLogger->error('Could not update Unilend IRR: -ExceptionMessage: ' . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-            }
-            $this->emptyProjectLastStatusMaterialized();
-            $this->stopCron();
-        }
-    }
-
-    private function fillProjectLastStatusMaterialized()
-    {
-        $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
-        $this->bdd->query('INSERT INTO projects_last_status_history_materialized
-                                    SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
-                                    FROM projects_status_history
-                                    GROUP BY id_project');
-        $this->bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
-    }
-
-    private function emptyProjectLastStatusMaterialized()
-    {
-        $this->bdd->query('TRUNCATE projects_last_status_history_materialized');
-    }
 
 
     public function _greenPointValidation()
