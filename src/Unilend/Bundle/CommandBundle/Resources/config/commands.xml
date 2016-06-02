@@ -1,5 +1,4 @@
 <?xml version="1.0" ?>
-
 <container xmlns="http://symfony.com/schema/dic/services"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
@@ -18,8 +17,12 @@
         <service id="unilend.command.projects_funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\BPIStreamCommand">
+        <service id="unilend.command.feeds.bpi_stream" class="Unilend\Bundle\CommandBundle\Command\BPIStreamCommand">
             <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.feeds.bank_transfer" class="Unilend\Bundle\CommandBundle\Command\BankTransferCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
         </service>
         <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
             <tag name="console.command"/>
