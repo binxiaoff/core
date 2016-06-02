@@ -3,6 +3,7 @@
 namespace Unilend\Service;
 
 use Psr\Log\LoggerInterface;
+use Symfony\Bridge\Monolog\Logger;
 use Unilend\core\Loader;
 use Unilend\Service\Simulator\EntityManager;
 
@@ -28,7 +29,14 @@ class IRRManager
         $this->aConfig = Loader::loadConfig();
         $this->oLogger = $oLogger;
         $this->oEntityManager = $oEntityManager;
+    }
 
+    /**
+     * @param Logger $oLogger
+     */
+    public function setLogger(Logger $oLogger)
+    {
+        $this->oLogger = $oLogger;
     }
 
     public function updateIRRUnilend()
@@ -72,13 +80,14 @@ class IRRManager
             }
         }
 
-        $oFinancial = new \PHPExcel_Calculation_Financial();
-        $fXIRR      = bcmul($oFinancial->XIRR($aSums, $aDates, self::IRR_GUESS), 100, 2);
-        if (abs($fXIRR) > 100) {
-            throw new \Exception('IRR not in range IRR : ' . $fXIRR);
+        $oFinancial   = new \PHPExcel_Calculation_Financial();
+        $fXIRR        = $oFinancial->XIRR($aSums, $aDates, self::IRR_GUESS);
+        $fXIRRPercent = bcmul($fXIRR, 100, 2);
+        if (abs($fXIRRPercent) > 100) {
+            throw new \Exception('IRR not in range IRR : ' . $fXIRRPercent);
         }
 
-        return $fXIRR;
+        return $fXIRRPercent;
     }
 
     /**
@@ -145,15 +154,29 @@ class IRRManager
             \projects_status::LIQUIDATION_JUDICIAIRE,
             \projects_status::DEFAUT
         );
-        return count($oProjectStatusHistory->countProjectStatusChangesOnDate($sDate, $aProjectStatusTriggeringChange)) > 0
-                || count($oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized()) > 0 ;
+
+        $iCountProjectStatusChanges    = $oProjectStatusHistory->countProjectStatusChangesOnDate($sDate, $aProjectStatusTriggeringChange);
+        $iCountLendersWithLatePayments = $oLendersAccountsStats->getLendersWithLatePaymentsForIRRUsingProjectsLastStatusHistoryMaterialized();
+        return count($iCountProjectStatusChanges) > 0 || count($iCountLendersWithLatePayments) > 0 ;
     }
 
     public function getLastUnilendIRR()
     {
         /** @var \unilend_stats $oUnilendStats */
-        $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
-        return array_shift($oUnilendStats->select('type_stat = "IRR"', 'added DESC', null, '1'));
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $aUnilendStats = $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1');
+        return array_shift($aUnilendStats);
+    }
+
+    public function addIRRLender($aLender)
+    {
+        /** @var \lenders_account_stats $oLendersAccountsStats */
+        $oLendersAccountsStats = $this->oEntityManager->getRepository('lenders_account_stats');
+
+        $oLendersAccountsStats->id_lender_account = $aLender['id_lender_account'];
+        $oLendersAccountsStats->tri_date          = date('Y-m-d H:i:s');
+        $oLendersAccountsStats->tri_value         = $this->calculateIRRForLender($aLender['id_lender_account']);
+        $oLendersAccountsStats->create();
     }
 
 }

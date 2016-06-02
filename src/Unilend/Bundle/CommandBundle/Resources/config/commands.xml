@@ -18,5 +18,11 @@
         <service id="unilend.projects.funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.IRR.lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
