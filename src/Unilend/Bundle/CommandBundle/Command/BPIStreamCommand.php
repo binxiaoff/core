@@ -7,7 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\core\Loader;
 use Unilend\Service\Simulator\EntityManager;
 
-class BPIStream extends ContainerAwareCommand
+class BPIStreamCommand extends ContainerAwareCommand
 {
     /**
      * @see Command

@@ -18,7 +18,7 @@
         <service id="unilend.command.projects_funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\BPIStream">
+        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\BPIStreamCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
