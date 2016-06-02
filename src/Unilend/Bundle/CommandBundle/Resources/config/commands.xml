@@ -15,10 +15,10 @@
         <service id="unilend.command.salesforce_extraction" class="Unilend\Bundle\CommandBundle\Command\SalesforceExtractionCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.projects.funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
+        <service id="unilend.command.projects_funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\SendBPIXMLStream">
+        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\BPIStream">
             <tag name="console.command"/>
         </service>
     </services>
