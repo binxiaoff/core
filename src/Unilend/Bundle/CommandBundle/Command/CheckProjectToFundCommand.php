@@ -1,11 +1,13 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\librairies\Cache;
 use Unilend\core\Loader;
+use Unilend\Service\Simulator\EntityManager;
 
 class CheckProjectToFundCommand extends ContainerAwareCommand
 {
@@ -30,8 +32,10 @@ EOF
         $this->sRootPath = $sRootDir . '/../';
         $this->aConfig   = Loader::loadConfig();
 
+        /** @var EntityManager $oEntityManager */
+        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $oProject */
-        $oProject = Loader::loadData('projects');
+        $oProject = $oEntityManager->getRepository('projects');
         /** @var \Unilend\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
         /** @var bool $bHasProjectPublished */
@@ -60,27 +64,29 @@ EOF
      */
     private function zipProjectAttachments(\projects $projects)
     {
+        /** @var EntityManager $oEntityManager */
+        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \companies $companies */
-        $companies = Loader::loadData('companies');
+        $companies = $oEntityManager->getRepository('companies');
         /** @var \attachment $oAttachment */
-        $oAttachment = Loader::loadData('attachment');
+        $oAttachment = $oEntityManager->getRepository('attachment');
         /** @var \attachment_type $oAttachmentType */
-        $oAttachmentType = Loader::loadData('attachment_type');
+        $oAttachmentType = $oEntityManager->getRepository('attachment_type');
 
         $companies->get($projects->id_company, 'id_company');
 
         $sPathNoZip = $this->sRootPath . 'protected/sftp_groupama_nozip/';
         $sPath      = $this->sRootPath . 'protected/sftp_groupama/';
 
-        if (! is_dir($sPath)) {
+        if (false === is_dir($sPath)) {
             mkdir($sPath);
         }
 
-        if (! is_dir($sPathNoZip)) {
+        if (false === is_dir($sPathNoZip)) {
             mkdir($sPathNoZip);
         }
 
-        if (! is_dir($sPathNoZip . $companies->siren)) {
+        if (false === is_dir($sPathNoZip . $companies->siren)) {
             mkdir($sPathNoZip . $companies->siren);
         }
 
@@ -119,7 +125,7 @@ EOF
 
     private function copyAttachment(\attachment_helper $oAttachmentHelper, $aAttachments, $sAttachmentType, $sPrefix, $sSiren, $sPathNoZip)
     {
-        if (! isset($aAttachments[$sAttachmentType]['path'])) {
+        if (false === isset($aAttachments[$sAttachmentType]['path'])) {
             return;
         }
         $sFromPath  = $oAttachmentHelper->getFullPath(\attachment::PROJECT, $sAttachmentType) . $aAttachments[$sAttachmentType]['path'];
@@ -152,22 +158,25 @@ EOF
      */
     private function sendNewProjectEmail(\projects $projects)
     {
+        /** @var EntityManager $oEntityManager */
+        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \clients $clients */
-        $clients = Loader::loadData('clients');
+        $clients = $oEntityManager->getRepository('clients');
         /** @var \notifications $notifications */
-        $notifications = Loader::loadData('notifications');
+        $notifications = $oEntityManager->getRepository('notifications');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clients_gestion_notifications = Loader::loadData('clients_gestion_notifications');
+        $clients_gestion_notifications = $oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
-        $clients_gestion_mails_notif = Loader::loadData('clients_gestion_mails_notif');
+        $clients_gestion_mails_notif = $oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \companies $companies */
-        $companies = Loader::loadData('companies');
-        Loader::loadData('clients_status');//For class constants
+        $companies = $oEntityManager->getRepository('companies');
+        $oEntityManager->getRepository('clients_status');//For class constants
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var \settings $settings */
-        $settings = Loader::loadData('settings');
+        $settings = $oEntityManager->getRepository('settings');
 
+        /** @var Logger $oLogger */
         $oLogger = $this->getContainer()->get('monolog.logger.console');
         $oLogger->info('Send email for Project ID: ' . $projects->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects->id_project));
 
