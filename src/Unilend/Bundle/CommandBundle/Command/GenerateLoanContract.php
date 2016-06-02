@@ -5,6 +5,7 @@ use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
 class GenerateLoanContract extends ContainerAwareCommand
@@ -40,12 +41,14 @@ EOF
         require_once $this->sRootPath . 'apps/default/bootstrap.php';
         require_once $this->sRootPath . 'apps/default/controllers/pdf.php';
 
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \loans $loans */
-        $loans = Loader::loadData('loans');
+        $loans = $entityManager->getRepository('loans');
         /** @var \projects $projects */
-        $projects = Loader::loadData('projects');
+        $projects = $entityManager->getRepository('projects');
         /** load for class constants */
-        Loader::loadData('projects_status');
+        $entityManager->getRepository('projects_status');
         /** @var Logger $oLogger */
         $oLogger = $this->getContainer()->get('monolog.logger.console');
 
