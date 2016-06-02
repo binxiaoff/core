@@ -15,5 +15,8 @@
         <service id="unilend.command.salesforce_extraction" class="Unilend\Bundle\CommandBundle\Command\SalesforceExtractionCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.loan_contract" class="Unilend\Bundle\CommandBundle\Command\GenerateLoanContract">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
