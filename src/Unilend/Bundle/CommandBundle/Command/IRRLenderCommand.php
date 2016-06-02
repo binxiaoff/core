@@ -42,8 +42,6 @@ EOF
         $oLendersAccountsStats = $entityManager->getRepository('lenders_account_stats');
         /** @var /lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
         $oLendersAccountsStatsQueue = $entityManager->getRepository('lenders_accounts_stats_queue');
-        /** @var Connection $bdd */
-        $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
         /** @var Logger $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         $oIRRManager->setLogger($logger);
