@@ -45,11 +45,10 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
     {
         ini_set('memory_limit', '1G');
 
-
         /** @var Connection $bdd */
         $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
 
-        $previousDay = $name = $input->getArgument('day');
+        $previousDay = $input->getArgument('day');
         if (false === empty($previousDay) && 1 === preg_match('/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/', $previousDay)) {
             $previousDay = \DateTime::createFromFormat('Y-m-d', $previousDay);
         } else {
