@@ -30,8 +30,12 @@
         <service id="unilend.IRR.lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.lender.repayment_mail" class="Unilend\Bundle\CommandBundle\Command\AutomaticRepaymentEmailCommand">
+        <service id="unilend.lender.repayment_mail" class="Unilend\Bundle\CommandBundle\Command\AutomaticLenderRepaymentEmailCommand">
             <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.feeds.fiscal_state" class="Unilend\Bundle\CommandBundle\Command\FeedsFiscalStateCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
         </service>
     </services>
 </container>
