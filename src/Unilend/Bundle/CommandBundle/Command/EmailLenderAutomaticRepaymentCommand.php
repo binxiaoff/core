@@ -10,12 +10,12 @@ use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
 
 
-class AutomaticLenderRepaymentEmailCommand extends ContainerAwareCommand
+class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
         $this
-            ->setName('lender:repayment_email')
+            ->setName('email:lender:repayment_email')
             ->setDescription('For automatic repayments: creates repayment notifications and sends email if settings is on immediate');
     }
 
