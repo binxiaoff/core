@@ -2095,61 +2095,6 @@ class cronController extends bootstrap
         }
     }
 
-    // check  le 1 er et le 15 du mois si y a un virement a faire  (1h du matin)
-    public function _retraitUnilend()
-    {
-        if (true === $this->startCron('retraitUnilend', 5)) {
-            $jour           = date('d');
-            $datesVirements = array(1, 15);
-
-            if (in_array($jour, $datesVirements)) {
-                $oAccountUnilend = $this->loadData('platform_account_unilend');
-                $total           = $oAccountUnilend->getBalance();
-
-                if ($total > 0) {
-                    $virements    = $this->loadData('virements');
-                    $transactions = $this->loadData('transactions');
-                    $bank_unilend = $this->loadData('bank_unilend');
-
-                    $transactions->id_client        = 0;
-                    $transactions->montant          = $total;
-                    $transactions->id_langue        = 'fr';
-                    $transactions->date_transaction = date('Y-m-d H:i:s');
-                    $transactions->status           = '1';
-                    $transactions->etat             = '1';
-                    $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                    $transactions->type_transaction = 11; // virement Unilend (retrait)
-                    $transactions->transaction      = 1; // transaction virtuelle
-                    $transactions->create();
-
-                    $virements->id_client      = 0;
-                    $virements->id_project     = 0;
-                    $virements->id_transaction = $transactions->id_transaction;
-                    $virements->montant        = $total;
-                    $virements->motif          = 'UNILEND_' . date('dmY');
-                    $virements->type           = 4; // Unilend
-                    $virements->status         = 0;
-                    $virements->create();
-
-                    $bank_unilend->id_transaction         = $transactions->id_transaction;
-                    $bank_unilend->id_echeance_emprunteur = 0;
-                    $bank_unilend->id_project             = 0;
-                    $bank_unilend->montant                = '-' . $total;
-                    $bank_unilend->type                   = 3;
-                    $bank_unilend->status                 = 3;
-                    $bank_unilend->create();
-
-                    $oAccountUnilend->id_transaction = $transactions->id_transaction;
-                    $oAccountUnilend->type           = platform_account_unilend::TYPE_WITHDRAW;
-                    $oAccountUnilend->amount         = - $total;
-                    $oAccountUnilend->create();
-                }
-            }
-
-            $this->stopCron();
-        }
-    }
-
     // passe a 1h du matin le 1er du mois
     public function _etat_fiscal()
     {
