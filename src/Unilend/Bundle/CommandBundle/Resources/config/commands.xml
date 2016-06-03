@@ -30,5 +30,8 @@
         <service id="unilend.IRR.lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.lender.repayment_mail" class="Unilend\Bundle\CommandBundle\Command\AutomaticRepaymentEmailCommand">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
