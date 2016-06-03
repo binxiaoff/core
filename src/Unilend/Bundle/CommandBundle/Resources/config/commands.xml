@@ -24,6 +24,14 @@
             <tag name="console.command"/>
             <argument>%path.sftp%</argument>
         </service>
+        <service id="unilend.command.feeds.direct_debit" class="Unilend\Bundle\CommandBundle\Command\FeedsDirectDebitCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
+        </service>
+        <service id="unilend.command.feeds.fiscal_state" class="Unilend\Bundle\CommandBundle\Command\FeedsFiscalStateCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
+        </service>
         <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
             <tag name="console.command"/>
         </service>
@@ -32,10 +40,6 @@
         </service>
         <service id="unilend.lender.repayment_mail" class="Unilend\Bundle\CommandBundle\Command\AutomaticLenderRepaymentEmailCommand">
             <tag name="console.command"/>
-        </service>
-        <service id="unilend.command.feeds.fiscal_state" class="Unilend\Bundle\CommandBundle\Command\FeedsFiscalStateCommand">
-            <tag name="console.command"/>
-            <argument>%path.sftp%</argument>
         </service>
     </services>
 </container>
