@@ -130,6 +130,7 @@ class ProjectManager
             $aLogContext['Project ID']    = $oProject->id_project;
             $aLogContext['Balance']       = $iBidTotal;
             $aLogContext['Rejected bids'] = $nb_bids_ko;
+            $aLogContext['Max rate']      = $oBid->getProjectMaxRate($oProject->id_project);
         }
 
         if ($bBidsLogs == true) {
@@ -138,7 +139,7 @@ class ProjectManager
             $oBidLog->nb_bids_ko      = $nb_bids_ko;
             $oBidLog->total_bids      = $oBid->counter('id_project = ' . $oProject->id_project);
             $oBidLog->total_bids_ko   = $oBid->counter('id_project = ' . $oProject->id_project . ' AND status = 2');
-            $oBidLog->rate_max        = $oBid->getProjectMaxRate($oProject->id_project);
+            $oBidLog->rate_max        = $aLogContext['Max rate'];
             $oBidLog->fin             = date('Y-m-d H:i:s');
             $oBidLog->create();
         }
