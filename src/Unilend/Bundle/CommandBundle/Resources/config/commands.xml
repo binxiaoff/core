@@ -32,6 +32,10 @@
             <tag name="console.command"/>
             <argument>%path.sftp%</argument>
         </service>
+        <service id="unilend.command.feeds.month_repayments" class="Unilend\Bundle\CommandBundle\Command\FeedsMonthRepaymentsCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
+        </service>
         <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
             <tag name="console.command"/>
         </service>
