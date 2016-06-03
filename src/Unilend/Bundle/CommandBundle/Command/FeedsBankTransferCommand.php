@@ -21,6 +21,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 
         parent::__construct();
     }
+
     /**
      * @see Command
      */
