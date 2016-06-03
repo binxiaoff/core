@@ -17,10 +17,10 @@
         <service id="unilend.command.projects_funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.feeds.bpi_stream" class="Unilend\Bundle\CommandBundle\Command\BPIStreamCommand">
+        <service id="unilend.command.feeds.bpi" class="Unilend\Bundle\CommandBundle\Command\FeedsBPICommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.feeds.bank_transfer" class="Unilend\Bundle\CommandBundle\Command\BankTransferCommand">
+        <service id="unilend.command.feeds.bank_transfer" class="Unilend\Bundle\CommandBundle\Command\FeedsBankTransferCommand">
             <tag name="console.command"/>
             <argument>%path.sftp%</argument>
         </service>
