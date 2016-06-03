@@ -21,6 +21,7 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
 
         parent::__construct();
     }
+
     /**
      * @see Command
      */

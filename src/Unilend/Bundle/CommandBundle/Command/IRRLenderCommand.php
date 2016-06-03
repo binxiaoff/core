@@ -70,9 +70,6 @@ EOF
         $this->emptyProjectLastStatusMaterialized();
     }
 
-    /**
-     * @param Connection $bdd
-     */
     private function fillProjectLastStatusMaterialized()
     {
         /** @var Connection $bdd */
@@ -86,9 +83,6 @@ EOF
         $bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
     }
 
-    /**
-     * @param Connection $bdd
-     */
     private function emptyProjectLastStatusMaterialized()
     {
         /** @var Connection $bdd */
