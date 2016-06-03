@@ -27,5 +27,8 @@
         <service id="unilend.IRR.lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.lender.repayment" class="Unilend\Bundle\CommandBundle\Command\AutomaticLenderRepaymentCommand">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
