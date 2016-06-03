@@ -229,7 +229,6 @@ EOF
                     $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
                     $message->setTo($aLender['email']);
                     $mailer = $this->getContainer()->get('mailer');
-                    /** @todo check the mailer transport config : actually the error : "sh: 1: /usr/sbin/sendmail: not found" when I execute the command */
                     $mailer->send($message);
                     ++$iEmails;
                 }
