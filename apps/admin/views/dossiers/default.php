@@ -153,10 +153,9 @@
                         <td style="padding-top:23px;">
                             <select name="duree" id="duree" class="select" style="width:80px;">
                                 <option value="">Durée</option>
-                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '24' ? 'selected' : '') ?> value="24">24 mois</option>
-                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '36' ? 'selected' : '') ?> value="36">36 mois</option>
-                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '48' ? 'selected' : '') ?> value="48">48 mois</option>
-                                <option <?= (isset($_POST['duree']) && $_POST['duree'] == '60' ? 'selected' : '') ?> value="60">60 mois</option>
+                                <?php foreach ($this->fundingTimeValues as $sFundingtime) : ?>
+                                    <option <?= (isset($_POST['duree']) && $_POST['duree'] == $sFundingtime ? 'selected' : '') ?> value="<?= $sFundingtime ?>"><?= $sFundingtime ?> mois</option>
+                                <?php endforeach; ?>
                                 <option <?= (isset($_POST['duree']) && $_POST['duree'] == '1000000' ? 'selected' : '') ?> value="1000000">je ne sais pas</option>
                             </select>
                         </td>

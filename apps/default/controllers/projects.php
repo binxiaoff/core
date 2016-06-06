@@ -194,7 +194,7 @@ class projectsController extends bootstrap
                     $this->form_ok = false;
                 }
 
-                $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects->id_project);
+                $fMaxCurrentRate = $this->bids->getProjectMaxRate($this->projects);
 
                 if ($this->soldeBid >= $this->projects->amount && $_POST['taux_pret'] >= $fMaxCurrentRate) {
                     $this->form_ok = false;
@@ -495,7 +495,7 @@ class projectsController extends bootstrap
                 $this->resteApayer          = 0;
                 $this->pourcentage          = 100;
                 $this->decimalesPourcentage = 0;
-                $this->txLenderMax          = $this->bids->getProjectMaxRate($this->projects->id_project);
+                $this->txLenderMax          = $this->bids->getProjectMaxRate($this->projects);
             } else {
                 $this->payer                = $this->soldeBid;
                 $this->resteApayer          = $this->projects->amount - $this->soldeBid;
@@ -513,7 +513,7 @@ class projectsController extends bootstrap
             /** @var \Unilend\Service\ProjectManager $projectManager */
             $projectManager       = $this->get('unilend.service.project_manager');
             $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
-
+            $this->meanBidAmount  = round(array_sum(array_column($this->bidsStatistics, 'amount_total')) / array_sum(array_column($this->bidsStatistics, 'nb_bids')), 2);
 
             if (false === empty($this->clients->id_client)) {
                 $this->bidsEncours = $this->bids->getBidsEncours($this->projects->id_project, $this->lenders_accounts->id_lender_account);

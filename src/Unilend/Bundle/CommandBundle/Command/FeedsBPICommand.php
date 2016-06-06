@@ -7,7 +7,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\core\Loader;
 use Unilend\Service\Simulator\EntityManager;
 
-class BPIStream extends ContainerAwareCommand
+class FeedsBPICommand extends ContainerAwareCommand
 {
     /**
      * @see Command
@@ -15,7 +15,7 @@ class BPIStream extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('feeds:bpistream')
+            ->setName('feeds:bpi')
             ->setDescription('Sends BPI XML Stream');
     }
 

@@ -140,10 +140,6 @@ apt-get install -y ruby-all-dev ruby-switch libsqlite3-dev
 ruby-switch --set ruby2.0
 gem install mailcatcher
 sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env /usr/local/bin/catchmail' /etc/php5/fpm/php.ini
+sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env /usr/local/bin/catchmail' /etc/php5/cli/php.ini
 ln -fs /vagrant/conf/vhosts/mailcatcher.conf /etc/nginx/sites-enabled/mailcatcher.conf
 cp /vagrant/conf/mailcatcher.conf /etc/init/mailcatcher.conf
-
-#increase swap memory
-/bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
-/sbin/mkswap /var/swap.1
-/sbin/swapon /var/swap.1
