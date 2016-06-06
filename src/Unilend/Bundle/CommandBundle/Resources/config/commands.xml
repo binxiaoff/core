@@ -43,6 +43,18 @@
             <tag name="console.command"/>
             <argument>%path.sftp%</argument>
         </service>
+        <service id="unilend.command.sfpmei_incoming_feeds" class="Unilend\Bundle\CommandBundle\Command\FeedsSfpmeiIncomingCommand">
+            <tag name="console.command"/>
+            <call method="setPath">
+                <argument>%path.sftp%</argument>
+            </call>
+        </service>
+        <service id="unilend.command.check_incoming_sfpmei_feeds_availability" class="Unilend\Bundle\CommandBundle\Command\CheckIncomingSfpmeiFeedFile">
+            <tag name="console.command"/>
+            <call method="setPath">
+                <argument>%path.sftp%</argument>
+            </call>
+        </service>
         <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
             <tag name="console.command"/>
         </service>
@@ -50,6 +62,18 @@
             <tag name="console.command"/>
         </service>
         <service id="unilend.email.lender.repayment_mail" class="Unilend\Bundle\CommandBundle\Command\EmailLenderAutomaticRepaymentCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.email.lender.daily_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderDailySummaryCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.email.lender.weekly_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderWeeklySummaryCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.email.lender.monthly_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderMonthlySummaryCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.email.borrower.upcoming_repayment" class="Unilend\Bundle\CommandBundle\Command\EmailBorrowerUpcomingRepaymentCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.unilend.bank_transfert" class="Unilend\Bundle\CommandBundle\Command\UnilendBankTransfertCommand">
