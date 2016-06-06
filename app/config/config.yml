@@ -19,7 +19,10 @@ doctrine:
                 user:     "%database_user%"
                 password: "%database_password%"
                 charset:  "UTF8"
-                wrapper_class: "%wrapper_class%"
+                wrapper_class: "%dbal_wrapper_class%"
+                driver_class: "%dbal_driver_class%"
+                options:
+                    x_reconnect_attempts: 3
     orm:
         result_cache_driver:
             type: memcache
