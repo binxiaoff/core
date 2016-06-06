@@ -6,7 +6,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Service\Simulator\EntityManager;
 
-class BankTransferCommand extends ContainerAwareCommand
+class FeedsBankTransferCommand extends ContainerAwareCommand
 {
     /** @var string */
     private $sftpPath;
@@ -21,6 +21,7 @@ class BankTransferCommand extends ContainerAwareCommand
 
         parent::__construct();
     }
+
     /**
      * @see Command
      */

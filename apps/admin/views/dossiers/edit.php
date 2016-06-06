@@ -694,17 +694,6 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <th></th>
-                            <td>
-                                <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == \projects_status::FUNDE) { ?>
-                                    <select name="statut_pouvoir" id="statut_pouvoir" class="select">
-                                        <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
-                                        <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
-                                    </select>
-                                <?php } ?>
-                            </td>
-                        </tr>
                     <?php } elseif ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir :</label></th>
@@ -801,15 +790,15 @@
         <a href="<?= $this->lurl ?>/dossiers/export/<?= $this->projects->id_project ?>" class="btn_link">CSV données financières</a>
         <a href="<?= $this->lurl ?>/dossiers/edit/<?= $this->projects->id_project ?>/altares" class="btn_link">Générer les données Altares</a>
     </div>
-    <?php if (count($this->lProjects_comments) > 0): ?>
         <div id="table_memo">
+            <?php if (count($this->lProjects_comments) > 0): ?>
             <table class="tablesorter">
                 <thead>
-                <tr>
-                    <th width="120" align="center">Date ajout</th>
-                    <th align="center">Contenu</th>
-                    <th width="50" align="center">&nbsp;</th>
-                </tr>
+                    <tr>
+                        <th width="120" align="center">Date ajout</th>
+                        <th align="center">Contenu</th>
+                        <th width="50" align="center">&nbsp;</th>
+                    </tr>
                 </thead>
                 <tbody>
                 <?php $i = 1; ?>
@@ -825,9 +814,9 @@
                 <?php endforeach; ?>
                 </tbody>
             </table>
+            <?php endif; ?>
         </div>
         <br/>
-    <?php endif; ?>
     <br/><br/>
     <div class="btnDroite"><a href="<?= $this->lurl ?>/dossiers/addMemo/<?= $this->projects->id_project ?>" class="btn_link thickbox">Ajouter un mémo</a></div>
 

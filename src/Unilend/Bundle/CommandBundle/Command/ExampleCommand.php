@@ -19,6 +19,9 @@ class ExampleCommand extends ContainerAwareCommand
         $this->defaultArgument = $defaultArgument;
     }
 
+    /**
+     * @see Command
+     */
     protected function configure()
     {
         $this
@@ -37,6 +40,9 @@ class ExampleCommand extends ContainerAwareCommand
             );
     }
 
+    /**
+     * {@inheritdoc}
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $name = $input->getArgument('name');

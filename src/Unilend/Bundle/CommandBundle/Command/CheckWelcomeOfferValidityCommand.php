@@ -23,17 +23,17 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \settings $oSettings */
-        $oSettings            = $entityManager->getRepository('settings');
+        $oSettings = $entityManager->getRepository('settings');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $entityManager->getRepository('offres_bienvenues_details');
         /** @var \transactions $oTransactions */
-        $oTransactions        = $entityManager->getRepository('transactions');
+        $oTransactions = $entityManager->getRepository('transactions');
         /** @var \wallets_lines $oWalletsLines */
-        $oWalletsLines        = $entityManager->getRepository('wallets_lines');
+        $oWalletsLines = $entityManager->getRepository('wallets_lines');
         /** @var \bank_unilend $oBankUnilend */
-        $oBankUnilend         = $entityManager->getRepository('bank_unilend');
+        $oBankUnilend = $entityManager->getRepository('bank_unilend');
         /** @var \lenders_accounts $oLendersAccounts */
-        $oLendersAccounts     = $entityManager->getRepository('lenders_accounts');
+        $oLendersAccounts = $entityManager->getRepository('lenders_accounts');
         /** @var Logger $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
 
