@@ -95,60 +95,6 @@ class cronController extends bootstrap
         die;
     }
 
-    public function _mail_echeance_emprunteur()
-    {
-        if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
-            /** @var \echeanciers_emprunteur $oPaymentSchedule */
-            $oPaymentSchedule    = $this->loadData('echeanciers_emprunteur');
-            $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
-            /** @var \prelevements $oDirectDebit */
-            $oDirectDebit = $this->loadData('prelevements');
-
-            foreach ($aUpcomingRepayments as $aRepayment) {
-                $aDirectDebit = $oDirectDebit->select('id_project = ' . $aRepayment['id_project'] . ' AND type = 2 AND num_prelevement = ' . $aRepayment['ordre']);
-
-                if (false === empty($aDirectDebit)) {
-                    $this->projects->get($aRepayment['id_project']);
-                    $this->companies->get($this->projects->id_company);
-
-                    if (false === empty($this->companies->prenom_dirigeant) && false === empty($this->companies->email_dirigeant)) {
-                        $sFirstName  = $this->companies->prenom_dirigeant;
-                        $sMailClient = $this->companies->email_dirigeant;
-                    } else {
-                        $this->clients->get($this->companies->id_client_owner);
-
-                        $sFirstName  = $this->clients->prenom;
-                        $sMailClient = $this->clients->email;
-                    }
-
-                    /** @var \loans $oLoans */
-                    $oLoans = $this->loadData('loans');
-
-                    $aMail = array(
-                        'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),
-                        'echeance'           => $this->ficelle->formatNumber($aDirectDebit[0]['montant'] / 100),
-                        'prochaine_echeance' => date('d/m/Y', strtotime($aRepayment['date_echeance_emprunteur'])),
-                        'surl'               => $this->surl,
-                        'url'                => $this->furl,
-                        'nom_entreprise'     => $this->companies->name,
-                        'montant'            => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
-                        'prenom_e'           => $sFirstName,
-                        'lien_fb'            => $this->like_fb,
-                        'lien_tw'            => $this->twitter
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $aMail);
-                    $message->setTo($sMailClient);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                }
-            }
-
-            $this->stopCron();
-        }
-    }
-
     public function _pre_publish_project()
     {
         if (true === $this->startCron('pre_publish_project', 15)) {
