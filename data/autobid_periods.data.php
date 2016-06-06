@@ -91,8 +91,8 @@ class autobid_periods extends autobid_periods_crud
             if (true === empty($mDurations)) {
                 return false;
             }
-        } catch (\Doctrine\DBAL\DBALException $ex) {
-            return false;
+        } catch (\Doctrine\DBAL\DBALException $exception) {
+            return null;
         }
 
         return $mDurations;
