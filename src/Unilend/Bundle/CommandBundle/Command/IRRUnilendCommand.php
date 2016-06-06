@@ -1,6 +1,4 @@
 <?php
-
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bridge\Monolog\Logger;
@@ -9,7 +7,6 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Service\IRRManager;
-
 
 class IRRUnilendCommand extends ContainerAwareCommand
 {
@@ -44,9 +41,6 @@ class IRRUnilendCommand extends ContainerAwareCommand
         $this->emptyProjectLastStatusMaterialized();
     }
 
-    /**
-     * @param Connection $bdd
-     */
     private function fillProjectLastStatusMaterialized()
     {
         /** @var Connection $bdd */
@@ -60,14 +54,10 @@ class IRRUnilendCommand extends ContainerAwareCommand
         $bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
     }
 
-    /**
-     * @param Connection $bdd
-     */
     private function emptyProjectLastStatusMaterialized()
     {
         /** @var Connection $bdd */
         $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
         $bdd->query('TRUNCATE projects_last_status_history_materialized');
     }
-
 }
