@@ -927,7 +927,7 @@ class MailerManager
                                         <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
 
                     if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
-                        $clientMailNotifications = Loader::loadData('clients_gestion_mails_notif');
+                        $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
@@ -974,11 +974,11 @@ class MailerManager
     public function sendBorrowerBill(\projects $project)
     {
        /** @var \companies $companies */
-        $companies   = Loader::loadData('companies');
+        $companies   = $this->oEntityManager->getRepository('companies');
         $companies->get($project->id_company, 'id_company');
 
         /** @var \clients $client */
-        $client = Loader::loadData('clients');
+        $client = $this->oEntityManager->getRepository('clients');
         $client->get($companies->id_client_owner, 'id_client');
 
         $varMail = array(
