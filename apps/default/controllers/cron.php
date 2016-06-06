@@ -117,42 +117,6 @@ class cronController extends bootstrap
         }
     }
 
-    // toutes les minute on check //
-    // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
-    public function _check_projet_a_funder()
-    {
-        if (true === $this->startCron('check_projet_a_funder', 5)) {
-            ini_set('max_execution_time', '300');
-            ini_set('memory_limit', '1G');
-
-            /** @var \projects $oProject */
-            $oProject = $this->loadData('projects');
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('unilend.service.project_manager');
-
-            $bHasProjectPublished = false;
-            $aProjectToFund       = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
-
-            foreach ($aProjectToFund as $aProject) {
-                if ($oProject->get($aProject['id_project'])) {
-                    $bHasProjectPublished = true;
-
-                   $oProjectManager->publish($oProject);
-
-                    $this->zippage($oProject->id_project);
-                    $this->sendNewProjectEmail($oProject);
-                }
-            }
-
-            if ($bHasProjectPublished) {
-                $oCachePool    = $this->get('memcache.default');
-                $oCachePool->deleteItem(Cache::LIST_PROJECTS . '_' . $this->tabProjectDisplay);
-            }
-
-            $this->stopCron();
-        }
-    }
-
     // check les statuts remb
     public function _check_status()
     {
@@ -1746,118 +1710,6 @@ class cronController extends bootstrap
         $mailer->send($message);
     }
 
-    // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    private function sendNewProjectEmail(\projects $oProject)
-    {
-        $this->clients                       = $this->loadData('clients');
-        $this->notifications                 = $this->loadData('notifications');
-        $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-        $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-        $this->projects                      = $this->loadData('projects');
-        $this->companies                     = $this->loadData('companies');
-        // Loaded for class constants
-        $this->loadData('clients_status');
-        /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->loadData('lenders_accounts');
-        /** @var \transactions $oTransaction */
-        $oTransaction = $this->loadData('transactions');
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutobidSettingsManager */
-        $oAutobidSettingsManager = $this->get('AutoBidSettingsManager');
-
-        $this->oLogger->debug('Sending new project email : id_project=' . $id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
-
-        $this->projects->get($oProject->id_project, 'id_project');
-        $this->companies->get($this->projects->id_company, 'id_company');
-
-        $varMail = array(
-            'surl'            => $this->surl,
-            'url'             => $this->furl,
-            'nom_entreprise'  => $this->companies->name,
-            'projet-p'        => $this->furl . '/projects/detail/' . $this->projects->slug,
-            'montant'         => $this->ficelle->formatNumber($this->projects->amount, 0),
-            'duree'           => $this->projects->period,
-            'gestion_alertes' => $this->lurl . '/profile',
-            'lien_fb'         => $this->like_fb,
-            'lien_tw'         => $this->twitter,
-            'annee'           => date('Y')
-        );
-        $this->lng['email-nouveau-projet'] = $this->ln->selectFront('email-nouveau-projet', $this->language, $this->App);
-
-        /** @var \autobid_periods $oAutobidPeriods */
-        $oAutobidPeriods = $this->loadData('autobid_periods');
-        $aPeriod         = $oAutobidPeriods->getPeriod($oProject->period);
-
-        /** @var \autobid $oAutobid */
-        $oAutobid    = $this->loadData('autobid');
-        $aAutobiders = array_column($oAutobid->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
-
-        /** @var \bids $oBids */
-        $oBids            = $this->loadData('bids');
-        $aBids            = $oBids->getLenders($oProject->id_project);
-        $aNoAutobidPlaced = array_diff(array_keys($aAutobiders), array_column($aBids, 'id_lender_account'));
-
-        $iOffset = 0;
-        $iLimit  = 100;
-
-        while ($aLenders = $this->clients->selectPreteursByStatus(\clients_status::VALIDATED, 'c.status = 1', 'c.id_client ASC', $iOffset, $iLimit)) {
-            $iEmails = 0;
-            $iOffset += $iLimit;
-
-             $this->oLogger->debug('Lenders retrieved: ' . count($aLenders), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
-
-            foreach ($aLenders as $aLender) {
-                $this->notifications->type       = \notifications::TYPE_NEW_PROJECT;
-                $this->notifications->id_lender  = $aLender['id_lender'];
-                $this->notifications->id_project = $oProject->id_project;
-                $this->notifications->create();
-
-                if (false === $this->clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $oProject->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
-                    $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
-                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                    $this->clients_gestion_mails_notif->id_project      = $oProject->id_project;
-                    $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
-
-                    if (empty($sAutobidInsufficientBalance) && $this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
-                        $this->clients_gestion_mails_notif->immediatement = 1;
-
-                        $sAutobidInsufficientBalance = '';
-
-                        if (
-                            in_array($aLender['id_lender'], $aNoAutobidPlaced)
-                            && $oLenderAccount->get($aLender['id_lender'])
-                            && $oAutobidSettingsManager->isOn($oLenderAccount)
-                            && $oTransaction->getSolde($oLenderAccount->id_client_owner) < $aAutobiders[$oLenderAccount->id_lender_account]
-                        ) {
-                            $sAutobidInsufficientBalance = '
-                                    <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
-                                        <tr>
-                                            <td align="center" style="color: #b20066">' . $this->lng['email-nouveau-projet']['solde-insuffisant-nouveau-projet'] . '</td>
-                                        </tr>
-                                    </table>';
-                        }
-
-                        $varMail['autobid_insufficient_balance'] = $sAutobidInsufficientBalance;
-                        $varMail['prenom_p']                     = $aLender['prenom'];
-                        $varMail['motif_virement']               = $this->clients->getLenderPattern($aLender['id_client']);
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
-                    $message->setTo($aLender['email']);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                        ++$iEmails;
-                    }
-                }
-
-                $this->clients_gestion_mails_notif->create();
-            }
-
-            $this->oLogger->debug('New project notification emails sent: ' . $iEmails, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
-        }
-    }
-
     // 1 fois par jour on regarde si on a une offre de parrainage a traiter pour donner l'argent
     public function _offre_parrainage()
     {
@@ -2237,7 +2089,7 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
-    
+
     // Passe toutes les 5 minutes la nuit de 3h à 4h
     // copie données table -> enregistrement table backup -> suppression données table
     public function _stabilisation_mails()
@@ -2285,7 +2137,7 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
-    
+
     private function deleteOldFichiers()
     {
         $path  = $this->path . 'protected/sftp_groupama/';
