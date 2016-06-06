@@ -1331,98 +1331,91 @@ class preteursController extends bootstrap
         $this->aInfosNotifications['vos-offres-et-vos-projets']['title'] = 'Offres et Projets';
         $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = array(
             \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
-                'title' => 'Annonce des nouveaux projets',
+                'title'           => 'Annonce des nouveaux projets',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_PLACED => array(
-                'title' => 'Offres réalisées',
+                'title'           => 'Offres réalisées',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
-                'title' => 'Offres refusées',
+                'title'           => 'Offres refusées',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
-                'title' => 'Offres acceptées',
+                'title'           => 'Offres acceptées',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
-                'title' => 'AutoLend soldes faible',
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                'title'           => 'Problème sur un projet',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
-                'title' => 'AutoLend soldes insuffisante',
+            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
+                'title'           => 'Autolend : offre réalisée ou rejetée',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';
         $this->aInfosNotifications['vos-remboursements']['notifications'] = array(
             \clients_gestion_type_notif::TYPE_REPAYMENT => array(
-                'title' => 'Remboursement(s)',
+                'title'           => 'Remboursement(s)',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
-            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
-                'title' => 'Problème sur un projet',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->aInfosNotifications['mouvements-sur-votre-compte']['title'] = 'Mouvements sur le compte';
         $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = array(
             \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
-                'title' => 'Alimentation de votre compte par virement',
+                'title'           => 'Alimentation de votre compte par virement',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => array(
-                'title' => 'Alimentation de votre compte par carte bancaire',
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => array(
+                'title'           => 'Alimentation de votre compte par carte bancaire',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_DEBIT => array(
-                'title' => 'retrait',
+                'title'           => 'retrait',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
 
         if (isset($_SESSION['FilterMails'])) {
@@ -1968,46 +1961,94 @@ class preteursController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
+        $iClientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
 
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
-
-        $sSwift           = strtoupper($_POST['bic']);
-        $bBicOk           = true;
-        $bIbanOk          = true;
-        $sIban            = '';
-        $sRibChangeStatus = 'ok';
-
-        if ($this->ficelle->swift_validate(trim($sSwift))) {
-            $oLendersAccounts->bic = str_replace(' ', '', strtoupper($sSwift));
-        } else {
-            $bBicOk = false;
+        if (false === $iClientId) {
+            echo json_encode(array('text' => 'Une erreur est survenue', 'severity' => 'error'));
+            return;
         }
+        /** @var \lenders_accounts $oLendersAccounts */
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($iClientId, 'id_client_owner');
+
+        $sCurrrentBic = $oLendersAccounts->bic;
+        $sNewBic      = str_replace(' ', '', strtoupper($_POST['bic']));
+        $sIban        = '';
 
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
-                $bIbanOk = false;
-                break;
+                echo json_encode(array('text' => 'IBAN incorrect', 'severity' => 'error'));
+                return;
             }
             $sIban .= strtoupper($_POST['iban' . $i]);
         }
+        $sCurrentIban = $oLendersAccounts->iban;
+        $sNewIban     = str_replace(' ', '', $sIban);
+        /** @var \Unilend\Service\MailerManager $oMailerManager */
+        $oMailerManager = $this->get('MailerManager');
 
-        if ($bIbanOk && $this->ficelle->isIBAN($sIban)) {
-            $oLendersAccounts->iban = str_replace(' ', '', $sIban);
+        if ($sCurrrentBic !== $sNewBic && $sCurrentIban !== $sNewIban) {
+            if ($this->validateBic($sNewBic, $oLendersAccounts) && $this->validateIban($sNewIban, $oLendersAccounts)) {
+                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
+                $sMessage = 'Bic et IBAN modifiés';
+                $sSeverity   = 'valid';
+                $oLendersAccounts->update();
+            } else {
+                $sMessage = 'BIC / IBAN incorrect';
+                $sSeverity   = 'error';
+            }
+        } elseif ($sCurrrentBic !== $sNewBic) {
+            if ($this->validateBic($sNewBic, $oLendersAccounts)) {
+                $sMessage = 'BIC modifié';
+                $sSeverity   = 'valid';
+                $oLendersAccounts->update();
+            } else {
+                $sMessage = 'BIC incorrect';
+                $sSeverity   = 'error';
+            }
+        } elseif ($sCurrentIban !== $sNewIban) {
+            if ($this->validateIban($sNewIban, $oLendersAccounts)) {
+                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
+                $sMessage = 'IBAN modifié';
+                $sSeverity   = 'valid';
+                $oLendersAccounts->update();
+            } else {
+                $sMessage = 'IBAN incorrect';
+                $sSeverity   = 'error';
+            }
         } else {
-            $bIbanOk = false;
+            echo json_encode(array('text' => 'Aucune modification', 'severity' => 'warning'));
+            return;
         }
+        echo json_encode(array('text' => $sMessage, 'severity' => $sSeverity));
+    }
 
-        if (false === $bBicOk && false === $bIbanOk) {
-            $sRibChangeStatus = 'both_ko';
-        } else if (false === $bBicOk) {
-            $sRibChangeStatus = 'bic_ko';
-        } else if (false === $bIbanOk) {
-            $sRibChangeStatus = 'iban_ko';
+    /**
+     * @param string $sNewBic
+     * @param \lenders_accounts $oLendersAccounts
+     * @return bool
+     */
+    private function validateBic($sNewBic, \lenders_accounts &$oLendersAccounts)
+    {
+        if ($this->ficelle->swift_validate($sNewBic)) {
+            $oLendersAccounts->bic = $sNewBic;
+            return true;
         }
+        return false;
+    }
 
-        $oLendersAccounts->update();
-        echo $sRibChangeStatus;
+    /**
+     * @param string $sNewIban
+     * @param \lenders_accounts $oLendersAccounts
+     * @return bool
+     */
+    private function validateIban($sNewIban, \lenders_accounts &$oLendersAccounts)
+    {
+        if ($this->ficelle->isIBAN($sNewIban)) {
+            $oLendersAccounts->iban = $sNewIban;
+            return true;
+        }
+        return false;
     }
 
     public function _lenderOnlineOffline()

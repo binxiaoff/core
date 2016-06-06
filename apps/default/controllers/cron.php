@@ -154,8 +154,9 @@ class cronController extends bootstrap
         if (true === $this->startCron('pre_publish_project', 15)) {
             ini_set('max_execution_time', '900');
             ini_set('memory_limit', '1G');
+
             /** @var \projects $oProject */
-            $oProject        = $this->loadData('projects');
+            $oProject = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
             $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= (NOW() + INTERVAL 15 MINUTE)", '', array(), '', '', false);
@@ -175,25 +176,28 @@ class cronController extends bootstrap
     public function _check_projet_a_funder()
     {
         if (true === $this->startCron('check_projet_a_funder', 5)) {
+            ini_set('max_execution_time', '300');
+            ini_set('memory_limit', '1G');
+
             /** @var \projects $oProject */
-            $oProject        = $this->loadData('projects');
+            $oProject = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
 
             $bHasProjectPublished = false;
-
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
+            $aProjectToFund       = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
                     $bHasProjectPublished = true;
 
-                    $oProjectManager->publish($oProject);
+                   $oProjectManager->publish($oProject);
 
                     $this->zippage($oProject->id_project);
-                    $this->sendNewProjectEmail($oProject->id_project);
+                    $this->sendNewProjectEmail($oProject);
                 }
             }
+
             if ($bHasProjectPublished) {
                 $oCachePool    = $this->get('memcache.default');
                 $oCachePool->deleteItem(Cache::LIST_PROJECTS . '_' . $this->tabProjectDisplay);
@@ -1133,8 +1137,11 @@ class cronController extends bootstrap
     public function _etat_fiscal()
     {
         if (true === $this->startCron('etat_fiscal', 5)) {
-            $echeanciers  = $this->loadData('echeanciers');
+            /** @var \echeanciers $echeanciers */
+            $echeanciers = $this->loadData('echeanciers');
+            /** @var \bank_unilend $bank_unilend */
             $bank_unilend = $this->loadData('bank_unilend');
+            /** @var \transactions $transactions */
             $transactions = $this->loadData('transactions');
 
             $this->settings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
@@ -1913,7 +1920,7 @@ class cronController extends bootstrap
     }
 
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    private function sendNewProjectEmail($id_project)
+    private function sendNewProjectEmail(\projects $oProject)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -1923,10 +1930,16 @@ class cronController extends bootstrap
         $this->companies                     = $this->loadData('companies');
         // Loaded for class constants
         $this->loadData('clients_status');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = $this->loadData('lenders_accounts');
+        /** @var \transactions $oTransaction */
+        $oTransaction = $this->loadData('transactions');
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutobidSettingsManager */
+        $oAutobidSettingsManager = $this->get('AutoBidSettingsManager');
 
         $this->oLogger->debug('Sending new project email : id_project=' . $id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
 
-        $this->projects->get($id_project, 'id_project');
+        $this->projects->get($oProject->id_project, 'id_project');
         $this->companies->get($this->projects->id_company, 'id_company');
 
         $varMail = array(
@@ -1938,8 +1951,23 @@ class cronController extends bootstrap
             'duree'           => $this->projects->period,
             'gestion_alertes' => $this->lurl . '/profile',
             'lien_fb'         => $this->like_fb,
-            'lien_tw'         => $this->twitter
+            'lien_tw'         => $this->twitter,
+            'annee'           => date('Y')
         );
+        $this->lng['email-nouveau-projet'] = $this->ln->selectFront('email-nouveau-projet', $this->language, $this->App);
+
+        /** @var \autobid_periods $oAutobidPeriods */
+        $oAutobidPeriods = $this->loadData('autobid_periods');
+        $aPeriod         = $oAutobidPeriods->getPeriod($oProject->period);
+
+        /** @var \autobid $oAutobid */
+        $oAutobid    = $this->loadData('autobid');
+        $aAutobiders = array_column($oAutobid->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
+
+        /** @var \bids $oBids */
+        $oBids            = $this->loadData('bids');
+        $aBids            = $oBids->getLenders($oProject->id_project);
+        $aNoAutobidPlaced = array_diff(array_keys($aAutobiders), array_column($aBids, 'id_lender_account'));
 
         $iOffset = 0;
         $iLimit  = 100;
@@ -1953,20 +1981,38 @@ class cronController extends bootstrap
             foreach ($aLenders as $aLender) {
                 $this->notifications->type       = \notifications::TYPE_NEW_PROJECT;
                 $this->notifications->id_lender  = $aLender['id_lender'];
-                $this->notifications->id_project = $id_project;
+                $this->notifications->id_project = $oProject->id_project;
                 $this->notifications->create();
 
-                $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
-                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                $this->clients_gestion_mails_notif->id_project      = $id_project;
-                $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
+                if (false === $this->clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $oProject->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
+                    $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
+                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
+                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                    $this->clients_gestion_mails_notif->id_project      = $oProject->id_project;
+                    $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
 
-                if ($this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
-                    $this->clients_gestion_mails_notif->immediatement = 1;
+                    if (empty($sAutobidInsufficientBalance) && $this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
+                        $this->clients_gestion_mails_notif->immediatement = 1;
 
-                    $varMail['prenom_p']       = $aLender['prenom'];
-                    $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
+                        $sAutobidInsufficientBalance = '';
+
+                        if (
+                            in_array($aLender['id_lender'], $aNoAutobidPlaced)
+                            && $oLenderAccount->get($aLender['id_lender'])
+                            && $oAutobidSettingsManager->isOn($oLenderAccount)
+                            && $oTransaction->getSolde($oLenderAccount->id_client_owner) < $aAutobiders[$oLenderAccount->id_lender_account]
+                        ) {
+                            $sAutobidInsufficientBalance = '
+                                    <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
+                                        <tr>
+                                            <td align="center" style="color: #b20066">' . $this->lng['email-nouveau-projet']['solde-insuffisant-nouveau-projet'] . '</td>
+                                        </tr>
+                                    </table>';
+                        }
+
+                        $varMail['autobid_insufficient_balance'] = $sAutobidInsufficientBalance;
+                        $varMail['prenom_p']                     = $aLender['prenom'];
+                        $varMail['motif_virement']               = $this->clients->getLenderPattern($aLender['id_client']);
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
@@ -1974,7 +2020,8 @@ class cronController extends bootstrap
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
 
-                    ++$iEmails;
+                        ++$iEmails;
+                    }
                 }
 
                 $this->clients_gestion_mails_notif->create();
@@ -2036,7 +2083,7 @@ class cronController extends bootstrap
                     $oCustomer->get($iCustomerId);
 
                     $sProjectsListHTML = '';
-                    $iProjectsCount    = count($aMailNotifications);
+                    $iProjectsCount    = 0;
 
                     foreach ($aMailNotifications as $aMailNotification) {
                         $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
@@ -2046,62 +2093,70 @@ class cronController extends bootstrap
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        $sProjectsListHTML .= '
-                        <tr style="color:#b20066;">
-                            <td  style="font-family:Arial;font-size:14px;height: 25px;">
-                               <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
-                            </td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
-                        </tr>';
+                        /** @var \projects_status $oProjectStatus */
+                        $oProjectStatus = $this->loadData('projects_status');
+                        $oProjectStatus->getLastStatut($oProject->id_project);
+
+                        if (\projects_status::EN_FUNDING === $oProjectStatus->status) {
+                            $sProjectsListHTML .= '
+                                <tr style="color:#b20066;">
+                                    <td  style="font-family:Arial;font-size:14px;height: 25px;">
+                                       <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
+                                    </td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
+                                </tr>';
+                            $iProjectsCount += 1;
+                        }
                     }
 
-                    if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                    } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                    } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                    } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
-                        continue;
+                    if ($iProjectsCount >= 1) {
+                        if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                        } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                        } else {
+                            trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
+                            continue;
+                        }
+
+                        $aReplacements = array(
+                            'surl'            => $this->surl,
+                            'url'             => $this->furl,
+                            'prenom_p'        => $oCustomer->prenom,
+                            'liste_projets'   => $sProjectsListHTML,
+                            'projet-p'        => $this->lurl . '/projets-a-financer',
+                            'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                            'gestion_alertes' => $this->lurl . '/profile',
+                            'contenu'         => $sContent,
+                            'objet'           => $sObject,
+                            'sujet'           => $sSubject,
+                            'lien_fb'         => $this->like_fb,
+                            'lien_tw'         => $this->twitter
+                        );
+
+                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
+                        $message->setTo($oCustomer->email);
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
                     }
-
-                    $aReplacements = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_projets'   => $sProjectsListHTML,
-                        'projet-p'        => $this->lurl . '/projets-a-financer',
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'contenu'         => $sContent,
-                        'objet'           => $sObject,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
                 } catch (\Exception $oException) {
                     $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
                 }
@@ -3122,7 +3177,55 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
+    
+    // Passe toutes les 5 minutes la nuit de 3h à 4h
+    // copie données table -> enregistrement table backup -> suppression données table
+    public function _stabilisation_mails()
+    {
+        if ($this->startCron('stabilisationMail', 10)) {
+            $iStartTime     = time();
+            $iRetentionDays = 30;
+            $iLimit         = 2000;
+            $sMinimumDate   = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $iRetentionDays, date('Y')));
 
+            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $iRetentionDays . ' days: ' . $sMinimumDate, array('ID' => $iStartTime));
+
+            $this->bdd->query("
+                INSERT IGNORE INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`)
+                SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $sMinimumDate . "' ORDER BY m1.added ASC LIMIT " . $iLimit
+            );
+
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
+
+            $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
+
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
+
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `mails_filer`');
+            }
+
+            $this->bdd->query("
+                INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
+                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $sMinimumDate . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $iLimit
+            );
+
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
+
+            $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
+
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
+
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `nmp`');
+            }
+
+            $this->stopCron();
+        }
+    }
+    
     private function deleteOldFichiers()
     {
         $path  = $this->path . 'protected/sftp_groupama/';
