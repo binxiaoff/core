@@ -20,6 +20,9 @@
         <service id="unilend.command.projects.early_refund_email" class="Unilend\Bundle\CommandBundle\Command\ProjectsEarlyRefundEmailCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.projects_pre_publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPrePublishCommand">
+            <tag name="console.command"/>
+        </service>
         <service id="unilend.command.feeds.bpi" class="Unilend\Bundle\CommandBundle\Command\FeedsBPICommand">
             <tag name="console.command"/>
         </service>
