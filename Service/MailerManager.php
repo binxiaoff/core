@@ -398,7 +398,7 @@ class MailerManager
                     if ($iNumberOfBidsInLoanIFP > 1) {
                         $sContract = '<br>L&rsquo;ensemble de vos offres &agrave; concurrence de 1 000 euros seront regroup&eacute;es sous la forme d&rsquo;un seul contrat de pr&ecirc;t. Son taux d&rsquo;int&eacute;r&ecirc;t correspondra donc &agrave; la moyenne pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
 
-                        $sLinkExplication = '<br><br>Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="' . $this->surl . '/document-de-pret">cette page</a>.';
+                        $sLinkExplication = '<br><br>Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="' . $this->sSUrl . '/document-de-pret">cette page</a>.';
                     }
                 }
 
@@ -629,9 +629,8 @@ class MailerManager
         );
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage($this->oMailTemplate->type, $varMail, false);
-        $message->setTo($oClient->email);
-        $this->mailer->send(explode(';', str_replace(' ', '', $sRecipient)));
-
+        $message->setTo(explode(';', str_replace(' ', '', $sRecipient)));
+        $this->mailer->send($message);
     }
 
     public function sendFirstAutoBidActivation(\notifications $oNotification)
@@ -803,7 +802,7 @@ class MailerManager
         $message->setTo($sMailClient);
         $this->mailer->send($message);
     }
-    
+
     /**
      * @param int $iClientId
      * @param string $sCurrentIban
@@ -828,7 +827,7 @@ class MailerManager
             'old_iban'   => $sCurrentIban,
             'new_iban'   => $sNewIban
         );
-        
+
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('uninotification-modification-iban-bo', $aMail);
         $message->setTo('controle_interne@unilend.fr');
@@ -1001,7 +1000,7 @@ class MailerManager
         /** @var TemplateMessage $message */
         $message = $this->messageProvider->newMessage('facture-emprunteur', $varMail);
         $message->setTo($companies->email_facture);
-        
+
         $this->mailer->send($message);
     }
 
