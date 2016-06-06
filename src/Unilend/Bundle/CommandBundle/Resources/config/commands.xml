@@ -1,5 +1,4 @@
 <?xml version="1.0" ?>
-
 <container xmlns="http://symfony.com/schema/dic/services"
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
@@ -15,19 +14,48 @@
         <service id="unilend.command.salesforce_extraction" class="Unilend\Bundle\CommandBundle\Command\SalesforceExtractionCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.projects_funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
+        <service id="unilend.command.projects.funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.projects.early_refund_email" class="Unilend\Bundle\CommandBundle\Command\ProjectsEarlyRefundEmailCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.projects_pre_publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPrePublishCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.bpistream" class="Unilend\Bundle\CommandBundle\Command\BPIStreamCommand">
+        <service id="unilend.command.feeds.bpi" class="Unilend\Bundle\CommandBundle\Command\FeedsBPICommand">
             <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.feeds.bank_transfer" class="Unilend\Bundle\CommandBundle\Command\FeedsBankTransferCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
+        </service>
+        <service id="unilend.command.feeds.direct_debit" class="Unilend\Bundle\CommandBundle\Command\FeedsDirectDebitCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
+        </service>
+        <service id="unilend.command.feeds.fiscal_state" class="Unilend\Bundle\CommandBundle\Command\FeedsFiscalStateCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
+        </service>
+        <service id="unilend.command.feeds.daily_state" class="Unilend\Bundle\CommandBundle\Command\FeedsDailyStateCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
+        </service>
+        <service id="unilend.command.feeds.month_repayments" class="Unilend\Bundle\CommandBundle\Command\FeedsMonthRepaymentsCommand">
+            <tag name="console.command"/>
+            <argument>%path.sftp%</argument>
         </service>
         <service id="unilend.IRR.unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.IRR.lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.email.lender.repayment_mail" class="Unilend\Bundle\CommandBundle\Command\EmailLenderAutomaticRepaymentCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.unilend.bank_transfert" class="Unilend\Bundle\CommandBundle\Command\UnilendBankTransfertCommand">
             <tag name="console.command"/>
         </service>
     </services>

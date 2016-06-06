@@ -28,34 +28,20 @@
 
 class virements extends virements_crud
 {
+    const TYPE_LENDER   = 1;
+    const TYPE_BORROWER = 2;
+    const TYPE_UNILEND  = 4;
 
-    function virements($bdd, $params = '')
+    const STATUS_PENDING   = 0;
+    const STATUS_SEND      = 1;
+    const STATUS_VALIDATED = 2;
+
+    public function __construct($bdd, $params = '')
     {
         parent::virements($bdd, $params);
     }
 
-    function get($id, $field = 'id_virement')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_virement')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -73,7 +59,7 @@ class virements extends virements_crud
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -85,14 +71,14 @@ class virements extends virements_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function exist($id, $field = 'id_virement')
+    public function exist($id, $field = 'id_virement')
     {
         $sql    = 'SELECT * FROM `virements` WHERE ' . $field . '="' . $id . '"';
         $result = $this->bdd->query($sql);
         return ($this->bdd->fetch_array($result) > 0);
     }
 
-    function sum($where = '')
+    public function sum($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
@@ -104,7 +90,7 @@ class virements extends virements_crud
         return (int) ($this->bdd->result($result, 0, 0));
     }
 
-    function sumVirementsbyDay($date, $where = '')
+    public function sumVirementsbyDay($date, $where = '')
     {
         if ($where != '') {
             $where = 'AND ' . $where;

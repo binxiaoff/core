@@ -79,7 +79,7 @@ class echeanciers_emprunteur extends echeanciers_emprunteur_crud
         $sql = 'SELECT sum(' . $sum . ') as sum FROM `echeanciers_emprunteur` ' . $where;
 
         $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($result, 0, 0);
     }
 
     public function onMetAjourTVA($taux)
