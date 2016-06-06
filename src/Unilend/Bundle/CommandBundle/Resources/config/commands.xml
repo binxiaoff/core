@@ -85,5 +85,8 @@
         <service id="unilend.unilend.bank_transfert" class="Unilend\Bundle\CommandBundle\Command\UnilendBankTransfertCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.lender_repayment" class="Unilend\Bundle\CommandBundle\Command\AutomaticLenderRepaymentCommand">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
