@@ -710,7 +710,7 @@ class dossiersController extends bootstrap
                                 //**************************************//
                                 //*** ENVOI DU MAIL FUNDE EMPRUNTEUR ***//
                                 //**************************************//
-                                
+
                                 $varMail = array(
                                     'surl'              => $this->surl,
                                     'url'               => $this->furl,
@@ -744,7 +744,7 @@ class dossiersController extends bootstrap
                         $this->projects_pouvoir->update();
                         /** @var \Monolog\Logger $oLogger */
                         $oLogger = $this->get('logger');
-                        
+
                         // si on a validé le pouvoir
                         if ($this->projects_pouvoir->status_remb == 1) {
                             $oLogger->info('Start control refund status id_project=' . $this->projects->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
@@ -1353,9 +1353,9 @@ class dossiersController extends bootstrap
                 'url'                  => $this->furl,
                 'surl'                 => $this->surl,
                 'civilite_e'           => $this->clients->civilite,
-                'nom_e'                => htmlentities($this->clients->nom, null, 'UTF-8'),
-                'prenom_e'             => htmlentities($this->clients->prenom, null, 'UTF-8'),
-                'entreprise'           => htmlentities($this->companies->name, null, 'UTF-8'),
+                'nom_e'                => $this->clients->nom,
+                'prenom_e'             => $this->clients->prenom,
+                'entreprise'           => $this->companies->name,
                 'montant_emprunt'      => $this->ficelle->formatNumber($this->projects->amount, 0),
                 'mensualite_e'         => $this->ficelle->formatNumber(($oPaymentSchedule->montant + $oPaymentSchedule->commission + $oPaymentSchedule->tva) / 100),
                 'num_dossier'          => $this->projects->id_project,
@@ -2089,10 +2089,10 @@ class dossiersController extends bootstrap
                                                 $varMail = array(
                                                     'surl'                  => $this->surl,
                                                     'url'                   => $this->furl,
-                                                    'prenom_p'              => utf8_decode($this->clients->prenom),
+                                                    'prenom_p'              => $this->clients->prenom,
                                                     'mensualite_p'          => $rembNetEmail,
                                                     'mensualite_avantfisca' => ($e['montant'] / 100),
-                                                    'nom_entreprise'        => utf8_decode($this->companies->name),
+                                                    'nom_entreprise'        => $this->companies->name,
                                                     'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                                     'nbre_prets'            => $nbpret,
                                                     'solde_p'               => $solde,
