@@ -33,6 +33,9 @@ class prelevements extends prelevements_crud
     const STATUS_TERMINATED          = 3;
     const STATUS_TEMPORARILY_BLOCKED = 4;
 
+    const CLIENT_TYPE_LENDER   = 1;
+    const CLIENT_TYPE_BORROWER = 2;
+
     public function __construct($bdd, $params = '')
     {
         parent::prelevements($bdd, $params);

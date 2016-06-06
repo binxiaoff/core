@@ -14,9 +14,9 @@ class apiController extends Controller
     /** @var Logger */
     private $oLogger;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
         $this->autoFireView = false;
         $this->hideDecoration();
 
