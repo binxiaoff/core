@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "f11f2f8c7a6ac1391f523f90a15cbf5e",
-    "content-hash": "327fa131c833899d6abfb4b32e246065",
+    "hash": "05a38720a58da264a68191a535bf2dcf",
+    "content-hash": "a19d4582dc8b10954e2e6e1b0f974ac9",
     "packages": [
         {
             "name": "cache/adapter-bundle",
@@ -1001,6 +1001,52 @@
                 "orm"
             ],
             "time": "2016-01-05 21:34:58"
+        },
+        {
+            "name": "facile-it/doctrine-mysql-come-back",
+            "version": "v1.6.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/facile-it/doctrine-mysql-come-back.git",
+                "reference": "f84b317a88f14edf039b4940aee6e4c5dedb6ee8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/facile-it/doctrine-mysql-come-back/zipball/f84b317a88f14edf039b4940aee6e4c5dedb6ee8",
+                "reference": "f84b317a88f14edf039b4940aee6e4c5dedb6ee8",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/dbal": ">=2.3,<2.6-dev",
+                "php": ">=5.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Facile\\DoctrineMySQLComeBack\\Doctrine\\DBAL\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache License Version 2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Luca Bo",
+                    "email": "luca.boeri@facile.it"
+                }
+            ],
+            "description": "Auto reconnect on Doctrine MySql has gone away exceptions on doctrine/dbal",
+            "keywords": [
+                "Connection",
+                "doctrine",
+                "exception",
+                "has gone away",
+                "mysql",
+                "reconnect",
+                "refresh"
+            ],
+            "time": "2016-06-03 07:25:14"
         },
         {
             "name": "guzzlehttp/guzzle",

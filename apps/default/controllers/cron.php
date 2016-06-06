@@ -95,28 +95,6 @@ class cronController extends bootstrap
         die;
     }
 
-    public function _pre_publish_project()
-    {
-        if (true === $this->startCron('pre_publish_project', 15)) {
-            ini_set('max_execution_time', '900');
-            ini_set('memory_limit', '1G');
-
-            /** @var \projects $oProject */
-            $oProject = $this->loadData('projects');
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('unilend.service.project_manager');
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= (NOW() + INTERVAL 15 MINUTE)", '', array(), '', '', false);
-
-            foreach ($aProjectToFund as $aProject) {
-                if ($oProject->get($aProject['id_project'])) {
-                    $this->oLogger->info('Do process pre-publish on project ID: ' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
-                    $oProjectManager->prePublish($oProject);
-                }
-            }
-            $this->stopCron();
-        }
-    }
-
     // toutes les minute on check //
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
@@ -2237,7 +2215,7 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
-    
+
     // Passe toutes les 5 minutes la nuit de 3h à 4h
     // copie données table -> enregistrement table backup -> suppression données table
     public function _stabilisation_mails()
@@ -2285,7 +2263,7 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
-    
+
     private function deleteOldFichiers()
     {
         $path  = $this->path . 'protected/sftp_groupama/';
