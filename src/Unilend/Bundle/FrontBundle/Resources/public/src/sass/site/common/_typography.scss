@@ -2,9 +2,6 @@
 // Unilend Typography
 //
 
-// @TODO put in common/site or common/responsive
-$max-readable-width: 800px;
-
 // Font size and line heights of titles
 $fs-h1: $fs-title * 1;
 $lh-h1: $lh-title;
@@ -215,6 +212,14 @@ sub {
   }
 }
 
+// Figure caption
+figcaption {
+  color: $c-t3;
+  font-style: italic;
+  font-size: $fs-base * .9;
+  line-height: 1.3em;
+}
+
 // Code
 code {
   font-family: 'Andale Mono', 'Courier New', mono;
@@ -306,7 +311,17 @@ h3.round-number {
   vertical-align: top;
 
   &.pip-has-many {
-    content: '\u2022';
+    line-height: 14px;
+
+    &:before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      background-color: $c-white;
+      border-radius: 6px;
+      vertical-align: middle;
+    }
 
     .pip-number {
       @include hide-accessible;
@@ -314,6 +329,14 @@ h3.round-number {
   }
 }
 
+// Positive/negative number
+#{$js-value-positive} {
+  color: $c-teal;
+}
+
+#{$js-value-negative} {
+  color: $c-error;
+}
 
 // Funky stamp
 .stamp {
@@ -360,6 +383,10 @@ h3.round-number {
 
     .sm {
       display: block;
+    }
+
+    .lg {
+      line-height: .8em;
     }
 
     .has-cssanimations & {

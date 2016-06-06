@@ -63,34 +63,41 @@
 
 // Page navigation
 .page-navigation {
+  @include clearfix;
   display: block;
   box-sizing: border-box;
   width: 100%;
+  padding-left: $width-site-margin-xs;
+  padding-right: $width-site-margin-xs;
+
+  @include devices('sm') {
+    padding-left: $width-site-margin-sm;
+    padding-right: $width-site-margin-sm;
+  }
+
+  @include devices('md') {
+    padding-left: $width-site-margin-md;
+    padding-right: $width-site-margin-md;
+  }
+
+  @include devices('lg') {
+    padding-left: $width-site-margin-lg;
+    padding-right: $width-site-margin-lg;
+  }
 
   > .site-wrap {
     margin-top: -70px;
-    margin-left: $width-site-margin-xs;
-    margin-right: $width-site-margin-xs;
 
-    @include devices('sm') {
-      margin-left: $width-site-margin-sm;
-      margin-right: $width-site-margin-sm;
-    }
-
-    @include devices('md') {
-      margin-left: $width-site-margin-md;
-      margin-right: $width-site-margin-md;
-    }
-
-    @include devices('lg') {
-      margin-left: $width-site-margin-lg;
-      margin-right: $width-site-margin-lg;
+    @include devices('mobile') {
+      padding-left: 0;
+      padding-right: 0;
     }
   }
 
   ul {
     display: table;
-    width: 100%;
+    width: auto;
+    float: left;
     list-style-type: none;
     padding: 0;
     margin: 0;
@@ -139,7 +146,7 @@
 
     a {
       display: block;
-      padding: 15px 10px;
+      padding: 15px 15px;
       font-size: 16px;
       line-height: 1.3em;
 
@@ -158,9 +165,13 @@
         )
       );
 
+      @include devices('md') {
+        padding: 15px 30px;
+      }
+
       @include devices('lg') {
         font-size: 18px;
-        padding: 20px 10px;
+        padding: 20px 40px;
       }
     }
 
@@ -172,6 +183,7 @@
         display: block;
         width: 100%;
         margin-top: 20px; // Ughhhh
+        float: none;
 
         > li {
           width: 100% !important;
@@ -352,11 +364,34 @@
       }
     }
   }
+
+  // Block promos
+  .block-promos {
+    margin-top: $width-site-margin-xs * 2;
+    margin-bottom: $width-site-margin-xs * 2;
+    text-align: center;
+
+    @include devices('sm') {
+      margin-left: $width-site-margin-sm * 2;
+      margin-right: $width-site-margin-sm * 2;
+    }
+
+    @include devices('md') {
+      margin-left: $width-site-margin-md * 2;
+      margin-right: $width-site-margin-md * 2;
+    }
+
+    @include devices('lg') {
+      margin-left: $width-site-margin-lg * 2;
+      margin-right: $width-site-margin-lg * 2;
+    }
+  }
 }
 
 .page-footer {
   .page-navigate-next-page {
     background-color: $c-t2;
+    background-image: image-url('generic/page-footer.png');
     background-position: center center;
     background-repeat: no-repeat;
     background-size: cover;

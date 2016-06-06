@@ -268,3 +268,7 @@ $breakpoints: ('xs', 'sm', 'md', 'lg', 'mobile', 'mobile-p', 'mobile-l', 'tablet
   @include site-wrap;
   position: relative;
 }
+
+.readable-wrap {
+  max-width: $width-readable-wrap;
+}

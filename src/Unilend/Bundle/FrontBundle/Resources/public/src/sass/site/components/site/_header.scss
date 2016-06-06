@@ -266,7 +266,7 @@
       .site-user-profile {
         @include clearfix;
         display: block;
-        width: $height-site-header;
+        width: $height-site-header * 3;
         height: $height-site-header;
         margin: 0;
         padding: 0;
@@ -275,20 +275,47 @@
 
         .profile-avatar {
           display: block;
-          float: left;
+          float: right;
           margin: 3px;
         }
 
-        .profile-name,
-        .profile-balance {
+        .profile-name {
           display: none;
+        }
+
+        .profile-balance {
+          display: block;
+          width: $height-site-header * 2;
+          height: $height-site-header;
+          margin: 0;
+          padding: 14px 0;
+          float: right;
+
+          color: $c-t1;
+          line-height: 1.3em;
+          text-align: left;
+
+          .label {
+            display: block;
+            margin-bottom: 0;
+            color: $c-t1;
+            font-size: $fs-base * .8;
+            font-style: italic;
+            line-height: 1em;
+          }
+
+          .value {
+            display: block;
+            color: $c-p1;
+            font-style: normal;
+          }
         }
 
         .profile-notifications {
           margin: 0;
           position: absolute;
-          top: 5px;
-          left: 5px;
+          top: $height-site-header - 20px;
+          right: $height-site-header - 20px;
         }
 
         .profile-logout {
@@ -669,7 +696,7 @@
           margin-top: -27px;
           margin-right: -25px;
           font-size: $fs-h4;
-          line-height: 46px;
+          line-height: 50px;
         }
 
         .profile-notifications {

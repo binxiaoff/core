@@ -215,14 +215,12 @@
   }
 
   .list-connexion-sessions {
-    display: table;
     padding: 0;
     margin: 20px 0 0;
     list-style: none;
 
     .connexion-session {
-      display: table-row;
-      padding: 0;
+      padding: 20px;
       margin: 0;
       color: $c-t1;
       line-height: 1.3em;
@@ -237,30 +235,49 @@
     .connexion-session-location,
     .connexion-session-period,
     .connexion-session-controls {
-      display: table-cell;
       box-sizing: border-box;
-      width: 25%;
-      padding: 10px 20px;
+      padding: 0;
       vertical-align: middle;
-
-      // @include devices('laptop') {
-      //   padding-left: 20px;
-      //   padding-right: 20px;
-      // }
-
-      @include devices('lg') {
-        padding: 20px 30px;
-      }
     }
 
     .connexion-session-controls {
       color: $c-t2;
-      text-align: right;
     }
 
     .connexion-session-os {
       color: $c-t2;
       font-size: $fs-base * .8;
+    }
+
+    // Change to table view for tablet-p, medium and large responsive devices
+    @include devices('tablet-p', 'md', 'lg') {
+      display: table;
+
+      .connexion-session {
+        display: table-row;
+      }
+
+      .connexion-session-ua,
+      .connexion-session-location,
+      .connexion-session-period,
+      .connexion-session-controls {
+        display: table-cell;
+        width: 25%;
+        padding: 10px 20px;
+      }
+
+      .connexion-session-controls {
+        text-align: right;
+      }
+    }
+
+    @include devices('lg') {
+      .connexion-session-ua,
+      .connexion-session-location,
+      .connexion-session-period,
+      .connexion-session-controls {
+        padding: 20px 30px;
+      }
     }
   }
 }

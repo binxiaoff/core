@@ -66,19 +66,37 @@
 @mixin dashboard-nav-computer {
   margin-bottom: 40px;
 
+  li {
+    padding: 0;
+    border-bottom: solid 1px $c-bg1;
+  }
+
   a {
     display: block;
-    padding: 10px 0;
-    border-bottom: solid 1px $c-bg1;
+    padding: 0;
+    position: relative;
 
     .icon {
-      display: inline-block;
+      display: block;
       width: 30px;
-      margin-right: 10px;
+      height: 23px;
+      padding: 10px 0 0;
+      position: absolute;
+      left: 0;
+      top: 0;
 
       color: $c-t3;
-      line-height: 1em;
+      line-height: 23px;
       text-align: center;
+      vertical-align: middle;
+    }
+
+    .label {
+      display: block;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      padding-left: 35px;
+      line-height: 23px;
       vertical-align: middle;
     }
 
@@ -102,9 +120,7 @@
     @include block-list;
 
     > :last-child {
-      a {
-        border-bottom: 0;
-      }
+      border-bottom: 0;
     }
 
     > li.active {
@@ -137,6 +153,57 @@
 
   background: $c-white;
   border-bottom: solid 2px $c-bg2;
+}
+
+// Site header modifications on dashboard layouts
+@include devices('xs', 'sm') {
+  .layout-dashboard {
+
+    // Prevent site header from becoming fixed on dashboard layouts
+    .site {
+      margin-top: 0 !important;
+      padding-top: 0 !important;
+    }
+
+    .site-header {
+      position: relative !important;
+      left: auto !important;
+      right: auto !important;
+      top: auto !important;
+      bottom: auto !important;
+
+      // Change logo to single U marque and move to left
+      text-align: left;
+
+      .site-title {
+        display: block;
+        width: auto;
+        height: auto;
+        padding: 0;
+        margin: 0;
+
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+
+      .site-logo {
+        display: block;
+        width: $height-site-header;
+        height: $height-site-header;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+
+        background-image: image-url('logo/logo-unilend-65x65-white.png');
+        background-position: center center;
+
+        @include retina {
+          background-image: image-url('logo/logo-unilend-65x65-white@2x.png');
+        }
+      }
+    }
+  }
 }
 
 .dashboard {

@@ -22,16 +22,16 @@
         <!-- CSS Dependencies -->
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.css" media="all">
         {% stylesheets
-            '@UnilendFrontBundle/Resources/public/assets/js/vendor/videojs/video-js.min.css'
-            '@UnilendFrontBundle/Resources/public/assets/js/vendor/swiper/css/swiper.min.css'
-            '@UnilendFrontBundle/Resources/public/assets/js/vendor/fancybox/css/jquery.fancybox.css' %}
+            '@UnilendFrontBundle/Resources/public/build/dev/js/vendor/videojs/video-js.min.css'
+            '@UnilendFrontBundle/Resources/public/build/dev/js/vendor/swiper/css/swiper.min.css'
+            '@UnilendFrontBundle/Resources/public/build/dev/js/vendor/fancybox/css/jquery.fancybox.css' %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="all">
         {% endstylesheets %}
     {% endblock %}
 
     <!-- CSS Site -->
     {% block cssFiles %}
-        {% stylesheets '@UnilendFrontBundle/Resources/public/assets/css/**.css' filter ='cssrewrite' %}
+        {% stylesheets '@UnilendFrontBundle/Resources/public/build/dev/css/**.css' %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">
         {% endstylesheets %}
 
@@ -137,10 +137,9 @@
     {% endif %}
 {% endblock %}
 {% javascripts
-    '@UnilendFrontBundle/Resources/public/assets/js/dependencies.js'
-    '@UnilendFrontBundle/Resources/public/assets/js/main.js' %}
+    '@UnilendFrontBundle/Resources/public/build/dev/js/dependencies.js'
+    '@UnilendFrontBundle/Resources/public/build/dev/js/main.js' %}
 
-<script type="text/javascript" src="{{ asset_url }}"></script>
 <script type="text/javascript" src="{{ asset_url }}"></script>
 
 {% endjavascripts %}

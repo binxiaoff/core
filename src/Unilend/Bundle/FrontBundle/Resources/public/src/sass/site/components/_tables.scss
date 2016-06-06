@@ -37,7 +37,7 @@ th {
   line-height: 1em;
   text-transform: uppercase;
 
-  @include devices('sm', 'lg') {
+  @include devices('sm', 'laptop', 'lg') {
     font-size: 13px;
     padding: 10px 30px;
   }
