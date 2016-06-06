@@ -14,7 +14,10 @@
         <service id="unilend.command.salesforce_extraction" class="Unilend\Bundle\CommandBundle\Command\SalesforceExtractionCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.projects_funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
+        <service id="unilend.command.projects.funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.projects.early_refund_email" class="Unilend\Bundle\CommandBundle\Command\ProjectsEarlyRefundEmailCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.feeds.bpi" class="Unilend\Bundle\CommandBundle\Command\FeedsBPICommand">
