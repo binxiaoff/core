@@ -2348,17 +2348,6 @@ class cronController extends bootstrap
         copy($sFromPath, $sPathNoZip . $sSiren . '/' . $sNewName);
     }
 
-    /**
-     * Send reminder email for project submissions
-     */
-    public function _relance_completude_emprunteurs()
-    {
-        if ($this->startCron('relance completude emprunteurs', 5)) {
-
-            $this->stopCron();
-        }
-    }
-
     public function _projet_process_fast_completude()
     {
         if ($this->startCron('projet process fast completude', 5)) {
