@@ -32,7 +32,8 @@ class Loader
                     'user'         => $params['parameters']['database_user'],
                     'password'     => $params['parameters']['database_password'],
                     'charset'      => 'utf8',
-                    'wrapperClass' => $params['parameters']['wrapper_class'],
+                    'wrapperClass' => $params['parameters']['dbal_wrapper_class'],
+                    'driverClass'  => $params['parameters']['dbal_driver_class'],
                 ]
             );
         }

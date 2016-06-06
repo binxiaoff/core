@@ -20,6 +20,9 @@
         <service id="unilend.command.projects.early_refund_email" class="Unilend\Bundle\CommandBundle\Command\ProjectsEarlyRefundEmailCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.projects_pre_publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPrePublishCommand">
+            <tag name="console.command"/>
+        </service>
         <service id="unilend.command.feeds.bpi" class="Unilend\Bundle\CommandBundle\Command\FeedsBPICommand">
             <tag name="console.command"/>
         </service>
@@ -76,7 +79,13 @@
         <service id="unilend.email.borrower.upcoming_repayment" class="Unilend\Bundle\CommandBundle\Command\EmailBorrowerUpcomingRepaymentCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.email.borrower.completeness_reminder" class="Unilend\Bundle\CommandBundle\Command\EmailBorrowerCompletenessReminderCommand">
+            <tag name="console.command"/>
+        </service>
         <service id="unilend.unilend.bank_transfert" class="Unilend\Bundle\CommandBundle\Command\UnilendBankTransfertCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.lender_repayment" class="Unilend\Bundle\CommandBundle\Command\AutomaticLenderRepaymentCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.project_publish" class="Unilend\Bundle\CommandBundle\Command\CheckProjectToFundCommand">
