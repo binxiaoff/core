@@ -3,7 +3,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 
 use Unilend\Service\ProjectManager;
 use Unilend\Service\Simulator\EntityManager;
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -24,7 +24,7 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
-        /** @var Logger $logger */
+        /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var ProjectManager $projectManager */
         $projectManager = $this->getContainer()->get('unilend.service.project_manager');
