@@ -28,7 +28,7 @@ abstract class Controller implements ContainerAwareInterface
 
     public $current_template = '';
 
-    public function __construct(&$command, $config, $app)
+    final public function __construct(&$command, $config, $app)
     {
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');

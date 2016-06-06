@@ -20,7 +20,7 @@
                         <div class="col-small"><?= $this->companiesEmprunteur->forme ?></div>
                     </li>
                     <li>Capital social
-                        <div class="col-small"><?= (0 < $this->companiesEmprunteur->capital) ? $this->ficelle->formatNumber($this->companiesEmprunteur->capital) : 0 ?>&nbsp;&euro;</div>
+                        <div class="col-small"><?= (0 < $this->companiesEmprunteur->capital) ? $this->ficelle->formatNumber($this->companiesEmprunteur->capital, 0) : 0 ?>&nbsp;&euro;</div>
                     </li>
                     <li>Adresse du siège social
                         <div class="col-small"><?= $this->companiesEmprunteur->adresse1 ?></div>
@@ -58,7 +58,7 @@
                     <?php else: // morale ?>
                         <li>Raison sociale<div class="col-small"><?= $this->companiesPreteur->name ?></div></li>
                         <li>Forme juridique<div class="col-small"><?= $this->companiesPreteur->forme ?></div></li>
-                        <li>Capital social<div class="col-small"><?= $this->ficelle->formatNumber($this->companiesPreteur->capital) ?>&nbsp;&euro;</div></li>
+                        <li>Capital social<div class="col-small"><?= $this->ficelle->formatNumber($this->companiesPreteur->capital, 0) ?>&nbsp;&euro;</div></li>
                         <li>Adresse du siège social<div class="col-small"><?= $this->companiesPreteur->adresse1 ?></div></li>
                         <li>Code postal<div class="col-small"><?= $this->companiesPreteur->zip ?></div></li>
                         <li>Ville<div class="col-small"><?= $this->companiesPreteur->city ?></div></li>
@@ -75,10 +75,9 @@
                             <?= $this->bloc_pdf_contrat['montant'] ?>
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->oLoans->amount / 100) ?>&nbsp;&euro;
+                            <?= $this->ficelle->formatNumber($this->oLoans->amount / 100, 0) ?>&nbsp;&euro;
                         </div>
                         <div class="cl">&nbsp;</div>
-                        <br/>
                     </li>
                     <li>
                         <div class="col-long">
@@ -118,7 +117,7 @@
                             <?= $this->bloc_pdf_contrat['a-rembourser'] ?>
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->oLoans->amount / 100) ?>&nbsp;&euro;
+                            <?= $this->ficelle->formatNumber($this->oLoans->amount / 100, 0) ?>&nbsp;&euro;
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -168,60 +167,84 @@
             <h5><?= $this->bloc_pdf_contrat['actif'] ?></h5>
             <div class="list">
                 <ul>
-                    <li><?= $this->bloc_pdf_contrat['immo-corpo'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['immo-corpo'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['immo-incorpo'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['immo-incorpo'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['immo-financieres'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['immo-financieres'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['stocks'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['stocks'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['creances'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['creances'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['dispo'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['dispo'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['valeurs-mobilieres'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['valeurs-mobilieres'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement'], 0) ?>&nbsp;&euro;</div>
                     </li>
+                    <?php if ($this->l_AP[0]['comptes_regularisation_actif'] != 0) : ?>
+                        <li>
+                            Comptes de régularisation
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif'], 0) ?>&nbsp;&euro;</div>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
             <div class="total-row" style="white-space:nowrap; text-align:left;">
                 <?= $this->bloc_pdf_contrat['total-actif'] ?> :
-                <div style="display:inline;float: right;"><?= $this->ficelle->formatNumber($this->totalActif) ?>&nbsp;&euro;</div>
+                <div style="display:inline;float: right;"><?= $this->ficelle->formatNumber($this->totalActif, 0) ?>&nbsp;&euro;</div>
             </div>
             <h5><?= $this->bloc_pdf_contrat['passif'] ?></h5>
             <div class="list">
                 <ul>
-                    <li><?= $this->bloc_pdf_contrat['capitaux'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['capitaux'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['provisions'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['provisions'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['amortissements-sur-immo'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['amortissements-sur-immo'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo'], 0) ?>&nbsp;&euro;</div>
                     </li>
-
-                    <li><?= $this->bloc_pdf_contrat['dettes-fi'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['dettes-fi'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['dettes-fourn'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['dettes-fourn'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs'], 0) ?>&nbsp;&euro;</div>
                     </li>
-                    <li><?= $this->bloc_pdf_contrat['autres-dettes'] ?>
-                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes']) ?>&nbsp;&euro;</div>
+                    <li>
+                        <?= $this->bloc_pdf_contrat['autres-dettes'] ?>
+                        <div class="col-small"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes'], 0) ?>&nbsp;&euro;</div>
                     </li>
+                    <?php if ($this->l_AP[0]['comptes_regularisation_passif'] != 0) : ?>
+                        <li>
+                            Comptes de régularisation
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif'], 0) ?>&nbsp;&euro;</div>
+                        </li>
+                    <?php endif; ?>
                 </ul>
             </div>
             <div class="total-row" style="white-space:nowrap; text-align:left;">
                 <?= $this->bloc_pdf_contrat['total-passif'] ?> :
-                <div style="display:inline;float: right;"><?= $this->ficelle->formatNumber($this->totalPassif) ?>&nbsp;&euro;</div>
+                <div style="display:inline;float: right;"><?= $this->ficelle->formatNumber($this->totalPassif, 0) ?>&nbsp;&euro;</div>
             </div>
             <div class="center-text">
                 <?= $this->bloc_pdf_contrat['certifie'] ?>
