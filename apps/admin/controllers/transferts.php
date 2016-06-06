@@ -1358,13 +1358,13 @@ class transfertsController extends bootstrap
                     foreach ($aAcceptedBids as $aBid) {
                         $lender->get($aBid['id_lender']);
 
-                        $iNotificationId = $oNotificationManager->createNotification(\notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $projects->id_project, $aBid['amount'], $aBid['id_bid']);
+                        $oNotification = $oNotificationManager->createNotification(\notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $projects->id_project, $aBid['amount'], $aBid['id_bid']);
 
                         $aLoansForBid = $acceptedBids->select('id_bid = ' . $aBid['id_bid']);
 
                         foreach ($aLoansForBid as $aLoan) {
                             if (in_array($aLoan['id_loan'], $aLastLoans) === false) {
-                                $oNotificationManager->createEmailNotification($iNotificationId, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, $clients->id_client, $aLoan['id_loan']);
+                                $oNotificationManager->createEmailNotification($oNotification->id_notification, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED, $clients->id_client, $aLoan['id_loan']);
                                 $aLastLoans[] = $aLoan['id_loan'];
                             }
                         }
