@@ -1383,53 +1383,6 @@ class cronController extends bootstrap
         }
     }
 
-    // Toutes les minutes de 21h à 7h
-    public function _declarationContratPret()
-    {
-        if (true === $this->startCron('declarationContratPret', 5)) {
-            ini_set('memory_limit', '1024M');
-            ini_set('max_execution_time', 300);
-
-            $loans    = $this->loadData('loans');
-            $projects = $this->loadData('projects');
-
-            $lProjects = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)), '', '', array(), '', '', false);
-
-            if (count($lProjects) > 0) {
-                $a          = 0;
-                $lesProjets = '';
-                foreach ($lProjects as $p) {
-                    $lesProjets .= ($a == 0 ? '' : ',') . $p['id_project'];
-                    $a++;
-                }
-
-                // On recupere que le premier loan
-                $lLoans = $loans->select('status = "0" AND fichier_declarationContratPret = "" AND id_project IN(' . $lesProjets . ')', 'id_loan ASC', 0, 10);
-                if (count($lLoans) > 0) {
-                    foreach ($lLoans as $l) {
-                        $projects->get($l['id_project'], 'id_project');
-
-                        $path = $this->path . 'protected/declarationContratPret/' . substr($l['added'], 0, 4) . '/' . $projects->slug . '/';
-                        $nom  = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
-
-                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array(
-                            $l['id_loan'], $path
-                        ), $this->language);
-                        $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
-                        $oPdf->_declarationContratPret_html($l['id_loan'], $path);
-
-                        $loans->get($l['id_loan'], 'id_loan');
-                        $loans->fichier_declarationContratPret = $nom;
-                        $loans->update();
-                    }
-                }
-                echo "Toutes les d&eacute;clarations sont g&eacute;n&eacute;r&eacute;es <br />";
-            }
-
-            $this->stopCron();
-        }
-    }
-
     // a 16 h 10 (10 16 * * *)
     public function _checkFinProjet()
     {
