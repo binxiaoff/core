@@ -636,10 +636,11 @@ class cronController extends bootstrap
                     die;
                 }
             } else {
-                $lien = $this->path . 'protected/sftp/reception';
+                $lien = $this->path . 'protected/sftp/sfpmei/reception';
             }
 
-            $lien .= '/UNILEND-00040631007-' . date('Ymd') . '.txt';
+//            $lien .= '/UNILEND-00040631007-' . date('Ymd') . '.txt';'
+            $lien .= '/UNILEND-00040631007-20141030.txt';
 
             $file = @file_get_contents($lien);
             if ($file === false) {
@@ -706,7 +707,7 @@ class cronController extends bootstrap
                 // si on a un fichier et qu'il n'est pas deja present en bdd
                 // on enregistre qu'une fois par jour
                 if ($lrecus != false && ($recep == false || isset($this->params[0]) && $this->params[0] === 'forceReplay')) {
-                    file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file);
+//                    file_put_contents($this->path . 'protected/sftp/reception/UNILEND-00040631007-' . date('Ymd') . '.txt', $file);
 
                     foreach ($lrecus as $r) {
                         $transactions->unsetData();

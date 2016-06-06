@@ -55,5 +55,17 @@
         <service id="unilend.unilend.bank_transfert" class="Unilend\Bundle\CommandBundle\Command\UnilendBankTransfertCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.sfpmei_incoming_feeds" class="Unilend\Bundle\CommandBundle\Command\FeedsSfpmeiIncomingCommand">
+            <tag name="console.command"/>
+            <call method="setPath">
+                <argument>%path.sftp%</argument>
+            </call>
+        </service>
+        <service id="unilend.command.check_incoming_sfpmei_feeds_availability" class="Unilend\Bundle\CommandBundle\Command\CheckIncomingSfpmeiFeedFile">
+            <tag name="console.command"/>
+            <call method="setPath">
+                <argument>%path.sftp%</argument>
+            </call>
+        </service>
     </services>
 </container>
