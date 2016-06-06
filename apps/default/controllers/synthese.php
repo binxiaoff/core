@@ -330,17 +330,16 @@ class syntheseController extends bootstrap
                     'id_bid DESC'
                 );
 
-                $this->aOngoingBidsByProject[$iKey]['aRejectedBid'] = array_shift(
-                    $this->bids->select(
-                        'id_project = ' . $aProject['id_project'] .
-                        ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                        ' AND status = ' . \bids::STATUS_BID_REJECTED,
-                        'id_bid DESC',
-                        null,
-                        '1'
-                    )
+                $bids = $this->bids->select(
+                    'id_project = ' . $aProject['id_project'] .
+                    ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
+                    ' AND status = ' . \bids::STATUS_BID_REJECTED,
+                    'id_bid DESC',
+                    null,
+                    '1'
                 );
 
+                $this->aOngoingBidsByProject[$iKey]['aRejectedBid'] = array_shift($bids);
                 $this->aOngoingBidsByProject[$iKey]['iNumberOfRejectedBids'] = $this->bids->counter('id_project = ' . $aProject['id_project'] .
                     ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
                     ' AND status = ' . \bids::STATUS_BID_REJECTED);
