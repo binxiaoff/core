@@ -8,20 +8,6 @@ use Unilend\Service\Simulator\EntityManager;
 
 class FeedsDirectDebitCommand extends ContainerAwareCommand
 {
-    /** @var string */
-    private $sftpPath;
-
-    /**
-     * BankTransferCommand constructor.
-     * @param string $sftpPath
-     */
-    public function __construct($sftpPath)
-    {
-        $this->sftpPath = $sftpPath;
-
-        parent::__construct();
-    }
-
     /**
      * @see Command
      */
@@ -131,7 +117,7 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
 </Document>';
 
         if (false === empty($borrowerDirectDebits)) {
-            file_put_contents($this->sftpPath . 'sfpmei/prelevements/Unilend_Prelevements_' . $date . '.xml', $xml);
+            file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/prelevements/Unilend_Prelevements_' . $date . '.xml', $xml);
         }
     }
 

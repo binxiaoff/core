@@ -1,8 +1,5 @@
 <?php
-
-
 namespace Unilend\Bundle\CommandBundle\Command;
-
 
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;

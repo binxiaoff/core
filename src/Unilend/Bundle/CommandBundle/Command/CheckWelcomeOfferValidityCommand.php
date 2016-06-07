@@ -1,7 +1,5 @@
 <?php
-
 namespace Unilend\Bundle\CommandBundle\Command;
-
 
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -14,7 +12,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('check:welcomeOfferValidity')
+            ->setName('check:welcome_offer_validity')
             ->setDescription('Remove WelcomeOffers not used by lenders during a time period');
     }
 

@@ -22,7 +22,6 @@ class ProjectsFundingCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        ini_set('max_execution_time', '300');
         ini_set('memory_limit', '1G');
 
         /** @var EntityManager $entityManager */
@@ -57,7 +56,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                 }
 
                 if ($endDate > $currentDate) {
-                    $projectManager->checkBids($project);
+                    $projectManager->checkBids($project, true);
                     $projectManager->autoBid($project);
                 } else {
                     $project->date_fin = $currentDate->format('Y-m-d H:i:s');

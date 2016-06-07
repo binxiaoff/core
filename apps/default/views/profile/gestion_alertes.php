@@ -167,11 +167,7 @@
                 ){
                     champs = true;
                 }
-            } else if(num == 6 || num == 7 || num == 8 || num == 9) {
-                if ($('#immediatement_' + num).prop('checked') == false) {
-                    champs = true;
-                }
-            } else {
+            } else if(num == 4 || num == 5) {
                 if(
                     $('#immediatement_' + num).prop('checked') == false
                     && $('#quotidienne_' + num).prop('checked') == false
@@ -180,10 +176,14 @@
                 ) {
                     champs = true;
                 }
+            } else {
+                if ($('#immediatement_' + num).prop('checked') == false) {
+                    champs = true;
+                }
             }
 
             if (champs == true) {
-                $('#uniquement_notif_'+num).click();
+                $('#uniquement_notif_' + num).click();
             }
         }
     }

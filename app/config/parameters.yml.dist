@@ -5,7 +5,8 @@ parameters:
     database_name:                  unilend
     database_user:                  root
     database_password:              ROOTPASSWORD
-    wrapper_class:                  Unilend\Bridge\Doctrine\DBAL\Connection
+    dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
+    dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
     secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
     locale:                         fr_FR
@@ -20,9 +21,6 @@ parameters:
 
     universign_url:                 https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/
 
-    static_path:                     /srv/sites/unilend/public/default/
-    user_path:                       /srv/sites/unilend/public/default/var/
-
     image_resize:
         projets:
             authorized: [72, 169] # Authorized heights
@@ -32,4 +30,7 @@ parameters:
     router.request_context.host:    dev.www.unilend.fr
     router.request_context.scheme:  https
 
+    path.static:                    /srv/sites/unilend/public/default/
+    path.user:                      /srv/sites/unilend/public/default/var/
     path.sftp:                      /srv/sites/unilend/protected/sftp/
+    path.payline:                   /srv/sites/unilend/protected/payline/

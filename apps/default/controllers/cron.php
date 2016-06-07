@@ -95,105 +95,33 @@ class cronController extends bootstrap
         die;
     }
 
-    public function _mail_echeance_emprunteur()
-    {
-        if (true === $this->startCron('mail_echeance_emprunteur', 10)) {
-            /** @var \echeanciers_emprunteur $oPaymentSchedule */
-            $oPaymentSchedule    = $this->loadData('echeanciers_emprunteur');
-            $aUpcomingRepayments = $oPaymentSchedule->getUpcomingRepayments(7);
-            /** @var \prelevements $oDirectDebit */
-            $oDirectDebit = $this->loadData('prelevements');
-
-            foreach ($aUpcomingRepayments as $aRepayment) {
-                $aDirectDebit = $oDirectDebit->select('id_project = ' . $aRepayment['id_project'] . ' AND type = 2 AND num_prelevement = ' . $aRepayment['ordre']);
-
-                if (false === empty($aDirectDebit)) {
-                    $this->projects->get($aRepayment['id_project']);
-                    $this->companies->get($this->projects->id_company);
-
-                    if (false === empty($this->companies->prenom_dirigeant) && false === empty($this->companies->email_dirigeant)) {
-                        $sFirstName  = $this->companies->prenom_dirigeant;
-                        $sMailClient = $this->companies->email_dirigeant;
-                    } else {
-                        $this->clients->get($this->companies->id_client_owner);
-
-                        $sFirstName  = $this->clients->prenom;
-                        $sMailClient = $this->clients->email;
-                    }
-
-                    /** @var \loans $oLoans */
-                    $oLoans = $this->loadData('loans');
-
-                    $aMail = array(
-                        'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),
-                        'echeance'           => $this->ficelle->formatNumber($aDirectDebit[0]['montant'] / 100),
-                        'prochaine_echeance' => date('d/m/Y', strtotime($aRepayment['date_echeance_emprunteur'])),
-                        'surl'               => $this->surl,
-                        'url'                => $this->furl,
-                        'nom_entreprise'     => $this->companies->name,
-                        'montant'            => $this->ficelle->formatNumber((float) $this->projects->amount, 0),
-                        'prenom_e'           => $sFirstName,
-                        'lien_fb'            => $this->like_fb,
-                        'lien_tw'            => $this->twitter
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mail-echeance-emprunteur', $aMail);
-                    $message->setTo($sMailClient);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                }
-            }
-
-            $this->stopCron();
-        }
-    }
-
-    public function _pre_publish_project()
-    {
-        if (true === $this->startCron('pre_publish_project', 15)) {
-            ini_set('max_execution_time', '900');
-            ini_set('memory_limit', '1G');
-            /** @var \projects $oProject */
-            $oProject        = $this->loadData('projects');
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('unilend.service.project_manager');
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::A_FUNDER,  "AND p.date_publication_full <= (NOW() + INTERVAL 15 MINUTE)", '', array(), '', '', false);
-
-            foreach ($aProjectToFund as $aProject) {
-                if ($oProject->get($aProject['id_project'])) {
-                    $this->oLogger->info('Do process pre-publish on project ID: ' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
-                    $oProjectManager->prePublish($oProject);
-                }
-            }
-            $this->stopCron();
-        }
-    }
-
     // toutes les minute on check //
     // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
     public function _check_projet_a_funder()
     {
         if (true === $this->startCron('check_projet_a_funder', 5)) {
+            ini_set('max_execution_time', '300');
+            ini_set('memory_limit', '1G');
+
             /** @var \projects $oProject */
-            $oProject        = $this->loadData('projects');
+            $oProject = $this->loadData('projects');
             /** @var \Unilend\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
 
             $bHasProjectPublished = false;
-
-            $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
+            $aProjectToFund       = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
 
             foreach ($aProjectToFund as $aProject) {
                 if ($oProject->get($aProject['id_project'])) {
                     $bHasProjectPublished = true;
 
-                    $oProjectManager->publish($oProject);
+                   $oProjectManager->publish($oProject);
 
                     $this->zippage($oProject->id_project);
-                    $this->sendNewProjectEmail($oProject->id_project);
+                    $this->sendNewProjectEmail($oProject);
                 }
             }
+
             if ($bHasProjectPublished) {
                 $oCachePool    = $this->get('memcache.default');
                 $oCachePool->deleteItem(Cache::LIST_PROJECTS . '_' . $this->tabProjectDisplay);
@@ -1130,344 +1058,47 @@ class cronController extends bootstrap
         }
     }
 
-    // passe a 1h du matin le 1er du mois
-    public function _etat_fiscal()
+    // Toutes les minutes de 21h à 7h
+    public function _declarationContratPret()
     {
-        if (true === $this->startCron('etat_fiscal', 5)) {
-            $echeanciers  = $this->loadData('echeanciers');
-            $bank_unilend = $this->loadData('bank_unilend');
-            $transactions = $this->loadData('transactions');
+        if (true === $this->startCron('declarationContratPret', 5)) {
+            ini_set('memory_limit', '1024M');
+            ini_set('max_execution_time', 300);
 
-            $this->settings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
-            $prelevements_obligatoires = $this->settings->value * 100;
+            $loans    = $this->loadData('loans');
+            $projects = $this->loadData('projects');
 
-            $this->settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-            $txcontributions_additionnelles = $this->settings->value * 100;
+            $lProjects = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::REMBOURSEMENT, \projects_status::REMBOURSE, \projects_status::PROBLEME, \projects_status::RECOUVREMENT, \projects_status::DEFAUT, \projects_status::REMBOURSEMENT_ANTICIPE, \projects_status::PROBLEME_J_X, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE)), '', '', array(), '', '', false);
 
-            $this->settings->get('EQ-CRDS', 'type');
-            $txcrds = $this->settings->value * 100;
-
-            $this->settings->get('EQ-CSG', 'type');
-            $txcsg = $this->settings->value * 100;
-
-            $this->settings->get('EQ-Prélèvement de Solidarité', 'type');
-            $txprelevements_solidarite = $this->settings->value * 100;
-
-            $this->settings->get('EQ-Prélèvement social', 'type');
-            $txprelevements_sociaux = $this->settings->value * 100;
-
-            $this->settings->get('EQ-Retenue à la source', 'type');
-            $tauxRetenuSource = $this->settings->value * 100;
-
-            $mois          = date('m');
-            $annee         = date('Y');
-            $dateDebutTime = mktime(0, 0, 0, $mois - 1, 1, $annee);
-            $dateDebutSql  = date('Y-m-d', $dateDebutTime);
-            $dateFinTime   = mktime(0, 0, 0, $mois, 0, $annee);
-            $dateFinSql    = date('Y-m-d', $dateFinTime);
-
-            // personnes morale //
-            $Morale1    = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', '2'); // entreprises
-            $etranger   = $echeanciers->getEcheanceBetweenDatesEtranger($dateDebutSql, $dateFinSql); // etrangers
-            $MoraleInte = (array_sum(array_column($Morale1, 'interets')) + array_sum(array_column($etranger, 'interets'))) / 100;
-
-            $prelevementRetenuSoucre[1] = $Morale1[1]['retenues_source'] + $etranger[1]['retenues_source'];
-
-            // Physique non exoneré //
-            $PhysiqueNoExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '0', array(1, 3));
-            $PhysiqueNoExoInte[1] = ($PhysiqueNoExo[1]['interets'] - $etranger[1]['interets']) / 100;
-            $PhysiqueNoExoInte[2] = ($PhysiqueNoExo[2]['interets'] - $etranger[2]['interets']) / 100;
-
-            // prelevements pour physiques non exonéré
-            $lesPrelevSurPhysiqueNoExo[1] = $PhysiqueNoExo[1]['prelevements_obligatoires'] - $etranger[1]['prelevements_obligatoires'];
-            $lesPrelevSurPhysiqueNoExo[2] = $PhysiqueNoExo[2]['prelevements_obligatoires'] - $etranger[2]['prelevements_obligatoires'];
-
-            // Physique non exoneré dans la peride //
-            $PhysiqueNonExoPourLaPeriode = $echeanciers->getEcheanceBetweenDates_exonere_mais_pas_dans_les_dates($dateDebutSql, $dateFinSql);
-            $PhysiqueNoExoInte[1] += $PhysiqueNonExoPourLaPeriode[1]['interets'] / 100;
-            $PhysiqueNoExoInte[2] += $PhysiqueNonExoPourLaPeriode[2]['interets'] / 100;
-
-            // prelevements pour physiques non exonéré
-            $lesPrelevSurPhysiqueNoExo[1] += $PhysiqueNonExoPourLaPeriode[1]['prelevements_obligatoires'];
-            $lesPrelevSurPhysiqueNoExo[2] += $PhysiqueNonExoPourLaPeriode[2]['prelevements_obligatoires'];
-
-            // Physique exoneré //
-            $PhysiqueExo     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '1', array(1, 3));
-            $PhysiqueExoInte = array_sum(array_column($PhysiqueExo, 'interets')) / 100;
-
-            // prelevements pour physiques exonéré
-            $lesPrelevSurPhysiqueExo = array_sum(array_column($PhysiqueExo, 'prelevements_obligatoires'));
-
-            // Physique //
-            $Physique     = $echeanciers->getEcheanceBetweenDates($dateDebutSql, $dateFinSql, '', array(1, 3));
-            $PhysiqueInte = (array_sum(array_column($Physique, 'interets')) - array_sum(array_column($etranger, 'interets'))) / 100;
-
-            // prelevements pour physiques
-            $lesPrelevSurPhysique         = array_sum(array_column($Physique, 'prelevements_obligatoires')) - array_sum(array_column($etranger, 'prelevements_obligatoires'));
-            $csg                          = array_sum(array_column($Physique, 'csg')) - array_sum(array_column($etranger, 'csg'));
-            $prelevements_sociaux         = array_sum(array_column($Physique, 'prelevements_sociaux')) - array_sum(array_column($etranger, 'prelevements_sociaux'));
-            $contributions_additionnelles = array_sum(array_column($Physique, 'contributions_additionnelles')) - array_sum(array_column($etranger, 'contributions_additionnelles'));
-            $prelevements_solidarite      = array_sum(array_column($Physique, 'prelevements_solidarite')) - array_sum(array_column($etranger, 'prelevements_solidarite'));
-            $crds                         = array_sum(array_column($Physique, 'crds')) - array_sum(array_column($etranger, 'crds'));
-
-            $table = '
-        <style>
-            table th,table td{width:80px;height:20px;border:1px solid black;}
-            table td.dates{text-align:center;}
-            .right{text-align:right;}
-            .center{text-align:center;}
-            .boder-top{border-top:1px solid black;}
-            .boder-bottom{border-bottom:1px solid black;}
-            .boder-left{border-left:1px solid black;}
-            .boder-right{border-right:1px solid black;}
-        </style>
-
-        <table border="1" cellpadding="0" cellspacing="0" style=" background-color:#fff; font:11px/13px Arial, Helvetica, sans-serif; color:#000;width: 650px;">
-            <tr>
-                <th colspan="4">UNILEND</th>
-            </tr>
-            <tr>
-                <th style="background-color:#C9DAF2;">Période :</th>
-                <th style="background-color:#C9DAF2;">' . date('d/m/Y', $dateDebutTime) . '</th>
-                <th style="background-color:#C9DAF2;">au</th>
-                <th style="background-color:#C9DAF2;">' . date('d/m/Y', $dateFinTime) . '</th>
-            </tr>
-            <tr>
-                <th style="background-color:#ECAEAE;" colspan="4">Prélèvements obligatoires</th>
-            </tr>
-            <tr>
-                <th>&nbsp;</th>
-                <th style="background-color:#F4F3DA;">Base (Intérêts bruts)</th>
-                <th style="background-color:#F4F3DA;">Montant prélèvements</th>
-                <th style="background-color:#F4F3DA;">Taux</th>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Soumis au prélèvement (bons de caisse)</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte[1]) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo[1]) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Soumis au prélèvement (prêt IFP)</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueNoExoInte[2]) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueNoExo[2]) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Dispensé</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueExoInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysiqueExo) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber(0) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Total</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($lesPrelevSurPhysique) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#ECAEAE;" colspan="4">Retenue à la source (bons de caisse)</th>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Retenue à la source</th>
-                <td class="right">' . $this->ficelle->formatNumber($MoraleInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($prelevementRetenuSoucre[1]) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($tauxRetenuSource) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#ECAEAE;" colspan="4">Prélèvements sociaux</th>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">CSG</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($csg) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txcsg) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Prélèvement social</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($prelevements_sociaux) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txprelevements_sociaux) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Contribution additionnelle</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($contributions_additionnelles) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txcontributions_additionnelles) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">Prélèvement de solidarité</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($prelevements_solidarite) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txprelevements_solidarite) . '%</td>
-            </tr>
-            <tr>
-                <th style="background-color:#E6F4DA;">CRDS</th>
-                <td class="right">' . $this->ficelle->formatNumber($PhysiqueInte) . '</td>
-                <td class="right">' . $this->ficelle->formatNumber($crds) . '</td>
-                <td style="background-color:#DDDAF4;" class="right">' . $this->ficelle->formatNumber($txcrds) . '%</td>
-            </tr>
-        </table>
-        ';
-
-            echo utf8_decode($table);
-
-            $filename = 'Unilend_etat_fiscal_' . date('Ymd');
-            file_put_contents($this->path . 'protected/sftp/etat_fiscal/' . $filename . '.xls', $table);
-
-            $connection = ssh2_connect('ssh.reagi.com', 22);
-            ssh2_auth_password($connection, 'sfpmei', '769kBa5v48Sh3Nug');
-            $sftp       = ssh2_sftp($connection);
-            $sftpStream = @fopen('ssh2.sftp://' . $sftp . '/home/sfpmei/emissions/etat_fiscal/' . $filename . '.xls', 'w');
-            fwrite($sftpStream, $table);
-            fclose($sftpStream);
-
-            /** @var \settings $oSettings */
-            $oSettings = $this->loadData('settings');
-            $oSettings->get('Adresse notification etat fiscal', 'type');
-            $destinataire = $oSettings->value;
-
-            $varMail = array(
-                '$surl' => $this->surl,
-                '$url'  => $this->lurl
-            );
-
-            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-fiscal', $varMail, false);
-            $message->setTo(trim($destinataire));
-            $mailer = $this->get('mailer');
-            $mailer->send($message);
-
-            /////////////////////////////////////////////////////
-            // On retire de bank unilend la partie  pour letat //
-            /////////////////////////////////////////////////////
-            $dateRembtemp = mktime(date("H"), date("i"), date("s"), date("m") - 1, date("d"), date("Y"));
-            $dateRemb     = date("Y-m", $dateRembtemp);
-            $dateRembM    = date("m", $dateRembtemp);
-            $dateRembY    = date("Y", $dateRembtemp);
-            $etatRemb     = $bank_unilend->sumMontantEtat('status = 1 AND type IN(2) AND LEFT(added,7) = "' . $dateRemb . '"');
-
-            // 13 regul commission
-            $regulCom = $transactions->sumByday(13, $dateRembM, $dateRembY);
-
-            $sommeRegulDuMois = 0;
-            foreach ($regulCom as $r) {
-                $sommeRegulDuMois += $r['montant_unilend'] * 100;
-            }
-
-            $etatRemb += $sommeRegulDuMois;
-
-            if ($etatRemb > 0) {
-                $transactions->id_client        = 0;
-                $transactions->montant          = $etatRemb;
-                $transactions->id_langue        = 'fr';
-                $transactions->date_transaction = date('Y-m-d H:i:s');
-                $transactions->status           = '1';
-                $transactions->etat             = '1';
-                $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                $transactions->type_transaction = 12; // virement etat (retrait)
-                $transactions->transaction      = 1; // transaction virtuelle
-                $transactions->create();
-
-                $bank_unilend->id_transaction         = $transactions->id_transaction;
-                $bank_unilend->id_echeance_emprunteur = 0;
-                $bank_unilend->id_project             = 0;
-                $bank_unilend->montant                = '-' . $etatRemb;
-                $bank_unilend->type                   = 3;
-                $bank_unilend->status                 = 3;
-                $bank_unilend->retrait_fiscale        = 1;
-                $bank_unilend->create();
-            }
-
-            $this->stopCron();
-        }
-    }
-
-    // a 16 h 10 (10 16 * * *)
-    public function _checkFinProjet()
-    {
-        if (true === $this->startCron('checkFinProjet', 5)) {
-            $projects       = $this->loadData('projects');
-            $bids           = $this->loadData('bids');
-            $loans          = $this->loadData('loans');
-            $transactions   = $this->loadData('transactions');
-            $projects_check = $this->loadData('projects_check');
-
-            $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND DATE(p.date_fin) = "' . date('Y-m-d') . '"', '', array(), '', '', false);
-
-            foreach ($lProjets as $p) {
-                if ($projects_check->get($p['id_project'], 'id_project') === false ) {
-                    $montantBidsTotal = $bids->getSoldeBid($p['id_project']);
-                    $montantBidsOK    = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 1', 'amount');
-                    $montantBidsOK    = ($montantBidsOK / 100);
-                    $montantBidsKO    = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 2', 'amount');
-                    $montantBidsKO    = ($montantBidsKO / 100);
-
-                    $montantLoans = $loans->sum('id_project = ' . $p['id_project'], 'amount');
-                    $montantLoans = ($montantLoans / 100);
-
-                    $montantTransTotal = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = 2', 'montant');
-                    $montantTransTotal = str_replace('-', '', ($montantTransTotal / 100));
-                    $montantTransDegel = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = 2 AND id_bid_remb != 0', 'montant');
-                    $montantTransDegel = ($montantTransDegel / 100);
-
-                    $montantTransEnchere = $transactions->sum('id_project = ' . $p['id_project'] . ' AND type_transaction = 2 AND id_bid_remb != 0', 'montant');
-                    $montantTransEnchere = ($montantTransEnchere / 100);
-
-                    $diffMontantBidsEtProjet = str_replace('-', '', ($montantBidsOK - $p['amount']));
-                    $diffEntreBidsKoEtDegel  = ($montantTransEnchere - $montantBidsKO);
-
-                    $contenu = '';
-                    $contenu .= '<br>-------- PROJET ' . $p['id_project'] . ' --------<br><br>';
-                    $contenu .= 'Montant projet : ' . $p['amount'] . '<br>';
-                    $contenu .= '<br>--------BIDS--------<br>';
-                    $contenu .= 'montantBids : ' . $montantBidsTotal . '<br>';
-                    $contenu .= 'montantBidsOK : ' . $montantBidsOK . '<br>';
-                    $contenu .= 'montantBidsKO : ' . $montantBidsKO . '<br>';
-                    $contenu .= '<br>--------LOANS--------<br>';
-                    $contenu .= 'montantLoans : ' . $montantLoans . '<br>';
-                    $contenu .= '<br>--------TRANSACTIONS--------<br>';
-                    $contenu .= 'montantTransTotal : ' . $montantTransTotal . '<br>';
-                    $contenu .= 'montantTransDegel : ' . $montantTransDegel . '<br>';
-                    $contenu .= 'montantTransEnchere : ' . $montantTransEnchere . '<br>';
-                    $contenu .= '<br>--------PLUS--------<br>';
-                    $contenu .= 'diffMontantBidsEtProjet : ' . $diffMontantBidsEtProjet . '<br>';
-                    $contenu .= 'diffEntreBidsKoEtDegel : ' . $diffEntreBidsKoEtDegel . '<br>';
-                    $contenu .= '<br>-------- FIN PROJET ' . $p['id_project'] . ' --------<br>';
-
-                    $verif_no_good = false;
-
-                    if ($montantTransTotal != $p['amount']) {
-                        $verif_no_good = true;
-                    }
-                    if ($montantLoans != $p['amount']) {
-                        $verif_no_good = true;
-                    }
-                    if ($diffEntreBidsKoEtDegel != $diffMontantBidsEtProjet) {
-                        $verif_no_good = true;
-                    }
-
-                    if ($verif_no_good == true) {
-                        $subject = '[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'];
-                        $message = '
-                            <html>
-                            <head>
-                              <title>[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'] . '</title>
-                            </head>
-                            <body>
-                                <p>[ALERTE] Une incoherence est présente dans le projet ' . $p['id_project'] . '</p>
-                                <p>' . $contenu . '</p>
-                            </body>
-                            </html>';
-                        mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                        $projects_check->status = 2;
-                    } else {// pas d'erreur
-                        $projects_check->status = 1;
-                    }
-
-                    $projects_check->id_project = $p['id_project'];
-                    $projects_check->create();
+            if (count($lProjects) > 0) {
+                $a          = 0;
+                $lesProjets = '';
+                foreach ($lProjects as $p) {
+                    $lesProjets .= ($a == 0 ? '' : ',') . $p['id_project'];
+                    $a++;
                 }
+
+                // On recupere que le premier loan
+                $lLoans = $loans->select('status = "0" AND fichier_declarationContratPret = "" AND id_project IN(' . $lesProjets . ')', 'id_loan ASC', 0, 10);
+                if (count($lLoans) > 0) {
+                    foreach ($lLoans as $l) {
+                        $projects->get($l['id_project'], 'id_project');
+
+                        $path = $this->path . 'protected/declarationContratPret/' . substr($l['added'], 0, 4) . '/' . $projects->slug . '/';
+                        $nom  = 'Unilend_declarationContratPret_' . $l['id_loan'] . '.pdf';
+
+                        $oCommandPdf = new Command('pdf', 'declarationContratPret_html', array(
+                            $l['id_loan'], $path
+                        ), $this->language);
+                        $oPdf        = new pdfController($oCommandPdf, $this->Config, 'default');
+                        $oPdf->_declarationContratPret_html($l['id_loan'], $path);
+
+                        $loans->get($l['id_loan'], 'id_loan');
+                        $loans->fichier_declarationContratPret = $nom;
+                        $loans->update();
+                    }
+                }
+                echo "Toutes les d&eacute;clarations sont g&eacute;n&eacute;r&eacute;es <br />";
             }
 
             $this->stopCron();
@@ -1567,148 +1198,6 @@ class cronController extends bootstrap
         }
     }
 
-    // 1 fois par jour et on check les transactions non validés sur une journée (00:30)
-    public function _check_alim_cb()
-    {
-        if (true === $this->startCron('checkAlimCb', 5)) {
-            $this->transactions     = $this->loadData('transactions');
-            $this->backpayline      = $this->loadData('backpayline');
-            $this->lenders_accounts = $this->loadData('lenders_accounts');
-            $this->wallets_lines    = $this->loadData('wallets_lines');
-            $this->bank_lines       = $this->loadData('bank_lines');
-
-            // On recup la lib et le reste payline
-            require_once($this->path . 'protected/payline/include.php');
-
-            $date = mktime(0, 0, 0, date("m"), date("d") - 1, date("Y"));
-            $date = date('Y-m-d', $date);
-
-            $listTran = $this->transactions->select('type_transaction = 3 AND status = 0 AND etat = 0 AND LEFT(date_transaction,10) = "' . $date . '"');
-
-            $payline = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
-
-            foreach ($listTran as $t) {
-                $array_payline = unserialize($t['serialize_payline']);
-                $token         = $array_payline['token'];
-                $array         = array();
-
-                $array['token']   = $token;
-                $array['version'] = '3';
-                $response         = $payline->getWebPaymentDetails($array);
-
-                if (isset($response)) {
-                    // si on retourne une transaction accpetée
-                    if ($response['result']['code'] == '00000') {
-                        if ($this->transactions->get($response['order']['ref'], 'status = 0 AND etat = 0 AND id_transaction')) {
-                            // On enregistre le resultat payline
-                            $this->backpayline->code           = $response['result']['code'];
-                            $this->backpayline->token          = $array['token'];
-                            $this->backpayline->id             = $response['transaction']['id'];
-                            $this->backpayline->date           = $response['transaction']['date'];
-                            $this->backpayline->amount         = $response['payment']['amount'];
-                            $this->backpayline->serialize      = serialize($response);
-                            $this->backpayline->create();
-
-                            $this->transactions->id_backpayline   = $this->backpayline->id_backpayline;
-                            $this->transactions->montant          = $response['payment']['amount'];
-                            $this->transactions->id_langue        = 'fr';
-                            $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                            $this->transactions->status           = '1';
-                            $this->transactions->etat             = '1';
-                            $this->transactions->type_paiement    = ($response['extendedCard']['type'] == 'VISA' ? '0' : ($response['extendedCard']['type'] == 'MASTERCARD' ? '3' : ''));
-                            $this->transactions->update();
-
-                            $this->lenders_accounts->get($this->transactions->id_client, 'id_client_owner');
-                            $this->lenders_accounts->status = 1;
-                            $this->lenders_accounts->update();
-
-                            $this->wallets_lines->id_lender                = $this->lenders_accounts->id_lender_account;
-                            $this->wallets_lines->type_financial_operation = 30; // alimentation preteur
-                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                            $this->wallets_lines->status                   = 1;
-                            $this->wallets_lines->type                     = 1;
-                            $this->wallets_lines->amount                   = $response['payment']['amount'];
-                            $this->wallets_lines->create();
-
-                            $this->bank_lines->id_wallet_line    = $this->wallets_lines->id_wallet_line;
-                            $this->bank_lines->id_lender_account = $this->lenders_accounts->id_lender_account;
-                            $this->bank_lines->status            = 1;
-                            $this->bank_lines->amount            = $response['payment']['amount'];
-                            $this->bank_lines->create();
-
-                            $subject = '[Alerte] BACK PAYLINE Transaction approved';
-                            $message = '
-                                <html>
-                                <head>
-                                  <title>[Alerte] BACK PAYLINE Transaction approved</title>
-                                </head>
-                                <body>
-                                  <h3>[Alerte] BACK PAYLINE Transaction approved</h3>
-                                  <p>Un payement payline accepet&eacute; n\'a pas &eacute;t&eacute; mis &agrave; jour dans la BDD Unilend.</p>
-                                  <table>
-                                    <tr>
-                                      <th>Id client : </th><td>' . $this->transactions->id_client . '</td>
-                                    </tr>
-                                    <tr>
-                                      <th>montant : </th><td>' . ($this->transactions->montant / 100) . '</td>
-                                    </tr>
-                                    <tr>
-                                      <th>serialize donnees payline : </th><td>' . serialize($response) . '</td>
-                                    </tr>
-                                  </table>
-                                </body>
-                                </html>';
-
-                            mail($this->sDestinatairesDebug, $subject, $message, $this->sHeadersDebug);
-                        }
-                    }
-                }
-            }
-
-            $this->stopCron();
-        }
-    }
-
-    // Une fois par jour (crée le 27/04/2015)
-    public function _check_prelevements_emprunteurs()
-    {
-        $echeanciers = $this->loadData('echeanciers');
-        $projects    = $this->loadData('projects');
-
-        $liste       = $echeanciers->selectEcheanciersByprojetEtOrdre(); // <--- a rajouter en prod
-        $liste_remb  = '';
-        foreach ($liste as $l) {
-            $projects->get($l['id_project'], 'id_project');
-            $liste_remb .= '
-                <tr>
-                    <td>' . $l['id_project'] . '</td>
-                    <td>' . $projects->title_bo . '</td>
-                    <td>' . $l['ordre'] . '</td>
-                    <td>' . $l['date_echeance'] . '</td>
-
-                    <td>' . $l['date_echeance_emprunteur'] . '</td>
-                    <td>' . $l['date_echeance_emprunteur_reel'] . '</td>
-                    <td>' . ((int) $l['status_emprunteur'] === 1 ? 'Oui' : 'Non') . '</td>
-                </tr>';
-        }
-
-        $varMail = array(
-            '$surl'       => $this->surl,
-            '$liste_remb' => $liste_remb
-        );
-
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
-        $oSettings->get('Adresse notification check remb preteurs', 'type');
-        $destinataire = $oSettings->value;
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $varMail, false);
-        $message->setTo($destinataire);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
-    }
-
     public function _check_remboursement_preteurs()
     {
         $oRepayment = $this->loadData('echeanciers');
@@ -1746,128 +1235,8 @@ class cronController extends bootstrap
         $mailer->send($message);
     }
 
-
-    // Cron une fois par jour a 19h30 (* 18-20 * * *)
-    public function _alertes_quotidienne()
-    {
-        if (true === $this->startCron('notification quotidienne', 5)) {
-            ini_set('max_execution_time', 250);
-            ini_set('memory_limit', '1G');
-
-            $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
-
-            /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-            $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-            // Loaded for class constants
-            $this->loadData('clients_gestion_type_notif');
-
-            $iCurrentTime = time();
-
-            if (
-                $iCurrentTime >= mktime(19, 30, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(20, 0, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendNewProjectsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_NEW_PROJECT), 'quotidienne');
-            } elseif (
-                $iCurrentTime >= mktime(20, 0, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(20, 15, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendPlacedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_BID_PLACED), 'quotidienne');
-            } elseif (
-                $iCurrentTime >= mktime(20, 15, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(20, 30, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendRejectedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_BID_REJECTED), 'quotidienne');
-            } elseif (
-                $iCurrentTime >= mktime(20, 30, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(21, 0, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), 'quotidienne');
-            } elseif (
-                $iCurrentTime >= mktime(18, 0, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime <  mktime(19, 30, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendRepaymentsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('quotidienne', \clients_gestion_type_notif::TYPE_REPAYMENT), 'quotidienne');
-            }
-
-            $this->stopCron();
-        }
-    }
-
-    // chaque samedi matin à 9h00  (0 9 * * 6 )
-    public function _alertes_hebdomadaire()
-    {
-        if (true === $this->startCron('notification hebomadaire', 5)) {
-            ini_set('max_execution_time', 250);
-            ini_set('memory_limit', '1G');
-
-            $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
-
-            /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-            $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-            // Loaded for class constants
-            $this->loadData('clients_gestion_type_notif');
-
-            $iCurrentTime = time();
-
-            if (
-                $iCurrentTime >= mktime(9, 0, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(9, 30, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendNewProjectsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('hebdomadaire', \clients_gestion_type_notif::TYPE_NEW_PROJECT), 'hebdomadaire');
-            } elseif (
-                $iCurrentTime >= mktime(9, 30, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(10, 0, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('hebdomadaire', \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), 'hebdomadaire');
-            } elseif (
-                $iCurrentTime >= mktime(10, 0, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(10, 30, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendRepaymentsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('hebdomadaire', \clients_gestion_type_notif::TYPE_REPAYMENT), 'hebdomadaire');
-            }
-
-            $this->stopCron();
-        }
-    }
-
-    // Cron le 1er de chaque mois à 9h00 (0 9 1 * * )
-    public function _alertes_mensuelle()
-    {
-        if (true === $this->startCron('notification mensuelle', 5)) {
-            ini_set('max_execution_time', 250);
-            ini_set('memory_limit', '1G');
-
-            $this->lng['email-synthese'] = $this->ln->selectFront('email-synthese', $this->language, $this->App);
-
-            /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-            $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-            // Loaded for class constants
-            $this->loadData('clients_gestion_type_notif');
-
-            $iCurrentTime = time();
-
-            if (
-                $iCurrentTime >= mktime(10, 30, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(11, 0, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('mensuelle', \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), 'mensuelle');
-            } elseif (
-                $iCurrentTime >= mktime(11, 0, 0, date('m'), date('d'), date('Y'))
-                && $iCurrentTime < mktime(11, 30, 0, date('m'), date('d'), date('Y'))
-            ) {
-                $this->sendRepaymentsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification('mensuelle', \clients_gestion_type_notif::TYPE_REPAYMENT), 'mensuelle');
-            }
-
-            $this->stopCron();
-        }
-    }
-
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
-    private function sendNewProjectEmail($id_project)
+    private function sendNewProjectEmail(\projects $oProject)
     {
         $this->clients                       = $this->loadData('clients');
         $this->notifications                 = $this->loadData('notifications');
@@ -1877,10 +1246,16 @@ class cronController extends bootstrap
         $this->companies                     = $this->loadData('companies');
         // Loaded for class constants
         $this->loadData('clients_status');
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = $this->loadData('lenders_accounts');
+        /** @var \transactions $oTransaction */
+        $oTransaction = $this->loadData('transactions');
+        /** @var \Unilend\Service\AutoBidSettingsManager $oAutobidSettingsManager */
+        $oAutobidSettingsManager = $this->get('AutoBidSettingsManager');
 
         $this->oLogger->debug('Sending new project email : id_project=' . $id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
 
-        $this->projects->get($id_project, 'id_project');
+        $this->projects->get($oProject->id_project, 'id_project');
         $this->companies->get($this->projects->id_company, 'id_company');
 
         $varMail = array(
@@ -1892,8 +1267,23 @@ class cronController extends bootstrap
             'duree'           => $this->projects->period,
             'gestion_alertes' => $this->lurl . '/profile',
             'lien_fb'         => $this->like_fb,
-            'lien_tw'         => $this->twitter
+            'lien_tw'         => $this->twitter,
+            'annee'           => date('Y')
         );
+        $this->lng['email-nouveau-projet'] = $this->ln->selectFront('email-nouveau-projet', $this->language, $this->App);
+
+        /** @var \autobid_periods $oAutobidPeriods */
+        $oAutobidPeriods = $this->loadData('autobid_periods');
+        $aPeriod         = $oAutobidPeriods->getPeriod($oProject->period);
+
+        /** @var \autobid $oAutobid */
+        $oAutobid    = $this->loadData('autobid');
+        $aAutobiders = array_column($oAutobid->getSettings(null, $oProject->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
+
+        /** @var \bids $oBids */
+        $oBids            = $this->loadData('bids');
+        $aBids            = $oBids->getLenders($oProject->id_project);
+        $aNoAutobidPlaced = array_diff(array_keys($aAutobiders), array_column($aBids, 'id_lender_account'));
 
         $iOffset = 0;
         $iLimit  = 100;
@@ -1907,20 +1297,38 @@ class cronController extends bootstrap
             foreach ($aLenders as $aLender) {
                 $this->notifications->type       = \notifications::TYPE_NEW_PROJECT;
                 $this->notifications->id_lender  = $aLender['id_lender'];
-                $this->notifications->id_project = $id_project;
+                $this->notifications->id_project = $oProject->id_project;
                 $this->notifications->create();
 
-                $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
-                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                $this->clients_gestion_mails_notif->id_project      = $id_project;
-                $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
+                if (false === $this->clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $oProject->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
+                    $this->clients_gestion_mails_notif->id_client       = $aLender['id_client'];
+                    $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
+                    $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                    $this->clients_gestion_mails_notif->id_project      = $oProject->id_project;
+                    $this->clients_gestion_mails_notif->date_notif      = $this->projects->date_publication_full;
 
-                if ($this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
-                    $this->clients_gestion_mails_notif->immediatement = 1;
+                    if (empty($sAutobidInsufficientBalance) && $this->clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
+                        $this->clients_gestion_mails_notif->immediatement = 1;
 
-                    $varMail['prenom_p']       = $aLender['prenom'];
-                    $varMail['motif_virement'] = $this->clients->getLenderPattern($aLender['id_client']);
+                        $sAutobidInsufficientBalance = '';
+
+                        if (
+                            in_array($aLender['id_lender'], $aNoAutobidPlaced)
+                            && $oLenderAccount->get($aLender['id_lender'])
+                            && $oAutobidSettingsManager->isOn($oLenderAccount)
+                            && $oTransaction->getSolde($oLenderAccount->id_client_owner) < $aAutobiders[$oLenderAccount->id_lender_account]
+                        ) {
+                            $sAutobidInsufficientBalance = '
+                                    <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
+                                        <tr>
+                                            <td align="center" style="color: #b20066">' . $this->lng['email-nouveau-projet']['solde-insuffisant-nouveau-projet'] . '</td>
+                                        </tr>
+                                    </table>';
+                        }
+
+                        $varMail['autobid_insufficient_balance'] = $sAutobidInsufficientBalance;
+                        $varMail['prenom_p']                     = $aLender['prenom'];
+                        $varMail['motif_virement']               = $this->clients->getLenderPattern($aLender['id_client']);
 
                     /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                     $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
@@ -1928,7 +1336,8 @@ class cronController extends bootstrap
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
 
-                    ++$iEmails;
+                        ++$iEmails;
+                    }
                 }
 
                 $this->clients_gestion_mails_notif->create();
@@ -1936,765 +1345,6 @@ class cronController extends bootstrap
 
             $this->oLogger->debug('New project notification emails sent: ' . $iEmails, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $id_project));
         }
-    }
-
-    /**
-     * Send new projects summary email
-     * @param array $aCustomerId
-     * @param string $sFrequency (quotidienne/hebdomadaire)
-     */
-    private function sendNewProjectsSummaryEmail(array $aCustomerId, $sFrequency)
-    {
-        $this->oLogger->debug('New projects notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-        $this->oLogger->debug('Number of customers to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
-
-        /** @var Email email */
-        $oEmail = $this->loadLib('email');
-
-        /** @var clients $oCustomer */
-        $oCustomer = $this->loadData('clients');
-        /** @var projects $oProject */
-        $oProject = $this->loadData('projects');
-        /** @var clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
-        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-        /** @var clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-        $oNotificationsLog->type     = $sFrequency;
-        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
-        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
-        $oNotificationsLog->create();
-
-        switch ($sFrequency) {
-            case 'quotidienne':
-                $sMail = 'nouveaux-projets-du-jour';
-                break;
-            case 'hebdomadaire':
-                $sMail = 'nouveaux-projets-de-la-semaine';
-            default:
-                trigger_error('Unknown frequency for new projects summary email: ' . $sFrequency, E_USER_WARNING);
-                return;
-        }
-
-        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_NEW_PROJECT) as $aMailNotifications) {
-                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
-            }
-
-            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
-                try {
-                    $oCustomer->get($iCustomerId);
-
-                    $sProjectsListHTML = '';
-                    $iProjectsCount    = count($aMailNotifications);
-
-                    foreach ($aMailNotifications as $aMailNotification) {
-                        $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
-                        $oMailNotification->{$sFrequency}                   = 1;
-                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
-                        $oMailNotification->update();
-
-                        $oProject->get($aMailNotification['id_project']);
-
-                        $sProjectsListHTML .= '
-                        <tr style="color:#b20066;">
-                            <td  style="font-family:Arial;font-size:14px;height: 25px;">
-                               <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
-                            </td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
-                        </tr>';
-                    }
-
-                    if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                    } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                    } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                    } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
-                        continue;
-                    }
-
-                    $aReplacements = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_projets'   => $sProjectsListHTML,
-                        'projet-p'        => $this->lurl . '/projets-a-financer',
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'contenu'         => $sContent,
-                        'objet'           => $sObject,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                } catch (\Exception $oException) {
-                    $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-            }
-        }
-
-        $oNotificationsLog->fin = date('Y-m-d H:i:s');
-        $oNotificationsLog->update();
-    }
-
-    /**
-     * Send accepted bids summary email
-     * @param array $aCustomerId
-     * @param string $sFrequency
-     */
-    private function sendPlacedBidsSummaryEmail(array $aCustomerId, $sFrequency)
-    {
-        $this->oLogger->debug('Placed bids notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
-
-        /** @var bids $oBid */
-        $oBid = $this->loadData('bids');
-        /** @var clients $oCustomer */
-        $oCustomer = $this->loadData('clients');
-        /** @var notifications $oNotification */
-        $oNotification = $this->loadData('notifications');
-        /** @var projects $oProject */
-        $oProject = $this->loadData('projects');
-        /** @var clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
-        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-        /** @var clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_PLACED;
-        $oNotificationsLog->type     = $sFrequency;
-        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
-        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
-        $oNotificationsLog->create();
-
-        switch ($sFrequency) {
-            case 'quotidienne':
-                $sMail = 'vos-offres-du-jour';
-                break;
-            default:
-                trigger_error('Unknown frequency for placed bids summary email: ' . $sFrequency, E_USER_WARNING);
-                return;
-        }
-
-        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_BID_PLACED) as $aMailNotifications) {
-                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
-            }
-
-            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
-                try {
-                    $oCustomer->get($iCustomerId);
-
-                    $sBidsListHTML    = '';
-                    $iSumBidsPlaced   = 0;
-                    $iPlacedBidsCount = count($aMailNotifications);
-
-                    foreach ($aMailNotifications as $aMailNotification) {
-                        $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
-                        $oMailNotification->{$sFrequency} = 1;
-                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
-                        $oMailNotification->update();
-
-                        $oNotification->get($aMailNotification['id_notification']);
-                        $oProject->get($oNotification->id_project);
-                        $oBid->get($oNotification->id_bid);
-
-                        $iSumBidsPlaced += $oBid->amount / 100;
-
-                        $sSpanAutobid = empty($oBid->id_autobid) ? '': '<span style="border-radius: 6px; color: #ffffff; font-weight: bold; background: #d9aa34; padding: 3px 6px 3px 6px; text-decoration: none; margin: 3px">A</span>';
-
-                        $sBidsListHTML .= '
-                            <tr style="color:#b20066;">
-                                <td>' . $sSpanAutobid . '</td>
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->amount / 100, 0) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->rate, 1) . ' %</td>
-                            </tr>';
-                    }
-
-                    $sBidsListHTML .= '
-                        <tr>
-                            <td></td>
-                            <td style="height:25px;border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-                            <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumBidsPlaced, 0) . '&nbsp;&euro;</td>
-                            <td style="border-top:1px solid #727272;color: #727272;font-family:Arial;font-size:14px;"></td>
-                        </tr>';
-
-                    if (1 === $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-singulier'];
-                    } elseif (1 < $iPlacedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-offre-placee-quotidienne-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-offre-placee-quotidienne-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offre-placee-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of placed bids not handled: ' . $sFrequency . ' / ' . $iPlacedBidsCount, E_USER_WARNING);
-                        continue;
-                    }
-
-                    $aReplacements = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_offres'    => $sBidsListHTML,
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'contenu'         => $sContent,
-                        'objet'           => $sObject,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                } catch (\Exception $oException) {
-                    $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-            }
-        }
-
-        $oNotificationsLog->fin = date('Y-m-d H:i:s');
-        $oNotificationsLog->update();
-    }
-
-    /**
-     * Send rejected bids summary email
-     * @param array $aCustomerId
-     * @param string $sFrequency
-     */
-    private function sendRejectedBidsSummaryEmail(array $aCustomerId, $sFrequency)
-    {
-        $this->oLogger->debug('Rejected bids notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
-
-        /** @var Email email */
-        $oEmail = $this->loadLib('email');
-
-        /** @var bids $oBid */
-        $oBid = $this->loadData('bids');
-        /** @var clients $oCustomer */
-        $oCustomer = $this->loadData('clients');
-        /** @var notifications $oNotification */
-        $oNotification = $this->loadData('notifications');
-        /** @var projects $oProject */
-        $oProject = $this->loadData('projects');
-        /** @var clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
-        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-        /** @var clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_BID_REJECTED;
-        $oNotificationsLog->type     = $sFrequency;
-        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
-        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
-        $oNotificationsLog->create();
-
-        switch ($sFrequency) {
-            case 'quotidienne':
-                $sMail = 'synthese-quotidienne-offres-non-retenues';
-                break;
-            default:
-                trigger_error('Unknown frequency for rejected bids summary email: ' . $sFrequency, E_USER_WARNING);
-                return;
-        }
-
-        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_BID_REJECTED) as $aMailNotifications) {
-                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
-            }
-
-            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
-                try {
-                    $oCustomer->get($iCustomerId);
-
-                    $sBidsListHTML      = '';
-                    $iSumRejectedBids   = 0;
-                    $iRejectedBidsCount = count($aMailNotifications);
-
-                    foreach ($aMailNotifications as $aMailNotification) {
-                        $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
-                        $oMailNotification->{$sFrequency} = 1;
-                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
-                        $oMailNotification->update();
-
-                        $oNotification->get($aMailNotification['id_notification']);
-                        $oProject->get($oNotification->id_project);
-                        $oBid->get($oNotification->id_bid);
-
-                        $iSumRejectedBids += $oNotification->amount / 100;
-
-                        $sSpanAutobid = empty($oBid->id_autobid) ? '': '<span style="border-radius: 6px; color: #ffffff; font-weight: bold; background: #d9aa34; padding: 3px 6px 3px 6px; text-decoration: none; margin: 3px">A</span>';
-
-                        $sBidsListHTML .= '
-                            <tr style="color:#b20066;">
-                                <td>' . $sSpanAutobid . '</td>
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oNotification->amount / 100, 0) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oBid->rate, 1) . ' %</td>
-                            </tr>';
-                    }
-
-                    $sBidsListHTML .= '
-                        <tr>
-                            <td></td>
-                            <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-                            <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumRejectedBids, 0) . '&nbsp;&euro;</td>
-                            <td style="border-top:1px solid #727272;"></td>
-                        </tr>';
-
-                    if (1 === $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-singulier'];
-                    } elseif (1 < $iRejectedBidsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-offres-refusees-quotidienne-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-offres-refusees-quotidienne-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-offres-refusees-quotidienne-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of rejected bids not handled: ' . $sFrequency . ' / ' . $iRejectedBidsCount, E_USER_WARNING);
-                        continue;
-                    }
-
-                    $aReplacements = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_offres'    => $sBidsListHTML,
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->lurl . '/profile',
-                        'contenu'         => $sContent,
-                        'objet'           => $sObject,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                } catch (\Exception $oException) {
-                    $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-            }
-        }
-
-        $oNotificationsLog->fin = date('Y-m-d H:i:s');
-        $oNotificationsLog->update();
-    }
-
-    /**
-     * Send accepted loans summary email
-     * @param array $aCustomerId
-     * @param string $sFrequency
-     */
-    private function sendAcceptedLoansSummaryEmail(array $aCustomerId, $sFrequency)
-    {
-        $this->oLogger->debug('Accepted loans notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
-
-        /** @var Email email */
-        $oEmail = $this->loadLib('email');
-
-        /** @var clients $oCustomer */
-        $oCustomer = $this->loadData('clients');
-        /** @var lenders_accounts $oLender */
-        $oLender = $this->loadData('lenders_accounts');
-        /** @var loans $oLoan */
-        $oLoan = $this->loadData('loans');
-        /** @var notifications $oNotification */
-        $oNotification = $this->loadData('notifications');
-        /** @var projects $oProject */
-        $oProject = $this->loadData('projects');
-        /** @var clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
-        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-        /** @var clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
-        $oNotificationsLog->type     = $sFrequency;
-        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
-        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
-        $oNotificationsLog->create();
-
-        switch ($sFrequency) {
-            case 'quotidienne':
-               $sMail = 'synthese-quotidienne-offres-acceptees';
-                break;
-            case 'hebdomadaire':
-                $sMail = 'synthese-hebdomadaire-offres-acceptees';
-                break;
-            case 'mensuelle':
-                $sMail = 'synthese-mensuelle-offres-acceptees';
-                break;
-            default:
-                trigger_error('Unknown frequency for accepted loans summary email: ' . $sFrequency, E_USER_WARNING);
-                return;
-        }
-
-        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED) as $aMailNotifications) {
-                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
-            }
-
-            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
-                try {
-                    $oCustomer->get($iCustomerId);
-                    $oLender->get($oCustomer->id_client, 'id_client_owner');
-
-                    $sLoansListHTML      = '';
-                    $iSumAcceptedLoans   = 0;
-                    $iAcceptedLoansCount = count($aMailNotifications);
-
-                    foreach ($aMailNotifications as $aMailNotification) {
-                        $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
-                        $oMailNotification->{$sFrequency} = 1;
-                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
-                        $oMailNotification->update();
-
-                        $oNotification->get($aMailNotification['id_notification']);
-                        $oProject->get($oNotification->id_project);
-                        $oLoan->get($aMailNotification['id_loan']);
-
-                        $iSumAcceptedLoans += $oLoan->amount / 100;
-
-                        switch ($oLoan->id_type_contract) {
-                            case \loans::TYPE_CONTRACT_BDC:
-                                $sContractType = 'Bon de caisse';
-                                break;
-                            case \loans::TYPE_CONTRACT_IFP:
-                                $sContractType = 'Contrat de pr&ecirc;t';
-                                break;
-                            default:
-                                $sContractType = '';
-                                trigger_error('Unknown contract type: ' . $oLoan->id_type_contract, E_USER_WARNING);
-                                break;
-                        }
-
-                        $sLoansListHTML .= '
-                            <tr style="color:#b20066;">
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oLoan->amount / 100, 0) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oLoan->rate, 1) . ' %</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $sContractType . '</td>
-                            </tr>';
-                    }
-
-                    $sLoansListHTML .= '
-                        <tr>
-                            <td style="height:25px;border-top:1px solid #727272;color:#727272;font-family:Arial;font-size:14px;">Total de vos offres</td>
-                            <td align="right" style="border-top:1px solid #727272;color:#b20066;font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($iSumAcceptedLoans, 0) . '&nbsp;&euro;</td>
-                            <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
-                            <td style="border-top:1px solid #727272;font-family:Arial;font-size:14px;"></td>
-                        </tr>';
-
-                    if (1 === $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-singulier'];
-                    } elseif (1 < $iAcceptedLoansCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-offres-acceptees-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-quotidienne-offres-acceptees-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-offres-acceptees-pluriel'];
-                    } elseif (1 === $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-singulier'];
-                    } elseif (1 < $iAcceptedLoansCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-offres-acceptees-pluriel'];
-                    } elseif (1 === $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-singulier'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-singulier'];
-                    } elseif (1 < $iAcceptedLoansCount && 'mensuelle' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-offres-acceptees-pluriel'];
-                        $sObject                   = $this->lng['email-synthese']['objet-synthese-mensuelle-offres-acceptees-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-offres-acceptees-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of accepted loans not handled: ' . $sFrequency . ' / ' . $iAcceptedLoansCount, E_USER_WARNING);
-                        continue;
-                    }
-
-                    $aReplacements = array(
-                        'surl'             => $this->surl,
-                        'url'              => $this->furl,
-                        'prenom_p'         => $oCustomer->prenom,
-                        'liste_offres'     => $sLoansListHTML,
-                        'link_explication' => $oLender->isNaturalPerson() ? 'Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="' . $this->surl . '/document-de-pret">cette page</a>. ' : '',
-                        'motif_virement'   => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes'  => $this->lurl . '/profile',
-                        'contenu'          => $sContent,
-                        'objet'            => $sObject,
-                        'sujet'            => $sSubject,
-                        'lien_fb'          => $this->like_fb,
-                        'lien_tw'          => $this->twitter
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                } catch (\Exception $oException) {
-                    $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-            }
-        }
-
-        $oNotificationsLog->fin = date('Y-m-d H:i:s');
-        $oNotificationsLog->update();
-    }
-
-    /**
-     * Send repayment summary email
-     * @param array $aCustomerId
-     * @param string $sFrequency
-     */
-    private function sendRepaymentsSummaryEmail(array $aCustomerId, $sFrequency)
-    {
-        $this->oLogger->debug('Repayments notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
-        $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
-
-        /** @var Email email */
-        $oEmail = $this->loadLib('email');
-
-        /** @var clients $oCustomer */
-        $oCustomer = $this->loadData('clients');
-        /** @var echeanciers $oLenderRepayment */
-        $oLenderRepayment = $this->loadData('echeanciers');
-        /** @var notifications $oNotification */
-        $oNotification = $this->loadData('notifications');
-        /** @var projects $oProject */
-        $oProject = $this->loadData('projects');
-        /** @var transactions $oTransaction */
-        $oTransaction = $this->loadData('transactions');
-        /** @var clients_gestion_mails_notif $oMailNotification */
-        $oMailNotification = $this->loadData('clients_gestion_mails_notif');
-        /** @var clients_gestion_notifications $oCustomerNotificationSettings */
-        $oCustomerNotificationSettings = $this->loadData('clients_gestion_notifications');
-
-        /** @var clients_gestion_notif_log $oNotificationsLog */
-        $oNotificationsLog           = $this->loadData('clients_gestion_notif_log');
-        $oNotificationsLog->id_notif = \clients_gestion_type_notif::TYPE_REPAYMENT;
-        $oNotificationsLog->type     = $sFrequency;
-        $oNotificationsLog->debut    = date('Y-m-d H:i:s');
-        $oNotificationsLog->fin      = '0000-00-00 00:00:00';
-        $oNotificationsLog->create();
-
-        switch ($sFrequency) {
-            case 'quotidienne':
-               $sMail = 'synthese-quotidienne-remboursements';
-                break;
-            case 'hebdomadaire':
-                $sMail = 'synthese-hebdomadaire-remboursements';
-                break;
-            case 'mensuelle':
-                $sMail = 'synthese-mensuelle-remboursements';
-                break;
-            default:
-                trigger_error('Unknown frequency for repayment summary email: ' . $sFrequency, E_USER_WARNING);
-                return;
-        }
-
-        foreach (array_chunk($aCustomerId, 100) as $aPartialCustomerId) {
-            $aCustomerMailNotifications = array();
-            foreach ($oCustomerNotificationSettings->getCustomersNotifications($aPartialCustomerId, $sFrequency, \clients_gestion_type_notif::TYPE_REPAYMENT) as $aMailNotifications) {
-                $aCustomerMailNotifications[$aMailNotifications['id_client']][] = $aMailNotifications;
-            }
-
-            foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
-                try {
-                    $oCustomer->get($iCustomerId);
-
-                    $sEarlyRepaymentContent     = '';
-                    $sRepaymentsListHTML        = '';
-                    $fTotalInterestsTaxFree     = 0;
-                    $fTotalInterestsTaxIncluded = 0;
-                    $fTotalAmount               = 0;
-                    $fTotalCapital              = 0;
-                    $iRepaymentsCount           = count($aMailNotifications);
-
-                    foreach ($aMailNotifications as $aMailNotification) {
-                        $oMailNotification->get($aMailNotification['id_clients_gestion_mails_notif']);
-                        $oMailNotification->{$sFrequency} = 1;
-                        $oMailNotification->{'status_check_' . $sFrequency} = 1;
-                        $oMailNotification->update();
-
-                        $oNotification->get($aMailNotification['id_notification']);
-                        $oProject->get($oNotification->id_project);
-                        $oTransaction->get($aMailNotification['id_transaction']);
-
-                        if (\transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT == $oTransaction->type_transaction) {
-                            /** @var companies $oCompanies */
-                            $oCompanies = $this->loadData('companies');
-                            $oCompanies->get($oProject->id_company);
-
-                            /** @var lenders_accounts $oLender */
-                            $oLender = $this->loadData('lenders_accounts');
-                            $oLender->get($oCustomer->id_client, 'id_client_owner');
-
-                            /** @var loans $oLoan */
-                            $oLoan = $this->loadData('loans');
-
-                            $fRepaymentCapital              = $oTransaction->montant / 100;
-                            $fRepaymentInterestsTaxIncluded = 0;
-                            $fRepaymentTax                  = 0;
-
-                            $sEarlyRepaymentContent = "
-                                Important : le remboursement de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oTransaction->montant / 100) . "&nbsp;&euro;</span> correspond au remboursement total du capital restant d&ucirc; de votre pr&egrave;t &agrave; <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span>.
-                                Comme le pr&eacute;voient les r&egrave;gles d'Unilend, <span style='color: #b20066;'>" . htmlentities($oCompanies->name) . "</span> a choisi de rembourser son emprunt par anticipation sans frais.
-                                <br/><br/>
-                                Depuis l'origine, il vous a vers&eacute; <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLenderRepayment->getSumRembByloan_remb_ra($oTransaction->id_loan_remb, 'interets')) . "&nbsp;&euro;</span> d'int&eacute;r&ecirc;ts soit un taux d'int&eacute;r&ecirc;t annualis&eacute; moyen de <span style='color: #b20066;'>" . $this->ficelle->formatNumber($oLoan->getWeightedAverageInterestRateForLender($oLender->id_lender_account, $oProject->id_project), 1) . " %.</span><br/><br/> ";
-                        } else {
-                            $oLenderRepayment->get($oTransaction->id_echeancier);
-
-                            $fRepaymentCapital              = $oLenderRepayment->capital / 100;
-                            $fRepaymentInterestsTaxIncluded = $oLenderRepayment->interets / 100;
-                            $fRepaymentTax                  = $oLenderRepayment->prelevements_obligatoires + $oLenderRepayment->retenues_source + $oLenderRepayment->csg + $oLenderRepayment->prelevements_sociaux + $oLenderRepayment->contributions_additionnelles + $oLenderRepayment->prelevements_solidarite + $oLenderRepayment->crds;
-                            $fRepaymentAmount               = $fRepaymentCapital + $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
-                        }
-
-                        $fTotalAmount += $fRepaymentAmount;
-                        $fTotalCapital += $fRepaymentCapital;
-                        $fTotalInterestsTaxIncluded += $fRepaymentInterestsTaxIncluded;
-                        $fTotalInterestsTaxFree += $fRepaymentInterestsTaxIncluded - $fRepaymentTax;
-
-                        $sRepaymentsListHTML .= '
-                            <tr style="color:#b20066;">
-                                <td  style="height:25px;font-family:Arial;font-size:14px;"><a style="color:#b20066;text-decoration:none;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a></td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentAmount) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentCapital) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded) . '&nbsp;&euro;</td>
-                                <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($fRepaymentInterestsTaxIncluded - $fRepaymentTax) . '&nbsp;&euro;</td>
-                            </tr>';
-                    }
-
-                    $sRepaymentsListHTML .= '
-                        <tr>
-                            <td style="height:25px;font-family:Arial;font-size:14px;border-top:1px solid #727272;color:#727272;">Total</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalAmount) . '&nbsp;&euro;</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalCapital) . '&nbsp;&euro;</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxIncluded) . '&nbsp;&euro;</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;color:#b20066;border-top:1px solid #727272;">' . $this->ficelle->formatNumber($fTotalInterestsTaxFree) . '&nbsp;&euro;</td>
-                        </tr>';
-
-                    if (1 === $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
-                    } elseif (1 < $iRepaymentsCount && 'quotidienne' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-quotidienne-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-pluriel'];
-                    } elseif (1 === $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
-                    } elseif (1 < $iRepaymentsCount && 'hebdomadaire' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-hebdomadaire-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-hebdomadaire-pluriel'];
-                    } elseif (1 === $iRepaymentsCount && 'mensuelle' === $sFrequency) {
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-singulier'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-quotidienne-singulier'];
-                    } elseif (1 < $iRepaymentsCount && 'mensuelle' === $sFrequency) {
-                        $this->mail_template->subject = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
-                        $sSubject                  = $this->lng['email-synthese']['sujet-synthese-mensuelle-pluriel'];
-                        $sContent                  = $this->lng['email-synthese']['contenu-synthese-mensuelle-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of repayments not handled: ' . $sFrequency . ' / ' . $iRepaymentsCount, E_USER_WARNING);
-                        continue;
-                    }
-
-                    $aReplacements = array(
-                        'surl'                   => $this->surl,
-                        'url'                    => $this->furl,
-                        'prenom_p'               => $oCustomer->prenom,
-                        'liste_offres'           => $sRepaymentsListHTML,
-                        'motif_virement'         => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes'        => $this->lurl . '/profile',
-                        'montant_dispo'          => $this->ficelle->formatNumber($oTransaction->getSolde($oCustomer->id_client)),
-                        'remboursement_anticipe' => $sEarlyRepaymentContent,
-                        'contenu'                => $sContent,
-                        'sujet'                  => $sSubject,
-                        'lien_fb'                => $this->like_fb,
-                        'lien_tw'                => $this->twitter,
-                        'annee'                  => date('Y')
-                    );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMail, $this->language, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-
-                } catch (\Exception $oException) {
-                    $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
-                }
-            }
-        }
-
-        $oNotificationsLog->fin = date('Y-m-d H:i:s');
-        $oNotificationsLog->update();
     }
 
     // 1 fois par jour on regarde si on a une offre de parrainage a traiter pour donner l'argent
@@ -2873,204 +1523,48 @@ class cronController extends bootstrap
         }
     }
 
-    // Toutes les 5 minutes (cron en place)	le 27/01/2015
-    public function _remboursement_preteurs_auto()
+    // Passe toutes les 5 minutes la nuit de 3h à 4h
+    // copie données table -> enregistrement table backup -> suppression données table
+    public function _stabilisation_mails()
     {
-        if (true === $this->startCron('remboursements auto', 5)) {
-            /** @var \projects $projects */
-            $projects = $this->loadData('projects');
+        if ($this->startCron('stabilisationMail', 10)) {
+            $iStartTime     = time();
+            $iRetentionDays = 30;
+            $iLimit         = 2000;
+            $sMinimumDate   = date('Y-m-d', mktime(0, 0, 0, date('m'), date('d') - $iRetentionDays, date('Y')));
 
-            $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
-            $echeanciers             = $this->loadData('echeanciers');
-            $companies               = $this->loadData('companies');
-            $transactions            = $this->loadData('transactions');
-            $lenders                 = $this->loadData('lenders_accounts');
-            $projects_status_history = $this->loadData('projects_status_history');
-            $wallets_lines           = $this->loadData('wallets_lines');
-            $bank_unilend            = $this->loadData('bank_unilend');
-            $oAccountUnilend         = $this->loadData('platform_account_unilend');
+            $this->oLogger->addRecord(ULogger::INFO, 'Current date with an offset of ' . $iRetentionDays . ' days: ' . $sMinimumDate, array('ID' => $iStartTime));
 
-            /** @var \projects_remb_log $oRepaymentLog */
-            $oRepaymentLog = $this->loadData('projects_remb_log');
+            $this->bdd->query("
+                INSERT IGNORE INTO mails_filer_backup (`id_filermails`, `id_textemail`, `desabo`, `email_nmp`, `from`, `to`, `subject`, `content`, `headers`, `added`, `updated`)
+                SELECT m1.* FROM mails_filer m1 WHERE LEFT(m1.added, 10) <= '" . $sMinimumDate . "' ORDER BY m1.added ASC LIMIT " . $iLimit
+            );
 
-            /** @var \projects_remb $oProjectRepayment */
-            $oProjectRepayment = $this->loadData('projects_remb');
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
 
-            foreach ($oProjectRepayment->getProjectsToRepay(new \DateTime(), 1) as $r) {
-                $oRepaymentLog->id_project       = $r['id_project'];
-                $oRepaymentLog->ordre            = $r['ordre'];
-                $oRepaymentLog->debut            = date('Y-m-d H:i:s');
-                $oRepaymentLog->fin              = '0000-00-00 00:00:00';
-                $oRepaymentLog->montant_remb_net = 0;
-                $oRepaymentLog->etat             = 0;
-                $oRepaymentLog->nb_pret_remb     = 0;
-                $oRepaymentLog->create();
+            $this->bdd->query('DELETE FROM `mails_filer` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
 
-                $dernierStatut     = $projects_status_history->select('id_project = ' . $r['id_project'], 'id_project_status_history DESC', 0, 1);
-                $dateDernierStatut = $dernierStatut[0]['added'];
-                $timeAdd           = strtotime($dateDernierStatut);
-                $day               = date('d', $timeAdd);
-                $month             = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
-                $year              = date('Y', $timeAdd);
-                $Total_rembNet     = 0;
-                $lEcheances        = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`mails_filer` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
 
-                if ($lEcheances != false) {
-                    $Total_etat   = 0;
-                    $nb_pret_remb = 0;
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `mails_filer`');
+            }
 
-                    foreach ($lEcheances as $e) {
-                        if ($transactions->get($e['id_echeancier'], 'id_echeancier') == false) {
-                            $rembNet = $e['rembNet'];
-                            $etat    = $e['etat'];
+            $this->bdd->query("
+                INSERT IGNORE INTO nmp_backup (`id_nmp`, `serialize_content`, `date`, `mailto`, `reponse`, `erreur`, `status`, `date_sent`, `added`, `updated`)
+                SELECT n1.* FROM nmp n1  WHERE LEFT(n1.added, 10) <= '" . $sMinimumDate . "' AND mailto NOT LIKE '%unilend.fr' ORDER BY n1.added ASC LIMIT " . $iLimit
+            );
 
-                            $Total_rembNet += $rembNet;
-                            $Total_etat += $etat;
-                            $nb_pret_remb = ($nb_pret_remb + 1);
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` backuped lines: ' . mysql_affected_rows(), array('ID' => $iStartTime));
 
-                            $lenders->get($e['id_lender'], 'id_lender_account');
+            $this->bdd->query('DELETE FROM `nmp` WHERE LEFT(added, 10) <= "' . $sMinimumDate . '" ORDER BY added ASC LIMIT ' . $iLimit);
 
-                            $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                            $echeanciers->status             = 1; // remboursé
-                            $echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
-                            $echeanciers->update();
+            $iDeletedRows = mysql_affected_rows();
+            $this->oLogger->addRecord(ULogger::INFO, '`nmp` deleted lines: ' . $iDeletedRows, array('ID' => $iStartTime));
 
-                            $transactions->id_client        = $lenders->id_client_owner;
-                            $transactions->montant          = ($rembNet * 100);
-                            $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
-                            $transactions->id_langue        = 'fr';
-                            $transactions->date_transaction = date('Y-m-d H:i:s');
-                            $transactions->status           = '1';
-                            $transactions->etat             = '1';
-                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                            $transactions->type_transaction = 5; // remb enchere
-                            $transactions->transaction      = 2; // transaction virtuelle
-                            $transactions->id_transaction   = $transactions->create();
-
-                            $wallets_lines->id_lender                = $e['id_lender'];
-                            $wallets_lines->type_financial_operation = 40;
-                            $wallets_lines->id_transaction           = $transactions->id_transaction;
-                            $wallets_lines->status                   = 1; // non utilisé
-                            $wallets_lines->type                     = 2; // transaction virtuelle
-                            $wallets_lines->amount                   = ($rembNet * 100);
-                            $wallets_lines->id_wallet_line           = $wallets_lines->create();
-                        } // fin check transasction existante
-                    } // fin boucle echeances preteurs
-                }
-
-                if ($Total_rembNet > 0) {
-                    $emprunteur = $this->loadData('clients');
-
-                    $projects->get($r['id_project'], 'id_project');
-                    $companies->get($projects->id_company, 'id_company');
-                    $emprunteur->get($companies->id_client_owner, 'id_client');
-                    $echeanciers_emprunteur->get($r['id_project'], ' ordre = ' . $r['ordre'] . ' AND id_project');
-
-                    $transactions->montant                  = 0;
-                    $transactions->id_echeancier            = 0; // on reinitialise
-                    $transactions->id_client                = 0; // on reinitialise
-                    $transactions->montant_unilend          = '-' . $Total_rembNet * 100;
-                    $transactions->montant_etat             = $Total_etat * 100;
-                    $transactions->id_echeancier_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur; // id de l'echeance emprunteur
-                    $transactions->id_langue                = 'fr';
-                    $transactions->date_transaction         = date('Y-m-d H:i:s');
-                    $transactions->status                   = '1';
-                    $transactions->etat                     = '1';
-                    $transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
-                    $transactions->type_transaction         = 10; // remb unilend pour les preteurs
-                    $transactions->transaction              = 2; // transaction virtuelle
-                    $transactions->create();
-
-                    $bank_unilend->id_transaction         = $transactions->id_transaction;
-                    $bank_unilend->id_project             = $r['id_project'];
-                    $bank_unilend->montant                = '-' . $Total_rembNet * 100;
-                    $bank_unilend->etat                   = $Total_etat * 100;
-                    $bank_unilend->type                   = 2; // remb unilend
-                    $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
-                    $bank_unilend->status                 = 1;
-                    $bank_unilend->create();
-
-                    $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
-
-                    $varMail = array(
-                        'surl'            => $this->surl,
-                        'url'             => $this->furl,
-                        'prenom'          => $emprunteur->prenom,
-                        'pret'            => $this->ficelle->formatNumber($projects->amount),
-                        'entreprise'      => stripslashes(trim($companies->name)),
-                        'projet-title'    => $projects->title,
-                        'compte-p'        => $this->furl,
-                        'projet-p'        => $this->furl . '/projects/detail/' . $projects->slug,
-                        'link_facture'    => $this->furl . '/pdf/facture_ER/' . $emprunteur->hash . '/' . $r['id_project'] . '/' . $r['ordre'],
-                        'datedelafacture' => $day . ' ' . $month . ' ' . $year,
-                        'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
-                        'annee'           => date('Y'),
-                        'lien_fb'         => $this->like_fb,
-                        'lien_tw'         => $this->twitter,
-                        'montantRemb'     => $Total_rembNet
-                    );
-
-                    $tabVars   = $this->tnmp->constructionVariablesServeur($varMail);
-                    $sujetMail = strtr(utf8_decode($this->mail_template->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mail_template->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mail_template->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mail_template->id_textemail, trim($companies->email_facture), $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mail_template->nmp_secure, $this->mail_template->id_nmp, $this->mail_template->nmp_unique, $this->mail_template->mode);
-                    } else {
-                        $this->email->addRecipient(trim($companies->email_facture));
-                        Mailer::send($this->email, $this->mails_filer, $this->mail_template->id_textemail);
-                    }
-
-                    $oInvoiceCounter            = $this->loadData('compteur_factures');
-                    $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
-                    $oBorrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
-                    $oInvoice                   = $this->loadData('factures');
-
-                    $this->settings->get('Commission remboursement', 'type');
-                    $fCommissionRate = $this->settings->value;
-
-                    $aLenderRepayment = $oLenderRepaymentSchedule->select('id_project = ' . $projects->id_project . ' AND ordre = ' . $r['ordre'], '', 0, 1);
-
-                    if ($oBorrowerRepaymentSchedule->get($projects->id_project, 'ordre = ' . $r['ordre'] . '  AND id_project')) {
-                        $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($aLenderRepayment[0]['date_echeance_reel'])) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $aLenderRepayment[0]['date_echeance_reel']), 5, '0', STR_PAD_LEFT);
-                        $oInvoice->date            = $aLenderRepayment[0]['date_echeance_reel'];
-                        $oInvoice->id_company      = $companies->id_company;
-                        $oInvoice->id_project      = $projects->id_project;
-                        $oInvoice->ordre           = $r['ordre'];
-                        $oInvoice->type_commission = \factures::TYPE_COMMISSION_REMBOURSEMENT;
-                        $oInvoice->commission      = $fCommissionRate * 100;
-                        $oInvoice->montant_ht      = $oBorrowerRepaymentSchedule->commission;
-                        $oInvoice->tva             = $oBorrowerRepaymentSchedule->tva;
-                        $oInvoice->montant_ttc     = $oBorrowerRepaymentSchedule->commission + $oBorrowerRepaymentSchedule->tva;
-                        $oInvoice->create();
-                    }
-
-                    $lesRembEmprun = $bank_unilend->select('type = 1 AND status = 0 AND id_project = ' . $r['id_project']);
-
-                    foreach ($lesRembEmprun as $leR) {
-                        $bank_unilend->get($leR['id_unilend'], 'id_unilend');
-                        $bank_unilend->status = 1;
-                        $bank_unilend->update();
-                    }
-
-                    $oProjectRepayment->get($r['id_project_remb'], 'id_project_remb');
-                    $oProjectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
-                    $oProjectRepayment->status                  = \projects_remb::STATUS_REFUNDED;
-                    $oProjectRepayment->update();
-
-                    $oRepaymentLog->fin              = date('Y-m-d H:i:s');
-                    $oRepaymentLog->montant_remb_net = $Total_rembNet * 100;
-                    $oRepaymentLog->etat             = $Total_etat * 100;
-                    $oRepaymentLog->nb_pret_remb     = $nb_pret_remb;
-                    $oRepaymentLog->update();
-                }
+            if ($iDeletedRows < $iLimit) {
+                $this->bdd->query('OPTIMIZE TABLE `nmp`');
             }
 
             $this->stopCron();
@@ -3159,220 +1653,6 @@ class cronController extends bootstrap
         $sNewName = $sPrefix . $sSiren . '.' . $sExtension;
 
         copy($sFromPath, $sPathNoZip . $sSiren . '/' . $sNewName);
-    }
-
-    /**
-     * Send reminder email for project submissions
-     */
-    public function _relance_completude_emprunteurs()
-    {
-        if ($this->startCron('relance completude emprunteurs', 5)) {
-            ini_set('memory_limit', '1G');
-            ini_set('max_execution_time', 300);
-
-            $this->prescripteurs                = $this->loadData('prescripteurs');
-            $this->projects_status              = $this->loadData('projects_status');
-            $this->projects_status_history      = $this->loadData('projects_status_history');
-            $this->projects_last_status_history = $this->loadData('projects_last_status_history');
-
-            $this->settings->get('Intervales relances emprunteurs', 'type');
-            $aReminderIntervals = json_decode($this->settings->value, true);
-
-            $this->settings->get('Durée moyenne financement', 'type');
-            $aAverageFundingDurations = json_decode($this->settings->value, true);
-
-            $this->settings->get('Adresse emprunteur', 'type');
-            $sBorrowerEmail = $this->settings->value;
-
-            $this->settings->get('Téléphone emprunteur', 'type');
-            $sBorrowerPhoneNumber = $this->settings->value;
-
-            $aReplacements = array(
-                'adresse_emprunteur'   => $sBorrowerEmail,
-                'telephone_emprunteur' => $sBorrowerPhoneNumber,
-                'furl'                 => $this->furl,
-                'surl'                 => $this->surl,
-                'lien_fb'              => $this->like_fb,
-                'lien_tw'              => $this->twitter,
-            );
-
-            foreach ($aReminderIntervals as $sStatus => $aIntervals) {
-                if (1 === preg_match('/^status-([1-9][0-9]*)$/', $sStatus, $aMatches)) {
-                    $iStatus                       = (int) $aMatches[1];
-                    $iLastIndex                    = count($aIntervals);
-                    $iPreviousReminderDaysInterval = 0;
-
-                    foreach ($aIntervals as $iReminderIndex => $iDaysInterval) {
-                        $iDaysSincePreviousReminder = $iDaysInterval - $iPreviousReminderDaysInterval;
-
-                        foreach ($this->projects->getReminders($iStatus, $iDaysSincePreviousReminder, $iReminderIndex - 1) as $iProjectId) {
-                            try {
-                                $this->projects->get($iProjectId, 'id_project');
-                                $this->companies->get($this->projects->id_company, 'id_company');
-
-                                if ($this->projects->id_prescripteur > 0) {
-                                    $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur');
-                                    $this->clients->get($this->prescripteurs->id_client, 'id_client');
-                                } else {
-                                    $this->clients->get($this->companies->id_client_owner, 'id_client');
-                                }
-
-                                if (false === empty($this->clients->email) && 0 == $this->projects->stop_relances) {
-                                    $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
-                                    $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
-
-                                    $oSubmissionDate = new \DateTime($this->projects->added);
-
-                                    // @todo arbitrary default value
-                                    $iAverageFundingDuration = 15;
-                                    reset($aAverageFundingDurations);
-                                    foreach ($aAverageFundingDurations as $aAverageFundingDuration) {
-                                        if ($this->projects->amount >= $aAverageFundingDuration['min'] && $this->projects->amount <= $aAverageFundingDuration['max']) {
-                                            $iAverageFundingDuration = $aAverageFundingDuration['heures'] / 24;
-                                            break;
-                                        }
-                                    }
-
-                                    if (in_array($iStatus, array(7, 8))) {
-                                        $oCompletenessDate                       = $this->projects_status_history->getDateProjectStatus($this->projects->id_project, \projects_status::COMPLETUDE_ETAPE_2, true);
-                                        $aReplacements['date_completude_etape2'] = strftime('%d %B %Y', $oCompletenessDate->getTimestamp());
-                                    }
-
-                                    $aReplacements['liste_pieces']            = $this->projects_status_history->content;
-                                    $aReplacements['raison_sociale']          = $this->companies->name;
-                                    $aReplacements['prenom']                  = $this->clients->prenom;
-                                    $aReplacements['montant']                 = $this->ficelle->formatNumber($this->projects->amount, 0);
-                                    $aReplacements['delai_demande']           = $iDaysInterval;
-                                    $aReplacements['lien_reprise_dossier']    = $this->furl . '/depot_de_dossier/reprise/' . $this->projects->hash;
-                                    $aReplacements['lien_stop_relance']       = $this->furl . '/depot_de_dossier/emails/' . $this->projects->hash;
-                                    $aReplacements['date_demande']            = strftime('%d %B %Y', $oSubmissionDate->getTimestamp());
-                                    $aReplacements['pourcentage_financement'] = $iDaysInterval > $iAverageFundingDuration ? 100 : round(100 - ($iAverageFundingDuration - $iDaysInterval) / $iAverageFundingDuration * 100);
-                                    $aReplacements['sujet']                   = htmlentities($this->mail_template->subject, null, 'UTF-8');
-                                    $aReplacements['annee']                   = date('Y');
-
-                                    $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($this->clients->email));
-
-                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $this->language, $aReplacements);
-                                    $message->setTo($sRecipientEmail);
-                                    $mailer = $this->get('mailer');
-                                    $mailer->send($message);
-                                }
-
-                                /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                                $oProjectManager = $this->get('unilend.service.project_manager');
-
-                                /**
-                                 * When project is pending documents, abort status is not automatic and must be set manually in BO
-                                 */
-                                if ($iReminderIndex === $iLastIndex && $iStatus != \projects_status::EN_ATTENTE_PIECES) {
-                                    $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::ABANDON, $this->projects, $iReminderIndex, $this->projects_status_history->content);
-                                } else {
-                                    $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $this->projects, $iReminderIndex, $this->projects_status_history->content);
-                                }
-                            } catch (\Exception $oException) {
-                                $this->oLogger->error('Cannot send reminder for project id_project=' . $this->projects->id_project . '(Exception message : ' . $oException->getMessage() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
-                            }
-                        }
-
-                        $iPreviousReminderDaysInterval = $iDaysInterval;
-                    }
-                }
-            }
-            $this->stopCron();
-        }
-    }
-
-    public function _projet_process_fast_completude()
-    {
-        if ($this->startCron('projet process fast completude', 5)) {
-            $this->loadData('projects_status'); // Loaded for class constants
-            $this->loadData('users'); // Loaded for class constants
-
-            /** @var \projects $oProject */
-            $oProject = $this->loadData('projects');
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('unilend.service.project_manager');
-
-            foreach ($oProject->getFastProcessStep3() as $iProjectId) {
-                $oProject->get($iProjectId, 'id_project');
-                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $oProject);
-            }
-
-            $this->stopCron();
-        }
-    }
-
-    public function _emprunteur_impaye_avant_echeance()
-    {
-        if ($this->startCron('emprunteur impaye avant echeance', 5)) {
-            $oProjects = $this->loadData('projects');
-            $aProjects = $oProjects->getProblematicProjectsWithUpcomingRepayment();
-
-            if (false === empty($aProjects)) {
-                $oClients               = $this->loadData('clients');
-                $oCompanies             = $this->loadData('companies');
-                $oEcheanciers           = $this->loadData('echeanciers');
-                $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
-                $oLoans                 = $this->loadData('loans');
-                $oMailTemplate          = $this->loadData('mail_templates');
-                $oSettings              = $this->loadData('settings');
-
-                $oMailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
-
-                $oSettings->get('Virement - BIC', 'type');
-                $sBIC = $oSettings->value;
-
-                $oSettings->get('Virement - IBAN', 'type');
-                $sIBAN = $oSettings->value;
-
-                $oSettings->get('Téléphone emprunteur', 'type');
-                $sBorrowerPhoneNumber = $oSettings->value;
-
-                $oSettings->get('Adresse emprunteur', 'type');
-                $sBorrowerEmail = $oSettings->value;
-
-                $aCommonReplacements = array(
-                    'url'              => $this->furl,
-                    'surl'             => $this->surl,
-                    'lien_fb'          => $this->like_fb,
-                    'lien_tw'          => $this->twitter,
-                    'bic_sfpmei'       => $sBIC,
-                    'iban_sfpmei'      => $sIBAN,
-                    'tel_emprunteur'   => $sBorrowerPhoneNumber,
-                    'email_emprunteur' => $sBorrowerEmail,
-                    'annee'            => date('Y')
-                );
-
-                foreach ($aProjects as $aProject) {
-                    $oProjects->get($aProject['id_project']);
-                    $oCompanies->get($oProjects->id_company);
-                    $oClients->get($oCompanies->id_client_owner);
-
-                    $aNextRepayment = $oEcheanciersEmprunteur->select('id_project = ' . $oProjects->id_project . ' AND date_echeance_emprunteur > DATE(NOW())', 'date_echeance_emprunteur ASC', 0, 1);
-
-                    $aReplacements = $aCommonReplacements + array(
-                            'sujet'                              => htmlentities($oMailTemplate->subject, null, 'UTF-8'),
-                            'entreprise'                         => htmlentities($oCompanies->name, null, 'UTF-8'),
-                            'civilite_e'                         => $oClients->civilite,
-                            'prenom_e'                           => htmlentities($oClients->prenom, null, 'UTF-8'),
-                            'nom_e'                              => htmlentities($oClients->nom, null, 'UTF-8'),
-                            'mensualite_e'                       => $this->ficelle->formatNumber(($aNextRepayment[0]['montant'] + $aNextRepayment[0]['commission'] + $aNextRepayment[0]['tva']) / 100),
-                            'num_dossier'                        => $oProjects->id_project,
-                            'nb_preteurs'                        => $oLoans->getNbPreteurs($oProjects->id_project),
-                            'CRD'                                => $this->ficelle->formatNumber($oEcheanciers->sum('id_project = ' . $oProjects->id_project . ' AND status = 0', 'capital')),
-                            'date_prochaine_echeance_emprunteur' => $this->dates->formatDate($aNextRepayment[0]['date_echeance_emprunteur'], 'd/m/Y'), // @todo Intl
-                        );
-
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $this->language, $aReplacements);
-                    $message->setTo(trim($oClients->email));
-                    $mailer = $this->get('mailer');
-                    $mailer->send($message);
-                }
-            }
-            $this->stopCron();
-        }
     }
 
     /**
