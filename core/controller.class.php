@@ -34,9 +34,11 @@ abstract class Controller implements ContainerAwareInterface
         setlocale(LC_TIME, 'fr_FR');
 
         //Variables de session pour la fenetre de debug
-        unset($_SESSION['error']);
-        unset($_SESSION['debug']);
-        unset($_SESSION['msg']);
+        if (isset($_SESSION)) {
+            unset($_SESSION['error']);
+            unset($_SESSION['debug']);
+            unset($_SESSION['msg']);
+        }
 
         $this->Command      = $command;
         $this->Config       = $config;

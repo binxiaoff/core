@@ -64,7 +64,7 @@ class pdfController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        $this->oSnapPdf = new Pdf('/usr/bin/wkhtmltopdf');
+        $this->oSnapPdf = new Pdf('/usr/local/bin/wkhtmltopdf');
         $this->oLogger  = $this->get('logger');
     }
 
