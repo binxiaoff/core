@@ -1364,7 +1364,7 @@ class dossiersController extends bootstrap
             $this->projects->create();
 
             /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
+            $oProjectManager = $this->get('unilend.service.project_manager');
             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects);
 
             $serialize = serialize(array('id_project' => $this->projects->id_project));

@@ -554,7 +554,7 @@ class universignController extends bootstrap
                     /** @var \prelevements $directDebit */
                     $directDebit = $this->loadData('prelevements');
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
-                    $projectManager = $this->get('ProjectManager');
+                    $projectManager = $this->get('unilend.service.project_manager');
 
                     foreach ($aProjects as $aProject) {
                         $project->get($aProject['id_project']);

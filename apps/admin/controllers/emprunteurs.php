@@ -308,7 +308,7 @@ class emprunteursController extends bootstrap
 
                 if ($sCurrentIban !== $sNewIban) {
                     /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
-                    $oMailerManager = $this->get('MailerManager');
+                    $oMailerManager = $this->get('unilend.service.email_manager');
                     $oMailerManager->sendIbanUpdateToStaff($this->clients->id_client, $sCurrentIban, $sNewIban);
                 }
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));

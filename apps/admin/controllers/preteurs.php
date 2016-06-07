@@ -1984,7 +1984,7 @@ class preteursController extends bootstrap
         $sCurrentIban = $oLendersAccounts->iban;
         $sNewIban     = str_replace(' ', '', $sIban);
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
-        $oMailerManager = $this->get('MailerManager');
+        $oMailerManager = $this->get('unilend.service.email_manager');
 
         if ($sCurrrentBic !== $sNewBic && $sCurrentIban !== $sNewIban) {
             if ($this->validateBic($sNewBic, $oLendersAccounts) && $this->validateIban($sNewIban, $oLendersAccounts)) {

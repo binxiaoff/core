@@ -1221,11 +1221,11 @@ class transfertsController extends bootstrap
                 ini_set('memory_limit', '512M');
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
-                $oMailerManager = $this->get('MailerManager');
+                $oMailerManager = $this->get('unilend.service.email_manager');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $oNotificationManager */
-                $oNotificationManager = $this->get('NotificationManager');
+                $oNotificationManager = $this->get('unilend.service.notification_manager');
                 /** @var \lenders_accounts $lender */
                 $lender = $this->loadData('lenders_accounts');
                 /** @var \transactions $transactions */
