@@ -1911,26 +1911,6 @@ class cronController extends bootstrap
         copy($sFromPath, $sPathNoZip . $sSiren . '/' . $sNewName);
     }
 
-    public function _projet_process_fast_completude()
-    {
-        if ($this->startCron('projet process fast completude', 5)) {
-            $this->loadData('projects_status'); // Loaded for class constants
-            $this->loadData('users'); // Loaded for class constants
-
-            /** @var \projects $oProject */
-            $oProject = $this->loadData('projects');
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('unilend.service.project_manager');
-
-            foreach ($oProject->getFastProcessStep3() as $iProjectId) {
-                $oProject->get($iProjectId, 'id_project');
-                $oProjectManager->addProjectStatus(\users::USER_ID_CRON, \projects_status::A_TRAITER, $oProject);
-            }
-
-            $this->stopCron();
-        }
-    }
-
     public function _emprunteur_impaye_avant_echeance()
     {
         if ($this->startCron('emprunteur impaye avant echeance', 5)) {

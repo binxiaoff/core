@@ -98,5 +98,8 @@
         <service id="unilend.command.check_borrower_debit" class="Unilend\Bundle\CommandBundle\Command\CheckBorrowerDebitCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.check_project_process_fast_completeness" class="Unilend\Bundle\CommandBundle\Command\CheckProjectProcessFastCompletenessCommand">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
