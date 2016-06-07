@@ -1475,9 +1475,9 @@ class preteursController extends bootstrap
 
         $oTextes                   = $this->loadData('textes');
         $this->lng['autobid']      = $oTextes->selectFront('autobid', $this->language, $this->App);
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
-        /** @var \Unilend\Service\ClientManager $oClientManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
         $oClientManager            = $this->get('unilend.service.client_manager');
         $oAutoBidPeriod            = $this->loadData('autobid_periods');
 
@@ -1983,7 +1983,7 @@ class preteursController extends bootstrap
         }
         $sCurrentIban = $oLendersAccounts->iban;
         $sNewIban     = str_replace(' ', '', $sIban);
-        /** @var \Unilend\Service\MailerManager $oMailerManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
         $oMailerManager = $this->get('MailerManager');
 
         if ($sCurrrentBic !== $sNewBic && $sCurrentIban !== $sNewIban) {

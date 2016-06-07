@@ -1,12 +1,12 @@
 <?php
-namespace Unilend\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Cache\CacheItemPoolInterface;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
  * Class ClientSettingsManager
- * @package Unilend\Service
+ * @package Unilend\Bundle\CoreBusinessBundle\Service
  */
 class ClientSettingsManager
 {

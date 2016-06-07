@@ -1,10 +1,10 @@
 <?php
-namespace Unilend\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Unilend\core\Loader;
 use \Symfony\Bridge\Monolog\Logger;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectManager
 {

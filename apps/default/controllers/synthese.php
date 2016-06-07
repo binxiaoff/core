@@ -249,7 +249,7 @@ class syntheseController extends bootstrap
         // statut client
         $this->clients_status->getLastStatut($this->clients->id_client);
 
-        /** @var \Unilend\Service\IRRManager $oIRRManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IRRManager $oIRRManager */
         $oIRRManager                 = $this->get('unilend.service.irr_manager');
         $aLastUnilendIRR             = $oIRRManager->getLastUnilendIRR();
         $this->sIRRUnilend           = $this->ficelle->formatNumber((float) $aLastUnilendIRR['value']);
@@ -312,7 +312,7 @@ class syntheseController extends bootstrap
         }
 
         //Ongoing Bids Widget
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         $this->bFirstTimeActivation          = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);

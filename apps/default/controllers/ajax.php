@@ -1598,7 +1598,7 @@ class ajaxController extends bootstrap
         $oClient        = $this->loadData('clients');
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oBids          = $this->loadData('bids');
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
@@ -1654,7 +1654,7 @@ class ajaxController extends bootstrap
             $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
             $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
             $oAutoBidSettingsManager      = $this->get('unilend.service.autobid_settings_manager');
             $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         }

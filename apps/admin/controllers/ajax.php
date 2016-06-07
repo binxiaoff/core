@@ -705,7 +705,7 @@ class ajaxController extends bootstrap
             }
 
             if ($form_ok == true) {
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
@@ -986,7 +986,7 @@ class ajaxController extends bootstrap
                     $this->projects_notes->create();
                 }
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
@@ -1287,7 +1287,7 @@ class ajaxController extends bootstrap
                 $btn_etape7   = '';
                 $content_risk = '';
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
 
                 if ($_POST['status'] == 1) {

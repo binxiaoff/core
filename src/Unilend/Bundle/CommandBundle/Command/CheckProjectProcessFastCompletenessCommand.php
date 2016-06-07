@@ -6,7 +6,7 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 
 class CheckProjectProcessFastCompletenessCommand extends ContainerAwareCommand
@@ -33,7 +33,7 @@ class CheckProjectProcessFastCompletenessCommand extends ContainerAwareCommand
 
         /** @var \projects $oProject */
         $oProject = $entityManager->getRepository('projects');
-        /** @var \Unilend\Service\ProjectManager $oProjectManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
 
         foreach ($oProject->getFastProcessStep3() as $iProjectId) {

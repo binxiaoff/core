@@ -320,7 +320,7 @@ class espace_emprunteurController extends bootstrap
                 $oProject->period                               = $_POST['duree'];
                 $oProject->create();
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $oProject);
 

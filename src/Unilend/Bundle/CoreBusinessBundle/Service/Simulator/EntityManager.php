@@ -1,5 +1,5 @@
 <?php
-namespace Unilend\Service\Simulator;
+namespace Unilend\Bundle\CoreBusinessBundle\Service\Simulator;
 
 use Unilend\core\Loader;
 use Doctrine\DBAL\Driver\Connection;

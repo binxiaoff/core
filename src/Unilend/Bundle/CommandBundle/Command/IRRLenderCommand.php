@@ -7,8 +7,8 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputArgument;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Service\IRRManager;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class IRRLenderCommand extends ContainerAwareCommand
 {
@@ -29,7 +29,7 @@ EOF
     {
         /** @var IRRManager $oIRRManager */
         $oIRRManager = $this->getContainer()->get('unilend.service.irr_manager');
-        /** @var \Unilend\Service\LenderManager $oLenderManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\LenderManager $oLenderManager */
         $oLenderManager  = $this->getContainer()->get('unilend.service.lender_manager');
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');

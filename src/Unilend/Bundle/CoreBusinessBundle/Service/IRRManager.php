@@ -1,14 +1,14 @@
 <?php
 
-namespace Unilend\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
 use Unilend\core\Loader;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
  * Class IRRManager
- * @package Unilend\Service
+ * @package Unilend\Bundle\CoreBusinessBundle\Service
  */
 class IRRManager
 {

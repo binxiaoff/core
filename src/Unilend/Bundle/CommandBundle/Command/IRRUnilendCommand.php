@@ -6,7 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
-use Unilend\Service\IRRManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\IRRManager;
 
 class IRRUnilendCommand extends ContainerAwareCommand
 {

@@ -5,7 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\Service\SalesforceManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\SalesforceManager;
 
 class SalesforceExtractionCommand extends ContainerAwareCommand
 {

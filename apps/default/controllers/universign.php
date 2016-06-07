@@ -553,7 +553,7 @@ class universignController extends bootstrap
                     $mandate = $this->loadData('clients_mandats');
                     /** @var \prelevements $directDebit */
                     $directDebit = $this->loadData('prelevements');
-                    /** @var \Unilend\Service\ProjectManager $projectManager */
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
                     $projectManager = $this->get('ProjectManager');
 
                     foreach ($aProjects as $aProject) {

@@ -6,9 +6,9 @@
  * Time: 15:47
  */
 
-namespace Unilend\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class NotificationManager
 {

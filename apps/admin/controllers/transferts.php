@@ -1220,11 +1220,11 @@ class transfertsController extends bootstrap
             if ($paymentInspectionStopped->value == 1) {
                 ini_set('memory_limit', '512M');
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('ProjectManager');
-                /** @var \Unilend\Service\MailerManager $oMailerManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
                 $oMailerManager = $this->get('MailerManager');
-                /** @var \Unilend\Service\NotificationManager $oNotificationManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $oNotificationManager */
                 $oNotificationManager = $this->get('NotificationManager');
                 /** @var \lenders_accounts $lender */
                 $lender = $this->loadData('lenders_accounts');

@@ -1,13 +1,13 @@
 <?php
-namespace Unilend\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\core\Loader;
 use Psr\Log\LoggerInterface;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
  * Class BidManager
- * @package Unilend\Service
+ * @package Unilend\Bundle\CoreBusinessBundle\Service
  */
 class BidManager
 {

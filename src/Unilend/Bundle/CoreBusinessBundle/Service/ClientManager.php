@@ -1,11 +1,11 @@
 <?php
-namespace Unilend\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
  * Class ClientManager
- * @package Unilend\Service
+ * @package Unilend\Bundle\CoreBusinessBundle\Service
  */
 
 class ClientManager

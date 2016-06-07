@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class TemplateMessageProvider
 {

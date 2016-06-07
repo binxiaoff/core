@@ -1,9 +1,9 @@
 <?php
-namespace Unilend\Service;
+namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Doctrine\DBAL\Statement;
 use Psr\Log\LoggerInterface;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class SalesforceManager
 {

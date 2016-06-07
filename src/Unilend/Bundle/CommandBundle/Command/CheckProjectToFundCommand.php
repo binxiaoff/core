@@ -7,7 +7,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckProjectToFundCommand extends ContainerAwareCommand
 {
@@ -29,7 +29,7 @@ EOF
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $oProject */
         $oProject = $oEntityManager->getRepository('projects');
-        /** @var \Unilend\Service\ProjectManager $oProjectManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;

@@ -510,7 +510,7 @@ class projectsController extends bootstrap
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction    = 1;
 
-            /** @var \Unilend\Service\ProjectManager $projectManager */
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
             $projectManager       = $this->get('unilend.service.project_manager');
             $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
             $this->meanBidAmount  = round(array_sum(array_column($this->bidsStatistics, 'amount_total')) / array_sum(array_column($this->bidsStatistics, 'nb_bids')), 2);

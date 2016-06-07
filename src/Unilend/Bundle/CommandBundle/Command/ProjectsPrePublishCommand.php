@@ -1,8 +1,8 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Unilend\Service\ProjectManager;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;

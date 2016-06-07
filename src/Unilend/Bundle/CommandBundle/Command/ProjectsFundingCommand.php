@@ -2,9 +2,9 @@
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Unilend\librairies\CacheKeys;
-use Unilend\Service\ProjectManager;
-use Unilend\Service\MailerManager;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Cache\Adapter\Memcache\MemcacheCachePool;
 use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;

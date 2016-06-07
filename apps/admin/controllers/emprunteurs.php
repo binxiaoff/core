@@ -307,7 +307,7 @@ class emprunteursController extends bootstrap
                 }
 
                 if ($sCurrentIban !== $sNewIban) {
-                    /** @var \Unilend\Service\MailerManager $oMailerManager */
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
                     $oMailerManager = $this->get('MailerManager');
                     $oMailerManager->sendIbanUpdateToStaff($this->clients->id_client, $sCurrentIban, $sNewIban);
                 }
