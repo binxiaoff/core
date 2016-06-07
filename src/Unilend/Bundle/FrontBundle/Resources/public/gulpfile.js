@@ -3,6 +3,7 @@
 var gulp = require('gulp')
 var util = require('gulp-util')
 var browserify = require('browserify')
+var browsersync = require('browser-sync').create()
 var buffer = require('vinyl-buffer')
 var compass = require('gulp-compass')
 var concat = require('gulp-concat')
@@ -22,7 +23,6 @@ var source = require('vinyl-source-stream')
 var streamify = require('gulp-streamify')
 var svgmin = require('gulp-svgmin')
 var svgstore = require('gulp-svgstore')
-var twig = require('gulp-twig')
 var uglify = require('gulp-uglify')
 var watchify = require('watchify')
 var yargs = require('yargs').argv
@@ -77,6 +77,7 @@ var configFile = yargs.configFile || false
 
 // Default configs (and loading config overrides)
 util.log(util.colors.yellow('@@@ Loading config...'))
+
 Unilend.config = deepAssign({
   // The environment
   env: env || 'dev',
@@ -89,9 +90,11 @@ Unilend.config = deepAssign({
 
   // Browser-sync server configuration
   browserSync: deepAssign({
-    server: {
-      baseDir: goodPath(yargs.serverBaseDir) || goodPath('./build/' + env)
-    }
+ //   server: {
+ //     baseDir: goodPath(yargs.serverBaseDir) || goodPath('./build/' + env)
+ //   }
+ //   proxy: 'https://dev.www.unilend.fr/'
+
   }, getJSON(goodPath(configPath + '/browserSync.json')), getJSON(goodPath(configPath + env + '/browserSync.json'))),
 
   // Watch files
@@ -100,9 +103,6 @@ Unilend.config = deepAssign({
   // Compression
   compressCss: yargs.compress || yargs.compressCss || false,
   compressJs: yargs.compress || yargs.compressJs || false,
-
-  // JSON Dictionary file (for translation)
-  dictionaryFile: goodPath(yargs.dictionaryFile) || goodPath('./src/lang/Unilend.lang.json'),
 
   // Verbose output
   //verbose: yargs.verbose || false,
@@ -128,39 +128,6 @@ Unilend.config = deepAssign({
     debug: false
   }, getJSON(goodPath(configPath + '/compass.json')), getJSON(goodPath(configPath + env + '/compass.json'))),
 
-  // Twig defaults
-  twig: deepAssign({
-    // The base path where Twig files are located. Referenced by Twig's `import` and `extends` methods
-    base: goodPath('./src/twig'),
-
-    // Data used within Twig templates
-    data: {
-      env: env,
-      // The lang to build HTML files as
-      lang: yargs.htmlLang || 'fr',
-
-      // Site options
-      site: {
-        // Site base HTTP URL
-        base: '/',
-
-        // AJAX base HTTP URL
-        ajax: '/',
-
-        // Site assets HTTP URLs: where css, js, and media assets are located
-        // (no trailing slash)
-        assets: {
-          base: '/',
-          css: '/css/',
-          js: '/js/',
-          media: '/media/'
-        }
-      }
-
-      // There are a lot more variables to reference here and within twig.json
-      // See config/twig.example.json for all possible values
-    }
-  }, getJSON(goodPath(configPath + '/twig.json')), getJSON(goodPath(configPath + env + '/twig.json')))
 }, getJSON(goodPath(configPath + '/config.json')), getJSON(goodPath(configPath + env + '/config.json')))
 
 // Load in the additional config file
@@ -360,6 +327,11 @@ var cssTasks = lazypipe()
     // Move to dest CSS folder
     .pipe(gulp.dest, getDest('css'))
 
+    // Update browsersync
+    .pipe(function() {
+      return _if(config.watchFiles, browsersync.stream())
+    })
+
 /*
  * General HTML tasks
  */
@@ -368,7 +340,7 @@ var htmlTasks = lazypipe()
     .pipe(gulp.dest, getDest())
 
 // Concat CSS dependencies into a single file
-// @note Only reference files which don't have further assets (images, fonts, etc.). Put those into the `./src/js/vendor` folder and reference within the `./src/twig/layouts/_layout.twig` file
+// @note Only reference files which don't have further assets (images, fonts, etc.).
 gulp.task('cssdependencies', function () {
   return gulp.src([//getSrc('')
   ])
@@ -456,8 +428,13 @@ gulp.task('scss', function () {
 })
 
 // Watch Files
-gulp.task('watchfiles', function () {
+gulp.task('watchfiles', /*['browsersync'],*/ function () {
   if (config.watchFiles) {
     gulp.watch(getSrc('sass/**/*.scss'), ['scss'])
   }
 })
+
+// Web Server || have to find a way to suit with vagrant VM
+//gulp.task('browsersync', ['build'], function () {
+//  browsersync.init(config.browserSync)
+//})
