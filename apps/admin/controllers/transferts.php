@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\librairies\ULogger;
+use Psr\Log\LoggerInterface;
 
 class transfertsController extends bootstrap
 {
@@ -1210,9 +1210,9 @@ class transfertsController extends bootstrap
             $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
             $proxy->update();
 
-            $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers.log');
-
-            $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $_POST['id_project'] . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+            /** @var LoggerInterface $oLogger */
+            $oLogger = $this->get('logger');
+            $oLogger->info('Checking refund status for id_poject=' . $_POST['id_project'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $_POST['id_project']));
 
             $paymentInspectionStopped = $this->loadData('settings');
             $paymentInspectionStopped->get('Controle statut remboursement', 'type');
@@ -1386,8 +1386,7 @@ class transfertsController extends bootstrap
 
                 $paymentInspectionStopped->value = 1;
                 $paymentInspectionStopped->update();
-
-                $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement est bien passe pour le projet : ' . $projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+                $oLogger->info('Check refund status done for id_project=' . $projects->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects->id_project));
             } else {
                 $_SESSION['freeow']['title']   = 'Erreur de remboursement';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';

@@ -3,11 +3,11 @@
 use PhpXmlRpc\Client;
 use PhpXmlRpc\Request;
 use PhpXmlRpc\Value;
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class universignController extends bootstrap
 {
-    /** @var  Logger*/
+    /** @var  LoggerInterface*/
     private $oLogger;
 
     public function initialize()

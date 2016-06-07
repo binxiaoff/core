@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -32,7 +32,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
         $oBankUnilend = $entityManager->getRepository('bank_unilend');
         /** @var \lenders_accounts $oLendersAccounts */
         $oLendersAccounts = $entityManager->getRepository('lenders_accounts');
-        /** @var Logger $logger */
+        /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
 
         $oSettings->get('Durée validité Offre de bienvenue', 'type');

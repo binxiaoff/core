@@ -1,6 +1,7 @@
 <?php
 namespace Unilend\Service;
 
+use Psr\Log\LoggerInterface;
 use Unilend\core\Loader;
 use \Symfony\Bridge\Monolog\Logger;
 use Unilend\Service\Simulator\EntityManager;
@@ -19,7 +20,7 @@ class ProjectManager
     /** @var \dates */
     private $oDate;
 
-    /** @var Logger */
+    /** @var LoggerInterface */
     private $oLogger;
 
     /** @var BidManager */
@@ -61,9 +62,9 @@ class ProjectManager
     }
 
     /**
-     * @param Logger $oLogger
+     * @param LoggerInterface $oLogger
      */
-    public function setLogger(Logger $oLogger)
+    public function setLogger(LoggerInterface $oLogger)
     {
         $this->oLogger = $oLogger;
     }
@@ -170,7 +171,7 @@ class ProjectManager
             $oBidLog->fin             = date('Y-m-d H:i:s');
             $oBidLog->create();
         }
-        if ($this->oLogger instanceof Logger) {
+        if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info('id_project=' . $oProject->id_project . ' Check bid info: ' . var_export($aLogContext), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
     }
@@ -262,7 +263,7 @@ class ProjectManager
         $this->reBidAutoBidDeeply($oProject, BidManager::MODE_REBID_AUTO_BID_CREATE, true);
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
-        if ($this->oLogger instanceof Logger) {
+        if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info('id_project=' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
@@ -271,7 +272,7 @@ class ProjectManager
 
         $iBidNbTotal   = count($aBidList);
         $iTreatedBitNb = 0;
-        if ($this->oLogger instanceof Logger) {
+        if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . ' bids in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
         foreach ($aBidList as $aBid) {
@@ -286,7 +287,7 @@ class ProjectManager
                     $oBid->status = \bids::STATUS_BID_ACCEPTED;
                     $oBid->update();
                 }
-                if ($this->oLogger instanceof Logger) {
+                if ($this->oLogger instanceof LoggerInterface) {
                     $this->oLogger->info('id_project=' . $oProject->id_project . ' : The bid (' . $aBid['id_bid'] . ') status has been updated to 1', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
             } else { // Pour les encheres qui depassent on rend l'argent
@@ -294,7 +295,7 @@ class ProjectManager
                 $this->oBidManager->reject($oBid, true);
             }
             $iTreatedBitNb++;
-            if ($this->oLogger instanceof Logger) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
@@ -387,7 +388,7 @@ class ProjectManager
         $iBidNbTotal   = count($aBidList);
         $iTreatedBitNb = 0;
 
-        if ($this->oLogger instanceof Logger) {
+        if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . 'bids in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
@@ -395,7 +396,7 @@ class ProjectManager
             $oBid->get($aBid['id_bid'], 'id_bid');
             $this->oBidManager->reject($oBid, true);
             $iTreatedBitNb++;
-            if ($this->oLogger instanceof Logger) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
@@ -456,7 +457,7 @@ class ProjectManager
 
             $iLoanNbTotal   = count($lLoans);
             $iTreatedLoanNb = 0;
-            if ($this->oLogger instanceof Logger) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iLoanNbTotal . ' in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
 
@@ -587,7 +588,7 @@ class ProjectManager
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);
 
                 $iTreatedLoanNb++;
-                if ($this->oLogger instanceof Logger) {
+                if ($this->oLogger instanceof LoggerInterface) {
                     $this->oLogger->info(
                         'id_project=' . $oProject->id_project . ' : ' . $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated. ' . $k . ' repayment schedules created',
                         array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
@@ -621,7 +622,7 @@ class ProjectManager
         $iPaymentsNbTotal  = count($aPaymentList);
         $iTreatedPaymentNb = 0;
 
-        if ($this->oLogger instanceof Logger) {
+        if ($this->oLogger instanceof LoggerInterface) {
             $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iPaymentsNbTotal . ' in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
@@ -644,7 +645,7 @@ class ProjectManager
             $oPaymentSchedule->create();
 
             $iTreatedPaymentNb++;
-            if ($this->oLogger instanceof Logger) {
+            if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->info(
                     'id_project=' . $oProject->id_project . ' : borrower echeance (' . $oPaymentSchedule->id_echeancier_emprunteur . ') has been created. ' . $iTreatedPaymentNb . '/' . $iPaymentsNbTotal . 'traited',
                     array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)

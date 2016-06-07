@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -37,7 +37,7 @@ EOF
         $oLendersAccountsStats = $entityManager->getRepository('lenders_account_stats');
         /** @var /lenders_accounts_stats_queue $oLendersAccountsStatsQueue */
         $oLendersAccountsStatsQueue = $entityManager->getRepository('lenders_accounts_stats_queue');
-        /** @var Logger $logger */
+        /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         $oIRRManager->setLogger($logger);
 

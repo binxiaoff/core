@@ -1,6 +1,6 @@
 <?php
 
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Unilend\librairies\greenPoint\greenPoint;
 use Unilend\librairies\greenPoint\greenPointStatus;
 
@@ -26,7 +26,7 @@ class cronController extends bootstrap
      */
     private $oSemaphore;
 
-    /** @var  Logger */
+    /** @var  LoggerInterface */
     private $oLogger;
 
     public function initialize()

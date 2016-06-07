@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
+use Psr\Log\LoggerInterface;
 
 class depot_de_dossierController extends bootstrap
 {
@@ -120,7 +121,7 @@ class depot_de_dossierController extends bootstrap
 
         $this->settings->get('Altares email alertes', 'type');
         $sAlertEmail = $this->settings->value;
-        /** @var Logger $oLogger */
+        /** @var LoggerInterface $oLogger */
         $oLogger = $this->get('logger');
         try {
             $oAltares = new Altares();

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -39,7 +39,7 @@ class EmailLenderDailySummaryCommand extends ContainerAwareCommand
 
         /** @var MailerManager $mailerManager */
         $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
-        /** @var Logger $logger */
+        /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         $mailerManager->setLogger($logger);
 

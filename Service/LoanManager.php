@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Service;
 
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Unilend\Service\Simulator\EntityManager;
 
 /**
@@ -10,7 +10,7 @@ use Unilend\Service\Simulator\EntityManager;
  */
 class LoanManager
 {
-    /** @var  Logger */
+    /** @var  LoggerInterface */
     private $oLogger;
     /** @var EntityManager  */
     private $oEntityManager;
@@ -20,9 +20,9 @@ class LoanManager
         $this->oEntityManager = $oEntityManager;
     }
     /**
-     * @param Logger $oLogger
+     * @param LoggerInterface $oLogger
      */
-    public function setLogger(Logger $oLogger)
+    public function setLogger(LoggerInterface $oLogger)
     {
         $this->oLogger = $oLogger;
     }
@@ -47,7 +47,7 @@ class LoanManager
             $oAcceptedBid->amount  = $aAcceptedBid['amount'] * 100;
             $oAcceptedBid->create();
 
-            if ($oAcceptedBid->id_accepted_bid > 0 && $this->oLogger instanceof Logger) {
+            if ($oAcceptedBid->id_accepted_bid > 0 && $this->oLogger instanceof LoggerInterface) {
                 switch ($oLoan->id_type_contract) {
                     case \loans::TYPE_CONTRACT_BDC:
                         $sType = 'BDC';

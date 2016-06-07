@@ -3,7 +3,6 @@
 namespace Unilend\Service;
 
 use Psr\Log\LoggerInterface;
-use Symfony\Bridge\Monolog\Logger;
 use Unilend\core\Loader;
 use Unilend\Service\Simulator\EntityManager;
 
@@ -32,9 +31,9 @@ class IRRManager
     }
 
     /**
-     * @param Logger $oLogger
+     * @param LoggerInterface $oLogger
      */
-    public function setLogger(Logger $oLogger)
+    public function setLogger(LoggerInterface $oLogger)
     {
         $this->oLogger = $oLogger;
     }

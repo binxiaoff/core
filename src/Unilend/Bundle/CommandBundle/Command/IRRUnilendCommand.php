@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -21,7 +21,7 @@ class IRRUnilendCommand extends ContainerAwareCommand
     {
         /** @var IRRManager $oIRRManager */
         $oIRRManager = $this->getContainer()->get('unilend.service.irr_manager');
-        /** @var Logger $logger */
+        /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         $oIRRManager->setLogger($logger);
 

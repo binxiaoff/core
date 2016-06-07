@@ -1,7 +1,7 @@
 <?php
 
 use Knp\Snappy\Pdf;
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 
 class pdfController extends bootstrap
 {
@@ -20,7 +20,7 @@ class pdfController extends bootstrap
      */
     private $oSnapPdf;
 
-    /** @var  Logger */
+    /** @var  LoggerInterface */
     private $oLogger;
 
     /**

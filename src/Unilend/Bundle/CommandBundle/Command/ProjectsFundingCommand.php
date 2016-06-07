@@ -6,7 +6,7 @@ use Unilend\Service\ProjectManager;
 use Unilend\Service\MailerManager;
 use Unilend\Service\Simulator\EntityManager;
 use Cache\Adapter\Memcache\MemcacheCachePool;
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -28,7 +28,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var MailerManager $mailerManager */
         $mailerManager = $this->getContainer()->get('unilend.service.email_manager');
-        /** @var Logger $logger */
+        /** @var LoggerInterface $logger */
         $logger = $this->getContainer()->get('monolog.logger.console');
         /** @var ProjectManager $projectManager */
         $projectManager = $this->getContainer()->get('unilend.service.project_manager');
