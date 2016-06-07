@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -11,9 +11,6 @@ use Unilend\Service\Simulator\EntityManager;
 
 class CheckProjectToFundCommand extends ContainerAwareCommand
 {
-    /** @var  string $sftpPath*/
-    private $sftpPath;
-
     protected function configure()
     {
         $this
@@ -28,8 +25,6 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $this->sftpPath  = $this->getContainer()->getParameter('path.sftp');
-
         /** @var EntityManager $oEntityManager */
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $oProject */
@@ -59,7 +54,7 @@ EOF
     /**
      * @param \projects
      */
-    private function zipProjectAttachments(\projects $projects)
+    private function zipProjectAttachments(\projects $project)
     {
         /** @var EntityManager $oEntityManager */
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
@@ -70,10 +65,10 @@ EOF
         /** @var \attachment_type $oAttachmentType */
         $oAttachmentType = $oEntityManager->getRepository('attachment_type');
 
-        $companies->get($projects->id_company, 'id_company');
+        $companies->get($project->id_company, 'id_company');
 
-        $sPathNoZip = $this->sftpPath . 'groupama_nozip/';
-        $sPath      = $this->sftpPath . 'groupama/';
+        $sPathNoZip = $this->getContainer()->getParameter('path.sftp') . 'groupama_nozip/';
+        $sPath      = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
 
         if (false === is_dir($sPath)) {
             mkdir($sPath);
@@ -88,8 +83,8 @@ EOF
         }
 
         /** @var \attachment_helper $oAttachmentHelper */
-        $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->sftpPath));
-        $aAttachments      = $projects->getAttachments();
+        $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->getContainer()->getParameter('path.sftp')));
+        $aAttachments      = $project->getAttachments();
 
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
@@ -135,7 +130,7 @@ EOF
 
     private function deleteOldFiles()
     {
-        $path     = $this->sftpPath . 'groupama/';
+        $path     = $this->getContainer()->getParameter('path.sftp') . 'groupama/';
         $duration = 30; // jours
         $aFiles   = scandir($path);
         unset($aFiles[0], $aFiles[1]);
@@ -151,9 +146,9 @@ EOF
     }
 
     /**
-     * @param \projects $projects
+     * @param \projects $project
      */
-    private function sendNewProjectEmail(\projects $projects)
+    private function sendNewProjectEmail(\projects $project)
     {
         /** @var EntityManager $oEntityManager */
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
@@ -177,11 +172,11 @@ EOF
             $this->getContainer()->getParameter('router.request_context.host');
         $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
 
-        /** @var Logger $oLogger */
+        /** @var LoggerInterface $oLogger */
         $oLogger = $this->getContainer()->get('monolog.logger.console');
-        $oLogger->info('Send email for Project ID: ' . $projects->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects->id_project));
+        $oLogger->info('Send email for Project ID: ' . $project->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
-        $companies->get($projects->id_company, 'id_company');
+        $companies->get($project->id_company, 'id_company');
         $settings->get('Facebook', 'type');
         $sFacebookLink = $settings->value;
         $settings->get('Twitter', 'type');
@@ -191,9 +186,9 @@ EOF
             'surl'            => $sStaticUrl,
             'url'             => $sUrl,
             'nom_entreprise'  => $companies->name,
-            'projet-p'        => $sUrl . '/projects/detail/' . $projects->slug,
-            'montant'         => $ficelle->formatNumber($projects->amount, 0),
-            'duree'           => $projects->period,
+            'projet-p'        => $sUrl . '/projects/detail/' . $project->slug,
+            'montant'         => $ficelle->formatNumber($project->amount, 0),
+            'duree'           => $project->period,
             'gestion_alertes' => $sUrl . '/profile',
             'lien_fb'         => $sFacebookLink,
             'lien_tw'         => $sTwitterLink
@@ -206,19 +201,19 @@ EOF
             $iEmails = 0;
             $iOffset += $iLimit;
 
-            $oLogger->info('Lenders retrieved: ' . count($aLenders), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects->id_project));
+            $oLogger->info('Lenders retrieved: ' . count($aLenders), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
             foreach ($aLenders as $aLender) {
                 $notifications->type       = \notifications::TYPE_NEW_PROJECT;
                 $notifications->id_lender  = $aLender['id_lender'];
-                $notifications->id_project = $projects->id_project;
+                $notifications->id_project = $project->id_project;
                 $notifications->create();
 
                 $clients_gestion_mails_notif->id_client       = $aLender['id_client'];
                 $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
                 $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                $clients_gestion_mails_notif->id_project      = $projects->id_project;
-                $clients_gestion_mails_notif->date_notif      = $projects->date_publication_full;
+                $clients_gestion_mails_notif->id_project      = $project->id_project;
+                $clients_gestion_mails_notif->date_notif      = $project->date_publication_full;
 
                 if ($clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
                     $clients_gestion_mails_notif->immediatement = 1;
