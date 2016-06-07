@@ -83,6 +83,9 @@
         <service id="unilend.command.lender_repayment" class="Unilend\Bundle\CommandBundle\Command\AutomaticLenderRepaymentCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.email_lender_completeness_reminder" class="Unilend\Bundle\CommandBundle\Command\EmailLenderCompletenessReminderCommand">
+            <tag name="console.command"/>
+        </service>
         <service id="unilend.command.check_welcome_offer_validity" class="Unilend\Bundle\CommandBundle\Command\CheckWelcomeOfferValidityCommand">
             <tag name="console.command"/>
         </service>
@@ -92,7 +95,7 @@
         <service id="unilend.command.check_payline" class="Unilend\Bundle\CommandBundle\Command\CheckPaylineMoneyTransfersCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.email_lender_completeness_reminder" class="Unilend\Bundle\CommandBundle\Command\EmailLenderCompletenessReminderCommand">
+        <service id="unilend.command.check_borrower_debit" class="Unilend\Bundle\CommandBundle\Command\CheckBorrowerDebitCommand">
             <tag name="console.command"/>
         </service>
     </services>

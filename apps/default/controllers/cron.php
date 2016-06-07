@@ -1454,46 +1454,6 @@ class cronController extends bootstrap
         }
     }
 
-    // Une fois par jour (crée le 27/04/2015)
-    public function _check_prelevements_emprunteurs()
-    {
-        $echeanciers = $this->loadData('echeanciers');
-        $projects    = $this->loadData('projects');
-
-        $liste       = $echeanciers->selectEcheanciersByprojetEtOrdre(); // <--- a rajouter en prod
-        $liste_remb  = '';
-        foreach ($liste as $l) {
-            $projects->get($l['id_project'], 'id_project');
-            $liste_remb .= '
-                <tr>
-                    <td>' . $l['id_project'] . '</td>
-                    <td>' . $projects->title_bo . '</td>
-                    <td>' . $l['ordre'] . '</td>
-                    <td>' . $l['date_echeance'] . '</td>
-
-                    <td>' . $l['date_echeance_emprunteur'] . '</td>
-                    <td>' . $l['date_echeance_emprunteur_reel'] . '</td>
-                    <td>' . ((int) $l['status_emprunteur'] === 1 ? 'Oui' : 'Non') . '</td>
-                </tr>';
-        }
-
-        $varMail = array(
-            '$surl'       => $this->surl,
-            '$liste_remb' => $liste_remb
-        );
-
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
-        $oSettings->get('Adresse notification check remb preteurs', 'type');
-        $destinataire = $oSettings->value;
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-prelevement-emprunteur', $varMail, false);
-        $message->setTo($destinataire);
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
-    }
-
     public function _check_remboursement_preteurs()
     {
         $oRepayment = $this->loadData('echeanciers');
@@ -1818,7 +1778,7 @@ class cronController extends bootstrap
             }
         }
     }
-    
+
     // Passe toutes les 5 minutes la nuit de 3h à 4h
     // copie données table -> enregistrement table backup -> suppression données table
     public function _stabilisation_mails()
