@@ -8,7 +8,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\core\Loader;
 
-class GenerateLoanContract extends ContainerAwareCommand
+class GenerateLoanContractCommand extends ContainerAwareCommand
 {
     /** @var string */
     private $sRootPath;

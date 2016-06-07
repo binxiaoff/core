@@ -16,7 +16,7 @@
         <service id="unilend.command.projects_funding" class="Unilend\Bundle\CommandBundle\Command\ProjectsFundingCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.loan_contract" class="Unilend\Bundle\CommandBundle\Command\GenerateLoanContract">
+        <service id="unilend.command.loan_contract" class="Unilend\Bundle\CommandBundle\Command\GenerateLoanContractCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.projects.early_refund_email" class="Unilend\Bundle\CommandBundle\Command\ProjectsEarlyRefundEmailCommand">
