@@ -19,8 +19,6 @@ class IRRUnilendCommand extends ContainerAwareCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        set_time_limit(1000);
-
         /** @var IRRManager $oIRRManager */
         $oIRRManager = $this->getContainer()->get('unilend.service.irr_manager');
         /** @var Logger $logger */

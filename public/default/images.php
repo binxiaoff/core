@@ -36,7 +36,7 @@ try {
         throw new ResizableImageException('Unknown image type');
     }
 
-    $sStaticPath      = $kernel->getContainer()->getParameter('static_path');
+    $sStaticPath      = $kernel->getContainer()->getParameter('path.static');
     $sImageType       = $aMatches[1];
     $iImageHeight     = $aMatches[2];
     $iImageWidth      = round($iImageHeight * $config[$sImageType]['width'] / $config[$sImageType]['height']);

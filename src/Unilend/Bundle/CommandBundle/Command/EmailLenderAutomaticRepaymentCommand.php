@@ -1,5 +1,4 @@
 <?php
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -8,7 +7,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Service\Simulator\EntityManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
-
 
 class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 {
@@ -101,8 +99,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                         $sFB      = $settings->value;
                         $settings->get('Twitter', 'type');
                         $sTwitter = $settings->value;
-                        $aConfig  = Loader::loadConfig();
-                        $sUrl     = $aConfig['url'][$aConfig['env']]['default'];
+                        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
 
                         $varMail = array(
                             'surl'                  => $sUrl,

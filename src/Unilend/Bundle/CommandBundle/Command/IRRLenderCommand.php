@@ -1,6 +1,4 @@
 <?php
-
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bridge\Monolog\Logger;
@@ -11,7 +9,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Unilend\Bridge\Doctrine\DBAL\Connection;
 use Unilend\Service\IRRManager;
 use Unilend\Service\Simulator\EntityManager;
-
 
 class IRRLenderCommand extends ContainerAwareCommand
 {
@@ -30,8 +27,6 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        set_time_limit(2000);
-
         /** @var IRRManager $oIRRManager */
         $oIRRManager = $this->getContainer()->get('unilend.service.irr_manager');
         /** @var \Unilend\Service\LenderManager $oLenderManager */
@@ -89,5 +84,4 @@ EOF
         $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
         $bdd->query('TRUNCATE projects_last_status_history_materialized');
     }
-
 }

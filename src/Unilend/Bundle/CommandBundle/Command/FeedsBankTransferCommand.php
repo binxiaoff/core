@@ -8,20 +8,6 @@ use Unilend\Service\Simulator\EntityManager;
 
 class FeedsBankTransferCommand extends ContainerAwareCommand
 {
-    /** @var string */
-    private $sftpPath;
-
-    /**
-     * BankTransferCommand constructor.
-     * @param string $sftpPath
-     */
-    public function __construct($sftpPath)
-    {
-        $this->sftpPath = $sftpPath;
-
-        parent::__construct();
-    }
-
     /**
      * @see Command
      */
@@ -198,7 +184,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 </Document>';
 
         if (false === empty($pendingBankTransfers)) {
-            file_put_contents($this->sftpPath . 'sfpmei/virements/Unilend_Virements_' . $date . '.xml', $xml);
+            file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/virements/Unilend_Virements_' . $date . '.xml', $xml);
         }
     }
 }

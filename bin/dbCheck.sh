@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+#read -s -p "MySQL password:" PASSWORD
+PASSWORD="ROOTPASSWORD"
+
+echo "[client]
+user = root
+password = $PASSWORD" > my.cnf
+
+MYSQL="mysql --defaults-extra-file=./my.cnf unilend -Nbe"
+TABLES=`$MYSQL "SHOW TABLES LIKE '%project%';"`
+
+printf "\nTable\tNumber of lines\tAUTO_INCREMENT\tCollation\nChamps non UTF-8\nVARCHAR > 191\n"
+for TABLE in $TABLES
+do
+    printf "%s\t%s\t%s\t%s\n"\
+        $TABLE\
+        `$MYSQL "SELECT COUNT(*) FROM $TABLE;"`\
+        `$MYSQL "SELECT IFNULL(AUTO_INCREMENT, '0') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'unilend' AND TABLE_NAME = '$TABLE';"`\
+        `$MYSQL "SELECT IFNULL(TABLE_COLLATION, '') FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA = 'unilend' AND TABLE_NAME = '$TABLE';"`\
+        `$MYSQL "SELECT IFNULL((SELECT GROUP_CONCAT(COLUMN_NAME)), '') FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'unilend' AND TABLE_NAME = '$TABLE' AND COLLATION_NAME != 'utf8mb4_unicode_ci' GROUP BY TABLE_NAME;"`\
+        `$MYSQL "SELECT IFNULL((SELECT GROUP_CONCAT(COLUMN_NAME)), '') FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = 'unilend' AND TABLE_NAME = '$TABLE' AND DATA_TYPE = 'varchar' AND CHARACTER_MAXIMUM_LENGTH > 191 GROUP BY TABLE_NAME;"`
+done
+
+rm my.cnf
