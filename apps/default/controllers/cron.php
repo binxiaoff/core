@@ -1,6 +1,6 @@
 <?php
 
-use Unilend\librairies\Cache;
+use Unilend\librairies\CacheKeys;
 use Symfony\Bridge\Monolog\Logger;
 use Unilend\librairies\greenPoint\greenPoint;
 use Unilend\librairies\greenPoint\greenPointStatus;
@@ -93,41 +93,6 @@ class cronController extends bootstrap
     public function _default()
     {
         die;
-    }
-    // toutes les minute on check //
-    // on regarde si il y a des projets au statut "a funder" et on les passe en statut "en funding"
-    public function _check_projet_a_funder()
-    {
-        if (true === $this->startCron('check_projet_a_funder', 5)) {
-            ini_set('max_execution_time', '300');
-            ini_set('memory_limit', '1G');
-
-            /** @var \projects $oProject */
-            $oProject = $this->loadData('projects');
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('unilend.service.project_manager');
-
-            $bHasProjectPublished = false;
-            $aProjectToFund       = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
-
-            foreach ($aProjectToFund as $aProject) {
-                if ($oProject->get($aProject['id_project'])) {
-                    $bHasProjectPublished = true;
-
-                   $oProjectManager->publish($oProject);
-
-                    $this->zippage($oProject->id_project);
-                    $this->sendNewProjectEmail($oProject);
-                }
-            }
-
-            if ($bHasProjectPublished) {
-                $oCachePool    = $this->get('memcache.default');
-                $oCachePool->deleteItem(Cache::LIST_PROJECTS . '_' . $this->tabProjectDisplay);
-            }
-
-            $this->stopCron();
-        }
     }
 
     // check les statuts remb
@@ -1705,7 +1670,7 @@ class cronController extends bootstrap
             }
         }
     }
-    
+
     // Passe toutes les 5 minutes la nuit de 3h à 4h
     // copie données table -> enregistrement table backup -> suppression données table
     public function _stabilisation_mails()
@@ -1752,76 +1717,6 @@ class cronController extends bootstrap
 
             $this->stopCron();
         }
-    }
-
-    private function deleteOldFichiers()
-    {
-        $path  = $this->path . 'protected/sftp_groupama/';
-        $duree = 30; // jours
-        // On parcourt le dossier
-        $fichiers = scandir($path);
-        unset($fichiers[0], $fichiers[1]);
-        foreach ($fichiers as $f) {
-            $le_fichier = $path . $f;
-
-            $time            = filemtime($le_fichier);
-            $time_plus_duree = mktime(date("H", $time), date("i", $time), date("s", $time), date("n", $time), date("d", $time) + $duree, date("Y", $time));
-
-            // si la date du jour est superieur à la date du fichier plus n jours => on supprime
-            if (time() >= $time_plus_duree) {
-                unlink($le_fichier);
-            }
-        }
-    }
-
-    private function zippage($id_project)
-    {
-        $projects        = $this->loadData('projects');
-        $companies       = $this->loadData('companies');
-        $oAttachment     = $this->loadData('attachment');
-        $oAttachmentType = $this->loadData('attachment_type');
-
-        $projects->get($id_project, 'id_project');
-        $companies->get($projects->id_company, 'id_company');
-
-        $sPathNoZip = $this->path . 'protected/sftp_groupama_nozip/';
-        $sPath      = $this->path . 'protected/sftp_groupama/';
-
-        if (!is_dir($sPathNoZip . $companies->siren)) {
-            mkdir($sPathNoZip . $companies->siren);
-        }
-
-        /** @var attachment_helper $oAttachmentHelper */
-        $oAttachmentHelper = $this->loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->path));
-        $aAttachments      = $projects->getAttachments();
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::KBIS, 'KBIS-#', $companies->siren, $sPathNoZip);
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_1, 'CNI-25-1-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_1, 'CNI-25-1-VERSO-#', $companies->siren, $sPathNoZip);
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_2, 'CNI-25-2-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_2, 'CNI-25-2-VERSO-#', $companies->siren, $sPathNoZip);
-
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_3, 'CNI-25-3-#', $companies->siren, $sPathNoZip);
-        $this->copyAttachment($oAttachmentHelper, $aAttachments, attachment_type::CNI_BENEFICIAIRE_EFFECTIF_VERSO_3, 'CNI-25-3-VERSO-#', $companies->siren, $sPathNoZip);
-
-        $zip = new ZipArchive();
-        if (is_dir($sPathNoZip . $companies->siren)) {
-            if ($zip->open($sPath . $companies->siren . '.zip', ZipArchive::CREATE) == true) {
-                $fichiers = scandir($sPathNoZip . $companies->siren);
-                unset($fichiers[0], $fichiers[1]);
-                foreach ($fichiers as $f) {
-                    $zip->addFile($sPathNoZip . $companies->siren . '/' . $f, $f);
-                }
-                $zip->close();
-            }
-        }
-
-        $this->deleteOldFichiers();
     }
 
     private function copyAttachment($oAttachmentHelper, $aAttachments, $sAttachmentType, $sPrefix, $sSiren, $sPathNoZip)

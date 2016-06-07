@@ -5,14 +5,14 @@ use Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\librairies\Cache;
+use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Service\Simulator\EntityManager;
 
 class CheckProjectToFundCommand extends ContainerAwareCommand
 {
-    private $sRootPath;
-    private $aConfig;
+    /** @var  string $sftpPath*/
+    private $sftpPath;
 
     protected function configure()
     {
@@ -28,9 +28,7 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $sRootDir        = $this->getContainer()->getParameter('kernel.root_dir');
-        $this->sRootPath = $sRootDir . '/../';
-        $this->aConfig   = Loader::loadConfig();
+        $this->sftpPath  = $this->getContainer()->getParameter('path.sftp');
 
         /** @var EntityManager $oEntityManager */
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
@@ -54,8 +52,7 @@ EOF
         if ($bHasProjectPublished) {
             /** @var \Cache\Adapter\Memcache\MemcacheCachePool $oCachePool */
             $oCachePool = $this->getContainer()->get('memcache.default');
-            /** @todo Decide on the New maneer to manage Cache in controller side */
-            $oCachePool->deleteItem(Cache::LIST_PROJECTS . '_' . \projects_status::EN_FUNDING);
+            $oCachePool->deleteItem(CacheKeys::LIST_PROJECTS);
         }
     }
 
@@ -75,8 +72,8 @@ EOF
 
         $companies->get($projects->id_company, 'id_company');
 
-        $sPathNoZip = $this->sRootPath . 'protected/sftp_groupama_nozip/';
-        $sPath      = $this->sRootPath . 'protected/sftp_groupama/';
+        $sPathNoZip = $this->sftpPath . 'groupama_nozip/';
+        $sPath      = $this->sftpPath . 'groupama/';
 
         if (false === is_dir($sPath)) {
             mkdir($sPath);
@@ -91,7 +88,7 @@ EOF
         }
 
         /** @var \attachment_helper $oAttachmentHelper */
-        $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->sRootPath));
+        $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->sftpPath));
         $aAttachments      = $projects->getAttachments();
 
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
@@ -138,7 +135,7 @@ EOF
 
     private function deleteOldFiles()
     {
-        $path     = $this->sRootPath . 'protected/sftp_groupama/';
+        $path     = $this->sftpPath . 'groupama/';
         $duration = 30; // jours
         $aFiles   = scandir($path);
         unset($aFiles[0], $aFiles[1]);
@@ -176,25 +173,28 @@ EOF
         /** @var \settings $settings */
         $settings = $oEntityManager->getRepository('settings');
 
+        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
+            $this->getContainer()->getParameter('router.request_context.host');
+        $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
+
         /** @var Logger $oLogger */
         $oLogger = $this->getContainer()->get('monolog.logger.console');
         $oLogger->info('Send email for Project ID: ' . $projects->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects->id_project));
 
         $companies->get($projects->id_company, 'id_company');
-        $env = $this->aConfig['env'];
         $settings->get('Facebook', 'type');
         $sFacebookLink = $settings->value;
         $settings->get('Twitter', 'type');
         $sTwitterLink = $settings->value;
 
         $varMail = array(
-            'surl'            => $this->aConfig['url'][$env]['default'],
-            'url'             => $this->aConfig['url'][$env]['default'],
+            'surl'            => $sStaticUrl,
+            'url'             => $sUrl,
             'nom_entreprise'  => $companies->name,
-            'projet-p'        => $this->aConfig['url'][$env]['default'] . '/projects/detail/' . $projects->slug,
+            'projet-p'        => $sUrl . '/projects/detail/' . $projects->slug,
             'montant'         => $ficelle->formatNumber($projects->amount, 0),
             'duree'           => $projects->period,
-            'gestion_alertes' => $this->aConfig['url'][$env]['default'] . '/profile',
+            'gestion_alertes' => $sUrl . '/profile',
             'lien_fb'         => $sFacebookLink,
             'lien_tw'         => $sTwitterLink
         );

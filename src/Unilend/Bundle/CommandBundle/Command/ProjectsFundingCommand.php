@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Unilend\librairies\Cache;
+use Unilend\librairies\CacheKeys;
 use Unilend\Service\ProjectManager;
 use Unilend\Service\MailerManager;
 use Unilend\Service\Simulator\EntityManager;
@@ -86,7 +86,7 @@ class ProjectsFundingCommand extends ContainerAwareCommand
         if ($hasProjectFinished) {
             /** @var MemcacheCachePool $cachePool */
             $cachePool = $this->getContainer()->get('memcache.default');
-            $cachePool->deleteItem(Cache::LIST_PROJECTS);
+            $cachePool->deleteItem(CacheKeys::LIST_PROJECTS);
         }
     }
 }
