@@ -914,7 +914,7 @@ class depot_de_dossierController extends bootstrap
     {
         /** @var \mail_templates $oMailTemplate */
         $oMailTemplate = $this->loadData('mail_templates');
-        $oMailTemplate->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+        $oMailTemplate->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         $aVariables = array(
             'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
@@ -944,7 +944,7 @@ class depot_de_dossierController extends bootstrap
             $this->users->get($this->projects->id_commercial, 'id_user');
 
             $oMailTemplate = $this->loadData('mail_templates');
-            $oMailTemplate->get($sEmailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+            $oMailTemplate->get($sEmailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,

@@ -86,8 +86,8 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             $keywords = [
                 'surl'               => $staticUrl,
                 'url'                => $frontUrl,
-                'prenom'             => htmlentities($client->prenom, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
-                'raison_sociale'     => htmlentities($company->name, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
+                'prenom'             => $client->prenom,
+                'raison_sociale'     => $company->name,
                 'montant'            => $ficelle->formatNumber($project->amount, 0),
                 'nb_preteurs'        => count($projectLenders),
                 'duree'              => $project->period,

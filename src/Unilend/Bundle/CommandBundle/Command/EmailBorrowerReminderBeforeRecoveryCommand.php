@@ -50,7 +50,7 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
             /** @var \settings $settings */
             $settings = $entityManger->getRepository('settings');
 
-            $mailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->getContainer()->getParameter('locale') . '" AND type');
+            $mailTemplate->get('emprunteur-projet-statut-probleme-j-x-avant-prochaine-echeance', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getContainer()->getParameter('locale') . '" AND type');
 
             $settings->get('Virement - BIC', 'type');
             $bic = $settings->value;
