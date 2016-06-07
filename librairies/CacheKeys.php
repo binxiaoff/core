@@ -6,7 +6,7 @@ namespace Unilend\librairies;
  * Class Cache
  * @package Unilend\librairies
  */
-class CacheKeys extends \Memcache
+class CacheKeys
 {
     const SHORT_TIME  = 300;
     const MEDIUM_TIME = 1800;
