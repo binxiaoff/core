@@ -1197,44 +1197,7 @@ class cronController extends bootstrap
             $this->stopCron();
         }
     }
-
-    public function _check_remboursement_preteurs()
-    {
-        $oRepayment = $this->loadData('echeanciers');
-        $oProject    = $this->loadData('projects');
-        $oDate       = new \DateTime();
-        $aRepayments = $oRepayment->getRepaymentOfTheDay($oDate);
-        $sRepayments  = '';
-        foreach ($aRepayments as $aRepayment) {
-            $oProject->get($aRepayment['id_project'], 'id_project');
-            $sRepayments .= '
-                <tr>
-                    <td>' . $aRepayment['id_project'] . '</td>
-                    <td>' . $oProject->title_bo . '</td>
-                    <td>' . $aRepayment['ordre'] . '</td>
-                    <td>' . $aRepayment['nb_repayment'] . '</td>
-                    <td>' . $aRepayment['nb_repayment_paid'] . '</td>
-                    <td>' . ($aRepayment['nb_repayment'] === $aRepayment['nb_repayment_paid'] ? 'Oui' : 'Non') . '</td>
-                </tr>';
-        }
-
-        $aReplacements = array(
-            '[#SURL#]'         => $this->surl,
-            '[#REPAYMENTS#]'   => $sRepayments
-        );
-
-        /** @var \settings $oSettings */
-        $oSettings = $this->loadData('settings');
-        $oSettings->get('Adresse notification check remb preteurs', 'type');
-        $sRecipient  = $oSettings->value;
-
-        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-check-remboursements-preteurs', $aReplacements, false);
-        $message->setTo(trim($sRecipient));
-        $mailer = $this->get('mailer');
-        $mailer->send($message);
-    }
-
+    
     // Fonction qui crée les notification nouveaux projet pour les prêteurs (immediatement)(OK)
     private function sendNewProjectEmail(\projects $oProject)
     {
