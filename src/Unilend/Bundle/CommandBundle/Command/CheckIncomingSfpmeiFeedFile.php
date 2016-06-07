@@ -6,13 +6,11 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Unilend\Service\Simulator\EntityManager;
-use Unilend\core\Loader;
 
 class CheckIncomingSfpmeiFeedFile extends ContainerAwareCommand
 {
     CONST FILE_ROOT_NAME = 'UNILEND-00040631007-';
-    /** @var  string */
-    private $sRootPath;
+
     protected function configure()
     {
         $this
@@ -30,15 +28,10 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $sFilePath = $this->sRootPath . 'sfpmei/reception/' . self::FILE_ROOT_NAME . date('Ymd') . '.txt';
+        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/reception/' . self::FILE_ROOT_NAME . date('Ymd') . '.txt';
         if (false === file_exists($sFilePath)) {
             $this->sendMissingReceptionFileMail();
         }
-    }
-
-    public function setPath($sPath)
-    {
-        $this->sRootPath = $sPath;
     }
 
     /**
@@ -46,7 +39,9 @@ EOF
      */
     private function sendMissingReceptionFileMail()
     {
-        $aConfig = Loader::loadConfig();
+        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
+                      $this->getContainer()->getParameter('router.request_context.host');
+        $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
         /** @var EntityManager $oEntityManager */
         $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \settings $oSettings */
@@ -55,8 +50,8 @@ EOF
         $sTo = $oSettings->value;
 
         $varMail = array(
-            '$surl' => $aConfig['url'][$aConfig['env']]['default'],
-            '$url'  => $aConfig['url'][$aConfig['env']]['default']
+            '$surl' => $sStaticUrl,
+            '$url'  => $sUrl
         );
 
         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
