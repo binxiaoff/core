@@ -47,4 +47,5 @@ route.php
 # Exceptions
 !public/default/styles/default/*
 !public/default/scripts/default/*
+!protected/sftp
 !/dev/public/
