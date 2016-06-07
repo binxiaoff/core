@@ -53,10 +53,10 @@
                 <argument>%path.sftp%</argument>
             </call>
         </service>
-        <service id="unilend.command.IRR_unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
+        <service id="unilend.command.irr_unilend" class="Unilend\Bundle\CommandBundle\Command\IRRUnilendCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.IRR_lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
+        <service id="unilend.command.irr_lender" class="Unilend\Bundle\CommandBundle\Command\IRRLenderCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.email_lender_repayment_mail" class="Unilend\Bundle\CommandBundle\Command\EmailLenderAutomaticRepaymentCommand">
