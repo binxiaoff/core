@@ -93,5 +93,8 @@
         <service id="unilend.command.check_payline" class="Unilend\Bundle\CommandBundle\Command\CheckPaylineMoneyTransfersCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.email_lender_completeness_reminder" class="Unilend\Bundle\CommandBundle\Command\EmailLenderCompletenessReminderCommand">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>
