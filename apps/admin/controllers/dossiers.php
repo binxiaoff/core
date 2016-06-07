@@ -1143,7 +1143,7 @@ class dossiersController extends bootstrap
 
                     $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
                     $locale  = $this->getParameter('locale');
-                    $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $locale . '" AND type');
+                    $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
 
                     $aReplacements['sujet'] = $this->mail_template->subject;
 
