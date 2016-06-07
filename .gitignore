@@ -14,7 +14,7 @@ nb-configuration.xml
 .nb-gradle/
 
 ### Izinoa ###
-protected/
+protected/*
 log/
 logs/
 tmp/
