@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
-use Symfony\Bridge\Monolog\Logger;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -29,9 +29,6 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        ini_set('memory_limit', '1024M');
-        ini_set('max_execution_time', 300);
-
         $sRootDir        = $this->getContainer()->getParameter('kernel.root_dir');
         $this->sRootPath = $sRootDir . '/../';
         $this->aConfig   = Loader::loadConfig();
@@ -49,7 +46,7 @@ EOF
         $projects = $entityManager->getRepository('projects');
         /** load for class constants */
         $entityManager->getRepository('projects_status');
-        /** @var Logger $oLogger */
+        /** @var LoggerInterface $oLogger */
         $oLogger = $this->getContainer()->get('monolog.logger.console');
 
         $aProjectStatus = array(
@@ -87,7 +84,7 @@ EOF
                         mkdir($this->sRootPath . 'protected/declarationContratPret/' . substr($aLoan['added'], 0, 4));
                     }
                     $path = $this->sRootPath . 'protected/declarationContratPret/' . substr($aLoan['added'], 0, 4) . '/' . $projects->slug . '/';
-                    
+
                     if (! is_dir($path)) {
                         mkdir($path);
                     }
@@ -95,11 +92,10 @@ EOF
                     $oCommandPdf = new \Command('pdf', 'declarationContratPret_html', array(
                                                     $aLoan['id_loan'], $path
                                                 ), 'fr');
-                    
+
                     $oPdf = new \pdfController($oCommandPdf, $this->aConfig, 'default');
                     $oPdf->setContainer($this->getContainer());
 
-                    $oPdf->params           = array();
                     $_SERVER['REQUEST_URI'] = '';
                     $oPdf->initialize();
                     $oPdf->autoFireView = true;
