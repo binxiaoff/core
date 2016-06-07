@@ -12,7 +12,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('check:welcomeOfferValidity')
+            ->setName('check:welcome_offer_validity')
             ->setDescription('Remove WelcomeOffers not used by lenders during a time period');
     }
 
