@@ -13,20 +13,6 @@ use Unilend\Service\Simulator\EntityManager;
 
 class FeedsFiscalStateCommand extends ContainerAwareCommand
 {
-    /** @var string */
-    private $sftpPath;
-
-    /**
-     * FeedsFiscalStateCommand constructor.
-     * @param null|string $sftpPath
-     */
-    public function __construct($sftpPath)
-    {
-        $this->sftpPath = $sftpPath;
-
-        parent::__construct();
-    }
-
     /**
      * @see Command
      */
@@ -219,7 +205,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         ';
 
         $filename = 'Unilend_etat_fiscal_' . date('Ymd');
-        $sFilePath = $this->sftpPath . 'sfpmei/etat_fiscal/' . $filename . '.xls';
+        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/etat_fiscal/' . $filename . '.xls';
         file_put_contents($sFilePath, $table);
 
         $settings->get('Adresse notification etat fiscal', 'type');

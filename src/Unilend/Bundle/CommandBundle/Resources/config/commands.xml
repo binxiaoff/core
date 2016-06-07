@@ -33,7 +33,6 @@
         </service>
         <service id="unilend.command.feeds.fiscal_state" class="Unilend\Bundle\CommandBundle\Command\FeedsFiscalStateCommand">
             <tag name="console.command"/>
-            <argument>%path.sftp%</argument>
         </service>
         <service id="unilend.command.feeds.daily_state" class="Unilend\Bundle\CommandBundle\Command\FeedsDailyStateCommand">
             <tag name="console.command"/>
