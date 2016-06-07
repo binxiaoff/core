@@ -3,7 +3,6 @@
            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
            xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
-        <!-- Unilend Commands -->
         <service id="unilend.command.example" class="Unilend\Bundle\CommandBundle\Command\ExampleCommand">
             <tag name="console.command"/>
             <argument>Bin</argument>
@@ -28,11 +27,9 @@
         </service>
         <service id="unilend.command.feeds.bank_transfer" class="Unilend\Bundle\CommandBundle\Command\FeedsBankTransferCommand">
             <tag name="console.command"/>
-            <argument>%path.sftp%</argument>
         </service>
         <service id="unilend.command.feeds.direct_debit" class="Unilend\Bundle\CommandBundle\Command\FeedsDirectDebitCommand">
             <tag name="console.command"/>
-            <argument>%path.sftp%</argument>
         </service>
         <service id="unilend.command.feeds.fiscal_state" class="Unilend\Bundle\CommandBundle\Command\FeedsFiscalStateCommand">
             <tag name="console.command"/>
@@ -44,7 +41,6 @@
         </service>
         <service id="unilend.command.feeds.month_repayments" class="Unilend\Bundle\CommandBundle\Command\FeedsMonthRepaymentsCommand">
             <tag name="console.command"/>
-            <argument>%path.sftp%</argument>
         </service>
         <service id="unilend.command.sfpmei_incoming_feeds" class="Unilend\Bundle\CommandBundle\Command\FeedsSfpmeiIncomingCommand">
             <tag name="console.command"/>

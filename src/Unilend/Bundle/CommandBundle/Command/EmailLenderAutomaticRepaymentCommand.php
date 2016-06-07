@@ -1,5 +1,4 @@
 <?php
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -8,7 +7,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Service\Simulator\EntityManager;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
-
 
 class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
 {

@@ -4,7 +4,6 @@ namespace Unilend\Bundle\CommandBundle\Command;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Unilend\core\Loader;
 use Unilend\Service\Simulator\EntityManager;
 
 class FeedsBPICommand extends ContainerAwareCommand
@@ -36,8 +35,8 @@ class FeedsBPICommand extends ContainerAwareCommand
         /** @var \loans $loans */
         $loans = $entityManager->getRepository('loans');
 
-        $config   = Loader::loadConfig();
-        $userPath = $this->getContainer()->getParameter('kernel.root_dir') . '/../public/default/var/';
+        $staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');;
+        $userPath  = $this->getContainer()->getParameter('path.user');
 
         $projectStatuses = array(
             \projects_status::EN_FUNDING,
@@ -89,8 +88,8 @@ class FeedsBPICommand extends ContainerAwareCommand
             $xml .= '<ville><![CDATA["' . utf8_encode($company->city) . '"]]></ville>';
             $xml .= '<titre><![CDATA["' . $company->name . '"]]></titre>';
             $xml .= '<description><![CDATA["' . $project['nature_project'] . '"]]></description>';
-            $xml .= '<url><![CDATA[' . $config['static_url'][$config['env']] . '/projects/detail/' . $project['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent]]></url>';
-            $xml .= '<url_photo><![CDATA[' . $config['static_url'][$config['env']] . '/images/dyn/projets/169/' . $project['photo_projet'] . ']]></url_photo>';
+            $xml .= '<url><![CDATA[' . $staticUrl . '/projects/detail/' . $project['slug'] . '/?utm_source=TNProjets&utm_medium=Part&utm_campaign=Permanent]]></url>';
+            $xml .= '<url_photo><![CDATA[' . $staticUrl . '/images/dyn/projets/169/' . $project['photo_projet'] . ']]></url_photo>';
             $xml .= '<date_debut_collecte>' . $project['date_publication'] . '</date_debut_collecte>';
             $xml .= '<date_fin_collecte>' . $project['date_retrait'] . '</date_fin_collecte>';
             $xml .= '<montant_recherche>' . $project['amount'] . '</montant_recherche>';

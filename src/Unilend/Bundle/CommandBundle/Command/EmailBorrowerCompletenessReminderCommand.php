@@ -27,7 +27,6 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         ini_set('memory_limit', '1G');
-        ini_set('max_execution_time', 300);
 
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');

@@ -1,7 +1,5 @@
 <?php
-
 namespace Unilend\Bundle\CommandBundle\Command;
-
 
 use Symfony\Bridge\Monolog\Logger;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;

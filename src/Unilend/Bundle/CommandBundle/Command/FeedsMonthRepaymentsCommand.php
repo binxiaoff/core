@@ -9,20 +9,6 @@ use Unilend\Bridge\Doctrine\DBAL\Connection;
 
 class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 {
-    /** @var string */
-    private $sftpPath;
-
-    /**
-     * BankTransferCommand constructor.
-     * @param string $sftpPath
-     */
-    public function __construct($sftpPath)
-    {
-        $this->sftpPath = $sftpPath;
-
-        parent::__construct();
-    }
-
     /**
      * @see Command
      */
@@ -109,10 +95,11 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
                 AND e.status_ra = 0
             ORDER BY e.date_echeance ASC';
 
+        $sftpPath      = $this->getContainer()->getParameter('path.sftp');
         $dayFileName   = 'echeances_' . $previousDay->format('Ymd') . '.csv';
         $monthFileName = 'echeances_' . $previousDay->format('Ym') . '.csv';
-        $dayFilePath   = $this->sftpPath . 'sfpmei/etat_fiscal/' . $previousDay->format('Ym');
-        $monthFilePath = $this->sftpPath . 'sfpmei/etat_fiscal/';
+        $dayFilePath   = $sftpPath . 'sfpmei/etat_fiscal/' . $previousDay->format('Ym');
+        $monthFilePath = $sftpPath . 'sfpmei/etat_fiscal/';
 
         if (false === is_dir($dayFilePath)) {
             mkdir($dayFilePath);

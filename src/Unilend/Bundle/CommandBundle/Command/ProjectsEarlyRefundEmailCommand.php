@@ -30,9 +30,6 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        /** @var array $config */
-        $config = Loader::loadConfig();
-
         /** @var \projects $project */
         $project = $entityManager->getRepository('projects');
         /** @var \echeanciers $lenderRepaymentSchedule */
@@ -64,6 +61,9 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
 
+        $staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');;
+        $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');;
+
         $settings->get('Facebook', 'type');
         $facebookLink = $settings->value;
 
@@ -84,8 +84,8 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
             $remainingRepaymentsCount = $borrowerRepaymentSchedule->counter('id_project = ' . $project->id_project . ' AND status_ra = 1');
 
             $keywords = [
-                'surl'               => $config['static_url'][$config['env']],
-                'url'                => $config['url'][$config['env']]['default'],
+                'surl'               => $staticUrl,
+                'url'                => $frontUrl,
                 'prenom'             => htmlentities($client->prenom, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
                 'raison_sociale'     => htmlentities($company->name, ENT_COMPAT | ENT_HTML401, 'UTF-8'),
                 'montant'            => $ficelle->formatNumber($project->amount, 0),
@@ -134,8 +134,8 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
                         $accountBalance = $lenderTransaction->getSolde($client->id_client);
                         $keywords       = [
-                            'surl'                 => $config['static_url'][$config['env']],
-                            'url'                  => $config['url'][$config['env']]['default'],
+                            'surl'                 => $staticUrl,
+                            'url'                  => $frontUrl,
                             'prenom_p'             => $client->prenom,
                             'nomproject'           => $project->title,
                             'nom_entreprise'       => $company->name,
