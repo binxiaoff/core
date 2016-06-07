@@ -88,10 +88,13 @@
         <service id="unilend.command.lender_repayment" class="Unilend\Bundle\CommandBundle\Command\AutomaticLenderRepaymentCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.check_welcome_offer_validity" class="CheckWelcomeOfferValidityCommand">
+        <service id="unilend.command.check_welcome_offer_validity" class="Unilend\Bundle\CommandBundle\Command\CheckWelcomeOfferValidityCommand">
             <tag name="console.command"/>
         </service>
         <service id="nilend.command.check_funded_project_amounts" class="Unilend\Bundle\CommandBundle\Command\CheckFundedProjectAmountsCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.check_payline" class="Unilend\Bundle\CommandBundle\Command\CheckPaylineMoneyTransfersCommand">
             <tag name="console.command"/>
         </service>
     </services>
