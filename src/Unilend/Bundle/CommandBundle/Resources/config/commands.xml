@@ -77,6 +77,9 @@
         <service id="unilend.command.email_borrower_completeness_reminder" class="Unilend\Bundle\CommandBundle\Command\EmailBorrowerCompletenessReminderCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.email_borrower_reminder_before_unpaid" class="Unilend\Bundle\CommandBundle\Command\EmailBorrowerReminderBeforeRecoveryCommand">
+            <tag name="console.command"/>
+        </service>
         <service id="unilend.command.unilend_bank_transfert" class="Unilend\Bundle\CommandBundle\Command\UnilendBankTransfertCommand">
             <tag name="console.command"/>
         </service>
