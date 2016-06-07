@@ -224,8 +224,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
 
         $settings->get('Adresse notification etat fiscal', 'type');
         $destinataire = $settings->value;
-        $aConfig      = Loader::loadConfig();
-        $sUrl         = $aConfig['url'][$aConfig['env']]['default'];
+        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
 
         $varMail = array(
             '$surl' => $sUrl,

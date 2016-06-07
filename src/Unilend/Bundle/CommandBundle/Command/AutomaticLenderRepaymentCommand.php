@@ -154,8 +154,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $sFB      = $settings->value;
                 $settings->get('Twitter', 'type');
                 $sTwitter = $settings->value;
-                $aConfig  = Loader::loadConfig();
-                $sUrl     = $aConfig['url'][$aConfig['env']]['default'];
+                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
 
                 /** @var \ficelle $ficelle */
                 $ficelle = Loader::loadLib('ficelle');
