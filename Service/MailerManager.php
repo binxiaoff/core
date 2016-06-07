@@ -745,7 +745,7 @@ class MailerManager
         $oCompanies->get($oProject->id_company, 'id_company');
 
         $aReplacements = array(
-            '[SURL]'           => $this->sURl,
+            '[SURL]'           => $this->sSUrl,
             '[ID_PROJET]'      => $oProject->id_project,
             '[MONTANT]'        => $oProject->amount,
             '[RAISON_SOCIALE]' => utf8_decode($oCompanies->name),
