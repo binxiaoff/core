@@ -689,15 +689,17 @@ class ProjectManager
 
     private function projectStatusUpdateTrigger(\projects_status $oProjectStatus, \projects $oProject)
     {
+        /** @var \settings $oSettings */
+        $oSettings = $this->oEntityManager->getRepository('settings');
+
         switch ($oProjectStatus->status) {
             case \projects_status::A_TRAITER:
-                /** @var \settings $oSettings */
-                $oSettings = $this->oEntityManager->getRepository('settings');
                 $oSettings->get('Adresse notification inscription emprunteur', 'type');
                 $this->oMailerManager->sendProjectNotificationToStaff('notification-depot-de-dossier', $oProject, trim($oSettings->value));
                 break;
             case \projects_status::ATTENTE_ANALYSTE:
-                $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, \email::EMAIL_ADDRESS_ANALYSTS);
+                $oSettings->get('Adresse notification analystes', 'type');
+                $this->oMailerManager->sendProjectNotificationToStaff('notification-projet-a-traiter', $oProject, trim($oSettings->value));
                 break;
             case \projects_status::REJETE:
             case \projects_status::REJET_ANALYSTE:

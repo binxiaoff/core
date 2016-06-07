@@ -2476,7 +2476,7 @@ class dossiersController extends bootstrap
         $oClients = $this->loadData('clients');
         /** @var companies $oCompanies */
         $oCompanies = $this->loadData('companies');
-        /** @var \mail_template $oMailTemplate */
+        /** @var \mail_templates $oMailTemplate */
         $oMailTemplate = $this->loadData('mail_templates');
 
         if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
@@ -2522,7 +2522,7 @@ class dossiersController extends bootstrap
             $oClients = $this->loadData('clients');
             /** @var companies $oCompanies */
             $oCompanies = $this->loadData('companies');
-            /** @var \mail_template $oMailTemplate */
+            /** @var \mail_templates $oMailTemplate */
             $oMailTemplate = $this->loadData('mail_templates');
 
             if (false === isset($_POST['id_project']) || false === $oProjects->get($_POST['id_project'])) {
