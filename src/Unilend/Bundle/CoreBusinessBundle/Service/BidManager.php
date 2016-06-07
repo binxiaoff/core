@@ -20,9 +20,6 @@ class BidManager
     /** @var \ficelle */
     private $oFicelle;
 
-    /** @var array */
-    private $aConfig;
-
     /** @var LoggerInterface */
     private $oLogger;
 
@@ -40,8 +37,6 @@ class BidManager
 
     public function __construct(EntityManager $oEntityManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, LenderManager $oLenderManager)
     {
-        $this->aConfig = Loader::loadConfig();
-
         $this->oEntityManager          = $oEntityManager;
         $this->oNotificationManager    = $oNotificationManager;
         $this->oAutoBidSettingsManager = $oAutoBidSettingsManager;

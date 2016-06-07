@@ -14,9 +14,6 @@ class ProjectManager
     /** @var \ficelle */
     private $oFicelle;
 
-    /** @var array */
-    private $aConfig;
-
     /** @var \dates */
     private $oDate;
 
@@ -46,8 +43,6 @@ class ProjectManager
 
     public function __construct(EntityManager $oEntityManager, BidManager $oBidManager, LoanManager $oLoanManager, NotificationManager $oNotificationManager, AutoBidSettingsManager $oAutoBidSettingsManager, MailerManager $oMailerManager, LenderManager $oLenderManager)
     {
-        $this->aConfig = Loader::loadConfig();
-
         $this->oEntityManager          = $oEntityManager;
         $this->oBidManager             = $oBidManager;
         $this->oLoanManager            = $oLoanManager;

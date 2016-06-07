@@ -19,7 +19,9 @@ parameters:
     mailjet.api_key:                9968d5b7419c2d4edf7c00f32f629f8a
     mailjet.api_secret:             579bc26d8656f837ca8dcdcc6739da95
 
-    universign_url:                 https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/
+    url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
+    url.host_admin:                 'dev.admin.unilend.fr' # for Front to know the url BO
+    url.host_front:                 'dev.www.unilend.fr' # for BO to know the url Front
 
     image_resize:
         projets:

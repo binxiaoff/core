@@ -17,15 +17,11 @@ class IRRManager
     /** @var  LoggerInterface */
     private $oLogger;
 
-    /** @var array */
-    private $aConfig;
-
     /** @var EntityManager  */
     private $oEntityManager;
 
     public function __construct(EntityManager $oEntityManager, LoggerInterface $oLogger)
     {
-        $this->aConfig = Loader::loadConfig();
         $this->oLogger = $oLogger;
         $this->oEntityManager = $oEntityManager;
     }

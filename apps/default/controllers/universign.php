@@ -21,7 +21,7 @@ class universignController extends bootstrap
         $this->autoFireFooter = false;
         $this->autoFireDebug  = false;
 
-        $this->uni_url = $this->getParameter('universign_url');
+        $this->uni_url = $this->getParameter('url.universign');
         $this->oLogger = $this->get('logger');
     }
 
