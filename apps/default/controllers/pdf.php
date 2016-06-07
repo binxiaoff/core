@@ -54,7 +54,7 @@ class pdfController extends bootstrap
         parent::initialize();
 
         if (false === isset($this->params)) {
-            $this->params = $command->getParameters();
+            $this->params = $this->Command->getParameters();
         }
 
         $this->catchAll = true;
