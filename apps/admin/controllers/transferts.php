@@ -1284,9 +1284,14 @@ class transfertsController extends bootstrap
                 $montant -= $partUnilend;
 
                 if (false === $transactions->get($projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
+                    /** @var \clients_mandats $oMandate */
+                    $oMandate = $this->loadData('clients_mandats');
+                    $aMandate = $oMandate->select('id_project = ' . $projects->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1);
+                    $aMandate = array_shift($aMandate);
+
                     $transactions->id_client        = $clients->id_client;
-                    $transactions->montant          = '-' . ($montant * 100);
-                    $transactions->montant_unilend  = ($partUnilend * 100);
+                    $transactions->montant          = bcmul($montant, -100);
+                    $transactions->montant_unilend  = bcmul($partUnilend, 100);
                     $transactions->id_langue        = 'fr';
                     $transactions->id_project       = $projects->id_project;
                     $transactions->date_transaction = date('Y-m-d H:i:s');
@@ -1309,20 +1314,20 @@ class transfertsController extends bootstrap
 
                     $bank_unilend->id_transaction = $transactions->id_transaction;
                     $bank_unilend->id_project     = $projects->id_project;
-                    $bank_unilend->montant        = $partUnilend * 100;
+                    $bank_unilend->montant        = bcmul($partUnilend, 100);
                     $bank_unilend->create();
 
                     $oAccountUnilend                 = $this->loadData('platform_account_unilend');
                     $oAccountUnilend->id_transaction = $transactions->id_transaction;
                     $oAccountUnilend->id_project     = $projects->id_project;
-                    $oAccountUnilend->amount         = $partUnilend * 100;
+                    $oAccountUnilend->amount         = bcmul($partUnilend, 100);
                     $oAccountUnilend->type           = \platform_account_unilend::TYPE_COMMISSION_PROJECT;
                     $oAccountUnilend->create();
 
                     $virements->id_client      = $clients->id_client;
                     $virements->id_project     = $projects->id_project;
                     $virements->id_transaction = $transactions->id_transaction;
-                    $virements->montant        = $montant * 100;
+                    $virements->montant        = bcmul($montant, 100);
                     $virements->motif          = $oProjectManager->getBorrowerBankTransferLabel($projects);
                     $virements->type           = 2;
                     $virements->create();
