@@ -4313,8 +4313,6 @@ class cronController extends bootstrap
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
-                    $oCustomer->get($iCustomerId);
-
                     $sProjectsListHTML = '';
                     $iProjectsCount    = 0;
 
@@ -4341,61 +4339,63 @@ class cronController extends bootstrap
                                 </tr>';
                             $iProjectsCount += 1;
                         }
+                    }
 
-                        if ($iProjectsCount >= 1) {
-                            if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                                $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                                $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                                $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                                $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                            } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                                $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                                $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                                $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                                $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                            } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                                $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                                $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                                $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                                $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                            } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                                $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                                $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                                $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                                $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                            } else {
-                                trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
-                                continue;
-                            }
+                    if ($iProjectsCount >= 1) {
+                        $oCustomer->get($iCustomerId);
 
-                            $aReplacements = array(
-                                'surl'            => $this->surl,
-                                'url'             => $this->furl,
-                                'prenom_p'        => $oCustomer->prenom,
-                                'liste_projets'   => $sProjectsListHTML,
-                                'projet-p'        => $this->lurl . '/projets-a-financer',
-                                'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                                'gestion_alertes' => $this->lurl . '/profile',
-                                'contenu'         => $sContent,
-                                'objet'           => $sObject,
-                                'sujet'           => $sSubject,
-                                'lien_fb'         => $this->like_fb,
-                                'lien_tw'         => $this->twitter
-                            );
+                        if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                        } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $this->mails_text->subject = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                            $sContent                  = $this->lng['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sObject                   = $this->lng['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sSubject                  = $this->lng['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                        } else {
+                            trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
+                            continue;
+                        }
 
-                            $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
+                        $aReplacements = array(
+                            'surl'            => $this->surl,
+                            'url'             => $this->furl,
+                            'prenom_p'        => $oCustomer->prenom,
+                            'liste_projets'   => $sProjectsListHTML,
+                            'projet-p'        => $this->lurl . '/projets-a-financer',
+                            'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                            'gestion_alertes' => $this->lurl . '/profile',
+                            'contenu'         => $sContent,
+                            'objet'           => $sObject,
+                            'sujet'           => $sSubject,
+                            'lien_fb'         => $this->like_fb,
+                            'lien_tw'         => $this->twitter
+                        );
 
-                            $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
-                            $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
-                            $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+                        $aDYNReplacements = $this->tnmp->constructionVariablesServeur($aReplacements);
 
-                            if ($this->Config['env'] === 'prod') {
-                                Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            } else {
-                                $oEmail->addRecipient($oCustomer->email);
-                                Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
-                            }
+                        $oEmail->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $aDYNReplacements));
+                        $oEmail->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $aDYNReplacements)));
+                        $oEmail->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $aDYNReplacements)));
+
+                        if ($this->Config['env'] === 'prod') {
+                            Mailer::sendNMP($oEmail, $this->mails_filer, $this->mails_text->id_textemail, $oCustomer->email, $tabFiler);
+                            $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                        } else {
+                            $oEmail->addRecipient($oCustomer->email);
+                            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
                         }
                     }
                 } catch (\Exception $oException) {
