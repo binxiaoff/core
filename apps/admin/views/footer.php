@@ -3,7 +3,7 @@
         </div>
     </div>
 </body>
-<?php if ($this->Config['env'] != 'prod'): ?>
+<?php if ($this->getParameter('kernel.environment') != 'prod'): ?>
 <script type="text/javascript">
     window.ATL_JQ_PAGE_PROPS = $.extend(window.ATL_JQ_PAGE_PROPS, {
         // ==== default field values ====

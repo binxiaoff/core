@@ -56,7 +56,7 @@ EOF
             /** @var \lenders_accounts $oLendersAccount */
             $oLendersAccount = $oEntityManager->getRepository('lenders_accounts');
             /** @var greenPoint $oGreenPoint */
-            $oGreenPoint = new greenPoint();
+            $oGreenPoint = new greenPoint($this->getParameter('kernel.environment'));
             /** @var \attachment $oAttachment */
             $oAttachment = $oEntityManager->getRepository('attachment');
             /** @var \attachment_type $oAttachmentType */

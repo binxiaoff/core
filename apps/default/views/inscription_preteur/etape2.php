@@ -16,7 +16,7 @@
 </div>
 
 <?
-if ($this->Config['env'] == 'prod') // nmp
+if ($this->getParameter('kernel.environment') == 'prod') // nmp
 {
     ?>
     <img src="https://ws.optin-machine.com/unilend/t_l.php" border="0" width="1" height="1"/>

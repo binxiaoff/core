@@ -1,6 +1,5 @@
 <?php
 $config = array(
-    'env' => 'dev',
     'cms' => 'iZicom', //(iZinoa ou iZicom)
     'url' => array(
         'dev' => array(
@@ -11,6 +10,10 @@ $config = array(
             'default' => 'https://demo.corp.unilend.fr',
             'admin'   => 'https://admindemo.corp.unilend.fr'
         ),
+        'preprod' => array(
+            'default' => 'https://preprod.corp.unilend.fr',
+            'admin'   => 'https://adminpreprod.corp.unilend.fr'
+        ),
         'prod' => array(
             'default' => 'https://www.unilend.fr',
             'admin'   => 'https://admin.unilend.fr'
@@ -19,6 +22,7 @@ $config = array(
     'static_url' => array(
         'dev'  => 'https://dev.www.unilend.fr',
         'demo' => 'https://demo.corp.unilend.fr',
+        'preprod' => 'https://preprod.corp.unilend.fr',
         'prod' => 'https://www.unilend.fr'
     ),
     'params' => array(
@@ -33,20 +37,6 @@ $config = array(
         'allowed_languages'        => array('fr' => 'Francais'), // Liste des langues autorisées, la première est la langue par défaut (array('en'=>'Anglais','fr'=>'Francais') par exemple)
         'domain_default_languages' => array()                    // Liste des langues par défaut pour un domaine, ex:array('aspartam.dev.equinoa.net'=>'fr')
     ),
-    'cache' => array(
-        'dev'  => array(
-            'serverAddress' => '127.0.0.1',
-            'serverPort'    => 11211
-        ),
-        'demo' => array(
-            'serverAddress' => 'equinoamutu.memcache',
-            'serverPort'    => 11211
-        ),
-        'prod' => array(
-            'serverAddress' => 'unilend.memcache',
-            'serverPort'    => 11211
-        )
-    )
 );
 
 if (isset($_SERVER['HTTP_HOST'])) {
@@ -74,8 +64,4 @@ if (isset($_SERVER['HTTP_HOST'])) {
     if (in_array($_SERVER['HTTP_HOST'], array('prets-entreprises-unilend.capital.fr', 'partenaire.unilend.challenges.fr', 'lexpress.unilend.fr'))) {
         $config['static_url']['prod'] = 'http://www.unilend.fr';
     }
-}
-
-if (false === defined('ENVIRONMENT')) {
-    define('ENVIRONMENT', $config['env']);
 }

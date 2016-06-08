@@ -33,7 +33,7 @@ class apiController extends Controller
     {
         $aAllowedIP = array();
         $oSettings  = $this->loadData('settings');
-        switch ($this->Config['env']) {
+        switch ($this->getParameter('kernel.environment')) {
             case 'prod':
                 $oSettings->get('green_point_ip_prod', 'type');
                 $sAllowedIPSettings = $oSettings->value;
@@ -149,7 +149,7 @@ class apiController extends Controller
         $oGreenPointKyc = $this->loadData('greenpoint_kyc');
 
         /** @var greenPoint $oGreenPoint */
-        $oGreenPoint = new greenPoint();
+        $oGreenPoint = new greenPoint($this->getParameter('kernel.environment'));
         greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
     }
 

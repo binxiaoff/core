@@ -49,6 +49,8 @@ abstract class Controller implements ContainerAwareInterface
     {
         $this->bdd = $this->get('database_connection');
 
+        $env = $this->getParameter('kernel.environment');
+
         $this->included_js  = array();
         $this->included_css = array();
 
@@ -63,13 +65,13 @@ abstract class Controller implements ContainerAwareInterface
         $this->staticPath = $this->get('kernel')->getRootDir() . '/../public/default/';
         $this->logPath    = $this->get('kernel')->getLogDir();
         $this->surl       = $this->get('assets.packages')->getUrl('');
-        $this->url        = $this->Config['url'][$this->Config['env']][$this->App];
-        $this->lurl       = $this->Config['url'][$this->Config['env']][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
+        $this->url        = $this->Config['url'][$env][$this->App];
+        $this->lurl       = $this->Config['url'][$env][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
 
         //admin
-        $this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
+        $this->aurl = $this->Config['url'][$env]['admin'];
         //fo
-        $this->furl = $this->Config['url'][$this->Config['env']]['default'];
+        $this->furl = $this->Config['url'][$env]['default'];
 
         // Recuperation du type de plateforme
         $this->cms = $this->Config['cms'];
