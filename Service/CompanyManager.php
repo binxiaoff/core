@@ -3,7 +3,7 @@
 namespace Unilend\Service;
 
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CompanyManager
 {

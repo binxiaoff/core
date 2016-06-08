@@ -793,22 +793,27 @@ class ProjectManager
     public function getProjectsForDisplay(array $aProjectStatus, $sOrderBy)
     {
         /** @var \projects $projects */
-        $projects           = $this->oEntityManager->getRepository('projects');
-        $aProjectsInFunding = $projects->getProjectsForDisplay($aProjectStatus, $sOrderBy);
-        $aProjectsInFunding = $this->addCurrentInterestRateToProject($aProjectsInFunding);
+        $projects = $this->oEntityManager->getRepository('projects');
+        $aProjects = $projects->getProjectsForDisplay($aProjectStatus, $sOrderBy);
 
-        return $aProjectsInFunding;
+        if (0 < count($aProjects)) {
+            return false;
+        }
+
+        $aProjects = $this->addCurrentInterestRateToProject($aProjects);
+
+        return $aProjects;
     }
 
-    private function addCurrentInterestRateToProject(array $aProjectsInFunding)
+    private function addCurrentInterestRateToProject(array $aProjects)
     {
         /** @var \projects $project */
         $project = $this->oEntityManager->getRepository('projects');
 
-        foreach ($aProjectsInFunding as $iKey => $aProject) {
-            $aProjectsInFunding[$iKey]['currentInterestRate'] = $project->getAverageInterestRate($aProject['id_project']);
+        foreach ($aProjects as $iKey => $aProject) {
+            $aProjects[$iKey]['currentInterestRate'] = $project->getAverageInterestRate($aProject['id_project']);
         }
 
-        return $aProjectsInFunding;
+        return $aProjects;
     }
 }

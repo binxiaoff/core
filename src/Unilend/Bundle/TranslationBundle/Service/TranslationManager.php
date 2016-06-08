@@ -2,8 +2,7 @@
 
 namespace Unilend\Bundle\TranslationBundle\Service;
 
-use Unilend\Bundle\TranslationBundle\Service\TranslationLoader;
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 
 class TranslationManager

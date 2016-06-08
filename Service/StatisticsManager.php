@@ -2,7 +2,7 @@
 
 namespace Unilend\Service;
 
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class StatisticsManager
 {
