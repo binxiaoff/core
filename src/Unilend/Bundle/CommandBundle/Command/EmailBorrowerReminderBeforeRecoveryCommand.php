@@ -16,7 +16,7 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
     {
         $this
             ->setName('email:borrower:reminder_before_recovery')
-            ->setDescription('Send email to borrower with unpaid repayments befoire recovery process');
+            ->setDescription('Send email to borrower with unpaid repayments before recovery process');
     }
 
     /**
@@ -71,7 +71,7 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
             $twitterLink = $settings->value;
 
             $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
-            $staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+            $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
 
             $commonReplacements = array(
                 'url'              => $frontUrl,

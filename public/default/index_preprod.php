@@ -30,7 +30,7 @@ if ($bCacheFullPage) {
     require __DIR__ . '/prepend.php';
 }
 
-$oKernel = new AppKernel('prod', false);
+$oKernel = new AppKernel('preprod', false);
 $oKernel->boot();
 
 $errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';

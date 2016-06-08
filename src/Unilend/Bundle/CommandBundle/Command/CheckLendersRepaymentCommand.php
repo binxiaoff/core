@@ -15,7 +15,7 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
     {
         $this
             ->setName('check:lenders_repayment')
-            ->setDescription('Checks if all repayments of which today is the due date are payed. And Sends a reporting mail to the internal control team.');
+            ->setDescription('Checks if all repayments of which today is the due date are paid. And Sends a reporting mail to the internal control team.');
     }
 
     /**

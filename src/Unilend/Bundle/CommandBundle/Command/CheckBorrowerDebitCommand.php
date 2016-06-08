@@ -17,7 +17,7 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
     {
         $this
             ->setName('check:borrower_debit')
-            ->setDescription('Greet someone');
+            ->setDescription('Checks if the borrower has paid at the date of payment');
     }
 
     /**
