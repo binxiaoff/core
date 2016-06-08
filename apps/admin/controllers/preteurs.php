@@ -186,7 +186,7 @@ class preteursController extends bootstrap
 
         //// transactions mouvements ////
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translations');
+        $translationManager = $this->get('unilend.service.translation_manager');
         $this->lng['profile']                           = $translationManager->getAllTranslationsForSection('preteur-profile');
         $this->lng['preteur-operations-vos-operations'] = $translationManager->getAllTranslationsForSection('preteur-operations-vos-operations');
 
@@ -1476,9 +1476,9 @@ class preteursController extends bootstrap
         $this->getMessageAboutClientStatus();
 
         /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translations');
+        $translationManager = $this->get('unilend.service.translation_manager');
         $this->lng['autobid']      = $translationManager->getAllTranslationsForSection('autobid');
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager   = $this->get('unilend.service.autobid_settings_manager');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
         $oClientManager            = $this->get('unilend.service.client_manager');

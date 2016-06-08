@@ -172,7 +172,7 @@ class ajaxController extends bootstrap
     public function _loadNomTexte()
     {
         /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translations');
+        $translationManager = $this->get('unilend.service.translation_manager');
 
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->lNoms = $translationManager->selectNamesForSection($this->params[0]);
@@ -183,7 +183,7 @@ class ajaxController extends bootstrap
     public function _loadTradTexte()
     {
         /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translations');
+        $translationManager = $this->get('unilend.service.translation_manager');
         if (isset($this->params[0]) && $this->params[0] != '') {
             $this->lTranslations = $translationManager->selectTranslation($this->params[1], $this->params[0]);
         }
@@ -673,7 +673,7 @@ class ajaxController extends bootstrap
         if (isset($_POST['year'], $_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
 
             /** @var TranslationManager $translationManager */
-            $translationManager   = $this->get('unilend.service.translations');
+            $translationManager   = $this->get('unilend.service.translation_manager');
             $this->lng['profile'] = $translationManager->getAllTranslationsForSection('preteur-profile');
 
             $year = $_POST['year'];

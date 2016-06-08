@@ -109,7 +109,7 @@ class thickboxController extends bootstrap
                 $this->bReceiver     = false;
 
                 /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-                $translationManager = $this->get('unilend.service.translations');
+                $translationManager = $this->get('unilend.service.translation_manager');
                 $aProjectTexts = $translationManager->getAllTranslationsForSection('projet');
                 $this->sInfoStatusChange = trim($aProjectTexts['info-passage-statut-probleme']);
 

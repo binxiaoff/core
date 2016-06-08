@@ -20,7 +20,7 @@ class traductionsController extends bootstrap
     public function _default()
     {
         /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translations');
+        $translationManager = $this->get('unilend.service.translation_manager');
 
         if (isset($_POST['form_add_traduction'])) {
             $sSection     = $this->bdd->generateSlug($_POST['section']);
@@ -86,7 +86,7 @@ class traductionsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
         /** @var TranslationManager $translationManager */
-        $translationManager = $this->get('unilend.service.translations');
+        $translationManager = $this->get('unilend.service.translation_manager');
         $translationManager->clearLanguageCache();
         header('Location:' . $this->lurl . '/traductions');
         die;

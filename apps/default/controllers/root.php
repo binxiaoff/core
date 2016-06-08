@@ -807,9 +807,9 @@ class rootController extends bootstrap
         $companies = $this->loadData('companies');
         $bids      = $this->loadData('bids');
 
-        /** @var \Unilend\Service\CompanyManager $companyManager */
-        $companyManager  = $this->get('unilend.service.company_manager');
-        $this->tabSecteurs = $companyManager->getTranslatedCompanySectorList();
+        /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+        $translationManager  = $this->get('unilend.service.translation_manager');
+        $this->tabSecteurs = $translationManager->getTranslatedCompanySectorList();
 
         $lProjets = $projects->selectProjectsByStatus(implode(', ', array(\projects_status::EN_FUNDING, \projects_status::FUNDE, \projects_status::REMBOURSEMENT)));
 

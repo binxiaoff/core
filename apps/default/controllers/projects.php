@@ -121,9 +121,9 @@ class projectsController extends bootstrap
             $this->settings->get('Pret min', 'type');
             $this->pretMin = $this->settings->value;
 
-            /** @var \Unilend\Service\CompanyManager $companyManager */
-            $companyManager  = $this->get('unilend.service.company_manager');
-            $this->lSecteurs = $companyManager->getTranslatedCompanySectorList();
+            /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
+            $translationManager  = $this->get('unilend.service.translation_manager');
+            $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
 
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->projects_status->getLastStatut($this->projects->id_project);

@@ -210,7 +210,7 @@ class attachment_type extends attachment_type_crud
             );
         }
 
-        //TODO service or any other way of using translation once front is migrated
+        //TODO move to translation service or any other way of using translation once front is migrated
         $oTranslations = new \translations($this->bdd);
         $aTranslations = $oTranslations->selectFront('projet', $sLanguage);
 

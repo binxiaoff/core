@@ -106,9 +106,9 @@ class dossiersController extends bootstrap
                 sort($this->dureePossible);
             }
 
-            /** @var \Unilend\Service\CompanyManager $companyManager */
-            $companyManager  = $this->get('unilend.service.company_manager');
-            $this->lSecteurs = $companyManager->getTranslatedCompanySectorList();
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\CompanyManager $companyManager */
+            $translationManager  = $this->get('unilend.service.translation_manager');
+            $this->lSecteurs = $translationManager->getTranslatedCompanySectorList();
 
             $this->settings->get('Cabinet de recouvrement', 'type');
             $this->cab = $this->settings->value;
@@ -238,7 +238,7 @@ class dossiersController extends bootstrap
             $this->completude_wording = array();
             $aAttachmentTypes         = $this->attachment_type->getAllTypesForProjects($this->language, false);
             /** @var \Unilend\Bundle\TranslationBundle\Service\TranslationManager $translationManager */
-            $translationManager = $this->get('unilend.service.translations');
+            $translationManager = $this->get('unilend.service.translation_manager');
             $aTranslations      = $translationManager->getAllTranslationsForSection('projet');
 
             foreach ($this->attachment_type->changeLabelWithDynamicContent($aAttachmentTypes) as $aAttachment) {
