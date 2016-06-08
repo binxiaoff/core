@@ -59,13 +59,7 @@
         <service id="unilend.command.email_lender_repayment_mail" class="Unilend\Bundle\CommandBundle\Command\EmailLenderAutomaticRepaymentCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.email_lender_daily_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderDailySummaryCommand">
-            <tag name="console.command"/>
-        </service>
-        <service id="unilend.command.email_lender_weekly_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderWeeklySummaryCommand">
-            <tag name="console.command"/>
-        </service>
-        <service id="unilend.command.email_lender_monthly_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderMonthlySummaryCommand">
+        <service id="unilend.command.email_lender_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderSummaryCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.email_borrower_upcoming_repayment" class="Unilend\Bundle\CommandBundle\Command\EmailBorrowerUpcomingRepaymentCommand">
