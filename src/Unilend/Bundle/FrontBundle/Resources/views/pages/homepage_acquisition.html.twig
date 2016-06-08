@@ -15,7 +15,7 @@ permalink: route('/')
             <div class="video-hero-wrapper">
                 <div id="homeacq-video-hero-swiper" class="video-hero-slideshow swiper-container" data-swiper-autoplay="5000" data-swiper-speed="500">
                     <div class="swiper-wrapper">
-                        <div class="video-hero swiper-slide" data-preter-name="videoHeroes.Lenders.0.name" data-emprunter-name="videoHeroes.Borrowers.0.name">
+                        <div class="video-hero swiper-slide" data-preter-name="{{ videoHeroes.Lenders.0.name }}" data-emprunter-name="{{ videoHeroes.Borrowers.0.name }}">
                             <div class="video-hero-image">&nbsp;</div>
                             <div class="caption caption-align-left">
                                 <div class="caption-name">{{ videoHeroes.Lenders.0.name }} &mdash; {{ videoHeroes.Lenders.0.age }}</div>
@@ -29,7 +29,7 @@ permalink: route('/')
                                     <a href="{{ videoHeroes.Borrowers.0.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
                             </div><!-- /.caption -->
                         </div>
-                        <div class="video-hero swiper-slide" data-preter-name="videoHeroes.Lenders.1.name" data-emprunter-name="videoHeroes.Borrowers.1.name">
+                        <div class="video-hero swiper-slide" data-preter-name="{{ videoHeroes.Lenders.1.name }}" data-emprunter-name="{{ videoHeroes.Borrowers.1.name }}">
                             <div class="video-hero-image">&nbsp;</div>
                             <div class="caption caption-align-left">
                                 <div class="caption-name">{{ videoHeroes.Lenders.1.name }} &mdash; {{ videoHeroes.Lenders.1.age }}</div>
@@ -42,7 +42,7 @@ permalink: route('/')
                                 <div class="caption-links"><a href="{{ videoHeroes.Borrowers.1.urlTestimonial }}" class="link">{% trans %} site-general_testimonial-section-link-to-testimonial-title {% endtrans %}</a></div>
                             </div><!-- /.caption -->
                         </div>
-                        <div class="video-hero swiper-slide" data-preter-name="videoHeroes.Lenders.2.name" data-emprunter-name="videoHeroes.Borrowers.2.name">
+                        <div class="video-hero swiper-slide" data-preter-name="{{ videoHeroes.Lenders.2.name }}" data-emprunter-name="{{ videoHeroes.Borrowers.2.name }}">
                             <div class="video-hero-image">&nbsp;</div>
                             <div class="caption caption-align-left">
                                 <div class="caption-name">{{ videoHeroes.Lenders.2.name }} &mdash; {{ videoHeroes.Borrowers.1.age }}</div>
@@ -66,7 +66,8 @@ permalink: route('/')
                             <span class="icon fa-play"><span class="sr-only">Play</span></span>
                         </a>
                     </div>
-                    <h5 class="c-p1"><span class="ui-preter-name">Julie</span> {% trans %} site-general_testimonial-section-video-text {% endtrans %}<span class="ui-emprunter-name c-p2">Didier</span></h5>
+                    <h5 class="c-p1"><span class="ui-preter-name">Julie</span> {% trans %} site-general_testimonial-section-video-text {% endtrans %}&nbsp;<span
+                                class="ui-emprunter-name c-p2">Didier</span></h5>
                     <h3>{% trans %} site-general_testimonial-section-video-slogan {% endtrans %}</h3>
                 </div><!-- /.video-hero-cta -->
 
