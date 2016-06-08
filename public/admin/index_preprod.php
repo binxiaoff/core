@@ -12,7 +12,7 @@ ini_set('log_errors', 1);
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-$oKernel     = new AppKernel('prod', false);
+$oKernel     = new AppKernel('preprod', false);
 $oKernel->boot();
 
 $errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
