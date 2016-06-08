@@ -10,7 +10,7 @@ use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-class CheckProjectToFundCommand extends ContainerAwareCommand
+class ProjectsPublishCommand extends ContainerAwareCommand
 {
     protected function configure()
     {
@@ -247,7 +247,7 @@ EOF
                     $clients_gestion_mails_notif->id_project      = $project->id_project;
                     $clients_gestion_mails_notif->date_notif      = $project->date_publication_full;
 
-                    if (empty($sAutobidInsufficientBalance) && $clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
+                    if ($clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
                         $clients_gestion_mails_notif->immediatement = 1;
 
                         $sAutobidInsufficientBalance = '';
