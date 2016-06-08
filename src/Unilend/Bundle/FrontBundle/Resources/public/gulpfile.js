@@ -88,16 +88,15 @@ Unilend.config = deepAssign({
   // Root dest path, used by getDest
   dest: goodPath(yargs.dest) || goodPath('./build/' + env),
 
-  // Browser-sync server configuration
-  browserSync: deepAssign({
- //   server: {
- //     baseDir: goodPath(yargs.serverBaseDir) || goodPath('./build/' + env)
- //   }
- //   proxy: 'https://dev.www.unilend.fr/'
+// Browser-sync server configuration
+// browserSync: deepAssign({
+//   server: {
+//     baseDir: goodPath(yargs.serverBaseDir) || goodPath('./build/' + env)
+//   }
+//   proxy: 'https://dev.www.unilend.fr/'
+// }, getJSON(goodPath(configPath + '/browserSync.json')), getJSON(goodPath(configPath + env + '/browserSync.json'))),
 
-  }, getJSON(goodPath(configPath + '/browserSync.json')), getJSON(goodPath(configPath + env + '/browserSync.json'))),
-
-  // Watch files
+// Watch files
   watchFiles: yargs.watchFiles || false,
 
   // Compression
@@ -126,9 +125,9 @@ Unilend.config = deepAssign({
     image: goodPath('/src/media'),
     relative: true,
     debug: false
-  }, getJSON(goodPath(configPath + '/compass.json')), getJSON(goodPath(configPath + env + '/compass.json'))),
+  }, getJSON(goodPath(configPath + env + '/compass.json'))),
 
-}, getJSON(goodPath(configPath + '/config.json')), getJSON(goodPath(configPath + env + '/config.json')))
+}, getJSON(goodPath(configPath + env + '/config.json')))
 
 // Load in the additional config file
 if (configFile) {

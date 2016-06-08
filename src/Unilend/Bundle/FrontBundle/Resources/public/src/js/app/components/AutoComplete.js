@@ -15,9 +15,9 @@ jQuery.expr[':'].Contains = function(a, i, m) {
 };
 
 // AutoComplete Language
-var Dictionary = require('Dictionary')
-var AUTOCOMPLETE_LANG = require('../../../lang/AutoComplete.lang.json')
-var __ = new Dictionary(AUTOCOMPLETE_LANG)
+//var Dictionary = require('Dictionary')
+//var AUTOCOMPLETE_LANG = require('../../../lang/AutoComplete.lang.json')
+//var __ = new Dictionary(AUTOCOMPLETE_LANG)
 
 /*
  * AutoComplete
