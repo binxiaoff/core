@@ -176,10 +176,10 @@
 
     <article class="project-list-item {{ classProjectExpired }} {{ classUserInvolved }}"{{ sortAttrs }}>
         <div class="project-list-item-category">
-            {{ general.projectCategoryIcon(project.sector) }}
+            {{ general.projectCategoryIcon(project.company.sector) }}
             {% if project.photo_projet is not empty %}
-                <div class="project-list-item-image" style="background-image:url('{{ project.photo_projet|escape('html_attr') }}')">
-                    <img src="{{ project.photo_projet }}" alt="">
+                <div class="project-list-item-image" style="background-image:url('{{ project.photo_projet | completeProjectImagePath | escape('html_attr') }}')">
+                    <img src="{{ project.photo_projet | completeProjectImagePath }}" alt="">
                 </div>
             {% endif %}
         </div>
@@ -187,7 +187,7 @@
             <h3 class="project-list-item-title"><a href="{{ project.slug }}">{{ project.title}}</a></h3>
             <div class="project-list-item-meta">
                 <h4 class="project-list-item-location">
-                    <span class="icon fa-map-marker"></span> {{ project.city }}, {{ project.zip }}
+                    <span class="icon fa-map-marker"></span> {{ project.company.city }}, {{ project.company.zip }}
                 </h4>
                 <h5 class="project-list-item-cost">{{ project.amount }}€</h5>
             </div>
@@ -196,11 +196,11 @@
             </div>
         </div>
         <div class="project-list-item-stats">
-            <div class="project-list-item-interest">{{ project.currentInterestRate }}%</div>
+            <div class="project-list-item-interest">{{ project.avg_rate }} %</div>
             <div class="project-list-item-offers">
-                <strong>{{ project.number_bids }}</strong>{% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
+                <strong>{{ project.number_bids }}</strong> {% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
             </div><!-- /.project-list-item-offers -->
-            {% if project.currentUserTotalOffers is defined and project.currentUserTotalOffers > 0 and project.currentUserOffers is not empty %}
+            {% if project.currentUserOffers is defined and project.currentUserOffers | length > 0 %}
                 <div class="project-list-item-useroffers">
                     {% for statusOffer, numOffers in project.currentUserOffers if numOffers > 0 %}
                         {% if statusOffer == constant('\bids::STATUS_BID_ACCEPTED') %}
@@ -238,6 +238,6 @@
             <a href="{{ project.slug }}"><span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span></a>
         </div>
         {# Feel free to do something better here #}
-        <a href="{{ project.slug }}" class="project-list-item-hotspot"></a>
+        <a href="{{ path('project_show', {'projectSlug' : project.slug }) }}" class="project-list-item-hotspot"></a>
     </article><!-- /.project-list-item -->
 {% endmacro %}

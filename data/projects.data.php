@@ -207,6 +207,8 @@ class projects extends projects_crud
         }
         $sql = 'SELECT p.*,
               projects_status.status,
+              COUNT(b.id_bid) AS number_bids,
+              DATEDIFF(p.date_retrait_full, NOW()) AS daysLeft,
               CASE WHEN projects_status.status = :iFunding
                 THEN "1"
                 ELSE "2"
@@ -875,35 +877,4 @@ class projects extends projects_crud
         return $this->bdd->executeQuery($sQuery);
     }
 
-    public function getProjectsForDisplay(array $aProjectStatus, $sOrderBy)
-    {
-        //TODO implement cache
-        //TODO avg Rate
-
-        $sQuery ='SELECT
-                      p.*,
-                      c.sector,
-                      c.zip,
-                      c.city,
-                      COUNT(b.id_bid) AS number_bids,
-                      DATEDIFF(NOW(), p.date_retrait_full) AS daysLeft
-                    FROM
-                      projects p
-                    INNER JOIN projects_last_status_history USING(id_project)
-                    INNER JOIN projects_status_history USING(id_project_status_history)
-                    INNER JOIN projects_status USING(id_project_status)
-                    INNER JOIN companies c ON p.id_company = c.id_company
-                    INNER JOIN bids b ON p.id_project = b.id_project
-                    WHERE
-                      projects_status.status IN (' . implode($aProjectStatus) . ') AND p.display = ' . self::DISPLAY_PROJECT_ON . ' AND p.status = 0
-                    ORDER BY ' . $sOrderBy ;
-
-        $oStatement = $this->bdd->executeQuery($sQuery);
-        $aProjectsInFunding = array();
-        while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
-            $aProjectsInFunding[] = $aRow;
-        }
-
-        return $aProjectsInFunding;
-    }
 }

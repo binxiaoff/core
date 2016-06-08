@@ -4,6 +4,14 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 
 class AppExtension extends \Twig_Extension
 {
+
+    private $sUrl;
+
+    public function __construct($routerRequestContextScheme, $routerRequestContextHost)
+    {
+        $this->sUrl = $routerRequestContextHost . '://' . $routerRequestContextScheme ;
+    }
+
     public function getName()
     {
         return 'app_extension';
@@ -41,11 +49,13 @@ class AppExtension extends \Twig_Extension
         return $sSvgHtml;
     }
 
+    //TODO delete before going live
     public function routeFunction($sRoute)
     {
         return $sRoute;
     }
 
+    //TODO delete before going live
     public function temporaryTranslateFunction($sTranslations)
     {
         return $sTranslations;
@@ -56,6 +66,12 @@ class AppExtension extends \Twig_Extension
         return 'frontbundle/media/' . $sURL;
     }
 
+    public function canUseSvg()
+    {
+        //var useSVG = GLOBAL.Unilend.config.useSVG || false
+        return true;
+    }
+
 
     public function getFunctions()
     {
@@ -63,9 +79,9 @@ class AppExtension extends \Twig_Extension
             new \Twig_SimpleFunction('route', array($this, 'routeFunction')),
             new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
-            new \Twig_SimpleFunction('siteurlmedia', array($this, 'siteurlmediaFunction'))
+            new \Twig_SimpleFunction('siteurlmedia', array($this, 'siteurlmediaFunction')),
+            new \Twig_SimpleFunction('caniuse_svg', array($this, 'canUseSvg'))
         );
-
     }
 
     public function nbspFilter($sString)
@@ -83,13 +99,24 @@ class AppExtension extends \Twig_Extension
         return constant('\projects::RISK_' . $sProjectRating);
     }
 
+    public function projectImagePathFilter($sImage)
+    {
+        return $this->sUrl . '/images/dyn/projets/72/' . $sImage;
+    }
+
+    public function addBaseUrl($sUrl)
+    {
+        return $this->sUrl . $sUrl;
+    }
+
     public function getFilters()
     {
         return array(
             new \Twig_SimpleFilter('nbsp', array($this, 'nbspFilter')),
             new \Twig_SimpleFilter('__num', array($this, 'numFilter')),
-            new \Twig_SimpleFilter('convertRisk', array($this, 'convertProjectRiskFilter'))
-
+            new \Twig_SimpleFilter('convertRisk', array($this, 'convertProjectRiskFilter')),
+            new \Twig_SimpleFilter('completeProjectImagePath', array($this, 'projectImagePathFilter')),
+            new \Twig_SimpleFilter('baseUrl', array())
         );
     }
 

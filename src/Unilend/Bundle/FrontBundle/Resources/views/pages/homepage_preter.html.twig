@@ -120,8 +120,8 @@ permalink: route('preter')
                             <div class="promo-image">
                                 {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
                             </div>
-                            <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="90" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint">{{ stats.percentageFullyRepayedProjects }}</span><sup>%</sup></h3>
-                            <p>{% trans with {'%percentageFullyRepayedProjects%' : stats.percentageFullyRepayedProjects }%} home-lender_unilend-fact-lender-refunded-projects-text {% endtrans %}</p>
+                            <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="90" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint">{% trans %} home-lender_unilend-fact-1-title {% endtrans %}</h3>
+                            <p>{% trans %} home-lender_unilend-fact-1-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
 
@@ -131,8 +131,8 @@ permalink: route('preter')
                                 {{ svgimage('#promo-linechart', '', 190, 190, 'none') | raw }}
                             </div>
                             <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="8.84" data-total-time="3000" data-tween-count="easeOutQuint">
-                                    {{ stats.averageYearlyInterestRateUnilend }}</span><sup>%</sup></h3>
-                            <p>{% trans with { '%averageYearlyInterestRateUnilend%' : stats.averageYearlyInterestRateUnilend } %} home-lender_unilend-fact-lender-avg-interest-rate-text {% endtrans %}</p>
+                                    {% trans %} home-lender_unilend-fact-2-title {% endtrans %}</span></h3>
+                            <p>{% trans %} home-lender_unilend-fact-2-text {% endtrans %}</p>
                         </div>
                     </div><!-- /.promo -->
 
@@ -141,8 +141,8 @@ permalink: route('preter')
                             <div class="promo-image">
                                 {{ svgimage('#promo-clock', '', 190, 190, 'none') | raw }}
                             </div>
-                            <h3 class="promo-highlight">{% trans %} home-lender_unilend-fact-first-loan-number {% endtrans %}</h3>
-                            <p>{% trans %} home-lender_unilend-fact-first-loan-text {% endtrans %}</p>
+                            <h3 class="promo-highlight">{% trans %} home-lender_unilend-fact-3-title {% endtrans %}</h3>
+                            <p>{% trans %} home-lender_unilend-fact-3-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
                 </div>

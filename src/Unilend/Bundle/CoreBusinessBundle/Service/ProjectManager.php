@@ -790,30 +790,27 @@ class ProjectManager
         return $oBid->getBidsStatistics($oProject->id_project);
     }
 
-    public function getProjectsForDisplay(array $aProjectStatus, $sOrderBy)
+    public function getProjectsForDisplay(array $aProjectStatus, $sOrderBy, $aRateRange, $iLenderId = null)
     {
         /** @var \projects $projects */
-        $projects = $this->oEntityManager->getRepository('projects');
-        $aProjects = $projects->getProjectsForDisplay($aProjectStatus, $sOrderBy);
+        $projects  = $this->oEntityManager->getRepository('projects');
+        /** @var \companies $company */
+        $company = $this->oEntityManager->getRepository('companies');
+        /** @var \bids $bids */
+        $bids = $this->oEntityManager->getRepository('bids');
 
-        if (0 < count($aProjects)) {
-            return false;
-        }
+        $aProjects = $projects->selectProjectsByStatus(implode(',', $aProjectStatus), null, $sOrderBy, $aRateRange);
 
-        $aProjects = $this->addCurrentInterestRateToProject($aProjects);
-
-        return $aProjects;
-    }
-
-    private function addCurrentInterestRateToProject(array $aProjects)
-    {
-        /** @var \projects $project */
-        $project = $this->oEntityManager->getRepository('projects');
-
-        foreach ($aProjects as $iKey => $aProject) {
-            $aProjects[$iKey]['currentInterestRate'] = $project->getAverageInterestRate($aProject['id_project']);
+        foreach ($aProjects as $key => $project) {
+            $aCompany = $company->select('id_company = ' . $project['id_company']);
+            $aProjects[$key]['company'] = array_shift($aCompany);
+            $aProjects[$key]['currentUserInvolved'] = isset($iLenderId) ? $this->oLenderManager->hasBidOnProject($iLenderId, $project['id_project']) :  false ;
+            $aProjects[$key]['currentUserOffers'] = isset($iLenderId) ? $bids->select('id_lender_account = ' . $iLenderId . ' AND id_project = ' . $project['id_project']) : array();
         }
 
         return $aProjects;
     }
+
+
+
 }

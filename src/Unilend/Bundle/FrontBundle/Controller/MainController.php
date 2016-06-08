@@ -48,9 +48,13 @@ class MainController extends Controller
         $aVideoHeroesLenders   = $testimonialService->getActiveVideoHeroes('preter');
         $aVideoHeroesBorrowers = $testimonialService->getActiveVideoHeroes('emprunter');
 
+        $aRateRange = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
+
         /** @var ProjectManager $projectManager */
         $projectManager     = $this->get('unilend.service.project_manager');
-        $aProjectsInFunding = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC');
+        $aProjectsInFunding = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC', $aRateRange);
+
+
 
         return $this->render('UnilendFrontBundle:pages:homepage_preter.html.twig', array(
             'stats' => array(

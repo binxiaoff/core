@@ -55,4 +55,12 @@ class LenderManager
         }
     }
 
+    public function hasBidOnProject($iLenderAccountId, $iProjectId)
+    {
+        /** @var \bids $bids */
+        $bids = $this->oEntityManager->getRepository('bids');
+
+        return $bids->exist($iProjectId, 'id_lender_account = ' . $iLenderAccountId . ' AND id_project = ');
+    }
+
 }
