@@ -101,5 +101,8 @@
         <service id="unilend.command.project_publish" class="Unilend\Bundle\CommandBundle\Command\CheckProjectToFundCommand">
             <tag name="console.command"/>
         </service>
+        <service id="unilend.command.greenpoint_validation" class="Unilend\Bundle\CommandBundle\Command\GreenPointValidationCommand">
+            <tag name="console.command"/>
+        </service>
     </services>
 </container>

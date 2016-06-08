@@ -12,11 +12,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckProjectToFundCommand extends ContainerAwareCommand
 {
-    /** @var  EntityManager */
-    private $oEntityManager;
-    /** @var LoggerInterface $oLogger */
-    private $oLogger;
-
     protected function configure()
     {
         $this
@@ -33,25 +28,25 @@ EOF
     {
         ini_set('memory_limit', '1G');
 
-        $this->oLogger = $this->getContainer()->get('monolog.logger.console');
-        $this->oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        $oLogger = $this->getContainer()->get('monolog.logger.console');
+        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $oProject */
-        $oProject = $this->oEntityManager->getRepository('projects');
+        $oProject = $oEntityManager->getRepository('projects');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;
 
         $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
-        $this->oLogger->info('Number of projects to publish : ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $oLogger->info('Number of projects to publish : ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         foreach ($aProjectToFund as $aProject) {
             if ($oProject->get($aProject['id_project'])) {
-                $this->oLogger->info('Publishing the id_project=' . $aProject['id_project'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']));
+                $oLogger->info('Publishing the id_project=' . $aProject['id_project'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']));
                 $bHasProjectPublished = true;
                 $oProjectManager->publish($oProject);
-                $this->zipProjectAttachments($oProject);
-                $this->sendNewProjectEmail($oProject);
+                $this->zipProjectAttachments($oProject, $oEntityManager, $oLogger);
+                $this->sendNewProjectEmail($oProject, $oEntityManager);
             }
         }
         if ($bHasProjectPublished) {
@@ -63,15 +58,17 @@ EOF
 
     /**
      * @param \projects
+     * @param EntityManager $oEntityManager
+     * @param LoggerInterface $oLogger
      */
-    private function zipProjectAttachments(\projects $project)
+    private function zipProjectAttachments(\projects $project, EntityManager $oEntityManager, LoggerInterface $oLogger)
     {
         /** @var \companies $companies */
-        $companies = $this->oEntityManager->getRepository('companies');
+        $companies = $oEntityManager->getRepository('companies');
         /** @var \attachment $oAttachment */
-        $oAttachment = $this->oEntityManager->getRepository('attachment');
+        $oAttachment = $oEntityManager->getRepository('attachment');
         /** @var \attachment_type $oAttachmentType */
-        $oAttachmentType = $this->oEntityManager->getRepository('attachment_type');
+        $oAttachmentType = $oEntityManager->getRepository('attachment_type');
 
         $companies->get($project->id_company, 'id_company');
 
@@ -93,7 +90,7 @@ EOF
         $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->getContainer()->getParameter('kernel.root_dir') . '/../'));
         $aAttachments      = $project->getAttachments();
 
-        $this->oLogger->info('Project attachments of id_project=' . $project->id_project . ': ' . var_export($aAttachments, true), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+        $oLogger->info('Project attachments of id_project=' . $project->id_project . ': ' . var_export($aAttachments, true), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
@@ -156,32 +153,33 @@ EOF
 
     /**
      * @param \projects $project
+     * @param  EntityManager $oEntityManager
      */
-    private function sendNewProjectEmail(\projects $project)
+    private function sendNewProjectEmail(\projects $project, EntityManager $oEntityManager)
     {
         /** @var \clients $clients */
-        $clients = $this->oEntityManager->getRepository('clients');
+        $clients = $oEntityManager->getRepository('clients');
         /** @var \notifications $notifications */
-        $notifications = $this->oEntityManager->getRepository('notifications');
+        $notifications = $oEntityManager->getRepository('notifications');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clients_gestion_notifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
+        $clients_gestion_notifications = $oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
-        $clients_gestion_mails_notif = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
+        $clients_gestion_mails_notif = $oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \companies $companies */
-        $companies = $this->oEntityManager->getRepository('companies');
-        $this->oEntityManager->getRepository('clients_status');//For class constants
+        $companies = $oEntityManager->getRepository('companies');
+        $oEntityManager->getRepository('clients_status');//For class constants
 
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $oLenderAccount = $oEntityManager->getRepository('lenders_accounts');
         /** @var \transactions $oTransaction */
-        $oTransaction = $this->oEntityManager->getRepository('transactions');
+        $oTransaction = $oEntityManager->getRepository('transactions');
         /** @var AutoBidSettingsManager $oAutobidSettingsManager */
         $oAutobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
 
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var \settings $settings */
-        $settings = $this->oEntityManager->getRepository('settings');
+        $settings = $oEntityManager->getRepository('settings');
 
         $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
             $this->getContainer()->getParameter('router.request_context.host');
@@ -211,19 +209,19 @@ EOF
         );
 
         /** @var \textes $translations */
-        $translations                          = $this->oEntityManager->getRepository('textes');
+        $translations                          = $oEntityManager->getRepository('textes');
         $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
 
         /** @var \autobid_periods $oAutobidPeriods */
-        $oAutobidPeriods = $this->oEntityManager->getRepository('autobid_periods');
+        $oAutobidPeriods = $oEntityManager->getRepository('autobid_periods');
         $aPeriod         = $oAutobidPeriods->getPeriod($project->period);
 
         /** @var \autobid $oAutobid */
-        $oAutobid    = $this->oEntityManager->getRepository('autobid');
+        $oAutobid    = $oEntityManager->getRepository('autobid');
         $aAutobiders = array_column($oAutobid->getSettings(null, $project->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
 
         /** @var \bids $oBids */
-        $oBids            = $this->oEntityManager->getRepository('bids');
+        $oBids            = $oEntityManager->getRepository('bids');
         $aBids            = $oBids->getLenders($project->id_project);
         $aNoAutobidPlaced = array_diff(array_keys($aAutobiders), array_column($aBids, 'id_lender_account'));
 
