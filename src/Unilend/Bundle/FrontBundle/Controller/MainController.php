@@ -5,8 +5,8 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
-use Unilend\Service\ProjectManager;
-use Unilend\Service\StatisticsManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use \Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
 class MainController extends Controller
 {
@@ -87,6 +87,25 @@ class MainController extends Controller
                     'label' => 'Time Remaining, projectListFilterPeriod'
                 )
             )
+        ));
+    }
+
+    /**
+     * @Route("/borrower")
+     */
+    public function homeBorrowerAction()
+    {
+        /** @var TestimonialManager $testimonialService */
+        $testimonialService    = $this->get('unilend.service.testimonial');
+        $aVideoHeroesLenders   = $testimonialService->getActiveVideoHeroes('preter');
+        $aVideoHeroesBorrowers = $testimonialService->getActiveVideoHeroes('emprunter');
+        $aBattenbergPeople     = $testimonialService->getActiveBattenbergTestimonials();
+
+        return $this->render('UnilendFrontBundle:pages:homepage_emprunter.html.twig', array(
+            'stats' => array(),
+            'videoHeroes' => array('Lenders' => $aVideoHeroesLenders, 'Borrowers' => $aVideoHeroesBorrowers),
+            'testimonialPeople' => $aBattenbergPeople,
+
         ));
     }
 

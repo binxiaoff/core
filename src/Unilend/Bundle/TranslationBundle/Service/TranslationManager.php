@@ -3,6 +3,7 @@
 namespace Unilend\Bundle\TranslationBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Symfony\Component\Finder\Finder;
 
 
 class TranslationManager
@@ -13,26 +14,23 @@ class TranslationManager
     /** @var TranslationLoader  */
     private $translationLoader;
 
-    public function __construct(EntityManager $entityManager, TranslationLoader $translationLoader, $defaultLanguage, $rootDirectory)
+    public function __construct(EntityManager $entityManager, TranslationLoader $translationLoader, $defaultLanguage, $cacheDirectory)
     {
         $this->entityManager     = $entityManager;
         $this->translationLoader = $translationLoader;
         $this->defaultLanguage   = $defaultLanguage;
-        $this->rootDirectory     = $rootDirectory;
+        $this->cacheDirectory    = $cacheDirectory;
     }
 
     public function clearLanguageCache()
     {
-        $cacheDir = $this->rootDirectory . '/../var/cache';
-        $finder   = new \Symfony\Component\Finder\Finder();
-
-        $finder->in(array($cacheDir . '/dev/translations', $cacheDir . '/prod/translations'))->files();
+        $finder   = new Finder();
+        $finder->in($this->cacheDirectory)->files();
 
         foreach($finder as $file) {
             unlink($file->getRealpath());
         }
     }
-
 
     public function selectSections($sLanguage)
     {
@@ -126,6 +124,25 @@ class TranslationManager
         }
 
         return $aTranslations;
+    }
+
+    /**
+     * @param string|null $sLanguage
+     * @return array
+     */
+    public function getTranslatedCompanySectorList($sLanguage = null)
+    {
+        /** @var \company_sector $companySector */
+        $companySector       = $this->entityManager->getRepository('company_sector');
+        $aSectorTranslations = $this->getAllTranslationsForSection('company-sector', $sLanguage);
+        $aCompanySectors     = $companySector->select();
+        $aTranslatedSectors  = array();
+
+        foreach ($aCompanySectors as $aSector) {
+            $aTranslatedSectors[$aSector['id_company_sector']] = $aSectorTranslations['sector-' . $aSector['id_company_sector']];
+        }
+
+        return $aTranslatedSectors;
     }
 
 }

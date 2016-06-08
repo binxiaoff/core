@@ -89,3 +89,7 @@ monolog:
 
 swiftmailer:
     transport: '%mailer_transport%'
+
+unilend_translation:
+    parameters:
+        cache_path: "%kernel.cache_dir%/translations"

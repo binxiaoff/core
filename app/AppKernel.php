@@ -19,7 +19,7 @@ class AppKernel extends Kernel
             new Unilend\Bundle\MessagingBundle\UnilendMessagingBundle(),
             new Symfony\Bundle\TwigBundle\TwigBundle(),
             new Unilend\Bundle\FrontBundle\UnilendFrontBundle(),
-            new \Symfony\Bundle\AsseticBundle\AsseticBundle(),
+            new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Unilend\Bundle\TranslationBundle\UnilendTranslationBundle(),
         ];
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {

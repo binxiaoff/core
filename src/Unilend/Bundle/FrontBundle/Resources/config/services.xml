@@ -11,7 +11,7 @@
 
         <service id="unilend.service.testimonial" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
             <argument type="service" id="unilend.service.entity_manager"/>
-            <argument type="service" id="unilend.service.translations"/>
+            <argument type="service" id="unilend.service.translation_manager"/>
         </service>
     </services>
 </container>
