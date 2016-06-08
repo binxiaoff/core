@@ -1,0 +1,20 @@
+{
+  "en": {
+    "attachFileLabel": "Attach",
+    "removeFileLabel": "Remove",
+    "emptyFileLabel": "",
+    "errorIncorrectFileTypeError": "File type <strong>{{ fileType }}</strong> not accepted",
+    "errorIncorrectFileTypeMessage": "Accepting only: <strong>{{ acceptedFileTypes }}</strong>",
+    "errorIncorrectFileSizeError": "File size exceeds maximum <strong>{{ acceptedFileSize }}</strong>",
+    "errorIncorrectFileSizeMessage": ""
+  },
+  "fr": {
+    "attachFileLabel": "Ajouter",
+    "removeFileLabel": "Supprimer",
+    "emptyFileLabel": "",
+    "errorIncorrectFileTypeError": "Fichier type <strong>{{ fileType }}</strong> n'acceptée pas",
+    "errorIncorrectFileTypeMessage": "Accepter seulement: <strong>{{ acceptedFileTypes }}</strong>",
+    "errorIncorrectFileSizeError": "La taille du fichier dépasse le maximum <strong>{{ acceptedFileSize }}</strong>",
+    "errorIncorrectFileSizeMessage": ""
+  }
+}

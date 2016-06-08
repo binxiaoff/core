@@ -1,0 +1,106 @@
+//
+// Unilend Notifications
+//
+
+@mixin notification {
+  padding: 20px;
+
+  .notification-header {
+    position: relative;
+  }
+
+  .notification-datetime {
+    margin: 0;
+    color: $c-t3;
+    font-size: $fs-h6;
+  }
+
+  .notification-title {
+    margin: 0;
+    color: $c-t2;
+    font-size: $fs-h5;
+  }
+
+  .notification-image {
+    display: block;
+    width: 40px;
+    height: 40px;
+    overflow: hidden;
+
+    position: absolute;
+    right: -15px;
+    top: 0;
+
+    color: $c-t3;
+
+    svg.svg-icon {
+      display: block;
+      width: 80px;
+      max-width: none;
+      height: 80px;
+      max-height: none;
+      margin-left: -20px;
+      margin-top: -20px;
+
+      stroke-width: 2px;
+    }
+  }
+
+  .notification-content {
+    margin-top: 6px;
+
+    color: $c-t2;
+    font-size: $fs-base * .8;
+    line-height: 1.3em;
+
+    p {
+      margin: 0;
+      line-height: 1.3em;
+    }
+  }
+
+  &.notification-type-offer-rejected {
+    .notification-title {
+      color: $c-rejected;
+    }
+  }
+
+  &.notification-type-offer-accepted {
+    .notification-title {
+      color: $c-accepted;
+    }
+  }
+
+  &.notification-type-account {
+    .notification-title {
+      color: $c-account;
+    }
+  }
+}
+
+// Single notification
+.notification {
+  @include notification;
+}
+
+// List of notifications
+.list-notifications {
+  @include block-list;
+
+  .notification {
+    border-bottom: solid 1px $c-bg2;
+    background-color: $c-bg3;
+
+    .notification-content {
+      display: none;
+    }
+
+    &#{$js-notification-status-unread} {
+      background-color: $c-white;
+
+      .notification-content {
+        display: block;
+      }
+    }
+  }
+}

@@ -1,0 +1,344 @@
+//
+// Unilend User Preter Profile
+//
+
+#user-preter-profile.dashboard {
+  .nav.nav-dashboard-tabs {
+    > li {
+      width: 25%;
+    }
+  }
+
+  .panel {
+    position: relative;
+
+    .panel-header {
+      margin-bottom: 20px;
+
+      > :first-child {
+        margin-top: 0;
+      }
+
+      > :last-child {
+        margin-bottom: 0;
+      }
+
+      @include devices('lg') {
+        margin-bottom: 30px;
+      }
+    }
+
+    .collapsing {
+      .btn-edit {
+        display: none;
+      }
+    }
+
+    .panel-content {
+      margin-bottom: 20px;
+    }
+
+    // Padding on the right side for larger devices
+    @include devices('laptop') {
+      padding-right: 150px !important;
+    }
+
+    @include devices('lg') {
+      padding-right: 200px !important;
+    }
+  }
+
+  .btn-edit {
+    @include button;
+    @include button-shape-sm;
+    // @include button-color-default;
+    @include link-states(
+      $link: (
+        background-color: $c-bg2,
+        border-color: $c-bg2,
+        color: $c-t3,
+        text-decoration: none
+      ),
+      $hover: (
+        background-color: $c-bg2,
+        border-color: $c-bg2,
+        color: $c-t1,
+        text-decoration: none
+      ),
+      $active: (
+        background-color: $c-bg2,
+        border-color: $c-bg2,
+        color: $c-t1,
+        text-decoration: none
+      )
+    );
+
+    position: absolute;
+    right: 0;
+    top: 0;
+    margin-right: 20px;
+    margin-top: 20px;
+
+    @include devices('xs', 'sm') {
+      .label {
+        @include hide-accessible;
+      }
+    }
+
+    @include devices('laptop') {
+      margin-right: 30px;
+      margin-top: 30px;
+    }
+
+    @include devices('lg') {
+      margin-right: 40px;
+      margin-top: 40px;
+    }
+  }
+
+  .list-2col {
+    dt, dd {
+      margin-bottom: 6px;
+    }
+
+    dt {
+      padding-top: 5px;
+      color: $c-t2;
+      font-size: $fs-base * .9;
+      line-height: 1.3em;
+      font-style: italic;
+    }
+  }
+
+  .form-field {
+    > label,
+    .form-field-label,
+    .field-label {
+      font-weight: bold;
+    }
+  }
+
+  .btn-controls {
+    .btn-default,
+    .btn-primary,
+    .btn-alternate {
+      margin-right: 20px;
+    }
+  }
+
+  #panel-address .panel-header {
+    h1, h2, h3, h4, h5, h6 {
+      margin-bottom: 0;
+    }
+  }
+
+  #profile-address-is-correspondence {
+    margin-top: 6px;
+    color: $c-t2;
+    font-size: $fs-base * .9;
+  }
+
+  // #panel-bank {
+
+  // }
+
+  #panel-reports {
+    .list-files {
+      @include clearfix;
+      @include block-list;
+
+      > .file {
+        box-sizing: border-box;
+        width: 100%;
+        float: left;
+        padding-right: 20px;
+        padding-bottom: 20px;
+        line-height: 1.3em;
+
+        > :first-child {
+          margin-top: 0;
+        }
+
+        > :last-child {
+          margin-bottom: 0;
+        }
+
+        @include devices('sm', 'tablet-l') {
+          width: 50%;
+        }
+
+        @include devices('laptop', 'lg') {
+          width: 50%;
+        }
+
+        .link {
+          display: block;
+          margin-top: 5px;
+        }
+      }
+    }
+
+    .list-2col {
+      > dt {
+        color: $c-t1;
+        font-size: $fs-base;
+        font-style: normal;
+        font-weight: bold;
+      }
+
+      > dd {
+        color: $c-p1;
+        font-weight: bold;
+      }
+    }
+  }
+
+  #form-alerts {
+    .list-block {
+      > li {
+        @include clearfix;
+        padding: 10px;
+
+        &:nth-of-type(2n+1) {
+          background-color: $c-bg3;
+        }
+
+        .custom-input-switch {
+          float: right;
+        }
+      }
+    }
+  }
+
+  #form-security-connexion-alerts-switch {
+    margin-right: 5px;
+  }
+
+  .list-connexion-sessions {
+    padding: 0;
+    margin: 20px 0 0;
+    list-style: none;
+
+    .connexion-session {
+      padding: 20px;
+      margin: 0;
+      color: $c-t1;
+      line-height: 1.3em;
+      list-style: none;
+
+      &:nth-of-type(2n+1) {
+        background-color: $c-bg3;
+      }
+    }
+
+    .connexion-session-ua,
+    .connexion-session-location,
+    .connexion-session-period,
+    .connexion-session-controls {
+      box-sizing: border-box;
+      padding: 0;
+      vertical-align: middle;
+    }
+
+    .connexion-session-controls {
+      color: $c-t2;
+    }
+
+    .connexion-session-os {
+      color: $c-t2;
+      font-size: $fs-base * .8;
+    }
+
+    // Change to table view for tablet-p, medium and large responsive devices
+    @include devices('tablet-p', 'md', 'lg') {
+      display: table;
+
+      .connexion-session {
+        display: table-row;
+      }
+
+      .connexion-session-ua,
+      .connexion-session-location,
+      .connexion-session-period,
+      .connexion-session-controls {
+        display: table-cell;
+        width: 25%;
+        padding: 10px 20px;
+      }
+
+      .connexion-session-controls {
+        text-align: right;
+      }
+    }
+
+    @include devices('lg') {
+      .connexion-session-ua,
+      .connexion-session-location,
+      .connexion-session-period,
+      .connexion-session-controls {
+        padding: 20px 30px;
+      }
+    }
+  }
+}
+
+.file-justificatif {
+  display: inline-block;
+}
+
+.file-identity-side-a,
+.file-identity-side-b,
+.file-domicile,
+.file-rib {
+  &:before {
+    content: '';
+    display: inline-block;
+    width: 70px;
+    height: 50px;
+    padding: 0;
+    margin: 0 10px 5px 0;
+    overflow: hidden;
+
+    background-color: transparent;
+    background-image: none;
+    background-repeat: no-repeat;
+    background-position: center center;
+    line-height: 50px;
+    text-align: left;
+    text-indent: -9999em;
+  }
+}
+
+.file-identity-side-a:before {
+  background-image: image-url('dashboard/identity-side-a.png');
+}
+
+.file-identity-side-b:before {
+  background-image: image-url('dashboard/identity-side-b.png');
+}
+
+.file-domicile:before {
+  background-image: image-url('dashboard/domicile.png');
+}
+
+.file-rib:before {
+  background-image: image-url('dashboard/rib.png');
+}
+
+@include devices('sm', 'md', 'lg') {
+  .form-field {
+    &.file-identity-side-a,
+    &.file-identity-side-b,
+    &.file-domicile,
+    &.file-rib {
+      position: relative;
+      padding-left: 80px;
+
+      &:before {
+        position: absolute;
+        left: 0;
+        top: 0;
+      }
+    }
+  }
+}

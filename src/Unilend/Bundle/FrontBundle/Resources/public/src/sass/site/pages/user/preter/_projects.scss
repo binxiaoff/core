@@ -1,0 +1,93 @@
+//
+// Unilend User Preter Projects
+//
+
+#user-preter-projects.dashboard {
+  .project-list {
+    margin: 0;
+
+    .pagination-wrap {
+      background-color: $c-white;
+      border-top: solid 2px $c-bg2;
+
+      @include devices('xs', 'sm') {
+        padding-bottom: 20px;
+      }
+    }
+
+    .pagination-index {
+      > li {
+        > a {
+          @include link-states(
+            $link: (
+              background-color: $c-bg3,
+              border-color: $c-bg3,
+              color: $c-t1
+            ),
+            $hover: (
+              background-color: $c-bg1,
+              border-color: $c-bg1,
+              color: $c-t1
+            ),
+            $active: (
+              background-color: $c-bg1,
+              border-color: $c-bg1,
+              color: $c-p1
+            )
+          );
+        }
+
+        &.current {
+          > a {
+
+          }
+        }
+      }
+    }
+
+    @include devices('md', 'lg') {
+      margin-left: 20px;
+      margin-right: 20px;
+    }
+  }
+
+  .project-list-nav {
+    > .nav-tabs {
+      > li.active {
+        > a {
+          @include link-states(
+            $link: (
+              background-color: $c-bg3,
+              border-color: $c-bg3,
+              color: $c-t1
+            ),
+            $hover: (
+              background-color: $c-bg3,
+              border-color: $c-bg3,
+              color: $c-t1
+            ),
+            $active: (
+              background-color: $c-bg3,
+              border-color: $c-bg3,
+              color: $c-t1
+            )
+          );
+        }
+      }
+    }
+  }
+
+  .project-list-content {
+    border: 0;
+  }
+
+  .project-list-filters {
+    background-color: $c-bg3;
+    border-bottom: solid 2px $c-bg2;
+  }
+
+  .project-list-filter {
+    padding-top: 20px;
+    padding-bottom: 20px;
+  }
+}

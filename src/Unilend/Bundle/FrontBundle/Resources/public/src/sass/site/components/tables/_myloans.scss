@@ -1,0 +1,116 @@
+//
+// Unilend Table My Loans
+//
+
+.table-myloans {
+  border-collapse: separate;
+
+  th, td {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  // Columns
+  .table-myloans-item-project {
+    width: 14%;
+
+    .text-crop {
+      max-width: 150px;
+    }
+  }
+
+  .table-myloans-item-rating {
+    width: 10%;
+  }
+
+  .table-myloans-item-amount {
+    width: 10%;
+    text-align: right;
+  }
+
+  .table-myloans-item-interest {
+    width: 8%;
+    text-align: right;
+  }
+
+  .table-myloans-item-monthly {
+    width: 10%;
+    text-align: right;
+  }
+
+  .table-myloans-item-next {
+    width: 10%;
+  }
+
+  .table-myloans-item-duration {
+    width: 10%;
+  }
+
+  .table-myloans-item-documents {
+    width: 8%;
+    text-align: right;
+  }
+
+  .table-myloans-item {
+    .table-myloans-item-project {
+      border-left: solid 3px transparent;
+    }
+
+    &.ui-loan-status-inprogress {
+      .table-myloans-item-project {
+        border-color: $c-teal;
+      }
+    }
+
+    &.ui-loan-status-completing {
+      .table-myloans-item-project {
+        border-color: darken($c-teal, 15%);
+      }
+    }
+
+    &.ui-loan-status-completed {
+      .table-myloans-item-project {
+        border-color: darken($c-teal, 15%);
+      }
+    }
+
+    &.ui-loan-status-late {
+      .table-myloans-item-project {
+        border-color: $c-orange;
+      }
+    }
+
+    &.ui-loan-status-defaulted {
+      .table-myloans-item-project {
+        border-color: $c-red;
+      }
+    }
+  }
+}
+
+.loan-doc {
+  display: inline-block;
+  width: 28px;
+  height: 38px;
+  position: relative;
+
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: center center;
+
+  .pip {
+    margin-right: -($height-pip * .3);
+    margin-top: -($height-pip * .3);
+    position: absolute;
+    right: 0;
+    top: 0;
+  }
+}
+
+.loan-doc-contract {
+  background-image: image-url('dashboard/file-contract-28x38.png');
+}
+
+.loan-doc-bond {
+  background-image: image-url('dashboard/file-bond-28x38.png');
+}

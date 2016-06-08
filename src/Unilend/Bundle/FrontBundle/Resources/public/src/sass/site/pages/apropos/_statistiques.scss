@@ -1,0 +1,360 @@
+//
+// Unilend A Propos Statistiques Page
+//
+
+#apropos-statistiques.page {
+  .page-section {
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 20px;
+    padding-bottom: 20px;
+
+    @include devices('md') {
+      padding-top: $width-site-margin-md;
+      padding-bottom: $width-site-margin-md;
+    }
+
+    @include devices('lg') {
+      padding-top: $width-site-margin-lg;
+      padding-bottom: $width-site-margin-lg;
+    }
+
+    &#section-preteurs {
+      .block-stats {
+        margin-bottom: 0;
+      }
+    }
+
+    &#section-emprunteurs {
+      .block-stats {
+        margin-top: 0;
+      }
+    }
+
+    &#section-platform {
+      margin-bottom: 0;
+      padding-bottom: 40px;
+
+      @include devices('md') {
+        padding-bottom: 80px;
+      }
+
+      @include devices('lg') {
+        padding-bottom: 120px;
+      }
+    }
+  }
+
+  .readable-wrap {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .stats-number {
+    font-family: $ff-alternate;
+    font-size: 1.4em;
+  }
+
+  .stats-chart {
+    margin-bottom: 40px;
+  }
+
+  // Promo highlight
+  .promo-highlight {
+    margin-top: 20px;
+    margin-bottom: 20px;
+  }
+
+  .promo-highlight-md {
+    font-size: 40px;
+    line-height: .8em;
+
+    @include devices('md', 'lg') {
+      font-size: 50px;
+      line-height: .8em;
+    }
+
+    // @include devices('lg') {
+    //   font-size: 60px;
+    //   line-height: .8em;
+    // }
+  }
+
+  .promo-highlight-lg {
+    font-size: 50px;
+    line-height: .8em;
+
+    @include devices('md', 'lg') {
+      font-size: 60px;
+      line-height: .8em;
+    }
+
+    // @include devices('lg') {
+    //   font-size: 80px;
+    //   line-height: .8em;
+    // }
+  }
+
+  // Icon background
+  .bg-icon-linechart,
+  .bg-icon-money {
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: contain;
+
+    @include devices('md', 'lg') {
+      padding-top: 40px;
+      padding-bottom: 40px;
+    }
+  }
+
+  // These are special SVGs with actual colour set within SVG code
+  .bg-icon-linechart {
+    background-image: image-url('apropos/statistiques/bg-icon-linechart.svg');
+  }
+
+  .bg-icon-money {
+    background-image: image-url('apropos/statistiques/bg-icon-money.svg');
+  }
+
+  .block-promos-unilend {
+    .promo-image {
+      height: auto;
+      max-height: none;
+      overflow: visible;
+    }
+  }
+
+  // Stats
+  // -- Unilend chart
+  .stats-chart-unilend {
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .stats-chart-unilend-key {
+    .chart-key {
+      padding: 10px 20px 10px 30px;
+      position: relative;
+      text-align: left;
+
+      &:before {
+        content: '';
+        display: block;
+        box-sizing: border-box;
+        width: 20px;
+        height: 20px;
+
+        position: absolute;
+        left: 0;
+        top: 10px;
+
+        border-radius: 20px;
+      }
+
+      .label {
+        display: block;
+        color: $c-t1;
+        font-size: $fs-base * .8;
+        line-height: 1.1em;
+      }
+
+      .value {
+        display: block;
+        color: $c-t2;
+        font-size: $fs-base * .8;
+      }
+
+      &.chart-key-prete:before {
+        background-color: #5fc4d0;
+      }
+
+      &.chart-key-rembourse:before {
+        background-color: #1d79d8;
+      }
+
+      &.chart-key-attente:before {
+        border: dotted 4px #3286dc;
+      }
+
+      &.chart-key-recu:before {
+        background-color: #ffa210;
+      }
+
+      &.chart-key-recevoir:before {
+        border: dotted 4px #ffa210;
+      }
+
+      &.chart-key-difficulte:before {
+        border: dotted 4px #f8524e;
+      }
+    }
+  }
+
+  // Block of stats
+  .block-stats {
+    padding: 20px;
+    margin-top: 40px;
+    margin-bottom: 40px;
+
+    background-color: $c-white;
+    text-align: center;
+
+    @include devices('md') {
+      padding: 30px;
+      margin-top: 60px;
+      margin-bottom: 60px;
+    }
+
+    @include devices('lg') {
+      padding: 40px;
+      margin-top: 80px;
+      margin-bottom: 80px;
+    }
+
+    // Preteur
+    &.block-stats-p1 {
+      h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .stats-number {
+        color: $c-p1;
+      }
+
+      .stats-charts {
+        @include clearfix;
+        position: relative;
+
+        .stats-map {
+          width: 100%;
+          float: left;
+          clear: both;
+          text-align: center;
+        }
+
+        .stats-members,
+        .stats-enterprises {
+          width: 50%;
+          float: left;
+          clear: none;
+          text-align: center;
+        }
+
+        // Position extra elements relative to middle of this block
+        @include devices('tablet-l') {
+          .stats-map {
+            width: 400px;
+            min-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: 0;
+            float: none;
+          }
+
+          .stats-members {
+            width: 200px;
+            height: 150px;
+            margin-left: -450px;
+            margin-top: -75px;
+            float: none;
+
+            position: absolute;
+            left: 50%;
+            top: 50%;
+          }
+
+          .stats-enterprises {
+            width: 200px;
+            height: 150px;
+            margin-left: 250px;
+            margin-top: -75px;
+            float: none;
+
+            position: absolute;
+            left: 50%;
+            top: 50%;
+          }
+        }
+
+        @include devices('laptop', 'lg') {
+          .stats-map {
+            width: 500px;
+            min-height: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            float: none;
+          }
+
+          .stats-members {
+            width: 200px;
+            height: 150px;
+            margin-left: -500px;
+            margin-top: -75px;
+            float: none;
+
+            position: absolute;
+            left: 50%;
+            top: 50%;
+          }
+
+          .stats-enterprises {
+            width: 200px;
+            height: 150px;
+            margin-left: 300px;
+            margin-top: -75px;
+            float: none;
+
+            position: absolute;
+            left: 50%;
+            top: 50%;
+          }
+        }
+      }
+    }
+
+    // Emprunteur
+    &.block-stats-p2 {
+      h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .stats-number {
+        color: $c-p2;
+      }
+    }
+
+    // Unilend
+    &.block-stats-unilend {
+      .table-stats-unilend-item-value {
+        text-align: right;
+      }
+
+      @include devices('md', 'lg') {
+        .table-scroll {
+          max-width: 1000px;
+          margin-left: auto;
+          margin-right: auto;
+        }
+      }
+    }
+  }
+
+  // // Specific section overrides
+  // #section-preteurs {
+  //   padding-bottom: $width-site-margin-sm * .5;
+
+  //   @include devices('md') {
+  //     padding-bottom: $width-site-margin-md * .5;
+  //   }
+
+  //   @include devices('lg') {
+  //     padding-bottom: $width-site-margin-lg * .5;
+  //   }
+  // }
+
+  // #section-emprunteurs {
+  //   padding-top: $width-site-margin-sm * .5;
+
+  //   @include devices('md') {
+  //     padding-top: $width-site-margin-md * .5;
+  //   }
+
+  //   @include devices('lg') {
+  //     padding-top: $width-site-margin-lg * .5;
+  //   }
+  // }
+}

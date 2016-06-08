@@ -1,0 +1,184 @@
+{
+  "fr": {
+    "numberDecimal":  ",",
+    "numberMilli":    " ",
+    "numberCurrency": "€",
+
+    "timeUnitNow": "maintenant",
+    "timeUnitSecond": "seconde",
+    "timeUnitSeconds": "secondes",
+    "timeUnitMinute": "minute",
+    "timeUnitMinutes": "minutes",
+    "timeUnitHour": "heure",
+    "timeUnitHours": "heures",
+    "timeUnitDay": "jour",
+    "timeUnitDays": "jours",
+    "timeUnitWeek": "semaine",
+    "timeUnitWeeks": "semaines",
+    "timeUnitMonth": "mois",
+    "timeUnitMonths": "mois",
+    "timeUnitYear": "an",
+    "timeUnitYears": "ans",
+
+    "timeCountAgo": "Il y a %s",
+    "timeCountRemaining": "%s restantes",
+
+    "siteMobileMenuOpenLabel": "Ouvrir le menu",
+    "siteMobileMenuCloseLabel": "Fermer le menu",
+
+    "siteSearchLabel": "Recherche Unilend",
+    "siteSearchInputPlaceholder": "Une question ?",
+    "siteSearchSubmitLabel": "Lancer la recherche",
+    "siteSearchShowAllResultsLabel": "Voir tous les résultats",
+
+    "siteUserRegisterLabel": "Inscription",
+    "siteUserLoginLabel": "Connexion",
+
+    "siteFooterCopyrightAllRights": "Tous droits réservés",
+
+    "socialFollowOnFacebookLabel": "Suivez Unilend sur Facebook",
+    "socialFollowOnTwitterLabel": "Suivez Unilend sur Twitter",
+
+    "projectPeriodExpired": "Projet terminée",
+
+    "projectListViewListLabel": "Voir la liste",
+    "projectListViewMapLabel": "Voir sur la carte",
+    "projectListItemTypeSingle": "Projet",
+    "projectListItemTypePlural": "Projets",
+
+    "projectListFilterCategory": "Catégorie",
+    "projectListFilterCost": "Cost",
+    "projectListFilterInterest": "Taux Intérêt Moyen",
+    "projectListFilterRating": "Note",
+    "projectListFilterPeriod": "Temps restant",
+
+    "projectListItemOffersLabelSingle": "offre",
+    "projectListItemOffersLabelPlural": "offres",
+    "projectListItemOffersUserStatusInProgress": "en cours",
+    "projectListItemOffersUserStatusAccepted": "accepté",
+    "projectListItemOffersUserStatusRejected": "rejeté",
+    "projectListItemRatingLabel": "Rated %d sur 5",
+    "projectListItemPeriodLabel": "%d jours",
+    "projectListItemPeriodExpired": "Projet terminée",
+    "projectListItemViewLabel": "Voir les informations sur ce projet",
+
+    "projectListPaginationItemLabelSingle": "",
+    "projectListPaginationItemLabelPlural": "",
+
+    "projectSinglePeriodExpired": "Projet terminée",
+    "projectSingleRatingLabel": "Rated %d sur 5",
+    "projectSingleMapShowLabel": "Voir la carte",
+    "projectSingleMapHideLabel": "Cacher la carte",
+
+    "paginationItemLabelSingle": "",
+    "paginationItemLabelPlural": "",
+    "paginationInfoLocationLabel": "%d sur %d",
+    "paginationInfoNextLabel": "Voir %d %s suivants",
+    "paginationIndexPreviousLabel": "Les %d précédents %s",
+    "paginationIndexNextLabel": "%d %s suivants",
+
+    "listSharingShareTextDefault": "Regardez %shareTitle% sur Unilend",
+    "listSharingLinkFacebookShareLabel": "Partager sur Facebook",
+    "listSharingLinkTwitterShareLabel": "Partager sur Twitter",
+
+    "pageHomePreterProjectListTitle": "%d projets en cours",
+
+    "pageProjetsIndexHeaderTitle": "%s projets en cours, %s projets financés, %s prêteurs actifs."
+  },
+  "en": {
+    "numberDecimal":  ".",
+    "numberMilli":    ",",
+    "numberCurrency": "$",
+
+    "timeUnitNow": "now",
+    "timeUnitSecond": "second",
+    "timeUnitSeconds": "seconds",
+    "timeUnitMinute": "minute",
+    "timeUnitMinutes": "minutes",
+    "timeUnitHour": "hour",
+    "timeUnitHours": "hours",
+    "timeUnitDay": "day",
+    "timeUnitDays": "days",
+    "timeUnitWeek": "week",
+    "timeUnitWeeks": "weeks",
+    "timeUnitMonth": "month",
+    "timeUnitMonths": "months",
+    "timeUnitYear": "year",
+    "timeUnitYears": "years",
+
+    "timeCountAgo": "%s ago",
+    "timeCountRemaining": "%s remaining",
+
+    "siteMobileMenuOpenLabel": "Open Menu",
+    "siteMobileMenuCloseLabel": "Close Menu",
+
+    "siteSearchLabel": "Search Unilend",
+    "siteSearchInputPlaceholder": "Got a question?",
+    "siteSearchSubmitLabel": "Submit Search",
+    "siteSearchShowAllResultsLabel": "View all search results",
+
+    "siteUserRegisterLabel": "Register",
+    "siteUserLoginLabel": "Sign in",
+
+    "siteFooterCopyrightAllRights": "All Rights Reserved",
+
+    "socialFollowOnFacebookLabel": "Follow Unilend on Facebook",
+    "socialFollowOnTwitterLabel": "Follow Unilend on Twitter",
+
+    "projectPeriodExpired": "Project expired",
+
+    "projectListViewListLabel": "List View",
+    "projectListViewMapLabel": "Map View",
+    "projectListItemTypeSingle": "Project",
+    "projectListItemTypePlural": "Projects",
+
+    "projectListFilterCategory": "Category",
+    "projectListFilterCost": "Cost",
+    "projectListFilterInterest": "Interest",
+    "projectListFilterRating": "Rating",
+    "projectListFilterPeriod": "Time Remaining",
+
+    "projectListItemOffersLabelSingle": "offer",
+    "projectListItemOffersLabelPlural": "offers",
+    "projectListItemOffersUserStatusInProgress": "en cours",
+    "projectListItemOffersUserStatusAccepted": "accepté",
+    "projectListItemOffersUserStatusRejected": "rejeté",
+    "projectListItemRatingLabel": "Rated %d out of 5",
+    "projectListItemPeriodLabel": "%d days left",
+    "projectListItemPeriodExpired": "Project expired",
+    "projectListItemViewLabel": "View more information about this project",
+
+    "projectListPaginationItemLabelSingle": "",
+    "projectListPaginationItemLabelPlural": "",
+
+    "projectSinglePeriodExpired": "Project expired",
+    "projectSingleRatingLabel": "Rated %d out of 5",
+    "projectSingleMapShowLabel": "View map",
+    "projectSingleMapHideLabel": "Hide map",
+
+    "paginationItemLabelSingle": "",
+    "paginationItemLabelPlural": "",
+    "paginationInfoLocationLabel": "%d of %d",
+    "paginationInfoNextLabel": "View next %d %s",
+    "paginationIndexPreviousLabel": "Previous %d %s",
+    "paginationIndexNextLabel": "Next %d %s",
+
+    "listSharingShareTextDefault": "Check out %shareTitle% on Unilend",
+    "listSharingLinkFacebookShareLabel": "Share to Facebook",
+    "listSharingLinkTwitterShareLabel": "Share to Twitter",
+
+    "pageHomePreterProjectListTitle": "%d Active Projects",
+
+    "pageProjetsIndexHeaderTitle": "%s projects in progress, %s projects financed, %s active lenders."
+  },
+  "en-gb": {
+    "numberDecimal":  ".",
+    "numberMilli":    ",",
+    "numberCurrency": "£"
+  },
+  "es": {
+    "numberDecimal":  ",",
+    "numberMilli":    ".",
+    "numberCurrency": "€"
+  }
+}

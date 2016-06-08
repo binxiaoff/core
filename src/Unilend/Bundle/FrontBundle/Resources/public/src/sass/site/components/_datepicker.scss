@@ -1,0 +1,73 @@
+//
+// Unilend jQuery UI Datepicker
+//
+
+.ui-widget-header {
+  background: $c-bg2;
+  border: 0;
+  color: $c-t1;
+  font-weight: normal;
+
+  a {
+    color: $c-t1;
+  }
+}
+
+.ui-widget-content {
+  background: $c-white;
+  border: 0;
+
+  a {
+    color: $c-t1;
+  }
+}
+
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+  background: $c-bg2;
+  border: 0;
+  color: $c-t2;
+}
+
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active {
+  background: $c-p1;
+  border: 0;
+  color: $c-white;
+}
+
+.ui-corner-all,
+.ui-corner-right,
+.ui-corner-left,
+.ui-corner-top,
+.ui-corner-bottom,
+.ui-corner-tr,
+.ui-corner-tl,
+.ui-corner-br,
+.ui-corner-bl {
+  border-radius: 0;
+}
+
+.ui-datepicker {
+  padding: 0;
+  border: solid 2px $c-bg1;
+  border-radius: 4px !important;
+  box-shadow: 0 0 20px fade-out(#000, .8);
+
+  .ui-datepicker-next,
+  .ui-datepicker-prev {
+    background: transparent;
+    border: 0;
+    border-radius: 50px;
+    color: $c-t1;
+
+    &:hover,
+    &:focus,
+    &:active {
+      background: $c-bg1;
+      border: 0;
+    }
+  }
+}

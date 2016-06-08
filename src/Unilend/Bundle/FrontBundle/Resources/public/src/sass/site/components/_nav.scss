@@ -1,0 +1,531 @@
+//
+// Unilend Nav
+// Adapted from Twitter Bootstrap
+//
+
+@mixin nav-dropdown-menu($show-icon: false, $icon-size: 26px, $height: 50px) {
+  position: relative;
+
+  > li {
+    display: none;
+
+    &.active {
+      position: relative;
+      display: block;
+
+      @if $show-icon {
+        &:after {
+          box-sizing: border-box;
+          content: '\f142';
+          display: block;
+          width: $height;
+          height: $height;
+          padding: 0 10px;
+          margin: 0;
+
+          position: absolute;
+          top: 0;
+          right: 0;
+
+          color: $c-t3;
+          font-family: $ff-icon;
+          font-size: $icon-size;
+          line-height: $height;
+          text-align: center;
+          vertical-align: middle;
+
+          transition: transform .2s;
+        }
+      }
+    }
+  }
+
+  &#{$js-nav-dropdown-menu-open} {
+    > li {
+      display: block;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+
+      @if $show-icon {
+        &.active:after {
+          transform: rotate(90deg);
+        }
+      }
+    }
+  }
+}
+
+// Base class
+// --------------------------------------------------
+
+.nav {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  @include clearfix;
+
+  > li {
+    position: relative;
+    display: block;
+
+    > a {
+      position: relative;
+      display: block;
+      padding: 5px 15px;
+    }
+
+    // Disabled state sets text to gray and nukes hover/tab effects
+    &.disabled > a {
+      color: $c-bg2;
+
+      &:hover,
+      &:focus {
+        color: $c-p1;
+        text-decoration: none;
+        background-color: transparent;
+      }
+    }
+  }
+
+  // Open dropdowns
+  .open > a {
+    &,
+    &:hover,
+    &:focus {
+      background-color: $c-bg3;
+      border-color: transparent;
+    }
+  }
+
+  // Prevent IE8 from misplacing imgs
+  //
+  // See https://github.com/h5bp/html5-boilerplate/issues/984#issuecomment-3985989
+  > li > a > img {
+    max-width: none;
+  }
+}
+
+
+// Tabs
+// -------------------------
+
+// Give the tabs something to sit on
+.nav-tabs {
+  > li {
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 5px;
+
+    @include devices('sm') {
+      margin-right: 15px;
+    }
+
+    @include devices('md', 'lg') {
+      margin-right: 20px;
+    }
+
+    // Actual tabs (as links)
+    > a {
+      @include button;
+      @include button-shape-sm;
+      @include button-color-default;
+      min-width: 0;
+      padding-left: 15px;
+      padding-right: 15px;
+
+      @include devices('md', 'lg') {
+        @include button-shape-md;
+        min-width: 0;
+        padding-left: 20px;
+        padding-right: 20px;
+      }
+    }
+
+    // Active state, and its :hover to override normal :hover
+    &.active > a {
+      &,
+      &:hover,
+      &:focus {
+        background-color: $c-white;
+        border-color: $c-bg2;
+        color: $c-t2;
+      }
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  // pulling this in mainly for less shorthand
+  &.nav-justified {
+    @extend .nav-justified;
+    @extend .nav-tabs-justified;
+  }
+}
+
+
+// Pills
+// -------------------------
+.nav-pills {
+  > li {
+    float: left;
+
+    // Links rendered as pills
+    > a {
+      border-radius: 4px;
+    }
+
+    + li {
+      margin-left: 2px;
+    }
+
+    // Active state
+    &.active > a {
+      &,
+      &:hover,
+      &:focus {
+
+      }
+    }
+  }
+}
+
+
+// Stacked pills
+.nav-stacked {
+  > li {
+    float: none;
+
+    + li {
+      margin-top: 2px;
+      margin-left: 0; // no need for this gap between nav items
+    }
+  }
+}
+
+
+// Nav variations
+// --------------------------------------------------
+
+// Justified nav links
+// -------------------------
+
+.nav-justified {
+  width: 100%;
+
+  > li {
+    float: none;
+
+    > a {
+      text-align: center;
+      margin-bottom: 5px;
+    }
+  }
+
+  > .dropdown .dropdown-menu {
+    top: auto;
+    left: auto;
+  }
+}
+
+// Move borders to anchors instead of bottom of list
+//
+// Mixin for adding on top the shared `.nav-justified` styles for our tabs
+.nav-tabs-justified {
+  border-bottom: 0;
+
+  > li > a {
+    // Override margin from .nav-tabs
+    margin-right: 0;
+    border-radius: 4px;
+  }
+
+  > .active > a,
+  > .active > a:hover,
+  > .active > a:focus {
+
+  }
+}
+
+
+// Tabbable tabs
+// -------------------------
+
+// Hide tabbable panes to start, show them when `.active`
+.tab-content {
+  > .tab-pane {
+    display: none;
+  }
+  > .active {
+    display: block;
+  }
+}
+
+
+// Dropdowns
+// -------------------------
+
+// Specific dropdowns
+.nav-tabs .dropdown-menu {
+  // make dropdown border overlap tab border
+  margin-top: -1px;
+  // Remove the top rounded corners here since there is a hard edge above the menu
+  border-top-radius: 0;
+}
+
+
+// Anchors
+// -------------------------
+
+.nav-anchors {
+  @include clearfix;
+  font-size: 18px;
+  line-height: 1.3em;
+
+  > li {
+    float: left;
+    margin-right: 30px;
+
+    @include devices('md', 'lg') {
+      margin-right: 60px;
+    }
+
+    > a {
+      padding-left: 0;
+      padding-right: 0;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      border: solid 3px transparent;
+      border-right-width: 0;
+      border-left-width: 0;
+
+      @include link-states(
+        $link: (
+          color: $c-t1,
+          text-decoration: none
+        ),
+        $hover: (
+          color: $c-p1,
+          text-decoration: none
+        ),
+        $active: (
+          color: $c-p2,
+          text-decoration: none
+        )
+      );
+    }
+
+    &.active {
+      > a {
+        border-top-color: $c-p1;
+      }
+    }
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  @include devices('md', 'lg') {
+    font-size: 20px;
+  }
+}
+
+
+// Steps (emprunter sim)
+// ----------------------------
+
+.nav-steps {
+  background-color: $c-bg2;
+  @include clearfix;
+
+  > li {
+    float: left;
+    margin: 0;
+    padding: 0 15px;
+    overflow: visible;
+
+    box-sizing: border-box;
+
+    &:first-child {
+      padding-left: 0;
+    }
+
+    &:last-child {
+      padding-right: 0;
+    }
+
+    > a {
+      padding: 20px;
+      text-align: center;
+      overflow: visible;
+      // font-weight: bold;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+
+      box-sizing: border-box;
+      @include link-states(
+        $link: (
+          background-color: $c-bg2,
+          color: $c-p1,
+          text-decoration: none
+        )
+      );
+    }
+
+    &.active {
+      > a {
+        @include link-states(
+          $link: (
+            background-color: $c-white,
+            color: $c-p1,
+            text-decoration: none
+          )
+        )
+      }
+    }
+
+    &.active {
+      > a {
+        // Add reverse triangle shape at start of element
+        &:before {
+          content: ' ';
+          display: block;
+          width: 30px;
+          height: 100%;
+          background-image: inline-svg-code('<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><g id="triangle" fill="#{$c-white}"><path d="M0,0 L100,50 L0,100 L100,100 L100,0 L0,0"/></g></svg>');
+          background-repeat: no-repeat;
+          background-position: left center;
+          background-size: 30px 100%;
+
+          position: absolute;
+          left: -30px;
+          top: 0;
+          bottom: 0;
+          z-index: 1;
+        }
+
+        // Add triangle shape at end of element
+        &:after {
+          content: ' ';
+          display: block;
+          width: 30px;
+          height: 100%;
+          background-image: inline-svg-code('<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" preserveAspectRatio="none"><g id="triangle" fill="#{$c-white}"><path d="M0,0 L100,50 L0,100 L0,0"/></g></svg>');
+          background-repeat: no-repeat;
+          background-position: right center;
+          background-size: 30px 100%;
+
+          position: absolute;
+          right: -30px;
+          top: 0;
+          bottom: 0;
+          z-index: 1;
+        }
+      }
+
+      &:first-of-type > a:before,
+      &:last-of-type > a:after {
+        display: none;
+      }
+    }
+  }
+}
+
+
+// Progress (devenir-preter)
+
+.nav-progress {
+  display: table;
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.3em;
+
+  > li {
+    display: table-cell;
+    margin: 0;
+    padding: 0;
+
+    border-bottom: solid 3px transparent;
+    box-sizing: border-box;
+    font-size: 16px;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+    white-space: nowrap;
+
+    > a {
+      display: block;
+      padding-left: 30px;
+      padding-right: 0;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      // opacity: 0;
+      // transition: opacity .2s;
+
+      @include link-states(
+        $link: (
+          color: $c-t2,
+          text-decoration: none
+        ),
+        $hover: (
+          color: $c-t2,
+          text-decoration: none
+        ),
+        $active: (
+          color: $c-t2,
+          text-decoration: none
+        )
+      );
+    }
+
+    // Active progress tab
+    &.active {
+      border-color: $c-p1;
+    }
+
+    // Complete progress tab
+    &.complete {
+      border-color: $c-p1;
+
+      > a {
+        color: $c-t1;
+
+        &:before {
+          display: inline-block;
+          margin-right: 5px;
+          content: '\f00c';
+          color: $c-p1;
+          font-family: $ff-icon;
+          font-size: 21px;
+        }
+      }
+    }
+  }
+
+  // Link text is visible on hover
+  // &:hover,
+  // .has-touchevents & {
+  //    > li > a {
+  //     opacity: 1;
+  //   }
+  // }
+
+  @include devices('xs', 'sm') {
+    > li > a {
+      padding-left: 10px;
+      padding-right: 10px;
+      text-align: center;
+
+      .label {
+        @include hide-accessible;
+      }
+    }
+  }
+
+  @include devices('md', 'lg') {
+    font-size: 20px;
+  }
+}

@@ -1,0 +1,123 @@
+//
+// Unilend Grid
+//
+
+// Mixins
+@mixin generate-grid( $cols: 12, $total-width: 100%, $prefix: false ) {
+  // Add a prefix to mark different grids
+  @if $prefix {
+    $prefix: '#{$prefix}-';
+  } @else {
+    $prefix: '';
+  }
+
+  @for $i from 1 through $cols {
+    $col-width: ($total-width / $cols) * $i;
+
+    .col-#{$prefix}#{$i} {
+      box-sizing: border-box;
+      width: $col-width;
+    }
+
+    .push-#{$prefix}#{$i} {
+      margin-left: $col-width;
+    }
+
+    .pull-#{$prefix}#{$i} {
+      margin-right: $col-width;
+    }
+  }
+
+  .row {
+    @include clearfix;
+
+    @for $i from 1 through $cols {
+      > .col-#{$prefix}#{$i} {
+        float: left;
+      }
+
+      &.reverse {
+        > .col-#{$prefix}#{$i} {
+          float: right;
+        }
+      }
+    }
+  }
+}
+
+// Multi-col padding
+@mixin row-multi-col($prefix: false, $first-index: 1, $last-index: 2, $padding-width: 10px) {
+  @if $prefix {
+    $prefix: '-#{$prefix}';
+  } @else {
+    $prefix: '';
+  }
+
+  // Automatic column padding
+  &.row-multi-col#{$prefix} {
+    > * {
+      padding-left: $padding-width;
+      padding-right: $padding-width;
+    }
+
+    // Forms only have two columns
+    // First
+    > :nth-of-type(#{$first-index}) {
+      padding-left: 0;
+    }
+
+    // Second
+    > :nth-of-type(#{$last-index}) {
+      padding-right: 0;
+    }
+  }
+}
+
+// Grids
+// Extra small grid (max 4 columns)
+@include devices('xs') {
+  @include generate-grid(4, 100%, 'xs');
+  @include show-hide-display-types('xs');
+  @include hide-display-types('sm', 'md', 'lg');
+}
+
+// Small Grid (max 8 columns)
+@include devices('sm') {
+  @include generate-grid(8, 100%, 'sm');
+  @include show-hide-display-types('sm');
+  @include hide-display-types('xs', 'md', 'lg');
+}
+
+// Medium grid (12 columns)
+@include devices('md') {
+  @include generate-grid(12, 100%, 'md');
+  @include show-hide-display-types('md');
+  @include hide-display-types('xs', 'sm', 'lg');
+}
+
+// Large grid (12 columns)
+@include devices('lg') {
+  @include generate-grid(12, 100%, 'lg');
+  @include show-hide-display-types('lg');
+  @include hide-display-types('xs', 'sm', 'md');
+}
+
+// Multi-col with padding
+// defaults to 2 columns, so first column has no left padding and 2nd column has no right padding
+.row {
+  @include row-multi-col;
+}
+
+// Automatic column padding targetted for mobile devices
+@include devices('mobile') {
+  .row {
+    @include row-multi-col($prefix: 'mobile');
+  }
+}
+
+// Automatic column padding targetted for computer devices
+@include devices('computer') {
+  .row {
+    @include row-multi-col($prefix: 'computer');
+  }
+}
