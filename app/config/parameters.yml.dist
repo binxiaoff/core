@@ -35,4 +35,4 @@ parameters:
     path.static:                    /srv/sites/unilend/public/default/
     path.user:                      /srv/sites/unilend/public/default/var/
     path.sftp:                      /srv/sites/unilend/protected/sftp/
-    path.payline:                   /srv/sites/unilend/protected/payline/
+    path.payline:                   /srv/sites/unilend/librairies/payline/
