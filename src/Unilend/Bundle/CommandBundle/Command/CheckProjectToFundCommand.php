@@ -5,12 +5,18 @@ use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
+use Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager;
 use Unilend\librairies\CacheKeys;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckProjectToFundCommand extends ContainerAwareCommand
 {
+    /** @var  EntityManager */
+    private $oEntityManager;
+    /** @var LoggerInterface $oLogger */
+    private $oLogger;
+
     protected function configure()
     {
         $this
@@ -25,19 +31,23 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        /** @var EntityManager $oEntityManager */
-        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
+        ini_set('memory_limit', '1G');
+
+        $this->oLogger = $this->getContainer()->get('monolog.logger.console');
+        $this->oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $oProject */
-        $oProject = $oEntityManager->getRepository('projects');
+        $oProject = $this->oEntityManager->getRepository('projects');
         /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
         $oProjectManager = $this->getContainer()->get('unilend.service.project_manager');
         /** @var bool $bHasProjectPublished */
         $bHasProjectPublished = false;
 
         $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
+        $this->oLogger->info('Number of projects to publish : ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         foreach ($aProjectToFund as $aProject) {
             if ($oProject->get($aProject['id_project'])) {
+                $this->oLogger->info('Publishing the id_project=' . $aProject['id_project'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']));
                 $bHasProjectPublished = true;
                 $oProjectManager->publish($oProject);
                 $this->zipProjectAttachments($oProject);
@@ -56,14 +66,12 @@ EOF
      */
     private function zipProjectAttachments(\projects $project)
     {
-        /** @var EntityManager $oEntityManager */
-        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \companies $companies */
-        $companies = $oEntityManager->getRepository('companies');
+        $companies = $this->oEntityManager->getRepository('companies');
         /** @var \attachment $oAttachment */
-        $oAttachment = $oEntityManager->getRepository('attachment');
+        $oAttachment = $this->oEntityManager->getRepository('attachment');
         /** @var \attachment_type $oAttachmentType */
-        $oAttachmentType = $oEntityManager->getRepository('attachment_type');
+        $oAttachmentType = $this->oEntityManager->getRepository('attachment_type');
 
         $companies->get($project->id_company, 'id_company');
 
@@ -81,10 +89,11 @@ EOF
         if (false === is_dir($sPathNoZip . $companies->siren)) {
             mkdir($sPathNoZip . $companies->siren);
         }
-
         /** @var \attachment_helper $oAttachmentHelper */
-        $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->getContainer()->getParameter('path.sftp')));
+        $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->getContainer()->getParameter('kernel.root_dir') . '/../'));
         $aAttachments      = $project->getAttachments();
+
+        $this->oLogger->info('Project attachments of id_project=' . $project->id_project . ': ' . var_export($aAttachments, true), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
@@ -150,23 +159,29 @@ EOF
      */
     private function sendNewProjectEmail(\projects $project)
     {
-        /** @var EntityManager $oEntityManager */
-        $oEntityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \clients $clients */
-        $clients = $oEntityManager->getRepository('clients');
+        $clients = $this->oEntityManager->getRepository('clients');
         /** @var \notifications $notifications */
-        $notifications = $oEntityManager->getRepository('notifications');
+        $notifications = $this->oEntityManager->getRepository('notifications');
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clients_gestion_notifications = $oEntityManager->getRepository('clients_gestion_notifications');
+        $clients_gestion_notifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $clients_gestion_mails_notif */
-        $clients_gestion_mails_notif = $oEntityManager->getRepository('clients_gestion_mails_notif');
+        $clients_gestion_mails_notif = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
         /** @var \companies $companies */
-        $companies = $oEntityManager->getRepository('companies');
-        $oEntityManager->getRepository('clients_status');//For class constants
+        $companies = $this->oEntityManager->getRepository('companies');
+        $this->oEntityManager->getRepository('clients_status');//For class constants
+
+        /** @var \lenders_accounts $oLenderAccount */
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        /** @var \transactions $oTransaction */
+        $oTransaction = $this->oEntityManager->getRepository('transactions');
+        /** @var AutoBidSettingsManager $oAutobidSettingsManager */
+        $oAutobidSettingsManager = $this->getContainer()->get('unilend.service.autobid_settings_manager');
+
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
         /** @var \settings $settings */
-        $settings = $oEntityManager->getRepository('settings');
+        $settings = $this->oEntityManager->getRepository('settings');
 
         $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
             $this->getContainer()->getParameter('router.request_context.host');
@@ -191,8 +206,26 @@ EOF
             'duree'           => $project->period,
             'gestion_alertes' => $sUrl . '/profile',
             'lien_fb'         => $sFacebookLink,
-            'lien_tw'         => $sTwitterLink
+            'lien_tw'         => $sTwitterLink,
+            'annee'           => date('Y')
         );
+
+        /** @var \textes $translations */
+        $translations                          = $this->oEntityManager->getRepository('textes');
+        $aTranslations['email-nouveau-projet'] = $translations->selectFront('email-nouveau-projet', 'fr');
+
+        /** @var \autobid_periods $oAutobidPeriods */
+        $oAutobidPeriods = $this->oEntityManager->getRepository('autobid_periods');
+        $aPeriod         = $oAutobidPeriods->getPeriod($project->period);
+
+        /** @var \autobid $oAutobid */
+        $oAutobid    = $this->oEntityManager->getRepository('autobid');
+        $aAutobiders = array_column($oAutobid->getSettings(null, $project->risk, $aPeriod['id_period'], array(\autobid::STATUS_ACTIVE)), 'amount', 'id_lender');
+
+        /** @var \bids $oBids */
+        $oBids            = $this->oEntityManager->getRepository('bids');
+        $aBids            = $oBids->getLenders($project->id_project);
+        $aNoAutobidPlaced = array_diff(array_keys($aAutobiders), array_column($aBids, 'id_lender_account'));
 
         $iOffset = 0;
         $iLimit  = 100;
@@ -209,25 +242,43 @@ EOF
                 $notifications->id_project = $project->id_project;
                 $notifications->create();
 
-                $clients_gestion_mails_notif->id_client       = $aLender['id_client'];
-                $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
-                $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                $clients_gestion_mails_notif->id_project      = $project->id_project;
-                $clients_gestion_mails_notif->date_notif      = $project->date_publication_full;
+                if (false === $clients_gestion_mails_notif->exist(\clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID . '" AND id_project = ' . $project->id_project . ' AND id_client = ' . $aLender['id_client'] . ' AND immediatement = "1', 'id_notif')) {
+                    $clients_gestion_mails_notif->id_client       = $aLender['id_client'];
+                    $clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_NEW_PROJECT;
+                    $clients_gestion_mails_notif->id_notification = $notifications->id_notification;
+                    $clients_gestion_mails_notif->id_project      = $project->id_project;
+                    $clients_gestion_mails_notif->date_notif      = $project->date_publication_full;
 
-                if ($clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
-                    $clients_gestion_mails_notif->immediatement = 1;
-                    $varMail['prenom_p']                        = $aLender['prenom'];
-                    $varMail['motif_virement']                  = $clients->getLenderPattern($aLender['id_client']);
+                    if (empty($sAutobidInsufficientBalance) && $clients_gestion_notifications->getNotif($aLender['id_client'], \clients_gestion_type_notif::TYPE_NEW_PROJECT, 'immediatement')) {
+                        $clients_gestion_mails_notif->immediatement = 1;
 
-                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                    $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
-                    $message->setTo($aLender['email']);
-                    $mailer = $this->getContainer()->get('mailer');
-                    $mailer->send($message);
-                    ++$iEmails;
+                        $sAutobidInsufficientBalance = '';
+
+                        if (
+                            in_array($aLender['id_lender'], $aNoAutobidPlaced)
+                            && $oLenderAccount->get($aLender['id_lender'])
+                            && $oAutobidSettingsManager->isOn($oLenderAccount)
+                            && $oTransaction->getSolde($oLenderAccount->id_client_owner) < $aAutobiders[$oLenderAccount->id_lender_account]
+                        ) {
+                            $sAutobidInsufficientBalance = '
+                                    <table width=\'100%\' border=\'1\' cellspacing=\'0\' cellpadding=\'5\' bgcolor="d8b5ce" bordercolor="b20066">
+                                        <tr>
+                                            <td align="center" style="color: #b20066">' . $aTranslations['email-nouveau-projet']['solde-insuffisant-nouveau-projet'] . '</td>
+                                        </tr>
+                                    </table>';
+                        }
+                        $varMail['autobid_insufficient_balance'] = $sAutobidInsufficientBalance;
+                        $varMail['prenom_p']                     = $aLender['prenom'];
+                        $varMail['motif_virement']               = $clients->getLenderPattern($aLender['id_client']);
+                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('nouveau-projet', $varMail);
+                        $message->setTo($aLender['email']);
+                        $mailer = $this->getContainer()->get('mailer');
+                        $mailer->send($message);
+                        ++$iEmails;
+                    }
+                    $clients_gestion_mails_notif->create();
                 }
-                $clients_gestion_mails_notif->create();
             }
             $oLogger->info('Emails sent: ' . $iEmails);
         }
