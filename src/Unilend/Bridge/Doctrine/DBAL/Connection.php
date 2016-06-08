@@ -1,7 +1,7 @@
 <?php
 namespace Unilend\Bridge\Doctrine\DBAL;
 
-use Doctrine\DBAL\Connection as BaseConnection;
+use Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Connection as BaseConnection;
 use Doctrine\DBAL\Driver\Statement;
 
 class Connection extends BaseConnection
@@ -9,21 +9,46 @@ class Connection extends BaseConnection
     /**
      * Executes a statement
      *
-     *
-     * @deprecated for backwards compatibility only.
-     *
      * @return \Doctrine\DBAL\Statement
      */
     public function query()
     {
+        $stmt = null;
         $args = func_get_args();
-        try {
-            return parent::query($args[0]);
-        } catch (\Exception $exception) {
-            trigger_error($exception->getMessage(), E_USER_WARNING);
+        $attempt = 0;
+        $retry = true;
+        while ($retry) {
+            $retry = false;
+            try {
+                switch (count($args)) {
+                    case 1:
+                        $stmt = parent::query($args[0]);
+                        break;
+                    case 2:
+                        $stmt = parent::query($args[0], $args[1]);
+                        break;
+                    case 3:
+                        $stmt = parent::query($args[0], $args[1], $args[2]);
+                        break;
+                    case 4:
+                        $stmt = parent::query($args[0], $args[1], $args[2], $args[3]);
+                        break;
+                    default:
+                        $stmt = parent::query();
+                }
+            } catch (\Exception $exception) {
+                if ($this->canTryAgain($attempt) && $this->_driver->isGoneAwayException($exception)) {
+                    $this->close();
+                    $attempt++;
+                    $retry = true;
+                } else {
+                    trigger_error($exception->getMessage(), E_USER_WARNING);
 
-            return false;
+                    return false;
+                }
+            }
         }
+        return $stmt;
     }
 
     /**
@@ -130,25 +155,23 @@ class Connection extends BaseConnection
         return null;
     }
 
-    public function controlSlug($table, $slug, $id_name, $id_value)
+    public function controlSlug($table, $slug, $idName, $idValue)
     {
         $params    = [
-            'table' => $table,
             'slug'  => $slug,
-            'colum' => $id_name,
-            'value' => $id_value
+            'value' => $idValue
         ];
-        $statement = $this->executeQuery('SELECT slug FROM :table WHERE slug = :slug AND :colum != :value', $params);
+        $statement = $this->executeQuery('SELECT slug FROM ' . $table . ' WHERE slug = :slug AND ' . $idName . ' != :value', $params);
 
         if ($statement->rowCount() == 1 || $slug == "") {
-            if ($table == 'tree' && $id_value == 1 && $slug == '') {
+            if ($table == 'tree' && $idValue == 1 && $slug == '') {
                 $slug = '';
             } else {
-                $slug = $slug . '-' . $id_value;
+                $slug = $slug . '-' . $idValue;
             }
         }
 
-        $this->update($table, ['slug' => $slug], [$id_name => $id_value]);
+        $this->update($table, ['slug' => $slug], [$idName => $idValue]);
     }
 
     public function controlSlugMulti($table, $slug, $id_value, $list_field_value, $id_langue)

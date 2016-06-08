@@ -113,7 +113,10 @@ select.field-mega { width:938px; }
 .euro-field { padding-left:22px; }
 .euro-sign { position:absolute; margin:7px 0 0 12px; }
 
-
+.LV_invalid_field::-webkit-input-placeholder { color: #c84747;}
+.LV_invalid_field:-ms-input-placeholder { color: #c84747;}
+.LV_invalid_field::-moz-placeholder { color: #c84747;}
+.LV_invalid_field:-moz-placeholder { color: #c84747;}
 .LV_invalid_field { background:#ffe8e8 url(images/field-error.png) no-repeat right 0; border-color:#e3bcbc; color:#c84747; }
 .LV_valid_field { background-image:url(images/field-ok.png); background-repeat:no-repeat; background-position:right 0; }
 .LV_validation_message { display:none; }
@@ -756,11 +759,30 @@ form .row.rel .euro-sign { left: 0; right: auto; }
     Tabs Nav & Single project tab
 ============================ */
 
+.tabs .tab { display:none; }
+.tabs .tab:first-child { display:block; }
+.tabs-nav { height: 42px; margin-bottom: 25px; border-bottom: 1px solid #b10366; }
+.tabs-nav ul { padding-left: 0; }
+.tabs-nav li { float:left; padding: 0 6px; list-style-type: none; }
+.tabs-nav li a { display:block; padding: 0 11px 1px; line-height: 42px; font-size: 18px; font-weight:bold; color: #a1a5a7;}
+.tabs-nav li a:hover ,
+.tabs-nav li.active a { padding: 0 4px 0 4px; text-decoration:none; border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366; line-height: 41px; }
+
+.tabs { font-size: 15px; }
+.section-c h2 { font-size: 26px; line-height: 30px; color: #b10366; font-weight: bold; font-family: arial, serif; letter-spacing: 0; border-bottom: 1px solid #e3e4e4; padding-bottom: 7px; margin-bottom: 18px; text-transform: capitalize; }
+.section-c p { padding-bottom: 30px; }
+.tab-form { width: 460px; }
+.tab-form .row p { padding: 0; }
+.tab-form em { display:block; margin-bottom: 45px; }
+.tab-form .btn { float:right; position: relative; margin-right: -93px; }
+.tab-form .c2-sb-wrap { margin-bottom: 30px; }
+
+nav.tabs-nav ul > li > a{ border:1px solid transparent;line-height:41px;}
 div[class*="single-project"] .tabs-nav:after {content: "";display:block;clear:both;}
 div[class*="single-project"] .tabs-nav { height: 42px; margin-bottom: 25px;border-bottom: 1px solid #b10366; }
 div[class*="single-project"] .tabs-nav ul { padding-left: 0;float:left; }
 div[class*="single-project"] .tabs-nav li { float:left;padding: 0 6px; list-style-type: none; }
-div[class*="single-project"] .tabs-nav li a { display:block; line-height: 41px; font-size: 18px; font-weight:bold; color: #a1a5a7;/*padding:0 6px 3px 0;*/text-decoration:none;border: 1px solid rgba(0,0,0,0);}
+div[class*="single-project"] .tabs-nav li a { display:block; line-height: 41px; font-size: 18px; font-weight:bold; color: #a1a5a7;text-decoration:none;border: 1px solid rgba(0,0,0,0);}
 div[class*="single-project"] .tabs-nav li a:hover, div[class*="single-project"] .tabs-nav li.active a{ border: 1px solid #b10366; border-bottom: 1px solid #fff; background:#fff; color: #b10366;}
 div[class*="single-project"] .detail-nav th span.bid-number { text-align:left;}
 
@@ -792,7 +814,13 @@ div[class*="single-project"] .table th:first-child { text-align:left; border-rad
 div[class*="single-project"] .table th:last-child { border-radius:0 3px 0 0; }
 div[class*="single-project"] .table .th-wrap { display:block; position:relative; }
 
-
+div[class*="single-project"] .rejected-offers > td { text-align:center;background-color:#fbf2f7;cursor:pointer;color:#d4d4d4; }
+div[class*="single-project"] .rejected-offers:hover > td { color:#8d8d8d; }
+#bids .table-body.rejected_bids, #bids_mobile .table-body.rejected_bids{ display:none; }
+#bids .table-body.rejected_bids.visible, #bids_mobile .table-body.rejected_bids.visible{ display:table-row }
+#bids .table-body.rejected_bids td, #bids_mobile .table-body.rejected_bids td { background-color:#fbf2f7;color:#989899; }
+#bids .table-body.rejected_bids:last-of-type, #bids_mobile .table-body.rejected_bids:last-of-type { border-bottom:8px solid #eceaed; }
+#amount > small { text-transform:none; }
 
 /* ===========================
     Info Table
@@ -1214,3 +1242,11 @@ table#bids td {
     z-index: 98;
     width: 220px;
 }
+#current-offer .orders-table-wrapper { margin-top:0; }
+#current-offer #lOffres .orders-table > thead { top:0;position:static;line-height:32px; }
+#current-offer thead tr th { background-color:#b10366;padding:0;text-transform:none;font-weight:700;text-align:center;font-size:11px; }
+#current-offer table { border:none;width:calc(100% - 2px);}
+#current-offer tbody { background-color:#f4f4f4;border:1px solid #dbdcdd;border-radius:3px;box-sizing:border-box; }
+#current-offer tbody tr td { text-align:center;padding:0;line-height:33px; }
+#current-offer .autobid { line-height:15px;padding:0;font-size:12px;border-radius:50%;width:15px;height:15px;color:#d9aa34;background-color:#f1f1f1; }
+#current-offer .no_autobid { display:none; }

@@ -71,7 +71,7 @@ class ajaxController extends bootstrap
             /** @var villes $oVille */
             $oVille = $this->loadData('villes');
 
-            if ($oVille->exist(urldecode($this->params[0]), 'ville')) {
+            if ($oVille->exist(str_replace(array(' ', '-'), '', urldecode($this->params[0])), 'REPLACE(REPLACE(ville, " ", ""), "-", "")')) {
                 $response = 'ok';
             }
             unset($oVille);
@@ -1584,9 +1584,9 @@ class ajaxController extends bootstrap
 
         $_SESSION['operations-filter'] = array('projects' =>$aClientProjectIDs, 'start' => $oStartTime, 'end'=>$oEndTime, 'transaction'=>$iTransaction);
 
-        $this->aBorrowerOperations = $oClients->getDataForBorrowerOperations($aClientProjectIDs, $oStartTime, $oEndTime, $iTransaction, $oClients->id_client);
+        $this->aBorrowerOperations   = $oClients->getDataForBorrowerOperations($aClientProjectIDs, $oStartTime, $oEndTime, $iTransaction, $oClients->id_client);
         $this->sDisplayDateTimeStart = $oStartTime->format('d/m/Y');
-        $this->sDisplayDateTimeEnd = $oEndTime->format('d/m/Y');
+        $this->sDisplayDateTimeEnd   = $oEndTime->format('d/m/Y');
     }
 
     public function _rejectedBids()
@@ -1598,7 +1598,7 @@ class ajaxController extends bootstrap
         $oClient        = $this->loadData('clients');
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oBids          = $this->loadData('bids');
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
@@ -1654,7 +1654,7 @@ class ajaxController extends bootstrap
             $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', 'fr_FR', $this->App);
             $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
             $oAutoBidSettingsManager      = $this->get('unilend.service.autobid_settings_manager');
             $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         }

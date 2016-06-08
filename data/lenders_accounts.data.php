@@ -26,8 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\Cache;
-
 class lenders_accounts extends lenders_accounts_crud
 {
     const LENDER_STATUS_ONLINE  = 1;
@@ -196,54 +194,56 @@ class lenders_accounts extends lenders_accounts_crud
         return $result;
     }
 
-    public function isFrenchResident($iLenderId = null)
+    /**
+     * @param null $lenderId
+     * @return bool
+     */
+    public function isFrenchResident($lenderId = null)
     {
-        if (null === $iLenderId) {
-            $iLenderId = $this->id_lender_account;
+        $bResult = false;
+
+        if (null === $lenderId) {
+            $lenderId = $this->id_lender_account;
         }
 
-        if ($iLenderId) {
-            $oCache  = Cache::getInstance();
-            $sKey    = $oCache->makeKey('lenders_account', 'isFrenchResident', $iLenderId);
-            $aRecord = $oCache->get($sKey);
+        if ($lenderId) {
+            $sQuery = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = :lenderId";
+            try {
+                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array('lenderId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetch(PDO::FETCH_ASSOC);
 
-            if (false === $aRecord) {
-                $sQuery  = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = $iLenderId";
-                $oQuery  = $this->bdd->query($sQuery);
-                $aRecord = $this->bdd->fetch_array($oQuery);
-                $oCache->set($sKey, $aRecord);
-            }
-            if (empty($aRecord) || '0' === $aRecord['resident_etranger']) {
-                return true;
+                if (empty($result) || '0' === $result['resident_etranger']) {
+                    $bResult = true;
+                }
+            } catch (\Doctrine\DBAL\DBALException $ex) {
+                return null;
             }
         }
-
-        return false;
+        return $bResult;
     }
 
-    public function isNaturalPerson($iLenderId = null)
+    public function isNaturalPerson($lenderId = null)
     {
-        if (null === $iLenderId) {
-            $iLenderId = $this->id_lender_account;
+        $bResult = false;
+
+        if (null === $lenderId) {
+            $lenderId = $this->id_lender_account;
         }
 
-        if ($iLenderId) {
-            $oCache  = Cache::getInstance();
-            $sKey    = $oCache->makeKey('lenders_account', 'isNaturalPerson', $iLenderId);
-            $aRecord = $oCache->get($sKey);
+        if ($lenderId) {
+            $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = :lenderId";
+            try {
+                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetchAll(PDO::FETCH_ASSOC);
 
-            if (false === $aRecord) {
-                $sQuery  = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = $iLenderId";
-                $oQuery  = $this->bdd->query($sQuery);
-                $aRecord = $this->bdd->fetch_array($oQuery);
-                $oCache->set($sKey, $aRecord);
-            }
-
-            if (isset($aRecord['type']) && in_array($aRecord['type'], array(1, 3))) {
-                return true;
+                if (isset($result[0]['type']) && in_array($result[0]['type'], array(1, 3))) {
+                    $bResult = true;
+                }
+            } catch (\Doctrine\DBAL\DBALException $ex) {
+                return false;
             }
         }
-        return false;
+        return $bResult;
     }
 
     public function countCompaniesLenderInvestedIn($iLendersAccountId)

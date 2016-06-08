@@ -1004,7 +1004,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         </ul>
         <p>
             <span>Unilend</span> est intermédiaire en financement participatif (IFP) inscrit à l’ORIAS (www.orias.fr) sous le numéro 15006955.<br>
-            Le service de paiement Unilend est distribué par la Société française pour le financement des PME - SFF PME SAS, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790766034. Les informations d'enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
+            Le service de paiement Unilend est distribué par Unilend SAS, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790766034. Les informations d'enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
             Le service de paiement Unilend est fourni par la Société financière du porte-monnaie électronique interbancaire (SFPMEI), société par actions simplifiée au capital de 3 732 089 euros, dont le siège social est situé 29 rue du Louvre - 75002 Paris, immatriculée au registre du commerce et des sociétés de Paris sous le numéro 422 721 274. La SFPMEI est un établissement de crédit (code établissement 14378) agréé en date du 30 décembre 1999 par l’Autorité de contrôle prudentiel et de résolution (ACPR).
         </p>
         <br/>
@@ -1036,7 +1036,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
 <script src='js/jquery.base64.js'></script>
 <script src='js/bootstrap.min.js'></script>
 <script src="js/jquery.touchSwipe.min.js" type="text/javascript"></script>
-<script src="//crypto-js.googlecode.com/svn/tags/3.1.2/build/rollups/md5.js"></script>
+<script src="js/md5.js" type="text/javascript"></script>
 <script src="js/global.js" type="text/javascript"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script>

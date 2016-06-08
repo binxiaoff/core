@@ -528,7 +528,7 @@ class ajaxController extends bootstrap
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->mail_template->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->language . '" AND type');
+            $this->mail_template->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
             $oSettings->get('Facebook', 'type');
             $lien_fb = $oSettings->value;
@@ -542,7 +542,6 @@ class ajaxController extends bootstrap
                 'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
                 'lien_fb'              => $lien_fb,
                 'lien_tw'              => $lien_tw,
-                'sujet'                => htmlentities($this->mail_template->subject, null, 'UTF-8'),
                 'surl'                 => $this->surl,
                 'url'                  => $this->url,
             );
@@ -714,7 +713,7 @@ class ajaxController extends bootstrap
             }
 
             if ($form_ok == true) {
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
@@ -995,7 +994,7 @@ class ajaxController extends bootstrap
                     $this->projects_notes->create();
                 }
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
@@ -1296,7 +1295,7 @@ class ajaxController extends bootstrap
                 $btn_etape7   = '';
                 $content_risk = '';
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
 
                 if ($_POST['status'] == 1) {
@@ -1429,7 +1428,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
-            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['list'])) . '</ul>' . nl2br(htmlentities(utf8_decode($_POST['content'])));
+            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['list']) . '</ul>' . nl2br($_POST['content']);
             echo 'ok';
         } else {
             echo 'nok';

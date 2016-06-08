@@ -1,5 +1,4 @@
 <?php
-use Unilend\Bundle\Memcache\Cache\MemcacheInterface;
 
 class bootstrap extends Controller
 {

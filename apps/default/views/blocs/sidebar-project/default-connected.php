@@ -30,7 +30,7 @@
                     </div>
                 </div>
                 <?php if ($this->bidsEncours['nbEncours'] > 0) { ?>
-                    <div class="widget-cat">
+                    <div class="widget-cat" id="current-offer">
                         <h4 id="plusOffres">
                             <?= $this->bidsEncours['nbEncours'] ?> <?= $this->lng['preteur-projets']['offres-en-cours-pour'] ?> <?= $this->ficelle->formatNumber($this->bidsEncours['solde'], 0) ?>&nbsp;€
                         </h4>
@@ -39,13 +39,13 @@
                                 <table class="table orders-table" style="font-size: 0.8em;" id="bids">
                                     <thead>
                                         <tr style="text-align: center; color: white;">
-                                            <th width="30%" style="padding-left: 30px;">
+                                            <th width="20%">
                                                 <span id="triNum">N°</span>
                                             </th>
-                                            <th width="25%">
+                                            <th width="40%">
                                                 <span id="triTx"><?= $this->lng['preteur-projets']['taux-dinteret'] ?></span>
                                             </th>
-                                            <th width="25%">
+                                            <th width="20%">
                                                 <span id="triAmount"><?= $this->lng['preteur-projets']['montant'] ?></span>
                                             </th>
                                             <th width="20%">

@@ -2,7 +2,7 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
-use Unilend\Service\Simulator\EntityManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class TemplateMessageProvider
 {
@@ -35,8 +35,8 @@ class TemplateMessageProvider
     {
         /** @var \mail_templates $mailTemplate */
         $mailTemplate = $this->entityManager->getRepository('mail_templates');
-        if (false === $mailTemplate->get($template, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND lang = "' . $this->defaultLanguage . '" AND type')) {
-            throw new \InvalidArgumentException('The mail template ' . $template . ' for the language ' . $this->defaultLanguage . 'is not found.');
+        if (false === $mailTemplate->get($template, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->defaultLanguage . '" AND type')) {
+            throw new \InvalidArgumentException('The mail template ' . $template . ' for the language ' . $this->defaultLanguage . ' is not found.');
         }
 
         if ($wrapVariables) {

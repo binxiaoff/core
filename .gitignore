@@ -14,14 +14,11 @@ nb-configuration.xml
 .nb-gradle/
 
 ### Izinoa ###
-protected/
+protected/*
 log/
 logs/
-backup2/
-backup3/
 tmp/
 public/admin/.htaccess
-public/default/var
 public/default/.htaccess
 data/crud/*
 route.php
@@ -50,4 +47,5 @@ route.php
 # Exceptions
 !public/default/styles/default/*
 !public/default/scripts/default/*
+!protected/sftp
 !/dev/public/

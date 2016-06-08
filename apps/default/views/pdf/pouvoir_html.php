@@ -105,7 +105,7 @@
                             <?= $this->bloc_pouvoir['montant-total'] ?>
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->montantPrete) ?> &euro;
+                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -188,7 +188,7 @@
                             <?= $this->bloc_pouvoir['a-rembourser-153'] ?>
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->montantPrete) ?> &euro;
+                            <?= $this->ficelle->formatNumber($this->montantPrete, 0) ?> &euro;
                         </div>
                         <div class="cl">&nbsp;</div>
                     </li>
@@ -240,80 +240,80 @@
                     <ul>
                         <li>
                             Immobilisations corporelles
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_corporelles'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Immobilisations incorporelles
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_incorporelles'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Immobilisations financières
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['immobilisations_financieres'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Stocks
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['stocks'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Créances clients et autres
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['creances_clients'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Disponibilités
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['disponibilites'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Valeurs mobilières de placement
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['valeurs_mobilieres_de_placement'], 0) ?> &euro;</div>
                         </li>
                         <?php if ($this->l_AP[0]['comptes_regularisation_actif'] != 0) : ?>
                         <li>
                             Comptes de régularisation
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_actif'], 0) ?> &euro;</div>
                         </li>
                         <?php endif; ?>
                     </ul>
                 </div>
                 <div class="total-row">
-                    Total actif : <?= $this->ficelle->formatNumber($this->totalActif) ?> &euro;
+                    Total actif : <?= $this->ficelle->formatNumber($this->totalActif, 0) ?> &euro;
                 </div>
                 <h5>PASSIF</h5>
                 <div class="list">
                     <ul>
                         <li>
                             Capitaux propres
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['capitaux_propres'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Provisions pour risques et charges
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['provisions_pour_risques_et_charges'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Amortissements sur immobilisations
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['amortissement_sur_immo'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Dettes financières
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_financieres'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Dettes fournisseurs
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['dettes_fournisseurs'], 0) ?> &euro;</div>
                         </li>
                         <li>
                             Autres dettes
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['autres_dettes'], 0) ?> &euro;</div>
                         </li>
                         <?php if ($this->l_AP[0]['comptes_regularisation_passif'] != 0) : ?>
                         <li>
                             Comptes de régularisation
-                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif']) ?> &euro;</div>
+                            <div class="col-small nowrap"><?= $this->ficelle->formatNumber($this->l_AP[0]['comptes_regularisation_passif'], 0) ?> &euro;</div>
                         </li>
                         <?php endif; ?>
                     </ul>
                 </div>
                 <div class="total-row">
-                    Total passif : <?= $this->ficelle->formatNumber($this->totalPassif) ?> &euro;
+                    Total passif : <?= $this->ficelle->formatNumber($this->totalPassif, 0) ?> &euro;
                 </div>
                 <div class="center-text">
                     Certifié sincère par l'Emetteur
@@ -485,9 +485,8 @@
                                         <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->clients_adresses->adresse1 ?></td>
                                         <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->clients_adresses->cp ?></td>
                                         <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"><?= $this->clients_adresses->ville ?></td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;"
-                                            class="nowrap"><?= $this->ficelle->formatNumber($l['amount'] / 100) ?> &euro;</td>
-                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($l['rate']) ?> %</td>
+                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($l['amount'] / 100, 0) ?> &euro;</td>
+                                        <td style="border-bottom: dotted 1px #c0c0c0;border-right: solid 1px #c0c0c0;" class="nowrap"><?= $this->ficelle->formatNumber($l['rate'], 1) ?> %</td>
                                     </tr>
                                     <?php
                                     $var++;

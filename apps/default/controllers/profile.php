@@ -34,7 +34,7 @@ class profileController extends bootstrap
     {
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oLenderAccount->get($this->clients->id_client, 'id_client_owner');
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($oLenderAccount);
 
@@ -77,7 +77,7 @@ class profileController extends bootstrap
         $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
 
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
@@ -115,107 +115,99 @@ class profileController extends bootstrap
         }
         $this->infosNotifs['vos-offres-et-vos-projets'] = array(
             \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
-                'title' => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
-                'info' => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
+                'title'           => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
+                'info'            => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_PLACED => array(
-                'title' => $this->lng['gestion-alertes']['offres-realisees'],
-                'info' => $this->lng['gestion-alertes']['offres-realisees-info'],
+                'title'           => $this->lng['gestion-alertes']['offres-realisees'],
+                'info'            => $this->lng['gestion-alertes']['offres-realisees-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
-                'title' => $this->lng['gestion-alertes']['offres-refusees'],
-                'info' => $this->lng['gestion-alertes']['offres-refusees-info'],
+                'title'           => $this->lng['gestion-alertes']['offres-refusees'],
+                'info'            => $this->lng['gestion-alertes']['offres-refusees-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
-                'title' => $this->lng['gestion-alertes']['offres-acceptees'],
-                'info' => $this->lng['gestion-alertes']['offres-acceptees-info'],
+                'title'           => $this->lng['gestion-alertes']['offres-acceptees'],
+                'info'            => $this->lng['gestion-alertes']['offres-acceptees-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
-                'title' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation'],
-                'info' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info'],
+                'title'           => $this->lng['gestion-alertes']['incidents-projets-et-regularisation'],
+                'info'            => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
-                'title' => $this->lng['gestion-alertes']['autobid-balance-low'],
-                'info' => $this->lng['gestion-alertes']['autobid-balance-low-info'],
+            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
+                'title'           => $this->lng['gestion-alertes']['autobid-accepted-rejected-bid'],
+                'info'            => $this->lng['gestion-alertes']['autobid-accepted-rejected-bid-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
-                'title' => $this->lng['gestion-alertes']['autobid-balance-insufficient'],
-                'info' => $this->lng['gestion-alertes']['autobid-balance-insufficient-info'],
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->infosNotifs['vos-remboursements'] = array(
             \clients_gestion_type_notif::TYPE_REPAYMENT => array(
-                'title' => $this->lng['gestion-alertes']['remboursements'],
-                'info' => $this->lng['gestion-alertes']['remboursements-info'],
+                'title'           => $this->lng['gestion-alertes']['remboursements'],
+                'info'            => $this->lng['gestion-alertes']['remboursements-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->infosNotifs['mouvements-sur-votre-compte'] = array(
             \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
-                'title' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
-                'info' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
+                'title'           => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
+                'info'            => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => array(
-                'title' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
-                'info' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => array(
+                'title'           => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
+                'info'            => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_DEBIT => array(
-                'title' => $this->lng['gestion-alertes']['retrait'],
-                'info' => $this->lng['gestion-alertes']['retrait-info'],
+                'title'           => $this->lng['gestion-alertes']['retrait'],
+                'info'            => $this->lng['gestion-alertes']['retrait-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
@@ -627,7 +619,7 @@ class profileController extends bootstrap
                     }
                     $contenu .= '</ul>';
 
-                    /** @var \Unilend\Service\ClientManager $oClientManager */
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
                     $oClientManager = $this->get('unilend.service.client_manager');
                     $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
@@ -771,7 +763,7 @@ class profileController extends bootstrap
         $this->attachments = $this->lenders_accounts->getAttachments($this->lenders_accounts->id_lender_account);
         $this->clients_status->getLastStatut($this->clients->id_client);
 
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
@@ -792,107 +784,99 @@ class profileController extends bootstrap
 
         $this->infosNotifs['vos-offres-et-vos-projets'] = array(
             \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
-                'title' => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
-                'info' => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
+                'title'           => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets'],
+                'info'            => $this->lng['gestion-alertes']['annonce-des-nouveaux-projets-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_PLACED => array(
-                'title' => $this->lng['gestion-alertes']['offres-realisees'],
-                'info' => $this->lng['gestion-alertes']['offres-realisees-info'],
+                'title'           => $this->lng['gestion-alertes']['offres-realisees'],
+                'info'            => $this->lng['gestion-alertes']['offres-realisees-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
-                'title' => $this->lng['gestion-alertes']['offres-refusees'],
-                'info' => $this->lng['gestion-alertes']['offres-refusees-info'],
+                'title'           => $this->lng['gestion-alertes']['offres-refusees'],
+                'info'            => $this->lng['gestion-alertes']['offres-refusees-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
-                'title' => $this->lng['gestion-alertes']['offres-acceptees'],
-                'info' => $this->lng['gestion-alertes']['offres-acceptees-info'],
+                'title'           => $this->lng['gestion-alertes']['offres-acceptees'],
+                'info'            => $this->lng['gestion-alertes']['offres-acceptees-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
-                'title' => $this->lng['gestion-alertes']['autobid-balance-low'],
-                'info' => $this->lng['gestion-alertes']['autobid-balance-low-info'],
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                'title'           => $this->lng['gestion-alertes']['incidents-projets-et-regularisation'],
+                'info'            => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
-                'title' => $this->lng['gestion-alertes']['autobid-balance-insufficient'],
-                'info' => $this->lng['gestion-alertes']['autobid-balance-insufficient-info'],
+            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
+                'title'           => $this->lng['gestion-alertes']['autobid-accepted-rejected-bid'],
+                'info'            => $this->lng['gestion-alertes']['autobid-accepted-rejected-bid-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->infosNotifs['vos-remboursements'] = array(
             \clients_gestion_type_notif::TYPE_REPAYMENT => array(
-                'title' => $this->lng['gestion-alertes']['remboursements'],
-                'info' => $this->lng['gestion-alertes']['remboursements-info'],
+                'title'           => $this->lng['gestion-alertes']['remboursements'],
+                'info'            => $this->lng['gestion-alertes']['remboursements-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
-            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
-                'title' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation'],
-                'info' => $this->lng['gestion-alertes']['incidents-projets-et-regularisation-info'],
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->infosNotifs['mouvements-sur-votre-compte'] = array(
             \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
-                'title' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
-                'info' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
+                'title'           => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement'],
+                'info'            => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-virement-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => array(
-                'title' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
-                'info' => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => array(
+                'title'           => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire'],
+                'info'            => $this->lng['gestion-alertes']['alimentation-de-votre-compte-par-carte-bancaire-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_DEBIT => array(
-                'title' => $this->lng['gestion-alertes']['retrait'],
-                'info' => $this->lng['gestion-alertes']['retrait-info'],
+                'title'           => $this->lng['gestion-alertes']['retrait'],
+                'info'            => $this->lng['gestion-alertes']['retrait-info'],
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
 
         $this->lTypeNotifs = $this->clients_gestion_type_notif->select();
@@ -1357,7 +1341,7 @@ class profileController extends bootstrap
                     }
                     $contenu .= '</ul>';
 
-                    /** @var \Unilend\Service\ClientManager $oClientManager */
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
                     $oClientManager = $this->get('unilend.service.client_manager');
                     $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $contenu);
 
@@ -1715,7 +1699,7 @@ class profileController extends bootstrap
         }
 
         if (false !== strpos($sContentForHistory, '<li>')) {
-            /** @var \Unilend\Service\ClientManager $oClientManager */
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ClientManager $oClientManager */
             $oClientManager = $this->get('unilend.service.client_manager');
             $oClientManager->changeClientStatusTriggeredByClientAction($this->clients->id_client, $sContentForHistory);
             $this->sendAccountModificationEmail($this->clients);
@@ -1733,7 +1717,7 @@ class profileController extends bootstrap
 
     public function _autolend()
     {
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->oLendersAccounts  = $this->loadData('lenders_accounts');
 
@@ -1910,7 +1894,7 @@ class profileController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = true;
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
         $oClientStatus           = $this->loadData('clients_status');

@@ -22,7 +22,7 @@ table.vos_operations th#order_projects{text-align:left;}
 .soustable .detail_left{text-align:left;}
 .vos_operations_ligne{display:inline-block;vertical-align: top;}
 
-.vos_operations .print{margin-top: 3px;}
+.vos_operations .print{margin-top: 3px;margin-bottom:20px;}
 .vos_operations .xls{margin-top: 6px;}
 
 .load_table_vos_operations{
@@ -43,12 +43,14 @@ table.vos_operations th#order_projects{text-align:left;}
 .pdfHeader .logo { padding: 0 0 70px 0; float: none; background:url(images/logo.png) no-repeat 0 0; white-space:nowrap; overflow:hidden; }
 .pdfFooter{font-size:13px;}
 
-.table th:first-child.pdfSolde{color:white;padding-left: 5px;border-radius: 0;font-size: 17px;}
+.tab_head { background-color:#b20066; height:50px;}
 
+.table th:first-child.pdfSolde{color:white;padding-left: 5px;border-radius: 0;font-size: 17px;}
+.table tr > th.pdfSolde{ background-color:#b20066;color:#fff; }
 .th-wrap{color:white;}
 
 .vos_operations .th-wrap {text-align: center; font-size: 12px;}
 
 .soustable tr td{padding-top: 5px !important; padding-bottom: 5px !important;}
 
-.title-ope{margin-top:25px; color: black;}
+.title-ope{margin-top:0px; color: #fff;padding-left:10px; }
