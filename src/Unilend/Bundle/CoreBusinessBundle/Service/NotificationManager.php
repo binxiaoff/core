@@ -23,14 +23,12 @@ class NotificationManager
 
     public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null)
     {
-        /** @var \notifications $oNotification */
-        $oNotification = $this->oEntityManager->getRepository('notifications');
         /** @var \clients_gestion_notifications $oNotificationSettings */
         $oNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
         /** @var \clients_gestion_mails_notif $oMailNotification */
         $oMailNotification = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
 
-        $this->createNotification($iNotificationType, $iClientId, $iProjectId, $fAmount, $iBidId);
+        $oNotification = $this->createNotification($iNotificationType, $iClientId, $iProjectId, $fAmount, $iBidId);
 
         if ($oNotificationSettings->getNotif($iClientId, $iMailType, 'uniquement_notif') == false) {
             if (
@@ -56,7 +54,7 @@ class NotificationManager
      * @param null|int $iProjectId
      * @param null|float $fAmount
      * @param null|int $iBidId
-     * @return string
+     * @return \notifications
      */
     public function createNotification($iNotificationType, $iClientId, $iProjectId = null, $fAmount = null, $iBidId = null)
     {
@@ -76,7 +74,7 @@ class NotificationManager
         $oNotification->id_bid     = $iBidId;
         $oNotification->create();
 
-        return $oNotification->id_notification;
+        return $oNotification;
     }
 
     /**

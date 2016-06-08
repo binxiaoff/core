@@ -127,21 +127,19 @@ class dossiersController extends bootstrap
             $finFunding        = explode(':', $this->finFunding);
             $this->HfinFunding = $finFunding[0];
 
-            $this->current_projects_status->getLastStatut($this->projects->id_project);
-
-            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
-
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
+
             $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
             $this->current_projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
             $this->projects_status->get($this->current_projects_status_history->id_project_status);
-            $this->current_projects_status->get($this->current_projects_status_history->id_project_status);
+            $this->current_projects_status->getLastStatut($this->projects->id_project);
 
-            $this->bHasAdvisor = false;
+            $this->bHasAdvisor       = false;
+            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
@@ -468,11 +466,8 @@ class dossiersController extends bootstrap
                         $this->projects->risk = $_POST['risk'];
                     }
 
-                    // --- Génération du slug --- //
-                    // Génération du slug avec titre projet fo
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
-                        $leSlugProjet         = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
-                        $this->projects->slug = $leSlugProjet;
+                        $this->projects->slug = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
                     }
 
                     $this->projects->update();
@@ -501,7 +496,7 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
 
                             if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
@@ -734,6 +729,11 @@ class dossiersController extends bootstrap
                             }
                         }
                     }
+
+                    $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec suucès';
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
                 }
             }
 
