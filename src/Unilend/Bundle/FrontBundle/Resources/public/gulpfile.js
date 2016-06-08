@@ -86,7 +86,7 @@ Unilend.config = deepAssign({
   src: goodPath(yargs.src) || goodPath('./src'),
 
   // Root dest path, used by getDest
-  dest: goodPath(yargs.dest) || goodPath('./build/' + env),
+  dest: goodPath(yargs.dest) || goodPath('./frontBuild/' + env),
 
 // Browser-sync server configuration
 // browserSync: deepAssign({
