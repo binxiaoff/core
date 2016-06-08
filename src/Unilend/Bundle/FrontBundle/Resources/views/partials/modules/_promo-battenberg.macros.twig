@@ -1,33 +1,7 @@
 {# Promo Battenburg Macros #}
 {#% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %#}
 
-{# Example of people array for settings #}
-{# @schema #}
-{#
-  [{
-    type: 'emprunter',
-    image: siteurlmedia('promos/homeacq-promo-emprunter-600x400.jpg'),
-    name: 'Jean-Marc',
-    vocation: false,
-    location: 'Marseille',
-    quote: '"J\'ai pu emprunter 15&nbsp;000€ en quelques semaines et relancer la croissance de mon entreprise."',
-    urlTestimonial: route('emprunter/testimonials'),
-    urlProject: route('project/12345'),
-    labelCta: 'Présenter un projet',
-    urlCta: route('projects/new')
-  },{
-    type: 'preter',
-    image: siteurlmedia('promos/homeacq-promo-preter-600x400.jpg'),
-    name: 'Jane',
-    vocation: false,
-    location: 'Avignon',
-    quote: '"En 2 ans, j\'ai multiplié par 3 mon portefeuille de prêt. Et mes intérêts sont à +8%."',
-    urlTestimonial: route('preter/testimonials'),
-    urlProject: false,
-    labelCta: 'Devenir prêteur',
-    urlCta: route('preter')
-  }]
-#}
+
 
 {# Renders a battenberg promo #}
 {# @macro render #}
@@ -114,13 +88,13 @@
                 <div class="promo-image promo-{{ classColor }}" style="background-image: url('{{ person.image }}')">
                     &nbsp;
                     <a href="{{ person.urlCta }}" class="promo-image-cta">
-                        <div><span class="link">{{ person.labelCta }}</span></div>
+                        <div><span class="link">devenir {{ person.type }}</span></div>
                     </a>
                 </div><!-- /.promo-image -->
             </div>
             <div class="{{ classColumnsSlide }} vertical-align-content">
                 <div class="promo-slide promo-{{ classColor }} {{ classPosition }}{% if settings.animate %} {{ classAnimatePosition }}"{% endif %}>
-                    <p class="quote">{{ person.quote }}</p>
+                    <p class="quote">{{ person.quote | raw }}</p>
                     {% if person.name is not empty %}
                         <p class="source">
                             <cite>{{ person.name }}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite>
