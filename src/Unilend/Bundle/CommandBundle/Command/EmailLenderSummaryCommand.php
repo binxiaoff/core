@@ -81,9 +81,9 @@ EOF
                 return;
         }
 
-        $sNotificationType = $input->getArgument('notification_type');
+        $notificationType = $input->getArgument('notification_type');
 
-        switch ($sNotificationType) {
+        switch ($notificationType) {
             case 'repayment': // run at 18:00 for daily, at 10:00 for weekly and at 11::00 for monthly
                 $mailerManager->sendRepaymentsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_REPAYMENT), $summaryType);
                 break;

@@ -15,38 +15,27 @@ class Connection extends BaseConnection
     {
         $stmt = null;
         $args = func_get_args();
-        $attempt = 0;
-        $retry = true;
-        while ($retry) {
-            $retry = false;
-            try {
-                switch (count($args)) {
-                    case 1:
-                        $stmt = parent::query($args[0]);
-                        break;
-                    case 2:
-                        $stmt = parent::query($args[0], $args[1]);
-                        break;
-                    case 3:
-                        $stmt = parent::query($args[0], $args[1], $args[2]);
-                        break;
-                    case 4:
-                        $stmt = parent::query($args[0], $args[1], $args[2], $args[3]);
-                        break;
-                    default:
-                        $stmt = parent::query();
-                }
-            } catch (\Exception $exception) {
-                if ($this->canTryAgain($attempt) && $this->_driver->isGoneAwayException($exception)) {
-                    $this->close();
-                    $attempt++;
-                    $retry = true;
-                } else {
-                    trigger_error($exception->getMessage(), E_USER_WARNING);
-
-                    return false;
-                }
+        try {
+            switch (count($args)) {
+                case 1:
+                    $stmt = parent::query($args[0]);
+                    break;
+                case 2:
+                    $stmt = parent::query($args[0], $args[1]);
+                    break;
+                case 3:
+                    $stmt = parent::query($args[0], $args[1], $args[2]);
+                    break;
+                case 4:
+                    $stmt = parent::query($args[0], $args[1], $args[2], $args[3]);
+                    break;
+                default:
+                    $stmt = parent::query();
             }
+        } catch (\Exception $exception) {
+            trigger_error($exception->getMessage(), E_USER_WARNING);
+
+            return false;
         }
         return $stmt;
     }
