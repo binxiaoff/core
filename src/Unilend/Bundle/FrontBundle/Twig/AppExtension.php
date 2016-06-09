@@ -2,14 +2,20 @@
 namespace Unilend\Bundle\FrontBundle\Twig;
 
 
+use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
+
 class AppExtension extends \Twig_Extension
 {
 
     private $sUrl;
 
-    public function __construct($routerRequestContextScheme, $routerRequestContextHost)
+    /** @var  StatisticsManager */
+    private $statisticsManager;
+
+    public function __construct($routerRequestContextScheme, $routerRequestContextHost, $statisticsManager)
     {
-        $this->sUrl = $routerRequestContextHost . '://' . $routerRequestContextScheme ;
+        $this->sUrl = $routerRequestContextHost . '://' . $routerRequestContextScheme;
+        $this->statisticsManager = $statisticsManager;
     }
 
     public function getName()
@@ -72,6 +78,18 @@ class AppExtension extends \Twig_Extension
         return true;
     }
 
+    public function getStatistics()
+    {
+        $aStatistics = [
+            'numberProjects'           => $this->statisticsManager->getNumberOfProjects(),
+            'numberLenders'            => $this->statisticsManager->getNumberOfLenders(),
+            'amountBorrowedInMillions' => bcdiv($this->statisticsManager->getAmountBorrowed(), 1000000),
+            'irrUnilend' => $this->statisticsManager->getUnilendIRR()
+        ];
+
+        return $aStatistics;
+    }
+
 
     public function getFunctions()
     {
@@ -80,7 +98,8 @@ class AppExtension extends \Twig_Extension
             new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'siteurlmediaFunction')),
-            new \Twig_SimpleFunction('caniuse_svg', array($this, 'canUseSvg'))
+            new \Twig_SimpleFunction('caniuse_svg', array($this, 'canUseSvg')),
+            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics'))
         );
     }
 

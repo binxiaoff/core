@@ -88,7 +88,8 @@ class StatisticsManager
 
     public function getUnilendIRR()
     {
-        return $this->IRRManager->getLastUnilendIRR();
+        $aLastUnilendIRR = $this->IRRManager->getLastUnilendIRR();
+        return $aLastUnilendIRR['value'];
     }
 
     public function getAmountSuccessfullyFinancedProjects()
