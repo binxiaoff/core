@@ -991,18 +991,25 @@
         };
 
         $.post(add_url + "/preteurs/change_bank_account", rib).done(function (data) {
-            if (data == 'bic_ko') {
-                $('#iban_ok').text('BIC Incorrect');
-                $('#iban_ok').css("color", "red");
-            } else if (data == 'iban_ko') {
-                $('#iban_ok').text('IBAN Incorrect');
-                $('#iban_ok').css("color", "red");
-            } else if (data == 'both_ko') {
-                $('#iban_ok').text('BIC + IBAN Incorrect');
-                $('#iban_ok').css("color", "red");
+            oJson = JSON.parse(data);
+            var color = 'red';
+            if (typeof oJson.text !== 'undefined' && typeof oJson.severity !== 'undefined') {
+                switch (oJson.severity) {
+                    case 'valid':
+                        color = 'green';
+                        break;
+                    case 'warning':
+                        color = 'orange';
+                        break;
+                    case 'error':
+                        color = 'red';
+                        break;
+                }
+                $('#iban_ok').text(oJson.text);
+                $('#iban_ok').css("color", color);
             } else {
-                $('#iban_ok').text('BIC / IBAN Modifié');
-                $('#iban_ok').css("color", "green");
+                $('#iban_ok').text('Une erreur est survenue');
+                $('#iban_ok').css("color", color);
             }
         });
     });

@@ -35,8 +35,8 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    const BID_RATE_MIN = 4;
-    const BID_RATE_MAX = 10;
+    const BID_RATE_MIN = 4.0;
+    const BID_RATE_MAX = 10.0;
 
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
@@ -57,7 +57,7 @@ class bids extends bids_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -172,10 +172,20 @@ class bids extends bids_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    public function getProjectMaxRate($iProjectId)
+    public function getProjectMaxRate(\projects $project)
     {
-        $result = $this->bdd->query('SELECT MAX(rate) FROM bids WHERE id_project = ' . $iProjectId . ' AND status = 0');
-        return round($this->bdd->result($result, 0, 0), 1);
+        $amount        = 0;
+        $projectAmount = (int) ($project->amount * 100);
+        $validBids     = $this->select('id_project = ' . $project->id_project . ' AND status = ' . self::STATUS_BID_PENDING, 'rate ASC, ordre ASC');
+
+        foreach ($validBids as $bid) {
+            $amount += (int) $bid['amount'];
+            if ($amount >= $projectAmount) {
+                return round($bid['rate'], 1);
+            }
+        }
+
+        return self::BID_RATE_MAX;
     }
 
     public function getLenders($iProjectId, $aStatus = array())
@@ -186,17 +196,23 @@ class bids extends bids_crud
             $sStatus = implode(',', $aStatus);
             $sStatus = $this->bdd->escape_string($sStatus);
         }
-        $sQuery = 'SELECT id_lender_account, count(*) as bid_nb, SUM(amount) as amount_sum FROM `bids` WHERE id_project = ' . $iProjectId;
+        $sQuery = '
+            SELECT id_lender_account,
+                COUNT(*) AS bid_nb,
+                SUM(amount) AS amount_sum
+            FROM bids
+            WHERE id_project = ' . $iProjectId;
 
         if ('' !== $sStatus) {
-            $sQuery .= ' AND status in (' . $sStatus . ')';
+            $sQuery .= ' AND status IN (' . $sStatus . ')';
         }
 
-        $sQuery .= 'Group BY id_lender_account';
+        $sQuery .= '
+            GROUP BY id_lender_account';
 
         $rQuery   = $this->bdd->query($sQuery);
         $aLenders = array();
-        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aLenders[] = $aRow;
         }
 
@@ -213,7 +229,7 @@ class bids extends bids_crud
 
         $rQuery = $this->bdd->query($sQuery);
         $aBids  = array();
-        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aBids[] = $aRow;
         }
 
@@ -280,15 +296,40 @@ class bids extends bids_crud
         $aBidsByRate = array();
         if ($iProjectId) {
             $sQuery = ' SELECT rate, SUM(amount / 100) as amount_total, SUM(IF(status = 2, 0, amount / 100))  as amount_active, count(*) as nb_bids
-                    FROM bids 
+                    FROM bids
                     WHERE id_project = ' . $iProjectId . '
                     GROUP BY rate ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
-            while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
                 $aBidsByRate[] = $aRow;
             }
         }
 
         return $aBidsByRate;
+    }
+
+    /**
+     * @param int $projectId
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function getLastProjectBidsByLender($projectId, $limit = 100, $offset = 0)
+    {
+        $bids = array();
+
+        // This only works with MySQL as long as non-agregated columns could not be use on other DB systems
+        $query = $this->bdd->query('
+            SELECT *
+            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_lender_account ASC, id_bid DESC) bids
+            GROUP BY id_lender_account
+            LIMIT ' . $limit . ' OFFSET ' . $offset
+        );
+
+        while ($row = $this->bdd->fetch_assoc($query)) {
+            $bids[] = $row;
+        }
+
+        return $bids;
     }
 }

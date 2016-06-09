@@ -432,16 +432,16 @@ class transfertsController extends bootstrap
         $this->hideDecoration();
         $this->autoFireView = false;
 
-        $projects                = $this->loadData('projects');
-        $companies               = $this->loadData('companies');
-        $clients                 = $this->loadData('clients');
-        $receptions              = $this->loadData('receptions');
-        $transactions            = $this->loadData('transactions');
-        $new_transactions        = $this->loadData('transactions');
-        $bank_unilend            = $this->loadData('bank_unilend');
-        $echeanciers             = $this->loadData('echeanciers');
-        $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
-        $projects_remb           = $this->loadData('projects_remb');
+        $projects               = $this->loadData('projects');
+        $companies              = $this->loadData('companies');
+        $clients                = $this->loadData('clients');
+        $receptions             = $this->loadData('receptions');
+        $transactions           = $this->loadData('transactions');
+        $new_transactions       = $this->loadData('transactions');
+        $bank_unilend           = $this->loadData('bank_unilend');
+        $echeanciers            = $this->loadData('echeanciers');
+        $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+        $projects_remb          = $this->loadData('projects_remb');
 
         if (
             isset($_POST['id_project'], $_POST['id_reception'])
@@ -588,35 +588,35 @@ class transfertsController extends bootstrap
             }
 
             if ($bOfferValid && $bEnoughMoneyLeft) {
-                $oWelcomeOfferDetails->id_offre_bienvenue        = $this->offres_bienvenues->id_offre_bienvenue;
-                $oWelcomeOfferDetails->motif                     = $sWelcomeOfferMotive;
-                $oWelcomeOfferDetails->id_client                 = $this->clients->id_client;
-                $oWelcomeOfferDetails->montant                   = $this->offres_bienvenues->montant;
-                $oWelcomeOfferDetails->status                    = 0;
+                $oWelcomeOfferDetails->id_offre_bienvenue = $this->offres_bienvenues->id_offre_bienvenue;
+                $oWelcomeOfferDetails->motif              = $sWelcomeOfferMotive;
+                $oWelcomeOfferDetails->id_client          = $this->clients->id_client;
+                $oWelcomeOfferDetails->montant            = $this->offres_bienvenues->montant;
+                $oWelcomeOfferDetails->status             = 0;
                 $oWelcomeOfferDetails->create();
 
-                $oTransactions->id_client                        = $this->clients->id_client;
-                $oTransactions->montant                          = $oWelcomeOfferDetails->montant;
-                $oTransactions->id_offre_bienvenue_detail        = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
-                $oTransactions->id_langue                        = 'fr';
-                $oTransactions->date_transaction                 = date('Y-m-d H:i:s');
-                $oTransactions->status                           = 1;
-                $oTransactions->etat                             = 1;
-                $oTransactions->ip_client                        = $_SERVER['REMOTE_ADDR'];
-                $oTransactions->type_transaction                 = \transactions_types::TYPE_WELCOME_OFFER;
+                $oTransactions->id_client                 = $this->clients->id_client;
+                $oTransactions->montant                   = $oWelcomeOfferDetails->montant;
+                $oTransactions->id_offre_bienvenue_detail = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
+                $oTransactions->id_langue                 = 'fr';
+                $oTransactions->date_transaction          = date('Y-m-d H:i:s');
+                $oTransactions->status                    = 1;
+                $oTransactions->etat                      = 1;
+                $oTransactions->ip_client                 = $_SERVER['REMOTE_ADDR'];
+                $oTransactions->type_transaction          = \transactions_types::TYPE_WELCOME_OFFER;
                 $oTransactions->create();
 
-                $oWalletsLines->id_lender                        = $oLendersAccounts->id_lender_account;
-                $oWalletsLines->type_financial_operation         = \wallets_lines::TYPE_MONEY_SUPPLY;
-                $oWalletsLines->id_transaction                   = $oTransactions->id_transaction;
-                $oWalletsLines->status                           = 1;
-                $oWalletsLines->type                             = 1;
-                $oWalletsLines->amount                           = $oWelcomeOfferDetails->montant;
+                $oWalletsLines->id_lender                = $oLendersAccounts->id_lender_account;
+                $oWalletsLines->type_financial_operation = \wallets_lines::TYPE_MONEY_SUPPLY;
+                $oWalletsLines->id_transaction           = $oTransactions->id_transaction;
+                $oWalletsLines->status                   = 1;
+                $oWalletsLines->type                     = 1;
+                $oWalletsLines->amount                   = $oWelcomeOfferDetails->montant;
                 $oWalletsLines->create();
 
-                $oBankUnilend->id_transaction                    = $oTransactions->id_transaction;
-                $oBankUnilend->montant                           = - $oWelcomeOfferDetails->montant;
-                $oBankUnilend->type                              = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
+                $oBankUnilend->id_transaction = $oTransactions->id_transaction;
+                $oBankUnilend->montant        = - $oWelcomeOfferDetails->montant;
+                $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                 $oBankUnilend->create();
 
                 $oMailsText = $this->loadData('mails_text');
