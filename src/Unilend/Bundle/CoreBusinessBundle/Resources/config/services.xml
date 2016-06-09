@@ -92,6 +92,7 @@
         </service>
         <service id="unilend.service.statistics_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager">
             <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.irr_manager"/>
         </service>
     </services>
 </container>

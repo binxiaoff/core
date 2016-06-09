@@ -9,9 +9,13 @@ class StatisticsManager
     /** @var  EntityManager */
     private $entityManager;
 
-    public function __construct(EntityManager $entityManager)
+    /** @var  IRRManager */
+    private $IRRManager;
+
+    public function __construct(EntityManager $entityManager, IRRManager $IRRManager)
     {
         $this->entityManager = $entityManager;
+        $this->IRRManager = $IRRManager;
     }
 
 
@@ -82,12 +86,9 @@ class StatisticsManager
         return $iBorrowedAmount;
     }
 
-    public function getLastUnilendIRR()
+    public function getUnilendIRR()
     {
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->entityManager->getRepository('unilend_stats');
-        $aUnilendStats = $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1');
-        return array_shift($aUnilendStats);
+        return $this->IRRManager->getLastUnilendIRR();
     }
 
     public function getAmountSuccessfullyFinancedProjects()

@@ -166,4 +166,12 @@ class IRRManager
         $oLendersAccountsStats->create();
     }
 
+    public function getLastUnilendIRR()
+    {
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
+        $aUnilendStats = $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1');
+        return array_shift($aUnilendStats);
+    }
+
 }
