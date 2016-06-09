@@ -81,4 +81,29 @@ class StatisticsManager
 
         return $iBorrowedAmount;
     }
+
+    public function getLastUnilendIRR()
+    {
+        /** @var \unilend_stats $unilendStats */
+        $unilendStats = $this->entityManager->getRepository('unilend_stats');
+        $aUnilendStats = $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1');
+        return array_shift($aUnilendStats);
+    }
+
+    public function getAmountSuccessfullyFinancedProjects()
+    {
+        /** @var \projects_status_history $projectStatusHistory */
+        $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');
+        $aCountByStatus = $projectStatusHistory->countProjectsHavingHadStatus(array(\projects_status::EN_FUNDING, \projects_status::FUNDE));
+
+        $sPercentageSuccessfullyFunded = bcmul(bcdiv($aCountByStatus[\projects_status::FUNDE], $aCountByStatus[\projects_status::EN_FUNDING], 4), 100);
+        return $sPercentageSuccessfullyFunded;
+    }
+
+    public function getAverageFundingTime()
+    {
+        /** @var \projects $projects */
+        $projects = $this->entityManager->getRepository('projects');
+        return $projects->getAverageFundingTime();
+    }
 }

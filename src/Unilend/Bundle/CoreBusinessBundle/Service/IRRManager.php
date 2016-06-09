@@ -155,14 +155,6 @@ class IRRManager
         return count($iCountProjectStatusChanges) > 0 || count($iCountLendersWithLatePayments) > 0 ;
     }
 
-    public function getLastUnilendIRR()
-    {
-        /** @var \unilend_stats $unilendStats */
-        $unilendStats = $this->oEntityManager->getRepository('unilend_stats');
-        $aUnilendStats = $unilendStats->select('type_stat = "IRR"', 'added DESC', null, '1');
-        return array_shift($aUnilendStats);
-    }
-
     public function addIRRLender($aLender)
     {
         /** @var \lenders_account_stats $oLendersAccountsStats */

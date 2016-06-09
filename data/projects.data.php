@@ -877,4 +877,29 @@ class projects extends projects_crud
         return $this->bdd->executeQuery($sQuery);
     }
 
+    public function getAverageFundingTime()
+    {
+        $sQuery = 'SELECT
+                      FLOOR(HOUR(AVG(t.DurationFunding)) / 24) AS "days",
+                      MOD(HOUR(AVG(t.DurationFunding)), 24) AS "hours",
+                      MINUTE(AVG(t.DurationFunding)) AS "minutes",
+                      AVG(t.DurationFunding) AS "unixtime"
+                      FROM
+                      (SELECT
+                        p.id_project,
+                        TIMEDIFF(CASE WHEN p.date_funded > "0000-00-00 00:00:00" THEN p.date_funded ELSE DATE_FORMAT(MIN(b.updated),"%Y-%m-%d %H:%i") END, p.date_publication_full) AS DurationFunding
+                    FROM
+                      `bids` b
+                    INNER JOIN projects p ON (b.id_project = p.id_project)
+                    INNER JOIN projects_status_history psh ON p.id_project = psh.id_project
+                    INNER JOIN projects_status ps ON psh.id_project_status = ps.id_project_status
+                    WHERE b.status = ' . \bids::STATUS_BID_REJECTED . ' AND ps.status = ' . \projects_status::FUNDE . ' AND p.date_retrait > "2014-04-01" ) AS t';
+
+
+        $oStatement = $this->bdd->executeQuery($sQuery);
+        $aDateIntervalInformation  = $oStatement->fetch(\PDO::FETCH_ASSOC);
+
+        return $aDateIntervalInformation;
+    }
+
 }
