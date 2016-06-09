@@ -17,7 +17,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
     {
         $this
             ->setName('feeds:daily_state')
-            ->setDescription('Extract lender repayments of the month')
+            ->setDescription('Extract daily fiscal state')
             ->addArgument(
                 'day',
                 InputArgument::OPTIONAL,
