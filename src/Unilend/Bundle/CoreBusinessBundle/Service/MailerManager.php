@@ -1063,8 +1063,6 @@ class MailerManager
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
-                    $oCustomer->get($iCustomerId);
-
                     $sProjectsListHTML = '';
                     $iProjectsCount    = count($aMailNotifications);
 
@@ -1076,57 +1074,69 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        $sProjectsListHTML .= '
-                        <tr style="color:#b20066;">
-                            <td  style="font-family:Arial;font-size:14px;height: 25px;">
-                               <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
-                            </td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->oFicelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
-                        </tr>';
+                        $oProject->get($aMailNotification['id_project']);
+
+                        /** @var \projects_status $oProjectStatus */
+                        $oProjectStatus = $this->loadData('projects_status');
+                        $oProjectStatus->getLastStatut($oProject->id_project);
+
+                        if (\projects_status::EN_FUNDING == $oProjectStatus->status) {
+                            $sProjectsListHTML .= '
+                                <tr style="color:#b20066;">
+                                    <td  style="font-family:Arial;font-size:14px;height: 25px;">
+                                       <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
+                                    </td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
+                                </tr>';
+                            $iProjectsCount += 1;
+                        }
                     }
 
-                    if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                    } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                    } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                    } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
-                        continue;
+                    if ($iProjectsCount >= 1) {
+                        $oCustomer->get($iCustomerId);
+
+                        if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                        } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                        } else {
+                            trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
+                            continue;
+                        }
+
+                        $aReplacements = [
+                            'surl'            => $this->sSUrl,
+                            'url'             => $this->sFUrl,
+                            'prenom_p'        => $oCustomer->prenom,
+                            'liste_projets'   => $sProjectsListHTML,
+                            'projet-p'        => $this->sFUrl . '/projets-a-financer',
+                            'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                            'gestion_alertes' => $this->sFUrl . '/profile',
+                            'contenu'         => $sContent,
+                            'objet'           => $sObject,
+                            'sujet'           => $sSubject,
+                            'lien_fb'         => $this->getFacebookLink(),
+                            'lien_tw'         => $this->getTwitterLink()
+                        ];
+
+                        /** @var TemplateMessage $message */
+                        $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+                        $message->setTo($oCustomer->email);
+                            $this->mailer->send($message);
                     }
-
-                    $aReplacements = array(
-                        'surl'            => $this->sSUrl,
-                        'url'             => $this->sFUrl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_projets'   => $sProjectsListHTML,
-                        'projet-p'        => $this->sFUrl . '/projets-a-financer',
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->sFUrl . '/profile',
-                        'contenu'         => $sContent,
-                        'objet'           => $sObject,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->getFacebookLink(),
-                        'lien_tw'         => $this->getTwitterLink()
-                    );
-
-                    /** @var TemplateMessage $message */
-                    $message = $this->messageProvider->newMessage($sMail, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $this->mailer->send($message);
-
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(),

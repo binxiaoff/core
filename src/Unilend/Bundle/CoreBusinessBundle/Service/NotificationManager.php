@@ -1,11 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: binxiao
- * Date: 19/02/2016
- * Time: 15:47
- */
-
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
@@ -21,6 +14,16 @@ class NotificationManager
         $this->oMailerManager = $oMailerManager;
     }
 
+    /**
+     * @param int        $iNotificationType
+     * @param int        $iMailType
+     * @param int        $iClientId
+     * @param null|int   $sMailFunction
+     * @param null|int   $iProjectId
+     * @param null|float $fAmount
+     * @param null|int   $iBidId
+     * @param null|int   $iTransactionId
+     */
     public function create($iNotificationType, $iMailType, $iClientId, $sMailFunction = null, $iProjectId = null, $fAmount = null, $iBidId = null, $iTransactionId = null)
     {
         /** @var \clients_gestion_notifications $oNotificationSettings */
@@ -49,8 +52,8 @@ class NotificationManager
     }
 
     /**
-     * @param $iNotificationType
-     * @param $iClientId
+     * @param int $iNotificationType
+     * @param int $iClientId
      * @param null|int $iProjectId
      * @param null|float $fAmount
      * @param null|int $iBidId
@@ -78,10 +81,10 @@ class NotificationManager
     }
 
     /**
-     * @param $iNotificationId
-     * @param $iMailType
-     * @param $iClientId
-     * @param $iTransactionId
+     * @param int $iNotificationId
+     * @param int $iMailType
+     * @param int $iClientId
+     * @param int $iTransactionId
      */
     public function createEmailNotification($iNotificationId, $iMailType, $iClientId, $iTransactionId, $iProjectId = null)
     {
