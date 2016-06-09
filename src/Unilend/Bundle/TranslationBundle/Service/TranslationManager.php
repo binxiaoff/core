@@ -14,28 +14,47 @@ class TranslationManager
     /** @var TranslationLoader  */
     private $translationLoader;
 
-    public function __construct(EntityManager $entityManager, TranslationLoader $translationLoader, $defaultLanguage, $cacheDirectory)
+    private $defaultLocale;
+    private $cacheDirectory;
+
+    public function __construct(EntityManager $entityManager, TranslationLoader $translationLoader, $defaultLocale, $cacheDirectory)
     {
         $this->entityManager     = $entityManager;
         $this->translationLoader = $translationLoader;
-        $this->defaultLanguage   = $defaultLanguage;
+        $this->defaultLocale     = $defaultLocale;
         $this->cacheDirectory    = $cacheDirectory;
     }
 
+    /**
+     * Deletes the pho file with the translation array in the cache folder.
+     * and if the folder does not exist (deleted manually) it creates the folder.
+     */
     public function clearLanguageCache()
     {
-        foreach(Finder::create()->in($this->cacheDirectory)->files() as $file) {
-            unlink($file->getRealpath());
+        try {
+            foreach(Finder::create()->in($this->cacheDirectory)->files() as $file) {
+                unlink($file->getRealpath());
+            }
+        } catch (\InvalidArgumentException $noTranslationDirectoryException) {
+            mkdir($this->cacheDirectory);
         }
     }
 
-    public function selectSections($sLanguage)
+    /**
+     * @param $sLocale
+     * @return array
+     */
+    public function selectSections($sLocale)
     {
         /** @var \translations $translations */
         $translations = $this->entityManager->getRepository('translations');
-        return $translations->selectSections($sLanguage);
+        return $translations->selectSections($sLocale);
     }
 
+    /**
+     * @param $sSection
+     * @return array
+     */
     public function selectNamesForSection($sSection)
     {
         /** @var \translations $translations */
@@ -66,7 +85,7 @@ class TranslationManager
     {
         /** @var \translations $translations */
         $translations              = $this->entityManager->getRepository('translations');
-        $translations->lang        = $this->defaultLanguage;
+        $translations->locale      = $this->defaultLocale;
         $translations->section     = $sSection;
         $translations->name        = $sName;
         $translations->translation = $sTranslation;
@@ -102,18 +121,18 @@ class TranslationManager
 
     /**
      * @param string $sSection
-     * @param string|null $sLanguage
+     * @param string|null $sLocale
      * @return array
      */
-    public function getAllTranslationsForSection($sSection, $sLanguage = null)
+    public function getAllTranslationsForSection($sSection, $sLocale = null)
     {
-        if (is_null($sLanguage)) {
-            $sLanguage = $this->defaultLanguage;
+        if (is_null($sLocale)) {
+            $sLocale = $this->defaultLocale;
         }
 
         /** @var \translations $translations */
         $translations            = $this->entityManager->getRepository('translations');
-        $aTranslationsForSection = $translations->getAllTranslationsForSection($sSection, $sLanguage);
+        $aTranslationsForSection = $translations->getAllTranslationsForSection($sSection, $sLocale);
         $aTranslations           = array();
 
         foreach($aTranslationsForSection as $key => $translation){
@@ -124,14 +143,18 @@ class TranslationManager
     }
 
     /**
-     * @param string|null $sLanguage
+     * @param string|null $sLocale
      * @return array
      */
-    public function getTranslatedCompanySectorList($sLanguage = null)
+    public function getTranslatedCompanySectorList($sLocale = null)
     {
+        if (is_null($sLocale)) {
+            $sLocale = $this->defaultLocale;
+        }
+
         /** @var \company_sector $companySector */
         $companySector       = $this->entityManager->getRepository('company_sector');
-        $aSectorTranslations = $this->getAllTranslationsForSection('company-sector', $sLanguage);
+        $aSectorTranslations = $this->getAllTranslationsForSection('company-sector', $sLocale);
         $aCompanySectors     = $companySector->select();
         $aTranslatedSectors  = array();
 
@@ -141,5 +164,4 @@ class TranslationManager
 
         return $aTranslatedSectors;
     }
-
 }

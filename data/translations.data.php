@@ -34,14 +34,14 @@ class translations extends translations_crud
 
     public function create($cs='')
     {
-        $this->bdd->insert('translations', array('lang' => $this->lang, 'section' => $this->section, 'name' => $this->name, 'translation' => $this->translation));
+        $this->bdd->insert('translations', array('locale' => $this->locale, 'section' => $this->section, 'name' => $this->name, 'translation' => $this->translation));
         $this->get($this->id_translation,'id_translation');
         return $this->id_translation;
     }
 
     public function update($cs='')
     {
-        $this->bdd->update('translations', array('translation' => $this->translation), array('lang' => $this->lang, 'section' => $this->section, 'name' => $this->name, ));
+        $this->bdd->update('translations', array('translation' => $this->translation), array('locale' => $this->locale, 'section' => $this->section, 'name' => $this->name, ));
         $this->get($this->id_translation,'id_translation');
     }
 
@@ -79,10 +79,13 @@ class translations extends translations_crud
         return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `translations` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 
-    public function getAllTranslationMessages($sLanguage)
+    public function getAllTranslationMessages($sLocale)
     {
-        $sQuery = 'SELECT * FROM translations WHERE lang = ? ';
-        $oStatement = $this->bdd->executeQuery($sQuery, array($sLanguage));
+        $aBind = array('locale' => $sLocale);
+        $aType = array('locale' => \PDO::PARAM_STR,);
+
+        $sQuery = 'SELECT * FROM translations WHERE locale = :locale ';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
         $aTranslations = array();
         while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
             $aTranslations[] = $aRow;
@@ -91,10 +94,13 @@ class translations extends translations_crud
         return $aTranslations;
     }
 
-    public function selectSections($sLanguage = 'fr_FR')
+    public function selectSections($sLocale = 'fr_FR')
     {
-        $sQuery     = 'SELECT DISTINCT section, COUNT(translation) FROM translations WHERE lang = ? GROUP BY section ORDER BY section ASC ';
-        $oStatement = $this->bdd->executeQuery($sQuery, array($sLanguage));
+        $aBind = array('locale' => $sLocale);
+        $aType = array('locale' => \PDO::PARAM_STR,);
+
+        $sQuery     = 'SELECT DISTINCT section, COUNT(translation) FROM translations WHERE locale = :locale GROUP BY section ORDER BY section ASC ';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
         $aSections  = array();
         while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
             $aSections[] = $aRow;
@@ -105,8 +111,11 @@ class translations extends translations_crud
 
     public function selectNamesForSection($sSection)
     {
-        $sQuery     = 'SELECT DISTINCT name FROM translations WHERE section = ? ORDER BY name ASC';
-        $oStatement = $this->bdd->executeQuery($sQuery, array($sSection));
+        $aBind = array('section' => $sSection);
+        $aType = array('section' => \PDO::PARAM_STR,);
+
+        $sQuery     = 'SELECT DISTINCT name FROM translations WHERE section = :section ORDER BY name ASC';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
         $aNames  = array();
         while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
             $aNames[] = $aRow;
@@ -117,16 +126,22 @@ class translations extends translations_crud
 
     public function selectTranslation($sSection, $sName)
     {
-        $sQuery     = 'SELECT translation FROM translations WHERE section = ? AND name = ?';
-        $oStatement = $this->bdd->executeQuery($sQuery, array($sSection, $sName));
+        $aBind = array('section' => $sSection, 'name' => $sName);
+        $aType = array('section' => \PDO::PARAM_STR, 'name' => \PDO::PARAM_STR);
+
+        $sQuery     = 'SELECT translation FROM translations WHERE section = :section AND name = :name';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
 
         return $oStatement->fetchColumn(0);
     }
 
-    public function getAllTranslationsForSection($sSection, $sLanguage)
+    public function getAllTranslationsForSection($sSection, $sLocale)
     {
-        $sQuery = 'SELECT * FROM translations WHERE section = ? AND lang = ?';
-        $oStatement = $this->bdd->executeQuery($sQuery, array($sSection, $sLanguage));
+        $aBind = array('section' => $sSection, 'locale' => $sLocale);
+        $aType = array('section' => \PDO::PARAM_STR, 'locale' => \PDO::PARAM_STR);
+
+        $sQuery = 'SELECT * FROM translations WHERE section = :section AND locale = :locale';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
         $aTranslations  = array();
         while ($aRow = $oStatement->fetch(\PDO::FETCH_ASSOC)) {
             $aTranslations[] = $aRow;
@@ -142,7 +157,7 @@ class translations extends translations_crud
             $id_langue = 'fr_FR';
         }
 
-        $sql      = 'SELECT * FROM translations WHERE section = "' . $section . '" AND lang = "' . $id_langue . '"';
+        $sql      = 'SELECT * FROM translations WHERE section = "' . $section . '" AND locale = "' . $id_langue . '"';
         $resultat = $this->bdd->query($sql);
         $result   = array();
 
