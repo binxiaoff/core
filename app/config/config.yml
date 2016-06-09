@@ -6,21 +6,21 @@ framework:
     default_locale:  "%locale%"
     assets:
         base_urls:
-            - "https://%router.request_context.host%"
+            - "%router.request_context.scheme%://%url.host_default%"
 
 doctrine:
     dbal:
         connections:
             default:
-                driver:   "%database_driver%"
-                host:     "%database_host%"
-                port:     "%database_port%"
-                dbname:   "%database_name%"
-                user:     "%database_user%"
-                password: "%database_password%"
-                charset:  "UTF8"
+                driver:        "%database_driver%"
+                host:          "%database_host%"
+                port:          "%database_port%"
+                dbname:        "%database_name%"
+                user:          "%database_user%"
+                password:      "%database_password%"
+                charset:       "UTF8"
                 wrapper_class: "%dbal_wrapper_class%"
-                driver_class: "%dbal_driver_class%"
+                driver_class:  "%dbal_driver_class%"
                 options:
                     x_reconnect_attempts: 3
     orm:
