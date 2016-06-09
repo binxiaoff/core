@@ -52,7 +52,7 @@ class CheckBorrowerDebitCommand extends ContainerAwareCommand
         }
 
         $varMail = array(
-            '$surl'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host'),
+            '$surl'       => $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default'),
             '$liste_remb' => $liste_remb
         );
 

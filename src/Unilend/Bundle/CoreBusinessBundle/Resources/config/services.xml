@@ -51,7 +51,7 @@
             <argument>%kernel.default_locale%</argument>
             <argument type="service" id="assets.packages" />
             <argument>%router.request_context.scheme%</argument>
-            <argument>%url.host_front%%</argument>
+            <argument>%url.host_default%%</argument>
             <argument>%url.host_admin%%</argument>
             <call method="setLogger">
                 <argument type="service" id="logger" on-invalid="null"/>

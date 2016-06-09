@@ -43,7 +43,7 @@
         &nbsp;&nbsp;|&nbsp;&nbsp;
         <?= date('d/m/Y') ?>&nbsp;&nbsp;|&nbsp;&nbsp;
         <a href="<?= $this->lurl ?>/logout" title="Se deconnecter"><strong>Se deconnecter</strong></a><br/><br/>
-        <a href="<?= $this->urlfront ?>" title="Retourner sur le site" target="_blank"><strong>Retourner sur le site</strong></a>
+        <a href="<?= $this->furl ?>" title="Retourner sur le site" target="_blank"><strong>Retourner sur le site</strong></a>
     </div>
 </div>
 <div id="navigation">

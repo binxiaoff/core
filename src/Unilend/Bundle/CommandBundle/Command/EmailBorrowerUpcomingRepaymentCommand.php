@@ -67,7 +67,7 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
                 $sFB      = $settings->value;
                 $settings->get('Twitter', 'type');
                 $sTwitter = $settings->value;
-                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
                 $aMail = array(
                     'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),

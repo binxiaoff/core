@@ -181,8 +181,7 @@ EOF
         /** @var \settings $settings */
         $settings = $oEntityManager->getRepository('settings');
 
-        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
-            $this->getContainer()->getParameter('router.request_context.host');
+        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
 
         /** @var LoggerInterface $oLogger */

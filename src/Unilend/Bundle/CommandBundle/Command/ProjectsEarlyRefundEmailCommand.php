@@ -61,8 +61,8 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         /** @var \settings $settings */
         $settings = $entityManager->getRepository('settings');
 
-        $staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
-        $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+        $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
+        $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
         $settings->get('Facebook', 'type');
         $facebookLink = $settings->value;

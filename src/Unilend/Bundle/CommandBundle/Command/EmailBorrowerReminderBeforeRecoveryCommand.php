@@ -70,7 +70,7 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
             $settings->get('Twitter', 'type');
             $twitterLink = $settings->value;
 
-            $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+            $frontUrl  = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
             $staticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
 
             $commonReplacements = array(

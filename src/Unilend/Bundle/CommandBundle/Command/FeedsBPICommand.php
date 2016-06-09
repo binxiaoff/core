@@ -35,7 +35,7 @@ class FeedsBPICommand extends ContainerAwareCommand
         /** @var \loans $loans */
         $loans = $entityManager->getRepository('loans');
 
-        $staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+        $staticUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $userPath  = $this->getContainer()->getParameter('path.user');
 
         $projectStatuses = array(

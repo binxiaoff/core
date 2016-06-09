@@ -46,7 +46,7 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
                     <td>' . ($repayment['nb_repayment'] === $repayment['nb_repayment_paid'] ? 'Oui' : 'Non') . '</td>
                 </tr>';
         }
-        $url           = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+        $url           = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $replacements = array(
             '[#SURL#]'       => $url,
             '[#REPAYMENTS#]' => $repaymentsTable

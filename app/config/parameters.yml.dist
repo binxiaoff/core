@@ -21,7 +21,7 @@ parameters:
 
     url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
     url.host_admin:                 'dev.admin.unilend.fr' # for Front to know the url BO
-    url.host_front:                 'dev.www.unilend.fr' # for BO to know the url Front
+    url.host_default:               'dev.www.unilend.fr' # for BO to know the url Front
 
     image_resize:
         projets:
@@ -29,7 +29,6 @@ parameters:
             height: 1365          #  Source image maximum height
             width: 2048           #  Source image maximum width
 
-    router.request_context.host:    dev.www.unilend.fr
     router.request_context.scheme:  https
 
     path.static:                    /srv/sites/unilend/public/default/

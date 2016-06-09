@@ -445,7 +445,7 @@ EOF
         $sEmail = $oSettings->value;
 
         $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
-                      $this->getContainer()->getParameter('router.request_context.host');
+                      $this->getContainer()->getParameter('url.host_default');
         $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
         $varMail = array(
             '$surl'       => $sStaticUrl,
@@ -604,8 +604,7 @@ EOF
                             $clients_gestion_mails_notif->immediatement = 1;
                             $clients_gestion_mails_notif->update();
 
-                            $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
-                                $this->getContainer()->getParameter('router.request_context.host');
+                            $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
                             $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
                             
                             $varMail = array(

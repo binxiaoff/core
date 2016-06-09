@@ -62,9 +62,6 @@ class projectsController extends bootstrap
             $this->autoFireDebug  = false;
             $this->autoFireHead   = true;
             $this->autoFireFooter = true;
-            
-            $env = $this->getParameter('kernel.environment');
-            $this->url_form = $this->Config['url'][$env]['default'];
 
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
                 $this->utm_source = '/?utm_source=capital';
@@ -72,7 +69,6 @@ class projectsController extends bootstrap
                 $this->utm_source = '/?utm_source=challenge';
             }
         } else {
-            $this->url_form   = $this->lurl;
             $this->utm_source = '';
         }
 
