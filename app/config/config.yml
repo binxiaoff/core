@@ -92,4 +92,5 @@ swiftmailer:
 
 unilend_translation:
     parameters:
-        cache_path: "%kernel.cache_dir%/translations"
+        cache:
+            path: "%kernel.cache_dir%/translations"

@@ -24,10 +24,7 @@ class TranslationManager
 
     public function clearLanguageCache()
     {
-        $finder   = new Finder();
-        $finder->in($this->cacheDirectory)->files();
-
-        foreach($finder as $file) {
+        foreach(Finder::create()->in($this->cacheDirectory)->files() as $file) {
             unlink($file->getRealpath());
         }
     }

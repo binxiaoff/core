@@ -21,7 +21,7 @@ class UnilendTranslationExtension extends Extension
     {
         $configuration = new Configuration();
         $config = $this->processConfiguration($configuration, $configs);
-        $container->setParameter('translation_cache_path', $config['parameters']['cache_path']);
+        $container->setParameter('translation_cache_path', $config['parameters']['cache']['path']);
 
         $loader = new Loader\XmlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.xml');
