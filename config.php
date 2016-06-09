@@ -1,6 +1,5 @@
 <?php
 $config = array(
-    'cms' => 'iZicom', //(iZinoa ou iZicom)
     'url' => array(
         'dev' => array(
             'default' => 'https://dev.www.unilend.fr',
@@ -18,12 +17,6 @@ $config = array(
             'default' => 'https://www.unilend.fr',
             'admin'   => 'https://admin.unilend.fr'
         )
-    ),
-    'static_url' => array(
-        'dev'  => 'https://dev.www.unilend.fr',
-        'demo' => 'https://demo.corp.unilend.fr',
-        'preprod' => 'https://preprod.corp.unilend.fr',
-        'prod' => 'https://www.unilend.fr'
     ),
     'params' => array(
         'mode'         => 'literal', // Mode de gestion des paramètres (literal = nom et valeur du paramètre dans l'URL, ex. : id_18, default = valeur uniquement, ex. 18)
@@ -47,21 +40,8 @@ if (isset($_SERVER['HTTP_HOST'])) {
         case 'partenaire.unilend.challenges.fr':
             $config['url']['prod']['default'] = 'http://partenaire.unilend.challenges.fr';
             break;
-        case 'lexpress.unilend.fr':
-            $config['url']['prod']['default'] = 'http://lexpress.unilend.fr';
-            break;
-        case 'pret-entreprise.votreargent.lexpress.fr':
-            $config['url']['prod']['default'] = 'http://pret-entreprise.votreargent.lexpress.fr';
-            break;
-        case 'emprunt-entreprise.lentreprise.lexpress.fr':
-            $config['url']['prod']['default'] = 'http://emprunt-entreprise.lentreprise.lexpress.fr';
-            break;
         case 'financementparticipatifpme.lefigaro.fr':
             $config['url']['prod']['default'] = 'http://financementparticipatifpme.lefigaro.fr';
             break;
-    }
-
-    if (in_array($_SERVER['HTTP_HOST'], array('prets-entreprises-unilend.capital.fr', 'partenaire.unilend.challenges.fr', 'lexpress.unilend.fr'))) {
-        $config['static_url']['prod'] = 'http://www.unilend.fr';
     }
 }

@@ -74,7 +74,7 @@ abstract class Controller implements ContainerAwareInterface
         $this->furl = $this->Config['url'][$env]['default'];
 
         // Recuperation du type de plateforme
-        $this->cms = $this->Config['cms'];
+        $this->cms = $this->getParameter('cms');
 
         //*** SESSION IS DEAD ***//
         if (isset($_POST['killsession'])) {

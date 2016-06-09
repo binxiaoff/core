@@ -36,3 +36,5 @@ parameters:
     path.user:                      /srv/sites/unilend/public/default/var/
     path.sftp:                      /srv/sites/unilend/protected/sftp/
     path.payline:                   /srv/sites/unilend/librairies/payline/
+
+    cms:                            iZicom
