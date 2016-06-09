@@ -133,10 +133,11 @@ permalink: route('/')
             <div class="site-wrap">
                 <h1 class="h2">{% trans %} site-general_testimonial-section-title {% endtrans %}</h1>
 
+                {% set BattenberglabelCtaButton %}{% transchoice projects|length with { '%numberProjects%' : projects|length } %} project-list_title-ongoing-projects  {% endtranschoice %}{% endset %}
                 {{ promoBattenberg.render({
                     classCtaButton: 'btn-color-primary',
-                    labelCtaButton: '12 projets en cours',
-                    urlCtaButton: route('projets'),
+                    labelCtaButton: BattenberglabelCtaButton,
+                    urlCtaButton: path('projects'),
                     people: testimonialPeople
                 }) }}
 
@@ -157,9 +158,11 @@ permalink: route('/')
                                     </ul>
                                 </div><!-- /.card-text -->
                                 <a href="{{ route('preter/register') }}" class="btn-primary btn-shape-md">{% trans %} site-general_unilend-advantages-welcome-offer-title {% endtrans %}</a>
+                                {% if showWelcomeOffer == true %}
                                 <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
                                     {% trans %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
                                 </div><!-- /.stamp -->
+                                {% endif %}
                             </div><!-- /.card -->
                         </div>
                         <div class="col-lg-5 col-md-5">

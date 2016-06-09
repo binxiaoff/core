@@ -82,10 +82,11 @@ permalink: route('preter')
                         <a href="{{ route('preter/help') }}" class="btn-default ui-open-site-search">{% trans %} home-lender_question-button {% endtrans %}</a>
                         <a href="{{ route('preter/new') }}" class="btn-primary">{% trans %} home-lender_create-account-button {% endtrans %}</a>
                     </div><!-- /.btn-toolbar -->
-
+                    {% if showWelcomeOffer == true %}
                     <div class="stamp" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
                         {% trans %} site-general_unilend-advantages-welcome-offer-description {% endtrans %}
                     </div><!-- /.stamp -->
+                    {% endif %}
                 </div>
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
@@ -120,7 +121,7 @@ permalink: route('preter')
                             <div class="promo-image">
                                 {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
                             </div>
-                            <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="90" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint">{% trans %} home-lender_unilend-fact-1-title {% endtrans %}</h3>
+                            <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="ceil" data-tween-count="easeOutQuint">{% trans %} home-lender_unilend-fact-1-title {% endtrans %}</h3>
                             <p>{% trans %} home-lender_unilend-fact-1-text {% endtrans %}</p>
                         </div><!-- /.promo -->
                     </div>
@@ -130,7 +131,7 @@ permalink: route('preter')
                             <div class="promo-image">
                                 {{ svgimage('#promo-linechart', '', 190, 190, 'none') | raw }}
                             </div>
-                            <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="8.84" data-total-time="3000" data-tween-count="easeOutQuint">
+                            <h3 class="promo-highlight"><span class="ui-text-count" data-start-count="0" data-end-count="{{ stats.irrUnilend }}" data-total-time="3000" data-tween-count="easeOutQuint">
                                     {% trans %} home-lender_unilend-fact-2-title {% endtrans %}</span></h3>
                             <p>{% trans %} home-lender_unilend-fact-2-text {% endtrans %}</p>
                         </div>
