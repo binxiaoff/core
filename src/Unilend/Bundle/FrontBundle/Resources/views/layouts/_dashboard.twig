@@ -1,6 +1,12 @@
 {# Dashboard #}
 {% extends 'layouts/_layout.twig' %}
 
+{% set bodyClassNames = 'layout-dashboard' %}
+
+{# See config/twig.json for the data value of `userProfile` #}
+
+{# @note Twig.JS has an error with embeds overwriting blocks #}
+{#       see: https://github.com/twigjs/twig.js/issues/352 #}
 {# {% block siteHeader %}
   {% embed 'partials/site/header.twig' %}
     {% block siteHeaderMobileMenuOpen %} {% endblock %}
@@ -12,43 +18,49 @@
     </div><!-- /.site-user -->
     {% endblock %}
   {% endembed %}
-{% endblock %} #}
+{% endblock %}#}
 
-{# {% block siteFooter %}
+{# In production you'd use the above block, not the one below #}
+{% block siteHeader %}
+  {% include 'partials/site/header-dashboard.twig' %}
+{% endblock %}
+
+{#{% block siteFooter %}
   {% embed 'partials/site/footer.twig' %}
     {% block siteMobileMenu %} {% endblock %}
   {% endembed %}
 {% endblock %} #}
 
 {% block siteContent %}
-<section class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
-  <div class="hero-wrap">
-    <div class="site-wrap">
-      <div class="col-menu">
-        <nav class="dashboard-nav">
-        {% block dashboardNav %}
-          <ul>
-            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/dashboard'), page.permalink) }}><a href="#todo"><span class="icon fa-th-large"></span><span class="label">Tableau de bord</span></a></li>
-            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/balance'), page.permalink) }}><a href="#todo"><span class="icon fa-euro"></span><span class="label">Apport – Retrait</span></a></li>
-            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/projects'), page.permalink) }}><a href="#todo"><span class="icon fa-file-text-o"></span><span class="label">Projets</span></a></li>
-            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/operations'), page.permalink) }}><a href="#todo"><span class="icon fa-exchange"></span><span class="label">Opérations</span></a></li>
-            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/profile'), page.permalink) }}><a href="#todo"><span class="icon fa-user"></span><span class="label">Profil</span></a></li>
-            <li role="presentation" {{ general.isRouteActiveClass(route('user/preter/autolend'), page.permalink) }}><a href="#todo"><span class="icon fa-cogs"></span><span class="label">Autolend</span></a></li>
-          </ul>
-        {% endblock %}
-        </nav>
 
-        {% block dashboardNotifications %}
-          {% include '@UnilendFrontBundle/partials/components/dashboard-panel-notifications.twig' %}
-        {% endblock %}
+  <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="dashboard{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
+    <div class="dashboard-inner">
+      <div class="site-wrap">
+        <div class="col-menu">
+          <nav class="dashboard-nav">
+            {% block dashboardNav %}
+              <ul>
+                <li role="presentation" class="dashboard-nav-dashboard {{ general.isRouteActiveClass(route('user/preter/dashboard'), page.permalink, true) }}"><a href="{{ route('user/preter/dashboard') }}"><span class="icon fa-th-large"></span><span class="label">Tableau de bord</span></a></li>
+                <li role="presentation" class="dashboard-nav-balance {{ general.isRouteActiveClass(route('user/preter/balance'), page.permalink, true) }}"><a href="{{ route('user/preter/balance') }}"><span class="icon fa-euro"></span><span class="label">Apport – Retrait</span></a></li>
+                <li role="presentation" class="dashboard-nav-projects {{ general.isRouteActiveClass(route('user/preter/projects'), page.permalink, true) }}"><a href="{{ route('user/preter/projects') }}"><span class="icon fa-file-text-o"></span><span class="label">Projets</span></a></li>
+                <li role="presentation" class="dashboard-nav-operations {{ general.isRouteActiveClass(route('user/preter/operations'), page.permalink, true) }}"><a href="{{ route('user/preter/operations') }}"><span class="icon fa-exchange"></span><span class="label">Opérations</span></a></li>
+                <li role="presentation" class="dashboard-nav-profile {{ general.isRouteActiveClass(route('user/preter/profile'), page.permalink, true) }}"><a href="{{ route('user/preter/profile') }}"><span class="icon fa-user"></span><span class="label">Profil</span></a></li>
+                <li role="presentation" class="dashboard-nav-autolend {{ general.isRouteActiveClass(route('user/preter/autolend'), page.permalink, true) }}"><a href="{{ route('user/preter/autolend') }}"><span class="icon fa-cogs"></span><span class="label">Autolend</span></a></li>
+                <li role="presentation" class="dashboard-nav-notifications {{ general.isRouteActiveClass(route('user/preter/notifications'), page.permalink, true) }}"><a href="{{ route('user/preter/notifications') }}"><span class="icon fa-bell"></span><span class="label">Notifications</span></a></li>
+              </ul>
+            {% endblock %}
+          </nav>
 
-      </div><!-- /.col-menu -->
-      <div class="col-content">
-        {% block dashboardContent %}
-          <p>Nothing here</p>
-        {% endblock %}
-      </div><!-- /.col-content -->
-    </div>
-  </div>
-</section><!-- /.dashboard -->
+          {% block dashboardNotifications %}
+            {% include 'partials/components/dashboard-panel-notifications.twig' %}
+          {% endblock %}
+
+        </div><!-- /.col-menu -->
+        <div class="col-content">
+          {% block dashboardContent %} {% endblock %}
+        </div><!-- /.col-content -->
+      </div><!-- /.site-wrap -->
+    </div><!-- /.dashboard-inner -->
+  </article><!-- /.dashboard -->
+
 {% endblock %}

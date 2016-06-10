@@ -96,9 +96,7 @@
                 <div class="promo-slide promo-{{ classColor }} {{ classPosition }}{% if settings.animate %} {{ classAnimatePosition }}"{% endif %}>
                     <p class="quote">{{ person.quote | raw }}</p>
                     {% if person.name is not empty %}
-                        <p class="source">
-                            <cite>{{ person.name }}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite>
-                        </p>
+        <p class="source"><cite>{{ person.name }}{% if person.vocation is not empty %}, {{ person.vocation }}{% endif %}{% if person.location is not empty %} &mdash; {{ person.location }}{% endif %}</cite></p>
                     {% endif %}
                     <div class="promo-links">
                         {% if person.urlTestimonial is not empty %}<a href="{{ person.urlTestimonial | raw }}" class="link">

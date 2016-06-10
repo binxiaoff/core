@@ -1,0 +1,48 @@
+{# Email User Preter Operation #}
+{% extends 'layouts/_email.twig' %}
+{% import 'extensions/_email.macros.twig' as emailComponent %}
+
+{# Email data #}
+{% set placeholderData = {
+  "email": {
+    "permalink": "http://example.com",
+    "subject": "Example email subject",
+    "excerpt": "Bonjour David, Vous avez reçu un remboursement de 0,37 euros sur votre compte Unilend. Il s’agit de la régularisation de l'échéance de votre prêt à Eco House Construction. Ce remboursement a été versé sur votre compte Unilend après les prélèvements fiscaux sur vos intérêts. Vous avez maintenant 18,22 euros disponibles pour prêter aux entreprises. Nous vous remercions de votre confiance et nous vous invitons à découvrir dès maintenant les projets à financer. À très bientôt sur Unilend.",
+    "recipient": {
+      "nom": "Raux",
+      "prenom": "David",
+      "email": "david.raux@unilend.fr"
+    }
+  }
+} %}
+{% set email = placeholderData.email %}
+
+{% block emailContent %}
+
+{# Header #}
+{% embed 'partials/email/block-header.twig' with {'hasSpacerRight': true} %}
+  {% block headerImage %}
+    <img src="{{ siteurlmedia('email/user/preter/header-enterprise-inprogress-128x200.gif') }}" border="0" width="128" height="200" alt="" class="image_reset" style="{{ css.image_reset }} width: 128px; height: 200px;">
+  {% endblock %}
+{% endembed %}
+{# /Header #}
+
+{# Text #}
+{% embed 'partials/email/block-text-1col.twig' with {'hasSpacerTop': false, 'tableStyle': css.bg_white } %}
+  {% block content %}
+    <h2 style="{{ css.p_block }}{{ css.ff_title }}{{ css.fs_title_md }}{{ css.c_p1 }}">Un remboursement en retard a été régularisé</h2>
+    <hr style="{{ css.hr_reset }}{{ css.bg_p1 }}">
+
+    <div class="spacer" style="{{ css.spacer }}">&nbsp;</div>
+
+    <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Bonjour {{ email.recipient.prenom }},</p>
+    <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Vous avez reçu un remboursement de <span style="{{ css.c_p1 }}">0,37 euros</span> sur votre compte Unilend.</p>
+    <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Il s’agit de la régularisation de l'échéance de votre prêt à <span style="{{ css.c_p1 }}">Eco House Construction.</span></p>
+    <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Ce remboursement a été versé sur votre compte Unilend après les prélèvements fiscaux sur vos intérêts. Vous avez maintenant <span style="{{ css.c_p1 }}">18,22 euros</span> disponibles pour prêter aux entreprises.</p>
+    <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">Nous vous remercions de votre confiance et nous vous invitons à découvrir dès maintenant les projets à financer.</p>
+    <p style="{{ css.p_block }}{{ css.ff_base }}{{ css.fs_md }}{{ css.c_t1 }}">À très bientôt sur Unilend.</p>
+  {% endblock %}
+{% endembed %}
+{# /Text #}
+
+{% endblock %}

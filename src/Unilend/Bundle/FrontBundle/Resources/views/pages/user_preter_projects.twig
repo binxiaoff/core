@@ -1,20 +1,20 @@
-{# Projects Index #}
-{% extends 'layouts/_layout.twig' %}
+{# User / Preter / Projects #}
+{% extends 'layouts/_dashboard.twig' %}
 {% import 'partials/modules/_project-list.macros.twig' as projectList %}
 
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-  title: 'Projets',
-  permalink: route('projets')
+  id: 'user-preter-projects',
+  title: 'Prêteur / Projets',
+  permalink: route('user/preter/projects'),
+  classNames: 'user-preter-projects'
 } %}
 
-{# Placeholder Data (temp until hooked into backend) #}
-{% set placeholderData = {
-  totalProjectsInProgress: 1545,
-  totalProjectsFinanced: 8123,
-  totalLendersActive: 5431,
+{# See config/twig.json for the data value of `userProfile` #}
 
+{# Placeholder data #}
+{% set placeholderData = {
   filterItems: [{
     column: 'category',
     sortBy: 'categoryId',
@@ -175,41 +175,18 @@
   }]
 } %}
 
-{% block siteContent %}
-  <article id="projets-index" class="page">
+{% block dashboardContent %}
 
-    <header class="page-header page-header-hero">
-      <div class="hero-wrap">
-        <div class="site-wrap">
-          <h2 class="page-title">{{ __('%s projects in progress, %s projects financed, %s active lenders.', 'pageProjetsIndexHeaderTitle')|format(placeholderData.totalProjectsInProgress|__num|nbsp, placeholderData.totalProjectsFinanced|__num|nbsp, placeholderData.totalLendersActive|__num|nbsp) }}</h2>
-        </div><!-- /.site-wrap -->
+  {{ projectList.render(
+      'project-list-module',
+      placeholderData.filterItems,
+      placeholderData.listItems,
+      false,
+      {
+        pageUrl: route('user/preter/projects/%index%'),
+        totalItems: 280,
+        currentIndex: 7
+      }
+    ) }}
 
-        {% include 'partials/components/list-socialmedia.twig' %}
-      </div><!-- /.hero-wrap -->
-    </header><!-- /.page-header -->
-
-    <section id="projets-index-project-list" class="page-section">
-      <div class="site-wrap">
-        {{ projectList.render(
-          'projets-index-project-list-module',
-          placeholderData.filterItems,
-          placeholderData.listItems,
-          false,
-          {
-            pageUrl: 'projects/%index%',
-            totalItems: 280,
-            currentIndex: 7
-          }
-        ) }}
-
-        <div class="row page-section-footer">
-          <div class="btn-toolbar">
-            <a href="{{ route('preter/new') }}" class="btn-primary">Pas encore prêteur&nbsp;? Créer un compte</a>
-          </div>
-          <p><a href="{{ route('emprunter') }}" class="link c-p2">Vous êtes une entreprise et souhaitez emprunter&nbsp;?</a></p>
-        </div><!-- /.page-section-footer -->
-      </div><!-- /.site-wrap -->
-    </section><!-- /.page-section -->
-
-  </article><!-- /.page -->
 {% endblock %}

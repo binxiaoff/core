@@ -1,0 +1,79 @@
+{# Block Text - 2 column #}
+
+{# Usage:
+
+{% embed 'partials/block-text-2col.twig' with {'colLeftWidth': 370, 'colRightWidth': 100} %}
+  {% block colLeftContent %}<p>Example of text on left</p>{% endblock %}
+  {% block colRightContent %}<ul><li>Example 2</li><li>Example 3</li><li>Example 4</li></ul>{% endblock %}
+{% endembed %}
+
+Variable Reference:
+
+  hasTable:             {Boolean} Default: true
+  colLeftWidth:         {Int} in pixels, Default: 235
+  colRightWidth:        {Int} in pixels, Default: 235
+  spacerLeftWidth:      {Int} in pixels, Default: 55
+  spacerCenterWidth:    {Int} in pixels, Default: 20
+  spacerRightWidth:     {Int} in pixels, Default: 55
+  spacerTopHeight:      {Int} in pixels, Default: 40
+  spacerBottomHeight:   {Int} in pixels, Default: 40
+  hasSpacerTop:         {Boolean} Default: true
+  hasSpacerBottom:      {Boolean} Default: true
+  tableClassNames:      {String}
+  tableStyle:           {String}
+  colLeftAlign:         {String} Default: 'left'
+  colLeftClassNames:    {String}
+  colLeftStyle:         {String}
+  colRightAlign:        {String} Default: 'left'
+  colRightClassNames:   {String}
+  colRightStyle:        {String}
+
+Block Reference:
+
+  colLeftContent
+  colRightContent
+#}
+
+{# Set defaults here #}
+{% set hasTable = hasTable|default(false) %}
+{% set colLeftWidth = colLeftWidth|default(235) %}
+{% set colRightWidth = colRightWidth|default(235) %}
+{% set spacerLeftWidth = spacerLeftWidth|default(55) %}
+{% set spacerCenterWidth = spacerLeftWidth|default(20) %}
+{% set spacerRightWidth = spacerRightWidth|default(55) %}
+{% set spacerTopHeight = spacerTopHeight|default(40) %}
+{% set spacerBottomHeight = spacerBottomHeight|default(40) %}
+{% set hasSpacerLeft = hasSpacerLeft|default(true) %}
+{% set hasSpacerRight = hasSpacerRight|default(true) %}
+{% set hasSpacerTop = hasSpacerTop|default(true) %}
+{% set hasSpacerBottom = hasSpacerBottom|default(true) %}
+{% set tableClassNames = tableClassNames|default('') %}
+{% set tableStyle = tableStyle|default('') %}
+{% set colLeftAlign = colLeftAlign|default('left') %}
+{% set colLeftClassNames = colLeftClassNames|default('') %}
+{% set colLeftStyle = colLeftStyle|default('') %}
+{% set colRightAlign = colRightAlign|default('left') %}
+{% set colRightClassNames = colRightClassNames|default('') %}
+{% set colRightStyle = colRightStyle|default('') %}
+{% set colSpan = ((hasSpacerLeft == true ? 1 : 0) + (hasSpacerRight == true ? 1 : 0) + 3) %}
+
+{# HTML output #}
+{% if hasTable == true %}<table width="100%" border="0" cellpadding="0" cellspacing="0" class="table_reset {{ tableClassNames }}" style="{{ css.table_reset }} {{ tableStyle }}">{% endif %}
+  {% if hasSpacerTop == true %}<tr>
+    <td colspan="{{ colSpan }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="100%" height="{{ spacerTopHeight }}" alt="" class="image_reset" style="{{ css.image_reset }} width: 100%; height: {{ spacerTopHeight }}px;"></td>
+  </tr>{% endif %}
+  <tr>
+    <td width="{{ spacerLeftWidth }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: 55px; text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="{{ spacerLeftWidth }}" height="1" alt="" class="image_reset" class="{{ css.image_reset }} width: {{ spacerLeftWidth }}px;"></td>
+    <td width="{{ colLeftWidth }}" align="{{ colLeftAlign }}" valign="top" class="td_reset {{ colLeftClassNames }}" style="{{ css.td_reset }} width: {{ colLeftWidth }}px; text-align: {{ colLeftAlign }}; vertical-align: top; {{ colLeftStyle }}">
+      {% block colLeftContent %}&nbsp;{% endblock %}
+    </td>
+    <td width="{{ spacerCenterWidth }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: {{ spacerMiddleWidth }}px; text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="{{ spacerMiddleWidth }}" height="1" alt="" style="{{ css.img_reset }} width: {{ spacerCenterWidth }}px;"></td>
+    <td width="{{ colRightWidth }}" align="{{ colRightAlign }}" valign="top" class="td_reset {{ colRightClassNames }}" style="{{ css.td_reset }} width: {{ colRightWidth }}px; text-align: {{ colRightAlign }}; vertical-align: top; {{ colRightStyle }}">
+      {% block colRightContent %}&nbsp;{% endblock %}
+    </td>
+    <td width="{{ spacerRightWidth }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: {{ spacerRightWidth }}px; text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="{{ spacerRightWidth }}" height="1" alt="" class="image_reset" style="{{ css.image_reset }} width: {{ spacerRightWidth }}px;"></td>
+  </tr>
+  {% if hasSpacerBottom == true %}<tr>
+    <td colspan="{{ colSpan }}" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} text-align: left; vertical-align: top;"><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="100%" height="{{ spacerBottomHeight }}" alt="" class="image_reset" style="{{ css.image_reset }} width: 100%; height: {{ spacerBottomHeight }}px;"></td>
+  </tr>{% endif %}
+{% if hasTable == true %}</table>{% endif %}

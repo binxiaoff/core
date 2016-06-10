@@ -3,6 +3,7 @@
 {% import 'partials/modules/_pagination.macros.twig' as pagination %}
 
 {# Page data #}
+{% set bodyId = 'planche-ui' %}
 {% set page = {
   title: 'Planche UI',
   permalink: route('planche-ui')
@@ -122,6 +123,15 @@
         <li><a href="{{ siteurl('preter_guide.html') }}">Guide du Prêteur</a></li>
         <li><a href="{{ siteurl('preter_fiscalite.html') }}">Prêter Fiscalite</a></li>
         <li><a href="{{ siteurl('user_preter_dashboard.html') }}">User Preter - Dashboard</a></li>
+        <li><a href="{{ siteurl('user_preter_balance.html') }}">User Preter - Balance (Apport - Retrait)</a></li>
+        <li><a href="{{ siteurl('user_preter_profile.html') }}">User Preter - Profile</a></li>
+        <li><a href="{{ siteurl('user_preter_projects.html') }}">User Preter - Projects</a></li>
+        <li><a href="{{ siteurl('user_preter_operations.html') }}">User Preter - Operations</a></li>
+        <li><a href="{{ siteurl('user_preter_autolend.html') }}">User Preter - Autolend</a></li>
+        <li><a href="{{ siteurl('apropos_quisommesnous.html') }}">A Propos - Qui Sommes Nous</a></li>
+        <li><a href="{{ siteurl('apropos_statistiques.html') }}">A Propos - Statistiques</a></li>
+        <li><a href="{{ siteurl('email_commercial.html') }}">Email - Commercial</a></li>
+        <li><a href="{{ siteurl('email_user_preter.html') }}">Email - User - Preter</a></li>
       </ul>
     </section>
     {% endif %}
@@ -1019,25 +1029,72 @@
       <h1>Text Counters</h1>
       <p>If these number elements are visible on your screen, they'll start to count. They'll only count once.</p>
       <ul>
-        <li>$10,000.00 to $200,000.00 in 5sec: <code><span class="ui-text-count" data-end-count="200000" data-total-time="5000">$10,000.00</span></code></li>
-        <li>100 to 0 in 1sec: <code><span class="ui-text-count" data-end-count="0" data-total-time="1000">100</span></code></li>
-        <li><code>null</code> to 1000 in 10sec: <code><span class="ui-text-count" data-end-count="1000" data-total-time="10000"></span></code></li>
-        <li><code>0.12345678</code> to 1 in 5sec: <code><span class="ui-text-count" data-end-count="1" data-total-time="5000">0.12345678</span></code></li>
+        <li>$10,000.00 to $200,000.00 in 5sec: <code>$<span data-textcount data-end-count="200000" data-total-time="5000">10,000.00</span></code></li>
+        <li>100 to 0 in 1sec: <code><span data-textcount data-end-count="0" data-total-time="1000">100</span></code></li>
+        <li><code>null</code> to 1000 in 10sec: <code><span data-textcount data-end-count="1000" data-total-time="10000"></span></code></li>
+        <li><code>0.12345678</code> to 1 in 5sec: <code><span data-textcount data-end-count="1" data-total-time="5000">0.12345678</span></code></li>
+        <li><code>1000</code> to 1 in 5sec with <code>easeOutCirc</code> tweening: <code><span data-textcount data-end-count="0" data-total-time="5000" data-round-float="round" data-tween-count="easeOutCirc">1000</span></code></li>
       </ul>
       <p><code>formatNumber()</code> localises numbers and converts numbers to prices too.</p>
       <div class="btn-toolbar">
         <div class="btn-group">
           <span class="label">Set language:</span>
-          <a href="#" id="set-lang-en" class="btn-primary btn-shape-sm">EN</a>
-          <a href="#" id="set-lang-en-gb" class="btn-primary btn-shape-sm">EN-GB</a>
-          <a href="#" id="set-lang-fr" class="btn-primary btn-shape-sm">FR</a>
-          <a href="#" id="set-lang-es" class="btn-primary btn-shape-sm">ES</a>
+          <a href="javascript:;" id="set-lang-en" class="btn-primary btn-shape-sm">EN</a>
+          <a href="javascript:;" id="set-lang-en-gb" class="btn-primary btn-shape-sm">EN-GB</a>
+          <a href="javascript:;" id="set-lang-fr" class="btn-primary btn-shape-sm">FR</a>
+          <a href="javascript:;" id="set-lang-es" class="btn-primary btn-shape-sm">ES</a>
         </div>
       </div>
-      <p><a href="#" id="restart-text-counters" class="btn-default btn-shape-md"><span class="icon fa-angle-right"></span> Restart Text Counters</a></p>
+      <div class="message-alert">
+        <p>I have removed the currency character from the number formatting function in the JS <code>Dictionary</code> library module</p>
+      </div>
+      <p><a href="javascript:;" id="restart-text-counters" class="btn-default btn-shape-md"><span class="icon fa-angle-right"></span> Restart Text Counters</a></p>
 
       <p>Example TextCounter HTML code:</p>
-      <pre><code class="html">&lt;span class="ui-text-count" data-end-count="200000" data-total-time="5000"&gt;$10,000.00&lt;/span&gt;</code></pre>
+      <pre><code class="html">&lt;span class="ui-textcount" data-end-count="200000" data-total-time="5000"&gt;$10,000.00&lt;/span&gt;</code></pre>
+    </section>
+
+    <section id="time-counters" class="page-section">
+      <h1>Time Counters</h1>
+      <p>Time counters work similar to text counters, except they can have either a start time, an end time, or both. There is an option to count in relative numbers too (e.g. "2 days") instead of a timecode (<code>HH:MM:SS</code>).</p>
+
+      <div class="example">
+        <p>Counting from a set date:<br/>
+          <span data-timecount data-timecount-from="{{ 'now'|date('j F Y H:i:s') }}">{{ 'now'|date('j F Y H:i:s') }}</span></p>
+        <p>Counting from a set date with relative time:<br/>
+          <span data-timecount data-timecount-from="{{ 'now'|date('j F Y H:i:s') }}" data-timecount-relative="true">{{ 'now'|date('j F Y H:i:s') }}</span>
+        </p>
+        <p>Counting to a set date:<br/>
+          <span data-timecount data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}">{{ 'now'|date_modify('+1 minute')|date('j F Y H:i:s') }}</span>
+        </p>
+        <p>Counting to a set date with relative time:<br/>
+          <span data-timecount data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}" data-timecount-relative="true">{{ 'now'|date_modify('+1 minute')|date('j F Y H:i:s') }}</span>
+        </p>
+        <p>Difference between two dates (no counting):<br/>
+          <span data-timecount data-timecount-from="{{ 'now'|date('d F Y H:i:s') }}" data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}">{{ 'now'|date('d F Y H:i:s') }} &mdash; {{ 'now'|date_modify('+1 week')|date('j F Y H:i:s') }}</span>
+        </p>
+        <p>Difference between two dates with relative time (no counting):<br/>
+          <span data-timecount data-timecount-from="{{ 'now'|date('d F Y H:i:s') }}" data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}" data-timecount-relative="true">{{ 'now'|date('d F Y H:i:s') }} &mdash; {{ 'now'|date_modify('+1 week')|date('j F Y H:i:s') }}</span>
+        </p>
+      </div>
+
+      <pre><code class="html">&lt;p&gt;Counting from a set date:&lt;br/&gt;
+          &lt;span data-timecount data-timecount-from="{{ 'now'|date('j F Y H:i:s') }}"&gt;{{ 'now'|date('j F Y H:i:s') }}&lt;/span&gt;&lt;/p&gt;
+        &lt;p&gt;Counting from a set date with relative time:&lt;br/&gt;
+          &lt;span data-timecount data-timecount-from="{{ 'now'|date('j F Y H:i:s') }}" data-timecount-relative="true"&gt;{{ 'now'|date('j F Y H:i:s') }}&lt;/span&gt;
+        &lt;/p&gt;
+        &lt;p&gt;Counting to a set date:&lt;br/&gt;
+          &lt;span data-timecount data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}"&gt;{{ 'now'|date_modify('+1 minute')|date('j F Y H:i:s') }}&lt;/span&gt;
+        &lt;/p&gt;
+        &lt;p&gt;Counting to a set date with relative time:&lt;br/&gt;
+          &lt;span data-timecount data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}" data-timecount-relative="true"&gt;{{ 'now'|date_modify('+1 minute')|date('j F Y H:i:s') }}&lt;/span&gt;
+        &lt;/p&gt;
+        &lt;p&gt;Difference between two dates (no counting):&lt;br/&gt;
+          &lt;span data-timecount data-timecount-from="{{ 'now'|date('d F Y H:i:s') }}" data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}"&gt;{{ 'now'|date('d F Y H:i:s') }} &mdash; {{ 'now'|date_modify('+1 week')|date('j F Y H:i:s') }}&lt;/span&gt;
+        &lt;/p&gt;
+        &lt;p&gt;Difference between two dates with relative time (no counting):&lt;br/&gt;
+          &lt;span data-timecount data-timecount-from="{{ 'now'|date('d F Y H:i:s') }}" data-timecount-to="{{ 'now'|date_modify('+1 week')|date('d F Y H:i:s') }}" data-timecount-relative="true"&gt;{{ 'now'|date('d F Y H:i:s') }} &mdash; {{ 'now'|date_modify('+1 week')|date('j F Y H:i:s') }}&lt;/span&gt;
+        &lt;/p&gt;</code></pre>
     </section>
 
     <section id="video-js">

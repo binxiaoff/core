@@ -1,6 +1,8 @@
 {# Securite / Security Page #}
 {% extends 'layouts/_page-simple.twig' %}
 
+{# Page data #}
+{% set bodyId = '' %}
 {% set page = {
   id: 'page-security',
   title: 'Securité',
@@ -8,11 +10,11 @@
 } %}
 
 {% block extendPageHeader %}
-  <div class="page-header-image">{{ svgimage('#header-securite', '', 300, 300)  | raw }}</div>
+  <div class="page-header-image">{{ svgimage('#header-securite', '', 300, 300) }}</div>
 {% endblock %}
 
 {% block pageAsideBody %}
-  <div class="page-aside-body" data-sticky>
+  <div class="page-aside-body" data-sticky{# data-spy="affix" #}>
     <nav class="page-navigation">
       <ul class="list-links">
         <li role="presentation"><a href="#securite-section-1">Gardez vos codes secrets en lieu sûr</a></li>

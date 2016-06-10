@@ -2,6 +2,7 @@
 {% extends 'layouts/_page-single.twig' %}
 
 {# Page data #}
+{% set bodyId = '' %}
 {% set page = {
   id: 'preter-guide',
   title: 'Guide du prêteur',
@@ -9,19 +10,20 @@
   classNames: 'page-single-preter'
 } %}
 
-{% block extendPageHeader %}
-  <nav class="page-navigation">
-    <ul>
-      <li role="presentation" class="active"><a href="{{ route('preter/guide') }}">Guide du prêteur</a></li>
-      <li role="presentation"><a href="{{ route('preter/fiscalite') }}">Fiscalité</a></li>
-      <li role="presentation"><a href="{{ route('preter/performance') }}">Performance de vos prêts</a></li>
-      <li role="presentation"><a href="{{ route('preter/documents') }}">Documents à fournir</a></li>
-      <li role="presentation" class="c-p1"><a href="{{ route('preter/new') }}">Devenir prêteur</a></li>
-    </ul>
-  </nav>
-{% endblock %}
-
 {% block pageContentInner %}
+
+<nav class="page-navigation">
+  <div class="site-wrap">
+    <ul data-nav-dropdown-menu="mobile">{#
+      #}<li role="presentation" class="active"><a href="{{ route('preter/guide') }}">Guide du prêteur</a></li>{#
+      #}<li role="presentation"><a href="{{ route('preter/fiscalite') }}">Fiscalité</a></li>{#
+      #}<li role="presentation"><a href="{{ route('preter/performance') }}">Performance de vos prêts</a></li>{#
+      #}<li role="presentation"><a href="{{ route('preter/documents') }}">Documents à fournir</a></li>{#
+      #}<li role="presentation" class="c-p1"><a href="{{ route('preter/new') }}">Devenir prêteur</a></li>{#
+    #}</ul>
+  </div><!-- /.site-wrap -->
+</nav><!-- /.page-navigation -->
+
 <section class="page-section">
   <div class="site-wrap">
     <div class="row">
@@ -45,21 +47,21 @@
     <div class="block-promos row">
       <div class="promo col-lg-4 col-md-4">
         <div class="promo-image">
-          {{ svgimage('#promo-saving', '', 190, 190, 'none')  | raw }}
+          {{ svgimage('#promo-saving', '', 190, 190, 'none') }}
         </div>
         <h3>Percevez vos intérêts</h3>
         <p>Vos prêts vous rapportent des intérêts et sont remboursables mensuellement.</p>
       </div><!-- /.promo -->
       <div class="promo col-lg-4 col-md-4">
         <div class="promo-image">
-          {{ svgimage('#promo-verified', '', 190, 190, 'none')  | raw }}
+          {{ svgimage('#promo-verified', '', 190, 190, 'none') }}
         </div>
         <h3>Contrôlez votre épargne</h3>
         <p>Unilend gère les prêts, contrats, et remboursements entre prêteurs et entreprises.</p>
       </div><!-- /.promo -->
       <div class="promo col-lg-4 col-md-4">
         <div class="promo-image">
-          {{ svgimage('#promo-money', '', 190, 190, 'none')  | raw }}
+          {{ svgimage('#promo-money', '', 190, 190, 'none') }}
         </div>
         <h3>Ne payez aucun frais</h3>
         <p>Unilend se rémunère auprès des emprunteurs lorsqu’ils réunissent leur financement.</p>

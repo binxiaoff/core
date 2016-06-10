@@ -1,0 +1,36 @@
+{# Maintenance page #}
+{% extends 'layouts/_layout.twig' %}
+
+{# Page data #}
+{% set bodyId = 'maintenance' %}
+{% set page = {
+  title: 'Maintenance'
+} %}
+
+{% block siteHeader %} {% endblock %}
+
+{% block siteContent %}
+
+<article class="page">
+  <section class="page-section">
+    <div class="site-wrap">
+      <div class="row">
+        <div class="col-image col-lg-6 col-md-6" data-equal-height="sm md lg">
+          <div class="inner"><img src="{{ siteurlmedia('maintenance/cogs.png') }}" alt="" /></div>
+        </div>
+        <div class="col-text col-lg-6 col-md-6" data-equal-height="sm md lg">
+          <div class="inner">
+            <h1 class="site-logo">Unilend</h1>
+            <h2 class="h4">Le site est en cours de maintenance,<br/>
+            veuillez nous excuser pour la gêne occasionnée.</h2>
+            <p><a href="{{ route('contact') }}" class="btn-default">Nous contacter</a></p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /.site-wrap -->
+  </section><!-- /.page-section -->
+</article><!-- /.page -->
+
+{% endblock %}
+
+{% block siteFooter %} {% endblock %}

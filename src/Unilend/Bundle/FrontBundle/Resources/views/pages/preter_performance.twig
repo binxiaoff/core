@@ -2,6 +2,7 @@
 {% extends 'layouts/_page-single.twig' %}
 
 {# Page data #}
+{% set bodyId = '' %}
 {% set page = {
   id: 'preter-performance',
   title: 'Performance de vos prêts',
@@ -9,19 +10,19 @@
   classNames: 'page-single-preter'
 } %}
 
-{% block extendPageHeader %}
-  <nav class="page-navigation">
-    <ul>
-      <li role="presentation"><a href="{{ route('preter/guide') }}">Guide du prêteur</a></li>
-      <li role="presentation"><a href="{{ route('preter/fiscalite') }}">Fiscalité</a></li>
-      <li role="presentation" class="active"><a href="{{ route('preter/performance') }}">Performance de vos prêts</a></li>
-      <li role="presentation"><a href="{{ route('preter/documents') }}">Documents à fournir</a></li>
-      <li role="presentation" class="c-p1"><a href="{{ route('preter/new') }}">Devenir prêteur</a></li>
-    </ul>
-  </nav>
-{% endblock %}
-
 {% block pageContentInner %}
+<nav class="page-navigation">
+  <div class="site-wrap">
+    <ul data-nav-dropdown-menu="mobile">{#
+      #}<li role="presentation"><a href="{{ route('preter/guide') }}">Guide du prêteur</a></li>{#
+      #}<li role="presentation"><a href="{{ route('preter/fiscalite') }}">Fiscalité</a></li>{#
+      #}<li role="presentation" class="active"><a href="{{ route('preter/performance') }}">Performance de vos prêts</a></li>{#
+      #}<li role="presentation"><a href="{{ route('preter/documents') }}">Documents à fournir</a></li>{#
+      #}<li role="presentation" class="c-p1"><a href="{{ route('preter/new') }}">Devenir prêteur</a></li>{#
+    #}</ul>
+  </div><!-- /.site-wrap -->
+</nav><!-- /.page-navigation -->
+
 <section class="page-section">
   <div class="site-wrap">
     <div class="row">

@@ -1,8 +1,8 @@
-{# Projects Index #}
+{# Inscription / Connexion Page #}
 {% extends 'layouts/_layout.twig' %}
-{% import 'partials/modules/_project-list.macros.twig' as projectList %}
 
 {# Page data #}
+{% set bodyId = '' %}
 {% set page = {
   title: 'Inscription / Connexion',
   permalink: route('user/access')
@@ -24,8 +24,9 @@
 
             <div class="col-connect col-lg-4 col-md-4">
               <h2 class="h3 text-align-left">Déjà client&nbsp;?</h2>
-              <form action="{{ route('user/connect') }}" method="post" class="form-connect">
+              <form action="{{ route('user/connect') }}" method="post" class="form-connect" {# data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications" #}>
                 <div class="panel panel-connect">
+                  <div id="form-connect-notifications"></div>
                   <div class="panel-inner" data-equal-height="md lg">
                     <div class="form-field">
                       <label for="connect-access-email">E-mail</label>
@@ -33,7 +34,8 @@
                         <div class="btn-group">
                           <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
                         </div>
-                        <input type="text" id="connect-access-email" name="access[email]" value="" class="input-field">
+                        <input type="text" id="connect-access-email" name="access[email]" value="" class="input-field" {# data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email" #}>
+                        {# <ul class="ui-formvalidation-messages"></ul> #}
                       </div><!-- /.input-group -->
                     </div><!-- /.form-field -->
 
@@ -43,7 +45,8 @@
                         <div class="btn-group">
                           <label for="connect-access-password"><span class="icon fa-lock"></span></label>
                         </div>
-                        <input type="password" id="connect-access-password" name="access[password]" value="" class="input-field">
+                        <input type="password" id="connect-access-password" name="access[password]" value="" class="input-field" {# data-formvalidation-input data-formvalidation-required="true" #}>
+                        {# <ul class="ui-formvalidation-messages"></ul> #}
                       </div><!-- /.input-group -->
                       <div class="field-help">
                         <p><a href="{{ route('user/forgotpassword') }}" class="link">Mot de passe oublié?</a></p>
@@ -89,7 +92,7 @@
           </div>
         </div><!-- /.site-wrap -->
 
-        {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+        {% include 'partials/components/list-socialmedia.twig' %}
       </div><!-- /.hero-wrap -->
     </section><!-- /.page-content -->
 

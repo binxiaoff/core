@@ -1,13 +1,16 @@
 {# About - Legals Page #}
-{% extends '@UnilendFrontBundle/layouts/_page-simple.html.twig' %}
-{#{% set page = {#}
-  {#id: 'page-legal',#}
-  {#title: 'Informations Légales',#}
-  {#permalink: route('legal')#}
-{#} %}#}
+{% extends 'layouts/_page-simple.twig' %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+  id: 'page-legal',
+  title: 'Informations Légales',
+  permalink: route('legal')
+} %}
 
 {% block extendPageHeader %}
-  {#<div class="page-header-image">{{ svgimage('#header-legal', '', 300, 300) }}</div>#}
+  <div class="page-header-image">{{ svgimage('#header-legal', '', 300, 300) }}</div>
 {% endblock %}
 
 {% block pageAsideBody %}

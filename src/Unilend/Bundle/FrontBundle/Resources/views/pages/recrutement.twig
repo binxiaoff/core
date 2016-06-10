@@ -2,6 +2,7 @@
 {% extends 'layouts/_page-simple.twig' %}
 
 {# Page information #}
+{% set bodyId = '' %}
 {% set page = {
   id: 'page-recruitment',
   title: 'Recrutement',
@@ -25,7 +26,7 @@
 {% set jobs = placeholderData.jobs %}
 
 {% block extendPageHeader %}
-  <div class="page-header-image">{{ svgimage('#header-recrutement', '', 300, 300)  | raw }}</div>
+  <div class="page-header-image">{{ svgimage('#header-recrutement', '', 300, 300) }}</div>
 {% endblock %}
 
 {% block pageAsideBody %}

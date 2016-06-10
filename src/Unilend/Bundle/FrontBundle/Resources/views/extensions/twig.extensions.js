@@ -320,56 +320,72 @@ var replaceKeywords = function (input, keywords) {
   return input
 }
 
+// Get a date object from a string
+var getDate = function (input) {
+  if (input instanceof Date) return input
+
+  // Parse date from string
+  if (typeof input === 'string' && input !== 'now') {
+    return new Date(input)
+  }
+
+  // Now
+  return new Date()
+}
+
 // Get the relative time elapsed from an input
-// @TODO Dictionary implementation for FR
-var timeDiff = function (input) {
+var timeDiff = function (input, endTime) {
   // Reference
   var secondsAsUnits = [{
     min: 0,
     max: 5,
-    single: 'now',
-    plural: 'now'
+    single: __.__('now', 'timeUnitNow'),
+    plural: __.__('now', 'timeUnitNow')
   },{
     min: 1,
     max: 60,
-    single: '%d second',
-    plural: '%d seconds'
+    single: '%d ' + __.__('second', 'timeUnitSecond'),
+    plural: '%d ' + __.__('seconds', 'timeUnitSeconds')
   },{
     min: 60,
     max: 3600,
-    single: '%d minute',
-    plural: '%d minutes'
+    single: '%d ' + __.__('minute', 'timeUnitMinute'),
+    plural: '%d ' + __.__('minutes', 'timeUnitMinutes')
   },{
     min: 3600,
     max: 86400,
-    single: '%d hour',
-    plural: '%d hours'
+    single: '%d ' + __.__('hour', 'timeUnitHour'),
+    plural: '%d ' + __.__('hours', 'timeUnitHours')
   },{
     min: 86400,
     max: 604800,
-    single: '%d day',
-    plural: '%d days'
+    single: '%d ' + __.__('day', 'timeUnitDay'),
+    plural: '%d ' + __.__('days', 'timeUnitDays')
   },{
     min: 604800,
     max: 2419200,
-    single: '%d week',
-    plural: '%d weeks'
+    single: '%d ' + __.__('week', 'timeUnitWeek'),
+    plural: '%d ' + __.__('weeks', 'timeUnitWeeks')
   },{
     min: 2628000,
     max: 31536000,
-    single: '%d month',
-    plural: '%d months'
+    single: '%d ' + __.__('month', 'timeUnitMonth'),
+    plural: '%d ' + __.__('months', 'timeUnitMonths'),
   },{
     min: 31536000,
     max: -1,
-    single: '%d year',
-    plural: '%d years'
+    single: '%d ' + __.__('year', 'timeUnitYear'),
+    plural: '%d ' + __.__('years', 'timeUnitYears')
   }]
 
+  // console.log('time_diff', input, endTime)
+
   // Dates
-  var now = new Date()
-  var then = new Date(input)
-  var diffSeconds = ((now.getTime() - then.getTime()) / 1000)
+  var startDate = getDate(input)
+  var endDate = getDate(endTime)
+  var diffSeconds = ((endDate.getTime() - startDate.getTime()) / 1000)
+
+  // console.log('time_diff', startDate, endDate, diffSeconds)
 
   // Output
   var outputDiff = ''
@@ -377,7 +393,7 @@ var timeDiff = function (input) {
 
   for (var i = 0; i < secondsAsUnits.length; i++) {
     var u = secondsAsUnits[i]
-    if (Math.abs(diffSeconds) < u.max || u.max === -1 && Math.abs(diffSeconds) > u.min) {
+    if (Math.abs(diffSeconds) >= u.min && (Math.abs(diffSeconds) < u.max || u.max === -1)) {
       // Show the difference via number
       if (u.min > 0) {
         outputDiff = Math.round(Math.abs(diffSeconds) / u.min)
@@ -388,9 +404,7 @@ var timeDiff = function (input) {
         output = u.single
       }
 
-      // Whether in past or future
-      output += (then.getTime() < now.getTime() ? ' ago' : ' remaining')
-      return output
+      break
     }
   }
 
@@ -540,11 +554,14 @@ var TwigExtensions = function (Twig) {
   })
 
   // Time difference
-  Twig.exports.extendFunction('time_diff', function (input) {
-    return timeDiff(input)
+  Twig.exports.extendFunction('time_diff', function (input, endTime) {
+    return timeDiff(input, endTime)
   })
-  Twig.exports.extendFilter('time_diff', function (input) {
-    return timeDiff(input)
+  Twig.exports.extendFilter('time_diff', function (input, params) {
+    // Insert input at start of params to apply to function
+    params = params || []
+    params.unshift(input)
+    return timeDiff.apply(this, params)
   })
 }
 

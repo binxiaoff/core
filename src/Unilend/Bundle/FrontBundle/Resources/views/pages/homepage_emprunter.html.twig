@@ -3,6 +3,7 @@
 {% import '@UnilendFrontBundle/partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
 
 {# Page data #}
+{% set bodyId = '' %}
 {% set page = {
 title: 'Emprunter',
 permalink: route('emprunter')
@@ -47,11 +48,7 @@ permalink: route('emprunter')
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {% if caniuse_svg() == true %}
                                     {{ svgimage('#promo-projects', '', 190, 190, 'none') | raw }}
-                                {% else %}
-                                    <img src="{{ siteurlmedia('promos/promo-projects-118x92.png') }}" alt="">
-                                {% endif %}
                             </div>
                             <h3 class="round-number">1</h3>
                             <p>{% trans %} home-borrower_borrowing-step-1-text {% endtrans %}</p>
@@ -61,11 +58,7 @@ permalink: route('emprunter')
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {% if caniuse_svg() == true %}
                                     {{ svgimage('#promo-money', '', 190, 190, 'none') | raw }}
-                                {% else %}
-                                    <img src="{{ siteurlmedia('promos/promo-money-133x108.png') }}" alt="">
-                                {% endif %}
                             </div>
                             <h3 class="round-number">2</h3>
                             <p>{% trans %} home-borrower_borrowing-step-2-text {% endtrans %}</p>
@@ -75,11 +68,7 @@ permalink: route('emprunter')
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {% if caniuse_svg() == true %}
                                     {{ svgimage('#promo-people', '', 190, 190, 'none') | raw }}
-                                {% else %}
-                                    <img src="{{ siteurlmedia('promos/promo-people-158x95.png') }}" alt="">
-                                {% endif %}
                             </div>
                             <h3 class="round-number">3</h3>
                             <p>{% trans %} home-borrower_borrowing-step-3-text {% endtrans %}</p>
@@ -129,37 +118,32 @@ permalink: route('emprunter')
                             <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications"></div>
                                 <div class="row">
-                                    <div class="col-lg-6 col-md-6">
-                                        <div class="form-field">
-                                            <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
-                                                <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span></label>
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
+                                            <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span></label>
                                             <!-- <div class="input-group set-right"> -->
-                                            <input id="esim-input-amount" type="number" name="esim[amount]" value=""
+                                            <input id="esim-input-amount" type="number"  min="0" step="any" name="esim[amount]" value=""
                                                    placeholder="{% trans %} home-borrower_simulator-amount-field-placeholder {% endtrans %}"
-                                                   class="input-field" data-formvalidation-field data-formvalidation-required="true">
+                                                   class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                             <!--
                                               <div class="btn-group">
                                                 <span class="c-t3">€</span>
                                               </div>
                                             </div> -->
                                         </div>
-                                    </div>
-                                    <div class="col-lg-6 col-md-6">
-                                        <div class="form-field">
-                                            <label for="esim-input-reason">{% trans %} home-borrower_simulator-loan-motif-title {% endtrans %}</label>
-                                            <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-field data-formvalidation-required="true">
+                                    <div class="form-field col-lg-6 col-md-6">
+                                        <label for="esim-input-reason">{% trans %} home-borrower_simulator-loan-motif-title {% endtrans %}</label>
+                                        <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
                                                 {% for id, motive in loanMotives %}
                                                 <option value="{{ id }}">{{ motive }}</option>
                                                 {% endfor %}
                                             </select>
                                         </div>
                                     </div>
-                                </div>
                                 <div class="row">
-                                    <div class="col-lg-12 col-md-12">
-                                        <div class="form-field">
+                                    <div class="form-field col-lg-12 col-md-12">
                                             <label>{% trans %} home-borrower_simulator-loan-period-title {% endtrans %}</label>
-                                            <div class="custom-input-duration" data-formvalidation-field data-formvalidation-required="true" data-formvalidation-type="duration">
+                                            <div class="custom-input-duration" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
                                                 {% for period in loanPeriods %}
                                                 <label>
                                                     <input type="radio" id="esim-input-duration-{{ period }}" name="esim[duration]" value="{{ period }}">
@@ -169,7 +153,6 @@ permalink: route('emprunter')
                                             </div><!-- /.custom-input-duration -->
                                         </div><!-- /.form-field -->
                                     </div>
-                                </div>
                             </fieldset><!-- /.emprunter-sim-pane-inner -->
                         </div><!-- /.tab-pane -->
 
@@ -188,19 +171,15 @@ permalink: route('emprunter')
                                     {# TODO add trad via Ajax? #}
                                 </div>
                                 <div class="row">
-                                    <div class="col-lg-6 col-md-6">
-                                        <div class="form-field">
+                                    <div class="form-field col-lg-6 col-md-6">
                                             <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
-                                            <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-field data-formvalidation-required="true" data-form-vaidation-type="siret">
+                                            <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siret">
                                         </div><!-- /.form-field -->
-                                    </div>
-                                    <div class="col-lg-6 col-md-6">
-                                        <div class="form-field">
+                                    <div class="form-field col-lg-6 col-md-6">
                                             <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>
-                                            <input type="email" id="esim-input-email" name="esim[email]" value="" class="input-field" data-formvalidation-field data-formvalidation-required="true" data-form-vaidation-type="email">
+                                            <input type="email" id="esim-input-email" name="esim[email]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
                                         </div><!-- /.form-field -->
                                     </div>
-                                </div>
                             </fieldset><!-- /.emprunter-sim-pane-inner -->
                         </div><!-- /.tab-pane -->
 
@@ -208,14 +187,14 @@ permalink: route('emprunter')
                             <div class="emprunter-sim-pane-inner bg-p1 c-bg5">
                                 <div class="row">
                                     <div class="col-lg-5 col-md-5">
-                                        <dl class="row">
+                                        <dl class="row emprunter-sim-estimate-numbers">
                                             <dt class="col-lg-6 col-md-6 col-sm-3 col-xs-4">{% trans %} home-borrower_simulator-footer-mensuality-label {% endtrans %}</dt>
                                             <dd class="col-lg-6 col-md-6 col-sm-5 col-xs-4">
                                                 <strong>{% trans with { '%monthly_repayment%' : projects|length } %} home-borrower_simulator-footer-monthly-repayment-with-value {% endtrans %} </strong>
                                             </dd>
                                             <dt class="col-lg-6 col-md-6 col-sm-3 col-xs-4">{% trans %} home-borrower_simulator-footer-rate-label {% endtrans %}</dt>
                                             <dd class="col-lg-6 col-md-6 col-sm-5 col-xs-4">
-                                                <span class="ui-esim-output-interest">7,4</span>%
+                                                <span class="ui-esim-interest-output">7,4</span>%
                                             </dd>
                                         </dl>
                                         &nbsp;

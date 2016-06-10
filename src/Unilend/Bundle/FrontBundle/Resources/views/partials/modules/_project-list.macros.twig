@@ -1,5 +1,5 @@
 {# Project List Module #}
-{# @import 'partials/modules/_project-list.macros.twig' as projectList #}
+{# import 'partials/modules/_project-list.macros.twig' as projectList #}
 
 {# Render project list #}
 {# @macro render #}
@@ -30,8 +30,8 @@
     {# Default Pagination Settings #}
     {# See 'partials/modules/_pagination.macros.twig' for more details #}
     {% set paginationSettings = {
-    itemLabelSingle: __('Project', 'projectListItemTypeSingle'),
-    itemLabelPlural: __('Projects', 'projectListItemTypePlural'),
+    itemLabelSingle: __('', 'projectListPaginationItemLabelSingle'),
+    itemLabelPlural: __('', 'projectListPaginationItemLabelPlural'),
     pageUrl: 'page/%index%',
     totalItems: projects|length,
     currentIndex: 1,

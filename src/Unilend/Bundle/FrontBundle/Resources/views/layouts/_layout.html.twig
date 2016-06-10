@@ -9,17 +9,20 @@
 <html lang="{{ app.request.locale  }}" class="no-js"><!--<![endif]-->
 <head>
     <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{% if page.title is defined %}{{ page.title }} — {% endif %}{{ site.title|default('Unilend') }}</title>
+    <title>{% if page.title is not empty %}{{ page.title }} — {% endif %}{{ site.title|default('Unilend') }}</title>
+
+    <!-- @todo Canonical -->
+    <!-- @todo OpenGraph and Twitter meta tags will go here -->
 
     {% block extendMeta %}
-        <!-- Canonical -->
-        <!-- OpenGraph and Twitter meta tags will go here -->
+    <!-- @todo pages can overwrite this block to inject meta tags per page -->
     {% endblock %}
     {% block cssDependencies %}
         <!-- Fonts -->
-        <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic|Raleway:400,400italic" media="all">
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic|Raleway:400" media="all">
         <!-- CSS Dependencies -->
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.css" media="all">
         {% stylesheets
@@ -27,7 +30,8 @@
             '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/vendor/swiper/css/swiper.min.css'
             '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/vendor/fancybox/css/jquery.fancybox.css' %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="all">
-        {% endstylesheets %}
+        <link rel="stylesheet" type="text/css" href="{{ siteurljs('vendor/jquery-ui/themes/base/minified/jquery-ui.min.css') }}" media="all">
+    {# <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}dependencies{% if env != 'dev' %}.min{% endif %}.css" media="all"> #}
     {% endblock %}
 
     <!-- CSS Site -->
@@ -48,12 +52,12 @@
 
     <!-- JS -->
     <script type="text/javascript">
-        {#var site = JSON.parse('{{ site|json_encode }}')#}
+      var site = JSON.parse('{{ site|json_encode }}')
     </script>
 
     {% block extendHead %}{% endblock %}
 </head>
-<body>
+  <body id="{{ bodyId }}" class="{% if userProfile is not empty %}ui-user-level-{{ userProfile.level|default(1) }}{% endif %}{% if bodyClassNames is not empty %} {{ bodyClassNames }}{% endif %}">
 
 <div id="top" class="site">
     {% block siteHeader %}

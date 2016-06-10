@@ -1,6 +1,8 @@
 {# Single page layout #}
 {% extends 'layouts/_layout.twig' %}
 
+{% set bodyClassNames = 'layout-page-single' %}
+
 {% block siteContent %}
 
   <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="page page-single{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
