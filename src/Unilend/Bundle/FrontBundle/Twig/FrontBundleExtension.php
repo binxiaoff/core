@@ -4,7 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
 
-class AppExtension extends \Twig_Extension
+class FrontBundleExtension extends \Twig_Extension
 {
 
     private $sUrl;
@@ -25,7 +25,7 @@ class AppExtension extends \Twig_Extension
 
     public function svgImageFunction($sId, $sTitle, $iWidth, $iHeight, $sSizing = null)
     {
-        $sUrl        = 'frontbundle/media/svg/icons.svg'; //TODO change place according to asset management
+        $sUrl        = $this->sUrl . '/frontbundle/media/svg/icons.svg'; //TODO change place according to asset management
         $sSvgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"';
 
         // Supported sizing sizes, using preserveAspectRatio
@@ -55,7 +55,7 @@ class AppExtension extends \Twig_Extension
         return $sSvgHtml;
     }
 
-    //TODO delete before going live
+    //TODO delete before going live, after having all replaced by path
     public function routeFunction($sRoute)
     {
         return $sRoute;
@@ -67,9 +67,9 @@ class AppExtension extends \Twig_Extension
         return $sTranslations;
     }
 
-    public function siteurlmediaFunction($sURL)
+    public function siteurlmediaFunction($sPath)
     {
-        return 'frontbundle/media/' . $sURL;
+        return $this->sUrl . 'frontbundle/media/' . $sPath;
     }
 
     public function canUseSvg()
@@ -80,14 +80,7 @@ class AppExtension extends \Twig_Extension
 
     public function getStatistics()
     {
-        $aStatistics = [
-            'numberProjects'           => $this->statisticsManager->getNumberOfProjects(),
-            'numberLenders'            => $this->statisticsManager->getNumberOfLenders(),
-            'amountBorrowedInMillions' => bcdiv($this->statisticsManager->getAmountBorrowed(), 1000000),
-            'irrUnilend' => $this->statisticsManager->getUnilendIRR()
-        ];
-
-        return $aStatistics;
+        return $this->statisticsManager->getAllStatistics();
     }
 
 

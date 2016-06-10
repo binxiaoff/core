@@ -5,7 +5,7 @@
     xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
 
     <services>
-        <service id="unilend_app.twig_extension" class="Unilend\Bundle\FrontBundle\Twig\AppExtension" public="false">
+        <service id="unilend_app.twig_extension" class="Unilend\Bundle\FrontBundle\Twig\FrontBundleExtension" public="false">
             <tag name="twig.extension" />
             <argument>%router.request_context.host%</argument>
             <argument>%router.request_context.scheme%</argument>
