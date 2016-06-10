@@ -867,13 +867,16 @@ class dossiersController extends bootstrap
 
     private function updateProblematicStatus($iStatus)
     {
-        $this->projects_status_history_details                            = $this->loadData('projects_status_history_details');
-        $this->projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
-        $this->projects_status_history_details->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
-        $this->projects_status_history_details->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
-        $this->projects_status_history_details->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
-        $this->projects_status_history_details->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
-        $this->projects_status_history_details->create();
+        $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
+
+        /** @var \projects_status_history_details $projectStatusHistoryDetails */
+        $projectStatusHistoryDetails                            = $this->loadData('projects_status_history_details');
+        $projectStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+        $projectStatusHistoryDetails->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
+        $projectStatusHistoryDetails->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
+        $projectStatusHistoryDetails->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
+        $projectStatusHistoryDetails->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
+        $projectStatusHistoryDetails->create();
 
         // Disable automatic refund
         $this->projects->remb_auto = 1;
@@ -907,7 +910,7 @@ class dossiersController extends bootstrap
         $this->sendProblemStatusEmailBorrower($iStatus);
 
         if (false === empty($_POST['send_email'])) {
-            $this->sendProblemStatusEmailLender($iStatus);
+            $this->sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails);
         }
 
         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -1013,7 +1016,7 @@ class dossiersController extends bootstrap
         $mailer->send($message);
     }
 
-    private function sendProblemStatusEmailLender($iStatus)
+    private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
@@ -1027,8 +1030,8 @@ class dossiersController extends bootstrap
             'lien_fb'                => $sFacebookURL,
             'lien_tw'                => $sTwitterURL,
             'societe_recouvrement'   => $this->cab,
-            'contenu_mail'           => nl2br($this->projects_status_history_details->mail_content),
-            'coordonnees_mandataire' => nl2br($this->projects_status_history_details->receiver)
+            'contenu_mail'           => nl2br($projectStatusHistoryDetails->mail_content),
+            'coordonnees_mandataire' => nl2br($projectStatusHistoryDetails->receiver)
         );
 
         switch ($iStatus) {
@@ -1090,7 +1093,7 @@ class dossiersController extends bootstrap
         $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
 
         if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-            $oMaxClaimsSendingDate = new \DateTime($this->projects_status_history_details->date);
+            $oMaxClaimsSendingDate = new \DateTime($projectStatusHistoryDetails->date);
             $aCommonReplacements['date_max_envoi_declaration_creances'] = date('d/m/Y', $oMaxClaimsSendingDate->add(new \DateInterval('P2M'))->getTimestamp());
         }
 
