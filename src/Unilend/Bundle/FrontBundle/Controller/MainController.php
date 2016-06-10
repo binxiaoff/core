@@ -23,7 +23,7 @@ class MainController extends Controller
         $aTemplateVariables = array();
 
         /** @var TestimonialManager $testimonialService */
-        $testimonialService    = $this->get('unilend.service.testimonial');
+        $testimonialService = $this->get('unilend.service.testimonial_manager');
         /** @var ProjectManager $projectManager */
         $projectManager     = $this->get('unilend.service.project_manager');
         /** @var WelcomeOfferManager $welcomeOfferManager */

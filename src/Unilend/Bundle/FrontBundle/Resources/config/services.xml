@@ -12,9 +12,14 @@
             <argument type="service" id="unilend.service.statistics_Manager" />
         </service>
 
-        <service id="unilend.service.testimonial" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
+        <service id="unilend.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.translation_manager"/>
+        </service>
+
+        <service id="unilend.service.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.client_manager"/>
         </service>
     </services>
 </container>

@@ -98,4 +98,20 @@ class ClientManager
             return $oClient->isBorrower();
         }
     }
+
+    public function getClientBalance(\clients $oClient)
+    {
+        /** @var \transactions $transactions */
+        $transactions = $this->oEntityManager->getRepository('transactions');
+        $balance = $transactions->getSolde($oClient->id_client);
+        return $balance;
+    }
+
+    public function getClientInitials(\clients $oClient)
+    {
+        $initials = substr($oClient->prenom, 0, 1) . substr($oClient->nom, 0, 1);
+        //TODO decide which initials to use in case of company
+
+        return $initials;
+    }
 }

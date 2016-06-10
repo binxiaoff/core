@@ -1,0 +1,9 @@
+security:
+    providers:
+        Unilend:
+            id: unilend.service.user_provider
+    encoders:
+        FrontBundle\Security\User\User : md5
+    access_control:
+        - { path: ^/profile, roles: ROLE_LENDER }
+        - { path: ^/espace-emprunteur, roles: ROLE_BORROWER }
