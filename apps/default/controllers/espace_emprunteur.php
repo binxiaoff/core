@@ -8,7 +8,7 @@ class espace_emprunteurController extends bootstrap
 
         $this->catchAll = true;
 
-        if ($command->Function !== 'securite') {
+        if ($this->Command->Function !== 'securite') {
             $this->setHeader('header_account');
             $this->page = 'faq';
 
@@ -20,9 +20,10 @@ class espace_emprunteurController extends bootstrap
             $this->clients->get($_SESSION['client']['id_client']);
             $this->clients->checkAccessBorrower();
             $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
-            $aAllCompanyProjects = array_shift($this->companies->getProjectsForCompany($this->companies->id_company));
+            $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
+            $aAllCompanyProjects = array_shift($aAllCompanyProjects);
 
-            if ((int)$aAllCompanyProjects['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects['project_status'] < projects_status::PREP_FUNDING) {
+            if ($aAllCompanyProjects['project_status'] >= projects_status::A_TRAITER && $aAllCompanyProjects['project_status'] < projects_status::PREP_FUNDING) {
                 header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects['hash']);
                 die;
             }
@@ -76,17 +77,19 @@ class espace_emprunteurController extends bootstrap
                     if (false === empty($_SESSION['forms']['mdp_question_emprunteur']['errors'])) {
                         $_SESSION['forms']['mdp_question_emprunteur']['values'] = $_POST;
                     } else {
-                        $this->clients->password         = md5($_POST['pass']);
+                        $this->clients->password         = password_hash($_POST['pass'], PASSWORD_DEFAULT);
                         $this->clients->secrete_question = $_POST['secret-question'];
                         $this->clients->secrete_reponse  = md5($_POST['secret-response']);
                         $this->clients->status           = 1;
                         $this->clients->update();
                         header('Location: ' . $this->lurl);
+                        die;
                     }
                 }
             }
         } else {
             header('Location: ' . $this->lurl);
+            die;
         }
     }
 
@@ -406,7 +409,8 @@ class espace_emprunteurController extends bootstrap
             $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
             $aProjectsPostFunding[$iKey]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
 
-            $aNextRepayment                                        = array_shift($oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1));
+            $aNextRepayment                                        = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
+            $aNextRepayment                                        = array_shift($aNextRepayment);
             $aProjectsPostFunding[$iKey]['MonthlyPayment']         = ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100;
             $aProjectsPostFunding[$iKey]['DateNextMonthlyPayment'] = $aNextRepayment['date_echeance_emprunteur'];
         }

@@ -359,10 +359,6 @@ class inscription_preteurController extends bootstrap
                     $this->transactions->transaction      = 1; // transaction physique
                     $this->transactions->id_transaction   = $this->transactions->create();
 
-                    //***************//
-                    //*** PAYLINE ***//
-                    //***************//
-
                     $array                    = array();
                     $payline                  = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
                     $payline->returnURL       = $this->lurl . '/inscription_preteur/payment/' . $this->clients->hash . '/';
@@ -1056,7 +1052,7 @@ class inscription_preteurController extends bootstrap
             $this->clients->email                        = $_POST['email'];
             $this->clients->secrete_question             = $_POST['secret-question'];
             $this->clients->secrete_reponse              = md5($_POST['secret-response']);
-            $this->clients->password                     = md5($_POST['pass']);
+            $this->clients->password                     = password_hash($_POST['pass'], PASSWORD_DEFAULT);
             $this->clients->telephone                    = str_replace(' ', '', $_POST['phone']);
             $this->clients->ville_naissance              = $_POST['naissance'];
             $this->clients->insee_birth                  = $sCodeInsee;
@@ -1313,7 +1309,7 @@ class inscription_preteurController extends bootstrap
             $this->clients->slug             = $this->bdd->generateSlug($this->clients->prenom . '-' . $this->clients->nom);
             $this->clients->secrete_question = $_POST['secret-questionE'];
             $this->clients->secrete_reponse  = md5($_POST['secret-responseE']);
-            $this->clients->password         = md5($_POST['passE']);
+            $this->clients->password         = password_hash($_POST['passE'], PASSWORD_DEFAULT);
 
             $aPost = $_POST;
             $aPost['passE']            = md5($_POST['passE']);
@@ -1338,7 +1334,7 @@ class inscription_preteurController extends bootstrap
                 $this->clients->update();
                 $this->clients_adresses->update();
 
-                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost ));
+                $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $aPost));
                 $this->clients_history_actions->histo(16, 'edition inscription etape 1 entreprise', $this->clients->id_client, $serialize);
             } else {
                 $this->setSource($this->clients);

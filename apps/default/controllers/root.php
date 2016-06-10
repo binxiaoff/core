@@ -372,9 +372,8 @@ class rootController extends bootstrap
                             $this->erreur_reponse_secrete = true;
                         }
 
-                        if ($form_ok == true) {
-                            $mdp                     = $_POST['pass'];
-                            $this->clients->password = md5($mdp);
+                        if ($form_ok) {
+                            $this->clients->password = password_hash($_POST['pass'], PASSWORD_DEFAULT);
                             $this->clients->update();
 
                             header('Location:' . $this->lurl . '/' . $this->params[0] . '/' . $this->params[1] . '/valide');

@@ -1,14 +1,10 @@
 <div class="main">
     <div class="shell">
-        <?php
-        if ($this->bSuccessMessage === true ) : ?>
-
+        <?php if (isset($this->bSuccessMessage) && $this->bSuccessMessage === true ) : ?>
             <span>
                 <?= $this->lng['espace-emprunteur']['confirmation-demande-contact'] ?>
             </span>
-        <?php
-        else :
-        ?>
+        <?php else : ?>
         <div class="contact">
             <h1><?=$this->lng['espace-emprunteur']['nous-contacter'] ?></h1>
             <div class="contact-form">
@@ -131,6 +127,4 @@
         }
     });
 </script>
-
 <?php endif; ?>
-

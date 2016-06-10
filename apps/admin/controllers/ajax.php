@@ -546,7 +546,7 @@ class ajaxController extends bootstrap
             $mailer = $this->get('mailer');
             $mailer->send($message);
 
-            $this->clients->password = md5($this->ficelle->generatePassword(8));
+            $this->clients->password = password_hash($this->ficelle->generatePassword(8), PASSWORD_DEFAULT);
             $this->clients->status   = 1;
             $this->clients->update();
         }
