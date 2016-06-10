@@ -30,8 +30,9 @@
             '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/vendor/swiper/css/swiper.min.css'
             '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/vendor/fancybox/css/jquery.fancybox.css' %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="all">
-        <link rel="stylesheet" type="text/css" href="{{ siteurljs('vendor/jquery-ui/themes/base/minified/jquery-ui.min.css') }}" media="all">
+        <link rel="stylesheet" type="text/css" href="{{ 'vendor/jquery-ui/themes/base/minified/jquery-ui.min.css' }}" media="all">
     {# <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}dependencies{% if env != 'dev' %}.min{% endif %}.css" media="all"> #}
+        {% endstylesheets %}
     {% endblock %}
 
     <!-- CSS Site -->
@@ -52,12 +53,12 @@
 
     <!-- JS -->
     <script type="text/javascript">
-      var site = JSON.parse('{{ site|json_encode }}')
+      {#var site = JSON.parse('{{ site|json_encode }}')#}
     </script>
 
     {% block extendHead %}{% endblock %}
 </head>
-  <body id="{{ bodyId }}" class="{% if userProfile is not empty %}ui-user-level-{{ userProfile.level|default(1) }}{% endif %}{% if bodyClassNames is not empty %} {{ bodyClassNames }}{% endif %}">
+  <body id="{{ bodyId }}" class="{% if app.user is defined %}ui-user-level-{{ userProfile.level|default(1) }}{% endif %}{% if bodyClassNames is defined %} {{ bodyClassNames }}{% endif %}">
 
 <div id="top" class="site">
     {% block siteHeader %}
