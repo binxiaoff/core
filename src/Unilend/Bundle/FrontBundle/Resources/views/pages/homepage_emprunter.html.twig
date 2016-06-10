@@ -148,8 +148,9 @@ permalink: route('emprunter')
                                         <div class="form-field">
                                             <label for="esim-input-reason">{% trans %} home-borrower_simulator-loan-motif-title {% endtrans %}</label>
                                             <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-field data-formvalidation-required="true">
-                                                <option value="development">Développement</option>
-                                                {# @TODO populate with other options per esim algorithm #}
+                                                {% for id, motive in loanMotives %}
+                                                <option value="{{ id }}">{{ motive }}</option>
+                                                {% endfor %}
                                             </select>
                                         </div>
                                     </div>

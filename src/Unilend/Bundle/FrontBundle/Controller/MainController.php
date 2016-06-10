@@ -7,6 +7,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 
 class MainController extends Controller
@@ -27,6 +28,8 @@ class MainController extends Controller
         $projectManager     = $this->get('unilend.service.project_manager');
         /** @var WelcomeOfferManager $welcomeOfferManager */
         $welcomeOfferManager = $this->get('unilend.service.welcome_offer_manager');
+        /** @var TranslationManager $translationManager */
+        $translationManager = $this->get('unilend.service.translation_manager');
 
         $aRateRange = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
         $aTemplateVariables['projects'] = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC', $aRateRange);
@@ -37,6 +40,7 @@ class MainController extends Controller
         ];
         $aTemplateVariables['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
         $aTemplateVariables['loanPeriods'] = $projectManager->getPossibleLoanPeriods();
+        $aTemplateVariables['loanMotives'] = $translationManager->getTranslatedLoanMotiveList();
 
         //TODO replace switch by cookie check
         switch($type) {

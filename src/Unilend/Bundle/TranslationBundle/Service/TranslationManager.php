@@ -164,4 +164,27 @@ class TranslationManager
 
         return $aTranslatedSectors;
     }
+
+    /**
+     * @param string|null $sLocale
+     * @return array
+     */
+    public function getTranslatedLoanMotiveList($sLocale = null)
+    {
+        if (is_null($sLocale)) {
+            $sLocale = $this->defaultLocale;
+        }
+
+        /** @var \loan_motive $loanMotive */
+        $loanMotive          = $this->entityManager->getRepository('loan_motive');
+        $aMotiveTranslations = $this->getAllTranslationsForSection('loan-motive', $sLocale);
+        $aLoanMotives        = $loanMotive->select();
+        $aTranslatedMotives  = array();
+
+        foreach ($aLoanMotives  as $aMotive) {
+            $aTranslatedMotives[$aMotive['id_motive']] = $aMotiveTranslations['motive-' . $aMotive['id_motive']];
+        }
+
+        return $aTranslatedMotives;
+    }
 }

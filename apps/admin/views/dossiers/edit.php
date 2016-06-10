@@ -356,6 +356,17 @@
                         </td>
                     </tr>
                     <tr>
+                        <th><label for="motive">Motif de l'emprunt :</label></th>
+                        <td>
+                            <select name="motive" id="motive" class="select" style="width:160px;background-color:#AAACAC;">
+                                <option<?= (is_null($this->projects->id_loan_motive) ? ' selected' : '') ?> value="0">Non renseigné</option>
+                                <?php foreach ($this->aLoanMotives as $key => $motive) : ?>
+                                    <option<?= ($this->projects->id_loan_motive == $key ? ' selected' : '') ?> value="<?= $key ?>"><?= $motive ?> </option>
+                                <?php endforeach ?>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
                         <th><label for="need">Type de besoin :</label></th>
                         <td>
                             <select name="need" id="need" class="select" style="width:160px;background-color:#AAACAC;">
