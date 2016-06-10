@@ -18,6 +18,19 @@ class StatisticsManager
         $this->IRRManager = $IRRManager;
     }
 
+    public function getAllStatistics()
+    {
+        $aStatistics = [
+            'numberProjects'           => $this->getNumberOfProjects(),
+            'numberLenders'            => $this->getNumberOfLenders(),
+            'amountBorrowedInMillions' => bcdiv($this->getAmountBorrowed(), 1000000),
+            'irrUnilend'               => $this->getUnilendIRR(),
+            'avgFundingTime'           => $this->getAverageFundingTime(),
+            'SuccessFullyFunded'       => $this->getAmountSuccessfullyFinancedProjects()
+        ];
+
+        return $aStatistics;
+    }
 
     public function getNumberOfLenders()
     {

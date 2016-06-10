@@ -16,7 +16,7 @@ class ProjectsController extends Controller
 {
 
     /**
-     * @Route("/project")
+     * @Route("/project", name="projects")
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */

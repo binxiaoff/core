@@ -811,6 +811,12 @@ class ProjectManager
         return $aProjects;
     }
 
-
+    public function getPossibleLoanPeriods()
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Durée des prêts autorisées', 'type');
+        return explode(',', $settings->value);
+    }
 
 }
