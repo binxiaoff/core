@@ -652,8 +652,7 @@ class rootController extends bootstrap
         $this->wallets_lines    = $this->loadData('wallets_lines');
         $this->bank_lines       = $this->loadData('bank_lines');
 
-        // On recup la lib et le reste payline
-        require_once($this->path . 'protected/payline/include.php');
+        require_once $this->path . 'librairies/payline/include.php';
 
         $array = array();
 

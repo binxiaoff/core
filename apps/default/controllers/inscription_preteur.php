@@ -239,13 +239,10 @@ class inscription_preteurController extends bootstrap
 
         $this->page_preteur = 3;
 
-        //Recuperation des element de traductions
         $this->lng['etape3'] = $this->ln->selectFront('inscription-preteur-etape-3', $this->language, $this->App);
 
-        // On recup la lib et le reste payline
-        require_once($this->path . 'protected/payline/include.php');
+        require_once $this->path . 'librairies/payline/include.php';
 
-        // Chargement des datas
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
         $this->clients_adresses       = $this->loadData('clients_adresses');
         $this->transactions           = $this->loadData('transactions');
@@ -469,10 +466,8 @@ class inscription_preteurController extends bootstrap
         $this->autoFireView   = false;
         $this->autoFireFooter = false;
 
-        // On recup la lib et le reste payline
-        require_once($this->path . 'protected/payline/include.php');
+        require_once $this->path . 'librairies/payline/include.php';
 
-        // Chargement des datas
         $this->transactions           = $this->loadData('transactions');
         $this->backpayline            = $this->loadData('backpayline');
         $this->lenders_accounts       = $this->loadData('lenders_accounts');
