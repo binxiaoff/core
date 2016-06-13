@@ -90,13 +90,13 @@ EOF
             case 'new_project': // run at 19:30 for daily, at 9:00 for weekly
                 $mailerManager->sendNewProjectsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_NEW_PROJECT), $summaryType);
                 break;
-            case 'placed_bid': // run at 20:00
+            case 'placed_bid': // run at 20:00 for daily
                 $mailerManager->sendPlacedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_BID_PLACED), $summaryType);
                 break;
-            case 'rejected_bid': // run at 20:15
+            case 'rejected_bid': // run at 20:15 for daily
                 $mailerManager->sendRejectedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_BID_REJECTED), $summaryType);
                 break;
-            case 'accepted_loan': // run at 20:30, at 9:30 for weekly and at 10::30 for monthly
+            case 'accepted_loan': // run at 20:30 for daily, at 9:30 for weekly and at 10::30 for monthly
                 $mailerManager->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), $summaryType);
                 break;
             default:

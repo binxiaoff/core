@@ -1,10 +1,10 @@
 <?php
 namespace Unilend\Bundle\CommandBundle\Command;
 
+use Symfony\Component\Console\Input\InputOption;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
-use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 
@@ -15,11 +15,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $this
             ->setName('projects:early_refund_email')
             ->setDescription('Check projects that are in FUNDING status')
-            ->addArgument(
-                'limit',
-                InputArgument::OPTIONAL,
-                'Number of projects to process'
-            );
+            ->addOption('limit-project', 0, InputOption::VALUE_REQUIRED, 'Number of projects to process');
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
@@ -70,9 +66,9 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
         $settings->get('Twitter', 'type');
         $twitterLink = $settings->value;
 
-        $limit = $input->getArgument('limit');
+        $limit = $input->getOption('limit-project');
         $limit = $limit ? $limit : 1;
-
+        
         foreach ($earlyRepaymentEmail->select('statut = 0', 'added ASC', '', $limit) as $earlyRefundPendingEmail) {
             $sfpmeiFeedIncoming->get($earlyRefundPendingEmail['id_reception']);
             $project->get($sfpmeiFeedIncoming->id_project);

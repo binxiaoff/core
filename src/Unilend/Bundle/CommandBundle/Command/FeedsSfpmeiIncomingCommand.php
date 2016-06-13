@@ -12,7 +12,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
 {
-    CONST FILE_ROOT_NAME = 'UNILEND-00040631007-';
+    const FILE_ROOT_NAME = 'UNILEND-00040631007-';
 
     /** @var LoggerInterface $oLogger */
     private $oLogger;

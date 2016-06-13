@@ -9,7 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckIncomingSfpmeiFeedFile extends ContainerAwareCommand
 {
-    CONST FILE_ROOT_NAME = 'UNILEND-00040631007-';
+    const FILE_ROOT_NAME = 'UNILEND-00040631007-';
 
     protected function configure()
     {
