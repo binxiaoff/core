@@ -25,8 +25,8 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
     );
 }
 
-session_start();
-ini_set('session.gc_maxlifetime', 3600); // 1h la session
+//session_start();
+//ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
 Debug::enable();
 

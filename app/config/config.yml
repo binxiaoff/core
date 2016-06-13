@@ -1,5 +1,6 @@
 imports:
     - { resource: parameters.yml }
+    - { resource: security.yml }
 
 framework:
     secret: "%secret%"
@@ -18,6 +19,8 @@ framework:
         paths:
             - "%kernel.root_dir%/../src/Unilend/Bundle/TranslationBundle/Resources/translations"
         logging : true
+    session :
+        gc_maxlifetime : 3600
 
 # Twig Configuration
 twig:

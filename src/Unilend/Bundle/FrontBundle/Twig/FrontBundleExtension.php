@@ -69,7 +69,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function siteurlmediaFunction($sPath)
     {
-        return $this->sUrl . 'frontbundle/media/' . $sPath;
+        return $this->sUrl . '/frontbundle/media/' . $sPath;
     }
 
     public function canUseSvg()

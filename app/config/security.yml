@@ -1,0 +1,27 @@
+security:
+    encoders:
+        Unilend\Bundle\FrontBundle\Security\User\BaseUser:
+            algorithm: md5
+            encode_as_base64: false
+            iterations: 0
+
+    providers:
+        unilend_front_bundle:
+            id: unilend.service.user_provider
+    firewalls:
+        dev:
+            pattern: ^/(_(profiler|wdt)|css|images|js)/
+            security: false
+        default:
+            pattern: /
+            anonymous: ~
+            form_login:
+                login_path: login #route name not URL
+                check_path: login-check
+                success_handler : unilend.frontbundle.service.login_success_handler
+                # field names for the username and password fields
+                username_parameter: _username
+                password_parameter: _password
+            logout:
+                path: logout
+                target: home

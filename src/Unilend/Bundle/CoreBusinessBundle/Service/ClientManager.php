@@ -103,7 +103,7 @@ class ClientManager
     {
         /** @var \transactions $transactions */
         $transactions = $this->oEntityManager->getRepository('transactions');
-        $balance = $transactions->getSolde($oClient->id_client);
+        $balance      = $transactions->getSolde($oClient->id_client);
         return $balance;
     }
 
@@ -114,4 +114,38 @@ class ClientManager
 
         return $initials;
     }
+
+    public function isActive(\clients $oClient)
+    {
+        return (bool)$oClient->status;
+    }
+
+    public function getCurrentClientStatus(\clients $oClient)
+    {
+        /** @var \clients_status $lastClientStatus */
+        $lastClientStatus = $this->oEntityManager->getRepository('clients_status');
+        $lastClientStatus->getLastStatut($oClient->id_client);
+        return $lastClientStatus->status;
+    }
+
+    public function hasAcceptedCurrentTerms(\clients $oClient)
+    {
+        /** @var \acceptations_legal_docs $acceptedTerms */
+        $acceptedTerms = $this->oEntityManager->getRepository('acceptations_legal_docs');
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+
+        if (in_array($oClient->type, array(\clients::TYPE_LEGAL_ENTITY, \clients::TYPE_LEGAL_ENTITY_FOREIGNER))) {
+            $settings->get('Lien conditions generales inscription preteur societe', 'type');
+            $sTermsAndConditionsLink = $settings->value;
+        } else {
+            $settings->get('Lien conditions generales inscription preteur particulier', 'type');
+            $sTermsAndConditionsLink = $settings->value;
+        }
+
+        $aAcceptedTermsByClient = $acceptedTerms->selectAccepts('id_client = ' . $oClient->id_client);
+
+        return in_array($sTermsAndConditionsLink, $aAcceptedTermsByClient);
+    }
+
 }

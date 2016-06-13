@@ -21,6 +21,7 @@ class AppKernel extends Kernel
             new Unilend\Bundle\FrontBundle\UnilendFrontBundle(),
             new Symfony\Bundle\AsseticBundle\AsseticBundle(),
             new Unilend\Bundle\TranslationBundle\UnilendTranslationBundle(),
+            new Symfony\Bundle\SecurityBundle\SecurityBundle(),
         ];
         if (in_array($this->getEnvironment(), ['dev', 'test'], true)) {
             $bundles[] = new Symfony\Bundle\DebugBundle\DebugBundle();

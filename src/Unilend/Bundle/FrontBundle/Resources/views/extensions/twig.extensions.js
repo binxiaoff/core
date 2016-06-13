@@ -203,7 +203,7 @@ var getRouteUrl = function (input, isInvalidRoute) {
 }
 
 // Use SVG item from SVG symbol set (see {build}/media/icons.svg)
-// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.twig)
+// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.html.twig)
 // ID corresponds to {foldername-filename}
 // e.g. SVG hosted in media/svg/example-folder/filename.svg
 //      will translate to:
@@ -284,7 +284,7 @@ var svgImage = function (id, title, width, height, sizing) {
 }
 
 // Use SVG item from SVG symbol set (see {build}/media/icons.svg)
-// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.twig)
+// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.html.twig)
 // Outputs the URL link to an inline SVG file with ID refering to specific symbol
 var svgUrl = function (id, width, height, sizing) {
   return 'url(\'data:image/svg+xml,' + encodeURIComponent(svgImage(id, false, width, height, sizing)) + '\')';

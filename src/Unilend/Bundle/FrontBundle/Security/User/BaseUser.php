@@ -3,29 +3,24 @@
 namespace Unilend\Bundle\FrontBundle\Security\User;
 
 
+use Symfony\Component\Security\Core\User\AdvancedUserInterface;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class User implements UserInterface, EquatableInterface
+class BaseUser implements AdvancedUserInterface, EquatableInterface
 {
 
     private $username;
     private $password;
     private $salt;
     private $roles;
-    private $balance;
-    private $initials;
-    private $firstName;
 
-    public function __construct($username, $password, $salt, array $roles, $balance, $initials, $firstName)
+    public function __construct($username, $password, $salt, array $roles)
     {
-        $this->username  = $username;
-        $this->password  = $password;
-        $this->salt      = $salt;
-        $this->roles     = $roles;
-        $this->balance   = $balance;
-        $this->initials  = $initials;
-        $this->firstName = $firstName;
+        $this->username                = $username;
+        $this->password                = $password;
+        $this->salt                    = $salt;
+        $this->roles                   = $roles;
     }
 
     /**
@@ -60,7 +55,6 @@ class User implements UserInterface, EquatableInterface
         return $this->username;
     }
 
-
     /**
      * @inheritDoc
      */
@@ -88,5 +82,38 @@ class User implements UserInterface, EquatableInterface
 
         return true;
     }
+    /**
+     * @inheritDoc
+     */
+    public function isAccountNonExpired()
+    {
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isAccountNonLocked()
+    {
+
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isCredentialsNonExpired()
+    {
+        //checks whether the user’s credentials (password) has expired
+        return true;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function isEnabled()
+    {
+        return true; // TODO AB is validated? to check if client has status validated to have full feature access
+    }
+
 
 }

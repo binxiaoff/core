@@ -26,7 +26,6 @@ class UserProvider implements UserProviderInterface
         $this->clientManager = $clientManager;
     }
 
-
     /**
      * @inheritDoc
      */
@@ -35,19 +34,22 @@ class UserProvider implements UserProviderInterface
         /** @var \clients $client */
         $client = $this->entityManager->getRepository('clients');
         if ($client->get($username, 'email')) {
-            $balance  = $this->clientManager->getClientBalance($client);
-            $initials = $this->clientManager->getClientInitials($client);
-            $roles = ['ROLE_USER'];
-
-            if ($this->clientManager->isBorrower($client)) {
-                $roles[] = 'ROLE_BORROWER';
-            }
+            $balance                 = $this->clientManager->getClientBalance($client);
+            $initials                = $this->clientManager->getClientInitials($client);
+            $roles                   = ['ROLE_USER'];
 
             if ($this->clientManager->isLender($client)) {
                 $roles[] = 'ROLE_LENDER';
+                $isActive                = $this->clientManager->isActive($client);
+                $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
+                $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
+                return new UserLender($client->email, $client->password, '', $roles, $balance, $initials, $client->prenom, $isActive, $clientStatus, $hasAcceptedCurrentTerms);
             }
 
-            return new User($client->email, $client->password, '', $roles, $balance, $initials, $client->prenom);
+            if ($this->clientManager->isBorrower($client)) {
+                $roles[] = 'ROLE_BORROWER';
+                //return new UserBorrower($client->email, $client->password, '', $roles, $balance, $initials, $client->prenom, $isActive, $clientStatus, $hasAcceptedCurrentTerms);
+            }
         }
 
         throw new UsernameNotFoundException(
@@ -61,7 +63,7 @@ class UserProvider implements UserProviderInterface
      */
     public function refreshUser(UserInterface $user)
     {
-        if (false === $user instanceof User) {
+        if (false === $user instanceof BaseUser) {
             throw new UnsupportedUserException(
                 sprintf('Instances of "%s" are not supported.', get_class($user))
             );
