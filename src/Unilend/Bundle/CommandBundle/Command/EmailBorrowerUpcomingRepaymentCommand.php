@@ -18,7 +18,7 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
     {
         $this
             ->setName('email:borrower:upcoming_repayment')
-            ->setDescription('Send emails to borrower and lenders when an early repayment is done');
+            ->setDescription('Send emails to borrower when a repayment is coming');
     }
 
     /**

@@ -15,7 +15,7 @@ class IRRLenderCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('IRR:lender')
+            ->setName('irr:lender')
             ->setDescription('Calculate the IRR for Lenders with changes in their portfolio')
             ->addArgument('quantity', InputArgument::REQUIRED, 'For how many lenders per iteration do you want to recalculate the IRR?')
             ->setHelp(<<<EOF

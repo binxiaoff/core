@@ -18,7 +18,7 @@ class CheckProjectProcessFastCompletenessCommand extends ContainerAwareCommand
     {
         $this
             ->setName('check:project_process_fast_completeness')
-            ->setDescription('Greet someone');
+            ->setDescription('checks all projects in fast process that still at step 3 after one hour');
     }
 
     /**

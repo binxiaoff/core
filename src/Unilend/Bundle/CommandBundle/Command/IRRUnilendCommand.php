@@ -13,7 +13,7 @@ class IRRUnilendCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('IRR:unilend')
+            ->setName('irr:unilend')
             ->setDescription('Calculate the IRR of the whole platform');
     }
 
