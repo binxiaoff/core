@@ -37,7 +37,7 @@ class AppKernel extends Kernel
 
     public function getLogDir()
     {
-        return '/data/log';
+        return '/data/log/unilend';
     }
 
     public function registerContainerConfiguration(LoaderInterface $loader)
