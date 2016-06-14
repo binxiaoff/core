@@ -12,23 +12,21 @@
     <title>Unilend : les particuliers prêtent aux entreprises françaises</title>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-
     <meta name="Author" content="dynamic creative - Agence créative pas NET, mais WEB énormément"/>
     <meta name="description" content="Sur Unilend, tout le monde peut prêter aux entreprises françaises et recevoir des intérêts."/>
     <meta name="keywords" content="Financement entreprise, prêt à des entreprises, investissement direct, peer-to-peer lending, crowdfunding"/>
     <meta name="viewport" content="initial-scale = 1.0,maximum-scale = 1.0"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
-
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css">
-    <link href="css/font.css" type="text/css" rel="stylesheet" media="all">
-    <link href="css/base.css" type="text/css" rel="stylesheet" media="all">
-    <link href="css/global.css" type="text/css" rel="stylesheet" media="all">
-    <link href="css/responsive.css" type="text/css" rel="stylesheet" media="all">
-    <link href="css/jquery.c2selectbox.css" type="text/css" rel="stylesheet" media="all"/>
-    <link href="css/bootstrap.css" type="text/css" rel="stylesheet" media="all"/>
-    <link rel="stylesheet" href="css/jquery.nouislider.css"/>
-
+    <link href="../css/font.css" type="text/css" rel="stylesheet" media="all">
+    <link href="../css/base.css" type="text/css" rel="stylesheet" media="all">
+    <link href="../css/global.css" type="text/css" rel="stylesheet" media="all">
+    <link href="../css/responsive.css" type="text/css" rel="stylesheet" media="all">
+    <link href="../css/jquery.c2selectbox.css" type="text/css" rel="stylesheet" media="all"/>
+    <link href="../css/bootstrap.css" type="text/css" rel="stylesheet" media="all"/>
+    <link rel="stylesheet" href="../css/jquery.nouislider.css"/>
+    <link rel="stylesheet" href="css/form.css"/>
     <!--[if IE]><script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
 </head>
 <body>
@@ -55,6 +53,9 @@ if (false === ($source = filter_input(INPUT_GET, 'utm_source', FILTER_SANITIZE_S
 if (false === ($source2 = filter_input(INPUT_GET, 'utm_source2', FILTER_SANITIZE_STRING))) {
     $source2 = '';
 }
+if (false === ($utm_medium = filter_input(INPUT_GET, 'utm_medium', FILTER_SANITIZE_STRING))) {
+    $utm_medium = '';
+}
 if (false === ($nom = filter_input(INPUT_GET, 'nom', FILTER_SANITIZE_STRING))) {
     $nom = '';
 }
@@ -70,21 +71,16 @@ if (false === ($civilite = filter_input(INPUT_GET, 'civilite', FILTER_SANITIZE_S
 
 if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
     $page         = 'lexpress';
-    $slug_origine = '2015_lexpress';
+    $slug_origine = 'Lp-2015-web_lexpress';
 } else {
     $page         = '';
-    $slug_origine = '2015';
-    ?>
-    <style type="text/css">
-        #chiffres, #presse{display:none;}
-    </style>
-    <?php
+    $slug_origine = 'Lp-2015-web';
 }
 
 ?>
-<div id="form">
+<div id="form" class="alone">
     <section class="wrapper">
-        <form action="#" method="post" id="form_inscription" class="etape1" novalidate>
+        <form action="#" method="post" id="form_inscription" class="etape1 form-alone" novalidate>
             <div class="form_promo border10">
                 <a href="#bloc_mentions" class="macaron"><span>20 €</span> <b>OFFERTS</b> pour prêter !</a>
             </div>
@@ -94,41 +90,13 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
             </div>
             <div class="form_content etape1">
                 <select name="civilite" id="inscription_civilite" class="custom-select">
-                    <option value=""><?php
-                        if ($civilite == "Mme") {
-                            echo "Madame";
-                        } elseif ($civilite == "M.") {
-                            echo "Monsieur";
-                        } else {
-                            echo "Civilité*";
-                        }
-                        ?></option>
-                    <option <?php
-                    if ($civilite == "M.") {
-                        echo "selected";
-                    }
-                    ?> value="M.">Monsieur
-                    </option>
-                    <option <?php
-                    if ($civilite == "Mme") {
-                        echo "selected";
-                    }
-                    ?> value="Mme">Madame
-                    </option>
+                    <option value=""><?php if ($civilite == "Mme") { echo "Madame"; } elseif ($civilite == "M.") { echo "Monsieur"; } else { echo "Civilité*"; } ?></option>
+                    <option <?php if ($civilite == "M.") { echo "selected"; } ?> value="M.">Monsieur</option>
+                    <option <?php if ($civilite == "Mme") { echo "selected"; } ?> value="Mme">Madame</option>
                 </select>
                 <input type="text" id="inscription_nom" name="nom" placeholder="Nom*" maxlength="255" value="<?php echo $nom; ?>">
                 <input type="text" id="inscription_prenom" name="prenom" placeholder="Prénom*" maxlength="255" value="<?php echo $prenom; ?>">
                 <input type="email" id="inscription_email" name="email" placeholder="E-mail*" maxlength="255" value="<?php echo $email; ?>">
-                <p class="source3">Comment nous avez-vous connu ?</p>
-                <select id="inscription_utm_source3" name="utm_source3" class="custom-select">
-                    <option value="">Choisir</option>
-                    <option value="1">Conférence</option>
-                    <option value="2">Presse, radio, tv</option>
-                    <option value="3">Recherche Internet</option>
-                    <option value="4">Bouche-à-oreille</option>
-                    <option value="5">Autre, préciser : champ libre</option>
-                </select>
-                <input type="text" name="utm_source3_autre" id="inscription_utm_source3_autre" placeholder="Précisez..." maxlength="255">
                 <button type="submit" id="inscription_submit" name="valider">S'inscrire</button>
                 <p class="champs_obligatoires">* Champs obligatoires</p>
             </div>
@@ -791,7 +759,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                 <div class="cb-holder">
                     <label id="label_checkbox_inscription_cgv" for="inscription_cgv"></label>
                     <p id="label_inscription_cgv">J'ai lu et j'accepte les
-                        <a href="<?= $url_site ?>/cgv_preteurs" target="_blank">Conditions Générales de Vente</a> d'Unilend
+                        <a href="https://www.unilend.fr/cgv_preteurs" target="_blank">Conditions Générales de Vente</a> d'Unilend
                     </p>
                     <input type="checkbox" class="custom-chekckbox" name="inscription_cgv" id="inscription_cgv">
                 </div>
@@ -805,248 +773,24 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         </form>
     </section>
 </div>
-<div id="home" class="wrapper100">
-    <section class="wrapper">
-        <div class="logo disp_0">
-            <div class="disp_1">
-                <a href="#" id="logo"></a>
-            </div>
-        </div>
 
-        <h1>Prêtez directement aux entreprises</h1>
-        <h2>Recevez chaque mois vos intérêts</h2>
-        <div class="w_1 bloc_mac">
-            <div class="center">
-                <a href="#bloc_mentions" class="macaron"><img src="img/macaron.png"/></a>
-            </div>
-        </div>
 
-        <ul>
-            <li>
-                <h3><span>1</span> Choisissez</h3>
-                <p>
-                    Sélectionnez les entreprises auxquelles vous souhaitez prêter.<br/>
-                    Leur capacité de remboursement a été soigneusement étudiée.
-                </p>
-            </li>
-            <li>
-                <h3><span>2</span> PRÊTEZ À PARTIR DE 20 €</h3>
-                <p>
-                    Choisissez le montant (à partir de 20 €) et le taux (entre 4 % et 10 %)<br/>
-                    des prêts que vous souhaitez réaliser‏.
-                </p>
-            </li>
-            <li>
-                <h3><span>3</span> Recevez des intérêts</h3>
-                <p>
-                    Tous les mois, vous recevez vos remboursements et<br/>
-                    vos intérêts, que vous pouvez prêter à nouveau.
-                </p>
-            </li>
-        </ul>
-        <div class="conditions" id="bloc_mentions">Conditions de l'offre</div>
-        <div class="mentions">
-            Offre valable jusqu’au <?= date("t/m/Y") ?> réservée aux personnes physiques, capables, majeures.
-            L’offre est réservée aux nouveaux inscrits dont l’inscription est validée par Unilend. Seules les personnes physiques de nationalité française, ou possédant une nationalité d’un pays de l’Espace Economique Européen, et disposant d’un compte bancaire en euros en France pourront bénéficier de l’offre.
-            Les 20 € seront versés sur le compte Unilend du client dans le mois suivant la validation du compte et ne pourront servir qu’à prêter sur Unilend. Le client pourra prêter cette somme à l’entreprise de son choix parmi les entreprises présentées sur le site et ce dans un délai de 3 mois suivant la validation de son inscription. En cas de non utilisation de cette somme dans ce délai pour un prêt, Unilend se réserve le droit de reprendre ce montant non utilisé.
-            Une seule prime de 20 € par personne et par compte Unilend est octroyée. Offre non cumulable avec toute offre commerciale ou de parrainage en cours. Cette offre est régie par la loi française.
-            Voilà, c’est tout. Si vous avez lu jusqu’ici, il ne vous reste plus qu’à tester !
-        </div>
-        <div class="scroll2"><a href="#pourquoi_unilend"></a></div>
-    </section>
-</div><!-- home -->
-
-<div id="pourquoi_unilend" class="wrapper100 bg_gris">
-    <section class="wrapper">
-        <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-        <h1>Pourquoi <span>Unilend ?</span></h1>
-        <ul>
-            <li>Bénéficiez d’un compte totalement gratuit</li>
-            <li>Choisissez librement le taux</li>
-            <li>Prêtez à des taux attractifs entre 4 % et 10 %</li>
-            <li>Recevez des revenus mensuels</li>
-            <li>Faites travailler votre argent dans les PME françaises</li>
-        </ul>
-        <p class="fleche">Inscrivez-vous et reprenez le pouvoir sur votre argent</p>
-        <div class="scroll2"><a href="#projet_analyse"></a></div>
-    </section>
-</div><!-- pourquoi_unilend -->
-
-<div id="projet_analyse" class="wrapper100 bg_gris">
-    <section class="wrapper">
-        <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-        <h1>Chaque projet est <span>rigoureusement analysé</span></h1>
-        <ul id="projet_analyse_ul">
-            <li>
-                Analyse des données financières fournies par Altares,
-                membre du réseau Dun & Bradstreet, leader mondial
-                de la fourniture de données sur les sociétés
-            </li>
-            <li>
-                Étude approfondie des 3 derniers bilans et<br/>
-                du projet de l’entreprise
-            </li>
-            <li>Examen des capacités de remboursement</li>
-        </ul>
-        <p id="projet_analyse_tous"><img src="img/picto_fl.png"/></p>
-        <p id="projet_analyse_tous2">
-            Les projets à financer sur Unilend présentent
-            une capacité de remboursement éprouvée
-        </p>
-        <div class="clear"></div>
-        <h3>Exemples de projets financés</h3>
-        <div id="slider_projet">
-            <div>
-                <button id="slide_prec"></button>
-                <div>
-
-                    <div>
-                        <div>
-                            <img src="img/Giglam.jpeg" alt="Giglam" width="160" height="120">
-                            <p>Giglam Conseils</p>
-                        </div>
-                        <div>
-                            <img src="img/hmbc.png" alt="HMBC" width="160" height="120">
-                            <p>HMBC</p>
-                        </div>
-                        <div>
-                            <img src="img/ralf-tech.png" alt="Ralf Tech" width="160" height="120">
-                            <p>Ralf Tech</p>
-                        </div>
-                        <div>
-                            <img src="img/semafer.jpg" alt="Semafer" width="160" height="120">
-                            <p>Semafer</p>
-                        </div>
-                        <div>
-                            <img src="img/complement-europe.png" alt="Complément Europe" width="160" height="120">
-                            <p>Complément Europe</p>
-                        </div>
-                        <div>
-                            <img src="img/snri.png" alt="SNRI" width="160" height="120">
-                            <p>SNRI</p>
-                        </div>
-                    </div>
-
-                </div>
-                <button id="slide_suiv"></button>
-            </div>
-        </div>
-        <div class="clear"></div>
-        <p class="fleche">Choisissez vos projets. Pour les découvrir, inscrivez-vous</p>
-        <div class="scroll2"><a href="#presse"></a></div>
-    </section>
-</div><!-- projet_analyse -->
-
-<div id="presse" class="wrapper100">
-    <section class="wrapper">
-        <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-        <h1>La presse parle <span>d'Unilend</span></h1>
-        <img id="presse_logos" src="img/presse.jpg" alt="BFM Business - Le Monde - Capital - Le Point - Le Nouvel Observateur - L'Express - Oiuest France - 01net. - Le Figaro Economie" width="354" height="199">
-
-        <div class="clear"></div>
-        <div class="presse_liste">
-            <section>
-                <img id="video" src="img/le-monde.png" alt="Le Monde" width="90" height="40">
-                <p>"Nouveauté, Unilend permet de prêter de l’argent directement aux PME"</p>
-                <p>21/10/2013</p>
-                <div class="clear"></div>
-            </section>
-            <section>
-                <img id="video" src="img/capital.png" alt="Capital" width="90" height="40">
-                <p>"Les internautes peuvent désormais prêter en direct à des PME"</p>
-                <p>30/01/2014</p>
-                <div class="clear"></div>
-            </section>
-            <section>
-                <img id="video" src="img/figaro.png" alt="Le Figaro Economie" width="90" height="40">
-                <p>"Les gains peuvent atteindre 10 % l’an"</p>
-                <p>17/05/2014</p>
-                <div class="clear"></div>
-            </section>
-            <section>
-                <img id="video" src="img/le-particulier.png" alt="Le Particulier" width="90" height="40">
-                <p>"Percevez des intérêts en finançant des projets d’entreprises"</p>
-                <p>01/06/2014</p>
-                <div class="clear"></div>
-            </section>
-        </div>
-
-        <div class="presse_liste">
-            <section>
-                <img id="video" src="img/presse1.jpg" alt="" width="80" height="80">
-                <p>"Il nous faut développer des sources fiables de financements non bancaires, tel que le financement participatif."</p>
-                <p>11/09/2014</p>
-                <p>Mario Draghi, Président de la Banque Centrale Européenne</p>
-                <div class="clear"></div>
-            </section>
-            <section>
-                <img id="video" src="img/presse2.jpg" alt="" width="80" height="80">
-                <p>"Il faut des financements alternatifs pour accompagner les entreprises."</p>
-                <p>15/09/2014</p>
-                <p>Emmanuel Macron, ministre de l'Economie, de l'Industrie et du Numérique</p>
-                <div class="clear"></div>
-            </section>
-        </div>
-        <div class="clear"></div>
-        <p class="fleche">Inscrivez-vous et découvrez l’efficacité d’Unilend pour investir votre argent</p>
-        <div class="scroll2"><a href="#qui_sommes_nous"></a></div>
-    </section>
-</div><!-- presse -->
-
-<div id="qui_sommes_nous" class="wrapper100 bg_gris">
-    <section class="wrapper">
-        <a href="#" id="logo"><img src="img/unilend.png" alt="Unilend - Vos intérêts se rencontrent" width="252" height="60"></a>
-        <h1>Qui sommes-nous ?</h1>
-        <p>Unilend propose une nouvelle forme de finance pour permettre :</p>
-        <ul>
-            <li>Aux entreprises d'emprunter directement et simplement auprès du grand public</li>
-            <li>Aux épargnants de prêter de l'argent directement aux entreprises en recevant des intérêts.</li>
-        </ul>
-        <p>
-            <span>Unilend</span> est intermédiaire en financement participatif (IFP) inscrit à l’ORIAS (www.orias.fr) sous le numéro 15006955.<br>
-            Le service de paiement Unilend est distribué par Unilend SAS, agent prestataire de services de paiement mandaté par la SFPMEI et enregistré auprès de l'Autorité de contrôle prudentiel et de résolution (ACPR) sous le numéro 790766034. Les informations d'enregistrement sont disponibles sur le site du registre des agents financiers en cliquant <a href="https://www.regafi.fr/spip.php?rubrique1">ici</a>.<br>
-            Le service de paiement Unilend est fourni par la Société financière du porte-monnaie électronique interbancaire (SFPMEI), société par actions simplifiée au capital de 3 732 089 euros, dont le siège social est situé 29 rue du Louvre - 75002 Paris, immatriculée au registre du commerce et des sociétés de Paris sous le numéro 422 721 274. La SFPMEI est un établissement de crédit (code établissement 14378) agréé en date du 30 décembre 1999 par l’Autorité de contrôle prudentiel et de résolution (ACPR).
-        </p>
-        <br/>
-        <br/>
-        <p class="cadre_1">
-            <strong>Prêter présente un risque de non-remboursement : répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</strong>
-        </p>
-        <h2>Nos partenaires</h2>
-        <div>
-            <ul class="bloc_inline">
-                <li><img src="img/sfpmei.png" alt="SFPMEI" width="110" height="62"></li>
-                <li><img src="img/altares.png" alt="Altares - La connaissance inter-entreprises" width="110" height="62"></li>
-                <li><img src="img/norton.png" alt="Norton secured - powered by VeriSign" width="110" height="62"></li>
-                <li><img src="img/financement-participatif-france.png" alt="Financement Participatif France" width="110" height="62"></li>
-            </ul>
-            <div class="clear"></div>
-        </div>
-
-    </section>
-</div><!-- qui_sommes_nous -->
-
-<button id="scrollUp"></button>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-<script type="text/javascript">window.jQuery || document.write('<script type="text/javascript" src="js/jquery-1.9.1.min.js"><\/script>')</script>
-<script src="js/jquery.c2selectbox.js" type="text/javascript"></script>
-<script src="js/jquery.nouislider.all.js"></script>
-<script src="js/jquery.placeholder.js"></script>
-<script src='js/jquery.base64.js'></script>
-<script src='js/bootstrap.min.js'></script>
-<script src="js/jquery.touchSwipe.min.js" type="text/javascript"></script>
-<script src="js/md5.js" type="text/javascript"></script>
-<script src="js/global.js" type="text/javascript"></script>
+<script type="text/javascript">window.jQuery || document.write('<script type="text/javascript" src="../js/jquery-1.9.1.min.js"><\/script>')</script>
+<script src="../js/jquery.c2selectbox.js" type="text/javascript"></script>
+<script src="../js/jquery.nouislider.all.js"></script>
+<script src="../js/jquery.placeholder.js"></script>
+<script src='../js/jquery.base64.js'></script>
+<script src='../js/bootstrap.min.js'></script>
+<script src='../js/md5.js'></script>
+<script src="../js/jquery.touchSwipe.min.js" type="text/javascript"></script>
+<script src="../js/global.js" type="text/javascript"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
 <script>
     $(function () {
-        $('#inscription_utm_source3_autre').hide();
-        // promo mentions
         $('.macaron').click(function () {
-            if (!$('.mentions').is(':visible'))
-                $(".mentions").slideToggle(300, function () {
-                });
+            if (!$('.mentions').is(':visible')) $(".mentions").slideToggle(300, function() {});
         });
         $('.conditions').click(function () {
             $(".mentions").slideToggle(300, function () {
@@ -1061,19 +805,19 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         $('input').keydown(function () {
             $(this).removeClass('error');
         });
-        //
-        $('a[href^="#bloc_mentions"]').click(function () { // console.log("test")
+        $('a[href^="#bloc_mentions"]').click(function () {
             var id = $(this).attr("href");
             var offset = $(id).offset().top;
             $('html, body').animate({scrollTop: offset}, 'slow');
-            //return false;
         });
-        //
         $('#inscription_date_naissance').keydown(function () {
             $('#errorAge').html('');
         });
         $('select').change(function () {
             $(this).next('.c2-sb-wrap').removeClass('error');
+        });
+        $('#inscription_cgv').change(function () {
+            $(this).parent().find('label').removeClass('error');
         });
 
         $('#inscription_id_nationalite').change(function () {
@@ -1085,9 +829,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
             }
         });
 
-        $('#inscription_cgv').change(function () {
-            $(this).parent().find('label').removeClass('error');
-        });
+
         $('#errorAge').html('');
 
         var civilite = '';
@@ -1107,15 +849,10 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         $('#form_inscription').submit(function (event) {
             event.preventDefault();
 
-            $('html, body').animate({
-                scrollTop: 0
-            }, 1000, 'swing');
-
             var inscription_civilite = $('#inscription_civilite').val();
             var inscription_nom = $.trim($('#inscription_nom').val());
             var inscription_prenom = $.trim($('#inscription_prenom').val());
             var inscription_email = $.trim($('#inscription_email').val());
-
             var inscription_mdp = $.trim($('#inscription_mdp').val());
             var inscription_mdp2 = $.trim($('#inscription_mdp2').val());
             var inscription_question = $.trim($('#inscription_question').val());
@@ -1124,7 +861,6 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
             var inscription_ville_fiscale = $.trim($('#inscription_ville_fiscale').val());
             var inscription_cp_fiscale = $.trim($('#inscription_cp_fiscale').val());
             var inscription_id_pays_fiscale = $('#inscription_id_pays_fiscale').val();
-            // var inscription_check_adresse = $('#inscription_check_adresse').val();
             var inscription_adresse_correspondance = $.trim($('#inscription_adresse_correspondance').val());
             var inscription_ville_correspondance = $.trim($('#inscription_ville_correspondance').val());
             var inscription_cp_correspondance = $.trim($('#inscription_cp_correspondance').val());
@@ -1138,12 +874,10 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
             var inscription_cgv = $('#inscription_cgv');
             var utm_source = '<?php echo $source; ?>';
             var utm_source2 = '<?php echo $source2; ?>';
-            var utm_source3 = $('#inscription_utm_source3').val();
-            var utm_source3_autre = '';
+            var utm_medium = '<?php echo $utm_medium; ?>';
             var slug_origine = '<?php echo $slug_origine; ?>';
 
             if ($('#form_inscription').hasClass('etape1')) {
-
                 var erreur = 0;
 
                 if (!inscription_civilite) {
@@ -1166,25 +900,21 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     $('#inscription_email').addClass('error');
                     erreur = 1;
                 }
-                if (utm_source3 == 5) {
-                    utm_source3_autre = $('#inscription_utm_source3_autre').val();
-                }
                 if (erreur == 1) {
+                    $('html, body').animate({
+                        scrollTop: 0
+                    }, 1000, 'swing');
+
                     if ($('#form_header').hasClass('formlight')) {
                         if ($('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                             $('.form_content.etape1').stop().animate({scrollTop: $('.error:visible:first').position().top + 120}, 700, 'swing');
                         }
                     }
                     return false;
-                }
-                else {
-
-                    // AJAX
-
+                } else {
                     var key = 'unilend';
                     var hash = CryptoJS.MD5(key);
                     var time = $.now();
-
                     var token = $.base64.btoa(hash + '-' + time);
                     var localdate = new Date();
                     var mois = localdate.getMonth() + 1;
@@ -1214,21 +944,15 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     prenom = inscription_prenom;
                     civilite = inscription_civilite;
 
-                    var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
+                    var DATA = '&token=' + token + '&utm_source=' + utm_source + '&utm_source2=' + utm_source2 + '&utm_medium=' + utm_medium + '&slug_origine=' + slug_origine + '&date=' + date + '&email=' + email + '&nom=' + nom + '&prenom=' + prenom + '&civilite=' + civilite;
 
                     $.ajax({
                         type: "POST",
                         url: "<?= $url_site ?>/collect/prospect",
                         data: DATA,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
-
-                            if (parsedDate.reponse == 'OK') {
-                                if (utm_source3) {
-                                    var source3 = $('#inscription_utm_source3 option:selected').text();
-                                    set_source3(email, source3, utm_source3_autre);
-                                }
-
+                            var parsedData = jQuery.parseJSON(data);
+                            if (parsedData.reponse == 'OK') {
                                 $('#form_inscription').removeClass('etape1');
                                 $('#form_inscription').addClass('etape2');
 
@@ -1253,15 +977,13 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                     }
 
                                     var tracking1 = '<img height="1" width="1" alt="" style="display:none" src="https://www.facebook.com/tr?ev=6021615722883&amp;cd[value]=0.00&amp;cd[currency]=EUR&amp;noscript=1" />';
-
                                     $("#tracking").html(tracking1);
 
                                     $('#form_inscription > .form_content.etape2').fadeIn();
                                 });
                             }
                             else {
-
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     if (intituleErreur == "Nom") {
@@ -1273,7 +995,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                                     if (intituleErreur == "Email" || intituleErreur == "Format email") {
                                         $('#inscription_email').addClass('error');
                                     }
-                                    if (intituleErreur == "Email existant" && parsedDate.reponse.length > 1) {
+                                    if (intituleErreur == "Email existant" && parsedData.reponse.length > 1) {
                                         $('#inscription_email').addClass('error');
                                     }
                                     else {
@@ -1311,11 +1033,8 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                 }
             }
             else if ($('#form_inscription').hasClass('etape2')) {
-
                 var idSubmit = $("button[type=submit].clicked").attr("id");
-
                 var erreur = 0;
-
                 var localdate = new Date();
                 var annee = localdate.getFullYear();
                 var mois = localdate.getMonth() + 1;
@@ -1505,8 +1224,11 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     $('#inscription_cgv').parent().find('label').addClass('error');
                     erreur = 1;
                 }
-                // if(erreur == 1) { return false; }
                 if (erreur == 1) {
+                    $('html, body').animate({
+                        scrollTop: 0
+                    }, 1000, 'swing');
+
                     if ($('#form_header').hasClass('formlight')) {
                         if ($('#form_inscription').prop('scrollHeight') + $('.form_content').prop('scrollHeight') > $(window).height()) {
                             $('html, body').stop().animate({scrollTop: $('.error:visible:first').offset().top - 20}, 700, 'swing');
@@ -1521,12 +1243,14 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                     var time = $.now();
                     var token = $.base64.btoa(hash + '-' + time);
                     var passwordMd5 = CryptoJS.MD5(inscription_mdp);
+
                     $.ajax({
                         type: "POST",
                         url: "<?= $url_site ?>/collect/inscription",
                         data: 'token=' + token
                         + '&utm_source=' + utm_source
                         + '&utm_source2=' + utm_source2
+                        + '&utm_medium=' + utm_medium
                         + '&slug_origine=' + slug_origine
                         + '&date=' + annee + '-' + mois + '-' + jour + ' ' + heure + ':' + minutes + ':' + secondes
                         + '&email=' + inscription_email
@@ -1553,24 +1277,30 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                         + '&signature_cgv=' + 1
                         + '&forme_preteur=' + 1,
                         success: function (data) {
-                            var parsedDate = jQuery.parseJSON(data);
+                            var parsedData = jQuery.parseJSON(data);
 
-                            // console.log(parsedDate);
+                            if (parsedData.reponse == 'OK') {
+                                var url = parsedData.URL;
 
-                            if (parsedDate.reponse == 'OK') {
-                                var url = parsedDate.URL;
-                                var uniqueid = parsedDate.uniqueid;
-
-
+                                dataLayer.push({
+                                    'email_lead': email,
+                                    'unique_id': parsedData.uniqueid,
+                                    'source1_lead': utm_source,
+                                    'source2_lead': utm_source2,
+                                    'utm_medium': utm_medium,
+                                    'event': 'signupPreteurStep2OK'
+                                });
+                                setTimeout(function () {
                                 if (idSubmit == "inscription_submit2") {
-                                    $(location).attr('href', url);
+                                    window.open(url, '_blank');
+                                } else if (idSubmit == "voir_projets") {
+                                    $(location).attr('href', 'https://www.unilend.fr/projets-a-financer');
                                 }
-                                else if (idSubmit == "voir_projets") {
-                                    $(location).attr('href', '<?= $url_site ?>/projets-a-financer');
-                                }
+                                }, 3000);
+                                return false;
                             }
                             else {
-                                $.each(parsedDate.reponse, function (index, value) {
+                                $.each(parsedData.reponse, function (index, value) {
                                     var intituleErreur = value.erreur;
 
                                     if (intituleErreur == "Mot de passe") {
@@ -1628,7 +1358,6 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
                             }
                         }
                     });
-
                     return false;
                 }
             }
@@ -1637,8 +1366,8 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
             }
         });
         initAutocompleteCity();
-
     });
+
     function validateEmail(emailAddress) {
         var emailRegex = new RegExp(/^([\w-\.]+)@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.)|(([\w-]+\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\]?)$/);
         var valid = emailRegex.test(emailAddress);
@@ -1655,16 +1384,6 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
             return false;
         } else
             return true;
-    }
-
-    function set_source3(email, source3, utm_source3_autre) {
-        var DATA = '&email=' + email + '&source3=' + source3 + '&utm_source3_autre=' + utm_source3_autre;
-
-        $.ajax({
-            type: "POST",
-            url: "<?= $url_site ?>/Landing-Pages-Externes/2015/source3.php",
-            data: DATA
-        });
     }
 
     function initAutocompleteCity() {
@@ -1735,7 +1454,7 @@ if (isset($_GET['page']) && 'lexpress' === $_GET['page']) {
         });
 
         return result;
-    }
+    }    
 </script>
 </body>
 </html>

@@ -327,9 +327,9 @@ $(window).load(function(){
     $('#global-rate-Unilend').click(function() {
         $('.param-advanced-value').each(function () {
             $(this).val(<?= $this->fAverageRateUnilend ?>);
-            $(this).parents('.param-advanced-bottom').find('.param-advanced-label').html(<?= $this->fAverageRateUnilend ?>.toString().replace(".", ",") + '%'
+            $(this).parents('.param-advanced-bottom').find('.param-advanced-label').html((<?= $this->fAverageRateUnilend ?>).toString().replace(".", ",") + '%'
             )
-        });;
+        });
     });
 
     function drawPercentage(rate){
