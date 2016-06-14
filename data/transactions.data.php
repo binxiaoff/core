@@ -344,7 +344,7 @@ class transactions extends transactions_crud
             END AS type_transaction_alpha,
 
             CASE
-                WHEN t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
+                WHEN t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' THEN (SELECT ech.id_project FROM echeanciers ech WHERE ech.id_echeancier = t.id_echeancier)
                 WHEN b.id_project IS NULL THEN b2.id_project
                 ELSE b.id_project
             END AS le_id_project,
@@ -355,7 +355,7 @@ class transactions extends transactions_crud
 
             CASE t.type_transaction
                 WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN (SELECT p.title FROM projects p WHERE p.id_project = le_id_project)
-                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
+                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' THEN (SELECT p2.title FROM projects p2 LEFT JOIN echeanciers e ON p2.id_project = e.id_project WHERE e.id_echeancier = t.id_echeancier)
                 WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
                 WHEN ' . \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT . ' THEN (SELECT p2.title FROM projects p2 WHERE p2.id_project = t.id_project)
                 ELSE ""
@@ -363,12 +363,16 @@ class transactions extends transactions_crud
 
             CASE t.type_transaction
                 WHEN ' . \transactions_types::TYPE_LENDER_LOAN . ' THEN 0
-                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
+                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_echeancier = t.id_echeancier)
                 WHEN ' . \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT . ' THEN (SELECT e.id_loan FROM echeanciers e WHERE e.id_project = t.id_project AND w.id_lender = e.id_lender LIMIT 1)
                 ELSE ""
             END AS bdc,
-
-            t.montant AS amount_operation
+            
+            CASE t.type_transaction
+                WHEN ' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . '
+                    THEN (SELECT sum(t_refund.montant) FROM transactions t_refund WHERE t_refund.id_echeancier = t.id_echeancier AND t_refund.type_transaction IN (' . implode(', ', array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS)) . '))
+                ELSE t.montant
+            END AS amount_operation
 
             FROM transactions t
             LEFT JOIN wallets_lines w ON t.id_transaction = w.id_transaction
@@ -414,5 +418,14 @@ class transactions extends transactions_crud
             $result[] = $record;
         }
         return $result;
+    }
+
+    public function getRepaymentTransactionsAmount($iEcheanceId)
+    {
+        if (is_int($iEcheanceId)) {
+            $sWhere = 'type_transaction IN (' . \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL . ', ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ')
+            AND id_echeancier = ' . $iEcheanceId;
+            return $this->sum($sWhere, 'montant');
+        }
     }
 }

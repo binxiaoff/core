@@ -22,7 +22,7 @@
         <?php
 
         if (false === empty($this->oLendersAccounts->id_company_owner)) :
-            $this->companies->get($this->oLendersAccounts->id_company_owner); 
+            $this->companies->get($this->oLendersAccounts->id_company_owner);
             ?>
             <b><?= $this->companies->name ?></b><br/>
             <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
@@ -88,10 +88,8 @@
                 $solde = $t['solde'];
             }
 
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
+            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-                $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-
                 ?>
                 <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
                     <td><?= $t['libelle_operation'] ?></td>

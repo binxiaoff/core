@@ -134,7 +134,7 @@ class operationsController extends bootstrap
             $oActiveSheet->setCellValue('G' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y'));
             $oActiveSheet->setCellValue('H' . ($iRowIndex + 2), $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y'));
             $oActiveSheet->setCellValue('I' . ($iRowIndex + 2), $this->echeanciers->getRepaidCapital(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
-            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $this->echeanciers->getRepaidInterets(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
+            $oActiveSheet->setCellValue('J' . ($iRowIndex + 2), $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
             $oActiveSheet->setCellValue('K' . ($iRowIndex + 2), $this->echeanciers->getOwedCapital(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $aProjectLoans['id_project'])));
 
             $sRisk = isset($aProjectLoans['risk']) ? $aProjectLoans['risk'] : '';
@@ -188,6 +188,8 @@ class operationsController extends bootstrap
     private function commonLoans()
     {
         $this->echeanciers = $this->loadData('echeanciers');
+        //Used in views
+        $this->tax = $this->loadData('tax');
 
         $this->sOrderField     = isset($_POST['type']) ? $_POST['type'] : 'start';
         $this->sOrderDirection = isset($_POST['order']) && 'asc' === $_POST['order'] ? 'ASC' : 'DESC';
@@ -223,7 +225,7 @@ class operationsController extends bootstrap
                 break;
             case 'repayment':
                 $this->sOrderField = 'repayment';
-                $sOrderBy          = 'mensuel ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
+                $sOrderBy          = 'last_perceived_repayment ' . $this->sOrderDirection . ', debut DESC, p.title ASC';
                 break;
             case 'start':
             default:
@@ -307,6 +309,13 @@ class operationsController extends bootstrap
         $this->companies                         = $this->loadData('companies');
         $this->clients                           = $this->loadData('clients');
 
+        /** @var \tax $oTax */
+        $oTax = $this->loadData('tax');
+        /** @var \tax_type $oTaxTyp */
+        $oTaxTyp = $this->loadData('tax_type');
+        /** @var \tax_type $aTaxType */
+        $aTaxType = $oTaxTyp->select('id_tax_type !=' . \tax_type::TYPE_VAT);
+
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
 
@@ -383,7 +392,7 @@ class operationsController extends bootstrap
                 \transactions_types::TYPE_LENDER_LOAN,
                 \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
                 \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
                 \transactions_types::TYPE_DIRECT_DEBIT,
                 \transactions_types::TYPE_LENDER_WITHDRAWAL,
                 \transactions_types::TYPE_WELCOME_OFFER,
@@ -407,7 +416,7 @@ class operationsController extends bootstrap
             4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
             5 => array(\transactions_types::TYPE_LENDER_LOAN),
             6 => array(
-                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
                 \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
                 \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
             )
@@ -487,13 +496,11 @@ class operationsController extends bootstrap
                 <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
                 <th><?= $this->lng['preteur-operations-vos-operations']['capital-rembourse'] ?></th>
                 <th><?= $this->lng['preteur-operations-vos-operations']['interets-recus'] ?></th>
-                <th>Pr&eacute;l&egrave;vements obligatoires</th>
-                <th>Retenue &agrave; la source</th>
-                <th>CSG</th>
-                <th>Pr&eacute;l&egrave;vements sociaux</th>
-                <th>Contributions additionnelles</th>
-                <th>Pr&eacute;l&egrave;vements solidarit&eacute;</th>
-                <th>CRDS</th>
+                <?php
+                foreach ($aTaxType as $aType) {
+                    echo '<th>' . $aType['name'] . '</th>';
+                }
+                ?>
                 <th><?= $this->lng['preteur-operations-pdf']['solde-de-votre-compte'] ?></th>
                 <td></td>
             </tr>
@@ -512,8 +519,6 @@ class operationsController extends bootstrap
             );
 
             foreach ($this->lTrans as $t) {
-                $t['libelle_operation'] = $t['libelle_operation'];
-                $t['libelle_projet']    = $t['libelle_projet'];
                 if ($t['montant_operation'] > 0) {
                     $couleur = ' style="color:#40b34f;"';
                 } else {
@@ -523,20 +528,16 @@ class operationsController extends bootstrap
                 $sProjectId = $t['id_projet'] == 0 ? '' : $t['id_projet'];
                 $solde      = $t['solde'];
 
-                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
+                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
 
+                    foreach ($aTaxType as $aType) {
+                        $aTax[$aType['id_tax_type']]['amount'] = 0;
+                    }
                     if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
-                        $this->echeanciers->prelevements_obligatoires    = 0;
-                        $this->echeanciers->retenues_source              = 0;
-                        $this->echeanciers->interets                     = 0;
-                        $this->echeanciers->retenues_source              = 0;
-                        $this->echeanciers->csg                          = 0;
-                        $this->echeanciers->prelevements_sociaux         = 0;
-                        $this->echeanciers->contributions_additionnelles = 0;
-                        $this->echeanciers->prelevements_solidarite      = 0;
-                        $this->echeanciers->crds                         = 0;
-                        $this->echeanciers->capital                      = $t['montant_operation'];
+                        $this->echeanciers->capital = $t['montant_operation'];
+                    } else {
+                        $aTax = $oTax->getTaxListByRepaymentId($t['id_echeancier']);
                     }
                     ?>
                     <tr>
@@ -548,13 +549,11 @@ class operationsController extends bootstrap
                         <td<?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?></td>
                         <td><?= $this->ficelle->formatNumber(($this->echeanciers->capital / 100)) ?></td>
                         <td><?= $this->ficelle->formatNumber(($this->echeanciers->interets / 100)) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_obligatoires) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->retenues_source) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->csg) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_sociaux) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->contributions_additionnelles) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->prelevements_solidarite) ?></td>
-                        <td><?= $this->ficelle->formatNumber($this->echeanciers->crds) ?></td>
+                        <?php
+                            foreach ($aTaxType as $aType) {
+                                echo '<td>' . $this->ficelle->formatNumber($aTax[$aType['id_tax_type']]['amount'] / 100) . '</td>';
+                            }
+                        ?>
                         <td><?= $this->ficelle->formatNumber($solde / 100) ?></td>
                         <td></td>
                     </tr>
@@ -658,6 +657,10 @@ class operationsController extends bootstrap
 
     private function indexation_client(\clients $clients)
     {
+        /** @var \lender_tax_exemption $oTaxExemption */
+        $oTaxExemption = $this->loadData('lender_tax_exemption');
+        /** @var \tax $oTax */
+        $oTax = $this->loadData('tax');
         $this->echeanciers                       = $this->loadData('echeanciers');
         $this->indexage_vos_operations           = $this->loadData('indexage_vos_operations');
         $this->transactions                      = $this->loadData('transactions');
@@ -675,7 +678,7 @@ class operationsController extends bootstrap
             ),
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
-            \transactions_types::TYPE_LENDER_REPAYMENT               => $this->lng['preteur-operations-vos-operations']['remboursement'],
+            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement',
             \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['preteur-operations-vos-operations']['depot-de-fonds'],
             \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['preteur-operations-vos-operations']['retrait-dargents'],
             \transactions_types::TYPE_WELCOME_OFFER                  => $this->lng['preteur-operations-vos-operations']['offre-de-bienvenue'],
@@ -699,20 +702,8 @@ class operationsController extends bootstrap
 
         foreach ($this->lTrans as $t) {
             if (0 == $this->indexage_vos_operations->counter('id_transaction = ' . $t['id_transaction'] . ' AND libelle_operation = "' . $t['type_transaction_alpha'] . '"')) {
-                $retenuesfiscals = 0.0;
-                $capital         = 0.0;
-                $interets        = 0.0;
-
-                if ($this->echeanciers->get($t['id_echeancier'], 'id_echeancier')) {
-                    $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-                    $capital         = $this->echeanciers->capital;
-                    $interets        = $this->echeanciers->interets;
-                }
 
                 if ($clients->type == \clients::TYPE_PERSON || $clients->type == \clients::TYPE_PERSON_FOREIGNER) {
-                    /** @var \lender_tax_exemption $oTaxExemption */
-                    $oTaxExemption = $this->loadData('lender_tax_exemption');
-
                     if ($oTaxExemption->counter('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND year = "' . substr($t['date_transaction'], 0, 4) . '"') > 0) {
                         $libelle_prelevements = $this->lng['preteur-operations-vos-operations']['cotisations-sociales'];
                     } else {
@@ -734,14 +725,28 @@ class operationsController extends bootstrap
                 $this->indexage_vos_operations->solde               = bcmul($t['solde'], 100);
                 $this->indexage_vos_operations->montant_operation   = $t['amount_operation'];
                 $this->indexage_vos_operations->libelle_prelevement = $libelle_prelevements;
-                $this->indexage_vos_operations->montant_prelevement = bcmul($retenuesfiscals, 100);
+                $this->indexage_vos_operations->montant_prelevement = $oTax->getAmountByRepaymentId($t['id_echeancier']);
 
-                if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
-                    $this->indexage_vos_operations->montant_capital = $t['montant'];
-                    $this->indexage_vos_operations->montant_interet = 0;
-                } else {
-                    $this->indexage_vos_operations->montant_capital = $capital;
-                    $this->indexage_vos_operations->montant_interet = $interets;
+                $capital  = 0.0;
+                $interets = 0.0;
+
+                if ($this->echeanciers->get($t['id_echeancier'], 'id_echeancier')) {
+                    $capital  = $this->echeanciers->capital;
+                    $interets = $this->echeanciers->interets;
+                }
+
+                switch ($t['type_transaction']) {
+                    case \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL:
+                        $this->indexage_vos_operations->montant_capital = $t['montant'];
+                        $this->indexage_vos_operations->montant_interet = $t['amount_operation'] - $t['montant'];
+                        break;
+                    case \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS:
+                        $this->indexage_vos_operations->montant_capital = $t['montant'];
+                        $this->indexage_vos_operations->montant_interet = 0;
+                        break;
+                    default:
+                        $this->indexage_vos_operations->montant_capital = $capital;
+                        $this->indexage_vos_operations->montant_interet = $interets;
                 }
 
                 $this->indexage_vos_operations->create();

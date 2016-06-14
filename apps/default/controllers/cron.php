@@ -1758,7 +1758,6 @@ class cronController extends bootstrap
         }
     }
 
-    // 1 fois pr jour a  1h du matin
     public function _etat_quotidien()
     {
         if (true === $this->startCron('etat_quotidien', 10)) {
@@ -1789,14 +1788,24 @@ class cronController extends bootstrap
             $lanneeLemois  = date('Y-m', $mois);
             $laDate        = date('d-m-Y', $iTimeStamp);
             $lemoisLannee2 = date('m/Y', $mois);
-
-            $transac                = $this->loadData('transactions');
-            $echeanciers            = $this->loadData('echeanciers');
+            /** @var \transactions $transac */
+            $transac = $this->loadData('transactions');
+            /** @var \echeanciers $echeanciers */
+            $echeanciers = $this->loadData('echeanciers');
+            /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
             $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-            $virements              = $this->loadData('virements');
-            $prelevements           = $this->loadData('prelevements');
-            $etat_quotidien         = $this->loadData('etat_quotidien');
-            $bank_unilend           = $this->loadData('bank_unilend');
+            /** @var \virements $virements */
+            $virements = $this->loadData('virements');
+            /** @var \prelevements $prelevements */
+            $prelevements = $this->loadData('prelevements');
+            /** @var \etat_quotidien $etat_quotidien */
+            $etat_quotidien = $this->loadData('etat_quotidien');
+            /** @var bank_unilend $bank_unilend */
+            $bank_unilend = $this->loadData('bank_unilend');
+            /** @var \tax $tax */
+            $tax = $this->loadData('tax');
+            /**@var \tax_type **/
+            $this->loadData('tax_type');
 
             $lrembPreteurs                = $bank_unilend->sumMontantByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // Les remboursements preteurs
             $listEcheances                = $bank_unilend->ListEcheancesByDayMonths('type = 2 AND status = 1', $leMois, $lannee); // On recup les echeances le jour où ils ont été remb aux preteurs
@@ -1814,7 +1823,7 @@ class cronController extends bootstrap
             $offres_bienvenue             = $transac->sumByday('16', $leMois, $lannee); // 16 unilend offre bienvenue
             $offres_bienvenue_retrait     = $transac->sumByday('17', $leMois, $lannee); // 17 unilend offre bienvenue retrait
             $unilend_bienvenue            = $transac->sumByday('18', $leMois, $lannee); // 18 unilend offre bienvenue
-            $virementRecouv               = $transac->sumByday('25', $leMois, $lannee);
+            $aRefund                      = $transac->sumByday('27, 28', $leMois, $lannee);
             $rembRecouvPreteurs           = $transac->sumByday('26', $leMois, $lannee);
 
             $listDates = array();
@@ -2002,13 +2011,33 @@ class cronController extends bootstrap
                 <td colspan="10">&nbsp;</td>
             </tr>';
 
+            $aTaxType = array(
+                \tax_type::TYPE_INCOME_TAX,
+                \tax_type::TYPE_CSG,
+                \tax_type::TYPE_SOCIAL_DEDUCTIONS,
+                \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS,
+                \tax_type::TYPE_SOLIDARITY_DEDUCTIONS,
+                \tax_type::TYPE_CRDS,
+                \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE
+            );
             foreach ($listDates as $key => $date) {
                 if (strtotime($date . ' 00:00:00') < $InfeA) {
                     // sommes des echeance par jour (sans RA)
                     $echangeDate = $echeanciers->getEcheanceByDayAll($date, '1 AND status_ra = 0');
 
+                    $iDailyRefundedCapital = $transac->sum('type_transaction = 27 AND DATE(date_transaction) = "' . $date . '"', 'montant');
+                    $iDailyRefundedNetInterests = $transac->sum('type_transaction = 28 AND DATE(date_transaction) = "' . $date . '"', 'montant');
+                    $aDailyTax = $tax->getDailyTax('id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . ' AND DATE(added) ="' . $date . '"', 'amount');
+
+                    $iTotalDailyTaxAmount = 0;
+                    foreach ($aDailyTax as $iTaxTypeId => $iTaxAmount) {
+                        $aDailyTax[$iTaxTypeId] = bcdiv($iTaxAmount, 100);
+                        $iTotalDailyTaxAmount += $aDailyTax[$iTaxTypeId];
+                    }
+
                     // sommes des echeance par jour (que RA)
                     $echangeDateRA = $echeanciers->getEcheanceByDayAll($date, '1 AND status_ra = 1');
+                    $iDailyPrepaidCapital = $echeanciers->sum('status = 1 AND status_ra = 1 AND DATE(date_echeance_reel) = "' . $date . '" GROUP BY DATE(date_echeance_reel)', 'capital');
 
                     // on recup com de lecheance emprunteur a la date de mise a jour de la ligne (ddonc au changement de statut remboursé)
                     //$commission = $echeanciers_emprunteur->sum('commission','LEFT(date_echeance_emprunteur_reel,10) = "'.$date.'" AND status_emprunteur = 1');
@@ -2032,25 +2061,6 @@ class cronController extends bootstrap
 
                     $commission += $regulCom[$date]['montant'];
 
-                    ///////////////////////////
-                    //prelevements_obligatoires
-                    $prelevements_obligatoires = $echangeDate['prelevements_obligatoires'];
-                    //retenues_source
-                    $retenues_source = $echangeDate['retenues_source'];
-                    //csg
-                    $csg = $echangeDate['csg'];
-                    //prelevements_sociaux
-                    $prelevements_sociaux = $echangeDate['prelevements_sociaux'];
-                    //contributions_additionnelles
-                    $contributions_additionnelles = $echangeDate['contributions_additionnelles'];
-                    //prelevements_solidarite
-                    $prelevements_solidarite = $echangeDate['prelevements_solidarite'];
-                    //crds
-                    $crds = $echangeDate['crds'];
-
-                    // Retenues Fiscales
-                    $retenuesFiscales = $prelevements_obligatoires + $retenues_source + $csg + $prelevements_sociaux + $contributions_additionnelles + $prelevements_solidarite + $crds;
-
                     // Solde promotion
                     $soldePromotion += $unilend_bienvenue[$date]['montant'];
                     $soldePromotion -= $offres_bienvenue[$date]['montant'];
@@ -2059,8 +2069,8 @@ class cronController extends bootstrap
                     $offrePromo = $offres_bienvenue[$date]['montant'] + $offres_bienvenue_retrait[$date]['montant'];
                     // ADD $rejetrembEmprunteur[$date]['montant'] // 22/01/2015
                     // total Mouvements
-                    $entrees = ($alimCB[$date]['montant'] + $alimVirement[$date]['montant'] + $alimPrelevement[$date]['montant'] + $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $unilend_bienvenue[$date]['montant'] + $rejetrembEmprunteur[$date]['montant'] + $virementRecouv[$date]['montant']);
-                    $sorties = (str_replace('-', '', $virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend'] + $commission + $retenuesFiscales + str_replace('-', '', $retraitPreteur[$date]['montant']));
+                    $entrees = ($alimCB[$date]['montant'] + $alimVirement[$date]['montant'] + $alimPrelevement[$date]['montant'] + $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $unilend_bienvenue[$date]['montant'] + $rejetrembEmprunteur[$date]['montant'] + $aRefund[$date]['montant']);
+                    $sorties = (str_replace('-', '', $virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend'] + $commission + $iTotalDailyTaxAmount + str_replace('-', '', $retraitPreteur[$date]['montant']));
 
                     // Total mouvementsc de la journée
                     $sommeMouvements = ($entrees - $sorties);;    // solde De La Veille (solde theorique)
@@ -2101,28 +2111,24 @@ class cronController extends bootstrap
                     $soldeSFFPME += $virementEmprunteur[$date]['montant_unilend'] - $virementUnilend[$date]['montant'] + $commission;
 
                     // Solde Admin. Fiscale
-                    $soldeAdminFiscal += $retenuesFiscales - $virementEtat[$date]['montant'];
+                    $soldeAdminFiscal += $iTotalDailyTaxAmount - $virementEtat[$date]['montant'];
 
                     ////////////////////////////
                     /// add regul partie etat fiscal ///
 
                     $soldeAdminFiscal += $regulCom[$date]['montant_unilend'];
 
-                    ///////////////////////////
                     // somme capital preteurs par jour
-                    $capitalPreteur = $echangeDate['capital'];
-                    $capitalPreteur += $echangeDateRA['capital'];
-                    $capitalPreteur = ($capitalPreteur / 100);
-                    $capitalPreteur += $rembRecouvPreteurs[$date]['montant'];
+                    $capitalPreteur = bcdiv($iDailyRefundedCapital + $iDailyPrepaidCapital, 100) + $rembRecouvPreteurs[$date]['montant'];
 
-                    // somme net net preteurs par jour
-                    $interetNetPreteur = ($echangeDate['interets'] / 100) - $retenuesFiscales;
+                    // somme net preteurs par jour
+                    $interetNetPreteur = bcdiv($iDailyRefundedNetInterests, 100);
 
                     // Affectation Ech. Empr.
                     $affectationEchEmpr = $lrembPreteurs[$date]['montant'] + $lrembPreteurs[$date]['etat'] + $commission + $rembRecouvPreteurs[$date]['montant'];
 
                     // ecart Mouv Internes
-                    $ecartMouvInternes = round(($affectationEchEmpr) - $commission - $retenuesFiscales - $capitalPreteur - $interetNetPreteur, 2);
+                    $ecartMouvInternes = round(($affectationEchEmpr) - $commission - $iTotalDailyTaxAmount - $capitalPreteur - $interetNetPreteur, 2);
 
                     // solde bids validés
                     $octroi_pret = (str_replace('-', '', $virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend']);
@@ -2147,7 +2153,7 @@ class cronController extends bootstrap
 
                     $sommePrelev = $sommePrelev / 100;
 
-                    $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant'] + $virementRecouv[$date]['montant'];
+                    $leRembEmprunteur = $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $rejetrembEmprunteur[$date]['montant'] + $aRefund[$date]['montant'];
 
                     $totalAlimCB += $alimCB[$date]['montant'];
                     $totalAlimVirement += $alimVirement[$date]['montant'];
@@ -2160,16 +2166,16 @@ class cronController extends bootstrap
 
                     $totalCommission += $commission;
 
-                    $totalPrelevements_obligatoires += $prelevements_obligatoires;
-                    $totalRetenues_source += $retenues_source;
-                    $totalCsg += $csg;
-                    $totalPrelevements_sociaux += $prelevements_sociaux;
-                    $totalContributions_additionnelles += $contributions_additionnelles;
-                    $totalPrelevements_solidarite += $prelevements_solidarite;
-                    $totalCrds += $crds;
+                    $totalPrelevements_obligatoires     += $aDailyTax[\tax_type::TYPE_INCOME_TAX];
+                    $totalRetenues_source               += $aDailyTax[\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE];
+                    $totalCsg                           += $aDailyTax[\tax_type::TYPE_CSG];
+                    $totalPrelevements_sociaux          += $aDailyTax[\tax_type::TYPE_SOCIAL_DEDUCTIONS];
+                    $totalContributions_additionnelles  += $aDailyTax[\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS];
+                    $totalPrelevements_solidarite       += $aDailyTax[\tax_type::TYPE_SOLIDARITY_DEDUCTIONS];
+                    $totalCrds                          += $aDailyTax[\tax_type::TYPE_CRDS];
 
-                    $totalRetraitPreteur += $retraitPreteur[$date]['montant'];
-                    $totalSommeMouvements += $sommeMouvements;
+                    $totalRetraitPreteur    += $retraitPreteur[$date]['montant'];
+                    $totalSommeMouvements   += $sommeMouvements;
                     $totalNewsoldeDeLaVeille = $newsoldeDeLaVeille; // Solde théorique
                     $totalNewSoldeReel       = $newSoldeReel;
                     $totalEcartSoldes        = $ecartSoldes;
@@ -2208,13 +2214,13 @@ class cronController extends bootstrap
                     <td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $virementEmprunteur[$date]['montant'])) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($virementEmprunteur[$date]['montant_unilend']) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($commission) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber($prelevements_obligatoires) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber($retenues_source) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber($csg) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber($prelevements_sociaux) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber($contributions_additionnelles) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber($prelevements_solidarite) . '</td>
-                    <td class="right">' . $this->ficelle->formatNumber($crds) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($aDailyTax[\tax_type::TYPE_INCOME_TAX]) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($aDailyTax[\tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE]) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($aDailyTax[\tax_type::TYPE_CSG]) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($aDailyTax[\tax_type::TYPE_SOCIAL_DEDUCTIONS]) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($aDailyTax[\tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS]) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($aDailyTax[\tax_type::TYPE_SOLIDARITY_DEDUCTIONS]) . '</td>
+                    <td class="right">' . $this->ficelle->formatNumber($aDailyTax[\tax_type::TYPE_CRDS]) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber(str_replace('-', '', $retraitPreteur[$date]['montant'])) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($sommeMouvements) . '</td>
                     <td class="right">' . $this->ficelle->formatNumber($soldeTheorique) . '</td>
@@ -5059,17 +5065,19 @@ class cronController extends bootstrap
             $projects = $this->loadData('projects');
             /** @var clients_gestion_notifications clients_gestion_notifications */
             $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
+            /** @var \tax $tax */
+            $tax = $this->loadData('tax');
 
             $settingsControleRemb = $this->loadData('settings');
             $settingsControleRemb->get('Controle cron remboursements auto', 'type');
 
             if ($settingsControleRemb->value == 1) {
                 // BIEN PRENDRE EN COMPTE LA DATE DE DEBUT DE LA REQUETE POUR NE PAS TRATER LES ANCIENS PROJETS REMB <------------------------------------| !!!!!!!!!
-                $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300); // on limite a 300 mails par executions
+                $aEcheances = $echeanciers->select('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300); // on limite a 300 mails par executions
 
-                foreach ($lEcheances as $e) {
+                foreach ($aEcheances as $e) {
                     if (
-                        $transactions->get($e['id_echeancier'], 'id_echeancier')
+                        $transactions->exist($e['id_echeancier'], 'id_echeancier')
                         && $lenders->get($e['id_lender'], 'id_lender_account')
                         && $clients->get($lenders->id_client_owner, 'id_client')
                     ) {
@@ -5080,7 +5088,7 @@ class cronController extends bootstrap
                             $day               = date('d', $timeAdd);
                             $month             = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
                             $year              = date('Y', $timeAdd);
-                            $rembNet           = $e['rembNet'];
+                            $rembNet           = bcdiv($e['montant'] - $tax->getAmountByRepaymentId($e['id_echeancier']), 100);
 
                             $projects->get($e['id_project'], 'id_project');
                             $companies->get($projects->id_company, 'id_company');
@@ -5109,7 +5117,7 @@ class cronController extends bootstrap
                                 'url'                   => $this->furl,
                                 'prenom_p'              => $clients->prenom,
                                 'mensualite_p'          => $rembNetEmail,
-                                'mensualite_avantfisca' => $e['montant'] / 100,
+                                'mensualite_avantfisca' => bcdiv($e['montant'], 100),
                                 'nom_entreprise'        => $companies->name,
                                 'date_bid_accepte'      => $day . ' ' . $month . ' ' . $year,
                                 'nbre_prets'            => $nbpret,
@@ -5132,7 +5140,7 @@ class cronController extends bootstrap
                             $notifications->type       = \notifications::TYPE_REPAYMENT;
                             $notifications->id_lender  = $e['id_lender'];
                             $notifications->id_project = $e['id_project'];
-                            $notifications->amount     = $rembNet * 100;
+                            $notifications->amount     = $rembNet;
                             $notifications->create();
 
                             $this->clients_gestion_mails_notif                  = $this->loadData('clients_gestion_mails_notif');
@@ -5140,7 +5148,9 @@ class cronController extends bootstrap
                             $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
                             $this->clients_gestion_mails_notif->date_notif      = $echeanciers->date_echeance_reel;
                             $this->clients_gestion_mails_notif->id_notification = $notifications->id_notification;
-                            $this->clients_gestion_mails_notif->id_transaction  = $transactions->id_transaction;
+                            $aTransaction = $transactions->select('id_echeancier = ' . $e['id_echeancier']);
+                            $iTranscationId = $aTransaction[0]['id_transaction'];
+                            $this->clients_gestion_mails_notif->id_transaction  = $iTranscationId;
                             $this->clients_gestion_mails_notif->create();
 
                             if ($this->clients_gestion_notifications->getNotif($clients->id_client, \clients_gestion_type_notif::TYPE_REPAYMENT, 'immediatement') == true) {
@@ -5198,6 +5208,8 @@ class cronController extends bootstrap
             $oProjectRepayment = $this->loadData('projects_remb');
             /** @var \lender_repayment $lenderRepayment */
             $lenderRepayment = $this->loadData('lender_repayment');
+            /** @var \Unilend\Service\TaxManager $taxManager */
+            $taxManager = $this->get('TaxManager');
 
             foreach ($oProjectRepayment->getProjectsToRepay(new \DateTime(), 1) as $r) {
                 $projects->get($r['id_project'], 'id_project');
@@ -5217,81 +5229,121 @@ class cronController extends bootstrap
                 $day               = date('d', $timeAdd);
                 $month             = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
                 $year              = date('Y', $timeAdd);
-                $Total_rembNet     = 0;
-                $lEcheances        = $echeanciers->selectEcheances_a_remb('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
+                $aEcheances        = $echeanciers->$echeanciers->select('id_project = ' . $r['id_project'] . ' AND status_emprunteur = 1 AND ordre = ' . $r['ordre'] . ' AND status = 0');
+                $montant           = 0;
+                $iTotalTaxAmount   = 0;
+                $error             = false;
+                $iRepaymentNumber  = 0;
 
-                $Total_etat   = 0;
-                $nb_pret_remb = 0;
+                try {
+                    foreach ($aEcheances as $e) {
+                        if (false === $transactions->exist($e['id_echeancier'], 'id_echeancier')) {
+                            $montant += $e['montant'];
+                            $lenders->get($e['id_lender'], 'id_lender_account');
 
-                foreach ($lEcheances as $e) {
-                    if (false === $transactions->get($e['id_echeancier'], 'id_echeancier')) {
-                        $Total_rembNet += $e['rembNet'];
-                        $Total_etat    += $e['etat'];
-                        $nb_pret_remb   = $nb_pret_remb + 1;
+                            $lenderRepayment->id_lender  = $e['id_lender'];
+                            $lenderRepayment->id_company = $this->projects->id_company;
+                            $lenderRepayment->amount     = $e['montant'];
+                            $lenderRepayment->create();
 
-                        $lenders->get($e['id_lender'], 'id_lender_account');
+                            $repaymentDate = date('Y-m-d H:i:s');
 
-                        $lenderRepayment->id_lender  = $e['id_lender'];
-                        $lenderRepayment->id_company = $projects->id_company;
-                        $lenderRepayment->amount     = bcadd(bcmul($e['capital_net'], 100), bcmul($e['interets_net'], 100));
-                        $lenderRepayment->create();
+                            $echeanciers->get($e['id_echeancier'], 'id_echeancier');
+                            $echeanciers->capital_rembourse   = $echeanciers->capital;
+                            $echeanciers->interets_rembourses = $echeanciers->interets;
+                            $echeanciers->status              = \echeanciers::STATUS_REPAID;
+                            $echeanciers->status_email_remb   = 1;
+                            $echeanciers->date_echeance_reel  = $repaymentDate;
+                            $echeanciers->update();
 
-                        $echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                        $echeanciers->capital_rembourse   = $echeanciers->capital;
-                        $echeanciers->interets_rembourses = $echeanciers->interets;
-                        $echeanciers->status              = \echeanciers::STATUS_REPAID;
-                        $echeanciers->date_echeance_reel  = date('Y-m-d H:i:s');
-                        $echeanciers->update();
+                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->montant          = $e['capital'];
+                            $transactions->id_echeancier    = $e['id_echeancier'];
+                            $transactions->id_langue        = 'fr';
+                            $transactions->date_transaction = $repaymentDate;
+                            $transactions->status           = 1;
+                            $transactions->etat             = 1;
+                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
+                            $transactions->create();
 
-                        $transactions->unsetData();
-                        $transactions->id_client        = $lenders->id_client_owner;
-                        $transactions->montant          = bcmul($e['capital_net'], 100);
-                        $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
-                        $transactions->id_langue        = 'fr';
-                        $transactions->date_transaction = date('Y-m-d H:i:s');
-                        $transactions->status           = 1;
-                        $transactions->etat             = 1;
-                        $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                        $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
-                        $transactions->create();
+                            try {
+                                $iTaxOnCapital = $taxManager->taxTransaction($transactions);
+                            } catch (\Exception $exception) {
+                                $this->oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when applying taxes on the transaction : ' .
+                                    $transactions->id_transaction . ' - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
+                                throw $exception;
+                            }
 
-                        $transactions->unsetData();
-                        $transactions->id_client        = $lenders->id_client_owner;
-                        $transactions->montant          = bcmul($e['interets_net'], 100);
-                        $transactions->id_echeancier    = $e['id_echeancier']; // id de l'echeance remb
-                        $transactions->id_langue        = 'fr';
-                        $transactions->date_transaction = date('Y-m-d H:i:s');
-                        $transactions->status           = 1;
-                        $transactions->etat             = 1;
-                        $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                        $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
-                        $transactions->create();
+                            $wallets_lines->id_lender                = $e['id_lender'];
+                            $wallets_lines->type_financial_operation = 40;
+                            $wallets_lines->id_transaction           = $this->transactions->id_transaction;
+                            $wallets_lines->status                   = 1; // non utilisé
+                            $wallets_lines->type                     = 2; // transaction virtuelle
+                            $wallets_lines->amount                   = $transactions->montant;
+                            $wallets_lines->create();
 
-                        $wallets_lines->id_lender                = $e['id_lender'];
-                        $wallets_lines->type_financial_operation = 40;
-                        $wallets_lines->id_transaction           = $transactions->id_transaction;
-                        $wallets_lines->status                   = 1; // non utilisé
-                        $wallets_lines->type                     = 2; // transaction virtuelle
-                        $wallets_lines->amount                   = bcadd(bcmul($e['capital_net'], 100), bcmul($e['interets_net'], 100));
-                        $wallets_lines->create();
-                    } // fin check transasction existante
-                } // fin boucle echeances preteurs
+                            $transactions->unsetData();
+                            $transactions->id_client        = $lenders->id_client_owner;
+                            $transactions->montant          = $e['interets'];
+                            $transactions->id_echeancier    = $e['id_echeancier'];
+                            $transactions->id_langue        = 'fr';
+                            $transactions->date_transaction = $repaymentDate;
+                            $transactions->status           = 1;
+                            $transactions->etat             = 1;
+                            $transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                            $transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
+                            $transactions->create();
 
-                if ($Total_rembNet > 0) {
-                    $emprunteur = $this->loadData('clients');
+                            try {
+                                $iTaxOnInterests = $taxManager->taxTransaction($transactions);
+                            } catch (\Exception $exception) {
+                                $this->oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when applying taxes on the transaction : ' .
+                                    $transactions->id_transaction . ' - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
+                                throw $exception;
+                            }
+                            $iTotalTaxAmount += ($iTaxOnCapital + $iTaxOnInterests);
+
+                            $wallets_lines->unsetData();
+                            $wallets_lines->id_lender                = $e['id_lender'];
+                            $wallets_lines->type_financial_operation = 40;
+                            $wallets_lines->id_transaction           = $transactions->id_transaction;
+                            $wallets_lines->status                   = 1; // non utilisé
+                            $wallets_lines->type                     = 2; // transaction virtuelle
+                            $wallets_lines->amount                   = $transactions->montant;
+                            $wallets_lines->create();
+
+                            $this->notifications->type       = \notifications::TYPE_REPAYMENT;
+                            $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
+                            $this->notifications->id_project = $this->projects->id_project;
+                            $this->notifications->amount     = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;;
+                            $this->notifications->create();
+                            $iRepaymentNumber++;
+                        }
+                    }
+                } catch (\Exception $exception) {
+                    $error = true;
+                    $this->oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when calculating the refund details - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
+                }
+
+                if (false === $error && 0 !== $montant) {
+                    /** @var \clients $emprunteur */
+                    $emprunteur   = $this->loadData('clients');
+                    $rembNetTotal = $montant - $iTotalTaxAmount;
 
                     $companies->get($projects->id_company, 'id_company');
                     $emprunteur->get($companies->id_client_owner, 'id_client');
                     $echeanciers_emprunteur->get($r['id_project'], ' ordre = ' . $r['ordre'] . ' AND id_project');
 
+                    $transactions->unsetData();
                     $transactions->montant                  = 0;
                     $transactions->id_echeancier            = 0; // on reinitialise
                     $transactions->id_client                = 0; // on reinitialise
-                    $transactions->montant_unilend          = - $Total_rembNet * 100;
-                    $transactions->montant_etat             = $Total_etat * 100;
+                    $transactions->montant_unilend          = - $rembNetTotal;
+                    $transactions->montant_etat             = $iTotalTaxAmount;
                     $transactions->id_echeancier_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur; // id de l'echeance emprunteur
                     $transactions->id_langue                = 'fr';
-                    $transactions->date_transaction         = date('Y-m-d H:i:s');
+                    $transactions->date_transaction         = $repaymentDate;
                     $transactions->status                   = 1;
                     $transactions->etat                     = 1;
                     $transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
@@ -5300,8 +5352,8 @@ class cronController extends bootstrap
 
                     $bank_unilend->id_transaction         = $transactions->id_transaction;
                     $bank_unilend->id_project             = $r['id_project'];
-                    $bank_unilend->montant                = '-' . $Total_rembNet * 100;
-                    $bank_unilend->etat                   = $Total_etat * 100;
+                    $bank_unilend->montant                = - $rembNetTotal;
+                    $bank_unilend->etat                   = $iTotalTaxAmount;
                     $bank_unilend->type                   = 2; // remb unilend
                     $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
                     $bank_unilend->status                 = 1;
@@ -5326,7 +5378,7 @@ class cronController extends bootstrap
                         'annee'           => date('Y'),
                         'lien_fb'         => $this->like_fb,
                         'lien_tw'         => $this->twitter,
-                        'montantRemb'     => $Total_rembNet
+                        'montantRemb'     => $rembNetTotal
                     );
 
                     $tabVars   = $this->tnmp->constructionVariablesServeur($varMail);
@@ -5380,14 +5432,14 @@ class cronController extends bootstrap
                     }
 
                     $oProjectRepayment->get($r['id_project_remb'], 'id_project_remb');
-                    $oProjectRepayment->date_remb_preteurs_reel = date('Y-m-d H:i:s');
+                    $oProjectRepayment->date_remb_preteurs_reel = $repaymentDate;
                     $oProjectRepayment->status                  = \projects_remb::STATUS_REFUNDED;
                     $oProjectRepayment->update();
 
                     $oRepaymentLog->fin              = date('Y-m-d H:i:s');
-                    $oRepaymentLog->montant_remb_net = $Total_rembNet * 100;
-                    $oRepaymentLog->etat             = $Total_etat * 100;
-                    $oRepaymentLog->nb_pret_remb     = $nb_pret_remb;
+                    $oRepaymentLog->montant_remb_net = $rembNetTotal;
+                    $oRepaymentLog->etat             = $iTotalTaxAmount;
+                    $oRepaymentLog->nb_pret_remb     = $iRepaymentNumber;
                     $oRepaymentLog->update();
                 }
             }

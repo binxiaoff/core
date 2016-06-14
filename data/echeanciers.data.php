@@ -233,12 +233,13 @@ class echeanciers extends echeanciers_crud
      * @deprecated
      * @param string $where
      * @param string $champ
-     * @return string
+     * @return int
      */
     public function sum($where, $champ = 'montant')
     {
         $result = $this->bdd->query('SELECT SUM(' . $champ . ') FROM echeanciers WHERE ' . $where);
-        return bcdiv($this->bdd->result($result), 100, 2);
+        $result = $this->bdd->result($result);
+        return empty($result) ? 0 : (int)$result;
     }
 
     /**
@@ -304,36 +305,6 @@ class echeanciers extends echeanciers_crud
             $sum = $sum / 100;
         }
         return $sum;
-    }
-
-    /**
-     * @deprecated
-     */
-    public function getSumRevenuesFiscalesByMonths($id_lender, $year)
-    {
-        $sql = 'SELECT
-        SUM(prelevements_obligatoires) as prelevements_obligatoires,
-        SUM(retenues_source) as retenues_source,
-        SUM(csg) as csg,
-        SUM(prelevements_sociaux) as prelevements_sociaux,
-        SUM(contributions_additionnelles) as contributions_additionnelles,
-        SUM(prelevements_solidarite) as prelevements_solidarite,
-        SUM(crds) as crds,
-        LEFT(date_echeance_reel, 7) AS date
-        FROM `echeanciers`
-        WHERE status = ' . self::STATUS_REPAID . '
-        AND id_lender = ' . $id_lender . '
-        AND YEAR(date_echeance_reel) = ' . $year . '
-        GROUP BY LEFT(date_echeance_reel, 7)';
-
-        $res    = array();
-        $result = $this->bdd->query($sql);
-        while ($record = $this->bdd->fetch_array($result)) {
-            $d          = explode('-', $record['date']);
-            $retenues   = $record['prelevements_obligatoires'] + $record['retenues_source'] + $record['csg'] + $record['prelevements_sociaux'] + $record['contributions_additionnelles'] + $record['prelevements_solidarite'] + $record['crds'];
-            $res[$d[1]] = $retenues;
-        }
-        return $res;
     }
 
     /**
@@ -706,42 +677,6 @@ class echeanciers extends echeanciers_crud
         $this->bdd->query($sql);
     }
 
-    /**
-     * @todo Replace calls before taxation is finished
-     * @deprecated
-     */
-    public function selectEcheances_a_remb($where = '', $order = '', $start = '', $nb = '')
-    {
-        if ($where != '') {
-            $where = ' WHERE ' . $where;
-        }
-        if ($order != '') {
-            $order = ' ORDER BY ' . $order;
-        }
-
-        $sql = '
-            SELECT
-                id_echeancier,
-                id_lender,
-                id_project,
-                montant,
-                capital,
-                interets,
-                ROUND((capital / 100), 2) AS capital_net,
-                ROUND((ROUND((interets / 100), 2) - prelevements_obligatoires - retenues_source - csg - prelevements_sociaux - contributions_additionnelles - prelevements_solidarite - crds), 2) AS interets_net,
-                ROUND((ROUND((montant / 100), 2) - prelevements_obligatoires - retenues_source - csg - prelevements_sociaux - contributions_additionnelles - prelevements_solidarite - crds), 2) AS rembNet,
-                ROUND((prelevements_obligatoires + retenues_source + csg + prelevements_sociaux + contributions_additionnelles + prelevements_solidarite + crds), 2) AS etat,
-                status
-            FROM echeanciers' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-        $resultat = $this->bdd->query($sql);
-        $result   = array();
-        while ($record = $this->bdd->fetch_assoc($resultat)) {
-            $result[] = $record;
-        }
-        return $result;
-    }
-
     // Utilisé dans cron check remb preteurs (27/04/2015)
     public function selectEcheanciersByprojetEtOrdre()
     {
@@ -834,5 +769,29 @@ class echeanciers extends echeanciers_crud
         $result = $this->bdd->fetch_assoc($resultat);
 
         return $result;
+    }
+
+    /**
+     * @param int $iLoanId
+     * @param int $iAnticipatedRepaymentStatus
+     * @param string $sOrder
+     * @return array
+     */
+    public function getRepaymentWithTaxDetails($iLoanId, $iAnticipatedRepaymentStatus = 0, $sOrder = 'e.ordre ASC')
+    {
+        $sql = '
+        SELECT e.*, sum(ifnull(tax.amount, 0)) as tax
+        FROM echeanciers e
+            LEFT JOIN transactions t ON e.id_echeancier = t.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+            LEFT JOIN tax ON t.id_transaction = tax.id_transaction
+        WHERE e.id_loan = ' . $iLoanId . ' AND e.status_ra = ' . $iAnticipatedRepaymentStatus . '
+        GROUP BY e.id_echeancier
+        ORDER BY ' . $sOrder ;
+        $result = $this->bdd->query($sql);
+        $aReturn = array();
+        while ($record = $this->bdd->fetch_array($result)) {
+            $aReturn[] = $record;
+        }
+        return $aReturn;
     }
 }
