@@ -3,19 +3,23 @@ namespace Unilend\Bundle\FrontBundle\Twig;
 
 
 use Unilend\Bundle\CoreBusinessBundle\Service\StatisticsManager;
+use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
 class FrontBundleExtension extends \Twig_Extension
 {
 
     private $sUrl;
 
-    /** @var  StatisticsManager */
+    /** @var StatisticsManager */
     private $statisticsManager;
+    /** @var TranslationManager  */
+    private $translationManager;
 
-    public function __construct($routerRequestContextScheme, $routerRequestContextHost, $statisticsManager)
+    public function __construct($routerRequestContextScheme, $routerRequestContextHost, StatisticsManager $statisticsManager, TranslationManager $translationManager)
     {
         $this->sUrl = $routerRequestContextHost . '://' . $routerRequestContextScheme;
         $this->statisticsManager = $statisticsManager;
+        $this->translationManager = $translationManager;
     }
 
     public function getName()
@@ -83,6 +87,11 @@ class FrontBundleExtension extends \Twig_Extension
         return $this->statisticsManager->getAllStatistics();
     }
 
+    public function getCategoriesForSvg()
+    {
+        return $this->translationManager->getTranslatedCompanySectorList();
+    }
+
 
     public function getFunctions()
     {
@@ -92,7 +101,8 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'siteurlmediaFunction')),
             new \Twig_SimpleFunction('caniuse_svg', array($this, 'canUseSvg')),
-            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics'))
+            new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
+            new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg'))
         );
     }
 
