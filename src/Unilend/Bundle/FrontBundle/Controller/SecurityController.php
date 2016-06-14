@@ -4,7 +4,6 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
@@ -12,18 +11,13 @@ class SecurityController extends Controller
 {
     /**
      * @Route("/login", name="login")
-     * @param Request $request
      */
-    public function loginAction(Request $request)
+    public function loginAction()
     {
         /** @var AuthenticationUtils $authenticationUtils */
         $authenticationUtils = $this->get('security.authentication_utils');
-
-        $error = $authenticationUtils->getLastAuthenticationError();
-        //var_dump($_SESSION);
-        //var_dump($this->container->get('session'));
-
-        $lastUsername = $authenticationUtils->getLastUsername();
+        $error               = $authenticationUtils->getLastAuthenticationError();
+        $lastUsername        = $authenticationUtils->getLastUsername();
 
         return $this->render(
             'UnilendFrontBundle:pages:connexion_inscription.html.twig',
@@ -41,10 +35,8 @@ class SecurityController extends Controller
     {
         /*
         This method will never be executed.
-        When we submit, Symfony’s security system intercepts the request and processes the login information.
-        This works as long as we POST username and password as defined in security.yml to the URL /login_check.
-        This URL is special because its route is configured as the check_path in security.yml.
-        The loginCheckAction method is never executed, because Symfony intercepts POST requests to that URL.
+        When we submit, Symfony’s Guard security system intercepts the request and processes the login information.
+        This works as long as we POST username and password as defined in LoginAuthenticator::getCredentials().
         */
     }
 

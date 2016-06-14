@@ -10,26 +10,29 @@ permalink: route('user/access')
 
 {% block siteContent %}
     <article id="connexion-inscription" class="page">
-
+{{ dump(error) }}
         <header class="page-header">
             <div class="site-wrap">
                 <h1>Connexion / Inscription</h1>
             </div><!-- /.site-wrap -->
         </header><!-- /.page-header -->
-
         <section class="page-content">
             <div class="hero-wrap">
                 <div class="site-wrap">
                     <div class="row">
 
                         <div class="col-connect col-lg-4 col-md-4">
-                            <h2 class="h3 text-align-left">Déjà client&nbsp;?</h2>
+                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
                             <form action="{{ path('login-check') }}" method="post" class="form-connect" {# data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications" #}>
                                 <div class="panel panel-connect">
-                                    <div id="form-connect-notifications">{{ error }}</div>
+                                    {% if error %}
+                                    <div id="form-connect-notifications">
+                                        {{ "connect-subscribe-page_login-box-error-message-#{ error.message }" | trans }}
+                                    </div>
+                                    {% endif %}
                                     <div class="panel-inner" data-equal-height="md lg">
                                         <div class="form-field">
-                                            <label for="connect-access-email">E-mail</label>
+                                            <label for="connect-access-email">{% trans %} connect-subscribe-page_login-box-email-field-label {% endtrans %}</label>
                                             <div class="input-group set-left">
                                                 <div class="btn-group">
                                                     <label for="connect-access-email"><span class="icon fa-envelope-o"></span></label>
@@ -40,7 +43,7 @@ permalink: route('user/access')
                                         </div><!-- /.form-field -->
 
                                         <div class="form-field">
-                                            <label for="connect-access-password">Mot de passe</label>
+                                            <label for="connect-access-password">{% trans %} connect-subscribe-page_login-box-password-field-label {% endtrans %}</label>
                                             <div class="input-group set-left">
                                                 <div class="btn-group">
                                                     <label for="connect-access-password"><span class="icon fa-lock"></span></label>
@@ -50,42 +53,42 @@ permalink: route('user/access')
                                             </div><!-- /.input-group -->
                                             <div class="field-help">
                                                 <p>
-                                                    <a href="{{ route('user/forgotpassword') }}" class="link">Mot de passe oublié?</a>
+                                                    <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
                                                 </p>
                                             </div>
                                         </div><!-- /.form-field -->
                                     </div><!-- /.panel-inner -->
                                     <div class="btn-controls">
-                                        <button type="submit" class="btn-primary">Se connecter</button>
+                                        <button type="submit" class="btn-primary">{% trans %} connect-subscribe-page_login-box-connect-button {% endtrans %}</button>
                                     </div>
                                 </div><!-- /.panel -->
                             </form><!-- /.form-connect -->
                         </div><!-- /.col-connect -->
 
                         <div class="col-register col-lg-8 col-md-8">
-                            <h2 class="h3 text-align-left">Pas encore inscrit&nbsp;?</h2>
+                            <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_subscribe-box-title {% endtrans %}</h2>
                             <div class="row">
                                 <div class="col-emprunter col-lg-6 col-md-6">
                                     <div class="panel panel-emprunter">
                                         <div class="panel-inner" data-equal-height="md lg">
-                                            <h3>Déposer un projet</h3>
-                                            <p>Empruntez jusqu’à 500K€ auprès de notre communauté pour financer vos projets de développement professionnels.</p>
-                                            <p><a href="{{ route('emprunter') }}" class="link">En savoir +</a></p>
+                                            <h3>{% trans %} connect-subscribe-page_subscribe-box-borrower-title {% endtrans %}</h3>
+                                            <p>{% trans %} connect-subscribe-page_subscribe-box-borrower-text {% endtrans %}</p>
+                                            <p><a href="{{ route('emprunter') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-borrower-more-link {% endtrans %}</a></p>
                                         </div><!-- /.panel-inner -->
                                         <div class="btn-controls">
-                                            <a href="{{ route('projet/new') }}" class="btn-alternate">Déposer un projet</a>
+                                            <a href="{{ route('projet/new') }}" class="btn-alternate">{% trans %} connect-subscribe-page_subscribe-box-borrower-button {% endtrans %}</a>
                                         </div>
                                     </div><!-- /.panel -->
                                 </div>
                                 <div class="col-preter col-lg-6 col-md-6">
                                     <div class="panel panel-preter">
                                         <div class="panel-inner" data-equal-height="md lg">
-                                            <h3>Devenir prêteur</h3>
-                                            <p>Prêtez aux petites et moyennes entreprises françaises et recevez jusqu’à 10% d'intérêts tous les mois.</p>
-                                            <p><a href="{{ route('preter') }}" class="link">En savoir +</a></p>
+                                            <h3>{% trans %} connect-subscribe-page_subscribe-box-lender-title {% endtrans %}</h3>
+                                            <p>{% trans %} connect-subscribe-page_subscribe-box-lender-text {% endtrans %}</p>
+                                            <p><a href="{{ route('preter') }}" class="link">{% trans %} connect-subscribe-page_subscribe-box-lender-more-link {% endtrans %}</a></p>
                                         </div><!-- /.panel-inner -->
                                         <div class="btn-controls">
-                                            <a href="{{ route('preter/new') }}" class="btn-primary">Devenir prêteur</a>
+                                            <a href="{{ route('preter/new') }}" class="btn-primary">{% trans %} connect-subscribe-page_subscribe-box-lender-button {% endtrans %}</a>
                                         </div>
                                     </div><!-- /.panel -->
                                 </div>

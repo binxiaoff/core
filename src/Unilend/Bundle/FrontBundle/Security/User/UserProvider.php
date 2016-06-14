@@ -9,6 +9,8 @@ use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
+use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
+use Unilend\Bundle\FrontBundle\Security\User\UserLender;
 
 class UserProvider implements UserProviderInterface
 {
@@ -36,11 +38,11 @@ class UserProvider implements UserProviderInterface
         if ($client->get($username, 'email')) {
             $balance                 = $this->clientManager->getClientBalance($client);
             $initials                = $this->clientManager->getClientInitials($client);
+            $isActive                = $this->clientManager->isActive($client);
             $roles                   = ['ROLE_USER'];
 
             if ($this->clientManager->isLender($client)) {
                 $roles[] = 'ROLE_LENDER';
-                $isActive                = $this->clientManager->isActive($client);
                 $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
                 $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
                 return new UserLender($client->email, $client->password, '', $roles, $balance, $initials, $client->prenom, $isActive, $clientStatus, $hasAcceptedCurrentTerms);
@@ -48,7 +50,7 @@ class UserProvider implements UserProviderInterface
 
             if ($this->clientManager->isBorrower($client)) {
                 $roles[] = 'ROLE_BORROWER';
-                //return new UserBorrower($client->email, $client->password, '', $roles, $balance, $initials, $client->prenom, $isActive, $clientStatus, $hasAcceptedCurrentTerms);
+                return new UserBorrower($client->email, $client->password, '', $roles, $isActive);
             }
         }
 
@@ -77,7 +79,7 @@ class UserProvider implements UserProviderInterface
      */
     public function supportsClass($class)
     {
-        return $class === 'FrontBundle\Security\User\User';
+        return $class === 'FrontBundle\Security\User\BaseUser';
     }
 
 

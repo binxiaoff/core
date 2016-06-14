@@ -9,17 +9,15 @@ class UserLender extends BaseUser
     private $balance;
     private $initials;
     private $firstName;
-    private $isActive;
     private $clientStatus;
     private $hasAcceptedCurrentTerms;
 
     public function __construct($username, $password, $salt, array $roles, $balance, $initials, $firstName, $isActive, $clientStatus, $hasAcceptedCurrentTerms)
     {
-        parent::__construct($username, $password, $salt, $roles);
+        parent::__construct($username, $password, $salt, $roles, $isActive);
         $this->balance                 = $balance;
         $this->initials                = $initials;
         $this->firstName               = $firstName;
-        $this->isActive                = $isActive;
         $this->clientStatus            = $clientStatus;
         $this->hasAcceptedCurrentTerms = $hasAcceptedCurrentTerms;
     }
@@ -39,11 +37,6 @@ class UserLender extends BaseUser
         return $this->firstName;
     }
 
-    public function getIsActive()
-    {
-        return $this->isActive;
-    }
-
     public function getClientStatus()
     {
         return $this->clientStatus;
@@ -52,14 +45,6 @@ class UserLender extends BaseUser
     public function getHasAcceptedCurrentTerms()
     {
         return $this->hasAcceptedCurrentTerms;
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function isAccountNonLocked()
-    {
-        return $this->isActive;
     }
 
 }

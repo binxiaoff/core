@@ -14,13 +14,15 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     private $password;
     private $salt;
     private $roles;
+    private $isActive;
 
-    public function __construct($username, $password, $salt, array $roles)
+    public function __construct($username, $password, $salt, array $roles, $isActive)
     {
         $this->username                = $username;
         $this->password                = $password;
         $this->salt                    = $salt;
         $this->roles                   = $roles;
+        $this->isActive                = $isActive;
     }
 
     /**
@@ -55,6 +57,11 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
         return $this->username;
     }
 
+    public function getIsActive()
+    {
+        return $this->isActive;
+    }
+
     /**
      * @inheritDoc
      */
@@ -68,7 +75,7 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
      */
     public function isEqualTo(UserInterface $user)
     {
-        if (false === $user instanceof User) {
+        if (false === $user instanceof BaseUser) {
             return false;
         }
 
@@ -93,17 +100,8 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     /**
      * @inheritDoc
      */
-    public function isAccountNonLocked()
-    {
-
-    }
-
-    /**
-     * @inheritDoc
-     */
     public function isCredentialsNonExpired()
     {
-        //checks whether the user’s credentials (password) has expired
         return true;
     }
 
@@ -115,5 +113,12 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
         return true; // TODO AB is validated? to check if client has status validated to have full feature access
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function isAccountNonLocked()
+    {
+        return $this->isActive;
+    }
 
 }

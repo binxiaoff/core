@@ -7,7 +7,7 @@ security:
 
     providers:
         unilend_front_bundle:
-            id: unilend.service.user_provider
+            id: unilend.security.user.user_provider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -15,13 +15,9 @@ security:
         default:
             pattern: /
             anonymous: ~
-            form_login:
-                login_path: login #route name not URL
-                check_path: login-check
-                success_handler : unilend.frontbundle.service.login_success_handler
-                # field names for the username and password fields
-                username_parameter: _username
-                password_parameter: _password
+            guard:
+                authenticators:
+                    - unilend.frontbundle.security.login_authenticator
             logout:
                 path: logout
                 target: home
