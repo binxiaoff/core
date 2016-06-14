@@ -17,8 +17,8 @@ class SendMailCommand extends ContainerAwareCommand
         $this
             ->setName('mailer:spool:send')
             ->setDescription('Sends emails from the spool')
-            ->addOption('message-limit', 0, InputOption::VALUE_OPTIONAL, 'The maximum number of messages to send.')
-            ->addOption('time-limit', 0, InputOption::VALUE_OPTIONAL, 'The time limit for sending messages (in seconds).')
+            ->addOption('message-limit', null, InputOption::VALUE_OPTIONAL, 'The maximum number of messages to send.')
+            ->addOption('time-limit', null, InputOption::VALUE_OPTIONAL, 'The time limit for sending messages (in seconds).')
             ->setHelp(<<<EOF
 The <info>mailer:spool:send</info> command sends all emails from the spool.
 <info>php bin/console mailer:spool:send --message-limit=10 --time-limit=10</info>
