@@ -107,14 +107,14 @@
                            placeholder ="<?= $this->lng['etape1']['email'] ?>"
                            value="<?= empty($this->aForm['particulier']['email']) && false === empty($this->aLanding['email']) ? $this->aLanding['email'] : $this->aForm['particulier']['email'] ?>"
                            class="field field-large required <?= empty($this->aForm['particulier']['email']) ? "LV_valid_field" : '' ?>"
-                           data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this.value,'conf_email')">
+                           data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this, this.value,'conf_email')">
                     <em><?= $this->lng['etape1']['info-email'] ?></em>
                 </span>
                 <span class="pass-field-holder">
                     <input type="text" name="conf_email" id="conf_email" title="<?= $this->lng['etape1']['confirmation-email'] ?>" placeholder="<?= $this->lng['etape1']['confirmation-email'] ?>"
                            value="<?= $this->aForm['particulier']['conf_email'] ?>"
                            class="field field-large required <?= (empty($this->aForm['particulier']['conf_email']) ? "LV_valid_field" : "") ?>"
-                           data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }">
+                           data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/ }" onkeyup="checkConf(this, this.value,'email')">
                 </span>
             </div>
             <div class="row">

@@ -187,12 +187,14 @@
                 <td><label for="statut"><?= $this->receptions->motif ?></label></td>
             </tr>
         <?php
-        else : ?>
-            <tr>
-                <th>Virement à émettre avant le :</th>
-                <td><label for="statut"><?= $this->date_next_echeance_4jouvres_avant ?></label></td>
-            </tr>
-        <?php
+        else :
+            if (isset($this->nextRepaymentDate)) : ?>
+                <tr>
+                    <th>Virement à émettre avant le :</th>
+                    <td><label for="statut"><?= $this->nextRepaymentDate ?></label></td>
+                </tr>
+                <?php
+            endif;
         endif; ?>
         <tr>
             <th>Montant CRD (*) :</th>
@@ -241,8 +243,8 @@
         endif; ?>
     </table>
     <?php
-    if (false === $this->virement_recu && false === $this->remb_anticipe_effectue) : ?>
-        * : Le montant correspond aux CRD des échéances restantes après celle du <?= $this->date_next_echeance ?> qui sera prélevé normalement
+    if (false === $this->virement_recu && false === $this->remb_anticipe_effectue && false != $this->montant_restant_du_preteur) : ?>
+        * : Le montant correspond aux CRD des échéances restantes après celle du <?= isset($this->date_next_echeance) ? $this->date_next_echeance : '--' ?> qui sera prélevé normalement
         <?php
     endif;
     ?>

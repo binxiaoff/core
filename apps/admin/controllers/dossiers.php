@@ -40,6 +40,9 @@ class dossiersController extends bootstrap
         $this->oUserAnalyst     = $this->loadData('users');
         $this->oUserSalesPerson = $this->loadData('users');
 
+        $this->settings->get('Durée des prêts autorisées', 'type');
+        $this->fundingTimeValues = explode(',', $this->settings->value);
+
         if (isset($_POST['form_search_dossier'])) {
             if ($_POST['date1'] != '') {
                 $d1    = explode('/', $_POST['date1']);
@@ -125,21 +128,19 @@ class dossiersController extends bootstrap
             $finFunding        = explode(':', $this->finFunding);
             $this->HfinFunding = $finFunding[0];
 
-            $this->current_projects_status->getLastStatut($this->projects->id_project);
-
-            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
-
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
+
             $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
             $this->current_projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
             $this->projects_status->get($this->current_projects_status_history->id_project_status);
-            $this->current_projects_status->get($this->current_projects_status_history->id_project_status);
+            $this->current_projects_status->getLastStatut($this->projects->id_project);
 
-            $this->bHasAdvisor = false;
+            $this->bHasAdvisor       = false;
+            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
@@ -373,23 +374,20 @@ class dossiersController extends bootstrap
             }
 
             if (isset($_POST['send_form_dossier_resume'])) {
-                // On check avant la validation que la date de publication & date de retrait sont OK sinon on bloque(KLE)
-                /* La date de publication doit être au minimum dans 5min et la date de retrait à plus de 5min (pas de contrainte) */
                 $dates_valide = false;
                 if (false === empty($_POST['date_publication'])) {
-                    $tab_date_pub_post          = explode('/', $_POST['date_publication']);
-                    $date_publication_full_test = $tab_date_pub_post[2] . '-' . $tab_date_pub_post[1] . '-' . $tab_date_pub_post[0] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute'] . ':00';
-                    $tab_date_retrait_post      = explode('/', $_POST['date_retrait']);
-                    $date_retrait_full_test     = $tab_date_retrait_post[2] . '-' . $tab_date_retrait_post[1] . '-' . $tab_date_retrait_post[0] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute'] . ':00';
-                    $date_auj_plus_5min         = date("Y-m-d H:i:s", mktime(date('H'), date('i') + 5, date('s'), date("m"), date("d"), date("Y")));
-                    $date_auj_plus_1jour        = date("Y-m-d H:i:s", mktime(date('H'), date('i'), date('s'), date("m"), date("d") + 1, date("Y")));
-                    if ($date_publication_full_test > $date_auj_plus_5min && $date_retrait_full_test > $date_auj_plus_1jour) {
+                    $oPublicationDate                = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_publication'] . ' ' . $_POST['date_publication_heure'] . ':' . $_POST['date_publication_minute']);
+                    $oEndOfPublicationDate           = \DateTime::createFromFormat('d/m/Y H:i', $_POST['date_retrait'] . ' ' . $_POST['date_retrait_heure'] . ':' . $_POST['date_retrait_minute']);
+                    $oPublicationLimitationDate      = new \DateTime('NOW + 5 minutes');
+                    $oEndOfPublicationLimitationDate = new \DateTime('NOW + 1 hour');
+
+                    if ($oPublicationDate > $oPublicationLimitationDate && $oEndOfPublicationDate > $oEndOfPublicationLimitationDate) {
                         $dates_valide = true;
                     }
                 }
 
                 if (false === $dates_valide && in_array(\projects_status::A_FUNDER, array($_POST['status'], $this->current_projects_status->status))) {
-                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus de 24h';
+                    $this->retour_dates_valides = 'La date de publication du dossier doit être au minimum dans 5min et la date de retrait dans plus d\'1h';
                 } else {
                     $_SESSION['freeow']['title']   = 'Sauvegarde du résumé';
                     $_SESSION['freeow']['message'] = '';
@@ -467,11 +465,8 @@ class dossiersController extends bootstrap
                         $this->projects->risk = $_POST['risk'];
                     }
 
-                    // --- Génération du slug --- //
-                    // Génération du slug avec titre projet fo
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
-                        $leSlugProjet         = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
-                        $this->projects->slug = $leSlugProjet;
+                        $this->projects->slug = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
                     }
 
                     $this->projects->update();
@@ -500,7 +495,7 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
 
                             if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
@@ -741,380 +736,9 @@ class dossiersController extends bootstrap
                         }
                     }
 
-                    /////////////////
-                    // REMBOURSEMENT //
-                    // si on a le pouvoir
-                    if (
-                        isset($_POST['statut_pouvoir'])
-                        && $this->projects_pouvoir->get($this->projects->id_project, 'id_project')
-                        && 0 == $this->projects_pouvoir->status_remb
-                    ) {
-                        $this->projects_pouvoir->status_remb = $_POST['statut_pouvoir'];
-                        $this->projects_pouvoir->update();
+                    $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec suucès';
 
-                        $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers');
-                        // si on a validé le pouvoir
-                        if ($this->projects_pouvoir->status_remb == 1) {
-                            $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
-
-                            // debut processe chagement statut remboursement //
-                            // On recup le param
-                            $settingsControleRemb = $this->loadData('settings');
-                            $settingsControleRemb->get('Controle statut remboursement', 'type');
-
-                            // on rentre dans le cron si statut égale 1
-                            if ($settingsControleRemb->value == 1) {
-                                ini_set('memory_limit', '512M');
-
-                                // On passe le statut a zero pour signaler qu'on est en cours de traitement
-                                $settingsControleRemb->value = 0;
-                                $settingsControleRemb->update();
-
-                                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $this->projects);
-
-                                //*** virement emprunteur ***//
-                                $this->transactions     = $this->loadData('transactions');
-                                $virements              = $this->loadData('virements');
-                                $bank_unilend           = $this->loadData('bank_unilend');
-                                $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-
-                                $this->settings->get('Part unilend', 'type');
-                                $PourcentageUnliend = $this->settings->value;
-
-                                $montant     = $this->projects->amount;
-                                $partUnliend = $montant * $PourcentageUnliend;
-
-                                $montant -= $partUnliend;
-
-                                if (false === $this->transactions->get($this->projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
-                                    /** @var \clients_mandats $oMandate */
-                                    $oMandate = $this->loadData('clients_mandats');
-                                    $aMandate = array_shift($oMandate->select('id_project = ' . $this->projects->id_project . ' AND id_client = ' . $this->clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1));
-
-                                    /** @var \Unilend\Service\ProjectManager $oProjectManagement */
-                                    $oProjectManagement = $this->get('ProjectManager');
-
-                                    $this->transactions->id_client        = $this->clients->id_client;
-                                    $this->transactions->montant          = - $montant * 100; // moins car c'est largent qui part d'unilend
-                                    $this->transactions->montant_unilend  = $partUnliend * 100;
-                                    $this->transactions->id_langue        = 'fr';
-                                    $this->transactions->id_project       = $this->projects->id_project;
-                                    $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                                    $this->transactions->status           = 1;
-                                    $this->transactions->etat             = 1;
-                                    $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                                    $this->transactions->type_transaction = \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT;
-                                    $this->transactions->create();
-
-                                    $bank_unilend->id_transaction = $this->transactions->id_transaction;
-                                    $bank_unilend->id_project     = $this->projects->id_project;
-                                    $bank_unilend->montant        = $partUnliend * 100;
-                                    $bank_unilend->create();
-
-                                    $oAccountUnilend                 = $this->loadData('platform_account_unilend');
-                                    $oAccountUnilend->id_transaction = $this->transactions->id_transaction;
-                                    $oAccountUnilend->id_project     = $this->projects->id_project;
-                                    $oAccountUnilend->amount         = $partUnliend * 100;
-                                    $oAccountUnilend->type           = platform_account_unilend::TYPE_COMMISSION_PROJECT;
-                                    $oAccountUnilend->create();
-
-                                    $virements->id_client      = $this->clients->id_client;
-                                    $virements->id_project     = $this->projects->id_project;
-                                    $virements->id_transaction = $this->transactions->id_transaction;
-                                    $virements->montant        = $montant * 100;
-                                    $virements->motif          = $oProjectManagement->getBorrowerBankTransferLabel($this->projects);
-                                    $virements->type           = 2;
-                                    $virements->create();
-
-                                    //*** prelevement emprunteur ***//
-                                    $prelevements = $this->loadData('prelevements');
-
-                                    // On recup les echeances de remb emprunteur
-                                    $echea = $echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project);
-
-                                    foreach ($echea as $key => $e) {
-                                        $dateEcheEmp = strtotime($e['date_echeance_emprunteur']);
-                                        $result      = mktime(0, 0, 0, date("m", $dateEcheEmp), date("d", $dateEcheEmp) - 15, date("Y", $dateEcheEmp));
-                                        $dateExec    = date('Y-m-d', $result);
-
-                                        $prelevements->id_client                          = $this->clients->id_client;
-                                        $prelevements->id_project                         = $this->projects->id_project;
-                                        $prelevements->motif                              = $virements->motif;
-                                        $prelevements->montant                            = round($e['montant'] + $e['commission'] + $e['tva'], 2);
-                                        $prelevements->bic                                = str_replace(' ', '', $aMandate['bic']);
-                                        $prelevements->iban                               = str_replace(' ', '', $aMandate['iban']);
-                                        $prelevements->type_prelevement                   = 1; // recurrent
-                                        $prelevements->type                               = 2; //emprunteur
-                                        $prelevements->num_prelevement                    = $e['ordre'];
-                                        $prelevements->date_execution_demande_prelevement = $dateExec;
-                                        $prelevements->date_echeance_emprunteur           = $e['date_echeance_emprunteur'];
-                                        $prelevements->create();
-                                    }
-                                    //*** fin prelevement emprunteur ***//
-                                    // les contrats a envoyer //
-
-                                    $oClient          = $this->loadData('clients');
-                                    $oLender          = $this->loadData('lenders_accounts');
-                                    $oCompanies       = $this->loadData('companies');
-                                    $oAcceptedBids    = $this->loadData('accepted_bids');
-                                    $oPaymentSchedule = $this->loadData('echeanciers');
-
-                                    $aLendersIds   = $this->loans->getProjectLoansByLender($this->projects->id_project);
-                                    $aAcceptedBids = $oAcceptedBids->getDistinctBids($this->projects->id_project);
-                                    $aLastLoans    = array();
-
-                                    foreach ($aAcceptedBids as $aBid) {
-                                        $this->notifications->type       = \notifications::TYPE_LOAN_ACCEPTED;
-                                        $this->notifications->id_lender  = $aBid['id_lender'];
-                                        $this->notifications->id_project = $this->projects->id_project;
-                                        $this->notifications->amount     = $aBid['amount'];
-                                        $this->notifications->id_bid     = $aBid['id_bid'];
-                                        $this->notifications->create();
-
-                                        $oLender->get($aBid['id_lender'], 'id_lender_account');
-                                        $oClient->get($oLender->id_client_owner, 'id_client');
-
-                                        $aLoansForBid = $oAcceptedBids->select('id_bid = ' . $aBid['id_bid']);
-
-                                        foreach ($aLoansForBid as $aLoan) {
-                                            if (in_array($aLoan['id_loan'], $aLastLoans) === false ) {
-                                                $this->clients_gestion_mails_notif->id_client       = $oLender->id_client_owner;
-                                                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED;
-                                                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                                                $this->clients_gestion_mails_notif->id_transaction  = 0;
-                                                $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                                                $this->clients_gestion_mails_notif->id_loan         = $aLoan['id_loan'];
-                                                $this->clients_gestion_mails_notif->create();
-
-                                                if ($this->clients_gestion_notifications->getNotif($oLender->id_client_owner, 4, 'immediatement') == true) {
-                                                    $this->clients_gestion_mails_notif->get($aLoan['id_loan'], 'id_client = ' . $oLender->id_client_owner . ' AND id_loan');
-                                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                                                    $this->clients_gestion_mails_notif->update();
-                                                }
-                                                $aLastLoans[] = $aLoan['id_loan'];
-                                            }
-                                        }
-                                    }
-
-                                    $this->settings->get('Facebook', 'type');
-                                    $sLienFB = $this->settings->value;
-
-                                    $this->settings->get('Twitter', 'type');
-                                    $sLienTW = $this->settings->value;
-
-                                    foreach ($aLendersIds as $aLenderID) {
-                                        $oLender->get($aLenderID['id_lender'], 'id_lender_account');
-                                        $oClient->get($oLender->id_client_owner, 'id_client');
-                                        $oCompanies->get($this->projects->id_company, 'id_company');
-
-                                        if ($this->clients_gestion_notifications->getNotif($oLender->id_client_owner, 4, 'immediatement') == true) {
-                                            $bLenderIsNaturalPerson   = $oLender->isNaturalPerson($oLender->id_lender_account);
-                                            $aLoansOfLender           = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account, '`id_type_contract` DESC');
-                                            $iNumberOfLoansForLender  = count($aLoansOfLender);
-                                            $iSumMonthlyPayments      = $oPaymentSchedule->sum('id_lender = ' . $oLender->id_lender_account . ' AND id_project = ' . $this->projects->id_project . ' AND ordre = 1', 'montant');
-                                            $aFirstPayment            = $oPaymentSchedule->getPremiereEcheancePreteur($this->projects->id_project, $oLender->id_lender_account);
-                                            $sDateFirstPayment        = $aFirstPayment['date_echeance'];
-                                            $iNumberOfAcceptedBids    = $oAcceptedBids->getDistinctBidsForLenderAndProject($oLender->id_lender_account, $this->projects->id_project);
-                                            $sLoansDetails            = '';
-                                            $sLinkExplication         = '';
-                                            $sContract                = '';
-                                            $sStyleTD                 = 'border: 1px solid; padding: 5px; text-align: center; text-decoration:none;';
-
-                                            if ($bLenderIsNaturalPerson) {
-                                                $aLoanIFP               = $this->loans->select('id_project = ' . $this->projects->id_project . ' AND id_lender = ' . $oLender->id_lender_account . ' AND id_type_contract = ' . \loans::TYPE_CONTRACT_IFP);
-                                                $iNumberOfBidsInLoanIFP = $oAcceptedBids->counter('id_loan = ' . $aLoanIFP[0]['id_loan']);
-
-                                                if ($iNumberOfBidsInLoanIFP > 1) {
-                                                    $sContract        = '<br>L&rsquo;ensemble de vos offres &agrave; concurrence de 1 000 euros sont regroup&eacute;es sous la forme d&rsquo;un seul contrat de pr&ecirc;t. Son taux d&rsquo;int&eacute;r&ecirc;t correspond donc &agrave; la moyenne pond&eacute;r&eacute;e de vos <span style="color:#b20066;">' . $iNumberOfBidsInLoanIFP . ' offres de pr&ecirc;t</span>. ';
-                                                    $sLinkExplication = '<br><br>Pour en savoir plus sur les r&egrave;gles de regroupement des offres de pr&ecirc;t, vous pouvez consulter <a style="color:#b20066;" href="' . $this->surl . '/document-de-pret">cette page</a>.';
-                                                }
-                                            }
-
-                                            if ($iNumberOfAcceptedBids > 1) {
-                                                $sAcceptedOffers = 'vos offres ont &eacute;t&eacute; accept&eacute;es';
-                                                $sOffers         = 'vos offres';
-                                            } else {
-                                                $sAcceptedOffers = 'votre offre a &eacute;t&eacute; accept&eacute;e';
-                                                $sOffers         = 'votre offre';
-                                            }
-
-                                            if ($iNumberOfLoansForLender > 1) {
-                                                $sContracts      = 'Vos contrats sont disponibles';
-                                                $sLoans          = 'vos pr&ecirc;ts';
-                                            } else {
-                                                $sContracts      = 'Votre contrat est disponible';
-                                                $sLoans          = 'votre pr&ecirc;t';
-                                            }
-
-                                            foreach ($aLoansOfLender as $aLoan) {
-                                                $aFirstPayment = $oPaymentSchedule->getPremiereEcheancePreteurByLoans($aLoan['id_project'], $aLoan['id_lender'], $aLoan['id_loan']);
-                                                switch ($aLoan['id_type_contract']) {
-                                                    case \loans::TYPE_CONTRACT_BDC:
-                                                        $sContractType = 'Bon de caisse';
-                                                        break;
-                                                    case \loans::TYPE_CONTRACT_IFP:
-                                                        $sContractType = 'Contrat de pr&ecirc;t';
-                                                        break;
-                                                    default:
-                                                        $sContractType = '';
-                                                        break;
-                                                }
-                                                $sLoansDetails .= '<tr>
-                                                                    <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['amount'] / 100) . ' &euro;</td>
-                                                                    <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aLoan['rate']) . ' %</td>
-                                                                    <td style="' . $sStyleTD . '">' . $this->projects->period . ' mois</td>
-                                                                    <td style="' . $sStyleTD . '">' . $this->ficelle->formatNumber($aFirstPayment['montant'] / 100) . ' &euro;</td>
-                                                                    <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
-                                            }
-
-                                            //******************************//
-                                            //*** ENVOI DU MAIL CONTRAT ***//
-                                            //******************************//
-                                            $this->mails_text->get('preteur-contrat', 'lang = "' . $this->language . '" AND type');
-
-                                            $sTimeAdd = strtotime($sDateFirstPayment);
-                                            $sMonth   = $this->dates->tableauMois['fr'][ date('n', $sTimeAdd)];
-
-                                            $varMail = array(
-                                                'surl'               => $this->surl,
-                                                'url'                => $this->furl,
-                                                'offre_s_acceptee_s' => $sAcceptedOffers,
-                                                'prenom_p'           => $oClient->prenom,
-                                                'nom_entreprise'     => $oCompanies->name,
-                                                'offre_s'            => $sOffers,
-                                                'pret_s'             => $sLoans,
-                                                'valeur_bid'         => $this->ficelle->formatNumber($iSumMonthlyPayments),
-                                                'detail_loans'       => $sLoansDetails,
-                                                'mensualite_p'       => $this->ficelle->formatNumber($iSumMonthlyPayments),
-                                                'date_debut'         => date('d', $sTimeAdd) . ' ' . $sMonth . ' ' . date('Y', $sTimeAdd),
-                                                'contrat_s'          => $sContracts,
-                                                'compte-p'           => $this->furl,
-                                                'projet-p'           => $this->furl . '/projects/detail/' . $this->projects->slug,
-                                                'lien_fb'            => $sLienFB,
-                                                'lien_tw'            => $sLienTW,
-                                                'motif_virement'     => $oClient->getLenderPattern($oClient->id_client),
-                                                'link_explication'   => $sLinkExplication,
-                                                'contrat_pret'       => $sContract,
-                                                'annee'              => date('Y')
-                                            );
-
-                                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                            $this->email = $this->loadLib('email');
-                                            $this->email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                                            $this->email->setSubject(stripslashes(strtr(utf8_decode($this->mails_text->subject), $tabVars)));
-                                            $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                                            if ($this->Config['env'] === 'prod') {
-                                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($oClient->email), $tabFiler);
-                                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                            } else {
-                                                $this->email->addRecipient(trim($oClient->email));
-                                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                            }
-                                        }
-                                    }
-                                }
-
-                                // Renseigner l'id projet
-                                $id_project     = $this->projects->id_project;
-                                $month          = $this->dates->tableauMois['fr'][date('n')];
-                                $dateStatutRemb = date('d') . ' ' . $month . ' ' . date('Y');
-
-                                //********************************//
-                                //*** ENVOI DU MAIL FACTURE EF ***//
-                                //********************************//
-                                $this->mails_text->get('facture-emprunteur', 'lang = "' . $this->language . '" AND type');
-
-                                $leProject   = $this->loadData('projects');
-                                $lemprunteur = $this->loadData('clients');
-                                $laCompanie  = $this->loadData('companies');
-
-                                $leProject->get($id_project, 'id_project');
-                                $laCompanie->get($leProject->id_company, 'id_company');
-                                $lemprunteur->get($laCompanie->id_client_owner, 'id_client');
-
-                                $this->settings->get('Facebook', 'type');
-                                $lien_fb = $this->settings->value;
-
-                                $this->settings->get('Twitter', 'type');
-                                $lien_tw = $this->settings->value;
-
-                                $varMail = array(
-                                    'surl'            => $this->surl,
-                                    'url'             => $this->furl,
-                                    'prenom'          => $lemprunteur->prenom,
-                                    'entreprise'      => $laCompanie->name,
-                                    'pret'            => $this->ficelle->formatNumber($leProject->amount),
-                                    'projet-title'    => $leProject->title,
-                                    'compte-p'        => $this->furl,
-                                    'projet-p'        => $this->furl . '/projects/detail/' . $leProject->slug,
-                                    'link_facture'    => $this->furl . '/pdf/facture_EF/' . $lemprunteur->hash . '/' . $leProject->id_project . '/',
-                                    'datedelafacture' => $dateStatutRemb,
-                                    'mois'            => strtolower($this->dates->tableauMois['fr'][date('n')]),
-                                    'annee'           => date('Y'),
-                                    'lien_fb'         => $lien_fb,
-                                    'lien_tw'         => $lien_tw
-                                );
-
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                if ($this->Config['env'] === 'prod') {
-                                    $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
-                                }
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($laCompanie->email_facture), $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($laCompanie->email_facture));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
-
-                                $aRepaymentHistory = $this->projects_status_history->select('id_project = ' . $this->projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
-
-                                if (false === empty($aRepaymentHistory)) {
-                                    $oInvoiceCounter = $this->loadData('compteur_factures');
-                                    $oInvoice        = $this->loadData('factures');
-
-                                    $this->transactions->get($this->projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = 1 AND etat = 1 AND id_project');
-
-                                    $sDateFirstPayment  = $aRepaymentHistory[0]['added'];
-                                    $fCommission        = $this->transactions->montant_unilend;
-                                    $fVATFreeCommission = $fCommission / ($this->fVATRate + 1);
-
-                                    $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($oInvoiceCounter->compteurJournalier($this->projects->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
-                                    $oInvoice->date            = $sDateFirstPayment;
-                                    $oInvoice->id_company      = $this->companies->id_company;
-                                    $oInvoice->id_project      = $this->projects->id_project;
-                                    $oInvoice->ordre           = 0;
-                                    $oInvoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
-                                    $oInvoice->commission      = round($fVATFreeCommission / (abs($this->transactions->montant) + $fCommission) * 100, 0);
-                                    $oInvoice->montant_ttc     = $fCommission;
-                                    $oInvoice->montant_ht      = $fVATFreeCommission;
-                                    $oInvoice->tva             = $fCommission - $fVATFreeCommission;
-                                    $oInvoice->create();
-                                }
-
-                                $settingsControleRemb->value = 1;
-                                $settingsControleRemb->update();
-
-                                $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement est bien passe pour le projet : ' . $this->projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
-                            }
-                        }
-                    }
-
-                    $_SESSION['freeow']['message'] .= 'La sauvegarde du résumé a bien été faite !';
-
-                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->params[0]);
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
                     die;
                 }
             }
@@ -1249,13 +873,16 @@ class dossiersController extends bootstrap
 
     private function updateProblematicStatus($iStatus)
     {
-        $this->projects_status_history_details                            = $this->loadData('projects_status_history_details');
-        $this->projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
-        $this->projects_status_history_details->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
-        $this->projects_status_history_details->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
-        $this->projects_status_history_details->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
-        $this->projects_status_history_details->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
-        $this->projects_status_history_details->create();
+        $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
+
+        /** @var \projects_status_history_details $projectStatusHistoryDetails */
+        $projectStatusHistoryDetails                            = $this->loadData('projects_status_history_details');
+        $projectStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+        $projectStatusHistoryDetails->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
+        $projectStatusHistoryDetails->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
+        $projectStatusHistoryDetails->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
+        $projectStatusHistoryDetails->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
+        $projectStatusHistoryDetails->create();
 
         // Disable automatic refund
         $this->projects->remb_auto = 1;
@@ -1289,7 +916,7 @@ class dossiersController extends bootstrap
         $this->sendProblemStatusEmailBorrower($iStatus);
 
         if (false === empty($_POST['send_email'])) {
-            $this->sendProblemStatusEmailLender($iStatus);
+            $this->sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails);
         }
 
         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -1351,11 +978,12 @@ class dossiersController extends bootstrap
         }
 
         if (in_array($iStatus, array(\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
+            /** @var \echeanciers $oLenderRepaymentSchedule */
             $oLenderRepaymentSchedule = $this->loadData('echeanciers');
-            $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->sum('id_project = ' . $this->projects->id_project . ' AND status = 0', 'capital'), 2);
+            $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project)));
 
             if (\projects_status::RECOUVREMENT == $iStatus) {
-                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->sum('id_project = ' . $this->projects->id_project . ' AND status = 0 AND date_echeance < "' . date('Y-m-d') . '"', 'capital'), 2);
+                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->sum('id_project = ' . $this->projects->id_project . ' AND status IN (' . \echeanciers::STATUS_PENDING . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ') AND date_echeance < "' . date('Y-m-d') . '"', 'capital - capital_rembourse'));
             }
         }
 
@@ -1410,7 +1038,7 @@ class dossiersController extends bootstrap
         }
     }
 
-    private function sendProblemStatusEmailLender($iStatus)
+    private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
@@ -1424,8 +1052,8 @@ class dossiersController extends bootstrap
             'lien_fb'                => $sFacebookURL,
             'lien_tw'                => $sTwitterURL,
             'societe_recouvrement'   => $this->cab,
-            'contenu_mail'           => nl2br($this->projects_status_history_details->mail_content),
-            'coordonnees_mandataire' => nl2br($this->projects_status_history_details->receiver)
+            'contenu_mail'           => nl2br($projectStatusHistoryDetails->mail_content),
+            'coordonnees_mandataire' => nl2br($projectStatusHistoryDetails->receiver)
         );
 
         switch ($iStatus) {
@@ -1487,7 +1115,7 @@ class dossiersController extends bootstrap
         $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
 
         if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-            $oMaxClaimsSendingDate = new \DateTime($this->projects_status_history_details->date);
+            $oMaxClaimsSendingDate = new \DateTime($projectStatusHistoryDetails->date);
             $aCommonReplacements['date_max_envoi_declaration_creances'] = date('d/m/Y', $oMaxClaimsSendingDate->add(new \DateInterval('P2M'))->getTimestamp());
         }
 
@@ -1503,7 +1131,7 @@ class dossiersController extends bootstrap
                 $fLoansAmount    = $aLoans['amount'];
 
                 foreach ($this->echeanciers->select('id_loan IN (' . $aLoans['loans'] . ') AND id_project = ' . $this->projects->id_project . ' AND status = 1') as $aPayment) {
-                    $fTotalPayedBack += $aPayment['montant'] / 100 - $aPayment['prelevements_obligatoires'] - $aPayment['retenues_source'] - $aPayment['csg'] - $aPayment['prelevements_sociaux'] - $aPayment['contributions_additionnelles'] - $aPayment['prelevements_solidarite'] - $aPayment['crds'];
+                    $fTotalPayedBack += $this->transactions->getRepaymentTransactionsAmount($aPayment['id_echeance']);
                 }
 
                 $this->notifications->type       = $iNotificationType;
@@ -1883,6 +1511,8 @@ class dossiersController extends bootstrap
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
 
+        $oLogger = new ULogger('detail_remb', $this->logPath, 'dossiers');
+
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
@@ -1977,277 +1607,305 @@ class dossiersController extends bootstrap
                     $this->settings->get('Twitter', 'type');
                     $lien_tw = $this->settings->value;
 
-                    $montant                      = 0;
-                    $prelevements_obligatoires    = 0;
-                    $retenues_source              = 0;
-                    $csg                          = 0;
-                    $prelevements_sociaux         = 0;
-                    $contributions_additionnelles = 0;
-                    $prelevements_solidarite      = 0;
-                    $crds                         = 0;
-                    $lEcheancesRembEmprunteur     = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1', 'ordre ASC', 0, 1);
-                    $RembEmpr                     = $lEcheancesRembEmprunteur[0];
-                    $lEcheances                   = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
+                    $montant                  = 0;
+                    $iTotalTaxAmount          = 0;
+                    $error                    = false;
+                    $lEcheancesRembEmprunteur = $this->echeanciers_emprunteur->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1', 'ordre ASC', 0, 1);
+                    $RembEmpr                 = $lEcheancesRembEmprunteur[0];
+                    $lEcheances               = $this->echeanciers->select('id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 1 AND ordre = ' . $RembEmpr['ordre'] . ' AND status = 0');
 
                     /** @var \Unilend\Service\TaxManager $taxManager */
                     $taxManager = $this->get('TaxManager');
+                    /** @var \lender_repayment $lenderRepayment */
+                    $lenderRepayment = $this->loadData('lender_repayment');
 
-                    foreach ($lEcheances as $e) {
-                        $montant                      += $e['montant'] / 100;
-                        $prelevements_obligatoires    += $e['prelevements_obligatoires'];
-                        $retenues_source              += $e['retenues_source'];
-                        $csg                          += $e['csg'];
-                        $prelevements_sociaux         += $e['prelevements_sociaux'];
-                        $contributions_additionnelles += $e['contributions_additionnelles'];
-                        $prelevements_solidarite      += $e['prelevements_solidarite'];
-                        $crds                         += $e['crds'];
+                    try {
+                        foreach ($lEcheances as $e) {
+                            if (false === $this->transactions->exist($e['id_echeancier'], 'id_echeancier')) {
+                                $montant += $e['montant'];
 
-                        if (false === $this->transactions->get($e['id_echeancier'], 'id_echeancier')) {
-                            $capitalEAT  = bcdiv($e['capital'], 100);
-                            $interestEAT = bcdiv($e['interets'], 100) - $e['prelevements_obligatoires'] - $e['retenues_source'] - $e['csg'] - $e['prelevements_sociaux'] - $e['contributions_additionnelles'] - $e['prelevements_solidarite'] - $e['crds'];
-                            $totalEAT    = bcadd($capitalEAT, $interestEAT);
+                                $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
+                                $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
 
-                            $this->lenders_accounts->get($e['id_lender'], 'id_lender_account');
-                            $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
+                                $lenderRepayment->id_lender  = $e['id_lender'];
+                                $lenderRepayment->id_company = $this->projects->id_company;
+                                $lenderRepayment->amount     = $e['montant'];
+                                $lenderRepayment->create();
 
-                            $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
-                            $this->echeanciers->status             = 1; // remboursé
-                            $this->echeanciers->status_email_remb  = 1; // remboursé
-                            $this->echeanciers->date_echeance_reel = date('Y-m-d H:i:s');
-                            $this->echeanciers->update();
+                                $repaymentDate = date('Y-m-d H:i:s');
 
-                            $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                            $this->transactions->montant          = bcmul($capitalEAT, 100);
-                            $this->transactions->id_echeancier    = $e['id_echeancier'];
-                            $this->transactions->id_langue        = 'fr';
-                            $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                            $this->transactions->status           = 1;
-                            $this->transactions->etat             = 1;
-                            $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                            $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
-                            $this->transactions->create();
+                                $this->echeanciers->get($e['id_echeancier'], 'id_echeancier');
+                                $this->echeanciers->capital_rembourse   = $this->echeanciers->capital;
+                                $this->echeanciers->interets_rembourses = $this->echeanciers->interets;
+                                $this->echeanciers->status              = \echeanciers::STATUS_REPAID;
+                                $this->echeanciers->status_email_remb   = 1;
+                                $this->echeanciers->date_echeance_reel  = $repaymentDate;
+                                $this->echeanciers->update();
 
-                            $taxManager->taxTransaction($this->transactions);
+                                $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
+                                $this->transactions->montant          = $e['capital'];
+                                $this->transactions->id_echeancier    = $e['id_echeancier'];
+                                $this->transactions->id_langue        = 'fr';
+                                $this->transactions->date_transaction = $repaymentDate;
+                                $this->transactions->status           = 1;
+                                $this->transactions->etat             = 1;
+                                $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL;
+                                $this->transactions->create();
 
-                            $this->transactions->unsetData();
-                            $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                            $this->transactions->montant          = bcmul($interestEAT, 100);
-                            $this->transactions->id_echeancier    = $e['id_echeancier'];
-                            $this->transactions->id_langue        = 'fr';
-                            $this->transactions->date_transaction = date('Y-m-d H:i:s');
-                            $this->transactions->status           = 1;
-                            $this->transactions->etat             = 1;
-                            $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
-                            $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
-                            $this->transactions->create();
-
-                            $taxManager->taxTransaction($this->transactions);
-
-                            $this->wallets_lines->id_lender                = $e['id_lender'];
-                            $this->wallets_lines->type_financial_operation = 40;
-                            $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
-                            $this->wallets_lines->status                   = 1; // non utilisé
-                            $this->wallets_lines->type                     = 2; // transaction virtuelle
-                            $this->wallets_lines->amount                   = bcmul($totalEAT, 100);
-                            $this->wallets_lines->create();
-
-                            $this->notifications->type       = \notifications::TYPE_REPAYMENT;
-                            $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
-                            $this->notifications->id_project = $this->projects->id_project;
-                            $this->notifications->amount     = bcmul($totalEAT, 100);
-                            $this->notifications->create();
-
-                            $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
-                            $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
-                            $this->clients_gestion_mails_notif->date_notif      = date('Y-m-d H:i:s');
-                            $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
-                            $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
-                            $this->clients_gestion_mails_notif->create();
-
-                            if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                                $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
-                                $this->companies->get($this->projects->id_company, 'id_company');
-
-                                $this->settings->get('Cabinet de recouvrement', 'type');
-                                $sRecoveryCompany = $this->settings->value;
-
-                                $varMail = array(
-                                    'surl'             => $this->surl,
-                                    'url'              => $this->furl,
-                                    'prenom_p'         => $this->clients->prenom,
-                                    'cab_recouvrement' => $sRecoveryCompany,
-                                    'mensualite_p'     => $this->ficelle->formatNumber($totalEAT),
-                                    'nom_entreprise'   => $this->companies->name,
-                                    'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
-                                    'link_echeancier'  => $this->furl,
-                                    'motif_virement'   => $this->clients->getLenderPattern($this->clients->id_client),
-                                    'lien_fb'          => $lien_fb,
-                                    'lien_tw'          => $lien_tw
-                                );
-
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($this->clients->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                try {
+                                    $iTaxOnCapital = $taxManager->taxTransaction($this->transactions);
+                                } catch (\Exception $exception) {
+                                    $oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when applying taxes on the transaction : ' .
+                                        $this->transactions->id_transaction . ' - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
+                                    throw $exception;
                                 }
-                            } elseif (isset($this->params[2]) && $this->params[2] == 'regul') {
-                                $this->mails_text->get('preteur-regularisation-remboursement', 'lang = "' . $this->language . '" AND type');
-                                $this->companies->get($this->projects->id_company, 'id_company');
 
-                                $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
+                                $this->wallets_lines->id_lender                = $e['id_lender'];
+                                $this->wallets_lines->type_financial_operation = 40;
+                                $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
+                                $this->wallets_lines->status                   = 1; // non utilisé
+                                $this->wallets_lines->type                     = 2; // transaction virtuelle
+                                $this->wallets_lines->amount                   = $this->transactions->montant;
+                                $this->wallets_lines->create();
+                                $this->wallets_lines->unsetData();
 
-                                $surl = $this->surl;
-                                $url  = $this->furl;
+                                $this->transactions->unsetData();
+                                $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
+                                $this->transactions->montant          = $e['interets'];
+                                $this->transactions->id_echeancier    = $e['id_echeancier'];
+                                $this->transactions->id_langue        = 'fr';
+                                $this->transactions->date_transaction = $repaymentDate;
+                                $this->transactions->status           = 1;
+                                $this->transactions->etat             = 1;
+                                $this->transactions->ip_client        = $_SERVER['REMOTE_ADDR'];
+                                $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS;
+                                $this->transactions->create();
 
-                                // euro avec ou sans "s"
-                                if ($totalEAT >= 2) {
-                                    $euros = ' euros';
-                                } else {
-                                    $euros = ' euro';
+                                try {
+                                    $iTaxOnInterests = $taxManager->taxTransaction($this->transactions);
+                                } catch (\Exception $exception) {
+                                    $oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when applying taxes on the transaction : ' .
+                                        $this->transactions->id_transaction . ' - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
+                                    throw $exception;
                                 }
-                                $rembNetEmail = $this->ficelle->formatNumber($totalEAT) . $euros;
+                                $iTotalTaxAmount += ($iTaxOnCapital + $iTaxOnInterests);
 
-                                if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
-                                    $euros = ' euros';
-                                } else {
-                                    $euros = ' euro';
-                                }
-                                $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
-                                $timeAdd = strtotime($dateDernierStatut);
-                                $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+                                $this->wallets_lines->id_lender                = $e['id_lender'];
+                                $this->wallets_lines->type_financial_operation = 40;
+                                $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
+                                $this->wallets_lines->status                   = 1; // non utilisé
+                                $this->wallets_lines->type                     = 2; // transaction virtuelle
+                                $this->wallets_lines->amount                   = $this->transactions->montant;
+                                $this->wallets_lines->create();
 
-                                $varMail = array(
-                                    'surl'                  => $surl,
-                                    'url'                   => $url,
-                                    'prenom_p'              => utf8_decode($this->clients->prenom),
-                                    'mensualite_p'          => $rembNetEmail,
-                                    'mensualite_avantfisca' => ($e['montant'] / 100),
-                                    'nom_entreprise'        => utf8_decode($this->companies->name),
-                                    'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                    'nbre_prets'            => $nbpret,
-                                    'solde_p'               => $solde,
-                                    'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
-                                    'lien_fb'               => $lien_fb,
-                                    'lien_tw'               => $lien_tw
-                                );
+                                $iTotalEAT                                     = $e['montant'] - $iTaxOnInterests - $iTaxOnCapital;
+                                $this->notifications->type       = \notifications::TYPE_REPAYMENT;
+                                $this->notifications->id_lender  = $this->lenders_accounts->id_lender_account;
+                                $this->notifications->id_project = $this->projects->id_project;
+                                $this->notifications->amount     = $iTotalEAT;
+                                $this->notifications->create();
 
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                                $this->clients_gestion_mails_notif->id_client       = $this->lenders_accounts->id_client_owner;
+                                $this->clients_gestion_mails_notif->id_notif        = \clients_gestion_type_notif::TYPE_REPAYMENT;
+                                $this->clients_gestion_mails_notif->date_notif      = $repaymentDate;
+                                $this->clients_gestion_mails_notif->id_notification = $this->notifications->id_notification;
+                                /**
+                                 * @todo replace id_transaction  by id_lender_repayment
+                                 */
+                                $this->clients_gestion_mails_notif->id_transaction = $this->transactions->id_transaction;
+                                $this->clients_gestion_mails_notif->create();
 
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                                if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
+                                    $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
+                                    $this->companies->get($this->projects->id_company, 'id_company');
 
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
+                                    $this->settings->get('Cabinet de recouvrement', 'type');
+                                    $sRecoveryCompany = $this->settings->value;
 
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($this->clients->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
-                            } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
-                                $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                                $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                                $this->clients_gestion_mails_notif->update();
+                                    $varMail = array(
+                                        'surl'             => $this->surl,
+                                        'url'              => $this->furl,
+                                        'prenom_p'         => $this->clients->prenom,
+                                        'cab_recouvrement' => $sRecoveryCompany,
+                                        'mensualite_p'     => $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100)),
+                                        'nom_entreprise'   => $this->companies->name,
+                                        'solde_p'          => $this->transactions->getSolde($this->clients->id_client),
+                                        'link_echeancier'  => $this->furl,
+                                        'motif_virement'   => $this->clients->getLenderPattern($this->clients->id_client),
+                                        'lien_fb'          => $lien_fb,
+                                        'lien_tw'          => $lien_tw
+                                    );
 
-                                //*******************************************//
-                                //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
-                                //*******************************************//
-                                $this->mails_text->get('preteur-remboursement', 'lang = "' . $this->language . '" AND type');
-                                $this->companies->get($this->projects->id_company, 'id_company');
+                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
 
-                                $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
+                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
 
-                                $surl = $this->surl;
-                                $url  = $this->furl;
+                                    $this->email = $this->loadLib('email');
+                                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                                    $this->email->setSubject(stripslashes($sujetMail));
+                                    $this->email->setHTMLBody(stripslashes($texteMail));
 
-                                // euro avec ou sans "s"
-                                if ($totalEAT >= 2) {
-                                    $euros = ' euros';
-                                } else {
-                                    $euros = ' euro';
-                                }
-                                $rembNetEmail = $this->ficelle->formatNumber($totalEAT) . $euros;
+                                    if ($this->Config['env'] === 'prod') {
+                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    } else {
+                                        $this->email->addRecipient(trim($this->clients->email));
+                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                    }
+                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
+                                    $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                    $this->clients_gestion_mails_notif->update();
+                                } elseif (isset($this->params[2]) && $this->params[2] == 'regul') {
+                                    $this->mails_text->get('preteur-regularisation-remboursement', 'lang = "' . $this->language . '" AND type');
+                                    $this->companies->get($this->projects->id_company, 'id_company');
 
-                                if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
-                                    $euros = ' euros';
-                                } else {
-                                    $euros = ' euro';
-                                }
-                                $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
-                                $timeAdd = strtotime($dateDernierStatut);
-                                $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+                                    $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
 
-                                $varMail = array(
-                                    'surl'                  => $surl,
-                                    'url'                   => $url,
-                                    'prenom_p'              => $this->clients->prenom,
-                                    'mensualite_p'          => $rembNetEmail,
-                                    'mensualite_avantfisca' => ($e['montant'] / 100),
-                                    'nom_entreprise'        => $this->companies->name,
-                                    'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
-                                    'nbre_prets'            => $nbpret,
-                                    'solde_p'               => $solde,
-                                    'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
-                                    'lien_fb'               => $lien_fb,
-                                    'lien_tw'               => $lien_tw
-                                );
+                                    $surl = $this->surl;
+                                    $url  = $this->furl;
 
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                                    // euro avec ou sans "s"
+                                    if (bcdiv($iTotalEAT, 100) >= 2) {
+                                        $euros = ' euros';
+                                    } else {
+                                        $euros = ' euro';
+                                    }
+                                    $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100)) . $euros;
 
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+                                    if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
+                                        $euros = ' euros';
+                                    } else {
+                                        $euros = ' euro';
+                                    }
+                                    $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
+                                    $timeAdd = strtotime($dateDernierStatut);
+                                    $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
+                                    $varMail = array(
+                                        'surl'                  => $surl,
+                                        'url'                   => $url,
+                                        'prenom_p'              => utf8_decode($this->clients->prenom),
+                                        'mensualite_p'          => $rembNetEmail,
+                                        'mensualite_avantfisca' => ($e['montant'] / 100),
+                                        'nom_entreprise'        => utf8_decode($this->companies->name),
+                                        'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                        'nbre_prets'            => $nbpret,
+                                        'solde_p'               => $solde,
+                                        'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
+                                        'lien_fb'               => $lien_fb,
+                                        'lien_tw'               => $lien_tw
+                                    );
 
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($this->clients->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                                    $this->email = $this->loadLib('email');
+                                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                                    $this->email->setSubject(stripslashes($sujetMail));
+                                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                                    if ($this->Config['env'] === 'prod') {
+                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    } else {
+                                        $this->email->addRecipient(trim($this->clients->email));
+                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                    }
+                                } elseif (isset($this->params[2]) && $this->params[2] == 'regul') {
+                                    $this->mails_text->get('preteur-regularisation-remboursement', 'lang = "' . $this->language . '" AND type');
+                                    $this->companies->get($this->projects->id_company, 'id_company');
+                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
+                                    $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
+                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
+                                    $this->clients_gestion_mails_notif->update();
+
+                                    //*******************************************//
+                                    //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
+                                    //*******************************************//
+                                    $this->mails_text->get('preteur-remboursement', 'lang = "' . $this->language . '" AND type');
+                                    $this->companies->get($this->projects->id_company, 'id_company');
+
+                                    $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
+
+                                    $surl = $this->surl;
+                                    $url  = $this->furl;
+
+                                    if (bcdiv($iTotalEAT, 100) >= 2) {
+                                        $euros = ' euros';
+                                    } else {
+                                        $euros = ' euro';
+                                    }
+                                    $rembNetEmail = $this->ficelle->formatNumber(bcdiv($iTotalEAT, 100)) . $euros;
+
+                                    if ($this->transactions->getSolde($this->clients->id_client) >= 2) {
+                                        $euros = ' euros';
+                                    } else {
+                                        $euros = ' euro';
+                                    }
+                                    $solde   = $this->ficelle->formatNumber($this->transactions->getSolde($this->clients->id_client)) . $euros;
+                                    $timeAdd = strtotime($dateDernierStatut);
+                                    $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
+
+                                    $varMail = array(
+                                        'surl'                  => $surl,
+                                        'url'                   => $url,
+                                        'prenom_p'              => $this->clients->prenom,
+                                        'mensualite_p'          => $rembNetEmail,
+                                        'mensualite_avantfisca' => ($e['montant'] / 100),
+                                        'nom_entreprise'        => $this->companies->name,
+                                        'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
+                                        'nbre_prets'            => $nbpret,
+                                        'solde_p'               => $solde,
+                                        'motif_virement'        => $this->clients->getLenderPattern($this->clients->id_client),
+                                        'lien_fb'               => $lien_fb,
+                                        'lien_tw'               => $lien_tw
+                                    );
+
+                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+
+                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
+                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
+                                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
+
+                                    $this->email = $this->loadLib('email');
+                                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
+                                    $this->email->setSubject(stripslashes($sujetMail));
+                                    $this->email->setHTMLBody(stripslashes($texteMail));
+
+                                    if ($this->Config['env'] === 'prod') {
+                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
+                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
+                                    } else {
+                                        $this->email->addRecipient(trim($this->clients->email));
+                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                    }
                                 }
                             }
                         }
+                    } catch (\Exception $exception) {
+                        $error = true;
+                        $oLogger->addRecord(ULogger::ERROR, 'id_project=' . $this->projects->id_project . ' - An error occured when calculating the refund details - Exception message: ' . $exception->getMessage() . ' - Exception code: ' . $exception->getCode(), array(__METHOD__));
                     }
 
-                    // partie a retirer de bank unilend
-                    $rembNetTotal = $montant - $prelevements_obligatoires - $retenues_source - $csg - $prelevements_sociaux - $contributions_additionnelles - $prelevements_solidarite - $crds;
+                    if (false === $error && 0 !== $montant) {
+                        // partie a retirer de bank unilend
+                        $rembNetTotal = $montant - $iTotalTaxAmount;
 
-                    // partie pour l'etat
-                    $TotalEtat = $prelevements_obligatoires + $retenues_source + $csg + $prelevements_sociaux + $contributions_additionnelles + $prelevements_solidarite + $crds;
-
-                    // On evite de créer une ligne qui sert a rien
-                    if ($rembNetTotal != 0) {
                         $this->transactions->montant                  = 0;
                         $this->transactions->id_echeancier            = 0; // on reinitialise
                         $this->transactions->id_client                = 0; // on reinitialise
-                        $this->transactions->montant_unilend          = - $rembNetTotal * 100;
-                        $this->transactions->montant_etat             = $TotalEtat * 100;
+                        $this->transactions->montant_unilend          = - $rembNetTotal;
+                        $this->transactions->montant_etat             = $iTotalTaxAmount;
                         $this->transactions->id_echeancier_emprunteur = $RembEmpr['id_echeancier_emprunteur']; // id de l'echeance emprunteur
                         $this->transactions->id_langue                = 'fr';
-                        $this->transactions->date_transaction         = date('Y-m-d H:i:s');
+                        $this->transactions->date_transaction         = $repaymentDate;
                         $this->transactions->status                   = 1;
                         $this->transactions->etat                     = 1;
                         $this->transactions->ip_client                = $_SERVER['REMOTE_ADDR'];
@@ -2256,8 +1914,8 @@ class dossiersController extends bootstrap
 
                         $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
                         $this->bank_unilend->id_project             = $this->projects->id_project;
-                        $this->bank_unilend->montant                = - $rembNetTotal * 100;
-                        $this->bank_unilend->etat                   = $TotalEtat * 100;
+                        $this->bank_unilend->montant                = - $rembNetTotal;
+                        $this->bank_unilend->etat                   = $iTotalTaxAmount;
                         $this->bank_unilend->type                   = 2; // remb unilend
                         $this->bank_unilend->id_echeance_emprunteur = $RembEmpr['id_echeancier_emprunteur'];
                         $this->bank_unilend->status                 = 1;
@@ -2389,24 +2047,18 @@ class dossiersController extends bootstrap
 
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception        = $_POST['id_reception'];
-                $montant_crd_preteur = ($_POST['montant_crd_preteur'] * 100);
+                $montant_crd_preteur = (int) ($_POST['montant_crd_preteur'] * 100);
 
-                $this->projects                      = $this->loadData('projects');
-                $this->echeanciers                   = $this->loadData('echeanciers');
-                $this->receptions                    = $this->loadData('receptions');
-                $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
-                $this->transactions                  = $this->loadData('transactions');
-                $this->lenders_accounts              = $this->loadData('lenders_accounts');
-                $this->clients                       = $this->loadData('clients');
-                $this->wallets_lines                 = $this->loadData('wallets_lines');
-                $this->notifications                 = $this->loadData('notifications');
-                $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
-                $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
-                $this->mails_text                    = $this->loadData('mails_text');
-                $this->companies                     = $this->loadData('companies');
-                $this->loans                         = $this->loadData('loans');
-                $loans                               = $this->loadData('loans');
-
+                $this->projects               = $this->loadData('projects');
+                $this->echeanciers            = $this->loadData('echeanciers');
+                $this->receptions             = $this->loadData('receptions');
+                $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
+                $this->transactions           = $this->loadData('transactions');
+                $this->lenders_accounts       = $this->loadData('lenders_accounts');
+                $this->clients                = $this->loadData('clients');
+                $this->wallets_lines          = $this->loadData('wallets_lines');
+                $this->mails_text             = $this->loadData('mails_text');
+                $this->companies              = $this->loadData('companies');
                 /** @var \Unilend\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');
 
@@ -2416,32 +2068,38 @@ class dossiersController extends bootstrap
 
                 // on fait encore un dernier controle sur le montant
                 if ($montant_crd_preteur == $this->receptions->montant) {
-                    // REMB ECHEANCES EMPRUNTEUR ------------------------------------------------------------------
-                    // on rembourse les échéances que l'emprunteur devait regler
-                    $sql = 'UPDATE `echeanciers_emprunteur` SET `status_emprunteur`="1", `status_ra`="1",`updated`=NOW(), `date_echeance_emprunteur_reel`=NOW() WHERE id_project="' . $this->projects->id_project . '" AND status_emprunteur = 0';
-                    $this->bdd->query($sql);
-
-                    // on signe que l'emprunteur à remb les echeances sur l'échéancier preteur
-                    $sql = 'UPDATE `echeanciers` SET `status_emprunteur`="1",`updated`=NOW(), `status_ra`="1",  `date_echeance_emprunteur_reel`=NOW() WHERE id_project="' . $this->projects->id_project . '" AND status_emprunteur = 0';
-                    $this->bdd->query($sql);
+                    $this->bdd->query('
+                        UPDATE echeanciers_emprunteur SET
+                            status_emprunteur = 1,
+                            status_ra = 1,
+                            updated = NOW(),
+                            date_echeance_emprunteur_reel = NOW()
+                        WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
+                    );
+                    $this->bdd->query('
+                        UPDATE echeanciers SET
+                            status_emprunteur = 1,
+                            updated = NOW(),
+                            status_ra = 1,
+                            date_echeance_emprunteur_reel = NOW()
+                        WHERE id_project = ' . $this->projects->id_project . ' AND status_emprunteur = 0'
+                    );
 
                     $this->prelevements = $this->loadData('prelevements');
                     $this->prelevements->delete($this->projects->id_project, 'type_prelevement = 1 AND type = 2 AND status = 0 AND id_project');
 
-                    $remboursement_anticipe_mail_a_envoyer               = $this->loadData('remboursement_anticipe_mail_a_envoyer');
-                    $remboursement_anticipe_mail_a_envoyer->id_reception = $id_reception;
-                    $remboursement_anticipe_mail_a_envoyer->statut       = 0;
-                    $remboursement_anticipe_mail_a_envoyer->create();
+                    /** @var \remboursement_anticipe_mail_a_envoyer $earlyRepaymentEmail */
+                    $earlyRepaymentEmail               = $this->loadData('remboursement_anticipe_mail_a_envoyer');
+                    $earlyRepaymentEmail->id_reception = $id_reception;
+                    $earlyRepaymentEmail->statut       = 0;
+                    $earlyRepaymentEmail->create();
 
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
 
-                    $montant_total       = 0;
-                    $L_preteur_on_projet = $this->echeanciers->get_liste_preteur_on_project($this->projects->id_project);
+                    $montant_total = 0;
 
-                    $sum_ech_restant = $this->echeanciers_emprunteur->counter('id_project = ' . $this->projects->id_project . ' AND status_ra = 1');
-
-                    foreach ($L_preteur_on_projet as $preteur) {
-                        $reste_a_payer_pour_preteur = $this->echeanciers->getSumRestanteARembByProject_capital(' AND id_lender =' . $preteur['id_lender'] . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status = 0 AND id_project = ' . $this->projects->id_project);
+                    foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $preteur) {
+                        $reste_a_payer_pour_preteur = $this->echeanciers->getOwedCapital(array('id_loan' => $preteur['id_loan']));
 
                         $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
                         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -2468,75 +2126,18 @@ class dossiersController extends bootstrap
                         $this->wallets_lines->amount                   = $reste_a_payer_pour_preteur * 100;
                         $this->wallets_lines->create();
 
-                        /////////////////// EMAIL PRETEURS REMBOURSEMENTS //////////////////
-                        //*******************************************//
-                        //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
-                        //*******************************************//
-                        $this->mails_text->get('preteur-remboursement-anticipe', 'lang = "' . $this->language . '" AND type');
-
-                        // Récupération de la sommes des intérets deja versé au lender
-                        $sum_interet = $this->echeanciers->sum('id_project = ' . $this->projects->id_project . ' AND id_loan = ' . $preteur['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $preteur['id_lender'], 'interets');
-
-                        // Remb net email
-                        if ($reste_a_payer_pour_preteur >= 2) {
-                            $euros = ' euros';
-                        } else {
-                            $euros = ' euro';
-                        }
-
-                        $rembNetEmail = $this->ficelle->formatNumber($reste_a_payer_pour_preteur) . $euros;
-
-                        // Solde preteur
-                        $getsolde = $this->transactions->getSolde($this->clients->id_client);
-                        if ($getsolde > 1) {
-                            $euros = ' euros';
-                        } else {
-                            $euros = ' euro';
-                        }
-                        $solde = $this->ficelle->formatNumber($getsolde) . $euros;
-
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
-
-                        $loans->get($preteur['id_loan'], 'id_loan');
-
-                        $varMail = array(
-                            'surl'                 => $this->surl,
-                            'url'                  => $this->furl,
-                            'prenom_p'             => $this->clients->prenom,
-                            'nomproject'           => $this->projects->title,
-                            'nom_entreprise'       => $this->companies->name,
-                            'taux_bid'             => $this->ficelle->formatNumber($loans->rate),
-                            'nbecheancesrestantes' => $sum_ech_restant,
-                            'interetsdejaverses'   => $this->ficelle->formatNumber($sum_interet),
-                            'crdpreteur'           => $rembNetEmail,
-                            'Datera'               => date('d/m/Y'),
-                            'solde_p'              => $solde,
-                            'motif_virement'       => $this->clients->getLenderPattern($this->clients->id_client),
-                            'lien_fb'              => $lien_fb,
-                            'lien_tw'              => $lien_tw
-                        );
-
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
                         $montant_total += $reste_a_payer_pour_preteur;
                     }
 
-                    // on met à jour toutes les echeances du preteur pour dire qu'elles sont remb
-                    $sql = 'UPDATE `echeanciers` SET `status`="1",`updated`=NOW(), `date_echeance_reel`=NOW(), `date_echeance_emprunteur_reel`=NOW(), status_email_remb = 1 WHERE id_project="' . $this->projects->id_project . '" AND status = 0';
-                    $this->bdd->query($sql);
+                    $this->bdd->query('
+                        UPDATE echeanciers SET
+                            status = 1,
+                            updated = NOW(),
+                            date_echeance_reel = NOW(),
+                            date_echeance_emprunteur_reel = NOW(),
+                            status_email_remb = 1
+                        WHERE id_project = ' . $this->projects->id_project . ' AND status = 0'
+                    );
 
                     // partie a retirer de bank unilend
                     if ($montant_total != 0) {
@@ -2573,11 +2174,6 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->get($r['id_unilend'], 'id_unilend');
                         $this->bank_unilend->status = 1;
                         $this->bank_unilend->update();
-                    }
-
-                    // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
-                    if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                        $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT_ANTICIPE, $this->projects);
                     }
 
                     header('Location: ' . $this->lurl . '/dossiers/detail_remb/' . $this->projects->id_project);
@@ -2619,18 +2215,17 @@ class dossiersController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->projects_status_history = $this->loadData('projects_status_history');
         $this->receptions              = $this->loadData('receptions');
-
-        $this->lRemb = $this->echeanciers->select('id_loan = ' . $this->params[1] . ' AND status_ra = 0', 'ordre ASC');
+        $this->lRemb = $this->echeanciers->getRepaymentWithTaxDetails($this->params[1]);
 
         // on check si on est en remb anticipé
         // ON recup la date de statut remb
         $dernierStatut = $this->projects_status_history->select('id_project = ' . $this->params[0], 'id_project_status_history DESC', 0, 1);
 
         $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
+        $this->montant_ra = 0;
 
         if ($dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
-            //récupération du montant de la transaction du CRD pour afficher la ligne en fin d'échéancier
-            $this->montant_ra = $this->echeanciers->sum('id_project = ' . $this->params[0] . ' AND status_ra = 1 AND status = 1 AND id_loan = ' . $this->params[1], 'capital');
+            $this->montant_ra = $this->echeanciers->getEarlyRepaidCapital(array('id_loan' => $this->params[1]));
             $this->date_ra    = $dernierStatut[0]['added'];
         }
     }
@@ -2726,7 +2321,7 @@ class dossiersController extends bootstrap
                     $iLastOrderDate         = strtotime($sLastOrderDate);
                     $sBusinessDaysOrderDate = $oBusinessDays->display_jours_ouvres($iLastOrderDate, 4);
                 } else {
-                    $this->date_next_echeance_4jouvres_avant = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
+                    $this->nextRepaymentDate = "Aucune &eacute;ch&eacute;ance &agrave; venir dans le futur";
                 }
             } else {
                 // on va recup la date de la derniere echeance qui suit le process de base
@@ -2736,8 +2331,8 @@ class dossiersController extends bootstrap
         }
 
         if (false === empty($sBusinessDaysOrderDate)) {
-            $this->date_next_echeance_4jouvres_avant = date('d/m/Y', $sBusinessDaysOrderDate);
-            $this->date_next_echeance                = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
+            $this->nextRepaymentDate  = date('d/m/Y', $sBusinessDaysOrderDate);
+            $this->date_next_echeance = $this->dates->formatDateMysqltoFr_HourOut($sLastOrderDate);
         }
 
         $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
@@ -3095,10 +2690,10 @@ class dossiersController extends bootstrap
             'surl'                   => $this->surl,
             'adresse_emprunteur'     => $sBorrowerEmail,
             'telephone_emprunteur'   => $sBorrowerPhoneNumber,
-            'prenom'                 => utf8_decode($oClients->prenom),
-            'raison_sociale'         => utf8_decode($oCompanies->name),
+            'prenom'                 => $oClients->prenom,
+            'raison_sociale'         => $oCompanies->name,
             'lien_reprise_dossier'   => $this->furl . '/depot_de_dossier/fichiers/' . $oProjects->hash,
-            'liste_pieces'           => isset($_SESSION['project_submission_files_list'][ $oProjects->id_project ]) ? utf8_encode($_SESSION['project_submission_files_list'][ $oProjects->id_project ]) : '',
+            'liste_pieces'           => isset($_SESSION['project_submission_files_list'][ $oProjects->id_project ]) ? $_SESSION['project_submission_files_list'][ $oProjects->id_project ] : '',
             'lien_fb'                => $lien_fb,
             'lien_tw'                => $lien_tw,
             'lien_stop_relance'      => $this->furl . '/depot_de_dossier/emails/' . $oProjects->hash,

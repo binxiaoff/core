@@ -219,18 +219,6 @@ class loans extends loans_crud
         return $montant;
     }
 
-    public function getSumPretsByMonths($id_lender, $year)
-    {
-        $sql = 'SELECT SUM(amount/100) AS montant, LEFT(added,7) AS date FROM loans WHERE YEAR(added) = ' . $year . ' AND id_lender = ' . $id_lender . ' AND status = 0 GROUP BY LEFT(added,7)';
-        $req = $this->bdd->query($sql);
-        $res = array();
-        while ($rec = $this->bdd->fetch_array($req)) {
-            $d          = explode('-', $rec['date']);
-            $res[$d[1]] = $rec['montant'];
-        }
-        return $res;
-    }
-
     public function sum($where = '', $champ)
     {
         if ($where != '') {
@@ -248,6 +236,10 @@ class loans extends loans_crud
     // On recup la liste des loans d'un preteur en les regoupant par projet
     public function getSumLoansByProject($iLenderAccountId, $sOrder = null, $iYear = null, $iProjectStatus = null)
     {
+        $aPyedRepayment = array(
+            \echeanciers::STATUS_REPAID,
+            \echeanciers::STATUS_PARTIALLY_REPAID
+        );
         $result   = array();
         $resultat = $this->bdd->query('
             SELECT
@@ -259,6 +251,7 @@ class loans extends loans_crud
                 c.zip,
                 p.risk,
                 ps.status AS project_status,
+                ps.label AS project_status_label,
                 psh.added AS status_change,
                 SUM(ROUND(l.amount / 100, 2)) AS amount,
                 ROUND(SUM(rate * l.amount) / SUM(l.amount), 2) AS rate,
@@ -269,7 +262,17 @@ class loans extends loans_crud
                 DATE((SELECT MIN(e.date_echeance) FROM echeanciers e WHERE e.id_loan = l.id_loan AND e.ordre = 1)) AS debut,
                 DATE((SELECT MAX(e1.date_echeance) FROM echeanciers e1 WHERE e1.id_loan = l.id_loan)) AS fin,
                 DATE((SELECT MIN(e2.date_echeance) FROM echeanciers e2 WHERE e2.id_loan = l.id_loan AND e2.status = 0)) AS next_echeance,
-                SUM((SELECT (ROUND(e3.montant / 100, 2) - ROUND(e3.prelevements_obligatoires + e3.retenues_source + e3.csg + e3.prelevements_sociaux + e3.contributions_additionnelles + e3.prelevements_solidarite + e3.crds, 2)) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status = 0 AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status = 0) LIMIT 1)) AS mensuel
+                SUM((SELECT (ROUND(e3.montant / 100, 2) - 
+              
+                ROUND(
+                   (SELECT SUM(ifnull(tax.amount, 0) / 100)
+                   FROM tax
+                   WHERE tax.id_transaction =
+                         (SELECT t.id_transaction
+                          FROM transactions t
+                          WHERE t.id_echeancier = e3.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '))
+                    , 2)
+                ) FROM echeanciers e3 WHERE e3.id_loan = l.id_loan AND e3.status IN (' . implode(', ', $aPyedRepayment) . ') AND e3.date_echeance = (SELECT MIN(e4.date_echeance) FROM echeanciers e4 WHERE e4.id_loan = l.id_loan AND e4.status IN (' . implode(', ', $aPyedRepayment) . ') ) LIMIT 1)) AS last_perceived_repayment
             FROM loans l
             LEFT JOIN projects p ON l.id_project = p.id_project
             LEFT JOIN companies c ON p.id_company = c.id_company

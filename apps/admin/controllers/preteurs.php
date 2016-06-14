@@ -74,7 +74,7 @@ class preteursController extends bootstrap
 
     public function _gestion()
     {
-        $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
+        $this->loadData('transactions_types'); //To be able to use transactions_types class constants
         $this->clients = $this->loadData('clients');
 
         if (isset($_POST['form_search_preteur'])) {
@@ -90,7 +90,8 @@ class preteursController extends bootstrap
             \transactions_types::TYPE_LENDER_SUBSCRIPTION,
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-            \transactions_types::TYPE_LENDER_REPAYMENT,
+            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
+            \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS,
             \transactions_types::TYPE_LENDER_WITHDRAWAL,
             \transactions_types::TYPE_DIRECT_DEBIT,
             \transactions_types::TYPE_LENDER_REGULATION
@@ -158,10 +159,9 @@ class preteursController extends bootstrap
         $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
 
         $this->echeanciers    = $this->loadData('echeanciers');
-        $this->sumRembInte    = $this->echeanciers->getSumRemb($this->lenders_accounts->id_lender_account, 'interets');
+        $this->sumRembInte    = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account));
         $this->nextRemb       = $this->echeanciers->getNextRemb($this->lenders_accounts->id_lender_account);
-        $sumRembMontant       = $this->echeanciers->getSumRembV2($this->lenders_accounts->id_lender_account);
-        $this->sumRembMontant = $sumRembMontant['montant'];
+        $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account));
 
         $this->bids           = $this->loadData('bids');
         $this->avgPreteur     = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');
@@ -193,7 +193,8 @@ class preteursController extends bootstrap
             \transactions_types::TYPE_LENDER_SUBSCRIPTION            => $this->lng['profile']['versement-initial'],
             \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT      => $this->lng['profile']['alimentation-cb'],
             \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT    => $this->lng['profile']['alimentation-virement'],
-            \transactions_types::TYPE_LENDER_REPAYMENT               => 'Remboursement',
+            \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL       => 'Remboursement de capital',
+            \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS     => 'Remboursement d\'intérêts',
             \transactions_types::TYPE_DIRECT_DEBIT                   => $this->lng['profile']['alimentation-prelevement'],
             \transactions_types::TYPE_LENDER_WITHDRAWAL              => $this->lng['profile']['retrait'],
             \transactions_types::TYPE_LENDER_REGULATION              => 'Régularisation prêteur',
@@ -1280,98 +1281,91 @@ class preteursController extends bootstrap
         $this->aInfosNotifications['vos-offres-et-vos-projets']['title'] = 'Offres et Projets';
         $this->aInfosNotifications['vos-offres-et-vos-projets']['notifications'] = array(
             \clients_gestion_type_notif::TYPE_NEW_PROJECT => array(
-                'title' => 'Annonce des nouveaux projets',
+                'title'           => 'Annonce des nouveaux projets',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_PLACED => array(
-                'title' => 'Offres réalisées',
+                'title'           => 'Offres réalisées',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_BID_REJECTED => array(
-                'title' => 'Offres refusées',
+                'title'           => 'Offres refusées',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED => array(
-                'title' => 'Offres acceptées',
+                'title'           => 'Offres acceptées',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_LOW => array(
-                'title' => 'AutoLend soldes faible',
+            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
+                'title'           => 'Problème sur un projet',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_AUTOBID_BALANCE_INSUFFICIENT => array(
-                'title' => 'AutoLend soldes insuffisante',
+            \clients_gestion_type_notif::TYPE_AUTOBID_ACCEPTED_REJECTED_BID => array(
+                'title'           => 'Autolend : offre réalisée ou rejetée',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->aInfosNotifications['vos-remboursements']['title'] = 'Offres et Projets';
         $this->aInfosNotifications['vos-remboursements']['notifications'] = array(
             \clients_gestion_type_notif::TYPE_REPAYMENT => array(
-                'title' => 'Remboursement(s)',
+                'title'           => 'Remboursement(s)',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_DAILY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_WEEKLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_MONTHLY,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
-            \clients_gestion_type_notif::TYPE_PROJECT_PROBLEM => array(
-                'title' => 'Problème sur un projet',
-                'available_types' => array(
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
-                    \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
         $this->aInfosNotifications['mouvements-sur-votre-compte']['title'] = 'Mouvements sur le compte';
         $this->aInfosNotifications['mouvements-sur-votre-compte']['notifications'] = array(
             \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT => array(
-                'title' => 'Alimentation de votre compte par virement',
+                'title'           => 'Alimentation de votre compte par virement',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
-            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT   => array(
-                'title' => 'Alimentation de votre compte par carte bancaire',
+            \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT => array(
+                'title'           => 'Alimentation de votre compte par carte bancaire',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
+                )
             ),
             \clients_gestion_type_notif::TYPE_DEBIT => array(
-                'title' => 'retrait',
+                'title'           => 'retrait',
                 'available_types' => array(
                     \clients_gestion_notifications::TYPE_NOTIFICATION_IMMEDIATE,
                     \clients_gestion_notifications::TYPE_NOTIFICATION_NO_MAIL
-                ),
-            ),
+                )
+            )
         );
 
         if (isset($_SESSION['FilterMails'])) {
@@ -1400,6 +1394,8 @@ class preteursController extends bootstrap
 
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
+        $this->echeanciers = $this->loadData('echeanciers');
+        $this->tax = $this->loadData('tax');
 
         $this->lenders_accounts->get($this->params[0], 'id_lender_account');
         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -1448,7 +1444,7 @@ class preteursController extends bootstrap
         $this->bIsBetaTester       = $oClientManager->isBetaTester($this->clients);
 
         $this->aAutoBidSettings = array();
-        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE));
+        $aAutoBidSettings       = $oAutoBidSettingsManager->getSettings($this->lenders_accounts->id_lender_account, null, null, array(\autobid::STATUS_ACTIVE, \autobid::STATUS_INACTIVE), 'ap.min ASC, evaluation DESC');
         foreach ($aAutoBidSettings as $aSetting) {
             $aPeriod = $oAutoBidPeriod->getDurations($aSetting['id_autobid_period']);
             if ($aPeriod) {
@@ -1511,212 +1507,6 @@ class preteursController extends bootstrap
         $oLendersImpositionHistory->id_pays           = $oClientsAdresses->id_pays_fiscal;
         $oLendersImpositionHistory->id_user           = $_SESSION['user']['id_user'];
         $oLendersImpositionHistory->create();
-    }
-
-    public function _modify_passed_repaymet_schedule()
-    {
-        $aMatch                  = array();
-        $aNonMatch               = array();
-        $this->aChangesRepayment = array();
-        $aFieldCanBeModified     = array(
-            'montant',
-            'capital',
-            'interets',
-            'prelevements_obligatoires',
-            'retenues_source',
-            'csg',
-            'prelevements_sociaux',
-            'contributions_additionnelles',
-            'prelevements_solidarite',
-            'crds'
-        );
-
-        if (isset($_FILES['echeances_csv'])) {
-            $rFile = fopen($_FILES['echeances_csv']['tmp_name'], 'r');
-            if ($aKeys = fgetcsv($rFile, 0, ';')) {
-                /** @var echeanciers $oEcheanciers */
-                $oEcheanciers = $this->loadData('echeanciers');
-                /** @var transactions $oTransactionsLender */
-                $oTransactionsLender = $this->loadData('transactions');
-                /** @var wallets_lines $oWalletLine */
-                $oWalletLine = $this->loadData('wallets_lines');
-                /** @var echeanciers_emprunteur $oEcheanciersEmprunteur */
-                $oEcheanciersEmprunteur = $this->loadData('echeanciers_emprunteur');
-                /** @var transactions $oTransactionsUnilend */
-                $oTransactionsUnilend = $this->loadData('transactions');
-                /** @var bank_unilend $oBankUnilend */
-                $oBankUnilend = $this->loadData('bank_unilend');
-                while (($aRow = fgetcsv($rFile, 0, ';')) !== false) {
-                    $oEcheanciers->unsetData();
-                    $oTransactionsLender->unsetData();
-                    $oWalletLine->unsetData();
-                    $oEcheanciersEmprunteur->unsetData();
-                    $oTransactionsUnilend->unsetData();
-                    $oBankUnilend->unsetData();
-
-                    $aRepayment = array_combine($aKeys, $aRow);
-                    if ('' === $aRepayment['id_echeancier']
-                        || false === $oEcheanciers->get($aRepayment['id_echeancier'])
-                        || $oEcheanciers->id_lender != $aRepayment['id_lender']
-                        || $oEcheanciers->id_project != $aRepayment['id_project']
-                        || $oEcheanciers->id_loan != $aRepayment['id_loan']
-                    ) {
-                        $aNonMatch[] = $aRepayment;
-                        continue;
-                    }
-                    $aRepaymentOld = array_shift($oEcheanciers->selectEcheances_a_remb('id_echeancier = ' . $aRepayment['id_echeancier']));
-
-                    foreach ($aRepayment as $sKey => &$sValue) {
-                        if (false === in_array($sKey, $aFieldCanBeModified)) {
-                            continue;
-                        }
-                        $sValue                     = str_replace(',', '.', $sValue);
-                        $aRepayment[$sKey . '_old'] = $oEcheanciers->$sKey;
-                        $oEcheanciers->$sKey        = $sValue;
-                        $aMatch[$aRepayment['id_echeancier']] = $aRepayment;
-                    }
-                    $oEcheanciers->update();
-
-                    $aRepaymentNew = array_shift($oEcheanciers->selectEcheances_a_remb('id_echeancier = ' . $aRepayment['id_echeancier']));
-
-                    $iRepaymentNetDiff = ($aRepaymentNew['rembNet'] - $aRepaymentOld['rembNet']) * 100;
-                    $iRepaymentTaxDiff = ($aRepaymentNew['etat'] - $aRepaymentOld['etat']) * 100;
-
-                    if (0 != $iRepaymentNetDiff) {
-                        // Update transaction type "Remboursement prêteur"
-                        if (false === $oTransactionsLender->get($aRepayment['id_echeancier'], 'type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' AND id_echeancier')) {
-                            $aTransaction = array_shift($oTransactionsLender->select('type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT . ' AND id_echeancier = ' . $aRepayment['id_echeancier']));
-                            if (null === $aTransaction || false === $oTransactionsLender->get($aTransaction['id_transaction'])) {
-                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
-                                $aNonMatch[] = $aRepayment;
-                                unset($aMatch[$aRepayment['id_echeancier']]);
-                                continue;
-                            }
-                        }
-                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsLender->id_transaction, 'montant', $oTransactionsLender->montant . ' + (' . $iRepaymentNetDiff . ')');
-
-                        $oTransactionsLender->montant += $iRepaymentNetDiff;
-                        $oTransactionsLender->update();
-
-                        if (false === $oWalletLine->get($oTransactionsLender->id_transaction, 'id_transaction')) {
-                            $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
-                            $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
-                            $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
-                            $aNonMatch[] = $aRepayment;
-                            unset($aMatch[$aRepayment['id_echeancier']]);
-                            continue;
-                        }
-                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'wallets_lines', $oWalletLine->id_wallet_line, 'amount', $oWalletLine->amount . ' + (' . $iRepaymentNetDiff . ')');
-
-                        $oWalletLine->amount += $iRepaymentNetDiff;
-                        $oWalletLine->update();
-                    }
-
-                    if (0 != $iRepaymentNetDiff || 0 != $iRepaymentTaxDiff) {
-                        // Update transaction type "Remboursement Unilend"
-                        $aPaymentSchedule = array_shift($oEcheanciersEmprunteur->select('id_project = ' . $aRepayment['id_project'] . ' AND ordre = ' . $aRepayment['ordre']));
-                        if (null === $aPaymentSchedule) {
-                            $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
-                            $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
-                            $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
-                            $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
-                            $aNonMatch[] = $aRepayment;
-                            unset($aMatch[$aRepayment['id_echeancier']]);
-                            continue;
-                        }
-                        if (false === $oTransactionsUnilend->get($aPaymentSchedule['id_echeancier_emprunteur'], 'type_transaction = ' . \transactions_types::TYPE_UNILEND_REPAYMENT . ' AND id_echeancier_emprunteur')) {
-                            $aTransactionUnilend = array_shift($oTransactionsUnilend->select('type_transaction = ' . \transactions_types::TYPE_UNILEND_REPAYMENT . ' AND id_echeancier_emprunteur = ' . $aPaymentSchedule['id_echeancier_emprunteur']));
-                            if (null === $aTransactionUnilend || false === $oTransactionsUnilend->get($aTransactionUnilend['id_transaction'])) {
-                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
-                                $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
-                                $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
-                                $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
-                                $aNonMatch[] = $aRepayment;
-                                unset($aMatch[$aRepayment['id_echeancier']]);
-                                continue;
-                            }
-                        }
-                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_unilend', $oTransactionsUnilend->montant_unilend . ' + (' . -1 * $iRepaymentNetDiff . ')');
-                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'transactions', $oTransactionsUnilend->id_transaction, 'montant_etat', $oTransactionsUnilend->montant_etat . ' + (' . $iRepaymentTaxDiff . ')');
-
-                        $oTransactionsUnilend->montant_unilend += - $iRepaymentNetDiff;
-                        $oTransactionsUnilend->montant_etat    += $iRepaymentTaxDiff;
-                        $oTransactionsUnilend->update();
-
-                        // Update bank unilend type "Remboursement prêteur"
-                        if (false === $oBankUnilend->get($oTransactionsUnilend->id_transaction, 'type = 2 AND id_transaction')) {
-                            $aBankUnilend = array_shift($oBankUnilend->select('type = 2 and id_transaction = ' . $oTransactionsUnilend->id_transaction));
-                            if (null === $aBankUnilend || false === $oBankUnilend->get($aBankUnilend['id_unilend'])) {
-                                $this->rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified);
-                                $this->rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff);
-                                $this->rollbackWalletLine($oWalletLine, $iRepaymentNetDiff);
-                                $this->rollbackTransactionUnilend($oTransactionsUnilend, $iRepaymentNetDiff, $iRepaymentTaxDiff);
-                                $this->removeLogChangesSchedule($aRepayment['id_echeancier']);
-                                $aNonMatch[] = $aRepayment;
-                                unset($aMatch[$aRepayment['id_echeancier']]);
-                                continue;
-                            }
-                        }
-                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'bank_unilend', $oBankUnilend->id_unilend, 'montant', $oBankUnilend->montant . ' + (' . -1 * $iRepaymentNetDiff . ')');
-                        $this->addLogChangesSchedule($aRepayment['id_echeancier'], 'bank_unilend', $oBankUnilend->id_unilend, 'etat', $oBankUnilend->etat . ' + (' . $iRepaymentTaxDiff . ')');
-
-                        $oBankUnilend->montant += -1 * $iRepaymentNetDiff;
-                        $oBankUnilend->etat += $iRepaymentTaxDiff;
-                        $oBankUnilend->update();
-                    }
-                }
-            }
-            $this->aTemplateVariables = array(
-                'aMatch'    => $aMatch,
-                'aNonMatch' => $aNonMatch,
-                'aChanges'  => $this->aChangesRepayment
-            );
-        }
-    }
-
-    private function rollbackRepayment($aRepayment, $oEcheanciers, $aFieldCanBeModified)
-    {
-        foreach ($aRepayment as $sKey => $sValue) {
-            if (false === in_array($sKey, $aFieldCanBeModified)) {
-                continue;
-            }
-            $oEcheanciers->$sKey = $aRepayment[$sKey . '_old'];
-        }
-        $oEcheanciers->update();
-    }
-
-    private function rollbackTransactionLender($oTransactionsLender, $iRepaymentNetDiff)
-    {
-        $oTransactionsLender->montant -= $iRepaymentNetDiff;
-        $oTransactionsLender->update();
-    }
-
-    private function rollbackWalletLine($oWalletLine, $iRepaymentNetDiff)
-    {
-        $oWalletLine->amount -= $iRepaymentNetDiff;
-        $oWalletLine->update();
-    }
-
-    private function rollbackTransactionUnilend($oTransactionsUnilend, $iRepaymentNetDiff, $iRepaymentTaxDiff)
-    {
-        $oTransactionsUnilend->montant      -= (-1 * $iRepaymentNetDiff);
-        $oTransactionsUnilend->montant_etat -= $iRepaymentTaxDiff;
-        $oTransactionsUnilend->update();
-    }
-
-    private function addLogChangesSchedule($iIdSchedule, $sTable, $iId, $sColumn, $sMovement)
-    {
-        $this->aChangesRepayment[$iIdSchedule][] = array(
-            'table' => $sTable,
-            'id'    => $iId,
-            'column' => $sColumn,
-            'movement' => $sMovement
-        );
-    }
-
-    private  function removeLogChangesSchedule($iIdSchedule)
-    {
-        unset($this->aChangesRepayment[$iIdSchedule]);
     }
 
     private function changeClientStatus(\clients $oClient, $iStatus, $iOrigin)
@@ -1890,46 +1680,94 @@ class preteursController extends bootstrap
     {
         $this->hideDecoration();
         $this->autoFireView = false;
+        $iClientId          = filter_var($_POST['id_client'], FILTER_VALIDATE_INT);
 
-        $oLendersAccounts = $this->loadData('lenders_accounts');
-        $oLendersAccounts->get($_POST['id_client'], 'id_client_owner');
-
-        $sSwift           = strtoupper($_POST['bic']);
-        $bBicOk           = true;
-        $bIbanOk          = true;
-        $sIban            = '';
-        $sRibChangeStatus = 'ok';
-
-        if ($this->ficelle->swift_validate(trim($sSwift))) {
-            $oLendersAccounts->bic = str_replace(' ', '', strtoupper($sSwift));
-        } else {
-            $bBicOk = false;
+        if (false === $iClientId) {
+            echo json_encode(array('text' => 'Une erreur est survenue', 'severity' => 'error'));
+            return;
         }
+        /** @var \lenders_accounts $oLendersAccounts */
+        $oLendersAccounts = $this->loadData('lenders_accounts');
+        $oLendersAccounts->get($iClientId, 'id_client_owner');
+
+        $sCurrrentBic = $oLendersAccounts->bic;
+        $sNewBic      = str_replace(' ', '', strtoupper($_POST['bic']));
+        $sIban        = '';
 
         for ($i = 1; $i <= 7; $i++) {
             if (empty($_POST['iban' . $i])) {
-                $bIbanOk = false;
-                break;
+                echo json_encode(array('text' => 'IBAN incorrect', 'severity' => 'error'));
+                return;
             }
             $sIban .= strtoupper($_POST['iban' . $i]);
         }
+        $sCurrentIban = $oLendersAccounts->iban;
+        $sNewIban     = str_replace(' ', '', $sIban);
+        /** @var \Unilend\Service\MailerManager $oMailerManager */
+        $oMailerManager = $this->get('MailerManager');
 
-        if ($bIbanOk && $this->ficelle->isIBAN($sIban)) {
-            $oLendersAccounts->iban = str_replace(' ', '', $sIban);
+        if ($sCurrrentBic !== $sNewBic && $sCurrentIban !== $sNewIban) {
+            if ($this->validateBic($sNewBic, $oLendersAccounts) && $this->validateIban($sNewIban, $oLendersAccounts)) {
+                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
+                $sMessage = 'Bic et IBAN modifiés';
+                $sSeverity   = 'valid';
+                $oLendersAccounts->update();
+            } else {
+                $sMessage = 'BIC / IBAN incorrect';
+                $sSeverity   = 'error';
+            }
+        } elseif ($sCurrrentBic !== $sNewBic) {
+            if ($this->validateBic($sNewBic, $oLendersAccounts)) {
+                $sMessage = 'BIC modifié';
+                $sSeverity   = 'valid';
+                $oLendersAccounts->update();
+            } else {
+                $sMessage = 'BIC incorrect';
+                $sSeverity   = 'error';
+            }
+        } elseif ($sCurrentIban !== $sNewIban) {
+            if ($this->validateIban($sNewIban, $oLendersAccounts)) {
+                $oMailerManager->sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban);
+                $sMessage = 'IBAN modifié';
+                $sSeverity   = 'valid';
+                $oLendersAccounts->update();
+            } else {
+                $sMessage = 'IBAN incorrect';
+                $sSeverity   = 'error';
+            }
         } else {
-            $bIbanOk = false;
+            echo json_encode(array('text' => 'Aucune modification', 'severity' => 'warning'));
+            return;
         }
+        echo json_encode(array('text' => $sMessage, 'severity' => $sSeverity));
+    }
 
-        if (false === $bBicOk && false === $bIbanOk) {
-            $sRibChangeStatus = 'both_ko';
-        } else if (false === $bBicOk) {
-            $sRibChangeStatus = 'bic_ko';
-        } else if (false === $bIbanOk) {
-            $sRibChangeStatus = 'iban_ko';
+    /**
+     * @param string $sNewBic
+     * @param \lenders_accounts $oLendersAccounts
+     * @return bool
+     */
+    private function validateBic($sNewBic, \lenders_accounts &$oLendersAccounts)
+    {
+        if ($this->ficelle->swift_validate($sNewBic)) {
+            $oLendersAccounts->bic = $sNewBic;
+            return true;
         }
+        return false;
+    }
 
-        $oLendersAccounts->update();
-        echo $sRibChangeStatus;
+    /**
+     * @param string $sNewIban
+     * @param \lenders_accounts $oLendersAccounts
+     * @return bool
+     */
+    private function validateIban($sNewIban, \lenders_accounts &$oLendersAccounts)
+    {
+        if ($this->ficelle->isIBAN($sNewIban)) {
+            $oLendersAccounts->iban = $sNewIban;
+            return true;
+        }
+        return false;
     }
 
     public function _lenderOnlineOffline()

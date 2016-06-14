@@ -25,70 +25,44 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-
-class indexage_suivi extends indexage_suivi_crud
+class lender_repayment extends lender_repayment_crud
 {
-
-    function indexage_suivi($bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
-        parent::indexage_suivi($bdd, $params);
+        parent::lender_repayment($bdd, $params);
     }
 
-    function get($id, $field = 'id_indexage_suivi')
-    {
-        return parent::get($id, $field);
-    }
-
-    function update($cs = '')
-    {
-        parent::update($cs);
-    }
-
-    function delete($id, $field = 'id_indexage_suivi')
-    {
-        parent::delete($id, $field);
-    }
-
-    function create($cs = '')
-    {
-        $id = parent::create($cs);
-        return $id;
-    }
-
-    function select($where = '', $order = '', $start = '', $nb = '')
+    public function select($where = '', $order = '', $start = '', $nb = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
+
         if ($order != '') {
             $order = ' ORDER BY ' . $order;
         }
-        $sql = 'SELECT * FROM `indexage_suivi`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
-        $resultat = $this->bdd->query($sql);
+        $sql = 'SELECT * FROM lender_repayment' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
     }
 
-    function counter($where = '')
+    public function counter($where = '')
     {
         if ($where != '') {
             $where = ' WHERE ' . $where;
         }
 
-        $sql = 'SELECT count(*) FROM `indexage_suivi` ' . $where;
-
-        $result = $this->bdd->query($sql);
-        return (int) ($this->bdd->result($result, 0, 0));
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM lender_repayment' . $where));
     }
 
-    function exist($id, $field = 'id_indexage_suivi')
+    public function exist($id, $field = 'id_lender_repayment')
     {
-        $sql    = 'SELECT * FROM `indexage_suivi` WHERE ' . $field . '="' . $id . '"';
-        $result = $this->bdd->query($sql);
-        return ($this->bdd->fetch_array($result) > 0);
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM lender_repayment WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }

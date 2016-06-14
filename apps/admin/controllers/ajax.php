@@ -733,7 +733,8 @@ class ajaxController extends bootstrap
                 \transactions_types::TYPE_LENDER_SUBSCRIPTION         => $this->lng['profile']['versement-initial'],
                 \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT   => $this->lng['profile']['alimentation-cb'],
                 \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT => $this->lng['profile']['alimentation-virement'],
-                \transactions_types::TYPE_LENDER_REPAYMENT            => 'Remboursement',
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL    => 'Remboursement de capital',
+                \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS  => 'Remboursement d\'intérêts',
                 \transactions_types::TYPE_DIRECT_DEBIT                => $this->lng['profile']['alimentation-prelevement'],
                 \transactions_types::TYPE_LENDER_WITHDRAWAL           => $this->lng['profile']['retrait'],
                 \transactions_types::TYPE_LENDER_REGULATION           => 'Régularisation prêteur',
@@ -1516,7 +1517,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
-            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['list'])) . '</ul>' . nl2br(htmlentities(utf8_decode($_POST['content'])));
+            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['list']) . '</ul>' . nl2br($_POST['content']);
             echo 'ok';
         } else {
             echo 'nok';

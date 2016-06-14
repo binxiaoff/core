@@ -50,12 +50,12 @@ if(strtotime($this->clients->added) >= $dateDepartControlPays)
 
         <div class="row">
             <span class="pass-field-holder">
-                <input type="text" name="email" id="email" title="<?= $this->lng['etape1']['email'] ?>" value="<?= ($this->clients->email != '' ? $this->clients->email : $this->lng['etape1']['email']) ?>" class="field field-large required" data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" onkeyup="checkConf(this.value,'conf_email')">
+                <input type="text" name="email" id="email" title="<?= $this->lng['etape1']['email'] ?>" value="<?= ($this->clients->email != '' ? $this->clients->email : $this->lng['etape1']['email']) ?>" class="field field-large required" data-validators="Presence&amp;Email&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" placeholder="<?= $this->lng['etape1']['email'] ?>" onkeyup="checkConf(this, this.value,'conf_email')">
                 <em><?= $this->lng['etape1']['info-email'] ?></em>
             </span>
 
             <span class="pass-field-holder">
-                <input type="text" name="conf_email" id="conf_email" title="<?= $this->lng['etape1']['confirmation-email'] ?>" value="<?= ($this->clients->email != '' ? $this->clients->email : $this->lng['etape1']['confirmation-email']) ?>" class="field field-large required" data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}">
+                <input type="text" name="conf_email" id="conf_email" title="<?= $this->lng['etape1']['confirmation-email'] ?>" value="<?= ($this->clients->email != '' ? $this->clients->email : $this->lng['etape1']['confirmation-email']) ?>" class="field field-large required" data-validators="Confirmation,{ match: 'email' }&amp;Format,{ pattern:/^((?!@yopmail.com).)*$/}" placeholder="<?= $this->lng['etape1']['confirmation-email'] ?>" onkeyup="checkConf(this, this.value,'email')">
             </span>
         </div><!-- /.row -->
 

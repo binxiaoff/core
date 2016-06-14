@@ -1,11 +1,11 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html lang="en-US" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
+<html lang="fr-FR" xmlns="http://www.w3.org/1999/xhtml" dir="ltr">
 <head>
-    <title>Vos operations indexation</title>
+    <title>Vos operations</title>
     <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
-    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/style.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/style-edit.css" type="text/css" media="all" />
-    <link rel="stylesheet" href="<?=$this->surl?>/styles/default/pdf/styleOperations.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/style.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/style-edit.css" type="text/css" media="all" />
+    <link rel="stylesheet" href="<?= $this->surl ?>/styles/default/pdf/styleOperations.css" type="text/css" media="all" />
 </head>
 <body>
 <div class="pdfHeader">
@@ -21,10 +21,11 @@
         <br/><br/><br/>
         <?php
 
-        if (isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0) :
-            $this->companies->get($this->oLendersAccounts->id_company, 'id_company');
+        if (false === empty($this->oLendersAccounts->id_company_owner)) :
+            $this->companies->get($this->oLendersAccounts->id_company_owner);
             ?>
             <b><?= $this->companies->name ?></b><br/>
+            <b><?= $this->clients->prenom . ' ' . $this->clients->nom ?></b><br/>
             <?= $this->companies->adresse1 ?><br/>
             <?= $this->companies->zip . ' ' . $this->companies->city ?>
         <?php else : ?>
@@ -36,48 +37,22 @@
 
     <div style="clear:both;"></div>
     <br/>
-    <b><?= $this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n'] ?><?= $this->clients->id_client ?></b><br/>
-    <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0 ? $this->companies->name : $this->clients->prenom . ' ' . $this->clients->nom) ?>
-    <br/>
-    <?php if (isset($this->oLendersAccounts->id_company) && $this->oLendersAccounts->id_company != 0) : ?>
-        <?= $this->lng['preteur-operations-pdf']['Representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?>
-        <br/>
+    <strong><?= $this->lng['preteur-operations-pdf']['objet-releve-doperations-de-votre-compte-unilend-n'] ?><?= $this->clients->id_client ?></strong><br />
+    <?= $this->lng['preteur-operations-pdf']['titulaire'] ?> <?= (empty($this->oLendersAccounts->id_company_owner) ? $this->clients->prenom . ' ' . $this->clients->nom : $this->companies->name) ?><br/>
+    <?php if (false === empty($this->oLendersAccounts->id_company_owner)) : ?>
+        <?= $this->lng['preteur-operations-pdf']['representant-legal'] ?> <?= $this->clients->civilite . ' ' . $this->clients->prenom . ' ' . $this->clients->nom ?><br/>
     <?php endif; ?>
 </div>
 <br /><br />
 
 <table class="table vos_operations" border="0" cellspacing="0" cellpadding="0">
     <tr>
-        <th width="200px" id="order_operations" class="col1">
-            <div align="left" class="th-wrap" style='top:-3px;width:300px;'>
-                <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['operations'] ?>&nbsp;</div>
-            </div>
-        </th>
-        <th width="180px" id="order_date">
-            <div align="left" class="th-wrap">
-                <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?>&nbsp;</div>
-            </div>
-        </th>
-        <th width="180px" id="order_date">
-            <div align="left" class="th-wrap">
-                <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?>&nbsp;</div>
-            </div>
-        </th>
-        <th width="180px" id="order_date">
-            <div align="left" class="th-wrap">
-                <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?>&nbsp;</div>
-            </div>
-        </th>
-        <th width="180px" id="order_montant">
-            <div align="left" class="th-wrap" style="top:-2px;">
-                <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?>&nbsp;</div>
-            </div>
-        </th>
-        <th width="140px" id="solde">
-            <div align="left" class="th-wrap" style="top:-2px;">
-                <div class="title-ope"><?= $this->lng['preteur-operations-pdf']['info-titre-solde-compte'] ?>&nbsp;</div>
-            </div>
-        </th>
+        <th><?= $this->lng['preteur-operations-pdf']['operations'] ?></th>
+        <th><?= $this->lng['preteur-operations-pdf']['info-titre-loan-id'] ?></th>
+        <th><?= $this->lng['preteur-operations-pdf']['info-titre-projets'] ?></th>
+        <th><?= $this->lng['preteur-operations-pdf']['date-de-loperation'] ?></th>
+        <th><?= $this->lng['preteur-operations-pdf']['montant-de-loperation'] ?></th>
+        <th><?= $this->lng['preteur-operations-pdf']['info-titre-solde-compte'] ?></th>
     </tr>
 
     <?php
@@ -113,10 +88,8 @@
                 $solde = $t['solde'];
             }
 
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
+            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
-                $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
-
                 ?>
                 <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
                     <td><?= $t['libelle_operation'] ?></td>
@@ -189,7 +162,7 @@
                     <td <?= $couleur ?>><?= $this->ficelle->formatNumber($t['montant_operation'] / 100) ?> €</td>
                     <td><?= $this->ficelle->formatNumber($t['solde']) ?> €</td>
                 </tr>
-                <?
+                <?php
                 $i++;
             } elseif ($t['type_transaction'] == \transactions_types::TYPE_LENDER_LOAN) {
                 $bdc = $t['bdc'];

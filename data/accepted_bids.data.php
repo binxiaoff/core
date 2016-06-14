@@ -86,7 +86,7 @@ class accepted_bids extends accepted_bids_crud
     public function getDistinctBids($iProjectID)
     {
         $sql = 'SELECT
-                    SUM(ab.amount),
+                    SUM(ab.amount) AS amount,
                     ab.id_bid,
                     l.id_lender
                 FROM

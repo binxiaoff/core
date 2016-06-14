@@ -617,20 +617,26 @@ class rootController extends bootstrap
 
     public function _search()
     {
-        //Recuperation des element de traductions
         $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
 
-        // recupération du title et slug pour le Breadcrumbs
         $this->page_title = $this->lng['search']['title'];
-        $this->page_slug  = "search";
+        $this->page_slug  = 'search';
 
-        // Vérification recherche
         if (isset($_POST['search']) && $_POST['search'] != $this->lng['header']['recherche']) {
-            $this->search = $_POST['search'];
-
-            $this->result = $this->tree->search($this->search, '', $this->language);
+            header('Location: ' . $this->lurl . '/search/' . urlencode($_POST['search']));
+            die;
         }
 
+        if (empty($this->params[0])) {
+            $this->search = '';
+            $this->result = array();
+        } else {
+            /** @var \tree $tree */
+            $tree = $this->loadData('tree');
+
+            $this->search = urldecode($this->params[0]);
+            $this->result = $tree->search($this->search, $this->language);
+        }
     }
 
     public function _notification_payline()

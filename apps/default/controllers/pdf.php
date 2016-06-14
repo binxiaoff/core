@@ -325,7 +325,7 @@ class pdfController extends bootstrap
             if ($this->projects->get($this->params[1], 'id_company = ' . $this->companies->id_company . ' AND id_project')) {
                 $this->oProjectsPouvoir = $this->loadData('projects_pouvoir');
 
-                $bSign          = false;
+                $bSigned        = false;
                 $sPath          = $this->path . 'protected/pdf/pouvoir/';
                 $sNamePdfClient = 'POUVOIR-UNILEND-' . $this->projects->slug . '-' . $this->clients->id_client;
                 $sFileName      = 'pouvoir-' . $this->params[0] . '-' . $this->params[1] . '.pdf';
@@ -348,21 +348,19 @@ class pdfController extends bootstrap
                         die;
                     }
 
-                    // Si pouvoir signé
-                    $bSign          = ($aProjectPouvoirToTreat['status'] > 0) ? true : false;
+                    $bSigned        = $aProjectPouvoirToTreat['status'] == \projects_pouvoir::STATUS_SIGNED;
                     $bInstantCreate = false;
 
                     if (false === file_exists($sPath . $aProjectPouvoirToTreat['name'])) {
-                        $this->GenerateAuthorityHtml();
+                        $this->GenerateProxyHtml();
                         $this->WritePdf($sPath . $aProjectPouvoirToTreat['name'], 'authority');
-                        $bSign          = false;
+                        $bSigned        = false;
                         $bInstantCreate = true;
                     }
 
                     $this->oProjectsPouvoir->get($aProjectPouvoirToTreat['id_pouvoir'], 'id_pouvoir');
-
-                } else { // Si pas de pouvoir on créer une ligne
-                    $this->GenerateAuthorityHtml();
+                } else {
+                    $this->GenerateProxyHtml();
                     $this->WritePdf($sPath . $sFileName, 'authority');
 
                     $this->oProjectsPouvoir->id_project = $this->projects->id_project;
@@ -373,17 +371,17 @@ class pdfController extends bootstrap
                     $bInstantCreate = true;
                 }
 
-                if (false === $bSign) {
+                if (false === $bSigned) {
                     if (file_exists($sPath . $sFileName) && filesize($sPath . $sFileName) > 0 && date('Y-m-d', filemtime($sPath . $sFileName)) != date('Y-m-d')) {
                         unlink($sPath . $sFileName);
                         $this->oLogger->addRecord(ULogger::INFO, 'File : ' . $sPath . $sFileName . ' deleting.', array(__FILE__ . ' on line ' . __LINE__));
 
-                        $this->GenerateAuthorityHtml();
+                        $this->GenerateProxyHtml();
                         $this->WritePdf($sPath . $sFileName, 'authority');
                         $bInstantCreate = true;
                     }
-                    $this->generateAuthorityUniversign($bInstantCreate);
-                } else { //Si pouvoir signé
+                    $this->generateProxyUniversign($bInstantCreate);
+                } else {
                     $this->ReadPdf($sPath . $sFileName, $sNamePdfClient);
                 }
 
@@ -456,19 +454,12 @@ class pdfController extends bootstrap
         header('Location: ' . $this->url . '/universign/cgv_emprunteurs/' . $oProjectCgv->id . '/' . $oProjectCgv->name);
     }
 
-    private function generateAuthorityUniversign($bInstantCreate = false)
+    private function generateProxyUniversign($bInstantCreate = false)
     {
-        /**
-        /* On met a jour les dates d'echeances
-        /* en se basant sur la date de creation du pouvoir
-        */
         if (date('Y-m-d', strtotime($this->oProjectsPouvoir->updated)) == date('Y-m-d') && false === $bInstantCreate) {
-            $regenerationUniversign = '/NoUpdateUniversign'; // On crée pas de nouveau universign
-        } // Ici on creera un nouveau universign car la date est différente
-        else {
+            $regenerationUniversign = '/NoUpdateUniversign';
+        } else {
             $regenerationUniversign = '';
-            // On met a jour la date des echeances en se basant sur la date de signature du pouvoir c'est a dire aujourd'hui
-            $this->updateEcheances($this->oProjectsPouvoir->id_project, date('Y-m-d H:i:s'));
             $this->oProjectsPouvoir->update();
         }
 
@@ -476,9 +467,13 @@ class pdfController extends bootstrap
         exit;
     }
 
-    private function GenerateAuthorityHtml()
+    private function GenerateProxyHtml()
     {
         $this->lng['pdf-pouvoir'] = $this->ln->selectFront('pdf-pouvoir', $this->language, $this->App);
+
+        // Update repayment schedule dates based on proxy generation date
+        // Once proxy has been generated, do not update repayment schedule anymore
+        $this->updateRepaymentSchedules();
 
         $this->blocs->get('pouvoir', 'slug');
         $lElements = $this->blocs_elements->select('id_bloc = ' . $this->blocs->id_bloc . ' AND id_langue = "' . $this->language . '"');
@@ -495,18 +490,10 @@ class pdfController extends bootstrap
         $this->oLendersAccounts       = $this->loadData('lenders_accounts');
         $this->oLoans                 = $this->loadData('loans');
 
-        $this->montantPrete = $this->projects->amount;
-
-        $montantHaut = 0;
-        $montantBas  = 0;
-        foreach ($this->oLoans->select('id_project = ' . $this->projects->id_project) as $b) {
-            $montantHaut += ($b['rate'] * ($b['amount'] / 100));
-            $montantBas += ($b['amount'] / 100);
-        }
-
-        $this->taux             = (0 < $montantBas) ? ($montantHaut / $montantBas) : 0;
-        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = 1 AND id_project = ' . $this->projects->id_project);
-        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = 2 AND id_project = ' . $this->projects->id_project);
+        $this->montantPrete     = $this->projects->amount;
+        $this->taux             = $this->projects->getAverageInterestRate();
+        $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_BDC . ' AND id_project = ' . $this->projects->id_project);
+        $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_IFP . ' AND id_project = ' . $this->projects->id_project);
         $this->echeanceEmprun   = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
         $this->rembByMonth      = round($this->echeanceEmprun[0]['montant'] + $this->echeanceEmprun[0]['commission'] + $this->echeanceEmprun[0]['tva'], 2);
         $this->rembByMonth      = $this->rembByMonth / 100;
@@ -536,9 +523,10 @@ class pdfController extends bootstrap
             exit;
         }
 
+        /** @var \clients $oClients */
         $oClients = $this->loadData('clients');
 
-        if (false === $oClients->get($this->params[0], 'hash') || false === $oClients->checkAccess() && (false === isset($_SESSION['user']['id_user']) || $_SESSION['user']['id_user'] == '')) {
+        if (false === $oClients->get($this->params[0], 'hash') || false === $oClients->checkAccess() && empty($_SESSION['user']['id_user'])) {
             header('Location: ' . $this->lurl);
             exit;
         }
@@ -603,8 +591,8 @@ class pdfController extends bootstrap
         $this->dateDernierBilan = date('d/m/Y', strtotime($this->companies_bilans->cloture_exercice_fiscal)); // @todo Intl
 
         $this->l_AP        = $this->companies_actif_passif->select('id_bilan = ' . $oProjects->id_dernier_bilan);
-        $this->totalActif  = ($this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement']);
-        $this->totalPassif = ($this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes']);
+        $this->totalActif       = $this->l_AP[0]['immobilisations_corporelles'] + $this->l_AP[0]['immobilisations_incorporelles'] + $this->l_AP[0]['immobilisations_financieres'] + $this->l_AP[0]['stocks'] + $this->l_AP[0]['creances_clients'] + $this->l_AP[0]['disponibilites'] + $this->l_AP[0]['valeurs_mobilieres_de_placement'] + $this->l_AP[0]['comptes_regularisation_actif'];
+        $this->totalPassif      = $this->l_AP[0]['capitaux_propres'] + $this->l_AP[0]['provisions_pour_risques_et_charges'] + $this->l_AP[0]['amortissement_sur_immo'] + $this->l_AP[0]['dettes_financieres'] + $this->l_AP[0]['dettes_fournisseurs'] + $this->l_AP[0]['autres_dettes'] + $this->l_AP[0]['comptes_regularisation_passif'];
         $this->lRemb       = $this->echeanciers->select('id_loan = ' . $oLoans->id_loan, 'ordre ASC');
 
         $this->capital = 0;
@@ -643,7 +631,7 @@ class pdfController extends bootstrap
 
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
         $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 / (1 + $fVat);
-        $this->fInterestTotal       = $this->echeanciers->getSumByLoan($oLoans->id_loan, 'interets');
+        $this->fInterestTotal       = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         if (\loans::TYPE_CONTRACT_BDC == $oLoans->id_type_contract) {
             $this->blocs->get('pdf-contrat', 'slug');
@@ -688,7 +676,7 @@ class pdfController extends bootstrap
             $this->preteur->get($this->lender->id_client_owner, 'id_client');
             $this->preteur_adresse->get($this->lender->id_client_owner, 'id_client');
 
-            $this->lEcheances = $this->echeanciers->getSumByAnnee($this->oLoans->id_loan);
+            $this->lEcheances = array_values($this->echeanciers->getYearlySchedule(array('id_loan' => $this->oLoans->id_loan)));
 
             if ($this->preteur->type == 2) {
                 $this->preteurCompanie->get($this->lender->id_company_owner, 'id_company');
@@ -858,37 +846,33 @@ class pdfController extends bootstrap
     }
 
     // Mise a jour des dates echeances preteurs et emprunteur (utilisé pour se baser sur la date de creation du pouvoir)
-    public function updateEcheances($id_project, $dateRemb)
+    private function updateRepaymentSchedules()
     {
         ini_set('max_execution_time', 300);
 
-        $projects                = $this->loadData('projects');
-        $projects_status         = $this->loadData('projects_status');
-        $echeanciers             = $this->loadData('echeanciers');
-        $echeanciers_emprunteur  = $this->loadData('echeanciers_emprunteur');
+        /** @var \projects_status $projectStatus */
+        $projectStatus = $this->loadData('projects_status');
+        $projectStatus->getLastStatut($this->projects->id_project);
 
-        $jo = $this->loadLib('jours_ouvres');
+        if ($projectStatus->status == \projects_status::FUNDE) {
+            /** @var \echeanciers $lenderRepaymentSchedule */
+            $lenderRepaymentSchedule = $this->loadData('echeanciers');
+            /** @var \echeanciers_emprunteur $borrowerRepaymentSchedule */
+            $borrowerRepaymentSchedule = $this->loadData('echeanciers_emprunteur');
+            /** @var \jours_ouvres $jo */
+            $jo = $this->loadLib('jours_ouvres');
 
-        $this->settings->get('Nombre de mois apres financement pour remboursement', 'type');
-        $nb_mois = $this->settings->value;
+            $this->settings->get('Nombre jours avant remboursement pour envoyer une demande de prelevement', 'type');
+            $daysOffset        = $this->settings->value;
+            $repaymentBaseDate = date('Y-m-d H:i:00');
 
-        $this->settings->get('Nombre de jours apres financement pour remboursement', 'type');
-        $nb_jours = $this->settings->value;
+            for ($order = 1; $order <= $this->projects->period; $order++) {
+                $lenderRepaymentDate   = date('Y-m-d H:i:s', $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order));
+                $borrowerRepaymentDate = $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order);
+                $borrowerRepaymentDate = date('Y-m-d H:i:s', $jo->display_jours_ouvres($borrowerRepaymentDate, $daysOffset));
 
-        $projects->get($id_project, 'id_project');
-        $projects_status->getLastStatut($projects->id_project);
-
-        if ($projects_status->status == \projects_status::FUNDE) {
-            for ($ordre = 1; $ordre <= $projects->period; $ordre++) {
-                $date_echeance = $this->dates->dateAddMoisJoursV3($dateRemb, $ordre);
-                $date_echeance = date('Y-m-d H:i', $date_echeance) . ':00';
-
-                $date_echeance_emprunteur = $this->dates->dateAddMoisJoursV3($dateRemb, $ordre);
-                $date_echeance_emprunteur = $jo->display_jours_ouvres($date_echeance_emprunteur, 6);
-                $date_echeance_emprunteur = date('Y-m-d H:i', $date_echeance_emprunteur) . ':00';
-
-                $echeanciers->onMetAjourLesDatesEcheances($projects->id_project, $ordre, $date_echeance, $date_echeance_emprunteur);
-                $echeanciers_emprunteur->onMetAjourLesDatesEcheancesE($id_project, $ordre, $date_echeance_emprunteur);
+                $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate, $borrowerRepaymentDate);
+                $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate);
             }
         }
     }
@@ -972,7 +956,7 @@ class pdfController extends bootstrap
                 $this->date = date('d/m/Y', strtotime($this->projects_status_history_details->date));
             }
 
-            $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(e.date_echeance) >= "2015-04-19" AND DATE(e.date_echeance) <= "' . date('Y-m-d') . '" AND l.id_loan = ' . $this->oLoans->id_loan, 'montant');
+            $this->echu         = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(e.date_echeance) >= "2015-04-19" AND DATE(e.date_echeance) <= "' . date('Y-m-d') . '" AND l.id_loan = ' . $this->oLoans->id_loan, 'capital_rembourse + interets_rembourses');
             $this->echoir       = $this->echeanciers->getSumARemb($this->oLendersAccounts->id_lender_account . ' AND DATE(e.date_echeance) > "' . date('Y-m-d') . '" AND l.id_loan = ' . $this->oLoans->id_loan, 'capital');
             $this->total        = $this->echu + $this->echoir;
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
@@ -1158,7 +1142,7 @@ class pdfController extends bootstrap
                 \transactions_types::TYPE_LENDER_LOAN,
                 \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
                 \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
                 \transactions_types::TYPE_DIRECT_DEBIT,
                 \transactions_types::TYPE_LENDER_WITHDRAWAL,
                 \transactions_types::TYPE_WELCOME_OFFER,
@@ -1182,7 +1166,7 @@ class pdfController extends bootstrap
             4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
             5 => array(\transactions_types::TYPE_LENDER_LOAN),
             6 => array(
-                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
                 \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
                 \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
             )

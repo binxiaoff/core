@@ -195,7 +195,7 @@ class statsController extends bootstrap
     public function _etape_inscription()
     {
         // Récup des dates
-        if ($_POST['date1'] != '') {
+        if (isset($_POST['date1']) && $_POST['date1'] != '') {
             $d1    = explode('/', $_POST['date1']);
             $date1 = $d1[2] . '-' . $d1[1] . '-' . $d1[0];
         } else {
@@ -204,7 +204,7 @@ class statsController extends bootstrap
 
         }
 
-        if ($_POST['date2'] != '') {
+        if (isset($_POST['date2']) && $_POST['date2'] != '') {
             $d2    = explode('/', $_POST['date2']);
             $date2 = $d2[2] . '-' . $d2[1] . '-' . $d2[0];
         } else {
@@ -220,6 +220,7 @@ class statsController extends bootstrap
                         c.prenom,
                         c.email,
                         c.telephone,
+                        c.mobile,
                         c.added,
                             IF (
                                 c.etape_inscription_preteur = 3,
@@ -228,8 +229,7 @@ class statsController extends bootstrap
                                     c.etape_inscription_preteur
                                     ) as etape_inscription_preteur2,
                         c.source,
-                        c.source2,
-                        c.source3
+                        c.source2
                             FROM clients c
                             LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
                             WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "' . $date1 . ' 00:00:00' . '" AND c.added <= "' . $date2 . ' 23:59:59";';
@@ -269,6 +269,7 @@ class statsController extends bootstrap
                         c.prenom,
                         c.email,
                         c.telephone,
+                        c.mobile,
                         c.added,
                             IF (
                                 c.etape_inscription_preteur = 3,
@@ -277,8 +278,7 @@ class statsController extends bootstrap
                                     c.etape_inscription_preteur
                                     ) as etape_inscription_preteur2,
                         c.source,
-                        c.source2,
-                        c.source3
+                        c.source2
                             FROM clients c
                             LEFT JOIN lenders_accounts la ON (la.id_client_owner = c.id_client)
                             WHERE c.etape_inscription_preteur > 0 AND c.status = 1 AND c.added >= "' . $date1 . ' 00:00:00' . '" AND c.added <= "' . $date2 . ' 23:59:59";';
@@ -290,82 +290,15 @@ class statsController extends bootstrap
                 $this->L_clients[] = $record;
             }
 
-            $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2; Source 3\n";
+            $csv = "id_client;nom;prenom;email;tel;date_inscription;etape_inscription;Source;Source 2;\n";
             // construction de chaque ligne
             foreach ($this->L_clients as $u) {
                 // on concatene a $csv
-                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'], 'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur2']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . $u['slug_origine'] . "\n"; // le \n final entre " "
+                $csv .= utf8_decode($u['id_client']) . ';' . utf8_decode($u['nom']) . ';' . utf8_decode($u['prenom']) . ';' . utf8_decode($u['email']) . ';' . utf8_decode($u['telephone'] . ' ' . $u['mobile']) . ';' . utf8_decode($this->dates->formatDate($u['added'], 'd/m/Y')) . ';' . utf8_decode($u['etape_inscription_preteur2']) . ';' . $u['source'] . ';' . $u['source2'] . ';' . "\n";
             }
 
             print($csv);
         }
-    }
-
-    public function _requete_dossiers()
-    {
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->projects         = $this->loadData('projects');
-        $this->projects_status  = $this->loadData('projects_status');
-
-        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
-    }
-
-    public function _requete_dossiers_csv()
-    {
-        $this->autoFireView = false;
-        $this->hideDecoration();
-
-        $this->companies        = $this->loadData('companies');
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->insee            = $this->loadData('insee');
-        $this->projects         = $this->loadData('projects');
-        $this->projects_status  = $this->loadData('projects_status');
-
-        $this->lEmpr = $this->clients->getBorrowers('clients.status = 1');
-
-        $header = "Cdos;Dénomination;Adresse;Voie;CodeCommune;commune;CodePostal;Ville;Activités;Siret;APE;F Juridique;Capital;CapitalMonnaie;Responsable;Fonction;Téléphone;Fax;CatJuridique;CDéclaration;Cbénéficiaire;";
-        $header = utf8_encode($header);
-
-        $csv = "";
-        $csv .= $header . " \n";
-
-        foreach ($this->lEmpr as $e) {
-            $this->companies->get($e['id_client'], 'id_client_owner');
-
-            $statutRemb = false;
-            $lPorjects  = $this->projects->select('id_company = ' . $this->companies->id_company);
-            if ($lPorjects != false) {
-                foreach ($lPorjects as $p) {
-                    $this->projects_status->getLastStatut($p['id_project']);
-                    if ($this->projects_status->status == \projects_status::REMBOURSEMENT) {
-                        $statutRemb = true;
-                    }
-                }
-            }
-
-            if ($statutRemb == true) {
-                $this->clients_adresses->get($e['id_client'], 'id_client');
-
-                $this->insee->get($this->clients_adresses->ville, 'NCCENR');
-
-                // Code commune insee
-                $dep     = str_pad($this->insee->DEP, 2, '0', STR_PAD_LEFT);
-                $com     = str_pad($this->insee->COM, 3, '0', STR_PAD_LEFT);
-                $codeCom = $dep . $com;
-
-                $csv .= $e['id_client'] . ";" . $this->companies->name . ";;" . str_replace(';', ',', $this->clients_adresses->adresse1) . ";" . $codeCom . ";;" . $this->clients_adresses->cp . ";" . $this->clients_adresses->ville . ";" . $this->companies->activite . ";" . $this->companies->siret . ";;" . $this->companies->forme . ";" . $this->companies->capital . ";\"EUR\";;" . $e['prenom'] . ' ' . $e['nom'] . ";" . $e['fonction'] . ";" . $e['telephone'] . ";;;C;B;";
-                $csv .= " \n";
-            }
-        }
-
-        $titre = 'requete_dossiers' . date('Ymd');
-        header("Content-type: application/vnd.ms-excel");
-        header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
-        print(utf8_decode($csv));
     }
 
     public function _requete_donnees_financieres()
@@ -1020,7 +953,7 @@ class statsController extends bootstrap
                     e.ordre,
                     e.montant,
                     e.capital,
-                    (select sum(capital) FROM echeanciers e2 where e2.id_project = e.id_project and e2.id_lender = e.id_lender and e2.id_loan = e.id_loan and e2.ordre > e.ordre) as capitalRestant,
+                    (select sum(capital - capital_rembourse) FROM echeanciers e2 where e2.id_project = e.id_project and e2.id_lender = e.id_lender and e2.id_loan = e.id_loan and e2.ordre > e.ordre) as capitalRestant,
                     e.interets,
                     e.prelevements_obligatoires,
                     e.retenues_source,
@@ -1047,106 +980,6 @@ class statsController extends bootstrap
             header("Content-disposition: attachment; filename=\"" . $titre . ".csv\"");
 
             print(utf8_decode($csv));
-        }
-    }
-
-    public function _infos_preteurs()
-    {
-        $this->sql = '
-            SELECT
-            c.id_client,
-            c.civilite,
-            c.nom,
-            c.nom_usage,
-            c.prenom,
-            c.fonction,
-            c.naissance,
-            c.telephone,
-            c.email,
-            c.source,
-            ca.adresse1 as adresse,
-            ca.cp,
-            ca.ville,
-            ca.adresse_fiscal,
-            ca.ville_fiscal,
-            ca.cp_fiscal,
-
-            CASE l.exonere
-            WHEN 1 THEN "Oui"
-            ELSE "Non"
-            END exonere,
-            debut_exoneration,
-            fin_exoneration,
-            CASE
-            WHEN l.origine_des_fonds = 1 AND l.id_company_owner = 0 THEN "Revenu travail/retraite"
-            WHEN l.origine_des_fonds = 2 AND l.id_company_owner = 0 THEN "Produit de la vente d\'un bien immobilier"
-            WHEN l.origine_des_fonds = 3 AND l.id_company_owner = 0 THEN "Produit de la cession de mon entreprise / de mon fonds de commerce"
-            WHEN l.origine_des_fonds = 4 AND l.id_company_owner = 0 THEN "epargne deja constituee"
-            WHEN l.origine_des_fonds = 5 AND l.id_company_owner = 0 THEN "heritage / une donation"
-            WHEN l.origine_des_fonds = 1 AND l.id_company_owner <> 0 THEN "Tresorerie existante"
-            WHEN l.origine_des_fonds = 2 AND l.id_company_owner <> 0 THEN "Resultat dexploitation"
-            WHEN l.origine_des_fonds = 3 AND l.id_company_owner <> 0 THEN "Resultat exceptionnel (dont vente d\'actifs)"
-            WHEN l.origine_des_fonds = 4 AND l.id_company_owner <> 0 THEN "Augmentation de capital ou autre injection de liquidites"
-            WHEN l.origine_des_fonds = 5 AND l.id_company_owner <> 0 THEN "Autres"
-            ELSE "Autre"
-            END origine_des_fonds,
-
-            CASE l.id_company_owner
-            WHEN 0 THEN "Personne physique"
-            ELSE (SELECT co.name FROM companies co WHERE co.id_company = l.id_company_owner)
-            END Entreprise,
-
-            comp.id_company as id_company,
-            comp.forme as forme_juridique,
-            comp.siren,
-
-            CASE comp.execices_comptables
-            WHEN 1 THEN "au moins trois exercices"
-            ELSE "Non"
-            END execices_comptables,
-
-            comp.tribunal_com,
-            comp.activite,
-            comp.lieu_exploi,
-            comp.capital,
-            comp.date_creation,
-            comp.adresse1 as adresse_company,
-            comp.zip as cp_company,
-            comp.city as ville_company,
-            comp.phone as telephone_company,
-
-            CASE comp.status_client
-
-            WHEN 1 THEN "Dirigeant"
-            WHEN 2 THEN "Beneficie d\'une delegation de pouvoir"
-            ELSE "externe a l\'entreprise"
-            END status_client,
-
-            CASE comp.status_conseil_externe_entreprise
-            WHEN 1 THEN "Expert-comptable"
-            WHEN 2 THEN "Courtier en credit"
-            ELSE comp.preciser_conseil_externe_entreprise
-            END status_conseil_externe_entreprise,
-
-            comp.civilite_dirigeant,
-            comp.nom_dirigeant,
-            comp.prenom_dirigeant,
-            comp.fonction_dirigeant,
-            comp.email_dirigeant,
-            comp.phone_dirigeant,
-            comp.sector,
-            comp.risk,
-
-            SUBSTRING(l.iban,5,4) as code_banque
-            FROM lenders_accounts l
-            LEFT JOIN clients c ON l.id_client_owner = c.id_client
-            LEFT JOIN clients_adresses ca ON l.id_client_owner = ca.id_client
-            LEFT JOIN companies comp ON l.id_company_owner = comp.id_company
-            WHERE c.status = 1
-            ORDER BY l.added DESC';
-
-        if (isset($this->params[0]) && $this->params[0] == 'csv') {
-            $this->exportQueryCSV($this->sql, 'infos_preteurs_' . date('Ymd'), array('id_client', 'civilite', 'nom', 'nom_usage', 'prenom', 'fonction', 'naissance', 'telephone', 'email', 'source', 'adresse', 'cp', 'ville', 'adresse_fiscal', 'ville_fiscal', 'cp_fiscal', 'exonere', 'debut_exoneration', 'fin_exoneration', 'origine_des_fonds', 'Entreprise', 'id_company', 'forme_juridique', 'siren', 'execices_comptables', 'tribunal_com', 'activite', 'lieu_exploi', 'capital', 'date_creation', 'adresse_company', 'cp_company', 'ville_company', 'telephone_company', 'status_client', 'status_conseil_externe_entreprise', 'civilite_dirigeant', 'nom_dirigeant', 'prenom_dirigeant', 'fonction_dirigeant', 'email_dirigeant', 'phone_dirigeant', 'sector', 'risk', 'code_banque'));
         }
     }
 
@@ -1432,6 +1265,48 @@ class statsController extends bootstrap
                     'date fin de projet'
                 );
                 $this->exportCSV($this->aProjectList, 'statistiques_autolends' . date('Ymd'), $aHeader);
+            }
+        }
+    }
+
+    public function _requete_source_emprunteurs()
+    {
+        /** @var \clients $oClient */
+        $oClient          = $this->loadData('clients');
+        $this->aBorrowers = array();
+
+        if (isset($_POST['dateStart'], $_POST['dateEnd']) && false === empty($_POST['dateStart']) && false === empty($_POST['dateEnd'])) {
+            $oDateTimeStart = \DateTime::createFromFormat('d/m/Y', $_POST['dateStart']);
+            $oDateTimeEnd   = \DateTime::createFromFormat('d/m/Y', $_POST['dateEnd']);
+
+            if (isset($_POST['queryOptions']) && 'allLines' == $_POST['queryOptions']) {
+                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart, $oDateTimeEnd, false);
+            }
+            if (isset($_POST['queryOptions']) && in_array($_POST['queryOptions'], array(
+                    'groupBySirenWithDetails',
+                    'groupBySiren'
+                ))
+            ) {
+                $this->aBorrowers = $oClient->getBorrowersContactDetailsAndSource($oDateTimeStart, $oDateTimeEnd, true);
+
+                if ('groupBySirenWithDetails' == $_POST['queryOptions']) {
+                    foreach ($this->aBorrowers as $iKey => $aBorrower) {
+                        if ($aBorrower['countSiren'] > 1) {
+                            $this->aBorrowers[$iKey]['firstEntrySource'] = $oClient->getFirstSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
+                            $this->aBorrowers[$iKey]['lastEntrySource']  = $oClient->getLastSourceForSiren($aBorrower['siren'], $oDateTimeStart, $oDateTimeEnd);
+                            /** @var \projects_status $oProjectStatus */
+                            $oProjectStatus = $this->loadData('projects_status');
+                            $oProjectStatus->getLastStatut($aBorrower['id_project']);
+                            $this->aBorrowers[$iKey]['lastLabel'] = $oProjectStatus->label;
+                            $aHeaderExtended = array_keys(($this->aBorrowers[$iKey]));
+                        }
+                    }
+                }
+            }
+
+            if (isset($_POST['extraction_csv'])) {
+                $aHeader = isset($aHeaderExtended) ? $aHeaderExtended : array_keys(array_shift($this->aBorrowers));
+                $this->exportCSV($this->aBorrowers, 'requete_source_emprunteurs' . date('Ymd'), $aHeader);
             }
         }
     }

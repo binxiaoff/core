@@ -259,12 +259,14 @@ function checkEmail(email) {
     return re.test(email);
 }
 
-function checkConf(val, id2) {
+function checkConf(el, val, id2) {
     var val2 = $('#' + id2).val();
 
     if (val == val2) {
         $('#' + id2).removeClass('LV_invalid_field');
         $('#' + id2).addClass('LV_valid_field');
+        $(el).removeClass('LV_invalid_field');
+        $(el).addClass('LV_valid_field');
     } else {
         $('#' + id2).addClass('LV_invalid_field');
         $('#' + id2).removeClass('LV_valid_field');
@@ -368,7 +370,7 @@ function initAutocompleteCity()
                 search: function(event, ui) {
                     if ($(this).data('autocomplete') == 'birth_city'){
                         $("#insee_birth").val('');
-                        if ($('#group_identiy').find(".country").val() != 1) {
+                        if ($('#group_identiy').length && $('#group_identiy').find(".country").val() != 1) {
                             return false;
                         }
                     } else {

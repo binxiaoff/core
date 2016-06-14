@@ -46,7 +46,7 @@
             $projects_en_remboursement[$key] = $value['id_project'];
         }
 
-        $capital_du = current(current($this->bdd->run("SELECT sum(capital) FROM `echeanciers` INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = echeanciers.id_lender WHERE (date_echeance_reel >= '$annee-01-01 00:00:00' OR echeanciers.status = 0) AND id_project IN(" . implode(',', $projects_en_remboursement) . ") AND lenders_accounts.id_client_owner = " . $this->clients->id_client))) / 100;
+        $capital_du = current(current($this->bdd->run("SELECT sum(capital - capital_rembourse) FROM `echeanciers` INNER JOIN `lenders_accounts` ON lenders_accounts.id_lender_account = echeanciers.id_lender WHERE (date_echeance_reel >= '$annee-01-01 00:00:00' OR echeanciers.status = 0) AND id_project IN(" . implode(',', $projects_en_remboursement) . ") AND lenders_accounts.id_client_owner = " . $this->clients->id_client))) / 100;
 
         $solde      = $this->ficelle->formatNumber($solde);
         $capital_du = $this->ficelle->formatNumber($capital_du);
