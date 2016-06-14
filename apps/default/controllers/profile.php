@@ -1721,6 +1721,7 @@ class profileController extends bootstrap
         $oAutoBidSettingsManager = $this->get('unilend.service.autobid_settings_manager');
         $this->oLendersAccounts  = $this->loadData('lenders_accounts');
         $this->loadData('autobid'); // load for constant
+        $this->loadData('client_settings'); // load for constant
 
         $this->oLendersAccounts->get($this->clients->id_client, 'id_client_owner');
 
