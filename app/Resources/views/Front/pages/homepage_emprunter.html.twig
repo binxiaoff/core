@@ -1,6 +1,6 @@
 {# Homepage Emprunter #}
-{% extends '@UnilendFrontBundle/layouts/_layout.html.twig' %}
-{% import '@UnilendFrontBundle/partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
+{% extends 'layouts/_layout.html.twig' %}
+{% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
 
 {# Page data #}
 {% set bodyId = '' %}
@@ -33,7 +33,7 @@ permalink: route('emprunter')
                     <h3>Didier a pu financier sa boulangerie en moins de 3 semaines</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="#homeemp-section-process" class="btn-cta btn-color-alternate"><span class="icon fa-angle-right"></span> Emprunter auprès des particuliers</a>
@@ -278,6 +278,6 @@ permalink: route('emprunter')
         </section><!-- /.promos -->
     </article><!-- /.page -->
 
-    {% include '@UnilendFrontBundle/partials/home/reviews.html.twig' %}
+    {% include 'partials/home/reviews.html.twig' %}
 
 {% endblock %}

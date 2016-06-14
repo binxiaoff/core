@@ -9,7 +9,8 @@
             <tag name="twig.extension" />
             <argument>%router.request_context.host%</argument>
             <argument>%router.request_context.scheme%</argument>
-            <argument type="service" id="unilend.service.statistics_Manager" />
+            <argument type="service" id="unilend.service.statistics_manager" />
+            <argument type="service" id="unilend.service.translation_manager" />
         </service>
 
         <service id="unilend.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">

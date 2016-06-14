@@ -1,6 +1,6 @@
 {# Homepage Acquisition #}
-{% extends '@UnilendFrontBundle/layouts/_layout.html.twig' %}
-{% import '@UnilendFrontBundle/partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
+{% extends 'layouts/_layout.html.twig' %}
+{% import 'partials/modules/_promo-battenberg.macros.twig' as promoBattenberg %}
 
 {# Page data #}
 {% set bodyId = '' %}
@@ -72,7 +72,7 @@ permalink: route('/')
                     <h3>{% trans %} site-general_testimonial-section-video-slogan {% endtrans %}</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
 
                 <div class="btn-toolbar row">
                     <div class="col-lg-6 col-md-6">
@@ -222,7 +222,7 @@ permalink: route('/')
             </div><!-- /.site-wrap -->
         </section><!-- /.page-section -->
 
-        {% include '@UnilendFrontBundle/partials/home/reviews.html.twig' %}
+        {% include 'partials/home/reviews.html.twig' %}
 
     </article><!-- /.page -->
 

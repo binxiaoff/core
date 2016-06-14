@@ -1,5 +1,5 @@
 {# Simple page layout #}
-{% extends '@UnilendFrontBundle/layouts/_layout.html.twig' %}
+{% extends 'layouts/_layout.html.twig' %}
 {% set bodyClassNames = 'layout-page-simple' %}
 
 {# Page object #}
@@ -24,7 +24,7 @@ page = {
           {% block extendPageHeader %}{% endblock %}
         </div><!-- /.site-wrap -->
 
-        {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+        {% include 'partials/components/list-socialmedia.html.twig' %}
       </div><!-- /.hero-wrap -->
     </header><!-- /.page-header -->
   {% endblock %}
@@ -41,7 +41,7 @@ page = {
       {% block pageContent %}
         <div class="col-lg-6 col-md-6 page-content" data-equal-height="md lg" data-equal-height-group="content">
           {% block pageContentBody %}
-            {% include '@UnilendFrontBundle/partials/error/not-found.twig' %}
+            {% include 'partials/error/not-found.twig' %}
           {% endblock %}
         </div><!-- /.page-content -->
       {% endblock %}

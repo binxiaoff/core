@@ -45,14 +45,14 @@ class MainController extends Controller
         //TODO replace switch by cookie check
         switch($type) {
             case 'lender' :
-                $sTemplateToRender = 'UnilendFrontBundle:pages:homepage_preter.html.twig';
+                $sTemplateToRender = 'pages/homepage_preter.html.twig';
                 break;
             case 'borrower' :
-                $sTemplateToRender = 'UnilendFrontBundle:pages:homepage_emprunter.html.twig';
+                $sTemplateToRender = 'pages/homepage_emprunter.html.twig';
                 break;
             case 'acquisition':
             default:
-                $sTemplateToRender = 'UnilendFrontBundle:pages:homepage_acquisition.html.twig';
+                $sTemplateToRender = 'pages/homepage_acquisition.html.twig';
                 break;
         };
 

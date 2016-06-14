@@ -20,7 +20,7 @@ class SecurityController extends Controller
         $lastUsername        = $authenticationUtils->getLastUsername();
 
         return $this->render(
-            'UnilendFrontBundle:pages:connexion_inscription.html.twig',
+            'pages/connexion_inscription.html.twig',
             array(
                 'last_username' => $lastUsername,
                 'error' => $error

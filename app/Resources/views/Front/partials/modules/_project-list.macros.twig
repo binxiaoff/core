@@ -10,7 +10,7 @@
 {# @param {Object} paginationOptions Object to configure pagination output with #}
 {% macro render(id, filterItems, projects, options, paginationOptions) %}
     {% import _self as projectList %}
-    {% import '@UnilendFrontBundle/partials/modules/_pagination.macros.twig' as pagination %}
+    {% import 'partials/modules/_pagination.macros.twig' as pagination %}
 
     {# Default Settings #}
     {% set settings = {
@@ -147,7 +147,7 @@
 {# @param {Object} settings the Project List's settings #}
 {% macro renderListItem(project, filterItems, settings) %}
     {% import _self as projectList %}
-    {% import '@UnilendFrontBundle/extensions/_general.macros.twig' as general %}
+    {% import 'extensions/_general.macros.twig' as general %}
 
     {# Build data-sort-{column} attributes #}
     {% set sortAttrs = '' %}

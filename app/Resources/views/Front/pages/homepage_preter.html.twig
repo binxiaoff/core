@@ -1,6 +1,6 @@
 {# Homepage Preter #}
-{% extends '@UnilendFrontBundle/layouts/_layout.html.twig' %}
-{% import '@UnilendFrontBundle/partials/modules/_project-list.macros.twig' as projectList %}
+{% extends 'layouts/_layout.html.twig' %}
+{% import 'partials/modules/_project-list.macros.twig' as projectList %}
 
 {# Page data #}
 {% set bodyId = '' %}
@@ -33,7 +33,7 @@ permalink: route('preter')
                     <h3>{% trans %} home-lender_testimonial-section-video-slogan {% endtrans %}</h3>
                 </div><!-- /.video-hero-cta -->
 
-                {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
 
                 <div class="btn-toolbar">
                     <a href="#homepre-section-steps" class="btn-cta btn-color-primary">
@@ -169,7 +169,7 @@ permalink: route('preter')
             </div><!-- /.site-wrap -->
         </section><!-- /.promos -->
 
-        {% include '@UnilendFrontBundle/partials/home/reviews.html.twig' %}
+        {% include 'partials/home/reviews.html.twig' %}
 
     </article>
 

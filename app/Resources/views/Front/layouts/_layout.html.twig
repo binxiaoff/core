@@ -62,17 +62,17 @@
 
 <div id="top" class="site">
     {% block siteHeader %}
-        {% include '@UnilendFrontBundle/partials/site/header.html.twig' %}
+        {% include 'partials/site/header.html.twig' %}
     {% endblock %}
 
     <div class="site-content">
         {% block siteContent %}
-            {% include '@UnilendFrontBundle/partials/error/not-found.twig' %}
+            {% include 'partials/error/not-found.twig' %}
         {% endblock %}
     </div>
 
     {% block siteFooter %}
-        {% include '@UnilendFrontBundle/partials/site/footer.html.twig' %}
+        {% include 'partials/site/footer.html.twig' %}
     {% endblock %}
 </div>
 

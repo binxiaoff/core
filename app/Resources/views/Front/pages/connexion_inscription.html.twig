@@ -1,5 +1,5 @@
 {# Inscription / Connexion Page #}
-{% extends '@UnilendFrontBundle/layouts/_layout.html.twig' %}
+{% extends 'layouts/_layout.html.twig' %}
 
 {# Page data #}
 {% set bodyId = '' %}
@@ -10,7 +10,6 @@ permalink: route('user/access')
 
 {% block siteContent %}
     <article id="connexion-inscription" class="page">
-{{ dump(error) }}
         <header class="page-header">
             <div class="site-wrap">
                 <h1>Connexion / Inscription</h1>
@@ -97,7 +96,7 @@ permalink: route('user/access')
                     </div>
                 </div><!-- /.site-wrap -->
 
-                {% include '@UnilendFrontBundle/partials/components/list-socialmedia.html.twig' %}
+                {% include 'partials/components/list-socialmedia.html.twig' %}
             </div><!-- /.hero-wrap -->
         </section><!-- /.page-content -->
 

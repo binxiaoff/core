@@ -20,7 +20,7 @@ class LenderProfileController extends Controller
      */
     public function showDashboardAction()
     {
-        $this->render('UnilendFrontBundle:pages:user_preter_dashboard.twig',
+        $this->render('pages/user_preter_dashboard.twig',
             array()
         );
     }
