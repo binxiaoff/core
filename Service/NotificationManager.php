@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: binxiao
- * Date: 19/02/2016
- * Time: 15:47
- */
 
 namespace Unilend\Service;
 

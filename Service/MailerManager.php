@@ -1064,11 +1064,11 @@ class MailerManager
     public function sendProjectOnlineToBorrower(\projects $oProject)
     {
         /** @var \companies $oCompanies */
-        $oCompanies = Loader::loadData('companies');
+        $oCompanies = $this->oEntityManager->getRepository('companies');
         $oCompanies->get($oProject->id_company);
 
         /** @var \clients $oClients */
-        $oClients = Loader::loadData('clients');
+        $oClients = $this->oEntityManager->getRepository('clients');
 
         $this->oMailText->get('annonce-mise-en-ligne-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
 
@@ -1131,7 +1131,7 @@ class MailerManager
         $this->oMailText->get('uninotification-modification-iban-bo', 'lang = "' . $this->sLanguage . '" AND type');
 
         /** @var \lenders_accounts $oLenderAccount */
-        $oLenderAccount = Loader::loadData('lenders_accounts');
+        $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         $oLenderAccount->get($iClientId, 'id_client_owner');
 
         $aMail = array(
@@ -1162,17 +1162,17 @@ class MailerManager
     public function sendLoanAccepted(\projects $project)
     {
         /** @var \loans $loans */
-        $loans = Loader::loadData('loans');
+        $loans = $this->oEntityManager->getRepository('loans');
 
         /** @var \companies $companies */
-        $companies = Loader::loadData('companies');
+        $companies = $this->oEntityManager->getRepository('companies');
         $companies->get($project->id_company, 'id_company');
 
         /** @var \clients_gestion_notifications $clients_gestion_notifications */
-        $clientNotifications = Loader::loadData('clients_gestion_notifications');
+        $clientNotifications = $this->oEntityManager->getRepository('clients_gestion_notifications');
 
         /** @var \lenders_accounts $lender */
-        $lender = Loader::loadData('lenders_accounts');
+        $lender = $this->oEntityManager->getRepository('lenders_accounts');
 
         $aLendersIds = $loans->getProjectLoansByLender($project->id_project);
 
@@ -1181,14 +1181,14 @@ class MailerManager
             $lender->get($loans->id_lender);
 
             /** @var \clients $client */
-            $client = Loader::loadData('clients');
+            $client = $this->oEntityManager->getRepository('clients');
             $client->get($lender->id_client_owner, 'id_client');
 
             /** @var \echeanciers $paymentSchedule */
-            $paymentSchedule = Loader::loadData('echeanciers');
+            $paymentSchedule = $this->oEntityManager->getRepository('echeanciers');
 
             /** @var \accepted_bids $acceptedBids */
-            $acceptedBids = Loader::loadData('accepted_bids');
+            $acceptedBids = $this->oEntityManager->getRepository('accepted_bids');
 
             if ($clientNotifications->getNotif($lender->id_client_owner, \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, 'id_type_contract DESC');
@@ -1248,7 +1248,7 @@ class MailerManager
                                         <td style="' . $sStyleTD . '">' . $sContractType . '</td></tr>';
 
                     if ($clientNotifications->getNotif($lender->id_client_owner, 4, 'immediatement') == true) {
-                        $clientMailNotifications = Loader::loadData('clients_gestion_mails_notif');
+                        $clientMailNotifications = $this->oEntityManager->getRepository('clients_gestion_mails_notif');
                         $clientMailNotifications->get($aLoan['id_loan'], 'id_client = ' . $lender->id_client_owner . ' AND id_loan');
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
@@ -1306,11 +1306,11 @@ class MailerManager
         $this->oMailText->get('facture-emprunteur', 'lang = "' . $this->sLanguage . '" AND type');
 
         /** @var \companies $companies */
-        $companies   = Loader::loadData('companies');
+        $companies   = $this->oEntityManager->getRepository('companies');
         $companies->get($project->id_company, 'id_company');
 
         /** @var \clients $client */
-        $client = Loader::loadData('clients');
+        $client = $this->oEntityManager->getRepository('clients');
         $client->get($companies->id_client_owner, 'id_client');
 
         $varMail = array(
