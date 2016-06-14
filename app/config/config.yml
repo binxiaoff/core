@@ -1,5 +1,6 @@
 imports:
     - { resource: parameters.yml }
+    - { resource: parameters_extended.yml, ignore_errors: true }
 
 framework:
     secret: "%secret%"
