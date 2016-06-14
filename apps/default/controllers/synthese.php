@@ -43,6 +43,8 @@ class syntheseController extends bootstrap
         $this->clients_status          = $this->loadData('clients_status');
         $this->clients_status_history  = $this->loadData('clients_status_history');
         $this->acceptations_legal_docs = $this->loadData('acceptations_legal_docs');
+        /** @var \tax $tax */
+        $tax = $this->loadData('tax');
 
         // Recuperation du bloc nos-partenaires
         $this->blocs->get('cgv', 'slug');
@@ -169,7 +171,7 @@ class syntheseController extends bootstrap
 
         for ($annee = $anneeCreationCompte; $annee <= date('Y'); $annee++) {
             $tabSumParMois[$annee]                 = $this->echeanciers->getMonthlyScheduleByYear(array('id_lender' => $this->lenders_accounts->id_lender_account), $annee); // captial remboursé / mois
-            $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // revenues fiscales / mois
+            $tabSumRevenuesfiscalesParMois[$annee] = $tax->getTaxByMounth($this->lenders_accounts->id_lender_account, $annee); // revenues fiscales / mois
 
             for ($i = 1; $i <= 12; $i++) {
                 $a                                            = $i;

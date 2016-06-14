@@ -135,7 +135,7 @@ foreach ($this->lTrans as $t) {
         $t['bdc'] = '';
     }
 
-    if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
+    if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
         // Récupération de la traduction et non plus du libelle dans l'indexation (si changement on est ko)
         $html .= '
             <!-- debut transasction remb -->

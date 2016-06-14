@@ -1111,6 +1111,8 @@ class ajaxController extends bootstrap
 
             $this->echeanciers      = $this->loadData('echeanciers');
             $this->lenders_accounts = $this->loadData('lenders_accounts');
+            /** @var tax $tax */
+            $tax = $this->loadData('tax');
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
             $this->anneeCreationCompte = date('Y', strtotime($this->clients->added));
@@ -1137,7 +1139,7 @@ class ajaxController extends bootstrap
                 // On parcourt toutes les années de la creation du compte a aujourd'hui
                 for ($annee = $this->anneeCreationCompte; $annee <= date('Y'); $annee++) {
                     $tabSumParMois[$annee]                 = $this->echeanciers->getMonthlyScheduleByYear(array('id_lender' => $this->lenders_accounts->id_lender_account), $annee); // captial remboursé / mois
-                    $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // revenues fiscales / mois
+                    $tabSumRevenuesfiscalesParMois[$annee] = $tax->getTaxByMounth($this->lenders_accounts->id_lender_account, $annee); // revenues fiscales / mois
 
                     for ($i = 1; $i <= 12; $i++) {
                         $a                                            = $i;
@@ -1190,7 +1192,7 @@ class ajaxController extends bootstrap
                 $nbSlides = 0;
                 for ($annee = $this->anneeCreationCompte; $annee <= date('Y'); $annee++) {
                     $tabSumParMois[$annee]                 = $this->echeanciers->getMonthlyScheduleByYear(array('id_lender' => $this->lenders_accounts->id_lender_account), $annee); // captial remboursé / mois
-                    $tabSumRevenuesfiscalesParMois[$annee] = $this->echeanciers->getSumRevenuesFiscalesByMonths($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $annee); // revenues fiscales / mois
+                    $tabSumRevenuesfiscalesParMois[$annee] = $tax->getTaxByMounth($this->lenders_accounts->id_lender_account, $annee); // revenues fiscales / mois
 
                     // on fait le tour sur l'année
                     for ($i = 1; $i <= 12; $i++) {
@@ -1285,7 +1287,7 @@ class ajaxController extends bootstrap
 
                 $this->sumRembParAn   = $this->echeanciers->getSumRembByYearCapital($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
                 $this->sumIntParAn    = $this->echeanciers->getSumIntByYear($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $this->debut, $this->fin);
-                $this->sumFiscalParAn = $this->echeanciers->getSumRevenuesFiscalesByYear($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $this->debut, $this->fin);
+                $this->sumFiscalParAn = $tax->getTaxByYear($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
             }
         }
     }
@@ -1422,7 +1424,7 @@ class ajaxController extends bootstrap
                 \transactions_types::TYPE_LENDER_LOAN,
                 \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT,
                 \transactions_types::TYPE_LENDER_BANK_TRANSFER_CREDIT,
-                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
                 \transactions_types::TYPE_DIRECT_DEBIT,
                 \transactions_types::TYPE_LENDER_WITHDRAWAL,
                 \transactions_types::TYPE_WELCOME_OFFER,
@@ -1446,7 +1448,7 @@ class ajaxController extends bootstrap
             4 => array(\transactions_types::TYPE_LENDER_WITHDRAWAL),
             5 => array(\transactions_types::TYPE_LENDER_LOAN),
             6 => array(
-                \transactions_types::TYPE_LENDER_REPAYMENT,
+                \transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL,
                 \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT,
                 \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT
             )

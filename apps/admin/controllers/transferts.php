@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\librairies\ULogger;
-
 class transfertsController extends bootstrap
 {
     public function __construct($command, $config, $app)
@@ -546,7 +544,7 @@ class transfertsController extends bootstrap
 
                 $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer(null, $sStartDateSQL, $sEndDateSQL);
             } elseif (false === empty($_POST['id'])) {
-                $this->aClientsWithoutWelcomeOffer                     = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
+                $this->aClientsWithoutWelcomeOffer = $this->clients->getClientsWithNoWelcomeOffer($_POST['id']);
                 $_SESSION['forms']['rattrapage_offre_bienvenue']['id'] = $_POST['id'];
             } else {
                 $_SESSION['freeow']['title']   = 'Recherche non abouti';
@@ -596,7 +594,7 @@ class transfertsController extends bootstrap
                 $oWelcomeOfferDetails->montant            = $this->offres_bienvenues->montant;
                 $oWelcomeOfferDetails->status             = 0;
                 $oWelcomeOfferDetails->create();
-
+                
                 $oTransactions->id_client                 = $this->clients->id_client;
                 $oTransactions->montant                   = $oWelcomeOfferDetails->montant;
                 $oTransactions->id_offre_bienvenue_detail = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
@@ -680,7 +678,7 @@ class transfertsController extends bootstrap
         $aColumnHeaders = array('ID Client', 'Nom ou Raison Sociale', 'Prénom', 'Email', 'Date de création', 'Date de validation');
         $aData          = array();
 
-        foreach ($aClientsWithoutWelcomeOffer as $key => $aClient) {
+        foreach ($aClientsWithoutWelcomeOffer as $key =>$aClient) {
             $aData[] = array(
                 $aClient['id_client'],
                 empty($aClient['company']) ? $aClient['nom'] : $aClient['company'],

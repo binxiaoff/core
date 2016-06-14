@@ -84,7 +84,7 @@
                     <span class="calandar-ech"><?= $this->dates->formatDate($aProjectLoans['next_echeance'], 'd/m/Y') ?></span>
                     <span class="calandar-ech"><?= $this->dates->formatDate($aProjectLoans['fin'], 'd/m/Y') ?></span>
                 </td>
-                <td><?= $this->ficelle->formatNumber($aProjectLoans['mensuel']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                <td><?= $this->ficelle->formatNumber($aProjectLoans['last_perceived_repayment']) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
             <?php } ?>
             <td class="documents">
                 <?php if ($aProjectLoans['nb_loan'] == 1): ?>
@@ -107,8 +107,8 @@
                         <table class="table" style="margin-bottom:0;">
                         <?php
                             foreach ($this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND id_project = ' . $aProjectLoans['id_project']) as $aLoan):
-                                $SumAremb    = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND status = 0', 'ordre ASC', 0, 1);
-                                $fLoanAmount = round($SumAremb[0]['montant'] / 100, 2) - round($SumAremb[0]['prelevements_obligatoires'] + $SumAremb[0]['retenues_source'] + $SumAremb[0]['csg'] + $SumAremb[0]['prelevements_sociaux'] + $SumAremb[0]['contributions_additionnelles'] + $SumAremb[0]['prelevements_solidarite'] + $SumAremb[0]['crds'], 2);
+                                $aRepayment    = $this->echeanciers->select('id_loan = ' . $aLoan['id_loan'] . ' AND status in(' . \echeanciers::STATUS_PARTIALLY_REPAID . ', ' . \echeanciers::STATUS_REPAID . ')', 'ordre ASC', 0, 1);
+                                $iLoanAmount = $aRepayment[0]['montant'] - $this->tax->getAmountByRepaymentId($aRepayment[0]['id_echeancier']);
                                 ?>
                                 <tr>
                                     <td class="col-status"></td>
@@ -117,7 +117,7 @@
                                     <td class="col3" style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['amount'] / 100, 0) ?> €</td>
                                     <td class="col4" style="white-space: nowrap;"><?= $this->ficelle->formatNumber($aLoan['rate'], 1) ?> %</td>
                                     <td class="col5"></td>
-                                    <td class="col6" style="white-space: nowrap;"><?= $this->ficelle->formatNumber($fLoanAmount) ?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
+                                    <td class="col6" style="white-space: nowrap;"><?= $this->ficelle->formatNumber(round($iLoanAmount / 100, 2))?> <?= $this->lng['preteur-operations-detail']['euros-par-mois'] ?></td>
                                     <td class="documents">
                                         <?php if ($aProjectLoans['project_status'] >= \projects_status::REMBOURSEMENT): ?>
                                             <a href="<?= $this->lurl ?>/pdf/contrat/<?= $this->clients->hash ?>/<?= $aLoan['id_loan'] ?>" class="btn btn-info btn-small multi"><?= $this->lng['preteur-operations-detail']['contract-type-' . $aLoan['id_type_contract']] ?></a>

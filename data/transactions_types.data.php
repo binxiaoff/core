@@ -32,7 +32,6 @@ class transactions_types extends transactions_types_crud
     const TYPE_LENDER_LOAN                         = 2;
     const TYPE_LENDER_CREDIT_CARD_CREDIT           = 3;
     const TYPE_LENDER_BANK_TRANSFER_CREDIT         = 4;
-    const TYPE_LENDER_REPAYMENT                    = 5; // @deprecated
     const TYPE_BORROWER_REPAYMENT                  = 6;
     const TYPE_DIRECT_DEBIT                        = 7;
     const TYPE_LENDER_WITHDRAWAL                   = 8;
