@@ -46,7 +46,7 @@
                 <h1>Modification de votre mot de passe</h1>
 
                 <?php
-                if(isset($this->retour_pass) && $this->retour_pass != "")
+                if(false === empty($this->retour_pass))
                 {
                     ?>
                     <br />

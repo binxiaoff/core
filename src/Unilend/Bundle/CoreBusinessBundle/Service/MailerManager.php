@@ -1817,4 +1817,56 @@ class MailerManager
         $oNotificationsLog->fin = date('Y-m-d H:i:s');
         $oNotificationsLog->update();
     }
+
+    /**
+     * @param \users $user
+     * @param $sNewPassword
+     */
+    public function sendNewPasswordEmail(\users $user, $sNewPassword)
+    {
+        $sMail         = 'user-nouveau-mot-de-passe';
+        $aReplacements = array(
+            'surl'    => $this->sSUrl,
+            'url'     => $this->sFUrl,
+            'email'   => trim($user->email),
+            'lien_fb' => $this->getFacebookLink(),
+            'lien_tw' => $this->getTwitterLink(),
+            'annee'   => date('Y'),
+            'mdp'     => $sNewPassword
+        );
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+        $message->setTo(trim($user->email));
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @param \users $user
+     */
+    public function sendPasswordModificationEmail(\users $user)
+    {
+        $sMail         = 'admin-nouveau-mot-de-passe';
+        $aReplacements = array(
+            'surl'    => $this->sSUrl,
+            'url'     => $this->sFUrl,
+            'email'   => trim($user->email),
+            'lien_fb' => $this->getFacebookLink(),
+            'lien_tw' => $this->getTwitterLink(),
+            'annee'   => date('Y')
+        );
+
+        /** @var TemplateMessage $message */
+        $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+        $message->setTo(trim($user->email));
+
+        /** @var \settings $settings */
+        $settings = Loader::loadData('settings');
+        $settings->get('alias_tracking_log', 'type');
+
+        if (false === empty($settings->value)) {
+            $message->setBcc($settings->value);
+        }
+        $this->mailer->send($message);
+    }
 }

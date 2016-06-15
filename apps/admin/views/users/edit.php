@@ -34,23 +34,6 @@
                     </td>
                 </tr>
                 <tr>
-                    <th><label for="password">Réinitialiser le mot de passe :</label></th>
-                    <td>
-                        <input type="password" name="password" id="password" value="" autocomplete="off" class="input_large"/>
-                    </td>
-                </tr>
-                <tr>
-                    <th><label for="id_tree">Rubrique d'arrivée :</label></th>
-                    <td>
-                        <select name="id_tree" id="id_tree" class="select">
-                            <option value="0">Choisir un lien</option>
-                            <?php foreach ($this->lTree as $tree) : ?>
-                                <option value="<?= $tree['id_tree'] ?>" <?php $this->users->id_tree == $tree['id_tree'] ? 'selected="selected"' : '' ?>><?= $tree['title'] ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </td>
-                </tr>
-                <tr>
                     <th><label for="id_user_type">Droits</label></th>
                     <td>
                         <select name="id_user_type" id="id_user_type" class="select">
@@ -73,7 +56,9 @@
                     </tr>
                 <?php endif; ?>
                 <tr>
-                    <td>&nbsp;</td>
+                    <td>
+                        <a href="<?= $this->lurl ?>/users/generate_new_password/<?= $this->users->id_user ?>" class="btn_link">Modifier le mot de passe</a>
+                    </td>
                     <th>
                         <input type="hidden" name="form_mod_users" id="form_mod_users"/>
                         <input type="submit" value="Valider" title="Valider" name="send_users" id="send_users" class="btn"/>
