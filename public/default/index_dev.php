@@ -27,7 +27,4 @@ ini_set('session.gc_maxlifetime', 3600); // 1h la session
 $oKernel = new AppKernel('dev', false);
 $oKernel->boot();
 
-$errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
-
 $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);

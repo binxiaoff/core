@@ -51,16 +51,31 @@ monolog:
         main:
             type: rotating_file
             path: "%kernel.logs_dir%/%kernel.environment%.log"
+            date_format: 'Ymd'
+            max_files: 90
             level: info
-            max_files: 10
             channels: ['!console']
         console:
-            type: stream
+            type: rotating_file
             path: "%kernel.logs_dir%/console-%kernel.environment%.log"
+            date_format: 'Ymd'
+            max_files: 90
             level: info
-            max_files: 10
             channels: [console]
-
+#        error:
+#            type: error_log
+#            path: "%kernel.logs_dir%/error-%kernel.environment%.log"
+#            level: error
+#            max_files: 90
+#        slack:
+#            type: slack
+#            token: 'T09JRNH40/B1H4TR0SV/zazbT41qaGDm6DPstT9UtgPH'
+#            channel: '#it-releases'
+#            level: error
+#        cleaned_error:
+#            type: filter
+#            handler: error
+#            accepted_levels: [INFO]
 
 swiftmailer:
     transport: '%mailer_transport%'

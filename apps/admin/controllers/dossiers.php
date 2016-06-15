@@ -67,6 +67,11 @@ class dossiersController extends bootstrap
 
     public function _edit()
     {
+        trigger_error('ERROR', E_USER_ERROR);
+        $logger = $this->get('logger');
+        $logger->info('Checking refund status');
+        die;
+
         $this->projects                        = $this->loadData('projects');
         $this->projects_notes                  = $this->loadData('projects_notes');
         $this->project_cgv                     = $this->loadData('project_cgv');

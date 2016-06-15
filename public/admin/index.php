@@ -12,10 +12,9 @@ ini_set('log_errors', 1);
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
+header('X-Server: ' . exec('hostname'));
+
 $oKernel     = new AppKernel('prod', false);
 $oKernel->boot();
-
-$errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
 
 $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'admin', $config);
