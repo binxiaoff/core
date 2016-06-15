@@ -26,18 +26,17 @@
         <!-- CSS Dependencies -->
         <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.css" media="all">
         {% stylesheets
-            '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/vendor/videojs/video-js.min.css'
-            '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/vendor/swiper/css/swiper.min.css'
-            '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/vendor/fancybox/css/jquery.fancybox.css' %}
+            '@UnilendFrontBundle/Resources/public/js/vendor/videojs/video-js.min.css'
+            '@UnilendFrontBundle/Resources/public/js/vendor/swiper/css/swiper.min.css'
+            '@UnilendFrontBundle/Resources/public/js/vendor/fancybox/css/jquery.fancybox.css' %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="all">
-        <link rel="stylesheet" type="text/css" href="{{ 'vendor/jquery-ui/themes/base/minified/jquery-ui.min.css' }}" media="all">
     {# <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}dependencies{% if env != 'dev' %}.min{% endif %}.css" media="all"> #}
         {% endstylesheets %}
     {% endblock %}
 
     <!-- CSS Site -->
     {% block cssFiles %}
-        {% stylesheets '@UnilendFrontBundle/Resources/public/frontBuild/dev/css/**.css' %}
+        {% stylesheets '@UnilendFrontBundle/Resources/public/css/**.css' %}
         <link rel="stylesheet" type="text/css" href="{{ asset_url }}" media="screen,projection">
         {% endstylesheets %}
 
@@ -143,8 +142,8 @@
     {% endif %}
 {% endblock %}
 {% javascripts
-    '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/dependencies.js'
-    '@UnilendFrontBundle/Resources/public/frontBuild/dev/js/main.js' %}
+    '@UnilendFrontBundle/Resources/public/js/dependencies.js'
+    '@UnilendFrontBundle/Resources/public/js/main.js' %}
 
 <script type="text/javascript" src="{{ asset_url }}"></script>
 

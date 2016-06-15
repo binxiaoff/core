@@ -27,7 +27,7 @@ var uglify = require('gulp-uglify')
 var watchify = require('watchify')
 var yargs = require('yargs').argv
 var logCapture = require('gulp-log-capture')
-var urlAdjuster = require('gulp-css-url-adjuster')
+//var urlAdjuster = require('gulp-css-url-adjuster')
 
 // Unilend GLOBAL vars
 var Unilend = GLOBAL.Unilend = {
@@ -86,7 +86,7 @@ Unilend.config = deepAssign({
   src: goodPath(yargs.src) || goodPath('./src'),
 
   // Root dest path, used by getDest
-  dest: goodPath(yargs.dest) || goodPath('./frontBuild/' + env),
+  dest: goodPath(yargs.dest) || goodPath('./public/'),
 
 // Browser-sync server configuration
 // browserSync: deepAssign({
@@ -278,6 +278,9 @@ gulp.task('copy', function () {
   // Copy JS assets
   gulp.src([getSrc('js/vendor/**/*')])
       .pipe(gulp.dest(getDest('js/vendor')))
+  // and medias
+  gulp.src([getSrc('media/**/*.*')])
+      .pipe(gulp.dest(getDest('./images')))
 })
 
 /*
@@ -414,9 +417,9 @@ gulp.task('scss', function () {
         cascade: true
       }))
       // here it is : "CSSREWRITE" but with gulp
-      .pipe(urlAdjuster({
-        replace:['../media/', '/frontbundle/media/'],
-      }))
+      //.pipe(urlAdjuster({
+      //  replace:['../media/', '/frontbundle/media/'],
+      //}))
 
       // Save to src for backup
       .pipe(gulp.dest(getSrc('css')))
