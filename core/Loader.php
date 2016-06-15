@@ -24,7 +24,7 @@ class Loader
         if (null === $db) {
             $params = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
 
-            if (file_exists(__DIR__ . '/../app/config/parameters.yml')) {
+            if (file_exists(__DIR__ . '/../app/config/parameters_extended.yml')) {
                 $params['parameters'] = array_merge($params['parameters'], Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters_extended.yml'))['parameters']);
             }
 
