@@ -49,7 +49,7 @@ try {
     }
 
     if (false === file_exists($sSourceImagePath)) {
-        $oImagick = new \Imagick($sStaticPath . 'images/dyn/default.jpg');
+        $oImagick = new \Imagick($sStaticPath . 'images/default.jpg');
         $oImagick->scaleImage($iImageWidth, $iImageHeight);
 
         throw new ResizableImageException('Unable to find source image');

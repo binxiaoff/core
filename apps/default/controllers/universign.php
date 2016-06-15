@@ -33,8 +33,7 @@ class universignController extends bootstrap
         $projects_pouvoir = $this->loadData('projects_pouvoir');
         $projects         = $this->loadData('projects');
 
-        // Retour pdf Mandat
-        if (isset($this->params[1], $this->params[2]) && $this->params[1] == 'mandat' && $clients_mandats->get($this->params[2], 'id_mandat') && $clients_mandats->status == 0) {
+        if (isset($this->params[1], $this->params[2]) && $this->params[1] == 'mandat' && $clients_mandats->get($this->params[2], 'id_mandat') && $clients_mandats->status == \clients_mandats::STATUS_PENDING) {
             if ($this->params[0] == 'success') {
                 //used variables
                 $uni_url = $this->uni_url;
@@ -46,7 +45,9 @@ class universignController extends bootstrap
 
                 //Send request and analyse response
                 $r = $c->send($f);
-                $this->oLogger->info('Mandat sent to Universign for project : id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                $this->oLogger->info('Mandate sent to Universign (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                 if (!$r->faultCode()) {
                     //if the request succeeded
                     $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
@@ -54,12 +55,14 @@ class universignController extends bootstrap
 
                     // On met a jour le pdf en bdd
                     file_put_contents($doc['name'], $doc['content']);
-                    $clients_mandats->status = 1;
+                    $clients_mandats->status = \clients_mandats::STATUS_SIGNED;
                     $clients_mandats->update();
-                    $this->oLogger->info('Mandat Ok for project id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                    $this->oLogger->info('Mandate OK (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                     // redirection sur page confirmation : mandat signé
                     // on verif si on a le mandat de déjà signé
-                    if ($projects_pouvoir->get($clients_mandats->id_project, 'id_project') && $projects_pouvoir->status == 1) {
+                    if ($projects_pouvoir->get($clients_mandats->id_project, 'id_project') && $projects_pouvoir->status == \projects_pouvoir::STATUS_SIGNED) {
                         $this->settings->get('Adresse notification pouvoir mandat signe', 'type');
                         $destinataire = $this->settings->value;
 
@@ -82,58 +85,58 @@ class universignController extends bootstrap
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
 
-                        $this->oLogger->info('Mandat and Pouvoir Ok for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+                        $this->oLogger->info('Mandate and proxy OK (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
                     } else {
-                        $this->oLogger->info('Mandat Ok but Pouvoir not signed for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+                        $this->oLogger->info('Mandate OK - proxy not signed (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
                     }
                 } else {
                     $this->settings->get('DebugMailIt', 'type');
                     $sDestinatairesDebug = $this->settings->value;
-                    //displays the error code and the fault message
-                    $this->oLogger->error('Return Universign Mandat NOK for id_project=' . $clients_mandats->id_project . ' - Errorr code : ' . $r->faultCode() . ' - Error Message : ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                    $this->oLogger->error('Return Universign mandate NOK (project ' . $clients_mandats->id_project . ') - Errorr code : ' . $r->faultCode() . ' - Error Message : ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                     mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] == 'fail') {
-                $this->oLogger->error('Mandat Fail for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
-                $clients_mandats->status = 3;
+                $this->oLogger->error('Mandate fail (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                $clients_mandats->status = \clients_mandats::STATUS_FAILED;
                 $clients_mandats->update();
             } elseif ($this->params[0] == 'cancel') {
-                $this->oLogger->error('Mandat Canceled for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
-                $clients_mandats->status = 2;
+                $this->oLogger->error('Mandate canceled (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                $clients_mandats->status = \clients_mandats::STATUS_CANCELED;
                 $clients_mandats->update();
             }
 
             header('Location: ' . $this->lurl . '/universign/confirmation/mandat/' . $clients_mandats->id_mandat);
             die;
-        } elseif (isset($this->params[2]) && isset($this->params[1]) && $this->params[1] == 'pouvoir' &&
-            $projects_pouvoir->get($this->params[2], 'id_pouvoir') && $projects_pouvoir->status == 0
-        ) {// Retour pouvoir
+        } elseif (isset($this->params[1], $this->params[2]) && $this->params[1] === 'pouvoir' && $projects_pouvoir->get($this->params[2], 'id_pouvoir') && $projects_pouvoir->status == \projects_pouvoir::STATUS_PENDING) {
             if ($this->params[0] == 'success') {
-                //used variables
                 $uni_url = $this->uni_url;
-                $uni_id  = $projects_pouvoir->id_universign; // a collection id
+                $uni_id  = $projects_pouvoir->id_universign;
 
-                //create the request
                 $c = new Client($uni_url);
                 $f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 
-                //Send request and analyse response
                 $r = $c->send($f);
-                $this->oLogger->info('Pouvoir sent to Universign for id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                $this->oLogger->info('Proxy sent to Universign (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
                 if (!$r->faultCode()) {
-                    //if the request succeeded
                     $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
                     $doc['content'] = $r->value()->arrayMem(0)->structMem('content')->scalarVal();
 
-                    // On met a jour le pdf en bdd
                     file_put_contents($doc['name'], $doc['content']);
-                    $projects_pouvoir->status = 1;
+                    $projects_pouvoir->status = \projects_pouvoir::STATUS_SIGNED;
                     $projects_pouvoir->update();
-                    $this->oLogger->info('Pouvoir Ok for id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
-                    // on verif si on a le mandat de déjà signé
-                    if ($clients_mandats->get($projects_pouvoir->id_project, 'id_project') && $clients_mandats->status == 1) {
+
+                    $this->oLogger->info('Proxy OK (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    if ($clients_mandats->get($projects_pouvoir->id_project, 'id_project') && $clients_mandats->status == \clients_mandats::STATUS_SIGNED) {
                         $this->settings->get('Adresse notification pouvoir mandat signe', 'type');
                         $destinataire = $this->settings->value;
+
                         $projects->get($projects_pouvoir->id_project, 'id_project');
                         $companies->get($projects->id_company, 'id_company');
                         $clients->get($companies->id_client_owner, 'id_client');
@@ -153,24 +156,27 @@ class universignController extends bootstrap
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
 
-                        $this->oLogger->info('Pouvoir and Mandat Ok for id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+                        $this->oLogger->info('Proxy and mandate OK (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
                     } else {
-                        $this->oLogger->info('Pouvoir Ok but Mandat not signed id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+                        $this->oLogger->info('Proxy OK and mandate not signed (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
                     }
                 } else {
                     $this->settings->get('DebugMailIt', 'type');
                     $sDestinatairesDebug = $this->settings->value;
-                    //displays the error code and the fault message
-                    $this->oLogger->error('Pouvoir NOK for id_project=' . $projects_pouvoir->id_project . ' - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    $this->oLogger->error('Proxy NOK (project ' . $projects_pouvoir->id_project . ') - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
                     mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id pouvoir : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] == 'fail') {
-                $this->oLogger->error('Pouvoir Fail for id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
-                $projects_pouvoir->status = 3;
+                $this->oLogger->error('Proxy fail for (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                $projects_pouvoir->status = \projects_pouvoir::STATUS_FAILED;
                 $projects_pouvoir->update();
             } elseif ($this->params[0] == 'cancel') {
-                $this->oLogger->error('Pouvoir Canceled for id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
-                $projects_pouvoir->status = 2;
+                $this->oLogger->error('Proxy canceled (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                $projects_pouvoir->status = \projects_pouvoir::STATUS_CANCELLED;
                 $projects_pouvoir->update();
             }
             header('Location: ' . $this->lurl . '/universign/confirmation/pouvoir/' . $projects_pouvoir->id_pouvoir);
@@ -185,13 +191,14 @@ class universignController extends bootstrap
 
             if ($this->params[0] === 'success') {
                 $uni_url = $this->uni_url;
-                $uni_id  = $oProjectCgv->id_universign; // a collection id
+                $uni_id  = $oProjectCgv->id_universign;
 
                 $c = new Client($uni_url);
                 $f = new Request('requester.getDocumentsByTransactionId', array(new Value($uni_id, "string")));
 
                 $r = $c->send($f);
-                $this->oLogger->info('CGV emprunteur sent to Universign for id_project=' . $oProjectCgv->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+
+                $this->oLogger->info('CGV emprunteur sent to Universign (project ' . $oProjectCgv->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
 
                 if (! $r->faultCode()) {
                     $doc['name']    = $r->value()->arrayMem(0)->structMem('name')->scalarVal();
@@ -202,7 +209,7 @@ class universignController extends bootstrap
                     $oProjectCgv->status = project_cgv::STATUS_SIGN_UNIVERSIGN;
                     $oProjectCgv->update();
 
-                    $this->oLogger->info('CGV emprunteur Ok for id_project=' . $oProjectCgv->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+                    $this->oLogger->info('CGV emprunteur OK (project ' . $oProjectCgv->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
 
                     $oClients   = $this->loadData('clients');
                     $oProjects  = $this->loadData('projects');
@@ -244,25 +251,25 @@ class universignController extends bootstrap
                     $mailer = $this->get('mailer');
                     $mailer->send($message);
 
-                    $this->oLogger->info('CGV emprunteur notification mail sent for id_project=' . $oProjectCgv->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+                    $this->oLogger->info('CGV emprunteur notification mail sent (project ' . $oProjectCgv->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
                 } else {
                     $this->settings->get('DebugMailIt', 'type');
                     $sDestinatairesDebug = $this->settings->value;
-                    $this->oLogger->error('CGV emprunteur NOK for id_project=' . $oProjectCgv->id_project . ' - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+
+                    $this->oLogger->error('CGV emprunteur NOK (project ' . $oProjectCgv->id_project . ') - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+
                     mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id cgv_project : ' . $oProjectCgv->id . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             } elseif ($this->params[0] === 'fail') {
-                $this->oLogger->error('CGV emprunteur failed for id_project=' . $oProjectCgv->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+                $this->oLogger->error('CGV emprunteur failed (project ' . $oProjectCgv->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
 
                 $oProjectCgv->status = project_cgv::STATUS_SIGN_FAILED;
                 $oProjectCgv->update();
-                // redirection sur page confirmation : une erreur est parvenue essayez plus tard
             } elseif ($this->params[0] === 'cancel') {
-                $this->oLogger->error('CGV emprunteur cancelled for id_project=' . $oProjectCgv->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+                $this->oLogger->error('CGV emprunteur cancelled (project ' . $oProjectCgv->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
 
                 $oProjectCgv->status = project_cgv::STATUS_SIGN_CANCELLED;
                 $oProjectCgv->update();
-                // redirection sur page confirmation : vous avez annulé voulez vous signer votre mandat ?
             }
 
             header('Location: ' . $this->lurl . '/universign/confirmation/cgv_emprunteurs/' . $oProjectCgv->id . '/' . sha1($oProjectCgv->id_project . '_' . $oProjectCgv->id_tree));
@@ -280,7 +287,8 @@ class universignController extends bootstrap
 
         if ($clients_mandats->get($this->params[0], 'id_mandat') && $clients_mandats->status != \clients_mandats::STATUS_SIGNED) {
             if ($clients_mandats->url_universign != '' && $clients_mandats->status == \clients_mandats::STATUS_PENDING) {
-                $this->oLogger->info('Mandat not signed. Redirection to universign for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+                $this->oLogger->info('Mandate not signed. Redirection to Universign (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                 header('Location: ' . $clients_mandats->url_universign);
                 die;
             } else {
@@ -295,12 +303,14 @@ class universignController extends bootstrap
                         $sMandatStatus = 'fail';
                         break;
                     default:
-                        $this->oLogger->info('Mandat status not handled : status=' . $clients_mandats->status . ' - Cannot create PDF for Universign. id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+                        $this->oLogger->info('Unknown mandate status (' . $clients_mandats->status . ') - Cannot create PDF for Universign (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                         header('Location: ' . $this->lurl);
                         die;
                 }
 
-                $this->oLogger->info('Mandat status : status=' . $sMandatStatus . ' - Creation of pdf to send to universign. id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+                $this->oLogger->info('Mandate status (' . $sMandatStatus . ') - Creation of PDF to send to Universign (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                 $clients->get($clients_mandats->id_client, 'id_client');
 
                 $uni_url     = $this->uni_url; // address of the universign server with basic authentication
@@ -368,7 +378,9 @@ class universignController extends bootstrap
 
                 //send request and stores response values
                 $r = $c->send($f);
-                $this->oLogger->info('Mandat sent to Universign for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                $this->oLogger->info('Mandate sent to Universign (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                 if (!$r->faultCode()) {
                     $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url
                     $id  = $r->value()->structMem('id')->scalarVal(); //you should store this id
@@ -383,15 +395,18 @@ class universignController extends bootstrap
                     $clients_mandats->bic            = $company->bic;
                     $clients_mandats->iban           = $company->iban;
                     $clients_mandats->update();
-                    $this->oLogger->info('Mandat response generation from universign OK. Redirection to universign to sign for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                    $this->oLogger->info('Mandate response generation from universign OK. Redirection to Universign to sign (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                     header('Location: ' . $url);
                     die;
 
                 } else {
-                    //displays the error code and the fault message
                     $this->settings->get('DebugMailIt', 'type');
                     $sDestinatairesDebug = $this->settings->value;
-                    $this->oLogger->info('Mandat response generation from universign NOK. id_project=' . $clients_mandats->id_project . ' - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                    $this->oLogger->info('Mandate response generation from universign NOK (project ' . $clients_mandats->id_project . ') - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
                     mail($sDestinatairesDebug, 'unilend erreur universign reception', ' creatioon mandat id mandat : ' . $clients_mandats->id_mandat . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             }
@@ -405,11 +420,10 @@ class universignController extends bootstrap
         $clients          = $this->loadData('clients');
         $projects         = $this->loadData('projects');
 
-        // on check les id et si le pdf n'est pas deja signé
         if ($projects_pouvoir->get($this->params[0], 'id_pouvoir') && $projects_pouvoir->status != \projects_pouvoir::STATUS_SIGNED) {
-            // on check si deja existant en bdd avec l'url universign et si encore en cours
             if (isset($this->params[1]) && $this->params[1] == 'NoUpdateUniversign' && $projects_pouvoir->url_universign != '' && $projects_pouvoir->status == \projects_pouvoir::STATUS_PENDING) { // si le meme jour alors on regenere pas le pdf universign
-                $this->oLogger->info('Pouvoir not signed but flag bdd exist. Redirection to universign.', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+                $this->oLogger->info('Proxy not signed but DB flag exists. Redirection to Universign (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
                 header('Location: ' . $projects_pouvoir->url_universign);
                 die;
             } else {// Sinon on crée
@@ -424,7 +438,8 @@ class universignController extends bootstrap
                         $sPouvoirStatus = 'fail';
                         break;
                 }
-                $this->oLogger->info('Pouvoir status : status=' . $sPouvoirStatus . ' - Creation of pdf to send to universign for id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                $this->oLogger->info('Proxy status: ' . $sPouvoirStatus . ' - Creation of PDF to send to Universign (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
 
                 $projects->get($projects_pouvoir->id_project, 'id_project');
                 $companies->get($projects->id_company, 'id_company');
@@ -495,7 +510,7 @@ class universignController extends bootstrap
 
                 //send request and stores response values
                 $r = $c->send($f);
-                $this->oLogger->info('Pouvoir sent to Universign for id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+                $this->oLogger->info('Proxy sent to Universign (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
                 if (!$r->faultCode()) {
                     $url = $r->value()->structMem('url')->scalarVal(); //you should redirect the signatory to this url
                     $id  = $r->value()->structMem('id')->scalarVal(); //you should store this id
@@ -504,14 +519,17 @@ class universignController extends bootstrap
                     $projects_pouvoir->url_universign = $url;
                     $projects_pouvoir->status         = \projects_pouvoir::STATUS_PENDING;
                     $projects_pouvoir->update();
-                    $this->oLogger->info('Pouvoir generation response from universign OK. Redirection to universign to sign. id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    $this->oLogger->info('Proxy generation response from Universign OK. Redirection to Universign to sign (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
                     header('Location: ' . $url);
                     die;
                 } else {
                     $this->settings->get('DebugMailIt', 'type');
                     $sDestinatairesDebug = $this->settings->value;
-                    //displays the error code and the fault message
-                    $this->oLogger->error('Pouvoir generation response from universign NOK. id_project=' . $projects_pouvoir->id_project . ' - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    $this->oLogger->error('Proxy generation response from Universign NOK (project ' . $projects_pouvoir->id_project . ') - Error code: ' . $r->faultCode() . ' - Error message: ' . $r->faultString(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
                     mail($sDestinatairesDebug, 'unilend erreur universign reception', 'id mandat : ' . $projects_pouvoir->id_pouvoir . ' | An error occurred: Code: ' . $r->faultCode() . ' Reason: "' . $r->faultString());
                 }
             }
@@ -571,21 +589,25 @@ class universignController extends bootstrap
                     }
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été signé';
-                    $this->oLogger->info('Mandat confirmation : signed. id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                    $this->oLogger->info('Mandat confirmation: signed (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
                 } elseif ($clients_mandats->status == \clients_mandats::STATUS_CANCELED) {
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Votre mandat a bien été annulé vous pouvez le signer plus tard.';
-                    $this->oLogger->info('Mandat confirmation : cancelled. id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                    $this->oLogger->info('Mandate confirmation: cancelled (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
                 } elseif ($clients_mandats->status == \clients_mandats::STATUS_FAILED) {
                     $this->titre   = 'Confirmation mandat';
-                    $this->message = 'Une erreur s\'est produite ressayez plus tard';
-                    $this->oLogger->error('Mandat confirmation error. id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+                    $this->message = 'Une erreur s\'est produite, réessayez plus tard';
+
+                    $this->oLogger->error('Mandate confirmation error (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
                 } else {
                     $this->titre   = 'Confirmation mandat';
                     $this->message = 'Vous n\'avez pas encore signé votre mandat';
-                    $this->oLogger->info('Mandat confirmation not signed for id_project=' . $clients_mandats->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
+
+                    $this->oLogger->info('Mandate confirmation not signed (project ' . $clients_mandats->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $clients_mandats->id_project));
                 }
-            } elseif ($this->params[0] == 'pouvoir' && $projects_pouvoir->get($this->params[1], 'id_pouvoir')) {// si on a le pouvoir
+            } elseif ($this->params[0] == 'pouvoir' && $projects_pouvoir->get($this->params[1], 'id_pouvoir')) {
                 $projects->get($projects_pouvoir->id_project, 'id_project');
                 $companies->get($projects->id_company, 'id_company');
                 $clients->get($companies->id_client_owner, 'id_client');
@@ -596,19 +618,22 @@ class universignController extends bootstrap
                 // si pouvoir ok
                 if ($projects_pouvoir->status == 1) {
                     $this->message = 'Votre pouvoir a bien été signé';
-                    $this->oLogger->info('Pouvoir confirmation : signed. id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    $this->oLogger->info('Proxy confirmation: signed (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
                 } elseif ($projects_pouvoir->status == 2) {// pouvoir annulé
                     $this->message = 'Votre pouvoir a bien été annulé vous pouvez le signer plus tard.';
-                    $this->oLogger->info('Pouvoir confirmation : cancelled. id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    $this->oLogger->info('Proxy confirmation: cancelled (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
                 } elseif ($projects_pouvoir->status == 3) {// pouvoir fail
                     $this->message = 'Une erreur s\'est produite ressayez plus tard';
-                    $this->oLogger->info('Pouvoir confirmation : error. id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    $this->oLogger->info('Proxy confirmation: error (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
                 } else {
                     $this->message = 'Vous n\'avez pas encore signé votre pouvoir';
-                    $this->oLogger->info('Pouvoir confirmation : not signed. id_project=' . $projects_pouvoir->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
+
+                    $this->oLogger->info('Proxy confirmation: not signed (project ' . $projects_pouvoir->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $projects_pouvoir->id_project));
                 }
             } elseif ($this->params[0] == 'cgv_emprunteurs') {
-                // CGV Emprunteur (project)
                 $oProjectCgv = $this->loadData('project_cgv');
 
                 if (
@@ -630,15 +655,17 @@ class universignController extends bootstrap
                 $this->lien_pdf = $this->lurl . $oProjectCgv->getUrlPath();
 
                 if ($oProjectCgv->status == project_cgv::STATUS_NO_SIGN) {
-                    $this->oLogger->info('CGV borrower confirmation : not signed. id_project=' . $oProjectCgv->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
+                    $this->oLogger->info('CGV borrower confirmation: not signed (project ' . $oProjectCgv->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProjectCgv->id_project));
                 }
             } else {
-                $this->oLogger->error('Unknown document for confirmation. Redirection home page.', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->oLogger->error('Unknown document (' . $this->params[0] . ') for Universign confirmation. Redirection home page.', array('class' => __CLASS__, 'function' => __FUNCTION__));
+
                 header('Location: ' . $this->lurl);
                 die;
             }
         } else {
-            $this->oLogger->error('Missing parameters. Redirection home page.', array('class' => __CLASS__, 'function' => __FUNCTION__));
+            $this->oLogger->error('Missing parameters for Universign confirmation. Redirection home page.', array('class' => __CLASS__, 'function' => __FUNCTION__));
+
             header('Location: ' . $this->lurl);
             die;
         }

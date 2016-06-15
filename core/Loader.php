@@ -22,7 +22,12 @@ class Loader
     public static function loadData($object, array $params = array(), $db = null)
     {
         if (null === $db) {
-            $params            = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
+            $params = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
+
+            if (file_exists(__DIR__ . '/../app/config/parameters_extended.yml')) {
+                $params['parameters'] = array_merge($params['parameters'], Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters_extended.yml'))['parameters']);
+            }
+
             $connectionFactory = new ConnectionFactory([]);
             $db                = $connectionFactory->createConnection(
                 [

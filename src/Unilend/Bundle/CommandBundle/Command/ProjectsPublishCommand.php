@@ -38,11 +38,12 @@ EOF
         $bHasProjectPublished = false;
 
         $aProjectToFund = $oProject->selectProjectsByStatus(\projects_status::AUTO_BID_PLACED, "AND p.date_publication_full <= NOW()", '', array(), '', '', false);
-        $oLogger->info('Number of projects to publish : ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $oLogger->info('Number of projects to publish: ' . count($aProjectToFund), array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         foreach ($aProjectToFund as $aProject) {
             if ($oProject->get($aProject['id_project'])) {
-                $oLogger->info('Publishing the id_project=' . $aProject['id_project'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']));
+                $oLogger->info('Publishing the project ' . $aProject['id_project'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aProject['id_project']));
+
                 $bHasProjectPublished = true;
                 $oProjectManager->publish($oProject);
                 $this->zipProjectAttachments($oProject, $oEntityManager, $oLogger);
@@ -90,7 +91,7 @@ EOF
         $oAttachmentHelper = Loader::loadLib('attachment_helper', array($oAttachment, $oAttachmentType, $this->getContainer()->getParameter('kernel.root_dir') . '/../'));
         $aAttachments      = $project->getAttachments();
 
-        $oLogger->info('Project attachments of id_project=' . $project->id_project . ': ' . var_export($aAttachments, true), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+        $oLogger->info('Project attachments for project ' . $project->id_project . ': ' . var_export($aAttachments, true), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_DIRIGEANT, 'CNI-#', $companies->siren, $sPathNoZip);
         $this->copyAttachment($oAttachmentHelper, $aAttachments, \attachment_type::CNI_PASSPORTE_VERSO, 'CNI-VERSO-#', $companies->siren, $sPathNoZip);
@@ -186,7 +187,7 @@ EOF
 
         /** @var LoggerInterface $oLogger */
         $oLogger = $this->getContainer()->get('monolog.logger.console');
-        $oLogger->info('Send email for Project ID: ' . $project->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+        $oLogger->info('Send publication emails for project: ' . $project->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
         $companies->get($project->id_company, 'id_company');
         $settings->get('Facebook', 'type');

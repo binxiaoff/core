@@ -35,8 +35,8 @@ class ProjectsPrePublishCommand extends ContainerAwareCommand
         foreach ($projectsToFund as $projectTable) {
             if ($project->get($projectTable['id_project'])) {
                 $output->writeln('Project : ' . $project->title);
+                $logger->info('Pre-publish project ' . $project->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
-                $logger->info('Do process pre-publish on project ID: ' . $project->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
                 $projectManager->prePublish($project);
             }
         }

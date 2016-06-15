@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-
 class EmailLenderSummaryCommand extends ContainerAwareCommand
 {
     const DAILY   = 'quotidienne';
@@ -76,8 +75,8 @@ EOF
                 $summaryType = self::MONTHLY;
                 break;
             default:
-                $output->writeln('unknown summary type');
-                $logger->warning('unknown summary type', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $output->writeln('Unknown summary type (' . $summaryType . ')');
+                $logger->warning('Unknown summary type (' . $summaryType . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
                 return;
         }
 
@@ -100,8 +99,8 @@ EOF
                 $mailerManager->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), $summaryType);
                 break;
             default:
-                $output->writeln('unknown notification type');
-                $logger->warning('unknown notification type', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $output->writeln('Unknown notification type (' . $notificationType . ')');
+                $logger->warning('Unknown notification type (' . $notificationType . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
                 return;
         }
     }
