@@ -1,7 +1,5 @@
 <?php
 
-use Unilend\core\Loader;
-
 class usersController extends bootstrap
 {
     var $Command;
@@ -79,6 +77,7 @@ class usersController extends bootstrap
 
                 $this->users->status       = ($this->users->status == 2 ? 2 : isset($_POST['status']) ? $_POST['status'] : $this->users->status);
                 $this->users->id_user_type = $_POST['id_user_type'];
+                $this->users->update();
 
                 $this->users_zones->delete($this->users->id_user, 'id_user');
                 $lZones = $this->users_types_zones->select('id_user_type = ' . $this->users->id_user_type . ' ');
@@ -90,8 +89,6 @@ class usersController extends bootstrap
                     $usersZones->create();
                 }
             }
-
-            $this->users->update();
 
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
@@ -173,8 +170,8 @@ class usersController extends bootstrap
         if (isset($_POST['form_edit_pass_user']) && $_POST['id_user'] == $_SESSION['user']['id_user']) {
             $this->users->get($_POST['id_user'], 'id_user');
 
-            /** @var \previous_passwords $previous_passwords */
-            $previous_passwords = Loader::loadData('previous_passwords');
+            /** @var \previous_passwords $previousPasswords */
+            $previousPasswords = $this->loadData('previous_passwords');
 
             $this->retour_pass = '';
             if ($_POST['old_pass'] == '' || $_POST['new_pass'] == '' || $_POST['new_pass2'] == '') {
@@ -185,11 +182,10 @@ class usersController extends bootstrap
                 $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et 1 caract&egrave;re sp&eacute;cial";
             } elseif ($_POST['new_pass'] != $_POST['new_pass2']) {
                 $this->retour_pass = "La confirmation du nouveau de passe doit &ecirc;tre la m&ecirc;me que votre nouveau mot de passe";
-            } elseif (true === $previous_passwords->passwordUsed($_POST['new_pass'], $this->users->id_user)) {
+            } elseif (true === $previousPasswords->passwordUsed($_POST['new_pass'], $this->users->id_user)) {
                 $this->retour_pass = "Ce mot de passe a d&eacute;ja &eacute;t&eacute; utilis&eacute; !";
             } else {
-                $sNewPassword = $this->ficelle->generatePassword(10);
-                $this->users->changePassword($sNewPassword, $this->users, false);
+                $this->users->changePassword($_POST['new_pass'], $this->users, false);
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');

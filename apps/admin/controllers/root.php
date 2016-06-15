@@ -18,7 +18,7 @@ class rootController extends bootstrap
         if (isset($_POST['form_new_password'])) {
             if ($this->users->get(trim($_POST['email']), 'email')) {
                 $sNewPassword = $this->ficelle->generatePassword(10);
-                $this->users->changePassword($sNewPassword, $this->users);
+                $this->users->changePassword($sNewPassword, $this->users, true);
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $mailerManager */
                 $mailerManager = $this->get('unilend.service.email_manager');
@@ -124,7 +124,6 @@ class rootController extends bootstrap
 
         $this->users = $this->loadData('users');
 
-        // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
 
         if ($this->users->get($this->params[0], 'id_user') && $this->users->id_user != $_SESSION['user']['id_user']) {
@@ -133,10 +132,9 @@ class rootController extends bootstrap
         }
 
         if (isset($_POST['form_edit_pass_user'])) {
-            /** @var \previous_passwords $previous_passwords */
-            $previous_passwords = Loader::loadData('previous_passwords');
+            /** @var \previous_passwords $previousPasswords */
+            $previousPasswords = $this->loadData('previous_passwords');
 
-            // on check si le user qui post est le même que celui qu'on a en session, sinon on bloque tout
             if ($_POST['id_user'] != $_SESSION['user']['id_user']) {
                 header('Location:' . $this->lurl . '/users');
                 die;
@@ -156,8 +154,8 @@ class rootController extends bootstrap
                 $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et un caract&egrave;re sp&eacute;cial";
             }
 
-            if (true === $previous_passwords->passwordUsed($_POST['old_pass'], $this->users->id_user)) {
-                $this->retour_pass = "Non";
+            if (true === $previousPasswords->passwordUsed($_POST['old_pass'], $this->users->id_user)) {
+                $this->retour_pass = "Ce mot de passe a d&eacute;ja &eacute;t&eacute; utilis&eacute; !";
             }
 
             if ($_POST['new_pass'] == $_POST['new_pass2']) {
