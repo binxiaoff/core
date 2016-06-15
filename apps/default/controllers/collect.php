@@ -406,16 +406,12 @@ class collectController extends bootstrap
                 $this->clients->get($this->clients->id_client, 'id_client');
                 $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
 
-                //******************************************************//
-                //*** ENVOI DU MAIL CONFIRMATION INSCRIPTION PRETEUR ***//
-                //******************************************************//
-                $this->mails_text->get('confirmation-inscription-preteur', 'lang = "' . $this->language . '" AND type');
-
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
-
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
+                /** @var \settings $oSettings */
+                $oSettings = $this->loadData('settings');
+                $oSettings->get('Facebook', 'type');
+                $lien_fb = $oSettings;
+                $oSettings->get('Twitter', 'type');
+                $lien_tw = $oSettings;
 
                 $varMail = array(
                     'surl'           => $this->surl,
@@ -428,24 +424,11 @@ class collectController extends bootstrap
                     'lien_tw'        => $lien_tw
                 );
 
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-inscription-preteur', $varMail);
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
 
                 $_SESSION['LP_id_unique'] = $this->clients->id_client;
 

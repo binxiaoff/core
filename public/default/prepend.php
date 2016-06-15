@@ -57,11 +57,20 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 }
 
 if (! $nocache) {
-    $oCache             = Unilend\librairies\Cache::getInstance($config);
+    $params = \Symfony\Component\Yaml\Yaml::parse(file_get_contents(__DIR__ . '/../../app/config/parameters.yml'));
+    $oCache = new Memcache;
+    $oCache->connect($params['parameters']['server1.memcache_host'], $params['parameters']['server1.memcache_port']);
+    
+    if (isset($_GET['flushCache']) && $_GET['flushCache'] == 'y') {
+        $oCache->flush();
+    }
+
     $keyPartenaireMedia = isset($_SESSION['lexpress']) ? 'lexpress' : 'direct';
-    $uri                = trim(str_replace(array('clearCache=y', 'noCache=y', 'flushCache=y'), '', $_SERVER['REQUEST_URI']), '?/');
-    $cacheKey           = $oCache->makeKey($_SERVER['HTTP_HOST'], 'cache', $currentController, $keyPartenaireMedia, str_replace('/', '_', $uri));
-    $content            = $oCache->get($cacheKey);
+    $uri  = trim(str_replace(array('clearCache=y', 'noCache=y', 'flushCache=y'), '', $_SERVER['REQUEST_URI']), '?/');
+    $sKey = 'prod' . '_' . $_SERVER['HTTP_HOST'] . '_cache_' . $currentController . '_' . $keyPartenaireMedia . '_' . str_replace('/', '_', $uri);
+    $cacheKey = (250 < strlen($sKey)) ? md5($sKey) : $sKey;
+
+    $content  = $oCache->get($cacheKey);
 
     if ($content !== false) {
         echo $content;

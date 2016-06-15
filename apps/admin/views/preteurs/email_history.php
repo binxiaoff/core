@@ -92,7 +92,6 @@
     </div>
     <br><br>
     <H2>Historique des Emails</H2>
-    <p>(envoyés à l'adresse email : <?= $this->clients->email ?>)</p>
     <div class="date_picker_email_history">
         <form method="post" name="history_dates" id="history_dates" enctype="multipart/form-data" action="" target="_parent">
             <fieldset>
@@ -111,20 +110,20 @@
     <table class="tablesorter">
         <thead>
         <tr>
-            <th>Type de Mail</th>
+            <th>Date</th>
+            <th>From</th>
             <th>Sujet</th>
-            <th>Date d'envoi</th>
             <th>Visualiser</th>
         </tr>
         </thead>
         <tbody>
         <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
             <tr>
-                <td><?= $aEmail['name'] ?></td>
-                <td><?= str_replace('_', ' ', utf8_encode(mb_decode_mimeheader($aEmail['subject']))) ?></td>
-                <td><?= $this->dates->formatDateMysqltoFr_HourIn($aEmail['added']) ?></td>
+                <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
+                <td><?= $aEmail['sender_name'] ?></td>
+                <td><?= $aEmail['subject'] ?></td>
                 <td style="text-align: center">
-                    <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_filermails'] ?>" class="thickbox">
+                    <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_queue'] ?>" class="thickbox">
                         <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px" />
                     </a>
                 </td>

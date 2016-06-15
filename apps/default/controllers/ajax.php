@@ -496,50 +496,29 @@ class ajaxController extends bootstrap
                 }
                 $this->clients->update();
 
-                //************************************//
-                //*** ENVOI DU MAIL GENERATION MDP ***//
-                //************************************//
+                /** @var \settings $oSettings */
+                $oSettings = $this->loadData('settings');
+                $oSettings->get('Facebook', 'type');
+                $lien_fb = $oSettings->value;
 
-                $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
-
-                $surl  = $this->surl;
-                $url   = $this->lurl;
-                $login = $this->clients->email;
-
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
-
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
+                $oSettings->get('Twitter', 'type');
+                $lien_tw = $oSettings->value;
 
                 $varMail = array(
-                    'surl'     => $surl,
-                    'url'      => $url,
-                    'login'    => $login,
+                    'surl'     => $this->surl,
+                    'url'      => $this->lurl,
+                    'login'    => $this->clients->email,
                     'prenom_p' => $this->clients->prenom,
                     'mdp'      => '',
                     'lien_fb'  => $lien_fb,
                     'lien_tw'  => $lien_tw
                 );
 
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
 
                 echo 'ok';
             }
@@ -549,56 +528,32 @@ class ajaxController extends bootstrap
     public function _mdp_lost()
     {
         $this->autoFireView = false;
-
-        $clients = $this->loadData('clients');
+        $clients            = $this->loadData('clients');
 
         if (isset($_POST['email']) && $this->ficelle->isEmail($_POST['email']) && $clients->get($_POST['email'], 'email')) {
-            //*************************//
-            //*** ENVOI DU MAIL MDP ***//
-            //*************************//
-
-            $this->mails_text->get('mot-de-passe-oublie', 'lang = "' . $this->language . '" AND type');
-
-            $surl          = $this->surl;
-            $url           = $this->lurl;
-            $prenom        = $clients->prenom;
-            $login         = $clients->email;
-            $link_password = $this->lurl . '/' . $this->tree->getSlug(119, $this->language) . '/' . $clients->hash;
-
-            $this->settings->get('Facebook', 'type');
-            $lien_fb = $this->settings->value;
-
-            $this->settings->get('Twitter', 'type');
-            $lien_tw = $this->settings->value;
+            /** @var \settings $oSettings */
+            $oSettings = $this->loadData('settings');
+            $oSettings->get('Facebook', 'type');
+            $lien_fb = $oSettings->value;
+            $oSettings->get('Twitter', 'type');
+            $lien_tw = $oSettings->value;
 
             $varMail = array(
-                'surl'          => $surl,
-                'url'           => $url,
-                'prenom'        => $prenom,
-                'login'         => $login,
-                'link_password' => $link_password,
+                'surl'          => $this->surl,
+                'url'           => $this->lurl,
+                'prenom'        => $clients->prenom,
+                'login'         => $clients->email,
+                'link_password' => $this->lurl . '/' . $this->tree->getSlug(119, $this->language) . '/' . $clients->hash,
                 'lien_fb'       => $lien_fb,
                 'lien_tw'       => $lien_tw
             );
 
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
+            $message->setTo($clients->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
-            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-
-            if ($this->Config['env'] == 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else {
-                $this->email->addRecipient(trim($clients->email));
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-            }
             echo 'ok';
         } else {
             echo 'nok';
@@ -721,18 +676,18 @@ class ajaxController extends bootstrap
                 $this->clients_gestion_mails_notif->id_transaction  = $this->transactions->id_transaction;
                 $this->clients_gestion_mails_notif->create();
 
+                /** @var \settings $oSettings */
+                $oSettings = $this->loadData('settings');
+
                 if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 8, 'immediatement') == true) {
                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                     $this->clients_gestion_mails_notif->immediatement = 1;
                     $this->clients_gestion_mails_notif->update();
 
-                    $this->mails_text->get('preteur-retrait', 'lang = "' . $this->language . '" AND type');
-
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
+                    $oSettings->get('Facebook', 'type');
+                    $lien_fb = $oSettings->value;
+                    $oSettings->get('Twitter', 'type');
+                    $lien_tw = $oSettings->value;
 
                     $varMail = array(
                         'surl'            => $this->surl,
@@ -748,31 +703,18 @@ class ajaxController extends bootstrap
                         'lien_tw'         => $lien_tw
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] == 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-retrait', $varMail);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
 
                 //******************************************//
                 //*** ENVOI DU MAIL NOTIFICATION RETRAIT ***//
                 //******************************************//
-                $this->settings->get('Adresse notification controle fond', 'type');
-                $destinataire = $this->settings->value;
+                $oSettings->get('Adresse notification controle fond', 'type');
+                $destinataire = $oSettings->value;
 
                 $transac = $this->loadData('transactions');
                 $loans   = $this->loadData('loans');
@@ -780,45 +722,24 @@ class ajaxController extends bootstrap
                 // on recup la somme versé a l'inscription si y en a 1
                 $transac->get($this->clients->id_client, 'type_transaction = ' . \transactions_types::TYPE_LENDER_SUBSCRIPTION . ' AND status = 1 AND etat = 1 AND id_client');
 
-                $soldePrets = $loans->sumPrets($this->lenders_accounts->id_lender_account);
-
-                // Recuperation du modele de mail
-                $this->mails_text->get('notification-retrait-de-fonds', 'lang = "' . $this->language . '" AND type');
-
-                $surl            = $this->surl;
-                $url             = $this->lurl;
-                $idPreteur       = $this->clients->id_client;
-                $nom             = utf8_decode($this->clients->nom);
-                $prenom          = utf8_decode($this->clients->prenom);
-                $email           = $this->clients->email;
-                $dateinscription = date('d/m/Y', strtotime($this->clients->added));
-                if ($transac->montant != false) {
-                    $montantInscription = $this->ficelle->formatNumber($transac->montant / 100);
-                } else {
-                    $montantInscription = $this->ficelle->formatNumber(0);
-                }
-                $montantPreteDepuisInscription = $this->ficelle->formatNumber($soldePrets);
-                $montantRetirePlateforme       = $this->ficelle->formatNumber($montant);
-                $solde                         = $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client));
-
-                $sujetMail = $this->mails_text->subject;
-                eval("\$sujetMail = \"$sujetMail\";");
-
-                $texteMail = $this->mails_text->content;
-                eval("\$texteMail = \"$texteMail\";");
-
-                $exp_name = $this->mails_text->exp_name;
-                eval("\$exp_name = \"$exp_name\";");
-
-                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->addRecipient(trim($destinataire));
-                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                $this->email->setHTMLBody($texteMail);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                $varMail = array(
+                    '$surl'                          => $this->surl,
+                    '$url'                           => $this->lurl,
+                    '$idPreteur'                     => $this->clients->id_client,
+                    '$nom'                           => $this->clients->nom,
+                    '$prenom'                        => $this->clients->prenom,
+                    '$email'                         => $this->clients->email,
+                    '$dateinscription'               => date('d/m/Y', strtotime($this->clients->added)),
+                    '$montantInscription'            => (false === is_null($transac->montant)) ? $this->ficelle->formatNumber($transac->montant / 100) : $this->ficelle->formatNumber(0),
+                    '$montantPreteDepuisInscription' => $this->ficelle->formatNumber($loans->sumPrets($this->lenders_accounts->id_lender_account)),
+                    '$montantRetirePlateforme'       => $this->ficelle->formatNumber($montant),
+                    '$solde'                         => $this->ficelle->formatNumber($transac->getSolde($this->clients->id_client))
+                );
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-retrait-de-fonds', $varMail, false);
+                $message->setTo($destinataire);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
             }
             echo $verif;
         } else {
@@ -937,70 +858,29 @@ class ajaxController extends bootstrap
                 $this->demande_contact->message   = ($this->lng['contact']['message'] != $_POST['message'] ? $_POST['message'] : '');
                 $this->demande_contact->create();
 
-                $this->settings->get('Adresse preteur', 'type');
-                $destinataire = $this->settings->value;
+                /** @var \settings $oSettings */
+                $oSettings = $this->loadData('settings');
 
-                //*****************************//
-                //*** ENVOI DU MAIL CONTACT ***//
-                //*****************************//
-                $this->mails_text->get('demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-                $this->settings->get('Facebook', 'type');
+                $oSettings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
 
-                $this->settings->get('Twitter', 'type');
+                $oSettings->get('Twitter', 'type');
                 $lien_tw = $this->settings->value;
 
                 $varMail = array(
                     'surl'     => $this->surl,
                     'url'      => $this->lurl,
-                    'email_c'  => $this->demande_contact->email,
                     'prenom_c' => $this->demande_contact->prenom,
-                    'nom_c'    => $this->demande_contact->nom,
-                    'objet'    => 'Demande preteur',
                     'projets'  => $this->lurl . '/' . $this->tree->getSlug(4, $this->language),
                     'lien_fb'  => $lien_fb,
                     'lien_tw'  => $lien_tw
                 );
 
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] == 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->demande_contact->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->demande_contact->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
-
-                //***************************************//
-                //*** ENVOI DU MAIL CONTACT A UNILEND ***//
-                //***************************************//
-                $this->mails_text->get('notification-demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-                $surl   = $this->surl;
-                $url    = $this->lurl;
-                $email  = $this->demande_contact->email;
-                $nom    = ($this->demande_contact->nom);
-                $prenom = ($this->demande_contact->prenom);
-                $objet  = ($objets[$this->demande_contact->demande]);
-
-                $this->demande_contact->demande   = 2;
-                $this->demande_contact->nom       = $this->ficelle->majNom($_POST['name']);
-                $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
-                $this->demande_contact->email     = $_POST['email'];
-                $this->demande_contact->telephone = ($this->lng['contact']['telephone'] != $_POST['phone'] ? $_POST['phone'] : '');
-                $this->demande_contact->societe   = ($this->lng['contact']['societe'] != $_POST['societe'] ? $_POST['societe'] : '');
-                $this->demande_contact->message   = ($this->lng['contact']['message'] != $_POST['message'] ? $_POST['message'] : '');
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $varMail);
+                $message->setTo($this->demande_contact->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
 
                 $infos = '<ul>';
                 $infos .= '<li>Type demande : Demande preteur</li>';
@@ -1012,24 +892,18 @@ class ajaxController extends bootstrap
                 $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
                 $infos .= '</ul>';
 
-                $sujetMail = $this->mails_text->subject;
-                eval("\$sujetMail = \"$sujetMail\";");
+                $oSettings->get('Adresse preteur', 'type');
+                $destinataire = $this->settings->value;
 
-                $texteMail = $this->mails_text->content;
-                eval("\$texteMail = \"$texteMail\";");
+                $varInternalMail = array(
+                    '$infos'  => $infos
+                );
 
-                $exp_name = $this->mails_text->exp_name;
-                eval("\$exp_name = \"$exp_name\";");
-
-                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->addRecipient(trim($destinataire));
-                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                $this->email->setHTMLBody($texteMail);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $varInternalMail, false);
+                $message->setTo($destinataire);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
 
                 echo $captcha = '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
             } else {
@@ -1611,7 +1485,7 @@ class ajaxController extends bootstrap
         $oClient        = $this->loadData('clients');
         $oLenderAccount = $this->loadData('lenders_accounts');
         $oBids          = $this->loadData('bids');
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
         $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
 
@@ -1654,17 +1528,21 @@ class ajaxController extends bootstrap
                 $order = 'DESC';
             }
 
-            $cacheKey       = $this->oCache->makeKey(\bids::CACHE_KEY_PROJECT_BIDS, $projectId, $rate, $sortBy, $order);
-            $this->bidsList = $this->oCache->get($cacheKey);
-            if (false === $this->bidsList) {
+            $oCachePool  = $this->get('memcache.default');
+            $oCachedItem = $oCachePool->getItem(\bids::CACHE_KEY_PROJECT_BIDS . $projectId . $rate . $sortBy . $order);
+            if (true === $oCachedItem->isHit()) {
+                $this->bidsList = $oCachedItem->get();
+            } else {
                 $this->bidsList = $bid->select('id_project = ' . $projectId . ' AND rate like ' . $rate, $sortBy . ' ' . $order);
-                $this->oCache->set($cacheKey, $this->bidsList, \Unilend\librairies\Cache::SHORT_TIME);
+                $oCachedItem->set($this->bidsList)->expiresAfter(300);
+                $oCachePool->save($oCachedItem);
             }
+
             $this->lng['preteur-projets'] = $this->ln->selectFront('preteur-projets', $this->language, $this->App);
             $this->status                 = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
 
-            /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-            $oAutoBidSettingsManager      = $this->get('AutoBidSettingsManager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+            $oAutoBidSettingsManager      = $this->get('unilend.service.autobid_settings_manager');
             $this->bIsAllowedToSeeAutobid = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         }
     }

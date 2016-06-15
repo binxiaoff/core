@@ -63,15 +63,12 @@ class projectsController extends bootstrap
             $this->autoFireHead   = true;
             $this->autoFireFooter = true;
 
-            $this->url_form = $this->Config['url'][$this->Config['env']]['default'];
-
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
                 $this->utm_source = '/?utm_source=capital';
             } else {
                 $this->utm_source = '/?utm_source=challenge';
             }
         } else {
-            $this->url_form   = $this->lurl;
             $this->utm_source = '';
         }
 
@@ -105,7 +102,6 @@ class projectsController extends bootstrap
 
         $this->bIsConnected                  = $this->clients->checkAccess();
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
-        $this->restriction_ip                = in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]);
 
         if ($this->bIsConnected) {
             $this->setHeader('header_account');
@@ -302,13 +298,12 @@ class projectsController extends bootstrap
                     $this->notifications->create();
 
                     if ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 2, 'immediatement') == true) {
-                        $this->mails_text->get('confirmation-bid', 'lang = "' . $this->language . '" AND type');
-
-                        $this->settings->get('Facebook', 'type');
-                        $lien_fb = $this->settings->value;
-
-                        $this->settings->get('Twitter', 'type');
-                        $lien_tw = $this->settings->value;
+                        /** @var \settings $oSettings */
+                        $oSettings = $this->loadData('settings');
+                        $oSettings->get('Facebook', 'type');
+                        $lien_fb = $oSettings->value;
+                        $oSettings->get('Twitter', 'type');
+                        $lien_tw = $oSettings->value;
 
                         $timeAdd     = strtotime($this->bids->added);
                         $month       = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
@@ -328,24 +323,11 @@ class projectsController extends bootstrap
                             'lien_tw'        => $lien_tw
                         );
 
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($this->clients->email));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
+                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-bid', $varMail);
+                        $message->setTo($this->clients->email);
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
 
                         $this->clients_gestion_mails_notif->immediatement = 1;
                     } else {
@@ -524,8 +506,8 @@ class projectsController extends bootstrap
             $this->status       = array($this->lng['preteur-projets']['enchere-en-cours'], $this->lng['preteur-projets']['enchere-ok'], $this->lng['preteur-projets']['enchere-ko']);
             $this->direction    = 1;
 
-            /** @var \Unilend\Service\ProjectManager $projectManager */
-            $projectManager       = $this->get('ProjectManager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $projectManager */
+            $projectManager       = $this->get('unilend.service.project_manager');
             $this->bidsStatistics = $projectManager->getBidsStatistics($this->projects);
             $this->meanBidAmount  = round(array_sum(array_column($this->bidsStatistics, 'amount_total')) / array_sum(array_column($this->bidsStatistics, 'nb_bids')), 2);
 

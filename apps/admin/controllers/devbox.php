@@ -8,11 +8,6 @@ class devboxController extends bootstrap
         parent::initialize();
 
         $this->catchAll = true;
-
-        if (false === in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']])) {
-            header('Location: ' . $this->furl);
-            die;
-        }
     }
 
     public function _importINSEEPostalCodes()

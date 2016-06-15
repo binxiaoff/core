@@ -14,21 +14,27 @@ nb-configuration.xml
 .nb-gradle/
 
 ### Izinoa ###
-protected/
+protected/*
 log/
 logs/
-backup2/
-backup3/
 tmp/
 public/admin/.htaccess
-public/default/var
 public/default/.htaccess
-config.php
 data/crud/*
 route.php
 *.rej
-cache/
-Config/parameters.yml
+
+#Symfony 3
+/app/config/parameters.yml
+/app/config/parameters_extended.yml
+/build/
+/phpunit.xml
+/var/*
+/var/cache/*
+/var/logs/*
+/var/sessions/*
+!var/SymfonyRequirements.php
+/public/bundles/
 
 # PHPStorm
 .idea/
@@ -42,4 +48,5 @@ Config/parameters.yml
 # Exceptions
 !public/default/styles/default/*
 !public/default/scripts/default/*
+!protected/sftp
 !/dev/public/

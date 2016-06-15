@@ -26,6 +26,8 @@
 //
 // **************************************************************************************************** //
 
+use Unilend\core\Loader;
+
 class autobid extends autobid_crud
 {
     const STATUS_INACTIVE = 0;
@@ -86,6 +88,9 @@ class autobid extends autobid_crud
 
     public function sumAmount($sEvaluation, $iDuration)
     {
+        //Loaded for class constants
+        Loader::loadData('autobid_periods');
+
         $sQuery  = 'SELECT SUM(`amount`)
                    FROM `autobid` a
                    INNER JOIN autobid_periods ap ON ap.id_period = a.id_autobid_period

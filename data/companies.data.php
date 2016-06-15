@@ -211,6 +211,28 @@ class companies extends companies_crud
         ));
     }
 
+    /**
+     * @param string $sName
+     * @return array
+     */
+    public function searchByName($sName)
+    {
+        $sQuery = '
+            SELECT DISTINCT(name)
+            FROM companies
+            WHERE name LIKE "%' . $sName . '%"
+            ORDER BY name ASC';
+
+        $aNames  = array();
+        $rResult = $this->bdd->query($sQuery);
+
+        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
+            $aNames[] = $aRow['name'];
+        }
+
+        return $aNames;
+    }
+
     public function getCompaniesSalesForce()
     {
         $sQuery = "SELECT
@@ -234,27 +256,5 @@ class companies extends companies_crud
                     pays_v2 acountry ON (co.id_pays = acountry.id_pays)";
 
         return $this->bdd->executeQuery($sQuery);
-    }
-
-    /**
-     * @param string $sName
-     * @return array
-     */
-    public function searchByName($sName)
-    {
-        $sQuery = '
-            SELECT DISTINCT(name)
-            FROM companies
-            WHERE name LIKE "%' . $sName . '%"
-            ORDER BY name ASC';
-
-        $aNames  = array();
-        $rResult = $this->bdd->query($sQuery);
-
-        while ($aRow = $this->bdd->fetch_assoc($rResult)) {
-            $aNames[] = $aRow['name'];
-        }
-
-        return $aNames;
     }
 }

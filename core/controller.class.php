@@ -1,9 +1,8 @@
 <?php
-require_once __DIR__ . '/../Autoloader.php';
+use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
-use Unilend\core\ContainerAware;
-
-abstract class Controller extends ContainerAware
+abstract class Controller implements ContainerAwareInterface
 {
     var $Command;
     var $Config;
@@ -20,18 +19,26 @@ abstract class Controller extends ContainerAware
     var $view;
     var $included_js;
     var $included_css;
+    /**
+     * @var ContainerInterface
+     *
+     * @api
+     */
+    protected $container;
 
     public $current_template = '';
 
-    public function __construct(&$command, $config, $app)
+    final public function __construct(&$command, $config, $app)
     {
         setlocale(LC_TIME, 'fr_FR.utf8');
         setlocale(LC_TIME, 'fr_FR');
 
         //Variables de session pour la fenetre de debug
-        unset($_SESSION['error']);
-        unset($_SESSION['debug']);
-        unset($_SESSION['msg']);
+        if (isset($_SESSION)) {
+            unset($_SESSION['error']);
+            unset($_SESSION['debug']);
+            unset($_SESSION['msg']);
+        }
 
         $this->Command      = $command;
         $this->Config       = $config;
@@ -51,27 +58,58 @@ abstract class Controller extends ContainerAware
         $this->current_function   = $this->Command->getfunction();
 
         // Mise en place des chemins
-        $this->path       = $this->get('kernel')->getRootDir() . '/';
-        $this->spath      = $this->get('kernel')->getRootDir() . '/public/default/var/';
-        $this->staticPath = $this->get('kernel')->getRootDir() . '/public/default/';
+        $this->path       = $this->get('kernel')->getRootDir() . '/../';
+        $this->spath      = $this->get('kernel')->getRootDir() . '/../public/default/var/';
+        $this->staticPath = $this->get('kernel')->getRootDir() . '/../public/default/';
         $this->logPath    = $this->get('kernel')->getLogDir();
-        $this->surl       = $this->Config['static_url'][$this->Config['env']];
-        $this->url        = $this->Config['url'][$this->Config['env']][$this->App];
-        $this->lurl       = $this->Config['url'][$this->Config['env']][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
 
+        $this->surl = $this->get('assets.packages')->getUrl('');
+
+        $this->url = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App);
         //admin
-        $this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
-        //fo
-        $this->furl = $this->Config['url'][$this->Config['env']]['default'];
+        $this->aurl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin');
+
+        $frontUrl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
+        if (isset($_SERVER['HTTP_HOST'])) {
+            switch ($_SERVER['HTTP_HOST']) {
+                case 'prets-entreprises-unilend.capital.fr':
+                    $frontUrl = 'http://prets-entreprises-unilend.capital.fr';
+                    break;
+                case 'partenaire.unilend.challenges.fr':
+                    $frontUrl = 'http://partenaire.unilend.challenges.fr';
+                    break;
+                case 'financementparticipatifpme.lefigaro.fr':
+                    $frontUrl = 'http://financementparticipatifpme.lefigaro.fr';
+                    break;
+            }
+        }
+        if ('default' == $this->App) {
+            $this->url = $frontUrl;
+        }
+        $this->lurl = $this->url;
+
+        $this->furl = $frontUrl;
 
         // Recuperation du type de plateforme
-        $this->cms = $this->Config['cms'];
+        $this->cms = $this->getParameter('cms');
 
         //*** SESSION IS DEAD ***//
         if (isset($_POST['killsession'])) {
             //unset ca marche pas, mais ca oui
             $_SESSION = array();
         }
+    }
+
+    /**
+     * Sets the Container associated with this Controller.
+     *
+     * @param ContainerInterface $container A ContainerInterface instance
+     *
+     * @api
+     */
+    public function setContainer(ContainerInterface $container = null)
+    {
+        $this->container = $container;
     }
 
     public function _default()
@@ -91,17 +129,6 @@ abstract class Controller extends ContainerAware
         header("HTTP/1.0 404 Not Found");
         echo 'Page not found';
         die;
-    }
-
-    public function initErrorHandling()
-    {
-
-        if (file_exists($this->path . 'core/errorhandler.class.php')) {
-            include($this->path . 'core/errorhandler.class.php');
-            $this->ErrorHandler = new ErrorHandler($this->Config, $this->App, $this->bdd);
-            set_error_handler(array($this->ErrorHandler, 'errorHandler'));
-        }
-
     }
 
     public function execute()
@@ -442,7 +469,7 @@ abstract class Controller extends ContainerAware
     public function loadJs($js, $ieonly = 0, $version = '')
     {
         if (!array_key_exists($js, $this->included_js)) {
-            $this->included_js[$js] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<script type=\"text/javascript\" src=\"" . $this->Config['static_url'][$this->Config['env']] . "/scripts/" . $js . ".js" . ($version != '' ? '?d=' . $version : '') . "\"></script>" . ($ieonly != 0 ? "<![endif]-->" : "");
+            $this->included_js[$js] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<script type=\"text/javascript\" src=\"" . $this->surl . "/scripts/" . $js . ".js" . ($version != '' ? '?d=' . $version : '') . "\"></script>" . ($ieonly != 0 ? "<![endif]-->" : "");
         }
     }
 
@@ -466,7 +493,7 @@ abstract class Controller extends ContainerAware
     public function loadCss($css, $ieonly = 0, $media = 'all', $type = 'css', $version = '')
     {
         if (!array_key_exists($css, $this->included_css)) {
-            $this->included_css[$css] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<link media =\"" . $media . "\" href=\"" . $this->Config['static_url'][$this->Config['env']] . "/styles/" . $css . "." . $type . ($version != '' ? '?d=' . $version : '') . "\" type=\"text/css\" rel=\"stylesheet\" />" . ($ieonly != 0 ? "<![endif]-->" : "");
+            $this->included_css[$css] = ($ieonly != 0 ? "<!--[if IE " . $ieonly . "]>" : "") . "<link media =\"" . $media . "\" href=\"" . $this->surl . "/styles/" . $css . "." . $type . ($version != '' ? '?d=' . $version : '') . "\" type=\"text/css\" rel=\"stylesheet\" />" . ($ieonly != 0 ? "<![endif]-->" : "");
         }
     }
 

@@ -25,7 +25,7 @@ class alimentationController extends bootstrap
 
     public function _default()
     {
-        require_once $this->path . 'protected/payline/include.php';
+        require_once $this->path . 'librairies/payline/include.php';
 
         $this->companies               = $this->loadData('companies');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
@@ -164,16 +164,14 @@ class alimentationController extends bootstrap
                 $this->prelevements->motif            = $this->motif;
                 $this->prelevements->create();
 
-                //******************************//
-                //*** ENVOI DU MAIL preteur-alimentation ***//
-                //******************************//
-                $this->mails_text->get('preteur-alimentation', 'lang = "' . $this->language . '" AND type');
+                /** @var \settings $oSettings */
+                $oSettings = $this->loadData('settings');
 
-                $this->settings->get('Facebook', 'type');
-                $lien_fb = $this->settings->value;
+                $oSettings->get('Facebook', 'type');
+                $lien_fb = $oSettings->value;
 
-                $this->settings->get('Twitter', 'type');
-                $lien_tw = $this->settings->value;
+                $oSettings->get('Twitter', 'type');
+                $lien_tw = $oSettings->value;
 
                 $varMail = array(
                     'surl'           => $this->surl,
@@ -188,26 +186,11 @@ class alimentationController extends bootstrap
                     'lien_tw'        => $lien_tw
                 );
 
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
-                header('Location: ' . $this->lurl . '/alimentation/confirmation/p');
-                die;
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation', $varMail);
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
             }
         }
 
@@ -238,9 +221,6 @@ class alimentationController extends bootstrap
                 $this->transactions->type_transaction = \transactions_types::TYPE_LENDER_CREDIT_CARD_CREDIT;
                 $this->transactions->create();
 
-                //***************//
-                //*** PAYLINE ***//
-                //***************//
                 $array                    = array();
                 $payline                  = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
                 $payline->returnURL       = $this->lurl . '/alimentation/payment/' . $this->clients->hash . '/';
@@ -288,7 +268,7 @@ class alimentationController extends bootstrap
         $this->autoFireView   = false;
         $this->autoFireFooter = false;
 
-        require_once $this->path . 'protected/payline/include.php';
+        require_once $this->path . 'librairies/payline/include.php';
 
         $this->transactions                  = $this->loadData('transactions');
         $this->backpayline                   = $this->loadData('backpayline');
@@ -384,16 +364,13 @@ class alimentationController extends bootstrap
                             $this->clients_gestion_mails_notif->immediatement = 1;
                             $this->clients_gestion_mails_notif->update();
 
-                            //******************************//
-                            //*** ENVOI DU MAIL preteur-alimentation ***//
-                            //******************************//
-                            $this->mails_text->get('preteur-alimentation-cb', 'lang = "' . $this->language . '" AND type');
+                            /** @var \settings $oSettings */
+                            $oSettings = $this->loadData('settings');
+                            $oSettings->get('Facebook', 'type');
+                            $lien_fb = $oSettings->value;
 
-                            $this->settings->get('Facebook', 'type');
-                            $lien_fb = $this->settings->value;
-
-                            $this->settings->get('Twitter', 'type');
-                            $lien_tw = $this->settings->value;
+                            $oSettings->get('Twitter', 'type');
+                            $lien_tw = $oSettings->value;
 
                             $varMail = array(
                                 'surl'            => $this->surl,
@@ -409,24 +386,11 @@ class alimentationController extends bootstrap
                                 'lien_tw'         => $lien_tw
                             );
 
-                            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                            $this->email = $this->loadLib('email');
-                            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                            $this->email->setSubject(stripslashes($sujetMail));
-                            $this->email->setHTMLBody(stripslashes($texteMail));
-
-                            if ($this->Config['env'] === 'prod') {
-                                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                            } else {
-                                $this->email->addRecipient(trim($this->clients->email));
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                            }
+                            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-cb', $varMail);
+                            $message->setTo($this->clients->email);
+                            $mailer = $this->get('mailer');
+                            $mailer->send($message);
                         }
 
                         header('Location: ' . $this->lurl . '/alimentation/confirmation/cb/' . $this->transactions->id_transaction);

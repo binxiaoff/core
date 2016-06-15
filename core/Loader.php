@@ -22,16 +22,18 @@ class Loader
     public static function loadData($object, array $params = array(), $db = null)
     {
         if (null === $db) {
-            $params            = Yaml::parse(file_get_contents(__DIR__ . '/../Config/parameters.yml'));
+            $params            = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
             $connectionFactory = new ConnectionFactory([]);
             $db                = $connectionFactory->createConnection(
                 [
-                    'driver'   => $params['parameters']['database_driver'],
-                    'host'     => $params['parameters']['database_host'],
-                    'dbname'   => $params['parameters']['database_name'],
-                    'user'     => $params['parameters']['database_user'],
-                    'password' => $params['parameters']['database_password'],
-                    'charset'  => 'utf8'
+                    'driver'       => $params['parameters']['database_driver'],
+                    'host'         => $params['parameters']['database_host'],
+                    'dbname'       => $params['parameters']['database_name'],
+                    'user'         => $params['parameters']['database_user'],
+                    'password'     => $params['parameters']['database_password'],
+                    'charset'      => 'utf8',
+                    'wrapperClass' => $params['parameters']['dbal_wrapper_class'],
+                    'driverClass'  => $params['parameters']['dbal_driver_class'],
                 ]
             );
         }

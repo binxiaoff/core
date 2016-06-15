@@ -41,10 +41,9 @@
                             </td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #231f20;"><label>Adresse complète :</label>
-                                <span class="editable"><?= strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adresse))) ?></span>
-                            </td>
+                            <td style="border: 1px solid #231f20;"><label>Adresse complète :</label> <span class="editable"><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adresse)))?></span></td>
                         </tr>
+
                     </table>
                 </div><!-- /.section -->
                 <div class="section">
@@ -52,37 +51,19 @@
                     <table width="100%" cellspacing="0" cellpadding="0">
                         <tr>
                             <th style="border: 1px solid #231f20;" colspan="4">Conditions du prêt</th>
-                            <th rowspan="2">Noms, prénoms et adresses complètes (y compris code département) des parties
-                                <span>ÉCRIVEZ EN CAPITALES</span>
-                                <small>5</small>
-                            </th>
+                            <th rowspan="2">Noms, prénoms et adresses complètes (y compris code département) des parties <span>ÉCRIVEZ EN CAPITALES</span><small>5</small></th>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #231f20;" class="headings tc" width="42">
-                                Date
-                                <small>1</small>
-                            </td>
-                            <td style="border: 1px solid #231f20;" class="headings tc" width="32">
-                                Durée
-                                <small>2</small>
-                            </td>
-                            <td style="border: 1px solid #231f20;" class="headings tc" width="22">
-                                Taux
-                                <small>3</small>
-                            </td>
-                            <td style="border: 1px solid #231f20;" class="headings tc" width="62">
-                                Montant <br/>
-                                en principal
-                                <small>4</small>
-                            </td>
+                            <td style="border: 1px solid #231f20;" class="headings tc" width="42">Date <small>1</small></td>
+                            <td style="border: 1px solid #231f20;" class="headings tc" width="32">Durée <small>2</small></td>
+                            <td style="border: 1px solid #231f20;" class="headings tc" width="22">Taux <small>3</small></td>
+                            <td style="border: 1px solid #231f20;" class="headings tc" width="62">Montant <br />en principal <small>4</small></td>
                         </tr>
                         <tr>
-                            <td style="border: 1px solid #231f20;" class="tc"><span class="date"><?= date('d/m/Y', strtotime($this->oLoans->added)) ?></span></td>
-                            <td style="border: 1px solid #231f20;" class="tc"><?= ($this->projects->period / 12) ?></td>
-                            <td style="border: 1px solid #231f20;" class="tc">
-                                <small><?= $this->ficelle->formatNumber($this->oLoans->rate, 1) ?></small>
-                            </td>
-                            <td style="border: 1px solid #231f20;" class="tc"><?= $this->ficelle->formatNumber(($this->oLoans->amount / 100), 0) ?></td>
+                            <td style="border: 1px solid #231f20;" class="tc"><span class="date"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span></td>
+                            <td style="border: 1px solid #231f20;" class="tc"><?=($this->projects->period/12)?></td>
+                            <td style="border: 1px solid #231f20;" class="tc"><small><?=$this->ficelle->formatNumber($this->oLoans->rate, 1)?></small></td>
+                            <td style="border: 1px solid #231f20;" class="tc"><?=$this->ficelle->formatNumber(($this->oLoans->amount/100), 0)?></td>
                             <td style="border: 1px solid #231f20;" class="large nopadding">
                                 <table cellspacing="0" cellpadding="0" class="title">
                                     <tr>
@@ -92,13 +73,13 @@
                                 </table>
                                 <table width="100%" cellspacing="0" cellpadding="0" class="inner">
                                     <tr>
-                                        <td><?= strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->nomPreteur))) ?></td>
+                                        <td><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->nomPreteur)))?></td>
                                     </tr>
                                     <tr>
-                                        <td><?= strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adressePreteur))) ?></td>
+                                        <td><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->adressePreteur)))?></td>
                                     </tr>
                                     <tr>
-                                        <td><?= strtoupper($this->cpPreteur . ' ' . $this->ficelle->speCharNoAccent(utf8_decode($this->villePreteur))) ?></td>
+                                        <td><?=strtoupper($this->cpPreteur.' '.$this->ficelle->speCharNoAccent(utf8_decode($this->villePreteur)))?></td>
                                     </tr>
                                     <tr>
                                         <td>&nbsp;</td>
@@ -112,13 +93,13 @@
                                 </table>
                                 <table width="100%" cellspacing="0" cellpadding="0" class="inner">
                                     <tr>
-                                        <td><?= strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->companiesEmp->name))) ?></td>
+                                        <td><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->companiesEmp->name)))?></td>
                                     </tr>
                                     <tr>
-                                        <td><?= strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->companiesEmp->adresse1))) ?></td>
+                                        <td><?=strtoupper($this->ficelle->speCharNoAccent(utf8_decode($this->companiesEmp->adresse1)))?></td>
                                     </tr>
                                     <tr>
-                                        <td><?= strtoupper($this->companiesEmp->zip . ' ' . $this->ficelle->speCharNoAccent(utf8_decode($this->companiesEmp->city))) ?></td>
+                                        <td><?=strtoupper($this->companiesEmp->zip.' '.$this->ficelle->speCharNoAccent(utf8_decode($this->companiesEmp->city)))?></td>
                                     </tr>
                                     <tr>
                                         <td>&nbsp;</td>
@@ -127,6 +108,7 @@
                             </td>
                         </tr>
                     </table>
+
                     <table width="100%" cellspacing="0" cellpadding="0">
                         <tr>
                             <td style="border: 1px solid #231f20;" width="24" class="noborder-top"><strong>C</strong></td>
@@ -140,67 +122,80 @@
                             <td colspan="3" class="noborder">&nbsp;</td>
                         </tr>
                     </table>
+
                     <table width="100%" cellspacing="0" cellpadding="0" class="stats">
                         <tr>
                             <td style="border: 1px solid #231f20;" width="24"><strong>D</strong></td>
                             <td style="border: 1px solid #231f20;" width="80" class="tc">Années</td>
-                            <?php for ($i = 0; $i < 10; $i++) : ?>
-                                <td style="border: 1px solid #231f20;">
-                                    <span class="editable"><?= (isset($this->lEcheances[$i]) ? $this->lEcheances[$i]['annee'] : '..........') ?></span>
-                                </td>
-                            <?php endfor; ?>
+                            <?php
+                            for($i=0;$i<10;$i++)
+                            {
+                                ?><td style="border: 1px solid #231f20;"><span class="editable"><?=(isset($this->lEcheances[$i])==false?'..........':$this->lEcheances[$i]['annee'])?></span></td><?php
+                            }
+                            ?>
+
+
                         </tr>
                         <tr>
                             <td style="border: 1px solid #231f20;" colspan="2">Montant annuel des intérêts exigibles</td>
-                            <?php for ($i = 0; $i < 10; $i++) : ?>
-                                <td style="border: 1px solid #231f20;">
-                                    <span class="editable"><?= (isset($this->lEcheances[$i]) ? $this->ficelle->formatNumber($this->lEcheances[$i]['interets'] / 100) : '&nbsp;') ?></span>
-                                </td>
-                            <?php endfor; ?>
+                            <?php
+                            for($i=0;$i<10;$i++)
+                            {
+                                ?><td style="border: 1px solid #231f20;"><span class="editable"><?=(isset($this->lEcheances[$i])==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['interets']/100)))?></span></td><?php
+                            }
+                            ?>
+
                         </tr>
                         <tr>
                             <td style="border: 1px solid #231f20;" colspan="2">Montant annuel du principal remboursé</td>
-                            <?php for ($i = 0; $i < 10; $i++) : ?>
-                                <td style="border: 1px solid #231f20;">
-                                    <span class="editable"><?= (isset($this->lEcheances[$i]) ? $this->ficelle->formatNumber($this->lEcheances[$i]['capital'] / 100) : '&nbsp;') ?></span>
-                                </td>
-                            <?php endfor; ?>
+                            <?php
+                            for($i=0;$i<10;$i++)
+                            {
+                                ?><td style="border: 1px solid #231f20;"><span class="editable"><?=(isset($this->lEcheances[$i])==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['capital']/100)))?></span></td><?php
+                            }
+                            ?>
                         </tr>
-                        <?php if (count($this->lEcheances) > 10) : ?>
-                            <tr>
-                                <td style="border: 1px solid #231f20;" class="empty">&nbsp;</td>
-                                <td style="border: 1px solid #231f20;" width="80" class="tc noborder-left">Années</td>
-                                <?php for ($i = 0; $i < 10; $i++) : ?>
-                                    <td style="border: 1px solid #231f20;">
-                                        <span class="editable"><?= (isset($this->lEcheances[$i]) ? $this->lEcheances[$i]['annee'] : '..........') ?></span>
-                                    </td>
-                                <?php endfor; ?>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid #231f20;" colspan="2">Montant annuel des intérêts exigibles</td>
-                                <?php for ($i = 0; $i < 10; $i++) : ?>
-                                    <td style="border: 1px solid #231f20;">
-                                        <span class="editable"><?= (isset($this->lEcheances[$i]) ? $this->ficelle->formatNumber($this->lEcheances[$i]['interets'] / 100) : '&nbsp;') ?></span>
-                                    </td>
-                                <?php endfor; ?>
-                            </tr>
-                            <tr>
-                                <td style="border: 1px solid #231f20;" colspan="2">Montant annuel du principal remboursé</td>
-                                <?php for ($i = 0; $i < 10; $i++) : ?>
-                                    <td style="border: 1px solid #231f20;">
-                                        <span class="editable"><?= (isset($this->lEcheances[$i]) ? $this->ficelle->formatNumber($this->lEcheances[$i]['capital'] / 100) : '&nbsp;') ?></span>
-                                    </td>
-                                <?php endfor; ?>
-                            </tr>
-                        <?php endif; ?>
+                        <?php
+                        if(count($this->lEcheances) > 10)
+                        {
+                        ?>
+                        <tr>
+                            <td style="border: 1px solid #231f20;" class="empty">&nbsp;</td>
+                            <td style="border: 1px solid #231f20;" width="80" class="tc noborder-left">Années</td>
+                            <?php
+                            for($i=10;$i<20;$i++)
+                            {
+                                ?><td style="border: 1px solid #231f20;"><span class="editable"><?=(isset($this->lEcheances[$i])==false?'..........':$this->lEcheances[$i]['annee'])?></span></td><?php
+                            }
+                            ?>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #231f20;" colspan="2">Montant annuel des intérêts exigibles</td>
+                            <?php
+                            for($i=10;$i<20;$i++)
+                            {
+                                ?><td style="border: 1px solid #231f20;"><span class="editable"><?=(isset($this->lEcheances[$i])==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['interets']/100)))?></span></td><?php
+                            }
+                            ?>
+                        </tr>
+                        <tr>
+                            <td style="border: 1px solid #231f20;" colspan="2">Montant annuel du principal remboursé</td>
+                            <?php
+                            for($i=10;$i<=20;$i++)
+                            {
+                                ?><td style="border: 1px solid #231f20;"><span class="editable"><?=(isset($this->lEcheances[$i])==false?'&nbsp;':$this->ficelle->formatNumber(($this->lEcheances[$i]['capital']/100)))?></span></td><?php
+                            }
+                            ?>
+                        </tr>
+                        <?php
+                        }
+                        ?>
                     </table>
                 </div><!-- /.section -->
             </div><!-- /.doc-body -->
             <div class="doc-foot">
                 <div class="signiture">
-                    <span>A</span><span class="city editable">PARIS</span><span>, le </span>
-                    <span class="date editable"><?= date('d/m/Y', strtotime($this->oLoans->added)) ?></span>
-                    <em>Signature :</em>
+                    <span>A</span><span class="city editable">PARIS</span><span>, le </span> <span class="date editable"><?=date('d/m/Y',strtotime($this->oLoans->added))?></span> <em>Signature :</em>
                     <div class="footLogo"></div>
                 </div><!-- /.signiture -->
                 <div class="logoministere"></div>

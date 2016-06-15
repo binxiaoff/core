@@ -1,6 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
+/** @todo use new logger interface */
 use Unilend\librairies\ULogger;
 
 class dossiersController extends bootstrap
@@ -94,9 +95,9 @@ class dossiersController extends bootstrap
         $this->prescripteurs                   = $this->loadData('prescripteurs');
         $this->clients_prescripteurs           = $this->loadData('clients');
         $this->companies_prescripteurs         = $this->loadData('companies');
-
-        /** @var \Unilend\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->get('unilend.service.project_manager');
+        $this->settings                        = $this->loadData('settings');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+        $oProjectManager                       = $this->get('unilend.service.project_manager');
 
         if (isset($this->params[0]) && $this->projects->get($this->params[0], 'id_project')) {
             $this->settings->get('Durée des prêts autorisées', 'type');
@@ -400,12 +401,12 @@ class dossiersController extends bootstrap
                         $this->upload->setExtValide(array('jpeg', 'JPEG', 'jpg', 'JPG'));
 
                         $oImagick = new \Imagick($_FILES['photo_projet']['tmp_name']);
-
+                        $imageConfig = $this->getParameter('image_resize');
                         if (
-                            $oImagick->getImageWidth() > $this->Config['images']['projets']['width']
-                            || $oImagick->getImageHeight() > $this->Config['images']['projets']['height']
+                            $oImagick->getImageWidth() > $imageConfig['projets']['width']
+                            || $oImagick->getImageHeight() > $imageConfig['projets']['height']
                         ) {
-                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $this->Config['images']['projets']['width'] . 'x' . $this->Config['images']['projets']['height'] . ')<br>';
+                            $_SESSION['freeow']['message'] .= 'Erreur upload photo : taille max dépassée (' . $imageConfig['projets']['width'] . 'x' . $imageConfig['projets']['height'] . ')<br>';
                         } elseif ($this->upload->doUpload('photo_projet', '', true)) {
                             // Delete previous image of the name was different from the new one
                             if (! empty($this->projects->photo_projet) && $this->projects->photo_projet != $this->upload->getName()) {
@@ -583,8 +584,8 @@ class dossiersController extends bootstrap
                             $mess .= '</ul>';
 
                             if (strlen($mess) > 9) {
-                                $to = implode(',', $this->Config['DebugAlertesBusiness']);
-                                $to .= ($this->Config['env'] === 'prod') ? ', nicolas.lesur@unilend.fr' : '';
+                                $this->settings->get('DebugAlertesBusiness', 'type');
+                                $to = $this->settings->value;
                                 $subject = '[Rappel] Donnees projet manquantes';
                                 $message = '
                                 <html>
@@ -700,7 +701,6 @@ class dossiersController extends bootstrap
                                 //**************************************//
                                 //*** ENVOI DU MAIL FUNDE EMPRUNTEUR ***//
                                 //**************************************//
-                                $this->mails_text->get('preteur-pret-refuse', 'lang = "' . $this->language . '" AND type');
 
                                 $varMail = array(
                                     'surl'              => $this->surl,
@@ -714,24 +714,11 @@ class dossiersController extends bootstrap
                                     'lien_tw'           => $lien_tw
                                 );
 
-                                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->setSubject(stripslashes($sujetMail));
-                                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                if ($this->Config['env'] === 'prod') {
-                                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                } else {
-                                    $this->email->addRecipient(trim($clients->email));
-                                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                }
+                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-pret-refuse', $varMail);
+                                $message->setTo($clients->email);
+                                $mailer = $this->get('mailer');
+                                $mailer->send($message);
                             }
                         }
                     }
@@ -994,9 +981,9 @@ class dossiersController extends bootstrap
                 'url'                  => $this->furl,
                 'surl'                 => $this->surl,
                 'civilite_e'           => $this->clients->civilite,
-                'nom_e'                => htmlentities($this->clients->nom, null, 'UTF-8'),
-                'prenom_e'             => htmlentities($this->clients->prenom, null, 'UTF-8'),
-                'entreprise'           => htmlentities($this->companies->name, null, 'UTF-8'),
+                'nom_e'                => $this->clients->nom,
+                'prenom_e'             => $this->clients->prenom,
+                'entreprise'           => $this->companies->name,
                 'montant_emprunt'      => $this->ficelle->formatNumber($this->projects->amount, 0),
                 'mensualite_e'         => $this->ficelle->formatNumber(($oPaymentSchedule->montant + $oPaymentSchedule->commission + $oPaymentSchedule->tva) / 100),
                 'num_dossier'          => $this->projects->id_project,
@@ -1013,29 +1000,14 @@ class dossiersController extends bootstrap
                 'annee'                => date('Y')
             );
 
-        $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
+        $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
+        $aReplacements['sujet'] = $this->mail_template->subject;
 
-        $aReplacements['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
-
-        $tabVars = $this->tnmp->constructionVariablesServeur($aReplacements);
-        $tabVars['[EMV DYN]sujet[EMV /DYN]'] = strtr($aReplacements['sujet'], $tabVars);
-
-        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-        $this->email->setSubject('=?UTF-8?B?' . base64_encode(utf8_encode($sujetMail)) . '?=');
-        $this->email->setHTMLBody(stripslashes($texteMail));
-
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient(trim($this->clients->email));
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
+        $message->setTo($this->clients->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
@@ -1167,30 +1139,16 @@ class dossiersController extends bootstrap
                         );
 
                     $sMailType = (in_array($this->clients->type, array(1, 3))) ? $sEmailTypePerson : $sEmailTypeSociety;
+                    $locale  = $this->getParameter('locale');
+                    $this->mail_template->get($sMailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $locale . '" AND type');
 
-                    $this->mails_text->get($sMailType, 'lang = "' . $this->language . '" AND type');
+                    $aReplacements['sujet'] = $this->mail_template->subject;
 
-                    $aReplacements['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
-
-                    $tabVars = $this->tnmp->constructionVariablesServeur($aReplacements);
-                    $tabVars['[EMV DYN]sujet[EMV /DYN]'] = strtr($aReplacements['sujet'], $tabVars);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject('=?UTF-8?B?' . base64_encode(utf8_encode($sujetMail)) . '?=');
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $aReplacements, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sMailType, $aReplacements);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             }
         }
@@ -1402,8 +1360,8 @@ class dossiersController extends bootstrap
             $this->projects->create_bo  = 1; // on signale que le projet a été créé en Bo
             $this->projects->create();
 
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
-            $oProjectManager = $this->get('ProjectManager');
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+            $oProjectManager = $this->get('unilend.service.project_manager');
             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::A_TRAITER, $this->projects);
 
             $serialize = serialize(array('id_project' => $this->projects->id_project));
@@ -1507,6 +1465,7 @@ class dossiersController extends bootstrap
         $this->projects_remb                 = $this->loadData('projects_remb');
         $this->clients_gestion_notifications = $this->loadData('clients_gestion_notifications');
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
+        $this->settings                      = $this->loadData('settings');
 
         $this->settings->get('TVA', 'type');
         $this->tva = $this->settings->value;
@@ -1717,7 +1676,6 @@ class dossiersController extends bootstrap
                                 $this->clients_gestion_mails_notif->create();
 
                                 if ($this->projects_status->status == \projects_status::RECOUVREMENT) {
-                                    $this->mails_text->get('preteur-dossier-recouvre', 'lang = "' . $this->language . '" AND type');
                                     $this->companies->get($this->projects->id_company, 'id_company');
 
                                     $this->settings->get('Cabinet de recouvrement', 'type');
@@ -1737,36 +1695,16 @@ class dossiersController extends bootstrap
                                         'lien_tw'          => $lien_tw
                                     );
 
-                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dossier-recouvre', $varMail);
+                                    $message->setTo($this->clients->email);
+                                    $mailer = $this->get('mailer');
+                                    $mailer->send($message);
 
-                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                    $this->email = $this->loadLib('email');
-                                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                    $this->email->setSubject(stripslashes($sujetMail));
-                                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                    if ($this->Config['env'] === 'prod') {
-                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                    } else {
-                                        $this->email->addRecipient(trim($this->clients->email));
-                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                    }
-                                } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
-                                    $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
-                                    $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
-                                    $this->clients_gestion_mails_notif->update();
                                 } elseif (isset($this->params[2]) && $this->params[2] == 'regul') {
-                                    $this->mails_text->get('preteur-regularisation-remboursement', 'lang = "' . $this->language . '" AND type');
                                     $this->companies->get($this->projects->id_company, 'id_company');
 
                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-
-                                    $surl = $this->surl;
-                                    $url  = $this->furl;
 
                                     // euro avec ou sans "s"
                                     if (bcdiv($iTotalEAT, 100) >= 2) {
@@ -1786,12 +1724,12 @@ class dossiersController extends bootstrap
                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
                                     $varMail = array(
-                                        'surl'                  => $surl,
-                                        'url'                   => $url,
-                                        'prenom_p'              => utf8_decode($this->clients->prenom),
+                                        'surl'                  => $this->surl,
+                                        'url'                   => $this->furl,
+                                        'prenom_p'              => $this->clients->prenom,
                                         'mensualite_p'          => $rembNetEmail,
                                         'mensualite_avantfisca' => ($e['montant'] / 100),
-                                        'nom_entreprise'        => utf8_decode($this->companies->name),
+                                        'nom_entreprise'        => $this->companies->name,
                                         'date_bid_accepte'      => date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd),
                                         'nbre_prets'            => $nbpret,
                                         'solde_p'               => $solde,
@@ -1800,42 +1738,20 @@ class dossiersController extends bootstrap
                                         'lien_tw'               => $lien_tw
                                     );
 
-                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-regularisation-remboursement', $varMail);
+                                    $message->setTo($this->clients->email);
+                                    $mailer = $this->get('mailer');
+                                    $mailer->send($message);
 
-                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                    $this->email = $this->loadLib('email');
-                                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                    $this->email->setSubject(stripslashes($sujetMail));
-                                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                    if ($this->Config['env'] === 'prod') {
-                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                    } else {
-                                        $this->email->addRecipient(trim($this->clients->email));
-                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                    }
-                                } elseif (isset($this->params[2]) && $this->params[2] == 'regul') {
-                                    $this->mails_text->get('preteur-regularisation-remboursement', 'lang = "' . $this->language . '" AND type');
-                                    $this->companies->get($this->projects->id_company, 'id_company');
                                 } elseif ($this->clients_gestion_notifications->getNotif($this->clients->id_client, 5, 'immediatement') == true) {
                                     $this->clients_gestion_mails_notif->get($this->clients_gestion_mails_notif->id_clients_gestion_mails_notif, 'id_clients_gestion_mails_notif');
                                     $this->clients_gestion_mails_notif->immediatement = 1; // on met a jour le statut immediatement
                                     $this->clients_gestion_mails_notif->update();
 
-                                    //*******************************************//
-                                    //*** ENVOI DU MAIL REMBOURSEMENT PRETEUR ***//
-                                    //*******************************************//
-                                    $this->mails_text->get('preteur-remboursement', 'lang = "' . $this->language . '" AND type');
                                     $this->companies->get($this->projects->id_company, 'id_company');
 
                                     $nbpret = $this->loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-
-                                    $surl = $this->surl;
-                                    $url  = $this->furl;
 
                                     if (bcdiv($iTotalEAT, 100) >= 2) {
                                         $euros = ' euros';
@@ -1854,8 +1770,8 @@ class dossiersController extends bootstrap
                                     $month   = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
 
                                     $varMail = array(
-                                        'surl'                  => $surl,
-                                        'url'                   => $url,
+                                        'surl'                  => $this->surl,
+                                        'url'                   => $this->furl,
                                         'prenom_p'              => $this->clients->prenom,
                                         'mensualite_p'          => $rembNetEmail,
                                         'mensualite_avantfisca' => ($e['montant'] / 100),
@@ -1868,24 +1784,11 @@ class dossiersController extends bootstrap
                                         'lien_tw'               => $lien_tw
                                     );
 
-                                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                                    $this->email = $this->loadLib('email');
-                                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                    $this->email->setSubject(stripslashes($sujetMail));
-                                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                                    if ($this->Config['env'] === 'prod') {
-                                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                                    } else {
-                                        $this->email->addRecipient(trim($this->clients->email));
-                                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                                    }
+                                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                                    $message->setTo($this->clients->email);
+                                    $mailer = $this->get('mailer');
+                                    $mailer->send($message);
                                 }
                             }
                         }
@@ -1936,11 +1839,6 @@ class dossiersController extends bootstrap
                         $month    = $this->dates->tableauMois['fr'][date('n', $timeAdd)];
                         $dateRemb = date('d', $timeAdd) . ' ' . $month . ' ' . date('Y', $timeAdd);
 
-                        //********************************//
-                        //*** ENVOI DU MAIL FACTURE ER ***//
-                        //********************************//
-                        $this->mails_text->get('facture-emprunteur-remboursement', 'lang = "' . $this->language . '" AND type');
-
                         $varMail = array(
                             'surl'            => $this->surl,
                             'url'             => $this->furl,
@@ -1959,28 +1857,11 @@ class dossiersController extends bootstrap
                             'lien_tw'         => $lien_tw
                         );
 
-                        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                        $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                        $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                        $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                        $this->email = $this->loadLib('email');
-                        $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                        if ($this->Config['env'] === 'prod') {
-                            $this->email->addBCCRecipient('nicolas.lesur@unilend.fr');
-                        }
-
-                        $this->email->setSubject(stripslashes($sujetMail));
-                        $this->email->setHTMLBody(stripslashes($texteMail));
-
-                        if ($this->Config['env'] === 'prod') {
-                            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, trim($companies->email_facture), $tabFiler);
-                            $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                        } else {
-                            $this->email->addRecipient(trim($companies->email_facture));
-                            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                        }
+                        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('facture-emprunteur-remboursement', $varMail);
+                        $message->setTo(trim($companies->email_facture));
+                        $mailer = $this->get('mailer');
+                        $mailer->send($message);
 
                         $oInvoiceCounter            = $this->loadData('compteur_factures');
                         $oLenderRepaymentSchedule   = $this->loadData('echeanciers');
@@ -2027,7 +1908,7 @@ class dossiersController extends bootstrap
                         $this->bank_unilend->update();
                     }
 
-                    /** @var \Unilend\Service\ProjectManager $oProjectManager */
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                     $oProjectManager = $this->get('unilend.service.project_manager');
 
                     // si le projet etait en statut Recouvrement/probleme on le repasse en remboursement  || $this->projects_status->status == 100
@@ -2057,10 +1938,10 @@ class dossiersController extends bootstrap
                 $this->lenders_accounts       = $this->loadData('lenders_accounts');
                 $this->clients                = $this->loadData('clients');
                 $this->wallets_lines          = $this->loadData('wallets_lines');
-                $this->mails_text             = $this->loadData('mails_text');
+                $this->mail_template          = $this->loadData('mail_template');
                 $this->companies              = $this->loadData('companies');
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('unilend.service.project_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+                $oProjectManager= $this->get('unilend.service.project_manager');
 
                 $this->receptions->get($id_reception);
                 $this->projects->get($this->receptions->id_project);
@@ -2399,6 +2280,7 @@ class dossiersController extends bootstrap
         $oProjects   = $this->loadData('projects');
         $oCompanies  = $this->loadData('companies');
         $oProjectCgv = $this->loadData('project_cgv');
+        $oSettings   = $this->loadData('settings');
 
         if (false === isset($this->params[0]) || ! $oProjects->get($this->params[0], 'id_project')) {
             $this->result = 'project id invalid';
@@ -2421,8 +2303,8 @@ class dossiersController extends bootstrap
 
         if ($oProjectCgv->get($oProjects->id_project, 'id_project')) {
             if (empty($oProjectCgv->id_tree)) {
-                $this->settings->get('Lien conditions generales depot dossier', 'type');
-                $iTreeId = $this->settings->value;
+                $oSettings->get('Lien conditions generales depot dossier', 'type');
+                $iTreeId = $oSettings->value;
 
                 if (! $iTreeId) {
                     $this->result = 'tree id invalid';
@@ -2439,8 +2321,8 @@ class dossiersController extends bootstrap
             }
             $oProjectCgv->update();
         } else {
-            $this->settings->get('Lien conditions generales depot dossier', 'type');
-            $iTreeId = $this->settings->value;
+            $oSettings->get('Lien conditions generales depot dossier', 'type');
+            $iTreeId = $oSettings->value;
 
             if (! $iTreeId) {
                 $this->result = 'tree id invalid';
@@ -2476,14 +2358,11 @@ class dossiersController extends bootstrap
             copy($sPdfPath, $this->path . project_cgv::BASE_PATH . $oProjectCgv->name);
         }
 
-        $oEmailText = $this->loadData('mails_text');
-        $oEmailText->get('signature-universign-de-cgv', 'lang = "' . $this->language . '" AND type');
+        $oSettings->get('Facebook', 'type');
+        $lien_fb = $oSettings;
 
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
+        $oSettings->get('Twitter', 'type');
+        $lien_tw = $oSettings;
 
         $varMail = array(
             'surl'                => $this->surl,
@@ -2494,32 +2373,17 @@ class dossiersController extends bootstrap
             'lien_fb'             => $lien_fb,
         );
 
-        $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-        $sujetMail = strtr(utf8_decode($oEmailText->subject), $tabVars);
-        $texteMail = strtr(utf8_decode($oEmailText->content), $tabVars);
-        $exp_name  = strtr(utf8_decode($oEmailText->exp_name), $tabVars);
-
-        $oEmail = $this->loadLib('email');
-        $oEmail->setFrom($oEmailText->exp_email, $exp_name);
-        $oEmail->setSubject(stripslashes($sujetMail));
-        $oEmail->setHTMLBody(stripslashes($texteMail));
-
         if (empty($oClients->email)) {
             $this->result = 'Erreur : L\'adresse mail du client est vide';
             return;
         }
 
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($oEmail, $this->mails_filer, $oEmailText->id_textemail, $oClients->email, $tabFiler);
-            $this->tnmp->sendMailNMP($tabFiler, $varMail, $oEmailText->nmp_secure, $oEmailText->id_nmp, $oEmailText->nmp_unique, $oEmailText->mode);
-        } else {
-            $oEmail->addRecipient(trim($oClients->email));
-            if (! Mailer::send($oEmail, $this->mails_filer, $oEmailText->id_textemail)) {
-                $this->result = 'Erreur : L\'envoi du mail a échoué';
-                return;
-            }
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('signature-universign-de-cgv', $varMail);
+        $message->setTo($oClients->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
+
         $this->result = 'CGV envoyées avec succès';
     }
 
@@ -2564,7 +2428,7 @@ class dossiersController extends bootstrap
         $this->iProjectId = $oProjects->id_project;
 
         $sTypeEmail = $this->selectEmailCompleteness($iClientId);
-        $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
+        $this->mail_template->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
     }
 
     public function _completude_preview_iframe()
@@ -2577,6 +2441,8 @@ class dossiersController extends bootstrap
         $oClients = $this->loadData('clients');
         /** @var companies $oCompanies */
         $oCompanies = $this->loadData('companies');
+        /** @var \mail_templates $oMailTemplate */
+        $oMailTemplate = $this->loadData('mail_templates');
 
         if (false === isset($this->params[0]) || false === $oProjects->get($this->params[0])) {
             echo 'no projects found';
@@ -2594,13 +2460,17 @@ class dossiersController extends bootstrap
         }
 
         $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
-        $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
+        $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-        $varMail['sujet'] = $this->mails_text->subject;
-        $tabVars          = $this->tnmp->constructionVariablesServeur($varMail);
+        $varMail['sujet'] = $oMailTemplate->subject;
 
-        echo strtr($this->mails_text->content, $tabVars);
+        $tabVars = array();
+        foreach ($varMail as $key => $value) {
+            $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
+        }
+
+        echo strtr($oMailTemplate->content, $tabVars);
     }
 
     public function _send_completude()
@@ -2617,6 +2487,8 @@ class dossiersController extends bootstrap
             $oClients = $this->loadData('clients');
             /** @var companies $oCompanies */
             $oCompanies = $this->loadData('companies');
+            /** @var \mail_templates $oMailTemplate */
+            $oMailTemplate = $this->loadData('mail_templates');
 
             if (false === isset($_POST['id_project']) || false === $oProjects->get($_POST['id_project'])) {
                 echo 'no projects found';
@@ -2632,34 +2504,19 @@ class dossiersController extends bootstrap
                 echo 'no company found';
                 return;
             }
-
-            $sTypeEmail = $this->selectEmailCompleteness($oClients->id_client);
-            $this->mails_text->get($sTypeEmail, 'lang = "' . $this->language . '" AND type');
-
+            $sTypeEmail       = $this->selectEmailCompleteness($oClients->id_client);
+            $oMailTemplate->get($sTypeEmail, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
             $varMail          = $this->getEmailVarCompletude($oProjects, $oClients, $oCompanies);
-            $varMail['sujet'] = htmlentities($this->mails_text->subject, null, 'UTF-8');
-            $tabVars          = $this->tnmp->constructionVariablesServeur($varMail);
+            $varMail['sujet'] = htmlentities($oMailTemplate->subject, null, 'UTF-8');
+            $sRecipientEmail  = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));
 
-            $sujetMail = utf8_decode(strtr($this->mails_text->subject, $tabVars));
-            $texteMail = strtr($this->mails_text->content, $tabVars);
-            $exp_name  = strtr($this->mails_text->exp_name, $tabVars);
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $varMail);
+            $message->setTo($sRecipientEmail);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-
-            $sRecipientEmail = preg_replace('/^(.*)-[0-9]+$/', '$1', trim($oClients->email));
-
-            if ($this->Config['env'] === 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipientEmail, $tabFiler);
-                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else {
-                $this->email->addRecipient($sRecipientEmail);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-            }
-
-            /** @var \Unilend\Service\ProjectManager $oProjectManager */
+            /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
             $oProjectManager = $this->get('unilend.service.project_manager');
             $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::EN_ATTENTE_PIECES, $oProjects, 1, $varMail['liste_pieces']);
 
@@ -2671,17 +2528,20 @@ class dossiersController extends bootstrap
 
     private function getEmailVarCompletude($oProjects, $oClients, $oCompanies)
     {
-        $this->settings->get('Facebook', 'type');
-        $lien_fb = $this->settings->value;
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
 
-        $this->settings->get('Twitter', 'type');
-        $lien_tw = $this->settings->value;
+        $oSettings->get('Facebook', 'type');
+        $lien_fb = $oSettings->value;
 
-        $this->settings->get('Adresse emprunteur', 'type');
-        $sBorrowerEmail = $this->settings->value;
+        $oSettings->get('Twitter', 'type');
+        $lien_tw = $oSettings->value;
 
-        $this->settings->get('Téléphone emprunteur', 'type');
-        $sBorrowerPhoneNumber = $this->settings->value;
+        $oSettings->get('Adresse emprunteur', 'type');
+        $sBorrowerEmail = $oSettings->value;
+
+        $oSettings->get('Téléphone emprunteur', 'type');
+        $sBorrowerPhoneNumber = $oSettings->value;
 
         $oTemporaryLink = $this->loadData('temporary_links_login');
 
@@ -2772,16 +2632,15 @@ class dossiersController extends bootstrap
 
     private function sendEmailBorrowerArea($sTypeEmail)
     {
-        $oMailsText = $this->loadData('mails_text');
-        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
+        $sFacebookURL = $oSettings->value;
+        $oSettings->get('Twitter', 'type');
+        $sTwitterURL = $oSettings->value;
 
-        $this->settings->get('Facebook', 'type');
-        $sFacebookURL = $this->settings->value;
-        $this->settings->get('Twitter', 'type');
-        $sTwitterURL = $this->settings->value;
-
+        /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
-        $sTemporaryLink = $this->surl.'/espace_emprunteur/securite/'.$oTemporaryLink->generateTemporaryLink($this->clients->id_client);
+        $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($this->clients->id_client);
 
         $aVariables = array(
             'surl'                   => $this->surl,
@@ -2792,19 +2651,11 @@ class dossiersController extends bootstrap
             'prenom'                 => $this->clients->prenom
         );
 
-        $sRecipient = $this->clients->email;
-
-        $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
-            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $aVariables);
+        $message->setTo($this->clients->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     public function _status()

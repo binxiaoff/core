@@ -40,35 +40,19 @@ class rootController extends bootstrap
                 //*** ENVOI DU MAIL AVEC NEW PASSWORD NON EMT ***//
                 //***********************************************//
 
-                // Recuperation du modele de mail
-                $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
+                $aVars = array(
+                    '$cms'      => $this->cms,
+                    '$surl'     => $this->surl,
+                    '$url'      => $this->lurl,
+                    '$email'    => trim($_POST['email']),
+                    '$password' => $this->new_password
+                );
 
-                $cms      = $this->cms;
-                $surl     = $this->surl;
-                $url      = $this->lurl;
-                $email    = trim($_POST['email']);
-                $password = $this->new_password;
-
-                $sujetMail = $this->mails_text->subject;
-                eval("\$sujetMail = \"$sujetMail\";");
-
-                $texteMail = $this->mails_text->content;
-                eval("\$texteMail = \"$texteMail\";");
-
-                $exp_name = $this->mails_text->exp_name;
-                eval("\$exp_name = \"$exp_name\";");
-
-                // Nettoyage de printemps
-                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->addRecipient(trim($_POST['email']));
-                $this->email->addBCCRecipient('j.dehais@equinoa.fr');
-                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                $this->email->setHTMLBody($texteMail);
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $aVars, false);
+                $message->setTo(trim($_POST['email']));
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
 
                 // Mise en session du message
                 $_SESSION['msgErreur']   = 'newPassword';
@@ -180,6 +164,8 @@ class rootController extends bootstrap
         $this->autoFireDebug  = false;
         $this->autoFireFooter = false;
 
+        $this->users = $this->loadData('users');
+
         // On place le redirect sur la home
         $_SESSION['request_url'] = $this->url;
 
@@ -224,40 +210,26 @@ class rootController extends bootstrap
                                 //*** ENVOI DU MAIL AVEC NEW PASSWORD NON EMT ***//
                                 //***********************************************//
 
-                                // Recuperation du modele de mail
-                                $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
+                                $aVars = array(
+                                    '$cms'      => $this->cms,
+                                    '$surl'     => $this->surl,
+                                    '$url'      => $this->lurl,
+                                    '$email'    => trim($this->users->email),
+                                    '$password' => $_POST['new_pass']
+                                );
 
-                                $cms      = $this->cms;
-                                $surl     = $this->surl;
-                                $url      = $this->lurl;
-                                $email    = trim($this->users->email);
-                                $password = $_POST['new_pass'];
+                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $aVars, false);
+                                $message->setTo(trim($this->users->email));
 
-                                $sujetMail = $this->mails_text->subject;
-                                eval("\$sujetMail = \"$sujetMail\";");
-
-                                $texteMail = $this->mails_text->content;
-                                eval("\$texteMail = \"$texteMail\";");
-
-                                $exp_name = $this->mails_text->exp_name;
-                                eval("\$exp_name = \"$exp_name\";");
-
-                                // Nettoyage de printemps
-                                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                                $this->email = $this->loadLib('email');
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->addRecipient(trim($this->users->email));
-                                // ajout du tracking
-                                $this->settings->get('alias_tracking_log', 'type');
-                                $this->alias_tracking_log = $this->settings->value;
-                                if ($this->alias_tracking_log != "") {
-                                    $this->email->addBCCRecipient($this->alias_tracking_log);
+                                $oSettings = $this->loadData('settings');
+                                $oSettings->get('alias_tracking_log', 'type');
+                                if (false === empty($oSettings->value)) {
+                                    $message->setBcc($oSettings->value);
                                 }
-                                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                                $this->email->setHTMLBody($texteMail);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+
+                                $mailer = $this->get('mailer');
+                                $mailer->send($message);
 
 
                                 // On enregistre la modif du mot de passe

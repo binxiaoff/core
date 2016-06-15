@@ -933,6 +933,10 @@ class clients extends clients_crud
                         WHERE
                             cs.status = '. \clients_status::VALIDATED . '
                             AND c.id_client = csh.id_client
+                        ORDER BY
+                            csh.added DESC
+                        LIMIT
+                            1
                     ) AS date_validation
                 FROM
                     clients c

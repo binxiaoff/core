@@ -1,0 +1,66 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: parameters_extended.yml, ignore_errors: true }
+
+framework:
+    secret: "%secret%"
+    default_locale:  "%locale%"
+    assets:
+        base_urls:
+            - "%router.request_context.scheme%://%url.host_default%"
+
+doctrine:
+    dbal:
+        connections:
+            default:
+                driver:        "%database_driver%"
+                host:          "%database_host%"
+                port:          "%database_port%"
+                dbname:        "%database_name%"
+                user:          "%database_user%"
+                password:      "%database_password%"
+                charset:       "UTF8"
+                wrapper_class: "%dbal_wrapper_class%"
+                driver_class:  "%dbal_driver_class%"
+                options:
+                    x_reconnect_attempts: 3
+    orm:
+        result_cache_driver:
+            type: memcache
+            host: "%server1.memcache_host%"
+            port: "%server1.memcache_port%"
+            instance_class: Memcache
+        query_cache_driver:
+            type: memcache
+            host: "%server1.memcache_host%"
+            port: "%server1.memcache_port%"
+            instance_class: Memcache
+
+cache_adapter:
+    providers:
+        default_memcache_adapter:
+            factory: 'cache.factory.memcache'
+            options:
+                host: "%server1.memcache_host%"
+                port: "%server1.memcache_port%"
+            aliases: ['memcache.default']
+
+monolog:
+    channels: [console]
+    handlers:
+        main:
+            type: rotating_file
+            path: "%kernel.logs_dir%/%kernel.environment%.log"
+            level: info
+            max_files: 10
+            channels: ['!console']
+        console:
+            type: stream
+            path: "%kernel.logs_dir%/console-%kernel.environment%.log"
+            level: info
+            max_files: 10
+            channels: [console]
+
+
+swiftmailer:
+    transport: '%mailer_transport%'

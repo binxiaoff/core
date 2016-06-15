@@ -17,7 +17,7 @@ class Dispatcher
         $this->App         = $name;
         $this->environment = $this->kernel->getEnvironment();
         $this->debug       = $this->kernel->isDebug();
-        $this->path        = $this->kernel->getRootDir() . '/';
+        $this->path        = $this->kernel->getRootDir() . '/../';
 
         $this->handleUrl();
         $this->dispatch();

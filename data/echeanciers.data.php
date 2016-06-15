@@ -510,26 +510,30 @@ class echeanciers extends echeanciers_crud
      */
     public function getEcheanceByDayAll($date, $statut = self::STATUS_PENDING)
     {
-        $sql = 'SELECT
-        SUM(montant) as montant,
-        SUM(capital) as capital,
-        SUM(interets) as interets,
-        SUM(prelevements_obligatoires) as prelevements_obligatoires,
-        SUM(retenues_source) as retenues_source,
-        SUM(csg) as csg,
-        SUM(prelevements_sociaux) as prelevements_sociaux,
-        SUM(contributions_additionnelles) as contributions_additionnelles,
-        SUM(prelevements_solidarite) as prelevements_solidarite,
-        SUM(crds) as crds
-        FROM `echeanciers` WHERE status = ' . $statut . ' AND DATE(date_echeance_reel) = "' . $date . '" GROUP BY DATE(date_echeance_reel)';
+        $sql = '
+            SELECT
+                SUM(montant) AS montant,
+                SUM(capital) AS capital,
+                SUM(interets) AS interets,
+                SUM(prelevements_obligatoires) AS prelevements_obligatoires,
+                SUM(retenues_source) AS retenues_source,
+                SUM(csg) AS csg,
+                SUM(prelevements_sociaux) AS prelevements_sociaux,
+                SUM(contributions_additionnelles) AS contributions_additionnelles,
+                SUM(prelevements_solidarite) AS prelevements_solidarite,
+                SUM(crds) AS crds
+            FROM echeanciers
+            WHERE status = ' . $statut . ' AND DATE(date_echeance_reel) = "' . $date . '"
+            GROUP BY DATE(date_echeance_reel)';
 
-
-        $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        $resultat = $this->bdd->query($sql);
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
-        return $result[0];
+        return isset($result[0])
+            ? $result[0]
+            : array_fill_keys(array('montant', 'capital', 'interets', 'commission', 'retenues_source', 'csg', 'prelevements_sociaux', 'contributions_additionnelles', 'prelevements_solidarite', 'crds'), 0);
     }
 
     /**

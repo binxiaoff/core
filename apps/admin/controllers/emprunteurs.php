@@ -189,15 +189,16 @@ class emprunteursController extends bootstrap
 
     public function _edit()
     {
-        $this->clients          = $this->loadData('clients');
-        $this->clients_adresses = $this->loadData('clients_adresses');
-        $this->companies        = $this->loadData('companies');
-        $this->companies_bilans = $this->loadData('companies_bilans');
-        $this->projects         = $this->loadData('projects');
-        $this->projects_status  = $this->loadData('projects_status');
-        $this->clients_mandats  = $this->loadData('clients_mandats');
-        $this->projects_pouvoir = $this->loadData('projects_pouvoir');
-        $this->clients->history = '';
+        $this->clients           = $this->loadData('clients');
+        $this->clients_adresses  = $this->loadData('clients_adresses');
+        $this->companies         = $this->loadData('companies');
+        $this->companies_bilans  = $this->loadData('companies_bilans');
+        $this->projects          = $this->loadData('projects');
+        $this->projects_status   = $this->loadData('projects_status');
+        $this->clients_mandats   = $this->loadData('clients_mandats');
+        $this->projects_pouvoir  = $this->loadData('projects_pouvoir');
+        $this->clients->history  = '';
+        $this->settings          = $this->loadData('settings');
 
         $this->settings->get('Liste deroulante secteurs', 'type');
         $this->lSecteurs = explode(';', $this->settings->value);
@@ -306,8 +307,8 @@ class emprunteursController extends bootstrap
                 }
 
                 if ($sCurrentIban !== $sNewIban) {
-                    /** @var \Unilend\Service\MailerManager $oMailerManager */
-                    $oMailerManager = $this->get('MailerManager');
+                    /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
+                    $oMailerManager = $this->get('unilend.service.email_manager');
                     $oMailerManager->sendIbanUpdateToStaff($this->clients->id_client, $sCurrentIban, $sNewIban);
                 }
                 $serialize = serialize(array('id_client' => $this->clients->id_client, 'post' => $_POST, 'files' => $_FILES));
@@ -362,14 +363,12 @@ class emprunteursController extends bootstrap
                     }
 
                     // No need to create the new mandat, it will be created in pdf::_mandat()
-
                     //**********************************************//
                     //*** ENVOI DU MAIL FUNDE EMPRUNTEUR TERMINE ***//
                     //**********************************************//
                     $project->get($projects['id_project'], 'id_project');
                     $company->get($project->id_company, 'id_company');
                     $client->get($company->id_client_owner, 'id_client');
-                    $this->mails_text->get('changement-de-rib', 'lang = "' . $this->language . '" AND type');
                     $echeanciers_emprunteur->get($project->id_project, 'ordre = 1 AND id_project');
                     $mensualite = $echeanciers_emprunteur->montant + $echeanciers_emprunteur->commission + $echeanciers_emprunteur->tva;
                     $mensualite = ($mensualite / 100);
@@ -392,29 +391,19 @@ class emprunteursController extends bootstrap
                         'mensualite'             => $this->ficelle->formatNumber($mensualite),
                         'montant'                => $this->ficelle->formatNumber($project->amount, 0),
                         'link_compte_emprunteur' => $this->lurl . '/projects/detail/' . $project->id_project,
-                        'link_mandat'            => $this->urlfront . '/pdf/mandat/' . $client->hash . '/' . $project->id_project,
-                        'link_pouvoir'           => $this->urlfront . '/pdf/pouvoir/' . $client->hash . '/' . $project->id_project,
+                        'link_mandat'            => $this->furl . '/pdf/mandat/' . $client->hash . '/' . $project->id_project,
+                        'link_pouvoir'           => $this->furl . '/pdf/pouvoir/' . $client->hash . '/' . $project->id_project,
                         'projet'                 => $project->title,
                         'lien_fb'                => $lien_fb,
                         'lien_tw'                => $lien_tw,
                         'date_echeance'          => date('d/m/Y', strtotime($this->nextEcheance[0]['date_echeance_emprunteur']))
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    /** @var \Email email */
-                    $email = $this->loadLib('email');
-                    $email->setFrom($this->mails_text->exp_email, strtr(utf8_decode($this->mails_text->exp_name), $tabVars));
-                    $email->setSubject(stripslashes($this->mails_text->subject));
-                    $email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $tabVars)));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($email, $this->mails_filer, $this->mails_text->id_textemail, $client->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $email->addRecipient(trim($client->email));
-                        Mailer::send($email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('changement-de-rib', $varMail);
+                    $message->setTo($client->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
             }
         }

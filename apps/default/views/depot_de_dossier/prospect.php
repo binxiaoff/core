@@ -87,6 +87,6 @@
     });
 </script>
 
-<?php if ($this->Config['env'] == 'prod') { ?>
+<?php if ($this->getParameter('kernel.environment') == 'prod') { ?>
     <img src="https://ext.ligatus.com/conversion/?c=65835&a=7195" width="1" height="1">
 <?php } ?>

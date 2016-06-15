@@ -39,7 +39,7 @@ mkdir /vagrant/phpmyadmin/
 #awk 'BEGIN{ RS="<a *href *= *\""} NR>2 {sub(/".*/,"");print; }' /vagrant/phpmyadmin/index.html >> /vagrant/phpmyadmin/url-list.txt
 #grep "https://files.phpmyadmin.net/phpMyAdmin/" /vagrant/phpmyadmin/url-list.txt > /vagrant/phpmyadmin/phpmyadmin.url
 #sed -i 's/.zip/.tar.bz2/' /vagrant/phpmyadmin/phpmyadmin.url
-wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 https://files.phpmyadmin.net/phpMyAdmin/4.6.0/phpMyAdmin-4.6.0-all-languages.tar.bz2 > /dev/null
+wget --no-check-certificate --output-document=/vagrant/phpmyadmin/phpMyAdmin.tar.bz2 https://files.phpmyadmin.net/phpMyAdmin/4.6.1/phpMyAdmin-4.6.1-all-languages.tar.bz2 > /dev/null
 mkdir /srv/sites/phpmyadmin
 tar jxvf /vagrant/phpmyadmin/phpMyAdmin.tar.bz2 -C /srv/sites/phpmyadmin --strip 1 > /dev/null
 rm -rf /vagrant/phpmyadmin
@@ -50,7 +50,7 @@ mysql -uroot -pROOTPASSWORD -e "CREATE DATABASE pma"
 mysql -uroot -pROOTPASSWORD -e "CREATE USER 'pma'@'localhost' IDENTIFIED BY 'PMAUSERPASSWD'"
 mysql -uroot -pROOTPASSWORD -e "GRANT ALL ON pma.* TO 'pma'@'localhost'"
 mysql -uroot -pROOTPASSWORD -e "flush privileges"
-cat /vagrant/conf/phpmyadmin.conf.php > /srv/sites/phpmyadmin/config.inc.php
+ln -fs /vagrant/conf/phpmyadmin.conf.php /srv/sites/phpmyadmin/config.inc.php
 
 # create external user
 mysql -uroot -pROOTPASSWORD -e "CREATE USER 'external'@'%' IDENTIFIED BY 'EXTERNALPASSWD'"
@@ -86,6 +86,7 @@ xdebug.profiler_output_name=callgrind.%%t.%%R.cachegrind
 xdebug.var_display_max_data=262144
 xdebug.var_display_max_depth=10
 xdebug.var_display_max_children=1024' >> /etc/php5/apache2/php.ini
+sed -i '/;date.timezone =/c date.timezone = "Europe/Paris"' /etc/php5/cli/php.ini
 restart php5-fpm
 
 # install Nginx
@@ -139,10 +140,6 @@ apt-get install -y ruby-all-dev ruby-switch libsqlite3-dev
 ruby-switch --set ruby2.0
 gem install mailcatcher
 sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env /usr/local/bin/catchmail' /etc/php5/fpm/php.ini
+sed -i '/;sendmail_path =/c sendmail_path = /usr/bin/env /usr/local/bin/catchmail' /etc/php5/cli/php.ini
 ln -fs /vagrant/conf/vhosts/mailcatcher.conf /etc/nginx/sites-enabled/mailcatcher.conf
 cp /vagrant/conf/mailcatcher.conf /etc/init/mailcatcher.conf
-
-#increase swap memory
-/bin/dd if=/dev/zero of=/var/swap.1 bs=1M count=1024
-/sbin/mkswap /var/swap.1
-/sbin/swapon /var/swap.1
