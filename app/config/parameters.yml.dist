@@ -34,9 +34,9 @@ parameters:
 
     router.request_context.scheme:  https
 
-    path.static:                    /srv/sites/unilend/public/default/
-    path.user:                      /srv/sites/unilend/public/default/var/
-    path.sftp:                      /srv/sites/unilend/protected/sftp/
-    path.payline:                   /srv/sites/unilend/librairies/payline/
+    path.static:                    /data/sites/unilend/public/default/
+    path.user:                      /data/sites/unilend/public/default/var/
+    path.sftp:                      /data/sites/unilend/protected/sftp/
+    path.payline:                   /data/sites/unilend/librairies/payline/
 
     cms:                            iZicom
