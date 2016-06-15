@@ -32,15 +32,19 @@ class SalesforceManager
      */
     const FILE_PROSPECTS_ONLY = 'tempProspect.csv';
 
-    /**  @var LoggerInterface */
+    /** @var LoggerInterface */
     private $oLogger;
-    /**  @var array with character to replace */
+
+    /** @var array with character to replace */
     private $aSearchCharacter;
-    /**@var array with character of replacement */
+
+    /** @var array with character of replacement */
     private $aReplaceCharacter;
+
     /** @var EntityManager */
     private $oEntityManager;
-    /** @var  string */
+
+    /** @var string */
     private $sRootDir;
 
     /**
@@ -68,7 +72,7 @@ class SalesforceManager
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
-                'Error on query company : ' . $oException->getMessage(),
+                'Error on company Salesforces query: ' . $oException->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -83,7 +87,7 @@ class SalesforceManager
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
-                'Error on query borrower : ' . $oException->getMessage(),
+                'Error on borrower Salesforces query: ' . $oException->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -98,7 +102,7 @@ class SalesforceManager
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
-                'Error on query project : ' . $oException->getMessage(),
+                'Error on project Salesforces query: ' . $oException->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -113,7 +117,7 @@ class SalesforceManager
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
-                'Error on query lender : ' . $oException->getMessage(),
+                'Error on lender Salesforces query: ' . $oException->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -184,13 +188,13 @@ class SalesforceManager
                 fclose($rCsvFile);
                 $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
                 $this->oLogger->info(
-                    'Generation of csv prospects in ' . round($iTimeEndCsv, 2),
+                    'Prospects Salesforce CSV generated in ' . round($iTimeEndCsv, 2) . ' seconds',
                     array(__FILE__ . ' on line ' . __LINE__)
                 );
             }
         } catch (\Exception $oException) {
             $this->oLogger->error(
-                'Error on query prospects : ' . $oException->getMessage(),
+                'Error on prospects Salesforce query: ' . $oException->getMessage(),
                 array(__FILE__ . ' on line ' . __LINE__)
             );
         }
@@ -227,7 +231,7 @@ class SalesforceManager
 
             $iTimeEndCsv = microtime(true) - $iTimeStartCsv;
             $this->oLogger->info(
-                'Generation of csv ' . $sNameFile . ' in ' . round($iTimeEndCsv, 2),
+                $sNameFile . ' CSV generated in ' . round($iTimeEndCsv, 2) . ' seconds',
                 array(__FILE__ . ' on line ' . __LINE__)
             );
             return true;
@@ -241,7 +245,7 @@ class SalesforceManager
         if (false === is_dir($this->sRootDir . self::PATH_EXTRACT)) {
             if (false === mkdir($this->sRootDir . self::PATH_EXTRACT, 0777, true)) {
                 $this->oLogger->error(
-                    'Error on create dir ' . $this->sRootDir . self::PATH_EXTRACT,
+                    'Error on creating directory ' . $this->sRootDir . self::PATH_EXTRACT,
                     array(__FILE__ . ' on line ' . __LINE__)
                 );
                 return false;

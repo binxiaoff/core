@@ -189,9 +189,11 @@ class MailerManager
         /** @var \clients $oBorrower */
         $oBorrower = $this->oEntityManager->getRepository('clients');
 
-        // EMAIL EMPRUNTEUR FUNDE //
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('Project funded - sending email to borrower. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info(
+                'Project funded - sending email to borrower (project ' . $oProject->id_project . ')',
+                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+            );
         }
 
         $this->oSettings->get('Heure fin periode funding', 'type');
@@ -312,8 +314,10 @@ class MailerManager
             $this->mailer->send($message);
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('Email emprunteur-dossier-funde-et-termine sent. id_project=' . $oProject->id_project,
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info(
+                    'Email emprunteur-dossier-funde-et-termine sent (project ' . $oProject->id_project . ')',
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                );
             }
         }
     }
@@ -375,9 +379,12 @@ class MailerManager
         $aLendersIds       = $oLoan->getProjectLoansByLender($oProject->id_project);
         $iNbLenders        = count($aLendersIds);
         $iNbTreatedLenders = 0;
+
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info($iNbLenders . ' lenders to send email for. id_project=' . $oProject->id_project,
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info(
+                $iNbLenders . ' lenders to send email (project ' . $oProject->id_project . ')',
+                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+            );
         }
 
         foreach ($aLendersIds as $aLenderId) {
@@ -466,14 +473,20 @@ class MailerManager
                 $this->mailer->send($message);
 
                 if ($this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info('id_project=' . $oProject->id_project . ' - Email preteur-bid-ok sent for lender (' . $oLenderAccount->id_lender_account . ')',
-                        array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->oLogger->info(
+                        'Email preteur-bid-ok sent for lender ' . $oLenderAccount->id_lender_account . ' (project ' . $oProject->id_project . ')',
+                        array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                    );
                 }
             }
+
             $iNbTreatedLenders++;
+
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' - Loan notification email sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lender',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info(
+                    'Loan notification emails sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lenders  (project ' . $oProject->id_project . ')',
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                );
             }
         }
     }
@@ -591,8 +604,10 @@ class MailerManager
             $this->mailer->send($message);
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : email emprunteur-dossier-funding-ko sent',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info(
+                    'Email emprunteur-dossier-funding-ko sent (project ' . $oProject->id_project . ')',
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                );
             }
         }
     }
@@ -1024,6 +1039,7 @@ class MailerManager
             $this->oLogger->debug('New projects notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
             $this->oLogger->debug('Number of customers to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
+
         /** @var \clients $oCustomer */
         $oCustomer = $this->oEntityManager->getRepository('clients');
         /** @var \projects $oProject */
@@ -1139,8 +1155,10 @@ class MailerManager
                     }
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send new projects summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1275,8 +1293,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send placed bids summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1298,6 +1318,7 @@ class MailerManager
             $this->oLogger->debug('Rejected bids notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
             $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
+
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \clients $oCustomer */
@@ -1410,8 +1431,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send rejected bids summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1433,6 +1456,7 @@ class MailerManager
             $this->oLogger->debug('Accepted loans notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
             $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
+
         /** @var \clients $oCustomer */
         $oCustomer = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLender */
@@ -1583,8 +1607,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send accepted loan summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1779,8 +1805,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not repayments summary send email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }

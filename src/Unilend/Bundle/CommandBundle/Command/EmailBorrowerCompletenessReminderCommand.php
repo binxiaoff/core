@@ -150,7 +150,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
                             }
                         } catch (\Exception $oException) {
-                            $logger->error('Cannot send reminder for project id_project=' . $project->id_project . '(Exception message : ' . $oException->getMessage() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+                            $logger->error('Cannot send reminder (project ' . $project->id_project . ') - Message: "' . $oException->getMessage() . '"', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
                         }
                     }
 

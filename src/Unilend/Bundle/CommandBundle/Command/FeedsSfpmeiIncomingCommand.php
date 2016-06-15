@@ -16,6 +16,7 @@ class FeedsSfpmeiIncomingCommand extends ContainerAwareCommand
 
     /** @var LoggerInterface $oLogger */
     private $oLogger;
+
     /** @var EntityManager $oEntityManager */
     private $oEntityManager;
 
@@ -66,7 +67,7 @@ EOF
 
         switch ($sFileContent) {
             case false: {
-                $this->oLogger->error('There is no file to process in ' . $sReceptionPath . ' folder', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->oLogger->error('No SFPMEI incoming file to process in "' . $sReceptionPath . '"', array('class' => __CLASS__, 'function' => __FUNCTION__));
                 break;
             }
             default : {
@@ -260,7 +261,7 @@ EOF
                 unset($aResult[$item]);
             }
         } else {
-            $this->oLogger->error('The file ' . $file . ' was not processed.');
+            $this->oLogger->error('SFPMEI incoming file "' . $file . '" not processed');
         }
         return $aResult;
     }
@@ -317,7 +318,8 @@ EOF
      */
     private function processWelcomeOffer(array $aRow, \transactions $transactions, \bank_unilend $bank_unilend)
     {
-        $this->oLogger->info('Bank transfer welcome offer : ' . json_encode($aRow['unilend_bienvenue']), array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->oLogger->info('Bank transfer welcome offer: ' . json_encode($aRow['unilend_bienvenue']), array('class' => __CLASS__, 'function' => __FUNCTION__));
+
         $transactions->id_prelevement   = 0;
         $transactions->id_client        = 0;
         $transactions->montant          = $aRow['montant'];

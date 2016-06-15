@@ -81,6 +81,7 @@ class CheckWelcomeOfferValidityCommand extends ContainerAwareCommand
                 $iNumberOfUnusedWelcomeOffers +=1;
             }
         }
-        $logger->info('Number of withdrawn welcome offers : ' . $iNumberOfUnusedWelcomeOffers);
+
+        $logger->info('Number of withdrawn welcome offers: ' . $iNumberOfUnusedWelcomeOffers);
     }
 }

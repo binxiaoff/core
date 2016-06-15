@@ -57,10 +57,14 @@ EOF
                 $aIRRsCalculated += 1;
 
             } catch (\Exception $eIRRException) {
-                $logger->error('Could not calculate TRI for lender id_lender_account=' . $aLender['id_lender_account'] . ' Exception message: '  . $eIRRException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $logger->error(
+                    'Could not calculate IRR (lender ' . $aLender['id_lender_account'] . ') - Message: '  . $eIRRException->getMessage(),
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $aLender['id_lender_account'])
+                );
             }
         }
-        $logger->info('Calculation time for ' . $aIRRsCalculated . ' lenders : ' . round((microtime(true) - $fTimeStart)/60, 2) . ' minutes', array('class' => __CLASS__, 'function' => __FUNCTION__));
+
+        $logger->info('IRR calculation time for ' . $aIRRsCalculated . ' lenders: ' . round((microtime(true) - $fTimeStart) / 60, 2) . ' minutes', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         $this->emptyProjectLastStatusMaterialized();
     }
@@ -71,10 +75,12 @@ EOF
         $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
 
         $bdd->query('TRUNCATE projects_last_status_history_materialized');
-        $bdd->query('INSERT INTO projects_last_status_history_materialized
-                                    SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
-                                    FROM projects_status_history
-                                    GROUP BY id_project');
+        $bdd->query('
+            INSERT INTO projects_last_status_history_materialized
+              SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
+              FROM projects_status_history
+              GROUP BY id_project'
+        );
         $bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
     }
 
