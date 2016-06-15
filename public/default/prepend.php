@@ -24,6 +24,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 if (! $nocache) {
     $params = \Symfony\Component\Yaml\Yaml::parse(file_get_contents(__DIR__ . '/../../app/config/parameters.yml'));
+
+    if (file_exists(__DIR__ . '/../../app/config/parameters_extended.yml')) {
+        $params['parameters'] = array_merge($params['parameters'], \Symfony\Component\Yaml\Yaml::parse(file_get_contents(__DIR__ . '/../../app/config/parameters_extended.yml'))['parameters']);
+    }
+
     $oCache = new Memcache;
     $oCache->connect($params['parameters']['server1.memcache_host'], $params['parameters']['server1.memcache_port']);
 
