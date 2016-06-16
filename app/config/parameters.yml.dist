@@ -5,8 +5,8 @@ parameters:
     database_host:                  localhost
     database_port:                  ~
     database_name:                  unilend
-    database_user:                  root
-    database_password:              ROOTPASSWORD
+    database_user:                  unilend
+    database_password:              myPassw0rd
 
     mailjet.api_key:                ~
     mailjet.api_secret:             ~
