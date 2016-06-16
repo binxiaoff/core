@@ -134,6 +134,14 @@ class StaticPagesController extends Controller
 
     }
 
+    /**
+     * @Route("/reviews", name="reviews")
+     */
+    public function reviewFooterShowAction()
+    {
+        return $this->render('front/partials/home/reviews.html.twig', array());
+    }
+
 
 
 

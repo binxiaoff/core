@@ -6,13 +6,18 @@ namespace Unilend\Bundle\FrontBundle\Security\User;
 
 class UserLender extends BaseUser
 {
+    /** @var float $balance */
     private $balance;
+    /** @var  string $initials */
     private $initials;
     private $firstName;
     private $clientStatus;
+    /** @var bool $hasAcceptedCurrentTerms */
     private $hasAcceptedCurrentTerms;
+    /** @var  int $notificationsUnread */
+    private $notificationsUnread;
 
-    public function __construct($username, $password, $salt, array $roles, $balance, $initials, $firstName, $isActive, $clientStatus, $hasAcceptedCurrentTerms)
+    public function __construct($username, $password, $salt, array $roles, $balance, $initials, $firstName, $isActive, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread)
     {
         parent::__construct($username, $password, $salt, $roles, $isActive);
         $this->balance                 = $balance;
@@ -20,6 +25,7 @@ class UserLender extends BaseUser
         $this->firstName               = $firstName;
         $this->clientStatus            = $clientStatus;
         $this->hasAcceptedCurrentTerms = $hasAcceptedCurrentTerms;
+        $this->notificationsUnread     = $notificationsUnread;
     }
 
     public function getBalance()
@@ -45,6 +51,11 @@ class UserLender extends BaseUser
     public function getHasAcceptedCurrentTerms()
     {
         return $this->hasAcceptedCurrentTerms;
+    }
+
+    public function getNotificationsUnread()
+    {
+        return $this->notificationsUnread;
     }
 
 }

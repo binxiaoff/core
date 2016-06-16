@@ -93,7 +93,7 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
         $roles  = $token->getUser()->getRoles();
 
         if (in_array('ROLE_LENDER', $roles)){
-            return new RedirectResponse($this->router->generate('lender_dashboard'));
+            return new RedirectResponse($this->router->generate('home'));
         }
 
         if (in_array('ROLE_BORROWER', $roles)){

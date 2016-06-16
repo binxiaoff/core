@@ -8,6 +8,7 @@ use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\ClientManager;
+use Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 use Unilend\Bundle\FrontBundle\Security\User\UserBorrower;
 use Unilend\Bundle\FrontBundle\Security\User\UserLender;
@@ -18,14 +19,17 @@ class UserProvider implements UserProviderInterface
     private $entityManager;
     /** @var  ClientManager */
     private $clientManager;
+    /** @var  NotificationManager */
+    private $notificationManager;
 
     /**
      * @inheritDoc
      */
-    public function __construct($entityManager, $clientManager)
+    public function __construct($entityManager, $clientManager, $notificationManager)
     {
-        $this->entityManager = $entityManager;
-        $this->clientManager = $clientManager;
+        $this->entityManager       = $entityManager;
+        $this->clientManager       = $clientManager;
+        $this->notificationManager = $notificationManager;
     }
 
     /**
@@ -42,10 +46,23 @@ class UserProvider implements UserProviderInterface
             $roles                   = ['ROLE_USER'];
 
             if ($this->clientManager->isLender($client)) {
-                $roles[] = 'ROLE_LENDER';
-                $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
-                $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
-                return new UserLender($client->email, $client->password, '', $roles, $balance, $initials, $client->prenom, $isActive, $clientStatus, $hasAcceptedCurrentTerms);
+                $roles[]                   = 'ROLE_LENDER';
+                $clientStatus              = $this->clientManager->getCurrentClientStatus($client);
+                $hasAcceptedCurrentTerms   = $this->clientManager->hasAcceptedCurrentTerms($client);
+                $notificationsUnread = $this->notificationManager->countUnreadNotificationsForClient($client);
+
+                return new UserLender(
+                    $client->email,
+                    $client->password,
+                    '',
+                    $roles,
+                    $balance,
+                    $initials,
+                    $client->prenom,
+                    $isActive,
+                    $clientStatus,
+                    $hasAcceptedCurrentTerms,
+                    $notificationsUnread);
             }
 
             if ($this->clientManager->isBorrower($client)) {

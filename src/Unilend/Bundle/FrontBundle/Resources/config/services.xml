@@ -21,6 +21,7 @@
         <service id="unilend.security.user.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_manager"/>
+            <argument type="service" id="unilend.service.notification_manager"/>
         </service>
 
         <service id="unilend.frontbundle.security.login_authenticator" class="Unilend\Bundle\FrontBundle\Security\LoginAuthenticator">

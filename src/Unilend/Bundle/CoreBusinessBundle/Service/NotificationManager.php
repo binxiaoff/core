@@ -98,4 +98,16 @@ class NotificationManager
         $oMailNotification->id_transaction  = $iTransactionId;
         $oMailNotification->create();
     }
+
+    public function countUnreadNotificationsForClient(\clients $oClient)
+    {
+        /** @var \notifications $notifications */
+        $notifications  = $this->oEntityManager->getRepository('notifications');
+        /** @var \lenders_accounts $lenderAccount */
+        $lenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
+        $lenderAccount->get($oClient->id_client, 'id_client_owner');
+
+        return $notifications->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND status = ' . \notifications::STATUS_UNREAD);
+    }
+
 }

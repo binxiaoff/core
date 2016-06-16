@@ -47,6 +47,9 @@ class notifications extends notifications_crud
     const TYPE_AUTOBID_BALANCE_INSUFFICIENT   = 17;
     const TYPE_AUTOBID_FIRST_ACTIVATION       = 18;
 
+    const STATUS_READ   = 1;
+    const STATUS_UNREAD = 0;
+
     public function __construct($bdd, $params = '')
     {
         parent::notifications($bdd, $params);

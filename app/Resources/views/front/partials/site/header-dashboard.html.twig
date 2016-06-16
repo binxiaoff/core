@@ -1,0 +1,45 @@
+{# Site Header for Dashboard #}
+{# @note This file is produced as a workaround since Twig.JS doesn't correctly support embed tags #}
+{#       See: partials/layouts/_dashboard.twig for more information #}
+
+{% import 'extensions/_general.macros.twig' as general %}
+<header class="site-header">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+        <div class="site-wrap">
+            <h1 class="site-title">
+                <a href="{{ route('/') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a></h1>
+
+            <div class="site-controls">
+
+                {% block siteHeaderControls %}
+                    <div class="site-user">
+                        <a href="{{ route('user/preter/balance') }}" class="site-user-balance"><span class="label">{% trans %} header-connected_add-money-link {% endtrans %}</span></a><!-- /.site-user-balance -->
+                        <div class="site-user-profile">
+                            <div class="profile-avatar">
+                                <a href="{{ route('user/preter/profile') }}">
+                                    {{ app.user.initials }}
+                                    {#{% set avatarSex = 'm' %}
+                                    {% if userProfile.identity.civilite == 'madame' %}
+                                      {% set avatarSex = 'f' %}
+                                    {% endif %}
+                                    {{ svgimage('avatar-' ~ avatarSex ~ '-level-' ~ userProfile.level, '', 60, 60) }} #}
+                                </a>
+                            </div><!-- /.profile-avatar -->
+                            <a href="{{ route('user/preter/notifications') }}" class="profile-notifications">
+                                {% if app.user.notificationsUnread > 0 %}{{ general.pip(app.user.notificationsUnread) }}{% endif %}
+                            </a><!-- /.profile-notifications -->
+                            <div class="profile-name">{% trans with { '%firstName%' : app.user.firstName } %} header-connected_greeting {% endtrans %} </div>
+                            <div class="profile-balance">
+                                {% trans with { '%balance%' : app.user.balance } %} header-connected_balance {% endtrans %}
+                            </div><!-- /.profile-balance -->
+                            <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} header-connected_logout {% endtrans %}</span></a>
+                        </div><!-- /.site-user-profile -->
+                    </div><!-- /.site-user -->
+                {% endblock %}
+
+            </div><!-- /.site-controls -->
+        </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+</header>
