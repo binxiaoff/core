@@ -24,8 +24,6 @@ class ProjectsFundingCommand extends ContainerAwareCommand
     {
         ini_set('memory_limit', '1G');
 
-        throw new \Exception('thrown exception');
-
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var MailerManager $mailerManager */

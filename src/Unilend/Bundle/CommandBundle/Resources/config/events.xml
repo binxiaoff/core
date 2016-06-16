@@ -8,13 +8,10 @@
             <tag name="kernel.event_listener" event="console.command" method="onCommandStart"/>
             <argument type="service" id="monolog.logger.console"/>
         </service>
+
         <service id="unilend.event.console.listener.end" class="Unilend\Bundle\CommandBundle\Event\ConsoleEventListener">
             <tag name="kernel.event_listener" event="console.terminate" method="onCommandEnd"/>
             <argument type="service" id="monolog.logger.console"/>
-        </service>
-        <service id="unilend.event.console.listener.exception" class="Unilend\Bundle\CommandBundle\Event\ConsoleEventListener">
-            <tag name="kernel.event_listener" event="console.exception" method="onCommandException"/>
-            <argument type="service" id="logger"/>
         </service>
     </services>
 </container>
