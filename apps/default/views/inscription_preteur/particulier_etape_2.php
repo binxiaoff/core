@@ -97,7 +97,7 @@
             <p class="exInfoBulle"><?= $this->lng['etape2']['info-cni'] ?></p>
             <label class="inline-text"><?= $this->lng['etape2']['piece-didentite'] ?></label>
             <div class="uploader">
-                <input id="txt_ci" type="text" class="field required <?= (isset($this->error_cni) && $this->error_cni == true ? 'LV_invalid_field' : '') ?>" readonly="readonly" value="<?= (empty($this->attachments[attachment_type::CNI_PASSPORTE]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::CNI_PASSPORTE]['path']) ?>"/>
+                <input id="txt_ci" type="text" class="field required <?= (isset($this->error_cni) && $this->error_cni == true ? 'LV_invalid_field' : '') ?>" readonly="readonly" value="<?=  $this->lng['etape2']['aucun-fichier-selectionne'] ?>"/>
                 <div class="file-holder">
                     <span class="btn btn-small">
                         <?= $this->lng['etape2']['parcourir'] ?>
@@ -115,7 +115,7 @@
                 <input id="txt_cni_passeport_verso"
                        type="text" class="field required <?= (isset($this->error_cni_verso) && $this->error_cni_verso == true ? 'LV_invalid_field' : '') ?>"
                        readonly="readonly"
-                       value="<?= (empty($this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::CNI_PASSPORTE_VERSO]['path']) ?>"/>
+                       value="<?= $this->lng['etape2']['aucun-fichier-selectionne']?>"/>
                 <div class="file-holder">
                     <span class="btn btn-small">
                         <?= $this->lng['etape2']['parcourir'] ?>
@@ -131,7 +131,7 @@
             <label class="inline-text"><?= $this->lng['etape2']['justificatif-de-domicile'] ?></label>
 
             <div class="uploader">
-                <input id="txt_justificatif_de_domicile" type="text" class="field required <?= (isset($this->error_justificatif_domicile) && $this->error_justificatif_domicile == true ? 'LV_invalid_field' : '') ?>" readonly="readonly" value="<?= (empty($this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::JUSTIFICATIF_DOMICILE]['path']) ?>"/>
+                <input id="txt_justificatif_de_domicile" type="text" class="field required <?= (isset($this->error_justificatif_domicile) && $this->error_justificatif_domicile == true ? 'LV_invalid_field' : '') ?>" readonly="readonly" value="<?= $this->lng['etape2']['aucun-fichier-selectionne'] ?>"/>
                 <div class="file-holder">
                     <span class="btn btn-small">
                         <?= $this->lng['etape2']['parcourir'] ?>
@@ -151,7 +151,7 @@
                     <input id="txt_attestation_hebergement" type="text"
                            class="field required <?= (isset($this->error_attestation_hebergement) && $this->error_attestion_hebergement == true ? 'LV_invalid_field' : '') ?>"
                            readonly="readonly"
-                           value="<?= (empty($this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::ATTESTATION_HEBERGEMENT_TIERS]['path']) ?>"/>
+                           value="<?= $this->lng['etape2']['aucun-fichier-selectionne'] ?>"/>
                     <div class="file-holder">
                         <span class="btn btn-small">
                             <?= $this->lng['etape2']['parcourir'] ?>
@@ -166,8 +166,8 @@
                 <label class="inline-text"><?= $this->lng['etape2']['label-upload-field-id-third-person-housing'] ?></label>
                 <div class="uploader">
                     <input id="txt_cni_passport_tiers_hebergeant" type="text"
-                           class="field required <?= (isset($this->txt_identite_tiers_hebergeant) && $this->txt_identite_tiers_hebergeant == true ? 'LV_invalid_field' : '') ?>"
-                           readonly="readonly" value="<?= (empty($this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->attachments[attachment_type::CNI_PASSPORT_TIERS_HEBERGEANT]['path']) ?>"/>
+                           class="field required"
+                           readonly="readonly" value="<?= $this->lng['etape2']['aucun-fichier-selectionne'] ?>"/>
                     <div class="file-holder">
                         <span class="btn btn-small">
                             <?= $this->lng['etape2']['parcourir'] ?>
@@ -192,7 +192,7 @@
                 <?= $this->lng['etape2']['document-fiscal-' . $this->etranger] ?>
             </label>
             <div class="uploader">
-                <input id="document_fiscal" type="text" class="field required <?= (isset($this->error_document_fiscal) && $this->error_document_fiscal == true ? 'LV_invalid_field' : '') ?>" readonly="readonly" value="<?= (empty($this->lenders_accounts->fichier_document_fiscal) ? $this->lng['etape2']['aucun-fichier-selectionne'] : $this->lenders_accounts->fichier_document_fiscal) ?>"/>
+                <input id="document_fiscal" type="text" class="field required <?= (isset($this->error_document_fiscal) && $this->error_document_fiscal == true ? 'LV_invalid_field' : '') ?>" readonly="readonly" value="<?= $this->lng['etape2']['aucun-fichier-selectionne'] ?>"/>
                 <div class="file-holder">
                     <span class="btn btn-small">
                        <?= $this->lng['etape2']['parcourir'] ?>
