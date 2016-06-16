@@ -21,9 +21,6 @@ ini_set('log_errors', 1);
 $kernel = new AppKernel('prod', false);
 $kernel->boot();
 
-$errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
-
 $config = $kernel->getContainer()->getParameter('image_resize');
 
 try {

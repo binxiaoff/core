@@ -17,7 +17,4 @@ header('X-Server: ' . exec('hostname'));
 $oKernel = new AppKernel('prod', false);
 $oKernel->boot();
 
-$errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
-
 $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'admin', $config);
