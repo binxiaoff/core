@@ -5,8 +5,8 @@ parameters:
     database_host:                  localhost
     database_port:                  ~
     database_name:                  unilend
-    database_user:                  root
-    database_password:              ROOTPASSWORD
+    database_user:                  unilend
+    database_password:              myPassw0rd
 
     mailjet.api_key:                ~
     mailjet.api_secret:             ~
@@ -34,9 +34,9 @@ parameters:
 
     router.request_context.scheme:  https
 
-    path.static:                    /srv/sites/unilend/public/default/
-    path.user:                      /srv/sites/unilend/public/default/var/
-    path.sftp:                      /srv/sites/unilend/protected/sftp/
-    path.payline:                   /srv/sites/unilend/librairies/payline/
+    path.static:                    /data/sites/unilend/public/default/
+    path.user:                      /data/medias/nfs/var/
+    path.sftp:                      /data/medias/nfs/sftp/
+    path.payline:                   /data/sites/unilend/librairies/payline/
 
     cms:                            iZicom

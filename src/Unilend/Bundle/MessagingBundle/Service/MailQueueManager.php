@@ -44,15 +44,14 @@ class MailQueueManager
         $oMailQueue                       = $this->oEntityManager->getRepository('mail_queue');
         $oMailQueue->id_mail_template     = $oMessage->getTemplateId();
         $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
-        $aRecipients                      = array_keys($oMessage->getTo());
-        $recipient                        = array_shift($aRecipients);
+        $recipients                       = TemplateMessage::recipientsString($oMessage->getTo());
         /** @var \clients $client */
         $client                           = $this->oEntityManager->getRepository('clients');
         // try to find client id
-        if ($client->get($recipient, 'email')) {
+        if (1 === count($oMessage->getTo()) && $client->get($recipients, 'email')) {
             $oMailQueue->id_client = $client->id_client;
         }
-        $oMailQueue->recipient  = $recipient;
+        $oMailQueue->recipient  = $recipients;
         $oMailQueue->status     = \mail_queue::STATUS_PENDING;
         $oMailQueue->to_send_at = $oMessage->getToSendAt();
         $oMailQueue->create();
@@ -77,7 +76,7 @@ class MailQueueManager
         }
         /** @var TemplateMessage $oMessage */
         $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
-        $oMessage->addTo($oEmail->recipient);
+        $oMessage->setTo(TemplateMessage::recipientsArray($oEmail->recipient));
         return $oMessage;
     }
 
@@ -136,5 +135,4 @@ class MailQueueManager
         $oMailQueue   = $this->oEntityManager->getRepository('mail_queue');
         return $oMailQueue->exist($iTemplateID, 'id_mail_template');
     }
-
 }

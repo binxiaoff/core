@@ -33,9 +33,6 @@ if ($bCacheFullPage) {
 $oKernel = new AppKernel('preprod', false);
 $oKernel->boot();
 
-$errorLogfile = $oKernel->getLogDir() . '/error.'. date('Ymd') .'.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
-
 $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
 
 if ($bCacheFullPage) {

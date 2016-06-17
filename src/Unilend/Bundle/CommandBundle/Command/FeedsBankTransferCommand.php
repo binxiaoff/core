@@ -184,7 +184,7 @@ class FeedsBankTransferCommand extends ContainerAwareCommand
 </Document>';
 
         if (false === empty($pendingBankTransfers)) {
-            file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/virements/Unilend_Virements_' . $date . '.xml', $xml);
+            file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/virements/Unilend_Virements_' . $date . '.xml', $xml);
         }
     }
 }

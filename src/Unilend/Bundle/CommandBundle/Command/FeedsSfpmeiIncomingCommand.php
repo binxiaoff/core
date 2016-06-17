@@ -62,7 +62,7 @@ EOF
         $aEmittedLeviesStatus  = array(23, 25, 'A1', 'B1');
         $aRejectedLeviesStatus = array(10, 27, 'A3', 'B3');
 
-        $sReceptionPath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/reception/';
+        $sReceptionPath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/receptions/';
         $sFileContent   = @file_get_contents($sReceptionPath . self::FILE_ROOT_NAME . date('Ymd') . '.txt');
 
         switch ($sFileContent) {

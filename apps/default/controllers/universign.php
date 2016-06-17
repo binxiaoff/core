@@ -81,7 +81,7 @@ class universignController extends bootstrap
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $variablesInternalMail, false);
-                        $message->setTo($destinataire);
+                        $message->setTo(explode(';', $destinataire));
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
 
@@ -152,7 +152,7 @@ class universignController extends bootstrap
 
                         /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
                         $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-pouvoir-mandat-signe', $variablesInternalMail, false);
-                        $message->setTo($destinataire);
+                        $message->setTo(explode(';', $destinataire));
                         $mailer = $this->get('mailer');
                         $mailer->send($message);
 
