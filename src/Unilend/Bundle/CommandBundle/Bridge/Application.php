@@ -74,8 +74,10 @@ class Application extends BaseApplication
         if (! $input->hasParameterOption(array('--multi-process', '-m'), false)) {
             $lock = new LockHandler($this->getCommandName($input));
             if (! $lock->lock()) {
-                $output->writeln('The command is already running in another process.');
-
+                /** @var ContainerBuilder $container */
+                $container = $this->kernel->getContainer();
+                $container->get('monolog.logger.console')->warning('The command ' . $this->getCommandName($input) . ' is already running in another process.');
+                $output->writeln('The command ' . $this->getCommandName($input) . ' is already running in another process.');
                 return 0;
             }
         }
