@@ -132,7 +132,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($client->email));
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $aReplacements);var_dump('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex);
+                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $aReplacements);
                                 $message->setTo($sRecipientEmail);
                                 $mailer = $this->getContainer()->get('mailer');
                                 $mailer->send($message);
