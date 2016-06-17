@@ -44,7 +44,7 @@ class MailQueueManager
         $oMailQueue                       = $this->oEntityManager->getRepository('mail_queue');
         $oMailQueue->id_mail_template     = $oMessage->getTemplateId();
         $oMailQueue->serialized_variables = json_encode($oMessage->getVariables());
-        $recipients                       = $this->recipientsToString($oMessage->getTo());
+        $recipients                       = TemplateMessage::recipientsString($oMessage->getTo());
         /** @var \clients $client */
         $client                           = $this->oEntityManager->getRepository('clients');
         // try to find client id
@@ -76,7 +76,7 @@ class MailQueueManager
         }
         /** @var TemplateMessage $oMessage */
         $oMessage = $this->oTemplateMessage->newMessage($oMailTemplate->type, json_decode($oEmail->serialized_variables, true), false);
-        $oMessage->setTo($this->recipientsToArray($oEmail->recipient));
+        $oMessage->setTo(TemplateMessage::recipientsArray($oEmail->recipient));
         return $oMessage;
     }
 
@@ -134,47 +134,5 @@ class MailQueueManager
         /** @var \mail_queue $oMailQueue */
         $oMailQueue   = $this->oEntityManager->getRepository('mail_queue');
         return $oMailQueue->exist($iTemplateID, 'id_mail_template');
-    }
-
-    /**
-     * @param array $recipients
-     *
-     * @return string
-     */
-    private function recipientsToString(array $recipients)
-    {
-        $recipientsFormatted = '';
-        foreach ($recipients as $email => $name) {
-            if ($recipientsFormatted) {
-                $recipientsFormatted .= ', ';
-            }
-            if ($name) {
-                $recipientsFormatted .= $name . ' <' . $email . '>';
-            } else {
-                $recipientsFormatted .= $email;
-            }
-        }
-
-        return $recipientsFormatted;
-    }
-
-    /**
-     * @param string $recipients
-     *
-     * @return array
-     */
-    private function recipientsToArray($recipients)
-    {
-        $recipientsFormatted = '';
-        $recipients = explode(',', $recipients);
-        foreach ($recipients as $recipient) {
-            if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $recipient, $matches)) {
-                $recipientsFormatted[$matches['email']] = $matches['name'];
-            } else {
-                $recipientsFormatted[] = $recipient;
-            }
-        }
-        
-        return $recipientsFormatted;
     }
 }
