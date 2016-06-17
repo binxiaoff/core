@@ -210,7 +210,7 @@ class pdfController extends bootstrap
                 }
 
                 if (\clients_mandats::STATUS_SIGNED == $aMandat['status']) {
-                    $this->ReadPdf($aMandat['name'], $sNamePdfClient);
+                    $this->ReadPdf($sPath . $aMandat['name'], $sNamePdfClient);
                     die;
                 }
 
