@@ -29,7 +29,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function svgImageFunction($sId, $sTitle, $iWidth, $iHeight, $sSizing = null)
     {
-        $sUrl        = $this->sUrl . '/frontbundle/media/svg/icons.svg'; //TODO change place according to asset management
+        $sUrl        = $this->sUrl . '/bundles/unilendfront/images/svg/icons.svg';
         $sSvgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"';
 
         // Supported sizing sizes, using preserveAspectRatio
@@ -73,7 +73,7 @@ class FrontBundleExtension extends \Twig_Extension
 
     public function siteurlmediaFunction($sPath)
     {
-        return $this->sUrl . '/frontbundle/media/' . $sPath;
+        return $this->sUrl . '/bundles/unilendfront/images/' . $sPath;
     }
 
     public function canUseSvg()
