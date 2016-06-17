@@ -54,7 +54,7 @@ class Application extends BaseApplication
     public function doRun(InputInterface $input, OutputInterface $output)
     {
         $this->kernel->boot();
-        
+
         if (! $this->commandsRegistered) {
             $this->registerCommands();
 
@@ -72,7 +72,7 @@ class Application extends BaseApplication
         $this->setDispatcher($container->get('event_dispatcher'));
 
         if (! $input->hasParameterOption(array('--multi-process', '-m'), false)) {
-            $lock = new LockHandler($this->getName());
+            $lock = new LockHandler($this->getCommandName($input));
             if (! $lock->lock()) {
                 $output->writeln('The command is already running in another process.');
 
