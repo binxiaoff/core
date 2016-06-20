@@ -42,11 +42,11 @@
 {# @macro projectCategoryIcon #}
 {# @param {Int} categoryId The ID of the projectCategory to refer to #}
 {# @param {Array} projectCategories The array containing the projectCategory objects to reference (optional) #}
-{% macro projectCategoryIcon(categoryId, projectCategories) %}
+{# macro projectCategoryIcon(categoryId, projectCategories) #}
 
   {# If can't get the projectCategories from the root scope, refer to these #}
-  {% if projectCategories is empty %}
-    {% set projectCategories = [{
+  {# if projectCategories is empty #}
+    {# set projectCategories = [{
       name: "none",
       label: "No category",
       description: ""
@@ -110,15 +110,22 @@
       name: "autre",
       label: "Autre",
       description: ""
-    }] %}
-  {% endif %}
+    }] #}
+  {# endif #}
 
   {# Output an SVG image which coincides with the projectCategory #}
-  {% set projectCategory = projectCategories[categoryId] %}
-  {% if projectCategory is not empty %}
-  {{ svgimage('#category-' ~ projectCategory.name, projectCategory.label, 160, 160) | raw }}
-  {% else %}
-  <span class="icon fa-question-circle" title="Incorrect category ID given"></span><span class="sr-only">Incorrect category ID given</span>
+  {# set projectCategory = projectCategories[categoryId] #}
+  {# if projectCategory is not empty #}
+
+{% macro projectCategoryIcon(categoryId, projectCategories) %}
+    {% set projectCategory = getCategories()|keys %}
+      {% if projectCategory is not empty %}
+        {% set categorie = projectCategory[categoryId-1] %}
+
+
+        {{ svgimage('#category-' ~ categorie, '', 160, 160) | raw }}
+      {% else %}
+      <span class="icon fa-question-circle" title="Incorrect category ID given"></span><span class="sr-only">Incorrect category ID given</span>
   {% endif %}
 {% endmacro %}
 
