@@ -26,7 +26,7 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/reception/' . self::FILE_ROOT_NAME . date('Ymd') . '.txt';
+        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/receptions/' . self::FILE_ROOT_NAME . date('Ymd') . '.txt';
         if (false === file_exists($sFilePath)) {
             $this->sendMissingReceptionFileMail();
         }

@@ -807,7 +807,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             </tr>
         </table>';
 
-        file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls', $tableau);
+        file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls', $tableau);
 
         /** @var \settings $oSettings */
         $oSettings = $entityManager->getRepository('settings');
@@ -817,7 +817,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', [], false);
         $message
             ->setTo(explode(';', trim($oSettings->value)))
-            ->attach(\Swift_Attachment::fromPath($this->getContainer()->getParameter('path.sftp') . 'sfpmei/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls'));
+            ->attach(\Swift_Attachment::fromPath($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls'));
 
         /** @var \Swift_Mailer $mailer */
         $mailer = $this->getContainer()->get('mailer');

@@ -98,8 +98,8 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
         $sftpPath      = $this->getContainer()->getParameter('path.sftp');
         $dayFileName   = 'echeances_' . $previousDay->format('Ymd') . '.csv';
         $monthFileName = 'echeances_' . $previousDay->format('Ym') . '.csv';
-        $dayFilePath   = $sftpPath . 'sfpmei/etat_fiscal/' . $previousDay->format('Ym');
-        $monthFilePath = $sftpPath . 'sfpmei/etat_fiscal/';
+        $dayFilePath   = $sftpPath . 'sfpmei/emissions/etat_fiscal/' . $previousDay->format('Ym');
+        $monthFilePath = $sftpPath . 'sfpmei/emissions/etat_fiscal/';
 
         if (false === is_dir($dayFilePath)) {
             mkdir($dayFilePath);

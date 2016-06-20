@@ -52,13 +52,17 @@ monolog:
             type: rotating_file
             path: "%kernel.logs_dir%/%kernel.environment%.log"
             level: info
-            max_files: 10
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Ymd'
             channels: ['!console']
         console:
-            type: stream
+            type: rotating_file
             path: "%kernel.logs_dir%/console-%kernel.environment%.log"
             level: info
-            max_files: 10
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Ymd'
             channels: [console]
 
 
