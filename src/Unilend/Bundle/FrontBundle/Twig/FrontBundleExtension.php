@@ -71,7 +71,7 @@ class FrontBundleExtension extends \Twig_Extension
         return $sTranslations;
     }
 
-    public function siteurlmediaFunction($sPath)
+    public function completeUrlMediaFunction($sPath)
     {
         return $this->sUrl . '/bundles/unilendfront/images/' . $sPath;
     }
@@ -99,7 +99,7 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('route', array($this, 'routeFunction')),
             new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
-            new \Twig_SimpleFunction('siteurlmedia', array($this, 'siteurlmediaFunction')),
+            new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
             new \Twig_SimpleFunction('caniuse_svg', array($this, 'canUseSvg')),
             new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
             new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg'))
