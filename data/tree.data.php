@@ -1490,7 +1490,7 @@ class tree extends tree_crud
 
         while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
             $result[$recordProjects['slug']] = array(
-                'slug'  => '/projects/detail/' . $recordProjects['slug'],
+                'slug'  => 'projects/detail/' . $recordProjects['slug'],
                 'title' => $recordProjects['title']
             );
         }
