@@ -952,10 +952,7 @@ class MailerManager
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
                     }
-
                 }
-
-                $this->oMailText->get('preteur-contrat', 'lang = "' . $this->sLanguage . '" AND type');
 
                 $sTimeAdd = strtotime($sDateFirstPayment);
                 $sMonth   = $this->oDate->tableauMois['fr'][date('n', $sTimeAdd)];
