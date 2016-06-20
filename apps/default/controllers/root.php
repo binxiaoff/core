@@ -605,6 +605,7 @@ class rootController extends bootstrap
         $this->autoFireDebug  = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+        $this->autoFireView   = false;
 
         $this->users = $this->loadData('users');
 
