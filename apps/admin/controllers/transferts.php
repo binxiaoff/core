@@ -1207,9 +1207,6 @@ class transfertsController extends bootstrap
             $clients = $this->loadData('clients');
             $clients->get($companies->id_client_owner, 'id_client');
 
-            $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
-            $proxy->update();
-
             /** @var LoggerInterface $logger */
             $logger = $this->get('logger');
             $logger->info('Checking refund status (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
@@ -1219,6 +1216,9 @@ class transfertsController extends bootstrap
 
             if ($paymentInspectionStopped->value == 1) {
                 ini_set('memory_limit', '512M');
+
+                $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
+                $proxy->update();
 
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager = $this->get('unilend.service.project_manager');

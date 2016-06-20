@@ -834,8 +834,6 @@ class MailerManager
      */
     public function sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban)
     {
-        $this->oMailText->get('uninotification-modification-iban-bo', 'lang = "' . $this->sLanguage . '" AND type');
-
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         $oLenderAccount->get($iClientId, 'id_client_owner');
@@ -954,10 +952,7 @@ class MailerManager
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
                     }
-
                 }
-
-                $this->oMailText->get('preteur-contrat', 'lang = "' . $this->sLanguage . '" AND type');
 
                 $sTimeAdd = strtotime($sDateFirstPayment);
                 $sMonth   = $this->oDate->tableauMois['fr'][date('n', $sTimeAdd)];

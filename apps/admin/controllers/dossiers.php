@@ -1936,7 +1936,7 @@ class dossiersController extends bootstrap
             // Early repayment
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception        = $_POST['id_reception'];
-                $montant_crd_preteur = (int) ($_POST['montant_crd_preteur'] * 100);
+                $montant_crd_preteur = bcmul($_POST['montant_crd_preteur'] * 100);
 
                 $this->projects                      = $this->loadData('projects');
                 $this->echeanciers                   = $this->loadData('echeanciers');
@@ -1995,7 +1995,7 @@ class dossiersController extends bootstrap
 
                         // On enregistre la transaction
                         $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                        $this->transactions->montant          = ($reste_a_payer_pour_preteur * 100);
+                        $this->transactions->montant          = bcmul($reste_a_payer_pour_preteur, 100);
                         $this->transactions->id_echeancier    = 0; // pas d'id_echeance car multiple
                         $this->transactions->id_loan_remb     = $preteur['id_loan']; // <-------------- on met ici pour retrouver la jointure
                         $this->transactions->id_project       = $this->projects->id_project;
@@ -2015,7 +2015,7 @@ class dossiersController extends bootstrap
                         $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                         $this->wallets_lines->status                   = 1; // non utilisé
                         $this->wallets_lines->type                     = 2; // transaction virtuelle
-                        $this->wallets_lines->amount                   = ($reste_a_payer_pour_preteur * 100);
+                        $this->wallets_lines->amount                   = bcmul($reste_a_payer_pour_preteur, 100);
                         $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
 
                         $montant_total += $reste_a_payer_pour_preteur;
@@ -2038,7 +2038,7 @@ class dossiersController extends bootstrap
                         $this->transactions->montant                  = 0;
                         $this->transactions->id_echeancier            = 0; // on reinitialise
                         $this->transactions->id_client                = 0; // on reinitialise
-                        $this->transactions->montant_unilend          = '-' . $montant_total * 100;
+                        $this->transactions->montant_unilend          = bcmul($montant_total, -100);
                         $this->transactions->montant_etat             = 0 * 100; // pas d'argent pour l'état
                         $this->transactions->id_echeancier_emprunteur = 0; // pas d'echeance emprunteur
                         $this->transactions->id_langue                = 'fr';
@@ -2055,7 +2055,7 @@ class dossiersController extends bootstrap
                         // bank_unilend (on retire l'argent redistribué)
                         $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
                         $this->bank_unilend->id_project             = $this->projects->id_project;
-                        $this->bank_unilend->montant                = '-' . $montant_total * 100;
+                        $this->bank_unilend->montant                = bcmul($montant_total, -100);
                         $this->bank_unilend->etat                   = 0; // pas d'argent pour l'état
                         $this->bank_unilend->type                   = 2; // remb unilend
                         $this->bank_unilend->id_echeance_emprunteur = 0; // pas d'echeance emprunteur
