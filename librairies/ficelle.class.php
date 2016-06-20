@@ -145,70 +145,6 @@ class ficelle
         return $array;
     }
 
-
-    // fonction qui check la complexité d'un mot de passe
-    // 10 caractères mini / 1 chiffre / 1 caractère spécial
-    public function password_bo($mdp)    // $mdp le mot de passe passé en paramètre
-    {
-        $point_min        = 0;
-        $point_maj        = 0;
-        $point            = 0;
-        $point_chiffre    = 0;
-        $point_caracteres = 0;
-
-        // On récupère la longueur du mot de passe
-        $longueur = strlen($mdp);
-
-        // On fait une boucle pour lire chaque lettre
-        for ($i = 0; $i < $longueur; $i++) {
-
-            // On sélectionne une à une chaque lettre
-            // $i étant à 0 lors du premier passage de la boucle
-            $lettre = $mdp[$i];
-
-            if ($lettre >= 'a' && $lettre <= 'z') {
-                // On ajoute 1 point pour une minuscule
-                $point = $point + 1;
-
-                // On rajoute le bonus pour une minuscule
-                $point_min = 1;
-            } else {
-                if ($lettre >= 'A' && $lettre <= 'Z') {
-                    // On ajoute 2 points pour une majuscule
-                    $point = $point + 2;
-
-                    // On rajoute le bonus pour une majuscule
-                    $point_maj = 2;
-                } else {
-                    if ($lettre >= '0' && $lettre <= '9') {
-                        // On ajoute 3 points pour un chiffre
-                        $point = $point + 3;
-
-                        // On rajoute le bonus pour un chiffre
-                        $point_chiffre = 3;
-                    } else {
-                        // On ajoute 5 points pour un caractère autre
-                        $point = $point + 5;
-
-                        // On rajoute le bonus pour un caractère autre
-                        $point_caracteres = 5;
-                    }
-                }
-            }
-        }
-
-        // on vérifie que l'on a bien tout les critères nécessaires pour valider le pass
-        /* Au moins 10 caratères, 1 chiffre et 1 caractère spécial */
-        $valid = false;
-        if ($longueur >= 10 && $point_caracteres == 5 && $point_chiffre == 3) {
-            $valid = true;
-        }
-
-
-        return $valid;
-
-    }
-
     //fonction qui check la complexité d'un mot de passe
     public function testpassword($mdp)    // $mdp le mot de passe passé en paramètre
     {
@@ -452,6 +388,20 @@ class ficelle
     public function isMobilePhoneNumber($sPhoneNumber, $sCountry)
     {
         if ('fr' === $sCountry && 1 === preg_match('/(\+33|0033|0)[6-7][0-9]{8}/', str_replace(array(' ', '.', ','), '', $sPhoneNumber))) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Returns true if password contains at least 10 characters
+     * including digits, lower, upper case and special characters
+     * @param $sPassword
+     * @return bool
+     */
+    public function verifyBOPasswordStrength($sPassword)
+    {
+        if (1 === preg_match('/(?=.*[A-Z])(?=.*[$&+,:;=?@#|\'<>.^_*()%!-])(?=.*[a-z])(?=.*\d).{10,}/', $sPassword)) {
             return true;
         }
         return false;

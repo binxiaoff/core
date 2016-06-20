@@ -144,21 +144,13 @@ class rootController extends bootstrap
             $this->retour_pass = '';
             if ($_POST['old_pass'] == '' || $_POST['new_pass'] == '' || $_POST['new_pass2'] == '') {
                 $this->retour_pass = "Tous les champs sont obligatoires";
-            }
-
-            if ($this->users->password != md5($_POST['old_pass']) && $this->users->password != password_verify($_POST['old_pass'], $this->users->password)) {
+            } elseif ($this->users->password != md5($_POST['old_pass']) && $this->users->password != password_verify($_POST['old_pass'], $this->users->password)) {
                 $this->retour_pass = "L'ancien mot de passe ne correspond pas";
-            }
-
-            if (false == $this->ficelle->password_bo($_POST['new_pass'], 10, true)) {
+            } elseif (false == $this->ficelle->verifyBOPasswordStrength($_POST['new_pass'])) {
                 $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et un caract&egrave;re sp&eacute;cial";
-            }
-
-            if (true === $previousPasswords->passwordUsed($_POST['old_pass'], $this->users->id_user)) {
+            } elseif (true === $previousPasswords->passwordUsed($_POST['new_pass'], $this->users->id_user)) {
                 $this->retour_pass = "Ce mot de passe a d&eacute;ja &eacute;t&eacute; utilis&eacute; !";
-            }
-
-            if ($_POST['new_pass'] == $_POST['new_pass2']) {
+            } elseif ($_POST['new_pass'] == $_POST['new_pass2']) {
                 $this->users->changePassword($_POST['new_pass'], $this->users, false);
 
                 $_SESSION['user']['password']        = $this->users->password;

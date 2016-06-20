@@ -178,7 +178,7 @@ class usersController extends bootstrap
                 $this->retour_pass = "Tous les champs sont obligatoires";
             } elseif ($this->users->password != md5($_POST['old_pass']) && $this->users->password != password_verify($_POST['old_pass'], $this->users->password)) {
                 $this->retour_pass = "L'ancien mot de passe ne correspond pas";
-            } elseif (false === $this->ficelle->password_fo($_POST['new_pass'], 10, true)) {
+            } elseif (false === $this->ficelle->verifyBOPasswordStrength($_POST['new_pass'])) {
                 $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et 1 caract&egrave;re sp&eacute;cial";
             } elseif ($_POST['new_pass'] != $_POST['new_pass2']) {
                 $this->retour_pass = "La confirmation du nouveau de passe doit &ecirc;tre la m&ecirc;me que votre nouveau mot de passe";
