@@ -76,7 +76,7 @@ monolog:
         filter_console:
             type: filter
             handler: console
-            max_level: WARNING
+            max_level: warning
             channels: console
         console_handler:
             type: group
@@ -98,7 +98,7 @@ monolog:
         filter_site:
             type: filter
             handler: site
-            max_level: WARNING
+            max_level: warning
             channels: !console
         site_handler:
             type: rotating_file
