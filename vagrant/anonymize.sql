@@ -40,6 +40,12 @@ UPDATE prospects SET
   email = CONCAT('prospect', id_prospect, '@devunilend.fr')
 WHERE email NOT LIKE '%@unilend.fr';
 
-UPDATE companies SET email_facture = CONCAT('company', id_company, '@devunilend.fr') WHERE email_facture NOT LIKE '%@unilend.fr';
+UPDATE companies SET
+  email_facture = CONCAT('company', id_company, '@devunilend.fr'),
+  adresse1 = CONCAT(id_company, ', Rue du ', id_company),
+  zip = SUBSTRING(CONCAT(id_company, '12345'), 1, 5),
+  city = CONCAT('Ville ', id_company),
+  phone = IF(phone = '', '', CONCAT(SUBSTRING('0100000000', 1, 10 - LENGTH(id_company)), id_company))
+WHERE email_facture NOT LIKE '%@unilend.fr';
 
 UPDATE attachment SET path = CONCAT(type_owner, '-', id_owner, '-', id_type, IF(path REGEXP '\.[a-zA-Z0-9]{3}', SUBSTRING(path, -4), IF(path REGEXP '\.[a-zA-Z0-9]{4}', SUBSTRING(path, -5), 'ext')));

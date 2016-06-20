@@ -189,9 +189,11 @@ class MailerManager
         /** @var \clients $oBorrower */
         $oBorrower = $this->oEntityManager->getRepository('clients');
 
-        // EMAIL EMPRUNTEUR FUNDE //
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('Project funded - sending email to borrower. id_project=' . $oProject->id_project, array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info(
+                'Project funded - sending email to borrower (project ' . $oProject->id_project . ')',
+                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+            );
         }
 
         $this->oSettings->get('Heure fin periode funding', 'type');
@@ -312,8 +314,10 @@ class MailerManager
             $this->mailer->send($message);
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('Email emprunteur-dossier-funde-et-termine sent. id_project=' . $oProject->id_project,
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info(
+                    'Email emprunteur-dossier-funde-et-termine sent (project ' . $oProject->id_project . ')',
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                );
             }
         }
     }
@@ -375,9 +379,12 @@ class MailerManager
         $aLendersIds       = $oLoan->getProjectLoansByLender($oProject->id_project);
         $iNbLenders        = count($aLendersIds);
         $iNbTreatedLenders = 0;
+
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info($iNbLenders . ' lenders to send email for. id_project=' . $oProject->id_project,
-                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info(
+                $iNbLenders . ' lenders to send email (project ' . $oProject->id_project . ')',
+                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+            );
         }
 
         foreach ($aLendersIds as $aLenderId) {
@@ -466,14 +473,20 @@ class MailerManager
                 $this->mailer->send($message);
 
                 if ($this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info('id_project=' . $oProject->id_project . ' - Email preteur-bid-ok sent for lender (' . $oLenderAccount->id_lender_account . ')',
-                        array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->oLogger->info(
+                        'Email preteur-bid-ok sent for lender ' . $oLenderAccount->id_lender_account . ' (project ' . $oProject->id_project . ')',
+                        array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                    );
                 }
             }
+
             $iNbTreatedLenders++;
+
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' - Loan notification email sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lender',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info(
+                    'Loan notification emails sent to ' . $iNbTreatedLenders . '/' . $iNbLenders . ' lenders  (project ' . $oProject->id_project . ')',
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                );
             }
         }
     }
@@ -591,8 +604,10 @@ class MailerManager
             $this->mailer->send($message);
 
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : email emprunteur-dossier-funding-ko sent',
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info(
+                    'Email emprunteur-dossier-funding-ko sent (project ' . $oProject->id_project . ')',
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
+                );
             }
         }
     }
@@ -621,7 +636,7 @@ class MailerManager
         }
 
         $iLendersNb = $oLoan->getNbPreteurs($oProject->id_project);
-        $this->oMailTemplate->get('notification-projet-fini', 'lang = "' . $this->sLanguage . '" AND type');
+        $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->sLanguage . '" AND type');
 
         $varMail = array(
             '$surl'         => $this->sSUrl,
@@ -819,8 +834,6 @@ class MailerManager
      */
     public function sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban)
     {
-        $this->oMailText->get('uninotification-modification-iban-bo', 'lang = "' . $this->sLanguage . '" AND type');
-
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         $oLenderAccount->get($iClientId, 'id_client_owner');
@@ -939,10 +952,7 @@ class MailerManager
                         $clientMailNotifications->immediatement = 1;
                         $clientMailNotifications->update();
                     }
-
                 }
-
-                $this->oMailText->get('preteur-contrat', 'lang = "' . $this->sLanguage . '" AND type');
 
                 $sTimeAdd = strtotime($sDateFirstPayment);
                 $sMonth   = $this->oDate->tableauMois['fr'][date('n', $sTimeAdd)];
@@ -1024,6 +1034,7 @@ class MailerManager
             $this->oLogger->debug('New projects notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
             $this->oLogger->debug('Number of customers to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
+
         /** @var \clients $oCustomer */
         $oCustomer = $this->oEntityManager->getRepository('clients');
         /** @var \projects $oProject */
@@ -1063,8 +1074,6 @@ class MailerManager
 
             foreach ($aCustomerMailNotifications as $iCustomerId => $aMailNotifications) {
                 try {
-                    $oCustomer->get($iCustomerId);
-
                     $sProjectsListHTML = '';
                     $iProjectsCount    = count($aMailNotifications);
 
@@ -1076,61 +1085,75 @@ class MailerManager
 
                         $oProject->get($aMailNotification['id_project']);
 
-                        $sProjectsListHTML .= '
-                        <tr style="color:#b20066;">
-                            <td  style="font-family:Arial;font-size:14px;height: 25px;">
-                               <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->sFUrl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
-                            </td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $this->oFicelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
-                            <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
-                        </tr>';
+                        $oProject->get($aMailNotification['id_project']);
+
+                        /** @var \projects_status $oProjectStatus */
+                        $oProjectStatus = $this->loadData('projects_status');
+                        $oProjectStatus->getLastStatut($oProject->id_project);
+
+                        if (\projects_status::EN_FUNDING == $oProjectStatus->status) {
+                            $sProjectsListHTML .= '
+                                <tr style="color:#b20066;">
+                                    <td  style="font-family:Arial;font-size:14px;height: 25px;">
+                                       <a style="color:#b20066;text-decoration:none;font-family:Arial;" href="' . $this->lurl . '/projects/detail/' . $oProject->slug . '">' . $oProject->title . '</a>
+                                    </td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $this->ficelle->formatNumber($oProject->amount, 0) . '&nbsp;&euro;</td>
+                                    <td align="right" style="font-family:Arial;font-size:14px;">' . $oProject->period . ' mois</td>
+                                </tr>';
+                            $iProjectsCount += 1;
+                        }
                     }
 
-                    if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
-                    } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
-                    } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
-                    } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
-                        $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
-                        $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
-                    } else {
-                        trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
-                        continue;
+                    if ($iProjectsCount >= 1) {
+                        $oCustomer->get($iCustomerId);
+
+                        if (1 === $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-singulier'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-singulier'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-singulier'];
+                        } elseif (1 < $iProjectsCount && 'quotidienne' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-du-jour-pluriel'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-du-jour-pluriel'];
+                        } elseif (1 === $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-singulier'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-singulier'];
+                        } elseif (1 < $iProjectsCount && 'hebdomadaire' === $sFrequency) {
+                            $sContent = $aTranslations['email-synthese']['contenu-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sObject  = $aTranslations['email-synthese']['objet-synthese-nouveau-projet-hebdomadaire-pluriel'];
+                            $sSubject = $aTranslations['email-synthese']['sujet-nouveau-projet-hebdomadaire-pluriel'];
+                        } else {
+                            trigger_error('Frequency and number of projects not handled: ' . $sFrequency . ' / ' . $iProjectsCount, E_USER_WARNING);
+                            continue;
+                        }
+
+                        $aReplacements = [
+                            'surl'            => $this->sSUrl,
+                            'url'             => $this->sFUrl,
+                            'prenom_p'        => $oCustomer->prenom,
+                            'liste_projets'   => $sProjectsListHTML,
+                            'projet-p'        => $this->sFUrl . '/projets-a-financer',
+                            'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
+                            'gestion_alertes' => $this->sFUrl . '/profile',
+                            'contenu'         => $sContent,
+                            'objet'           => $sObject,
+                            'sujet'           => $sSubject,
+                            'lien_fb'         => $this->getFacebookLink(),
+                            'lien_tw'         => $this->getTwitterLink()
+                        ];
+
+                        /** @var TemplateMessage $message */
+                        $message = $this->messageProvider->newMessage($sMail, $aReplacements);
+                        $message->setTo($oCustomer->email);
+                            $this->mailer->send($message);
                     }
-
-                    $aReplacements = array(
-                        'surl'            => $this->sSUrl,
-                        'url'             => $this->sFUrl,
-                        'prenom_p'        => $oCustomer->prenom,
-                        'liste_projets'   => $sProjectsListHTML,
-                        'projet-p'        => $this->sFUrl . '/projets-a-financer',
-                        'motif_virement'  => $oCustomer->getLenderPattern($oCustomer->id_client),
-                        'gestion_alertes' => $this->sFUrl . '/profile',
-                        'contenu'         => $sContent,
-                        'objet'           => $sObject,
-                        'sujet'           => $sSubject,
-                        'lien_fb'         => $this->getFacebookLink(),
-                        'lien_tw'         => $this->getTwitterLink()
-                    );
-
-                    /** @var TemplateMessage $message */
-                    $message = $this->messageProvider->newMessage($sMail, $aReplacements);
-                    $message->setTo($oCustomer->email);
-                    $this->mailer->send($message);
-
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send new projects summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1265,8 +1288,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send placed bids summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1288,6 +1313,7 @@ class MailerManager
             $this->oLogger->debug('Rejected bids notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
             $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
+
         /** @var \bids $oBid */
         $oBid = $this->oEntityManager->getRepository('bids');
         /** @var \clients $oCustomer */
@@ -1400,8 +1426,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send rejected bids summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1423,6 +1451,7 @@ class MailerManager
             $this->oLogger->debug('Accepted loans notifications start', array('class' => __CLASS__, 'function' => __FUNCTION__));
             $this->oLogger->debug('Number of customer to process: ' . count($aCustomerId), array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
+
         /** @var \clients $oCustomer */
         $oCustomer = $this->oEntityManager->getRepository('clients');
         /** @var \lenders_accounts $oLender */
@@ -1573,8 +1602,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email for customer ' . $iCustomerId . ' -Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not send accepted loan summary email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }
@@ -1769,8 +1800,10 @@ class MailerManager
 
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
-                        $this->oLogger->error('Could not send email to customer ' . $iCustomerId . ' - Exception message: ' . $oException->getMessage(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__));
+                        $this->oLogger->error(
+                            'Could not repayments summary send email for customer ' . $iCustomerId . ' - Message: ' . $oException->getMessage(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__)
+                        );
                     }
                 }
             }

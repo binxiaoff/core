@@ -25,12 +25,12 @@
                     <div><span></span></div>
                 </div>
             </div>
-            <?php if (false === in_array($this->lurl, array('http://prets-entreprises-unilend.capital.fr', $this->lurl == 'http://partenaire.unilend.challenges.fr'))) { ?>
+            <?php if (false === in_array($this->lurl, array('http://prets-entreprises-unilend.capital.fr', 'http://partenaire.unilend.challenges.fr'))) { ?>
                 <div class="widget-cat" style="padding-top:25px;">
                     <i class="plusmoins" id="close-seconnecter"></i>
                     <div class="seconnecter" <?= (isset($_POST['project_detail']) ? 'style="display:block"' : '') ?> >
                         <div style="display:none" class="seconnecteropen"><?= (isset($_POST['project_detail']) ? 'true' : 'false') ?></div>
-                        <form target="_parent" method="post" action="<?= $this->url_form ?>/projects/detail/<?= $this->params[0] ?>" name="projectseconnecter" id="projectseconnecter">
+                        <form target="_parent" method="post" action="<?= $this->url ?>/projects/detail/<?= $this->params[0] ?>" name="projectseconnecter" id="projectseconnecter">
                             <div class="row">
                                 <input class="field field-medium" type="text" placeholder="<?= $this->lng['header']['identifiant'] ?>" name="login" autocomplete="off">
                             </div>
@@ -107,7 +107,7 @@
             <div class="widget-cat" style="padding-top:25px;">
                 <i class="plusmoins" id="close-sinscrire"></i>
                 <div class="sinscrire"<?= (empty($this->retour_form) ? '' : 'style="display:block;"') ?> >
-                    <form target="_parent" method="post" action="<?= $this->url_form ?>/projects/detail/<?= $this->params[0] ?><?= $this->utm_source ?>" name="projectsinscrire" id="projectsinscrire">
+                    <form target="_parent" method="post" action="<?= $this->url ?>/projects/detail/<?= $this->params[0] ?><?= $this->utm_source ?>" name="projectsinscrire" id="projectsinscrire">
                         <div style="display:none" class="sinscrireopen"><?= (empty($this->retour_form) ? 'false' : 'true') ?></div>
                         <div class="row">
                             <input class="field field-medium required" type="text" value="<?= (isset($_POST['nom']) ? $_POST['nom'] : '') ?>" placeholder="<?= $this->lng['landing-page']['nom'] ?>" name="nom" id="signup-first-name" data-validators="Presence&amp;Format,{  pattern:/^([^0-9]*)$/}">

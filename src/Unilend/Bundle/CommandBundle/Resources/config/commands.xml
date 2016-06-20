@@ -22,7 +22,10 @@
         <service id="unilend.command.projects.early_refund_email" class="Unilend\Bundle\CommandBundle\Command\ProjectsEarlyRefundEmailCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.projects_pre_publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPrePublishCommand">
+        <service id="unilend.command.projects.pre_publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPrePublishCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.project.publish" class="Unilend\Bundle\CommandBundle\Command\ProjectsPublishCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.feeds.bpi" class="Unilend\Bundle\CommandBundle\Command\FeedsBPICommand">
@@ -39,7 +42,6 @@
         </service>
         <service id="unilend.command.feeds.daily_state" class="Unilend\Bundle\CommandBundle\Command\FeedsDailyStateCommand">
             <tag name="console.command"/>
-            <argument>%path.sftp%</argument>
         </service>
         <service id="unilend.command.feeds.month_repayments" class="Unilend\Bundle\CommandBundle\Command\FeedsMonthRepaymentsCommand">
             <tag name="console.command"/>
@@ -59,13 +61,7 @@
         <service id="unilend.command.email_lender_repayment_mail" class="Unilend\Bundle\CommandBundle\Command\EmailLenderAutomaticRepaymentCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.email_lender_daily_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderDailySummaryCommand">
-            <tag name="console.command"/>
-        </service>
-        <service id="unilend.command.email_lender_weekly_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderWeeklySummaryCommand">
-            <tag name="console.command"/>
-        </service>
-        <service id="unilend.command.email_lender_monthly_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderMonthlySummaryCommand">
+        <service id="unilend.command.email_lender_summary" class="Unilend\Bundle\CommandBundle\Command\EmailLenderSummaryCommand">
             <tag name="console.command"/>
         </service>
         <service id="unilend.command.email_borrower_upcoming_repayment" class="Unilend\Bundle\CommandBundle\Command\EmailBorrowerUpcomingRepaymentCommand">
@@ -104,7 +100,10 @@
         <service id="unilend.command.check_lender_repayment" class="Unilend\Bundle\CommandBundle\Command\CheckLendersRepaymentCommand">
             <tag name="console.command"/>
         </service>
-        <service id="unilend.command.project_publish" class="Unilend\Bundle\CommandBundle\Command\CheckProjectToFundCommand">
+        <service id="unilend.command.greenpoint_validation" class="Unilend\Bundle\CommandBundle\Command\GreenPointValidationCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="unilend.command.generate_crud" class="Unilend\Bundle\CommandBundle\Command\GenerateCrudCommand">
             <tag name="console.command"/>
         </service>
     </services>

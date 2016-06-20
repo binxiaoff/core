@@ -1,10 +1,22 @@
 parameters:
     database_driver:                pdo_mysql
+
+    # Begin of parameters managed also by Ansible in parameters_extended.yml
     database_host:                  localhost
     database_port:                  ~
     database_name:                  unilend
-    database_user:                  root
-    database_password:              ROOTPASSWORD
+    database_user:                  unilend
+    database_password:              myPassw0rd
+
+    mailjet.api_key:                ~
+    mailjet.api_secret:             ~
+    mailer_transport:               mail # mailjet for prod, mail for the rest of the environments
+
+    url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
+    url.host_admin:                 'dev.admin.unilend.fr' # for Front to know the url BO
+    url.host_default:               'dev.www.unilend.fr' # for BO to know the url Front
+    # End of parameters managed also by Ansible
+
     dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
     dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
 
@@ -14,25 +26,17 @@ parameters:
     server1.memcache_host:          127.0.0.1
     server1.memcache_port:          11211
 
-    mailer_transport:               mail #use mailjet en prod
-
-    mailjet.api_key:                9968d5b7419c2d4edf7c00f32f629f8a
-    mailjet.api_secret:             579bc26d8656f837ca8dcdcc6739da95
-
-    url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
-    url.host_admin:                 'dev.admin.unilend.fr' # for Front to know the url BO
-    url.host_front:                 'dev.www.unilend.fr' # for BO to know the url Front
-
     image_resize:
         projets:
             authorized: [72, 169] # Authorized heights
             height: 1365          #  Source image maximum height
             width: 2048           #  Source image maximum width
 
-    router.request_context.host:    dev.www.unilend.fr
     router.request_context.scheme:  https
 
-    path.static:                    /srv/sites/unilend/public/default/
-    path.user:                      /srv/sites/unilend/public/default/var/
-    path.sftp:                      /srv/sites/unilend/protected/sftp/
-    path.payline:                   /srv/sites/unilend/protected/payline/
+    path.static:                    /data/sites/unilend/public/default/
+    path.user:                      /data/medias/nfs/var/
+    path.sftp:                      /data/medias/nfs/sftp/
+    path.payline:                   /data/sites/unilend/librairies/payline/
+
+    cms:                            iZicom

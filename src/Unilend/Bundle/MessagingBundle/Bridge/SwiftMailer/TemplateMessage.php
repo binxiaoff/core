@@ -74,6 +74,16 @@ class TemplateMessage extends \Swift_Message
         return $this;
     }
 
+    public function setTo($addresses, $name = null)
+    {
+        if (is_string($addresses)) {
+            $addresses = self::recipientsArray($addresses);
+        }
+
+        return parent::setTo($addresses, $name);
+    }
+
+
     /**
      * @return null|string
      */
@@ -96,5 +106,58 @@ class TemplateMessage extends \Swift_Message
     public function getToSendAt()
     {
         return $this->toSendAt;
+    }
+
+    /**
+     * @param array $recipients
+     *
+     * @return string
+     */
+    public static function recipientsString(array $recipients)
+    {
+        if (is_array($recipients)) {
+            $recipientsFormatted = '';
+            foreach ($recipients as $email => $name) {
+                if ($recipientsFormatted) {
+                    $recipientsFormatted .= ', ';
+                }
+                if ($name) {
+                    $recipientsFormatted .= $name . ' <' . $email . '>';
+                } else {
+                    $recipientsFormatted .= $email;
+                }
+            }
+        } else {
+            $recipientsFormatted = $recipients;
+        }
+
+        return $recipientsFormatted;
+    }
+
+    /**
+     * @param string $recipients
+     *
+     * @return array
+     */
+    public static function recipientsArray($recipients)
+    {
+        if (is_string($recipients)) {
+            $recipientsFormatted = '';
+
+            $recipients = str_replace(';', ',', $recipients);
+            $recipients = explode(',', $recipients);
+
+            foreach ($recipients as $recipient) {
+                if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $recipient, $matches)) {
+                    $recipientsFormatted[$matches['email']] = $matches['name'];
+                } else {
+                    $recipientsFormatted[] = $recipient;
+                }
+            }
+        } else {
+            $recipientsFormatted = $recipients;
+        }
+
+        return $recipientsFormatted;
     }
 }

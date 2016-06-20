@@ -8,7 +8,8 @@ include __DIR__ . '/../../core/command.class.php';
 include __DIR__ . '/../../config.php';
 require_once __DIR__.'/../../app/AppKernel.php';
 
-error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
+error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT & ~E_NOTICE);
+
 ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
@@ -27,11 +28,9 @@ if (! empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' || $_SERVER['SERVE
 session_start();
 ini_set('session.gc_maxlifetime', 3600); // 1h la session
 
-$bCacheFullPage = ($_SERVER['SERVER_NAME'] === 'www.unilend.fr');
+header('X-Server: ' . exec('hostname'));
 
-if ($bCacheFullPage) {
-    require __DIR__ . '/prepend.php';
-}
+require __DIR__ . '/prepend.php';
 
 $oKernel = new AppKernel('prod', false);
 
@@ -49,6 +48,4 @@ try {
     $oDispatcher = new \Unilend\core\Dispatcher($oKernel, 'default', $config);
 }
 
-if ($bCacheFullPage) {
-    require __DIR__ . '/append.php';
-}
+require __DIR__ . '/append.php';

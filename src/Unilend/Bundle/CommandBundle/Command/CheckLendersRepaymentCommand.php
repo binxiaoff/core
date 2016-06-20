@@ -15,7 +15,7 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
     {
         $this
             ->setName('check:lenders_repayment')
-            ->setDescription('Checks if all repayments of which today is the due date are payed. And Sends a reporting mail to the internal control team.');
+            ->setDescription('Checks if all repayments of which today is the due date are paid. And Sends a reporting mail to the internal control team.');
     }
 
     /**
@@ -46,7 +46,7 @@ class CheckLendersRepaymentCommand extends ContainerAwareCommand
                     <td>' . ($repayment['nb_repayment'] === $repayment['nb_repayment_paid'] ? 'Oui' : 'Non') . '</td>
                 </tr>';
         }
-        $url           = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+        $url           = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $replacements = array(
             '[#SURL#]'       => $url,
             '[#REPAYMENTS#]' => $repaymentsTable

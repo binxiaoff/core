@@ -62,17 +62,36 @@ abstract class Controller implements ContainerAwareInterface
         $this->spath      = $this->get('kernel')->getRootDir() . '/../public/default/var/';
         $this->staticPath = $this->get('kernel')->getRootDir() . '/../public/default/';
         $this->logPath    = $this->get('kernel')->getLogDir();
-        $this->surl       = $this->get('assets.packages')->getUrl('');
-        $this->url        = $this->Config['url'][$this->Config['env']][$this->App];
-        $this->lurl       = $this->Config['url'][$this->Config['env']][$this->App] . ($this->Config['multilanguage']['enabled'] ? '/' . $this->language : '');
 
+        $this->surl = $this->get('assets.packages')->getUrl('');
+
+        $this->url = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_' . $this->App);
         //admin
-        $this->aurl = $this->Config['url'][$this->Config['env']]['admin'];
-        //fo
-        $this->furl = $this->Config['url'][$this->Config['env']]['default'];
+        $this->aurl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_admin');
+
+        $frontUrl = $this->getParameter('router.request_context.scheme') . '://' . $this->getParameter('url.host_default');
+        if (isset($_SERVER['HTTP_HOST'])) {
+            switch ($_SERVER['HTTP_HOST']) {
+                case 'prets-entreprises-unilend.capital.fr':
+                    $frontUrl = 'http://prets-entreprises-unilend.capital.fr';
+                    break;
+                case 'partenaire.unilend.challenges.fr':
+                    $frontUrl = 'http://partenaire.unilend.challenges.fr';
+                    break;
+                case 'financementparticipatifpme.lefigaro.fr':
+                    $frontUrl = 'http://financementparticipatifpme.lefigaro.fr';
+                    break;
+            }
+        }
+        if ('default' == $this->App) {
+            $this->url = $frontUrl;
+        }
+        $this->lurl = $this->url;
+
+        $this->furl = $frontUrl;
 
         // Recuperation du type de plateforme
-        $this->cms = $this->Config['cms'];
+        $this->cms = $this->getParameter('cms');
 
         //*** SESSION IS DEAD ***//
         if (isset($_POST['killsession'])) {

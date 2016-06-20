@@ -17,11 +17,14 @@ class apiController extends Controller
     public function initialize()
     {
         parent::initialize();
+
         $this->autoFireView = false;
         $this->hideDecoration();
 
         $this->catchAll = true;
+
         $this->oLogger = $this->get('logger');
+
         $this->checkIp();
         $this->init();
     }
@@ -33,7 +36,7 @@ class apiController extends Controller
     {
         $aAllowedIP = array();
         $oSettings  = $this->loadData('settings');
-        switch ($this->Config['env']) {
+        switch ($this->getParameter('kernel.environment')) {
             case 'prod':
                 $oSettings->get('green_point_ip_prod', 'type');
                 $sAllowedIPSettings = $oSettings->value;
@@ -63,7 +66,9 @@ class apiController extends Controller
                 $aAllowedIP[] = $aAllowedIPSettings['root'] . $iSuffix;
             }
         }
+
         $this->oLogger->info('Allowed IP : ' . var_export($aAllowedIP, true) . ' Local IP : ' . $sLocalIp, array('class' => __CLASS__, 'function' => __FUNCTION__));
+
         if (false === in_array($_SERVER['REMOTE_ADDR'], $aAllowedIP) && false === in_array($_SERVER['REMOTE_ADDR'], explode(',', $sLocalIp))) {
             header('HTTP/1.0 403 Forbidden');
             echo 'Forbidden';
@@ -92,37 +97,36 @@ class apiController extends Controller
      */
     public function _update_status()
     {
-        $this->oLogger->info('************************************* Begin GreenPoint Asynchronous return *************************************', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        $this->oLogger->info('Start GreenPoint Asynchronous return', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
         /** @var \greenpoint_attachment $oGreenPointAttachment */
         $oGreenPointAttachment = $this->loadData('greenpoint_attachment');
 
         /** @var \greenpoint_attachment_detail $oGreenPointAttachmentDetail */
         $oGreenPointAttachmentDetail = $this->loadData('greenpoint_attachment_detail');
-        
+
         $this->oLogger->info('Input parameters : ' . var_export($this->aData, true), array('class' => __CLASS__, 'function' => __FUNCTION__));
+
         $oGreenPointAttachment->get($this->aData['document'], 'id_attachment');
         $oGreenPointAttachmentDetail->get($oGreenPointAttachment->id_greenpoint_attachment, 'id_greenpoint_attachment');
 
         switch ($this->aData['type']) {
-            case '1':
+            case 1:
                 $aGreenPointData = greenPointStatus::getGreenPointData($this->aData, attachment_type::CNI_PASSPORTE_DIRIGEANT);
                 break;
-            case '2':
+            case 2:
                 $aGreenPointData = greenPointStatus::getGreenPointData($this->aData, attachment_type::RIB);
                 break;
-            case '3':
+            case 3:
                 $aGreenPointData = greenPointStatus::getGreenPointData($this->aData, attachment_type::JUSTIFICATIF_DOMICILE);
                 break;
             default:
-                $aGreenPointData = array();
-                break;
+                $this->oLogger->error('Wrong type value (' . $this->aData['type'] . '). Expected to be one of [1, 2, 3]', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->_404();
         }
-        if (empty($aGreenPointData)) {
-            $this->oLogger->error('Wrong type value. Expected to be one of [1, 2, 3]', array('class' => __CLASS__, 'function' => __FUNCTION__));
-            $this->_404();
-        }
+
         $this->oLogger->info('Parsed Data from input params : ' . var_export($aGreenPointData, true), array('class' => __CLASS__, 'function' => __FUNCTION__));
+
         foreach ($aGreenPointData['greenpoint_attachment'] as $sKey => $mValue) {
             if (false === is_null($mValue)) {
                 $oGreenPointAttachment->$sKey = $mValue;
@@ -149,7 +153,7 @@ class apiController extends Controller
         $oGreenPointKyc = $this->loadData('greenpoint_kyc');
 
         /** @var greenPoint $oGreenPoint */
-        $oGreenPoint = new greenPoint();
+        $oGreenPoint = new greenPoint($this->getParameter('kernel.environment'));
         greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
     }
 

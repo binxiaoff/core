@@ -10,20 +10,6 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class FeedsDailyStateCommand extends ContainerAwareCommand
 {
-    /** @var string */
-    private $sftpPath;
-
-    /**
-     * BankTransferCommand constructor.
-     * @param string $sftpPath
-     */
-    public function __construct($sftpPath)
-    {
-        $this->sftpPath = $sftpPath;
-
-        parent::__construct();
-    }
-
     /**
      * @see Command
      */
@@ -31,7 +17,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
     {
         $this
             ->setName('feeds:daily_state')
-            ->setDescription('Extract lender repayments of the month')
+            ->setDescription('Extract daily fiscal state')
             ->addArgument(
                 'day',
                 InputArgument::OPTIONAL,
@@ -821,7 +807,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             </tr>
         </table>';
 
-        file_put_contents($this->sftpPath . 'sfpmei/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls', $tableau);
+        file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls', $tableau);
 
         /** @var \settings $oSettings */
         $oSettings = $entityManager->getRepository('settings');
@@ -831,7 +817,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
         $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('notification-etat-quotidien', [], false);
         $message
             ->setTo(explode(';', trim($oSettings->value)))
-            ->attach(\Swift_Attachment::fromPath($this->sftpPath . 'sfpmei/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls'));
+            ->attach(\Swift_Attachment::fromPath($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_quotidien/Unilend_etat_' . date('Ymd', $time) . '.xls'));
 
         /** @var \Swift_Mailer $mailer */
         $mailer = $this->getContainer()->get('mailer');

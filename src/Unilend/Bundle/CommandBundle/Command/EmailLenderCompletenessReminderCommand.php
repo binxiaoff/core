@@ -91,8 +91,7 @@ class EmailLenderCompletenessReminderCommand extends ContainerAwareCommand
      */
     private function sendReminderEmail(array $aLender, $sTwitterLink, $sFacebookLink, $sContent)
     {
-        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' .
-                      $this->getContainer()->getParameter('router.request_context.host');
+        $sUrl       = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
         $sStaticUrl = $this->getContainer()->get('assets.packages')->getUrl('');
         $timeCreate = strtotime($aLender['added_status']);
         $month      = $this->oDate->tableauMois['fr'][date('n', $timeCreate)];

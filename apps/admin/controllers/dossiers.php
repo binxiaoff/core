@@ -129,21 +129,19 @@ class dossiersController extends bootstrap
             $finFunding        = explode(':', $this->finFunding);
             $this->HfinFunding = $finFunding[0];
 
-            $this->current_projects_status->getLastStatut($this->projects->id_project);
-
-            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
-
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
             $this->clients_adresses->get($this->companies->id_client_owner, 'id_client');
             $this->projects_notes->get($this->projects->id_project, 'id_project');
             $this->project_cgv->get($this->projects->id_project, 'id_project');
+
             $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
             $this->current_projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
             $this->projects_status->get($this->current_projects_status_history->id_project_status);
-            $this->current_projects_status->get($this->current_projects_status_history->id_project_status);
+            $this->current_projects_status->getLastStatut($this->projects->id_project);
 
-            $this->bHasAdvisor = false;
+            $this->bHasAdvisor       = false;
+            $this->bReadonlyRiskNote = $this->current_projects_status->status >= \projects_status::EN_FUNDING;
 
             if ($this->projects->id_prescripteur > 0 && $this->prescripteurs->get($this->projects->id_prescripteur, 'id_prescripteur')) {
                 $this->clients_prescripteurs->get($this->prescripteurs->id_client, 'id_client');
@@ -472,11 +470,8 @@ class dossiersController extends bootstrap
                         $this->projects->risk = $_POST['risk'];
                     }
 
-                    // --- Génération du slug --- //
-                    // Génération du slug avec titre projet fo
                     if ($this->current_projects_status->status <= \projects_status::A_FUNDER) {
-                        $leSlugProjet         = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
-                        $this->projects->slug = $leSlugProjet;
+                        $this->projects->slug = $this->ficelle->generateSlug($this->projects->title . '-' . $this->projects->id_project);
                     }
 
                     $this->projects->update();
@@ -505,7 +500,7 @@ class dossiersController extends bootstrap
                                 }
                             }
 
-                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
+                            $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::PREP_FUNDING, $this->projects);
 
                             if (false === in_array(\projects_status::PREP_FUNDING, $aExistingStatus)) {
                                 $this->sendEmailBorrowerArea('ouverture-espace-emprunteur-plein');
@@ -738,6 +733,11 @@ class dossiersController extends bootstrap
                             }
                         }
                     }
+
+                    $_SESSION['freeow']['message'] .= 'Modifications enregistrées avec suucès';
+
+                    header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
+                    die;
                 }
             }
 
@@ -871,13 +871,16 @@ class dossiersController extends bootstrap
 
     private function updateProblematicStatus($iStatus)
     {
-        $this->projects_status_history_details                            = $this->loadData('projects_status_history_details');
-        $this->projects_status_history_details->id_project_status_history = $this->projects_status_history->id_project_status_history;
-        $this->projects_status_history_details->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
-        $this->projects_status_history_details->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
-        $this->projects_status_history_details->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
-        $this->projects_status_history_details->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
-        $this->projects_status_history_details->create();
+        $this->projects_status_history->loadLastProjectHistory($this->projects->id_project);
+
+        /** @var \projects_status_history_details $projectStatusHistoryDetails */
+        $projectStatusHistoryDetails                            = $this->loadData('projects_status_history_details');
+        $projectStatusHistoryDetails->id_project_status_history = $this->projects_status_history->id_project_status_history;
+        $projectStatusHistoryDetails->date                      = isset($_POST['decision_date']) ? date('Y-m-d', strtotime(str_replace('/', '-', $_POST['decision_date']))) : null;
+        $projectStatusHistoryDetails->receiver                  = isset($_POST['receiver']) ? $_POST['receiver'] : '';
+        $projectStatusHistoryDetails->mail_content              = isset($_POST['mail_content']) ? $_POST['mail_content'] : '';
+        $projectStatusHistoryDetails->site_content              = isset($_POST['site_content']) ? $_POST['site_content'] : '';
+        $projectStatusHistoryDetails->create();
 
         // Disable automatic refund
         $this->projects->remb_auto = 1;
@@ -911,7 +914,7 @@ class dossiersController extends bootstrap
         $this->sendProblemStatusEmailBorrower($iStatus);
 
         if (false === empty($_POST['send_email'])) {
-            $this->sendProblemStatusEmailLender($iStatus);
+            $this->sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails);
         }
 
         header('Location: ' . $this->lurl . '/dossiers/edit/' . $this->projects->id_project);
@@ -1017,7 +1020,7 @@ class dossiersController extends bootstrap
         $mailer->send($message);
     }
 
-    private function sendProblemStatusEmailLender($iStatus)
+    private function sendProblemStatusEmailLender($iStatus, $projectStatusHistoryDetails)
     {
         $this->settings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
@@ -1031,8 +1034,8 @@ class dossiersController extends bootstrap
             'lien_fb'                => $sFacebookURL,
             'lien_tw'                => $sTwitterURL,
             'societe_recouvrement'   => $this->cab,
-            'contenu_mail'           => nl2br($this->projects_status_history_details->mail_content),
-            'coordonnees_mandataire' => nl2br($this->projects_status_history_details->receiver)
+            'contenu_mail'           => nl2br($projectStatusHistoryDetails->mail_content),
+            'coordonnees_mandataire' => nl2br($projectStatusHistoryDetails->receiver)
         );
 
         switch ($iStatus) {
@@ -1094,7 +1097,7 @@ class dossiersController extends bootstrap
         $aCommonReplacements['annee_projet'] = date('Y', strtotime($aRepaymentStatus[0]['added']));
 
         if (in_array($iStatus, array(\projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
-            $oMaxClaimsSendingDate = new \DateTime($this->projects_status_history_details->date);
+            $oMaxClaimsSendingDate = new \DateTime($projectStatusHistoryDetails->date);
             $aCommonReplacements['date_max_envoi_declaration_creances'] = date('d/m/Y', $oMaxClaimsSendingDate->add(new \DateInterval('P2M'))->getTimestamp());
         }
 
@@ -1937,7 +1940,7 @@ class dossiersController extends bootstrap
             // Early repayment
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception        = $_POST['id_reception'];
-                $montant_crd_preteur = (int) ($_POST['montant_crd_preteur'] * 100);
+                $montant_crd_preteur = bcmul($_POST['montant_crd_preteur'] * 100);
 
                 $this->projects                      = $this->loadData('projects');
                 $this->echeanciers                   = $this->loadData('echeanciers');
@@ -1996,7 +1999,7 @@ class dossiersController extends bootstrap
 
                         // On enregistre la transaction
                         $this->transactions->id_client        = $this->lenders_accounts->id_client_owner;
-                        $this->transactions->montant          = ($reste_a_payer_pour_preteur * 100);
+                        $this->transactions->montant          = bcmul($reste_a_payer_pour_preteur, 100);
                         $this->transactions->id_echeancier    = 0; // pas d'id_echeance car multiple
                         $this->transactions->id_loan_remb     = $preteur['id_loan']; // <-------------- on met ici pour retrouver la jointure
                         $this->transactions->id_project       = $this->projects->id_project;
@@ -2016,7 +2019,7 @@ class dossiersController extends bootstrap
                         $this->wallets_lines->id_transaction           = $this->transactions->id_transaction;
                         $this->wallets_lines->status                   = 1; // non utilisé
                         $this->wallets_lines->type                     = 2; // transaction virtuelle
-                        $this->wallets_lines->amount                   = ($reste_a_payer_pour_preteur * 100);
+                        $this->wallets_lines->amount                   = bcmul($reste_a_payer_pour_preteur, 100);
                         $this->wallets_lines->id_wallet_line           = $this->wallets_lines->create();
 
                         $montant_total += $reste_a_payer_pour_preteur;
@@ -2039,7 +2042,7 @@ class dossiersController extends bootstrap
                         $this->transactions->montant                  = 0;
                         $this->transactions->id_echeancier            = 0; // on reinitialise
                         $this->transactions->id_client                = 0; // on reinitialise
-                        $this->transactions->montant_unilend          = '-' . $montant_total * 100;
+                        $this->transactions->montant_unilend          = bcmul($montant_total, -100);
                         $this->transactions->montant_etat             = 0 * 100; // pas d'argent pour l'état
                         $this->transactions->id_echeancier_emprunteur = 0; // pas d'echeance emprunteur
                         $this->transactions->id_langue                = 'fr';
@@ -2056,7 +2059,7 @@ class dossiersController extends bootstrap
                         // bank_unilend (on retire l'argent redistribué)
                         $this->bank_unilend->id_transaction         = $this->transactions->id_transaction;
                         $this->bank_unilend->id_project             = $this->projects->id_project;
-                        $this->bank_unilend->montant                = '-' . $montant_total * 100;
+                        $this->bank_unilend->montant                = bcmul($montant_total, -100);
                         $this->bank_unilend->etat                   = 0; // pas d'argent pour l'état
                         $this->bank_unilend->type                   = 2; // remb unilend
                         $this->bank_unilend->id_echeance_emprunteur = 0; // pas d'echeance emprunteur

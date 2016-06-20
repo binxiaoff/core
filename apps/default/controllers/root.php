@@ -605,6 +605,7 @@ class rootController extends bootstrap
         $this->autoFireDebug  = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+        $this->autoFireView   = false;
 
         $this->users = $this->loadData('users');
 
@@ -617,20 +618,26 @@ class rootController extends bootstrap
 
     public function _search()
     {
-        //Recuperation des element de traductions
         $this->lng['search'] = $this->ln->selectFront('search', $this->language, $this->App);
 
-        // recupération du title et slug pour le Breadcrumbs
         $this->page_title = $this->lng['search']['title'];
-        $this->page_slug  = "search";
+        $this->page_slug  = 'search';
 
-        // Vérification recherche
         if (isset($_POST['search']) && $_POST['search'] != $this->lng['header']['recherche']) {
-            $this->search = $_POST['search'];
-
-            $this->result = $this->tree->search($this->search, '', $this->language);
+            header('Location: ' . $this->lurl . '/search/' . urlencode($_POST['search']));
+            die;
         }
 
+        if (empty($this->params[0])) {
+            $this->search = '';
+            $this->result = array();
+        } else {
+            /** @var \tree $tree */
+            $tree = $this->loadData('tree');
+
+            $this->search = urldecode($this->params[0]);
+            $this->result = $tree->search($this->search, $this->language);
+        }
     }
 
     public function _notification_payline()
@@ -646,8 +653,7 @@ class rootController extends bootstrap
         $this->wallets_lines    = $this->loadData('wallets_lines');
         $this->bank_lines       = $this->loadData('bank_lines');
 
-        // On recup la lib et le reste payline
-        require_once($this->path . 'protected/payline/include.php');
+        require_once $this->path . 'librairies/payline/include.php';
 
         $array = array();
 
@@ -1057,7 +1063,9 @@ class rootController extends bootstrap
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $this->clients->checkAccessLender();
 
-            $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+            $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+            $listeAccept = array_shift($listeAccept);
+
             $id_tree_cgu = $listeAccept['id_legal_doc'];
 
             $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
@@ -1073,8 +1081,10 @@ class rootController extends bootstrap
                 header("Content-Type: application/force-download");
                 @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
             } else {
-                $oCommandPdf    = new Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+                $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->setContainer($this->container);
+                $oPdf->initialize();
                 $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
                 $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
                 $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
@@ -1118,7 +1128,9 @@ class rootController extends bootstrap
             if (isset($this->params[0]) && $this->params[0] == 'nosign') {
                 $dateAccept = '';
             } else {
-                $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+                $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+                $listeAccept = array_shift($listeAccept);
+
                 $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept['added']));
             }
 

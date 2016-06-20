@@ -18,7 +18,7 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
     {
         $this
             ->setName('email:borrower:upcoming_repayment')
-            ->setDescription('Send emails to borrower and lenders when an early repayment is done');
+            ->setDescription('Send emails to borrower when a repayment is coming');
     }
 
     /**
@@ -67,7 +67,7 @@ class EmailBorrowerUpcomingRepaymentCommand extends ContainerAwareCommand
                 $sFB      = $settings->value;
                 $settings->get('Twitter', 'type');
                 $sTwitter = $settings->value;
-                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
                 $aMail = array(
                     'nb_emprunteurs'     => $oLoans->getNbPreteurs($aRepayment['id_project']),

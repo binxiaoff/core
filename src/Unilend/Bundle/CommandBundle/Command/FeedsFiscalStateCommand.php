@@ -205,12 +205,12 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         ';
 
         $filename = 'Unilend_etat_fiscal_' . date('Ymd');
-        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/etat_fiscal/' . $filename . '.xls';
+        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/' . $filename . '.xls';
         file_put_contents($sFilePath, $table);
 
         $settings->get('Adresse notification etat fiscal', 'type');
         $destinataire = $settings->value;
-        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
         $varMail = array(
             '$surl' => $sUrl,

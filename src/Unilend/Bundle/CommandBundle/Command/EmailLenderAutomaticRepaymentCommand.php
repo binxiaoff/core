@@ -99,7 +99,7 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                         $sFB      = $settings->value;
                         $settings->get('Twitter', 'type');
                         $sTwitter = $settings->value;
-                        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+                        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
                         $varMail = array(
                             'surl'                  => $sUrl,

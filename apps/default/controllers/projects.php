@@ -63,15 +63,12 @@ class projectsController extends bootstrap
             $this->autoFireHead   = true;
             $this->autoFireFooter = true;
 
-            $this->url_form = $this->Config['url'][$this->Config['env']]['default'];
-
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
                 $this->utm_source = '/?utm_source=capital';
             } else {
                 $this->utm_source = '/?utm_source=challenge';
             }
         } else {
-            $this->url_form   = $this->lurl;
             $this->utm_source = '';
         }
 

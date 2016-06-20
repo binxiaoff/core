@@ -117,7 +117,7 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
 </Document>';
 
         if (false === empty($borrowerDirectDebits)) {
-            file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/prelevements/Unilend_Prelevements_' . $date . '.xml', $xml);
+            file_put_contents($this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/prelevements/Unilend_Prelevements_' . $date . '.xml', $xml);
         }
     }
 

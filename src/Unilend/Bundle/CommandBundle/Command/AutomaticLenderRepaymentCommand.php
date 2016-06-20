@@ -109,7 +109,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                         $wallets_lines->id_transaction           = $transactions->id_transaction;
                         $wallets_lines->status                   = 1;
                         $wallets_lines->type                     = \wallets_lines::VIRTUAL;
-                        $wallets_lines->amount                   = bcmul($rembNet,100);
+                        $wallets_lines->amount                   = bcmul($rembNet, 100);
                         $wallets_lines->create();
                     }
                 }
@@ -154,7 +154,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $sFB      = $settings->value;
                 $settings->get('Twitter', 'type');
                 $sTwitter = $settings->value;
-                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+                $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
                 /** @var \ficelle $ficelle */
                 $ficelle = Loader::loadLib('ficelle');

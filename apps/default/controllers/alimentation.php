@@ -25,7 +25,7 @@ class alimentationController extends bootstrap
 
     public function _default()
     {
-        require_once $this->path . 'protected/payline/include.php';
+        require_once $this->path . 'librairies/payline/include.php';
 
         $this->companies               = $this->loadData('companies');
         $this->lenders_accounts        = $this->loadData('lenders_accounts');
@@ -243,9 +243,6 @@ class alimentationController extends bootstrap
                 $this->transactions->transaction      = 1; // transaction physique
                 $this->transactions->id_transaction   = $this->transactions->create();
 
-                //***************//
-                //*** PAYLINE ***//
-                //***************//
                 $array                    = array();
                 $payline                  = new paylineSDK(MERCHANT_ID, ACCESS_KEY, PROXY_HOST, PROXY_PORT, PROXY_LOGIN, PROXY_PASSWORD, PRODUCTION);
                 $payline->returnURL       = $this->lurl . '/alimentation/payment/' . $this->clients->hash . '/';
@@ -296,7 +293,7 @@ class alimentationController extends bootstrap
         $this->autoFireView   = false;
         $this->autoFireFooter = false;
 
-        require_once $this->path . 'protected/payline/include.php';
+        require_once $this->path . 'librairies/payline/include.php';
 
         $this->transactions                  = $this->loadData('transactions');
         $this->backpayline                   = $this->loadData('backpayline');

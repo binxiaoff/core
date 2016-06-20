@@ -22,7 +22,7 @@ class bootstrap extends Controller
         $this->blocs            = $this->loadData('blocs');
         $this->blocs_elements   = $this->loadData('blocs_elements');
         $this->elements         = $this->loadData('elements');
-        $this->tree             = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->Config['url'][$this->Config['env']]['default'], 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
+        $this->tree             = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
         $this->users            = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
         $this->users_zones      = $this->loadData('users_zones');
         //$this->routages       = $this->loadData('routages', array('url' => $this->lurl));
@@ -152,9 +152,6 @@ class bootstrap extends Controller
         // Recuperation du paging des tableaux
         $this->settings->get('Paging Tableaux', 'type');
         $this->nb_lignes = $this->settings->value;
-
-        // Recuperation de l'URL du front
-        $this->urlfront = $this->Config['url'][$this->Config['env']]['default'];
 
         // Recuperation de la liste des langues disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];

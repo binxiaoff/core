@@ -65,7 +65,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
         $sFB      = $settings->value;
         $settings->get('Twitter', 'type');
         $sTwitter = $settings->value;
-        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('router.request_context.host');
+        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
         $aReplacements = array(
             'adresse_emprunteur'   => $sBorrowerEmail,
@@ -132,7 +132,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $sRecipientEmail = preg_replace('/^(.+)-[0-9]+$/', '$1', trim($client->email));
 
                                 /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
-                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $aReplacements);var_dump('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex);
+                                $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('depot-dossier-relance-status-' . $iStatus . '-' . $iReminderIndex, $aReplacements);
                                 $message->setTo($sRecipientEmail);
                                 $mailer = $this->getContainer()->get('mailer');
                                 $mailer->send($message);
@@ -150,7 +150,7 @@ class EmailBorrowerCompletenessReminderCommand extends ContainerAwareCommand
                                 $oProjectManager->addProjectStatus(\users::USER_ID_CRON, $iStatus, $project, $iReminderIndex, $projectStatusHistory->content);
                             }
                         } catch (\Exception $oException) {
-                            $logger->error('Cannot send reminder for project id_project=' . $project->id_project . '(Exception message : ' . $oException->getMessage() . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
+                            $logger->error('Cannot send reminder (project ' . $project->id_project . ') - Message: "' . $oException->getMessage() . '"', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
                         }
                     }
 

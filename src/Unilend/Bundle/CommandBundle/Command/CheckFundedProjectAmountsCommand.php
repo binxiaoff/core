@@ -28,13 +28,13 @@ class CheckFundedProjectAmountsCommand extends ContainerAwareCommand
         /** @var EntityManager $entityManager */
         $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $projects */
-        $projects       = $entityManager->getRepository('projects');
+        $projects = $entityManager->getRepository('projects');
         /** @var \bids $bids */
-        $bids           = $entityManager->getRepository('bids');
+        $bids = $entityManager->getRepository('bids');
         /** @var \loans $loans */
-        $loans          = $entityManager->getRepository('loans');
+        $loans = $entityManager->getRepository('loans');
         /** @var \transactions $transactions */
-        $transactions   = $entityManager->getRepository('transactions');
+        $transactions = $entityManager->getRepository('transactions');
         /** @var \projects_check $projects_check */
         $projects_check = $entityManager->getRepository('projects_check');
         /** @var \settings $settings */
@@ -43,7 +43,7 @@ class CheckFundedProjectAmountsCommand extends ContainerAwareCommand
         $debugEmail = $settings->value;
         $settings->get('DebugMailIt', 'type');
         $sDestinatairesDebug = $settings->value;
-        $sHeadersDebug  = 'MIME-Version: 1.0' . "\r\n";
+        $sHeadersDebug       = 'MIME-Version: 1.0' . "\r\n";
         $sHeadersDebug .= 'Content-type: text/html; charset=iso-8859-1' . "\r\n";
         $sHeadersDebug .= 'From: ' . $debugEmail . "\r\n";
 
@@ -51,7 +51,7 @@ class CheckFundedProjectAmountsCommand extends ContainerAwareCommand
         $lProjets = $projects->selectProjectsByStatus(\projects_status::FUNDE, ' AND DATE(p.date_fin) = "' . date('Y-m-d') . '"', '', array(), '', '', false);
 
         foreach ($lProjets as $p) {
-            if ($projects_check->get($p['id_project'], 'id_project') === false ) {
+            if ($projects_check->get($p['id_project'], 'id_project') === false) {
                 $montantBidsTotal = $bids->getSoldeBid($p['id_project']);
                 $montantBidsOK    = $bids->sum('id_project = ' . $p['id_project'] . ' AND status = 1', 'amount');
                 $montantBidsOK    = ($montantBidsOK / 100);

@@ -700,7 +700,7 @@ class operationsController extends bootstrap
         $this->ifu   = $this->loadData('ifu');
         if ($this->clients->hash == $hash_client) {
             if ($this->ifu->get($this->clients->id_client, 'annee = ' . $annee . ' AND statut = 1 AND id_client')) {
-                if (file_exists($this->ifu->chemin)) {
+                if (file_exists($this->path . $this->ifu->chemin)) {
                     $url = ($this->ifu->chemin);
                     header('Content-Description: File Transfer');
                     header('Content-Type: application/octet-stream');

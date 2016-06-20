@@ -13,7 +13,7 @@ class IRRUnilendCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('IRR:unilend')
+            ->setName('irr:unilend')
             ->setDescription('Calculate the IRR of the whole platform');
     }
 
@@ -33,7 +33,7 @@ class IRRUnilendCommand extends ContainerAwareCommand
             try {
                 $oIRRManager->updateIRRUnilend();
             } catch (\Exception $e) {
-                $logger->error('Could not update Unilend IRR: -ExceptionMessage: ' . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $logger->error('Could not update Unilend IRR. Message: ' . $e->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__));
             }
         }
         $this->emptyProjectLastStatusMaterialized();
@@ -45,10 +45,12 @@ class IRRUnilendCommand extends ContainerAwareCommand
         $bdd = $this->getContainer()->get('doctrine.dbal.default_connection');
 
         $bdd->query('TRUNCATE projects_last_status_history_materialized');
-        $bdd->query('INSERT INTO projects_last_status_history_materialized
-                                    SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
-                                    FROM projects_status_history
-                                    GROUP BY id_project');
+        $bdd->query('
+            INSERT INTO projects_last_status_history_materialized
+              SELECT MAX(id_project_status_history) AS id_project_status_history, id_project
+              FROM projects_status_history
+              GROUP BY id_project'
+        );
         $bdd->query('OPTIMIZE TABLE projects_last_status_history_materialized');
     }
 

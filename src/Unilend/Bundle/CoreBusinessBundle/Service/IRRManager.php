@@ -3,7 +3,6 @@
 namespace Unilend\Bundle\CoreBusinessBundle\Service;
 
 use Psr\Log\LoggerInterface;
-use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 /**
@@ -14,7 +13,7 @@ class IRRManager
 {
     const IRR_GUESS = 0.1;
 
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $oLogger;
 
     /** @var EntityManager  */
@@ -22,7 +21,7 @@ class IRRManager
 
     public function __construct(EntityManager $oEntityManager, LoggerInterface $oLogger)
     {
-        $this->oLogger = $oLogger;
+        $this->oLogger        = $oLogger;
         $this->oEntityManager = $oEntityManager;
     }
 
@@ -97,13 +96,14 @@ class IRRManager
 
         $fStartSQL  = microtime(true);
         $aValuesIRR = $oLendersAccountStats->getValuesForIRRUsingProjectsLastStatusHistoryMaterialized($iLenderId);
-        $this->oLogger->info('Lender ' . $iLenderId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
+
+        $this->oLogger->info('Calculate IRR for lender ' . $iLenderId . ' - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);
         $fXIRR = $this->calculateIRR($aValuesIRR);
 
-        $this->oLogger->info('Lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : ' . 100);
-        $this->oLogger->info('Lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+        $this->oLogger->info('Calculate IRR for lender ' . $iLenderId . ' - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : ' . 100);
+        $this->oLogger->info('Calculate IRR for lender ' . $iLenderId . ' - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
         return $fXIRR;
     }
@@ -119,12 +119,12 @@ class IRRManager
         $oUnilendStats = $this->oEntityManager->getRepository('unilend_stats');
         $fStartSQL  = microtime(true);
         $aValuesIRR = $oUnilendStats->getDataForUnilendIRRUsingProjectsLastStatusMaterialized();
-        $this->oLogger->info('Unilend - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
+        $this->oLogger->info('Unilend IRR calculation - SQL Time : ' . (round(microtime(true) - $fStartSQL, 2)) . ' for ' . count($aValuesIRR). ' lines ');
 
         $fStartXIRR = microtime(true);
         $fXIRR      = $this->calculateIRR($aValuesIRR);
-        $this->oLogger->info('Unilend - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
-        $this->oLogger->info('Unilend - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
+        $this->oLogger->info('Unilend IRR calculation - XIRR Time : ' . (round(microtime(true) - $fStartXIRR, 2)) . ' - Guess : ' . self::IRR_GUESS . ' MAX_INTERATIONS : '. 100);
+        $this->oLogger->info('Unilend IRR calculation - Total time : ' . (round(microtime(true) - $fStartSQL, 2)));
 
         return $fXIRR;
     }

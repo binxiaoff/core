@@ -156,7 +156,7 @@
 
             if (val.length != 0 || val != '') {
                 val = val.replace(/\\/g, '/').replace(/.*\//, '');
-                $self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field').addClass('file-uploaded');
+                $self.closest('.uploader').find('input.field').val(val).addClass('LV_valid_field file-uploaded').removeClass('LV_invalid_field');
             }
         });
 
