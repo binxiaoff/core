@@ -834,8 +834,6 @@ class MailerManager
      */
     public function sendIbanUpdateToStaff($iClientId, $sCurrentIban, $sNewIban)
     {
-        $this->oMailText->get('uninotification-modification-iban-bo', 'lang = "' . $this->sLanguage . '" AND type');
-
         /** @var \lenders_accounts $oLenderAccount */
         $oLenderAccount = $this->oEntityManager->getRepository('lenders_accounts');
         $oLenderAccount->get($iClientId, 'id_client_owner');
