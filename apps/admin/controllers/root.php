@@ -52,6 +52,8 @@ class rootController extends bootstrap
 
     public function _logout()
     {
+        $this->autoFireView = false;
+
         $_SESSION['request_url'] = $this->lurl;
 
         $this->users->handleLogout();

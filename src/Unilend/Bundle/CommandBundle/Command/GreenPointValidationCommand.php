@@ -142,7 +142,7 @@ EOF
     private function getGreenPointData($iClientId, $iAttachmentId, $sPath, array $aClient, $sType)
     {
         $aData = array(
-            'files'    => '@' . $sPath,
+            'files'    => new \CURLFile($sPath),
             'dossier'  => $iClientId,
             'document' => $iAttachmentId,
             'detail'   => 1,

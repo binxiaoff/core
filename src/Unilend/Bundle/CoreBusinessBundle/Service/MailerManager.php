@@ -636,7 +636,7 @@ class MailerManager
         }
 
         $iLendersNb = $oLoan->getNbPreteurs($oProject->id_project);
-        $this->oMailTemplate->get('notification-projet-fini', 'lang = "' . $this->sLanguage . '" AND type');
+        $this->oMailTemplate->get('notification-projet-fini', 'locale = "' . $this->sLanguage . '" AND type');
 
         $varMail = array(
             '$surl'         => $this->sSUrl,

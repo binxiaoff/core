@@ -1,10 +1,28 @@
 <?php
-
+use Monolog\ErrorHandler;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use Symfony\Component\HttpKernel\Kernel;
 use Symfony\Component\Config\Loader\LoaderInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class AppKernel extends Kernel
 {
+    /**
+     * Temporary error log solution before the migration 100% to the Symfony Framework
+     */
+    public function boot()
+    {
+        if (true === $this->booted) {
+            return;
+        }
+        parent::boot();
+        $logger = $this->getContainer()->get('logger', ContainerInterface::NULL_ON_INVALID_REFERENCE);
+        if ($logger instanceof LoggerInterface) {
+            ErrorHandler::register($logger, [], LogLevel::ERROR, LogLevel::ERROR);
+        }
+    }
+
     public function registerBundles()
     {
         $bundles = [
