@@ -240,6 +240,9 @@ class usersController extends bootstrap
             $mailerManager = $this->get('unilend.service.email_manager');
             $mailerManager->sendNewPasswordEmail($this->users, $sNewPassword);
         }
+        $_SESSION['freeow']['title']   = 'Modification du mot de passe';
+        $_SESSION['freeow']['message'] = 'Le mot de passe a bien &eacute;t&eacute; modifi&eacute; !';
+
         header('Location: ' . $this->lurl . '/users');
         die;
     }
