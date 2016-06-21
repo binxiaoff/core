@@ -56,6 +56,9 @@
             <?php
             $iRow      = 1;
             foreach ($this->lPreteurs as $c) {
+                $sGreenPointStatus = '';
+                $sWaitingForGP = '';
+                $sBGColor      = '';
                 if (isset($this->aGreenPointStatus[$c['id_client']])) {
                     $sWaitingForGP     = '';
                     $sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
@@ -70,9 +73,6 @@
                     }
                 } elseif (in_array($c['status_client'], array(clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION))) {
                     $sWaitingForGP = '&nbsp;<span style="font-weight: bold; color: #f79232;">Attente Green Point</span>';
-                    $sBGColor      = '';
-                } else {
-                    $sWaitingForGP = '';
                     $sBGColor      = '';
                 }
 
@@ -100,7 +100,7 @@
                 ?>
 
                 <tr class="<?= ($iRow % 2 == 1 ? '' : 'odd') ?> ">
-                    <td align="center" <?php if (false === empty($sBGColor)): ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?php $sGreenPointStatus ?>"><?php $c['id_client'] ?></td>
+                    <td align="center" <?php if (false === empty($sBGColor)): ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
                     <td><?= $nom ?></td>
                     <td><?= $prenom ?></td>
                     <td align="center"><?= date('d/m/Y', strtotime($c['added'])) ?></td>
