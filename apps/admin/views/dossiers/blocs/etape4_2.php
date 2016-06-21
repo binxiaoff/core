@@ -1,4 +1,7 @@
-<?php $iOldestAnnualAccountsId = end(array_keys($this->aBalanceSheets)); ?>
+<?php
+$aAnnualAccountsYears    = array_keys($this->aBalanceSheets);
+$iOldestAnnualAccountsId = end($aAnnualAccountsYears);
+?>
 <script type="text/javascript">
     $(function() {
         $('#last_annual_accounts').change(function() {

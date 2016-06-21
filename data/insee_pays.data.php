@@ -84,7 +84,7 @@ class insee_pays extends insee_pays_crud
     {
         $result = $this->bdd->query('SELECT * FROM insee_pays WHERE CODEISO2 LIKE "' . $sCodeIso . '"');
 
-        if ($this->bdd->num_rows() == 1) {
+        if ($this->bdd->num_rows($result) == 1) {
             $record = $this->bdd->fetch_array($result);
 
             $this->CODEISO2 = $record['CODEISO2'];

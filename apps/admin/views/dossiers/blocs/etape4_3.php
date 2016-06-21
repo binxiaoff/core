@@ -4,8 +4,9 @@ $aOperationalCashFlow    = array();
 $aGrossOperatingSurplus  = array();
 $aMediumLongTermDebt     = array();
 $aBalanceTotal           = array();
-$iLastAnnualAccountsId   = current(array_keys($this->aBalanceSheets));
-$iOldestAnnualAccountsId = end(array_keys($this->aBalanceSheets));
+$aAnnualAccountsYears    = array_keys($this->aBalanceSheets);
+$iLastAnnualAccountsId   = current($aAnnualAccountsYears);
+$iOldestAnnualAccountsId = end($aAnnualAccountsYears);
 
 foreach ($this->aBalanceSheets as $iBalanceSheetId => $aBalanceSheet) {
     $aOperationalCashFlow[$iBalanceSheetId] =

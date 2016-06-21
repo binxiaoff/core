@@ -4,9 +4,9 @@ class usersController extends bootstrap
 {
     var $Command;
 
-    function usersController(&$command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
         $this->menu_admin = 'admin';
@@ -16,7 +16,7 @@ class usersController extends bootstrap
         $this->users_types_zones = $this->loadData('users_types_zones');
     }
 
-    function _default()
+    public function _default()
     {
         $this->users->checkAccess('admin');
 
@@ -46,7 +46,7 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Ajout d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; ajout&eacute; !';
 
-            header('Location: ' . $this->lurl . '/zones');
+            header('Location:' . $this->lurl . '/zones');
             die;
         }
 
@@ -76,13 +76,14 @@ class usersController extends bootstrap
                 $users_zones->unsetData();
                 $users_zones->id_user = $this->users->id_user;
                 $users_zones->id_zone = $zone['id_zone'];
+
                 $users_zones->create();
             }
 
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl . '/users');
+            header('Location:' . $this->lurl . '/users');
             die;
         }
 
@@ -98,7 +99,7 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Suppression d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; supprim&eacute; !';
 
-            header('Location: ' . $this->lurl . '/users');
+            header('Location:' . $this->lurl . '/users');
             die;
         }
 
@@ -114,25 +115,25 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Statut d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'Le statut de l\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl . '/users');
+            header('Location:' . $this->lurl . '/users');
             die;
         }
 
         $this->lUsers = $this->users->select('id_user != 1', 'name ASC');
     }
 
-    function _edit()
+    public function _edit()
     {
         $this->users->checkAccess('admin');
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
         $this->users->get($this->params[0], 'id_user');
-        $this->lTree       = $this->tree->listChilds(0, '-', array(), $this->language);
+        $this->lTree = $this->tree->listChilds(0, '-', array(), $this->language);
         $this->lUsersTypes = $this->users_types->select('', ' label ASC ');
     }
 
-    function _edit_perso()
+    public function _edit_perso()
     {
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
@@ -142,18 +143,18 @@ class usersController extends bootstrap
     }
 
 
-    function _add()
+    public function _add()
     {
         $this->users->checkAccess('admin');
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
-        $this->lTree       = $this->tree->listChilds(0, '-', array(), $this->language);
+        $this->lTree = $this->tree->listChilds(0, '-', array(), $this->language);
         $this->lUsersTypes = $this->users_types->select('', ' label ASC ');
     }
 
     // on copie le traitement de default car on peut ne pas avoir les droits sur les users et modifier quand meme ses infos
-    function _edit_perso_user()
+    public function _edit_perso_user()
     {
         if (isset($_POST['form_mod_users'])) {
             $this->users->get($this->params[0], 'id_user');
@@ -172,20 +173,21 @@ class usersController extends bootstrap
             $_SESSION['freeow']['title']   = 'Modification d\'un utilisateur';
             $_SESSION['freeow']['message'] = 'L\'utilisateur a bien &eacute;t&eacute; modifi&eacute; !';
 
-            header('Location: ' . $this->lurl);
+            header('Location:' . $this->lurl);
             die;
         }
     }
 
-    function _edit_password()
+    public function _edit_password()
     {
         $_SESSION['request_url'] = $this->url;
         $this->users->get($this->params[0], 'id_user');
 
         if ($this->users->id_user != $_SESSION['user']['id_user']) {
-            header('Location: ' . $this->lurl);
+            header('Location:' . $this->lurl);
             die;
         }
+
 
         if (isset($_POST['form_edit_pass_user'])) {
             if ($_POST['id_user'] == $_SESSION['user']['id_user']) {
@@ -204,39 +206,26 @@ class usersController extends bootstrap
                                 $_SESSION['user']['password']        = md5($_POST['new_pass']);
                                 $_SESSION['user']['password_edited'] = date('Y-m-d H:i:s');
 
-                                $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
+                                $aVars = array(
+                                    '$cms'      => $this->cms,
+                                    '$surl'     => $this->surl,
+                                    '$url'      => $this->lurl,
+                                    '$email'    => trim($this->users->email),
+                                    '$password' => $_POST['new_pass']
+                                );
 
-                                $cms      = $this->cms;
-                                $surl     = $this->surl;
-                                $url      = $this->lurl;
-                                $email    = trim($this->users->email);
-                                $password = $_POST['new_pass'];
+                                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('admin-nouveau-mot-de-passe', $aVars, false);
+                                $message->setTo(trim($this->users->email));
 
-                                $sujetMail = $this->mails_text->subject;
-                                eval("\$sujetMail = \"$sujetMail\";");
-
-                                $texteMail = $this->mails_text->content;
-                                eval("\$texteMail = \"$texteMail\";");
-
-                                $exp_name = $this->mails_text->exp_name;
-                                eval("\$exp_name = \"$exp_name\";");
-
-                                $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-                                $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-                                $this->email = $this->loadLib('email', array());
-                                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                                $this->email->addRecipient(trim($this->users->email));
-
-                                $this->settings->get('alias_tracking_log', 'type');
-                                $this->alias_tracking_log = $this->settings->value;
-                                if ($this->alias_tracking_log != "") {
-                                    $this->email->addBCCRecipient($this->alias_tracking_log);
+                                $oSettings = $this->loadData('settings');
+                                $oSettings->get('alias_tracking_log', 'type');
+                                if (false === empty($oSettings->value)) {
+                                    $message->setBcc($oSettings->value);
                                 }
 
-                                $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-                                $this->email->setHTMLBody($texteMail);
-                                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+                                $mailer = $this->get('mailer');
+                                $mailer->send($message);
 
                                 $this->loggin_connection_admin                 = $this->loadData('loggin_connection_admin');
                                 $this->loggin_connection_admin->id_user        = $this->users->id_user;
@@ -252,14 +241,16 @@ class usersController extends bootstrap
                                 $_SESSION['freeow']['title']   = 'Modification de votre mot de passe';
                                 $_SESSION['freeow']['message'] = 'Votre mot de passe a bien &eacute;t&eacute; modifi&eacute; !';
 
-                                header('Location: ' . $this->lurl);
+                                header('Location:' . $this->lurl);
                                 die;
+
                             } else {
                                 $this->retour_pass = "La confirmation du nouveau de passe doit &ecirc;tre la m&ecirc;me que votre nouveau mot de passe";
                             }
                         } else {
                             $this->retour_pass = "Le mot de passe doit contenir au moins 10 caract&egrave;res, ainsi qu'au moins 1 chiffre et 1 caract&egrave;re sp&eacute;cial";
                         }
+
                     } else {
                         $this->retour_pass = " L'ancien mot de passe ne correspond pas";
                     }
@@ -267,24 +258,29 @@ class usersController extends bootstrap
                     $this->retour_pass = "Tous les champs sont obligatoires";
                 }
             } else {
-                header('Location: ' . $this->lurl);
+                header('Location:' . $this->lurl);
                 die;
             }
         }
     }
 
-    function _logs()
+    public function _logs()
     {
         $this->loggin_connection_admin = $this->loadData('loggin_connection_admin');
-        $this->L_Recuperation_logs     = $this->loggin_connection_admin->select('', 'added DESC', '', 500);
+
+        $this->L_Recuperation_logs = $this->loggin_connection_admin->select('', 'added DESC', '', 500);
+
     }
 
-    function _export_logs()
+    public function _export_logs()
     {
         $this->hideDecoration();
         $_SESSION['request_url'] = $this->url;
 
         $this->requete        = 'SELECT * FROM loggin_connection_admin ORDER BY added desc';
         $this->requete_result = $this->bdd->query($this->requete);
+
     }
+
+
 }

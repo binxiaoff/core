@@ -2,7 +2,7 @@
 
 class project_need extends project_need_crud
 {
-    public function __construct(bdd $oDatabase, $aParameters = '')
+    public function __construct($oDatabase, $aParameters = '')
     {
         parent::project_need($oDatabase, $aParameters);
     }

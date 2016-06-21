@@ -1,0 +1,112 @@
+imports:
+    - { resource: parameters.yml }
+    - { resource: parameters_extended.yml, ignore_errors: true }
+
+framework:
+    secret: "%secret%"
+    default_locale:  "%locale%"
+    assets:
+        base_urls:
+            - "%router.request_context.scheme%://%url.host_default%"
+
+doctrine:
+    dbal:
+        connections:
+            default:
+                driver:        "%database_driver%"
+                host:          "%database_host%"
+                port:          "%database_port%"
+                dbname:        "%database_name%"
+                user:          "%database_user%"
+                password:      "%database_password%"
+                charset:       "UTF8"
+                wrapper_class: "%dbal_wrapper_class%"
+                driver_class:  "%dbal_driver_class%"
+                options:
+                    x_reconnect_attempts: 3
+    orm:
+        result_cache_driver:
+            type: memcache
+            host: "%server1.memcache_host%"
+            port: "%server1.memcache_port%"
+            instance_class: Memcache
+        query_cache_driver:
+            type: memcache
+            host: "%server1.memcache_host%"
+            port: "%server1.memcache_port%"
+            instance_class: Memcache
+
+cache_adapter:
+    providers:
+        default_memcache_adapter:
+            factory: 'cache.factory.memcache'
+            options:
+                host: "%server1.memcache_host%"
+                port: "%server1.memcache_port%"
+            aliases: ['memcache.default']
+
+monolog:
+    channels: [console]
+    handlers:
+        error:
+            type: fingers_crossed
+            action_level: error
+            handler: error_handler
+        error_handler:
+            type: group
+            members: [file_error, slack_error]
+        file_error:
+            type: rotating_file
+            level: error
+            path: "%kernel.logs_dir%/error.%kernel.environment%.log"
+            max_files: 90
+            date_format: 'Ymd'
+            file_permission: 0664
+        slack_error:
+            type: slack
+            level: error
+            token: xoxp-1234567890-0123456789-01234567890-1a2b3c4d5e
+            channel: '#it-releases'
+            bot_name: 'Symfony Bot'
+
+        console:
+            type: fingers_crossed
+            action_level: info
+            handler: console_handler
+        filter_console:
+            type: filter
+            handler: console
+            max_level: warning
+            channels: console
+        console_handler:
+            type: group
+            members: [file_console, console_console]
+        file_console:
+            type: rotating_file
+            path: "%kernel.logs_dir%/console.%kernel.environment%.log"
+            level: info
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Ymd'
+        console_console:
+            type: console
+
+        site:
+            type: fingers_crossed
+            action_level: info
+            handler: site_handler
+        filter_site:
+            type: filter
+            handler: site
+            max_level: warning
+            channels: !console
+        site_handler:
+            type: rotating_file
+            level: info
+            path: "%kernel.logs_dir%/site.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Ymd'
+
+swiftmailer:
+    transport: '%mailer_transport%'

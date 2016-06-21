@@ -35,7 +35,7 @@
     </head>
     <body class="has-fixed-nav">
         <?php
-        if ($this->Config['env'] == 'prod') {
+        if ($this->getParameter('kernel.environment') == 'prod') {
             // Etape 2 inscription preteur
             if ($this->page_preteur == 2) {
                 ?>

@@ -27,8 +27,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\Cache;
-
 class projects extends projects_crud
 {
     const MINIMUM_CREATION_DAYS_PROSPECT = 720;
@@ -138,6 +136,7 @@ class projects extends projects_crud
                             COUNT(*)
                         FROM
                             projects p
+                            LEFT JOIN companies co ON p.id_company = co.id_company
                             LEFT JOIN projects_last_status_history plsh on plsh.id_project = p.id_project
                             LEFT JOIN projects_status_history psh on psh.id_project_status_history = plsh.id_project_status_history
                             LEFT JOIN projects_status ps on ps.id_project_status = psh.id_project_status
@@ -178,81 +177,116 @@ class projects extends projects_crud
         return $result;
     }
 
+    /**
+     * @param string $status
+     * @param string $where
+     * @param string $order
+     * @param array $aRateRange
+     * @param string $start
+     * @param string $nb
+     * @param bool $bUseCache
+     * @return array
+     */
     public function selectProjectsByStatus($status, $where = '', $order = '', $aRateRange = array(), $start = '', $nb = '', $bUseCache = true)
     {
-        $oCache    = Cache::getInstance();
-        $sCacheKey = $oCache->makeKey(__METHOD__, $status, $where, $order, serialize($aRateRange), $start, $nb);
+        $aBind = array('iFunding' => \projects_status::EN_FUNDING, 'status' => explode(',', $status));
 
-        if (false === $bUseCache || false === ($aResult = $oCache->get($sCacheKey))) {
-            $sWhereClause = 'projects_status.status IN (' . $status . ')';
+        if ($bUseCache) {
+            $QCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
+        } else {
+            $QCProfile = null;
+        }
+        $sWhereClause = 'projects_status.status IN (:status)';
 
-            if ('' !== trim($where)) {
-                $sWhereClause .= ' ' . $where . ' ';
-            }
+        if ('' !== trim($where)) {
+            $sWhereClause .= ' ' . $where . ' ';
+        }
 
-            if ($order == '') {
-                $order = 'lestatut ASC, p.date_retrait DESC';
-            }
-
-            $sql = 'SELECT p.*,
+        if ($order == '') {
+            $order = ' lestatut ASC, p.date_retrait DESC ';
+        }
+        $sql = 'SELECT p.*,
               projects_status.status,
-              CASE WHEN projects_status.status = ' . \projects_status::EN_FUNDING . '
+              CASE WHEN projects_status.status = :iFunding
                 THEN "1"
                 ELSE "2"
               END AS lestatut ';
 
-            if (2 === count($aRateRange)) {
-                $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
-            }
-
-            $sql .= " FROM projects p
+        if (2 === count($aRateRange)) {
+            $sql .= ', ROUND(SUM(b.amount * b.rate) / SUM(b.amount), 1) AS avg_rate';
+        }
+        $sql .= " FROM projects p
             INNER JOIN projects_last_status_history USING (id_project)
             INNER JOIN projects_status_history USING (id_project_status_history)
             INNER JOIN projects_status USING (id_project_status) ";
 
-            if (2 === count($aRateRange)) {
-                $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
-            }
-
-            $sql .= 'WHERE ' . $sWhereClause;
-
-            if (2 === count($aRateRange)) {
-                $sql .= ' GROUP BY p.id_project';
-                $sql .= ' HAVING avg_rate >= "' . $aRateRange[0] . '" AND avg_rate <' . ($aRateRange[1] == 10 ? '= "10' : ' "' . $aRateRange[1]) . '"';
-            }
-
-            $sql .= " ORDER BY " . $order .
-                ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
-
-            $aResult = array();
-            $rResult = $this->bdd->query($sql);
-            while ($record = $this->bdd->fetch_array($rResult)) {
-                $aResult[] = $record;
-            }
-
-            $oCache->set($sCacheKey, $aResult, 60);
+        if (2 === count($aRateRange)) {
+            $sql .= "LEFT JOIN bids b ON b.id_project = p.id_project AND b.status IN (0 ,1) ";
         }
-        return $aResult;
+        $sql .= 'WHERE ' . $sWhereClause;
+
+        if (2 === count($aRateRange)) {
+            $aBind['minRateRange'] = $aRateRange[0];
+            $aBind['maxRateRange'] = $aRateRange[1];
+            $sql .= ' GROUP BY p.id_project';
+            $sql .= ' HAVING avg_rate >= :minRateRange AND';
+            if ($aRateRange[1] == 10) {
+                $sql .= ' avg_rate <= :maxRateRange';
+            } else {
+                $sql .= ' avg_rate < :maxRateRange';
+            }
+        }
+        $sql .= ' ORDER BY ' . $order;
+
+        if (is_numeric($nb)) {
+            $aBind['number'] = $nb;
+            $sql .= ' LIMIT :number ';
+
+            if (is_numeric($start)) {
+                $aBind['start'] = $start;
+                $sql .= ' OFFSET :start';
+            }
+        }
+
+        try {
+            $aTypes = array(
+                'status'       => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY,
+                'iFunding'     => \PDO::PARAM_INT,
+                'minRateRange' => \PDO::PARAM_INT,
+                'maxRateRange' => \PDO::PARAM_INT,
+                'number'       => \PDO::PARAM_INT,
+                'start'        => \PDO::PARAM_INT
+            );
+            $result = $this->bdd->executeQuery($sql, $aBind, $aTypes, $QCProfile)->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Doctrine\DBAL\DBALException $ex) {
+            $result = array();
+        }
+        return $result;
     }
 
-    public function countSelectProjectsByStatus($status, $where = '')
+    public function countSelectProjectsByStatus($status, $where = '', $bUseCache = false)
     {
-        $sql = '
-            SELECT COUNT(*)
+        if (true === $bUseCache) {
+            $oQCProfile = new \Doctrine\DBAL\Cache\QueryCacheProfile(60, md5(__METHOD__));
+        } else {
+            $oQCProfile = null;
+        }
+        $aBind = array('status' => explode(',', $status));
+        $aType = array('status' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY);
+
+        $sQuery = '
+            SELECT COUNT(*) AS nb_project
             FROM projects p
             LEFT JOIN projects_last_status_history ON p.id_project = projects_last_status_history.id_project
             LEFT JOIN projects_status_history ON projects_last_status_history.id_project_status_history = projects_status_history.id_project_status_history
             LEFT JOIN projects_status ON projects_status_history.id_project_status = projects_status.id_project_status
-            WHERE projects_status.status IN (' . $status . ')' . $where;
+            WHERE projects_status.status IN (:status)' . $where;
 
-        $aCount = $this->bdd->fetch_assoc($this->bdd->query($sql));
-
-        if (is_array($aCount)) {
-            return current($this->bdd->fetch_assoc($this->bdd->query($sql)));
-        } else {
+        try {
+            return $this->bdd->executeQuery($sQuery, $aBind, $aType, $oQCProfile)->fetchColumn(0);
+        } catch (\Doctrine\DBAL\DBALException $ex) {
             return 0;
         }
-
     }
 
     public function searchDossiersByStatus(array $aStatus, $siren = null, $societe = null, $nom = null, $prenom = null, $projet = null, $email = null, $start = null, $nb = null)
@@ -307,25 +341,16 @@ class projects extends projects_crud
 
     public function positionProject($id_project, $status, $order)
     {
-        $oCache    = Cache::getInstance();
-        $sKey      = $oCache->makeKey(__METHOD__, $id_project, $status, $order);
+        $aProjects = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', $order);
 
-        if (false === ($aSiblings = $oCache->get($sKey))) {
-            $lProjets = $this->selectProjectsByStatus($status, ' AND p.display = 0 and p.status = 0', $order);
-
-        foreach ($lProjets as $k => $p) {
+        foreach ($aProjects as $k => $p) {
             if ($p['id_project'] == $id_project) {
-                $previous = isset($lProjets[$k - 1]) ? $lProjets[$k - 1]['slug'] : null;
-                $next     = isset($lProjets[$k + 1]) ? $lProjets[$k + 1]['slug'] : null;
+                $previous = isset($aProjects[$k - 1]) ? $aProjects[$k - 1]['slug'] : null;
+                $next     = isset($aProjects[$k + 1]) ? $aProjects[$k + 1]['slug'] : null;
                 break;
             }
         }
-
-            $aSiblings = array('previous' => $previous, 'next' => $next);
-            $oCache->set($sKey, $aSiblings, Cache::SHORT_TIME);
-        }
-
-        return $aSiblings;
+        return array('previous' => $previous, 'next' => $next);
     }
 
     // liste les projets favoris dont la date de retrait est dans j-2
@@ -334,20 +359,25 @@ class projects extends projects_crud
         $sql = 'SELECT * FROM `favoris` WHERE id_client = ' . $id_client;
 
         $resultat = $this->bdd->query($sql);
-        $lesfav   = '';
-        $i        = 0;
-        while ($f = $this->bdd->fetch_array($resultat)) {
-            $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
-            $i++;
-        }
-
-        $sql = 'SELECT *,DATEDIFF(date_retrait,CURRENT_DATE) as datediff FROM projects WHERE id_project IN (' . $lesfav . ') AND DATEDIFF(date_retrait,CURRENT_DATE)<=2 AND DATEDIFF(date_retrait,CURRENT_DATE)>=0 AND date_fin = "0000-00-00 00:00:00" ORDER BY datediff';
-
-        $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
-            $result[] = $record;
+
+        if (0 < $this->bdd->num_rows($resultat)) {
+            $lesfav   = '';
+            $i        = 0;
+            while ($f = $this->bdd->fetch_array($resultat)) {
+                $lesfav .= ($i > 0 ? ',' : '') . $f['id_project'];
+                $i++;
+            }
+
+            $sql = 'SELECT *,DATEDIFF(date_retrait,CURRENT_DATE) as datediff FROM projects WHERE id_project IN (' . $lesfav . ') AND DATEDIFF(date_retrait,CURRENT_DATE)<=2 AND DATEDIFF(date_retrait,CURRENT_DATE)>=0 AND date_fin = "0000-00-00 00:00:00" ORDER BY datediff';
+
+            $resultat = $this->bdd->query($sql);
+
+            while ($record = $this->bdd->fetch_array($resultat)) {
+                $result[] = $record;
+            }
         }
+
         return $result;
     }
 
@@ -412,21 +442,12 @@ class projects extends projects_crud
 
     public function getProjectsStatusAndCount($sListStatus, $sTabOrderProject, $iStart, $iLimit)
     {
-        $oCache    = Cache::getInstance();
-        $sKey      = $oCache->makeKey(Cache::LIST_PROJECTS, $sListStatus);
-        $aElements = $oCache->get($sKey);
-
-        if (false === $aElements) {
-            $alProjetsFunding = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, array(), $iStart, $iLimit);
-            $anbProjects      = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0');
-            $aElements = array(
-                'lProjectsFunding' => $alProjetsFunding,
-                'nbProjects'       => $anbProjects
-            );
-
-            $oCache->set($sKey, $aElements);
-        }
-
+        $aProjects   = $this->selectProjectsByStatus($sListStatus, ' AND p.status = 0 AND p.display = 0', $sTabOrderProject, array(), $iStart, $iLimit);
+        $anbProjects = $this->countSelectProjectsByStatus($sListStatus . ', ' . \projects_status::PRET_REFUSE, ' AND p.status = 0 AND p.display = 0', true);
+        $aElements   = array(
+            'lProjectsFunding' => $aProjects,
+            'nbProjects'       => $anbProjects
+        );
         return $aElements;
     }
 
@@ -569,6 +590,7 @@ class projects extends projects_crud
             case \projects_status::PRET_REFUSE:
             case \projects_status::EN_FUNDING:
             case \projects_status::AUTO_BID_PLACED:
+            case \projects_status::A_FUNDER:
                 $rResult = $this->bdd->query('
                     SELECT SUM(amount * rate) / SUM(amount) AS avg_rate
                     FROM bids
@@ -678,25 +700,30 @@ class projects extends projects_crud
 
     public function getAvgRate($sRisk = null, $sDurationMin = null, $sDurationMax = null)
     {
-        $oCache   = Cache::getInstance();
-        $sKey     = $oCache->makeKey('projects_getAvgRate', $sRisk, $sDurationMin, $sDurationMax);
-        $mAvgRate = $oCache->get($sKey);
+        $sWhereRisk        = '';
+        $sWhereDurationMin = '';
+        $sWhereDurationMax = '';
+        $aBind             = array();
+        $aType             = array();
 
-        if (false === $mAvgRate) {
-            $sWhereRisk        = '';
-            $sWhereDurationMin = '';
-            $sWhereDurationMax = '';
-            if (null !== $sRisk) {
-                $sWhereRisk = ' AND p.risk = "' . $sRisk . '" ';
-            }
-            if (null !== $sDurationMin) {
-                $sWhereDurationMin = ' AND p.period >=' . $sDurationMin;
-            }
-            if (null !== $sDurationMax) {
-                $sWhereDurationMax = ' AND p.period <=' . $sDurationMax;
-            }
+        if (null !== $sRisk) {
+            $sWhereRisk    = ' AND p.risk = :risk ';
+            $aBind['risk'] = $sRisk;
+            $aType['risk'] = \PDO::PARAM_STR;
+        }
 
-            $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
+        if (null !== $sDurationMin) {
+            $aBind['p_min']    = $sDurationMin;
+            $aType['p_min']    = \PDO::PARAM_INT;
+            $sWhereDurationMin = ' AND p.period >= :p_min';
+        }
+
+        if (null !== $sDurationMax) {
+            $aBind['p_max']    = $sDurationMax;
+            $aType['p_max']    = \PDO::PARAM_INT;
+            $sWhereDurationMax = ' AND p.period <= :p_max';
+        }
+        $sQuery = 'SELECT avg(t1.weighted_rate_by_project)
                         FROM (
                           SELECT SUM(t.amount * t.rate) / SUM(t.amount) as weighted_rate_by_project
                           FROM (
@@ -712,13 +739,11 @@ class projects extends projects_crud
                           GROUP BY t.id_project
                         ) t1
                         ';
-
-            $rQuery   = $this->bdd->query($sQuery);
-            $mAvgRate = $this->bdd->result($rQuery, 0, 0);
-            $oCache->set($sKey, $mAvgRate, Cache::MEDIUM_TIME);
+        try {
+            return $this->bdd->executeQuery($sQuery, $aBind, $aType, new \Doctrine\DBAL\Cache\QueryCacheProfile(1800, md5(__METHOD__)))->fetchColumn(0);
+        } catch (\Doctrine\DBAL\DBALException $ex) {
+            return false;
         }
-
-        return $mAvgRate;
     }
 
     public function getAutoBidProjectStatistic(\DateTime $oDateFrom, \DateTime $oDateTo)
@@ -781,5 +806,72 @@ class projects extends projects_crud
             $aProjects[] = $aRecord;
         }
         return $aProjects;
+    }
+
+    public function getProjectsSalesForce()
+    {
+        $sQuery = "SELECT
+                        p.id_project AS 'IDProjet',
+                        REPLACE(cl.source,',','') AS 'Source1',
+                        REPLACE(cl.source2,',','') AS 'Source2',
+                        p.id_company AS 'IDCompany',
+                        p.amount AS 'Amount',
+                        p.period AS 'NbMois',
+                        CASE p.date_publication
+                          WHEN '0000-00-00' then ''
+                          ELSE p.date_publication
+                        END AS 'Date_Publication',
+						CASE p.date_retrait
+                          WHEN '0000-00-00' then ''
+                          ELSE p.date_retrait
+                        END AS 'Date_Retrait',
+                        CASE p.added
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE p.added
+                        END AS 'Date_Ajout',
+                        CASE p.updated
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE p.updated
+                        END AS 'Date_Mise_Jour',
+                        REPLACE(ps.label,',','') AS 'Status',
+                        pn.note AS 'Note',
+                        CASE REPLACE(co.name,',','')
+                          WHEN '' THEN 'A renseigner'
+                          ELSE REPLACE(co.name,',','')
+                        END AS 'Nom_Societe',
+                        REPLACE(co.forme,',','') AS 'Forme',
+                        REPLACE(REPLACE(co.siren,'\t',''),',','') AS 'Siren',
+                        REPLACE(co.adresse1,',','') as 'Adresse1',
+                        REPLACE(co.adresse2,',','') as 'Adresse2',
+                        REPLACE(co.zip,',','') AS 'CP',
+                        REPLACE(co.city,',','') AS 'Ville',
+                        co.id_pays AS 'IdPays',
+                        REPLACE(co.phone,'\t','') AS 'Telephone',
+                        co.status_client AS 'Status_Client',
+                        CASE co.added
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE co.added
+                        END AS 'Date_ajout',
+                        CASE co.updated
+                          WHEN '0000-00-00 00:00:00' then ''
+                          ELSE co.updated
+                        END AS 'Date_Mise_A_Jour',
+                        co.id_client_owner AS 'IDClient'
+                    FROM
+                        projects p
+                    LEFT JOIN
+                        companies co ON (p.id_company = co.id_company)
+                    LEFT JOIN
+                        clients cl ON (cl.id_client = co.id_client_owner)
+                    LEFT JOIN
+                        projects_notes pn ON (p.id_project = pn.id_project)
+                    LEFT JOIN
+                      projects_last_status_history pslh ON pslh.id_project = p.id_project
+                    LEFT JOIN
+                      projects_status_history psh ON psh.id_project_status_history = pslh.id_project_status_history
+                    LEFT JOIN
+                      projects_status ps ON ps.id_project_status = psh.id_project_status";
+
+        return $this->bdd->executeQuery($sQuery);
     }
 }

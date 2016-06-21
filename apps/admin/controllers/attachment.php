@@ -10,9 +10,9 @@ class attachmentController extends bootstrap
      * @param $config
      * @param $app
      */
-    public function attachmentController($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->autoFireHeader = false;
         $this->autoFireHead   = false;

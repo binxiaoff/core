@@ -1,14 +1,14 @@
 <?php
 
-class espace_emprunteurController extends Bootstrap
+class espace_emprunteurController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
-        if ($command->Function !== 'securite') {
+        if ($this->Command->Function !== 'securite') {
             $this->setHeader('header_account');
             $this->page = 'faq';
 
@@ -20,7 +20,8 @@ class espace_emprunteurController extends Bootstrap
             $this->clients->get($_SESSION['client']['id_client']);
             $this->clients->checkAccessBorrower();
             $this->companies->get($_SESSION['client']['id_client'], 'id_client_owner');
-            $aAllCompanyProjects = array_shift($this->companies->getProjectsForCompany($this->companies->id_company));
+            $aAllCompanyProjects = $this->companies->getProjectsForCompany($this->companies->id_company);
+            $aAllCompanyProjects = array_shift($aAllCompanyProjects);
 
             if ((int)$aAllCompanyProjects['project_status'] >= projects_status::A_TRAITER && (int)$aAllCompanyProjects['project_status'] < projects_status::PREP_FUNDING) {
                 header('Location:' . $this->url . '/depot_de_dossier/fichiers/' . $aAllCompanyProjects['hash']);
@@ -148,6 +149,7 @@ class espace_emprunteurController extends Bootstrap
             $_SESSION['forms']['contact-emprunteur']['errors']['message'] = true;
         }
 
+        $sFilePath = '';
         if (isset($_FILES) && empty($_FILES) === false) {
             $oUpload = new \upload;
             $oUpload->setUploadDir($this->path, 'protected/contact/');
@@ -161,7 +163,6 @@ class espace_emprunteurController extends Bootstrap
             die;
         } else {
             $this->contactEmailClient();
-            $this->mails_text->get('notification-demande-de-contact-emprunteur', 'lang = "' . $this->language . '" AND type');
             $this->settings->get('Adresse emprunteur', 'type');
 
             $aReplacements = array(
@@ -176,17 +177,15 @@ class espace_emprunteurController extends Bootstrap
                 '[SURL]'      => $this->surl
             );
 
-            $this->email = $this->loadLib('email', array());
-            $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-            $this->email->addRecipient(trim($this->settings->value));
-            $this->email->setReplyTo(utf8_decode($_POST['email']), utf8_decode($_POST['nom']) . ' ' . utf8_decode($_POST['prenom']));
-            $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-            $this->email->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
-
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact-emprunteur', $aReplacements, false);
+            $message->setTo(trim($this->settings->value));
             if (empty($sFilePath) === false) {
-                $this->email->attach($sFilePath);
+                $message->attach(Swift_Attachment::fromPath($sFilePath));
             }
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+
             @unlink($sFilePath);
             $this->bSuccessMessage = true;
         }
@@ -322,8 +321,8 @@ class espace_emprunteurController extends Bootstrap
                 $oProject->period                               = $_POST['duree'];
                 $oProject->create();
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::A_TRAITER, $oProject);
 
                 header('Location:' . $this->lurl . '/espace_emprunteur/projets');
@@ -367,7 +366,7 @@ class espace_emprunteurController extends Bootstrap
                     $aProjectsPreFunding[$iKey]['project_status_label'] = 'en-attente-de-mise-en-ligne';
                     break;
             }
-            $fPredictAmountAutoBid = $this->get('AutoBidSettingsManager')->predictAmount($aProject['risk'], $aProject['period']);
+            $fPredictAmountAutoBid = $this->get('unilend.service.autobid_settings_manager')->predictAmount($aProject['risk'], $aProject['period']);
             $aProjectsPreFunding[$iKey]['predict_autobid'] = round(($fPredictAmountAutoBid / $aProject['amount']) * 100, 1);
         }
         return $aProjectsPreFunding;
@@ -407,8 +406,8 @@ class espace_emprunteurController extends Bootstrap
         foreach ($aProjectsPostFunding as $iKey => $aProject) {
             $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
             $aProjectsPostFunding[$iKey]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
-
-            $aNextRepayment                                        = array_shift($oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1));
+            $aNextRepayment                                        = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
+            $aNextRepayment                                        = array_shift($aNextRepayment);
             $aProjectsPostFunding[$iKey]['MonthlyPayment']         = ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100;
             $aProjectsPostFunding[$iKey]['DateNextMonthlyPayment'] = $aNextRepayment['date_echeance_emprunteur'];
         }
@@ -432,12 +431,12 @@ class espace_emprunteurController extends Bootstrap
 
     private function contactEmailClient()
     {
-        $this->mails_text->get('demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-        $this->settings->get('Facebook', 'type');
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
 
-        $this->settings->get('Twitter', 'type');
+        $oSettings->get('Twitter', 'type');
         $sTwitterURL = $this->settings->value;
 
         $aVariables = array(
@@ -449,31 +448,11 @@ class espace_emprunteurController extends Bootstrap
             'lien_tw'  => $sTwitterURL
         );
 
-        $this->email = $this->loadLib('email', array());
-        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-        $sRecipient = $_POST['email'];
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP(
-                $this->email,
-                $this->mails_filer,
-                $this->mails_text->id_textemail,
-                $sRecipient,
-                $aNMPResponse);
-            $this->tnmp->sendMailNMP(
-                $aNMPResponse,
-                $aVariables,
-                $this->mails_text->nmp_secure,
-                $this->mails_text->id_nmp,
-                $this->mails_text->nmp_unique,
-                $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $aVariables);
+        $message->setTo($_POST['email']);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     public function _getCSVWithLenderDetails()
@@ -558,10 +537,14 @@ class espace_emprunteurController extends Bootstrap
 
     public function _getPdfOperations()
     {
+        $this->hideDecoration();
         include $this->path . '/apps/default/controllers/pdf.php';
 
-        $oCommandPdf    = new Command('pdf', 'setDisplay', $this->language);
-        $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
+        $oCommandPdf    = new \Command('pdf', 'setDisplay', $this->language);
+        $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+        $oPdf->setContainer($this->container);
+        $oPdf->initialize();
+
         $sPath          = $this->path . 'protected/operations_export_pdf/' . $this->clients->id_client . '/';
         $sNamePdfClient = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
 
@@ -577,6 +560,7 @@ class espace_emprunteurController extends Bootstrap
             $this->clients->id_client
         );
 
+        $oPdf->companies = $this->loadData('companies');
         $oPdf->companies->get($this->clients->id_client, 'id_client_owner');
         $oPdf->setDisplay('operations_emprunteur_pdf_html');
         $oPdf->WritePdf($sPath . $sNamePdfClient, 'operations');

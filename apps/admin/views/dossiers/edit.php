@@ -694,17 +694,6 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr>
-                            <th></th>
-                            <td>
-                                <?php if ($this->projects_pouvoir->status_remb == '0' && $this->current_projects_status->status == \projects_status::FUNDE) { ?>
-                                    <select name="statut_pouvoir" id="statut_pouvoir" class="select">
-                                        <option <?= ($this->projects_pouvoir->status_remb == '0' ? 'selected' : '') ?> value="0">En attente</option>
-                                        <option <?= ($this->projects_pouvoir->status_remb == '1' ? 'selected' : '') ?> value="1">Validé</option>
-                                    </select>
-                                <?php } ?>
-                            </td>
-                        </tr>
                     <?php } elseif ($this->current_projects_status->status == \projects_status::FUNDE) { ?>
                         <tr>
                             <th><label for="upload_pouvoir">Pouvoir :</label></th>

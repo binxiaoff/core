@@ -25,7 +25,6 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-use Unilend\librairies\Cache;
 
 class loans extends loans_crud
 {
@@ -84,7 +83,7 @@ class loans extends loans_crud
         $sql = 'SELECT SUM(amount) as solde FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -153,7 +152,7 @@ class loans extends loans_crud
         $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return (int)($this->bdd->result($result, 0, 0));
+        return (int)($this->bdd->result($result));
     }
 
     // retourne la moyenne des prets validés d'un projet
@@ -162,7 +161,7 @@ class loans extends loans_crud
         $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
+        $avg    = $this->bdd->result($result);
         if ($avg == '') {
             $avg = 0;
         }
@@ -176,7 +175,7 @@ class loans extends loans_crud
         $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 'avg');
+        return $this->bdd->result($result);
     }
 
     // retourne la moyenne des prets validés d'un preteur
@@ -185,7 +184,7 @@ class loans extends loans_crud
         $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        return $this->bdd->result($result, 0, 'avg');
+        return $this->bdd->result($result);
     }
 
     // sum prêtée d'un lender
@@ -362,24 +361,30 @@ class loans extends loans_crud
         );
     }
 
-    public function getMonthNb($iProjectId = null)
+    /**
+     * @param int $projectId
+     * @return bool|int
+     */
+    public function getMonthNb($projectId = null)
     {
-        if (null === $iProjectId) {
-            $iProjectId = $this->id_project;
+        if (null === $projectId) {
+            $projectId = $this->id_project;
         }
 
-        if ($iProjectId) {
-            $oCache  = Cache::getInstance();
-            $sKey    = $oCache->makeKey('loans', 'getMonthNb', $iProjectId);
-            $mRecord = $oCache->get($sKey);
+        if ($projectId) {
+            $sQuery = 'SELECT period FROM projects WHERE id_project = :projectId';
 
-            if (!$mRecord) {
-                $sQuery  = 'SELECT period FROM projects WHERE id_project = ' . $iProjectId;
-                $rQuery  = $this->bdd->query($sQuery);
-                $mRecord = (int)$this->bdd->result($rQuery, 0, 0);
-                $oCache->set($sKey, $mRecord);
+            try {
+                $result = $this->bdd->executeQuery($sQuery, array('projectId' => $projectId), array('projectId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetchColumn(0);
+
+                if (empty($result)) {
+                    return false;
+                }
+            } catch (\Doctrine\DBAL\DBALException $ex) {
+                return false;
             }
-            return $mRecord;
+            return (int)$result;
         }
         return false;
     }

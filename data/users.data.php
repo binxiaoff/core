@@ -182,9 +182,9 @@ class users extends users_crud
         }
     }
 
-    public function checkAccess($zone = '')
+    public function checkAccess($zone = '', $superAdmin = false)
     {
-        if (in_array($_SERVER['REMOTE_ADDR'], $this->params['config']['ip_admin'][$this->params['config']['env']]) && $this->params['config']['superAdmin']) {
+        if ($superAdmin) {
             if (! isset($_SESSION['user'])) {
                 $sql = 'SELECT * FROM ' . $this->userTable . ' WHERE id_user = 1';
                 $res = $this->bdd->query($sql);
@@ -229,7 +229,7 @@ class users extends users_crud
 
                     $sql    = 'SELECT * FROM users_zones WHERE id_user = ' . $_SESSION['user']['id_user'] . ' AND id_zone = "' . $id_zone . '"';
                     $result = $this->bdd->query($sql);
-                    $nb     = $this->bdd->num_rows();
+                    $nb     = $this->bdd->num_rows($result);
 
                     if ($nb == 1) {
                         return true;
