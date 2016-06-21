@@ -100,7 +100,7 @@ class EmailBorrowerReminderBeforeRecoveryCommand extends ContainerAwareCommand
                         'mensualite_e'                       => $ficelle->formatNumber(($nextRepayment[0]['montant'] + $nextRepayment[0]['commission'] + $nextRepayment[0]['tva']) / 100),
                         'num_dossier'                        => $project->id_project,
                         'nb_preteurs'                        => $loans->getNbPreteurs($project->id_project),
-                        'CRD'                                => $ficelle->formatNumber($lenderRepaymentSchedule->sum('id_project = ' . $project->id_project . ' AND status = 0', 'capital')),
+                        'CRD'                                => $ficelle->formatNumber(bcmul($lenderRepaymentSchedule->getOwedCapital(array('id_project' => $project->id_project), array(' = ')), 100)),
                         'date_prochaine_echeance_emprunteur' => \DateTime::createFromFormat('Y-m-d H:i:s', $nextRepayment[0]['date_echeance_emprunteur'])->format('d/m/Y') // @todo Intl
                     );
 

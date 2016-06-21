@@ -1159,8 +1159,8 @@ class ajaxController extends bootstrap
                     $a++;
                 }
 
-                $this->sumRembParAn   = $this->echeanciers->getSumRembByYearCapital($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
-                $this->sumIntParAn    = $this->echeanciers->getSumIntByYear($this->lenders_accounts->id_lender_account . ' AND status_ra = 0 ', $this->debut, $this->fin);
+                $this->sumRembParAn   = $this->echeanciers->getRepaidCapitalInDateRange($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
+                $this->sumIntParAn    = $this->echeanciers->getRepaidInterestsInDateRange($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
                 $this->sumFiscalParAn = $tax->getTaxByYear($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
             }
         }

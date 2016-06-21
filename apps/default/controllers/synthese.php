@@ -131,12 +131,12 @@ class syntheseController extends bootstrap
         $this->nbLoan                  = $this->loans->getProjectsCount($this->lenders_accounts->id_lender_account);
         $this->sumBidsEncours          = $this->bids->sumBidsEncours($this->lenders_accounts->id_lender_account);
         $this->sumPrets                = $this->loans->sumPrets($this->lenders_accounts->id_lender_account);
-        $this->sumRembMontant          = $this->echeanciers->getRepaidCapital(array('id_lender' => $this->lenders_accounts->id_lender_account));
+        $this->sumRembMontant          = $this->echeanciers->getRepaidCapital(array('id_lender' => $this->lenders_accounts->id_lender_account), array(' = '));
         $ProblematicProjects           = $this->echeanciers->getProblematicProjects($this->lenders_accounts->id_lender_account);
         $this->nbProblems              = $ProblematicProjects['projects'];
         $this->sumProblems             = $ProblematicProjects['capital'];
-        $this->sumRestanteARemb        = $this->echeanciers->getOwedCapital(array('id_lender' => $this->lenders_accounts->id_lender_account)) - $this->sumProblems;
-        $this->sumRevenuesFiscalesRemb = $this->echeanciers->getSumRevenuesFiscalesRemb($this->lenders_accounts->id_lender_account . ' AND status_ra = 0');
+        $this->sumRestanteARemb        = $this->echeanciers->getOwedCapital(array('id_lender' => $this->lenders_accounts->id_lender_account), array(' = ')) - $this->sumProblems;
+        $this->sumRevenuesFiscalesRemb = bcdiv($tax->getTotalAmountForLender($this->lenders_accounts->id_lender_account), 100, 2);
         $this->sumInterets             = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account)) - $this->sumRevenuesFiscalesRemb;
 
         $total = $this->solde + $this->sumBidsEncours + $this->sumRestanteARemb;

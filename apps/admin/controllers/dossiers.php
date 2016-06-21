@@ -967,10 +967,10 @@ class dossiersController extends bootstrap
         if (in_array($iStatus, array(\projects_status::RECOUVREMENT, \projects_status::PROCEDURE_SAUVEGARDE, \projects_status::REDRESSEMENT_JUDICIAIRE, \projects_status::LIQUIDATION_JUDICIAIRE))) {
             /** @var \echeanciers $oLenderRepaymentSchedule */
             $oLenderRepaymentSchedule = $this->loadData('echeanciers');
-            $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project)));
+            $aReplacements['CRD'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project), array(' = ')));
 
             if (\projects_status::RECOUVREMENT == $iStatus) {
-                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber($oLenderRepaymentSchedule->sum('id_project = ' . $this->projects->id_project . ' AND status IN (' . \echeanciers::STATUS_PENDING . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ') AND date_echeance < "' . date('Y-m-d') . '"', 'capital - capital_rembourse'));
+                $aReplacements['mensualites_impayees'] = $this->ficelle->formatNumber(bcdiv($oLenderRepaymentSchedule->getOwedCapital(array('id_project' => $this->projects->id_project, 'date_echeance' => '"' . date('Y-m-d') . '"'), array(' = ', ' < ')), 100, 2));
             }
         }
 
@@ -1980,7 +1980,7 @@ class dossiersController extends bootstrap
                     $montant_total = 0;
 
                     foreach ($this->echeanciers->get_liste_preteur_on_project($this->projects->id_project) as $preteur) {
-                        $reste_a_payer_pour_preteur = $this->echeanciers->getOwedCapital(array('id_loan' => $preteur['id_loan']));
+                        $reste_a_payer_pour_preteur = $this->echeanciers->getOwedCapital(array('id_loan' => $preteur['id_loan']), array(' = '));
 
                         $this->lenders_accounts->get($preteur['id_lender'], 'id_lender_account');
                         $this->clients->get($this->lenders_accounts->id_client_owner, 'id_client');
@@ -2106,7 +2106,7 @@ class dossiersController extends bootstrap
         $this->montant_ra = 0;
 
         if ($dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
-            $this->montant_ra = $this->echeanciers->getEarlyRepaidCapital(array('id_loan' => $this->params[1]));
+            $this->montant_ra = $this->echeanciers->getEarlyRepaidCapital(array('id_loan' => $this->params[1]), array(' = '));
             $this->date_ra    = $dernierStatut[0]['added'];
         }
     }
@@ -2217,7 +2217,7 @@ class dossiersController extends bootstrap
         }
 
         $this->montant_restant_du_emprunteur = $this->echeanciers_emprunteur->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
-        $this->montant_restant_du_preteur    = $this->echeanciers->reste_a_payer_ra($id_project, $iOrderEarlyRefund);
+        $this->montant_restant_du_preteur    = floatval($this->echeanciers->getOwedCapital(array('id_project' => $id_project, 'ordre' => $iOrderEarlyRefund), array(' = ', ' >= ')));
         $resultat_num                        = $this->montant_restant_du_preteur - $this->montant_restant_du_emprunteur;
 
         $this->ordre_echeance_ra = $iOrderEarlyRefund;

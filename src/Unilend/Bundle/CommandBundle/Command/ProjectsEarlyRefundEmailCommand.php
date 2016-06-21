@@ -137,7 +137,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                             'nom_entreprise'       => $company->name,
                             'taux_bid'             => $ficelle->formatNumber($loan->rate),
                             'nbecheancesrestantes' => $remainingRepaymentsCount,
-                            'interetsdejaverses'   => $ficelle->formatNumber($lenderRepaymentSchedule->sum('id_project = ' . $project->id_project . ' AND id_loan = ' . $projectLender['id_loan'] . ' AND status_ra = 0 AND status = 1 AND id_lender =' . $projectLender['id_lender'], 'interets')),
+                            'interetsdejaverses'   => $ficelle->formatNumber($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender']), array(' = ', ' = ', ' = ')) * 100),
                             'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital) . ($lenderRemainingCapital >= 2 ? ' euros' : ' euro'),
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $ficelle->formatNumber($accountBalance) . ($accountBalance >= 2 ? ' euros' : ' euro'),

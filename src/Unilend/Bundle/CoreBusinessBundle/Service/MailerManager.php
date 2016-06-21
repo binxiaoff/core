@@ -893,7 +893,7 @@ class MailerManager
 
             if ($clientNotifications->getNotif($lender->id_client_owner, \notifications::TYPE_LOAN_ACCEPTED, 'immediatement') == true) {
                 $lenderLoans         = $loans->select('id_project = ' . $project->id_project . ' AND id_lender = ' . $lender->id_lender_account, 'id_type_contract DESC');
-                $iSumMonthlyPayments = $paymentSchedule->sum('id_lender = ' . $lender->id_lender_account . ' AND id_project = ' . $project->id_project . ' AND ordre = 1', 'montant');
+                $iSumMonthlyPayments = bcmul($paymentSchedule->getTotalAmount(array('id_lender' => $lender->id_lender_account, 'id_project' => $project->id_project, 'ordre' => 1), array(' = ', ' = ', ' = ')), 100);
                 $aFirstPayment       = $paymentSchedule->getPremiereEcheancePreteur($project->id_project, $lender->id_lender_account);
                 $sDateFirstPayment   = $aFirstPayment['date_echeance'];
                 $sLoansDetails       = '';

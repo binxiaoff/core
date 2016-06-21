@@ -49,13 +49,13 @@ class tax extends tax_crud
     {
         $sql = 'SELECT SUM(amount) as daily_amount, id_tax_type
                 FROM tax
-                WHERE DATE(added) = "' . $date . '" GROUP BY id_tax_type';
-        $rQuery = $this->bdd->query($sql);
-        $aResult = array();
-        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-            $aResult[$aRow['id_tax_type']] = $aRow['daily_amount'];
+                WHERE DATE(added) = :date GROUP BY id_tax_type';
+        $aResult = $this->bdd->executeQuery($sql, array('date' => $date), array('date' => \PDO::PARAM_STR), new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+        $aDailyTax = array();
+        foreach ($aResult as $aRow) {
+            $aDailyTax[$aRow['id_tax_type']] = $aRow['daily_amount'];
         }
-        return $aResult;
+        return $aDailyTax;
     }
 
     /**
@@ -124,34 +124,69 @@ class tax extends tax_crud
 
     /**
      * @param int $iLenderId
-     * @param string $sBegin
-     * @param string $sEnd
+     * @param int $iBegin
+     * @param int $iEnd
      * @return array
      */
-    public function getTaxByYear($iLenderId, $sBegin, $sEnd)
+    public function getTaxByYear($iLenderId, $iBegin, $iEnd)
     {
         $sql = '
-        SELECT SUM(tax.amount) as taxAmount,
-        LEFT(tax.added, 7) AS date
+        SELECT SUM(NULLIF(tax.amount, 0)) as taxAmount,
+        YEAR(tax.added) AS date
         FROM tax
         INNER JOIN transactions t on t.id_transaction = tax.id_transaction
         INNER JOIN echeanciers e ON e.id_echeancier = t.id_echeancier AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ') AND e.id_lender = ' . $iLenderId . '
-        WHERE year(tax.added) >= ' . $sBegin . '
-        AND YEAR(tax.added) <= ' . $sEnd . '
-        GROUP BY left(tax.added, 7)';
-        
+        WHERE year(tax.added) >= ' . $iBegin . '
+        AND YEAR(tax.added) <= ' . $iEnd . '
+        GROUP BY year(tax.added)';
+
         $result = $this->bdd->query($sql);
-
         $res      = array();
-        $resultat = array();
+
         while ($record = $this->bdd->fetch_array($result)) {
-            $res[$record['date']] = $record['taxAmount'];
+            $res[$record['date']] = number_format($record['taxAmount'], 2, '.', '');
         }
 
-        for ($i = $sBegin; $i <= $sEnd; $i++) {
-            $resultat[$i] = number_format(isset($res[$i]) ? $res[$i] : 0, 2, '.', '');
-        }
+        return $res;
+    }
 
-        return $resultat;
+    /**
+     * @param $iLenderId
+     * @return int
+     */
+    public function getTotalAmountForLender($iLenderId)
+    {
+        $iTotalAmount = 0;
+        foreach ($this->getTotalAmountByType($iLenderId) as $aRow) {
+            $iTotalAmount += $aRow['total_tax_amount'];
+        }
+        return $iTotalAmount;
+    }
+
+    /**
+     * @param $iLenderId
+     * @return array
+     */
+    public function getTotalAmountByType($iLenderId)
+    {
+        $sql = '
+        SELECT
+          SUM(amount) AS total_tax_amount,
+          id_tax_type
+        FROM
+          tax
+          INNER JOIN transactions t ON t.id_transaction = tax.id_transaction
+          INNER JOIN echeanciers e ON e.id_echeancier = t.id_echeancier AND e.status IN (:repayment_status_list)
+        WHERE e.id_lender = :id_lender AND e.status_ra = 0
+        GROUP BY tax.id_tax_type';
+
+        try {
+            return $this->bdd->executeQuery($sql,
+                array('id_lender' => $iLenderId, 'repayment_status_list' => array(\echeanciers::STATUS_PARTIALLY_REPAID, \echeanciers::STATUS_REPAID)),
+                array('id_lender' => \PDO::PARAM_INT, 'repayment_status_list' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY))
+                ->fetchAll(\PDO::FETCH_ASSOC);
+        } catch (\Exception $exception) {
+            return array();
+        }
     }
 }

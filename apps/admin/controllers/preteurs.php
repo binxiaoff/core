@@ -158,10 +158,20 @@ class preteursController extends bootstrap
         $this->SumDepot       = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10,30');
         $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
 
-        $this->echeanciers    = $this->loadData('echeanciers');
-        $this->sumRembInte    = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account));
-        $this->nextRemb       = $this->echeanciers->getNextRemb($this->lenders_accounts->id_lender_account);
-        $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account));
+        $this->echeanciers = $this->loadData('echeanciers');
+        $this->sumRembInte = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account), array(' = '));
+        $datetime          = new DateTime();
+        $sBeginDate        = $datetime->modify('first day of next month')->setTime(0, 0, 0)->format('Y-m-d H:i:s');
+        $datetime          = new DateTime();
+        $sEndDate          = $datetime->modify('last day of next month')->setTime(23, 59, 59)->format('Y-m-d H:i:s');
+        $this->nextRemb    = $this->echeanciers->getTotalAmount(array(
+                                                                        'id_lender'     => $this->lenders_accounts->id_lender_account,
+                                                                        'date_echeance' => '"' . $sBeginDate . '" AND "' . $sEndDate . '"',
+                                                                        'status'        => \echeanciers::STATUS_PENDING
+                                                                    ),
+                                                                array(' = ', ' BETWEEN ', ' = ')
+                                                                );
+        $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account), array(' = '));
 
         $this->bids           = $this->loadData('bids');
         $this->avgPreteur     = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');

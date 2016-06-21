@@ -501,15 +501,18 @@ class transfertsController extends bootstrap
         $this->offres_bienvenues = $this->loadData('offres_bienvenues');
         $this->clients           = $this->loadData('clients');
         $this->companies         = $this->loadData('companies');
+        /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails    = $this->loadData('offres_bienvenues_details');
+        /** @var \transactions $oTransactions */
         $oTransactions           = $this->loadData('transactions');
+        /** @var \wallets_lines $oWalletsLines */
         $oWalletsLines           = $this->loadData('wallets_lines');
+        /** @var \bank_unilend $oBankUnilend */
         $oBankUnilend            = $this->loadData('bank_unilend');
+        /** @var \lenders_accounts $oLendersAccounts */
         $oLendersAccounts        = $this->loadData('lenders_accounts');
+        /** @var \settings $oSettings */
         $oSettings               = $this->loadData('settings');
-        //load for use of constants
-        $this->loadData('transactions_types');
-        $this->loadData('clients_status');
 
         if (isset($this->params[0])) {
             $this->clients->get($this->params[0]);
@@ -583,7 +586,7 @@ class transfertsController extends bootstrap
                 $oWelcomeOfferDetails->montant            = $this->offres_bienvenues->montant;
                 $oWelcomeOfferDetails->status             = 0;
                 $oWelcomeOfferDetails->create();
-                
+
                 $oTransactions->id_client                 = $this->clients->id_client;
                 $oTransactions->montant                   = $oWelcomeOfferDetails->montant;
                 $oTransactions->id_offre_bienvenue_detail = $oWelcomeOfferDetails->id_offre_bienvenue_detail;
