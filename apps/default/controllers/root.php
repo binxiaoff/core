@@ -596,6 +596,8 @@ class rootController extends bootstrap
 
     public function _logout()
     {
+        $this->autoFireView = false;
+
         $this->clients->handleLogout();
     }
 
