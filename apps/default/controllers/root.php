@@ -2,16 +2,14 @@
 
 class rootController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
         $this->catchAll = true;
     }
 
     public function _default()
     {
-        $this->fireCache();
-
         // ajout du slash car capital rajout un Get
         if (isset($this->params[0]) && substr($this->params[0], 0, 8) == 'capital?') {
             header('Location:' . $this->lurl . '/capital/?');
@@ -103,9 +101,10 @@ class rootController extends bootstrap
             }
 
             // Recuperation du contenu de la page
-            $sKey      = $this->oCache->makeKey('Home_Tree_Childs_Elements', $this->tree->id_tree, $this->language);
-            $aElements = $this->oCache->get($sKey);
-            if (false === $aElements) {
+            $oCachePool = $this->get('memcache.default');
+
+            $oCachedItem  = $oCachePool->getItem('Home_Tree_Childs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+            if (false === $oCachedItem->isHit()) {
                 $this->content          = array();
                 $this->complement       = array();
                 $this->childsContent    = array();
@@ -134,8 +133,11 @@ class rootController extends bootstrap
                     'childsComplement' => $this->childsComplement
                 );
 
-
-                $this->oCache->set($sKey, $aElements);
+                $oCachedItem->set($aElements)
+                            ->expiresAfter(3600);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $aElements    = $oCachedItem->get();
             }
 
             $this->content          = $aElements['content'];
@@ -152,9 +154,9 @@ class rootController extends bootstrap
             }
 
             // Recuperation des positions des blocs
-            $sKey      = $this->oCache->makeKey('Home_Blocs_Elements', $this->tree->id_template, $this->language);
-            $aElements = $this->oCache->get($sKey);
-            if (false === $aElements) {
+            $oCachedItem  = $oCachePool->getItem('Home_Blocs_Elements_' . $this->tree->id_tree . '_' . $this->language);
+
+            if (false === $oCachedItem->isHit()) {
                 $this->bloc_content    = array();
                 $this->bloc_complement = array();
                 // Recuperation des blocs pour chaque position
@@ -175,7 +177,11 @@ class rootController extends bootstrap
                     'bloc_complement' => $this->bloc_complement
                 );
 
-                $this->oCache->set($sKey, $aElements, \Unilend\librairies\Cache::MEDIUM_TIME);
+                $oCachedItem->set($aElements)
+                            ->expiresAfter(3600);
+                $oCachePool->save($oCachedItem);
+            } else {
+                $aElements    = $oCachedItem->get();
             }
 
             $this->bloc_content    = $aElements['bloc_content'];
@@ -590,6 +596,8 @@ class rootController extends bootstrap
 
     public function _logout()
     {
+        $this->autoFireView = false;
+
         $this->clients->handleLogout();
     }
 
@@ -599,10 +607,11 @@ class rootController extends bootstrap
         $this->autoFireDebug  = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+        $this->autoFireView   = false;
 
         $this->users = $this->loadData('users');
 
-        if ($this->params[0] != '' && $this->params[1] != '') {
+        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
             $this->users->handleLoginFront($this->params[0], $this->params[1]);
         } else {
             $this->users->handleLogoutFront();
@@ -646,8 +655,7 @@ class rootController extends bootstrap
         $this->wallets_lines    = $this->loadData('wallets_lines');
         $this->bank_lines       = $this->loadData('bank_lines');
 
-        // On recup la lib et le reste payline
-        require_once($this->path . 'protected/payline/include.php');
+        require_once $this->path . 'librairies/payline/include.php';
 
         $array = array();
 
@@ -713,9 +721,8 @@ class rootController extends bootstrap
                     // Mail alert transaction //
                     ////////////////////////////
 
-                    //$to  = 'unilend@equinoa.fr';
-                    $to = implode(',', $this->Config['DebugAlertesBusiness']);
-
+                    $this->settings->get('DebugAlertesBusiness', 'type');
+                    $to = $this->settings->value;
                     // subject
                     $subject = '[Alerte] BACK PAYLINE Transaction approved';
 
@@ -760,8 +767,8 @@ class rootController extends bootstrap
                     // Mail alert transaction //
                     ////////////////////////////
 
-                    //$to  = 'unilend@equinoa.fr';
-                    $to = implode(',', $this->Config['DebugAlertesBusiness']);
+                    $this->settings->get('DebugAlertesBusiness', 'type');
+                    $to = $this->settings->value;
 
                     // subject
                     $subject = '[Alerte] BACK PAYLINE Transaction approved DEJA TRAITE';
@@ -864,14 +871,8 @@ class rootController extends bootstrap
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
 
-        // Chargement des librairies
-        $this->xml2array = $this->loadLib('xml2array');
-
-        $xmlstring = file_get_contents('http://www.capital.fr/wrapper-unilend.xml');
-
-        $result  = $this->xml2array->getArray($xmlstring);
-        $content = $result['wrapper']['content'];
-        $content = explode('<!--CONTENT_ZONE-->', $content);
+        $oXml    = new SimpleXMLElement(file_get_contents('http://www.capital.fr/wrapper-unilend.xml'));
+        $content = explode('<!--CONTENT_ZONE-->', (string)$oXml->content);
 
         $this->haut = str_replace(array('<!--TITLE_ZONE_HEAD-->', '<!--TITLE_ZONE-->'), array('Financement Participatif  : Prêtez aux entreprises françaises & Recevez des intérêts chaque mois', 'Financement participatif'), $content[0]);
         $this->bas  = str_replace('<!--XITI_ZONE-->', 'Unilend-accueil', $content[1]);
@@ -1063,7 +1064,9 @@ class rootController extends bootstrap
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $this->clients->checkAccessLender();
 
-            $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+            $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+            $listeAccept = array_shift($listeAccept);
+
             $id_tree_cgu = $listeAccept['id_legal_doc'];
 
             $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
@@ -1079,8 +1082,10 @@ class rootController extends bootstrap
                 header("Content-Type: application/force-download");
                 @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
             } else {
-                $oCommandPdf    = new Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+                $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->setContainer($this->container);
+                $oPdf->initialize();
                 $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
                 $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
                 $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
@@ -1124,7 +1129,9 @@ class rootController extends bootstrap
             if (isset($this->params[0]) && $this->params[0] == 'nosign') {
                 $dateAccept = '';
             } else {
-                $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+                $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+                $listeAccept = array_shift($listeAccept);
+
                 $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept['added']));
             }
 
@@ -1279,7 +1286,35 @@ class rootController extends bootstrap
 
             $this->demande_contact->create();
 
-            // Destinataire Unilend
+            // Liste des objets
+            $objets = array('', 'Relation presse', 'Demande preteur', 'Demande Emprunteur', 'Recrutement', 'Autre', 'Partenariat');
+
+            $this->settings->get('Facebook', 'type');
+            $lien_fb = $this->settings->value;
+
+            $this->settings->get('Twitter', 'type');
+            $lien_tw = $this->settings->value;
+
+            $pageProjets = $this->tree->getSlug(4, $this->language);
+
+            $varMail = array(
+                'surl'     => $this->surl,
+                'url'      => $this->lurl,
+                'email_c'  => $this->demande_contact->email,
+                'prenom_c' => $this->demande_contact->prenom,
+                'nom_c'    => $this->demande_contact->nom,
+                'objet'    => $objets[$this->demande_contact->demande],
+                'projets'  => $this->lurl . '/' . $pageProjets,
+                'lien_fb'  => $lien_fb,
+                'lien_tw'  => $lien_tw
+            );
+
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('demande-de-contact', $varMail);
+            $message->setTo($_POST['email']);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
+
             if ($this->demande_contact->demande == 1) {
                 $this->settings->get('Adresse presse', 'type');
             } elseif ($this->demande_contact->demande == 2) {
@@ -1296,83 +1331,6 @@ class rootController extends bootstrap
 
             $destinataire = $this->settings->value;
 
-            // Liste des objets
-            $objets = array('', 'Relation presse', 'Demande preteur', 'Demande Emprunteur', 'Recrutement', 'Autre', 'Partenariat');
-
-            //*****************************//
-            //*** ENVOI DU MAIL CONTACT ***//
-            //*****************************//
-
-            $this->mails_text->get('demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-            $surl   = $this->surl;
-            $url    = $this->lurl;
-            $email  = $this->demande_contact->email;
-            $nom    = $this->demande_contact->nom;
-            $prenom = $this->demande_contact->prenom;
-            $objet  = $objets[$this->demande_contact->demande];
-
-            $this->settings->get('Facebook', 'type');
-            $lien_fb = $this->settings->value;
-
-            $this->settings->get('Twitter', 'type');
-            $lien_tw = $this->settings->value;
-
-            $pageProjets = $this->tree->getSlug(4, $this->language);
-
-            $varMail = array(
-                'surl'     => $surl,
-                'url'      => $url,
-                'email_c'  => $email,
-                'prenom_c' => $prenom,
-                'nom_c'    => $nom,
-                'objet'    => $objet,
-                'projets'  => $this->lurl . '/' . $pageProjets,
-                'lien_fb'  => $lien_fb,
-                'lien_tw'  => $lien_tw
-            );
-
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-
-            if ($this->Config['env'] == 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $_POST['email'], $tabFiler);
-                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else {
-                $this->email->addRecipient(trim($_POST['email']));
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-            }
-
-            //***************************************//
-            //*** ENVOI DU MAIL CONTACT A UNILEND ***//
-            //***************************************//
-
-            // Recuperation du modele de mail
-            $this->mails_text->get('notification-demande-de-contact', 'lang = "' . $this->language . '" AND type');
-
-            $surl   = $this->surl;
-            $url    = $this->lurl;
-            $email  = $this->demande_contact->email;
-            $nom    = utf8_decode($this->demande_contact->nom);
-            $prenom = utf8_decode($this->demande_contact->prenom);
-            $objet  = ($objets[$this->demande_contact->demande]);
-
-            $this->demande_contact->preciser  = $_POST['preciser'];
-            $this->demande_contact->nom       = $this->ficelle->majNom($_POST['nom']);
-            $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
-            $this->demande_contact->email     = $_POST['email'];
-            $this->demande_contact->message   = $_POST['message'];
-            $this->demande_contact->societe   = $_POST['societe'];
-            $this->demande_contact->telephone = $_POST['telephone'];
-
             $infos = '<ul>';
             $infos .= '<li>Type demande : ' . $objet . '</li>';
             if ($this->demande_contact->demande == 5) {
@@ -1386,28 +1344,21 @@ class rootController extends bootstrap
             $infos .= '<li>Message : ' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->message) . '</li>';
             $infos .= '</ul>';
 
-            $sujetMail = $this->mails_text->subject;
-            eval("\$sujetMail = \"$sujetMail\";");
+            $variablesInternalMail = array(
+                '$surl'   => $this->surl,
+                '$url'    => $this->lurl,
+                '$email'  => $this->demande_contact->email,
+                '$nom'    => utf8_decode($this->demande_contact->nom),
+                '$prenom' => utf8_decode($this->demande_contact->prenom),
+                '$objet'  => ($objets[$this->demande_contact->demande]),
+                '$infos'  => $infos
+            );
 
-            $texteMail = $this->mails_text->content;
-            eval("\$texteMail = \"$texteMail\";");
-
-            $exp_name = $this->mails_text->exp_name;
-            eval("\$exp_name = \"$exp_name\";");
-
-            $sujetMail = strtr($sujetMail, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-            $exp_name  = strtr($exp_name, 'ÀÁÂÃÄÅÈÉÊËÌÍÎÏÒÓÔÕÖÙÚÛÜÝÇçàáâãäåèéêëìíîïòóôõöùúûüýÿÑñ', 'AAAAAAEEEEIIIIOOOOOUUUUYCcaaaaaaeeeeiiiiooooouuuuyynn');
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->addRecipient(trim($destinataire));
-            $this->email->setReplyTo(utf8_decode($this->demande_contact->email),
-                utf8_decode($this->demande_contact->nom) . ' ' . utf8_decode($this->demande_contact->prenom));
-
-            $this->email->setSubject('=?UTF-8?B?' . base64_encode($sujetMail) . '?=');
-            $this->email->setHTMLBody($texteMail);
-
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('notification-demande-de-contact', $variablesInternalMail, false);
+            $message->setTo($destinataire);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
             $this->demande_contact->demande   = '';
             $this->demande_contact->preciser  = '';

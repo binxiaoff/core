@@ -1,12 +1,12 @@
 <?php
 
-use Unilend\librairies\ULogger;
+use Psr\Log\LoggerInterface;
 
 class transfertsController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
@@ -235,6 +235,7 @@ class transfertsController extends bootstrap
         $this->transactions                      = $this->loadData('transactions');
         $this->echeanciers_recouvrements_prorata = $this->loadData('echeanciers_recouvrements_prorata');
         $this->bank_unilend                      = $this->loadData('bank_unilend');
+        $this->settings                          = $this->loadData('settings');
 
         $this->settings->get('Recouvrement - commission ht', 'type');
         $commission_ht = $this->settings->value;
@@ -679,6 +680,7 @@ class transfertsController extends bootstrap
         $this->clients_gestion_mails_notif   = $this->loadData('clients_gestion_mails_notif');
         $this->loadData('clients_gestion_type_notif'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
         $this->loadData('transactions_types'); // Variable is not used but we must call it in order to create CRUD if not existing :'(
+        $this->setting = $this->loadData('settings');
 
         if (
             isset($_POST['id_client'], $_POST['id_reception'], $_SESSION['controlDoubleAttr'])
@@ -748,8 +750,6 @@ class transfertsController extends bootstrap
                 $this->clients_gestion_mails_notif->immediatement = 1;
                 $this->clients_gestion_mails_notif->update();
 
-                $this->mails_text->get('preteur-alimentation-manu', 'lang = "' . $this->language . '" AND type');
-
                 $this->settings->get('Facebook', 'type');
                 $lien_fb = $this->settings->value;
 
@@ -769,24 +769,11 @@ class transfertsController extends bootstrap
                     'lien_tw'         => $lien_tw
                 );
 
-                $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                $this->email->setSubject(stripslashes($sujetMail));
-                $this->email->setHTMLBody(stripslashes($texteMail));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $preteurs->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                } else {
-                    $this->email->addRecipient(trim($preteurs->email));
-                    Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                }
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('preteur-alimentation-manu', $varMail);
+                $message->setTo($preteurs->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
             }
 
             echo $receptions->id_client;
@@ -981,6 +968,7 @@ class transfertsController extends bootstrap
         $oWalletsLines           = $this->loadData('wallets_lines');
         $oBankUnilend            = $this->loadData('bank_unilend');
         $oLendersAccounts        = $this->loadData('lenders_accounts');
+        $oSettings               = $this->loadData('settings');
         //load for use of constants
         $this->loadData('transactions_types');
         $this->loadData('clients_status');
@@ -991,8 +979,8 @@ class transfertsController extends bootstrap
         }
         $this->offres_bienvenues->get(1, 'status = 0 AND id_offre_bienvenue');
 
-        $this->settings->get('Offre de bienvenue motif', 'type');
-        $sWelcomeOfferMotive = $this->settings->value;
+        $oSettings->get('Offre de bienvenue motif', 'type');
+        $sWelcomeOfferMotive = $oSettings->value;
 
         unset($_SESSION['forms']['rattrapage_offre_bienvenue']);
 
@@ -1083,14 +1071,14 @@ class transfertsController extends bootstrap
                 $oBankUnilend->type           = \bank_unilend::TYPE_UNILEND_WELCOME_OFFER_PATRONAGE;
                 $oBankUnilend->create();
 
-                $oMailsText = $this->loadData('mails_text');
-                $oMailsText->get('offre-de-bienvenue', 'lang = "' . $this->language . '" AND type');
+                $oMailTemplate = $this->loadData('mail_templates');
+                $oMailTemplate->get('offre-de-bienvenue', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
-                $this->settings->get('Facebook', 'type');
-                $sFacebook = $this->settings->value;
+                $oSettings->get('Facebook', 'type');
+                $sFacebook = $oSettings->value;
 
-                $this->settings->get('Twitter', 'type');
-                $sTwitter = $this->settings->value;
+                $oSettings->get('Twitter', 'type');
+                $sTwitter = $oSettings->value;
 
                 $aVariables = array(
                     'surl'            => $this->surl,
@@ -1102,18 +1090,11 @@ class transfertsController extends bootstrap
                     'lien_tw'         => $sTwitter
                 );
 
-                $this->email = $this->loadLib('email');
-                $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-                $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
-                $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
-                if ($this->Config['env'] === 'prod') {
-                    Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $this->clients->email, $tabFiler);
-                    $this->tnmp->sendMailNMP($tabFiler, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
-                } else {
-                    $this->email->addRecipient(trim($this->clients->email));
-                    Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
-                }
+                /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('offre-de-bienvenue', $aVariables);
+                $message->setTo($this->clients->email);
+                $mailer = $this->get('mailer');
+                $mailer->send($message);
             }
         }
     }
@@ -1205,8 +1186,8 @@ class transfertsController extends bootstrap
 
     public function _deblocage()
     {
-        /** @var \projects $projects */
-        $projects = $this->loadData('projects');
+        /** @var \projects $project */
+        $project = $this->loadData('projects');
         /** @var \clients_mandats $mandate */
         $mandate = $this->loadData('clients_mandats');
         /** @var \projects_pouvoir $proxy */
@@ -1214,24 +1195,21 @@ class transfertsController extends bootstrap
 
         if (
             isset($_POST['validateProxy'], $_POST['id_project'])
-            && $projects->get($_POST['id_project'])
+            && $project->get($_POST['id_project'])
             && $mandate->get($_POST['id_project'] . '" AND status = "' . \clients_mandats::STATUS_SIGNED, 'id_project')
             && $proxy->get($_POST['id_project'] . '" AND status = "' . \projects_pouvoir::STATUS_SIGNED, 'id_project')
         ) {
             /** @var \companies $companies */
             $companies = $this->loadData('companies');
-            $companies->get($projects->id_company, 'id_company');
+            $companies->get($project->id_company, 'id_company');
 
             /** @var \clients clients */
             $clients = $this->loadData('clients');
             $clients->get($companies->id_client_owner, 'id_client');
 
-            $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
-            $proxy->update();
-
-            $oLogger = new ULogger('Statut_remboursement', $this->logPath, 'dossiers.log');
-
-            $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement pour le projet : ' . $_POST['id_project'] . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+            /** @var LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->info('Checking refund status (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
 
             $paymentInspectionStopped = $this->loadData('settings');
             $paymentInspectionStopped->get('Controle statut remboursement', 'type');
@@ -1239,12 +1217,15 @@ class transfertsController extends bootstrap
             if ($paymentInspectionStopped->value == 1) {
                 ini_set('memory_limit', '512M');
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
-                /** @var \Unilend\Service\MailerManager $oMailerManager */
-                $oMailerManager = $this->get('MailerManager');
-                /** @var \Unilend\Service\NotificationManager $oNotificationManager */
-                $oNotificationManager = $this->get('NotificationManager');
+                $proxy->status_remb = \projects_pouvoir::STATUS_VALIDATED;
+                $proxy->update();
+
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('unilend.service.project_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\MailerManager $oMailerManager */
+                $oMailerManager = $this->get('unilend.service.email_manager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\NotificationManager $oNotificationManager */
+                $oNotificationManager = $this->get('unilend.service.notification_manager');
                 /** @var \lenders_accounts $lender */
                 $lender = $this->loadData('lenders_accounts');
                 /** @var \transactions $transactions */
@@ -1267,8 +1248,7 @@ class transfertsController extends bootstrap
                 $paymentInspectionStopped->value = 0;
                 $paymentInspectionStopped->update();
 
-                $projects->get($_POST['id_project'], 'id_project');
-                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $projects);
+                $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REMBOURSEMENT, $project);
 
                 /** @var \clients_adresses $clientsAddresses */
                 $clientsAddresses = $this->loadData('clients_adresses');
@@ -1277,23 +1257,21 @@ class transfertsController extends bootstrap
                 $this->settings->get('Part unilend', 'type');
                 $PourcentageUnilend = $this->settings->value;
 
-                $montant = $loans->sumPretsProjet($projects->id_project);
+                $montant = $loans->sumPretsProjet($project->id_project);
 
                 $partUnilend = $montant * $PourcentageUnilend;
 
                 $montant -= $partUnilend;
 
-                if (false === $transactions->get($projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
-                    /** @var \clients_mandats $oMandate */
-                    $oMandate = $this->loadData('clients_mandats');
-                    $aMandate = $oMandate->select('id_project = ' . $projects->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1);
+                if (false === $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND id_project')) {
+                    $aMandate = $mandate->select('id_project = ' . $project->id_project . ' AND id_client = ' . $clients->id_client . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'id_mandat DESC', 0, 1);
                     $aMandate = array_shift($aMandate);
 
                     $transactions->id_client        = $clients->id_client;
                     $transactions->montant          = bcmul($montant, -100);
                     $transactions->montant_unilend  = bcmul($partUnilend, 100);
                     $transactions->id_langue        = 'fr';
-                    $transactions->id_project       = $projects->id_project;
+                    $transactions->id_project       = $project->id_project;
                     $transactions->date_transaction = date('Y-m-d H:i:s');
                     $transactions->status           = '1';
                     $transactions->etat             = '1';
@@ -1313,28 +1291,28 @@ class transfertsController extends bootstrap
                     $transactions->id_transaction   = $transactions->create();
 
                     $bank_unilend->id_transaction = $transactions->id_transaction;
-                    $bank_unilend->id_project     = $projects->id_project;
+                    $bank_unilend->id_project     = $project->id_project;
                     $bank_unilend->montant        = bcmul($partUnilend, 100);
                     $bank_unilend->create();
 
                     $oAccountUnilend                 = $this->loadData('platform_account_unilend');
                     $oAccountUnilend->id_transaction = $transactions->id_transaction;
-                    $oAccountUnilend->id_project     = $projects->id_project;
+                    $oAccountUnilend->id_project     = $project->id_project;
                     $oAccountUnilend->amount         = bcmul($partUnilend, 100);
                     $oAccountUnilend->type           = \platform_account_unilend::TYPE_COMMISSION_PROJECT;
                     $oAccountUnilend->create();
 
                     $virements->id_client      = $clients->id_client;
-                    $virements->id_project     = $projects->id_project;
+                    $virements->id_project     = $project->id_project;
                     $virements->id_transaction = $transactions->id_transaction;
                     $virements->montant        = bcmul($montant, 100);
-                    $virements->motif          = $oProjectManager->getBorrowerBankTransferLabel($projects);
+                    $virements->motif          = $oProjectManager->getBorrowerBankTransferLabel($project);
                     $virements->type           = 2;
                     $virements->create();
 
                     $prelevements = $this->loadData('prelevements');
 
-                    $echea = $paymentSchedule->select('id_project = ' . $projects->id_project);
+                    $echea = $paymentSchedule->select('id_project = ' . $project->id_project);
 
                     foreach ($echea as $key => $e) {
                         $dateEcheEmp = strtotime($e['date_echeance_emprunteur']);
@@ -1344,7 +1322,7 @@ class transfertsController extends bootstrap
                         $montant = $repaymentSchedule->getMontantRembEmprunteur($e['montant'], $e['commission'], $e['tva']);
 
                         $prelevements->id_client                          = $clients->id_client;
-                        $prelevements->id_project                         = $projects->id_project;
+                        $prelevements->id_project                         = $project->id_project;
                         $prelevements->motif                              = $virements->motif;
                         $prelevements->montant                            = $montant;
                         $prelevements->bic                                = str_replace(' ', '', $aMandate['bic']);
@@ -1357,13 +1335,13 @@ class transfertsController extends bootstrap
                         $prelevements->create();
                     }
 
-                    $aAcceptedBids = $acceptedBids->getDistinctBids($projects->id_project);
+                    $aAcceptedBids = $acceptedBids->getDistinctBids($project->id_project);
                     $aLastLoans    = array();
 
                     foreach ($aAcceptedBids as $aBid) {
                         $lender->get($aBid['id_lender']);
 
-                        $oNotification = $oNotificationManager->createNotification(\notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $projects->id_project, $aBid['amount'], $aBid['id_bid']);
+                        $oNotification = $oNotificationManager->createNotification(\notifications::TYPE_LOAN_ACCEPTED, $lender->id_client_owner, $project->id_project, $aBid['amount'], $aBid['id_bid']);
 
                         $aLoansForBid = $acceptedBids->select('id_bid = ' . $aBid['id_bid']);
 
@@ -1375,18 +1353,18 @@ class transfertsController extends bootstrap
                         }
                     }
 
-                    $oMailerManager->sendLoanAccepted($projects);
+                    $oMailerManager->sendLoanAccepted($project);
                 }
 
-                $oMailerManager->sendBorrowerBill($projects);
+                $oMailerManager->sendBorrowerBill($project);
 
-                $aRepaymentHistory = $projectsStatusHistory->select('id_project = ' . $projects->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
+                $aRepaymentHistory = $projectsStatusHistory->select('id_project = ' . $project->id_project . ' AND id_project_status = (SELECT id_project_status FROM projects_status WHERE status = ' . \projects_status::REMBOURSEMENT . ')', 'id_project_status_history DESC', 0, 1);
 
                 if (false === empty($aRepaymentHistory)) {
                     $oInvoiceCounter = $this->loadData('compteur_factures');
                     $oInvoice        = $this->loadData('factures');
 
-                    $transactions->get($projects->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = 1 AND etat = 1 AND id_project');
+                    $transactions->get($project->id_project, 'type_transaction = ' . \transactions_types::TYPE_BORROWER_BANK_TRANSFER_CREDIT . ' AND status = 1 AND etat = 1 AND id_project');
 
                     $this->settings->get('TVA', 'type');
                     $fVATRate = (float) $this->settings->value;
@@ -1395,10 +1373,10 @@ class transfertsController extends bootstrap
                     $fCommission        = $transactions->montant_unilend;
                     $fVATFreeCommission = $fCommission / ($fVATRate + 1);
 
-                    $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($oInvoiceCounter->compteurJournalier($projects->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
+                    $oInvoice->num_facture     = 'FR-E' . date('Ymd', strtotime($sDateFirstPayment)) . str_pad($oInvoiceCounter->compteurJournalier($project->id_project, $sDateFirstPayment), 5, '0', STR_PAD_LEFT);
                     $oInvoice->date            = $sDateFirstPayment;
                     $oInvoice->id_company      = $companies->id_company;
-                    $oInvoice->id_project      = $projects->id_project;
+                    $oInvoice->id_project      = $project->id_project;
                     $oInvoice->ordre           = 0;
                     $oInvoice->type_commission = \factures::TYPE_COMMISSION_FINANCEMENT;
                     $oInvoice->commission      = round($fVATFreeCommission / (abs($transactions->montant) + $fCommission) * 100, 0);
@@ -1411,36 +1389,38 @@ class transfertsController extends bootstrap
                 $paymentInspectionStopped->value = 1;
                 $paymentInspectionStopped->update();
 
-                $oLogger->addRecord(ULogger::ALERT, 'Controle statut remboursement est bien passe pour le projet : ' . $projects->id_project . ' - ' . date('Y-m-d H:i:s') . ' - ' . $this->Config['env']);
+                $logger->info('Check refund status done (project ' . $project->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $project->id_project));
             } else {
                 $_SESSION['freeow']['title']   = 'Erreur de remboursement';
                 $_SESSION['freeow']['message'] = 'Un remboursement est déjà en cours';
             }
 
-            header('Location: ' . $this->lurl . '/dossiers/edit/' . $projects->id_project);
+            header('Location: ' . $this->lurl . '/dossiers/edit/' . $project->id_project);
             die;
         }
 
-        $aProjects = $projects->selectProjectsByStatus(\projects_status::FUNDE, '', '', array(), '', '', false);
+        $aProjects = $project->selectProjectsByStatus(\projects_status::FUNDE, '', '', array(), '', '', false);
 
         $this->aProjects = array();
         foreach ($aProjects as $iProject => $aProject) {
             $this->aProjects[$iProject] = $aProject;
 
-            if ($aMandate = array_shift($mandate->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'added DESC', 0, 1))) {
+            $aMandate = $mandate->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = ' . \clients_mandats::STATUS_SIGNED, 'added DESC', 0, 1);
+            if ($aMandate = array_shift($aMandate)) {
                 $this->aProjects[$iProject]['bic']           = $aMandate['bic'];
                 $this->aProjects[$iProject]['iban']          = $aMandate['iban'];
                 $this->aProjects[$iProject]['mandat']        = $aMandate['name'];
                 $this->aProjects[$iProject]['status_mandat'] = $aMandate['status'];
             }
 
-            if ($aProxy = array_shift($proxy->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = ' . \projects_pouvoir::STATUS_SIGNED, 'added DESC', 0, 1))) {
+            $aProxy = $proxy->select('id_project = ' . $this->aProjects[$iProject]['id_project'] . ' AND status = ' . \projects_pouvoir::STATUS_SIGNED, 'added DESC', 0, 1);
+            if ($aProxy = array_shift($aProxy)) {
                 $this->aProjects[$iProject]['url_pdf']          = $aProxy['name'];
                 $this->aProjects[$iProject]['status_remb']      = $aProxy['status_remb'];
                 $this->aProjects[$iProject]['authority_status'] = $aProxy['status'];
             }
 
-            if ($aAttachments = $projects->getAttachments($this->aProjects[$iProject]['id_project'])) {
+            if ($aAttachments = $project->getAttachments($this->aProjects[$iProject]['id_project'])) {
                 $this->aProjects[$iProject]['kbis']    = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['path'] : '';
                 $this->aProjects[$iProject]['id_kbis'] = isset($aAttachments[\attachment_type::KBIS]) ? $aAttachments[\attachment_type::KBIS]['id'] : '';
                 $this->aProjects[$iProject]['rib']     = isset($aAttachments[\attachment_type::RIB]) ? $aAttachments[\attachment_type::RIB]['path'] : '';

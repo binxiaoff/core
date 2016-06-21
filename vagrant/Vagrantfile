@@ -11,17 +11,18 @@ end
 
 Vagrant.configure(2) do |config|
 
-  config.vm.box = "ubuntu/precise64"
+  config.vm.box = "ubuntu/trusty64"
 
-  config.vm.network "private_network", ip: "172.28.128.3"
-  config.vm.hostname = "dev.unilend"
-  config.vm.provider "virtualbox" do |v|
+  config.vm.network "private_network", ip: "192.168.56.101"
+  config.vm.provider :virtualbox do |v|
     v.memory = 1024
+    v.name = 'unilend_php56_nginx14_percona56'
   end
   config.hostsupdater.aliases = ["dev.www.unilend.fr", "dev.admin.unilend.fr", "dev.pma.unilend.fr", "dev.mailcatcher.unilend.fr"]
 
-  config.vm.synced_folder "../", "/srv/sites/unilend", type: "nfs"
+  config.vm.synced_folder "../", "/srv/sites/unilend", :mount_options => ["dmode=777","fmode=777"]
 
+  config.vm.provision "shell", path: "increase_swap.sh"
   config.vm.provision :shell, path: "bootstrap.sh"
-  config.vm.provision "shell", inline: "service apache2 restart", run: "always"
+  config.vm.provision "shell", inline: "service nginx restart", run: "always"
 end

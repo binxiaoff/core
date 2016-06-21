@@ -63,10 +63,10 @@
                         <?php
                         elseif (isset($_SESSION['login']['nb_tentatives_precedentes'])
                                 && $_SESSION['login']['nb_tentatives_precedentes'] <= 1
-                                && false === isset($_POST['project_detail'])) : ?>
+                                && false === isset($_POST['project_detail']) && isset($this->error_login)) : ?>
                             <p class="error_login"><?= $this->error_login ?></p>
                         <?php
-                        elseif($this->bAccountClosed) : ?>
+                        elseif ($this->bAccountClosed && isset($this->error_login)) : ?>
                             <p class="error_login"><?= $this->error_login ?></p>
                             <?php
                         endif; ?>

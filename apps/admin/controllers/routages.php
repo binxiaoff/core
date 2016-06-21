@@ -3,17 +3,17 @@
 class routagesController extends bootstrap
 {
 	var $Command;
-	
-	function routagesController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 	}
 	
 	function _default()
 	{
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('configuration');
 		
 		// Activation du menu
@@ -210,7 +210,7 @@ class routagesController extends bootstrap
 	
 	function _edit()
 	{
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('configuration');
 		
 		// Activation du menu
@@ -231,7 +231,7 @@ class routagesController extends bootstrap
 	
 	function _add()
 	{
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('configuration');
 		
 		// Activation du menu

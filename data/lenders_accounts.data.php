@@ -26,8 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\Cache;
-
 class lenders_accounts extends lenders_accounts_crud
 {
     const LENDER_STATUS_ONLINE  = 1;
@@ -196,54 +194,56 @@ class lenders_accounts extends lenders_accounts_crud
         return $result;
     }
 
-    public function isFrenchResident($iLenderId = null)
+    /**
+     * @param null $lenderId
+     * @return bool
+     */
+    public function isFrenchResident($lenderId = null)
     {
-        if (null === $iLenderId) {
-            $iLenderId = $this->id_lender_account;
+        $bResult = false;
+
+        if (null === $lenderId) {
+            $lenderId = $this->id_lender_account;
         }
 
-        if ($iLenderId) {
-            $oCache  = Cache::getInstance();
-            $sKey    = $oCache->makeKey('lenders_account', 'isFrenchResident', $iLenderId);
-            $aRecord = $oCache->get($sKey);
+        if ($lenderId) {
+            $sQuery = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = :lenderId";
+            try {
+                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array('lenderId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetch(PDO::FETCH_ASSOC);
 
-            if (false === $aRecord) {
-                $sQuery  = "SELECT resident_etranger, MAX(added) FROM `lenders_imposition_history` WHERE id_lender = $iLenderId";
-                $oQuery  = $this->bdd->query($sQuery);
-                $aRecord = $this->bdd->fetch_array($oQuery);
-                $oCache->set($sKey, $aRecord);
-            }
-            if (empty($aRecord) || '0' === $aRecord['resident_etranger']) {
-                return true;
+                if (empty($result) || '0' === $result['resident_etranger']) {
+                    $bResult = true;
+                }
+            } catch (\Doctrine\DBAL\DBALException $ex) {
+                return null;
             }
         }
-
-        return false;
+        return $bResult;
     }
 
-    public function isNaturalPerson($iLenderId = null)
+    public function isNaturalPerson($lenderId = null)
     {
-        if (null === $iLenderId) {
-            $iLenderId = $this->id_lender_account;
+        $bResult = false;
+
+        if (null === $lenderId) {
+            $lenderId = $this->id_lender_account;
         }
 
-        if ($iLenderId) {
-            $oCache  = Cache::getInstance();
-            $sKey    = $oCache->makeKey('lenders_account', 'isNaturalPerson', $iLenderId);
-            $aRecord = $oCache->get($sKey);
+        if ($lenderId) {
+            $sQuery = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = :lenderId";
+            try {
+                $result = $this->bdd->executeQuery($sQuery, array('lenderId' => $lenderId), array(), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                    ->fetchAll(PDO::FETCH_ASSOC);
 
-            if (false === $aRecord) {
-                $sQuery  = "SELECT c.type FROM lenders_accounts la INNER JOIN clients c ON c.id_client =  la.id_client_owner WHERE la.id_lender_account = $iLenderId";
-                $oQuery  = $this->bdd->query($sQuery);
-                $aRecord = $this->bdd->fetch_array($oQuery);
-                $oCache->set($sKey, $aRecord);
-            }
-
-            if (isset($aRecord['type']) && in_array($aRecord['type'], array(1, 3))) {
-                return true;
+                if (isset($result[0]['type']) && in_array($result[0]['type'], array(1, 3))) {
+                    $bResult = true;
+                }
+            } catch (\Doctrine\DBAL\DBALException $ex) {
+                return false;
             }
         }
-        return false;
+        return $bResult;
     }
 
     public function countCompaniesLenderInvestedIn($iLendersAccountId)
@@ -279,5 +279,93 @@ class lenders_accounts extends lenders_accounts_crud
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result, 0, 0) / 100);
+    }
+
+    public function getLendersSalesForce()
+    {
+        $sQuery = "SELECT
+                      c.id_client as 'IDClient',
+                      la.id_lender_account as 'IDPreteur',
+                      c.id_langue as 'Langue',
+                      REPLACE(c.source,',','') as 'Source1',
+                      REPLACE(c.source2,',','') as 'Source2',
+                      REPLACE(c.source3,',','') as 'Source3',
+                      REPLACE(c.civilite,',','') as 'Civilite',
+                      REPLACE(c.nom,',','') as 'Nom',
+                      REPLACE(c.nom_usage,',','') as 'NomUsage',
+                      REPLACE(c.prenom,',','') as 'Prenom',
+                      REPLACE(c.fonction,',','') as 'Fonction',
+                      CASE c.naissance
+                      WHEN '0000-00-00' then '2001-01-01'
+                      ELSE
+                        CASE SUBSTRING(c.naissance,1,1)
+                        WHEN '0' then '2001-01-01'
+                        ELSE c.naissance
+                        END
+                      END as 'Datenaissance',
+                      REPLACE(ville_naissance,',','') as 'Villenaissance',
+                      ccountry.fr as 'PaysNaissance',
+                      nv2.fr_f as 'Nationalite',
+                      REPLACE(c.telephone,'\t','') as 'Telephone',
+                      REPLACE(c.mobile,',','') as 'Mobile',
+                      REPLACE(c.email,',','') as 'Email',
+                      c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
+                      CASE c.type
+                      WHEN 1 THEN 'Physique'
+                      WHEN 2 THEN 'Morale'
+                      WHEN 3 THEN 'Physique'
+                      ELSE 'Morale'
+                      END as 'TypeContact',
+                      CASE cs.status
+                      WHEN 6 THEN 'oui'
+                      ELSE 'non'
+                      END as 'Valide',
+                      (
+                        SELECT cs.label FROM clients_status_history cshs1
+                        INNER JOIN clients_status cs on cshs1.id_client_status =cs.id_client_status
+                        WHERE cshs1.id_client=c.id_client
+                        ORDER BY cshs1.added DESC LIMIT 1
+                      ) AS 'StatusCompletude',
+                      CASE c.added
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE c.added
+                      END as 'DateInscription',
+                      CASE c.updated
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE c.updated
+                      END as 'DateDerniereMiseaJour',
+                      CASE c.lastlogin
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE c.lastlogin
+                      END as 'DateDernierLogin',
+                      cs.id_client_status as 'StatutValidation',
+                      status_inscription_preteur as 'StatusInscription',
+                      count(
+                          distinct(l.id_project)
+                      ) as 'NbPretsValides',
+                      REPLACE(ca.adresse1,',','') as 'Adresse1',
+                      REPLACE(ca.adresse2,',','') as 'Adresse2',
+                      REPLACE(ca.adresse3,',','') as 'Adresse3',
+                      REPLACE(ca.cp,',','') as 'CP',
+                      REPLACE(ca.ville,',','') as 'Ville',
+                      acountry.fr as 'Pays',
+                      SUM(l.amount)/100 as 'TotalPretEur',
+                      CASE p.id_prospect WHEN NULL THEN '' ELSE CONCAT('P', p.id_prospect) END AS 'DeletingProspect',
+                      '0012400000K0Bxw' as 'Sfcompte'
+                    FROM
+                      clients c
+                      INNER JOIN lenders_accounts la on la.id_client_owner = c.id_client
+                      LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
+                      LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
+                      LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
+                      LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
+                      LEFT JOIN loans l on la.id_lender_account = l.id_lender and l.status = 0
+                      LEFT JOIN clients_status cs on c.status = cs.id_client_status
+                      LEFT JOIN prospects p ON p.email = c.email
+                    WHERE c.status = 1
+                    GROUP BY
+                      c.id_client";
+
+        return $this->bdd->executeQuery($sQuery);
     }
 }

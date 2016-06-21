@@ -1,7 +1,7 @@
 <?php
 
 use Unilend\librairies\Altares;
-use Unilend\librairies\ULogger;
+use Psr\Log\LoggerInterface;
 
 class depot_de_dossierController extends bootstrap
 {
@@ -18,9 +18,9 @@ class depot_de_dossierController extends bootstrap
      */
     private $attachmentHelper;
 
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
@@ -122,20 +122,21 @@ class depot_de_dossierController extends bootstrap
         $this->settings->get('Altares email alertes', 'type');
         $sAlertEmail = $this->settings->value;
 
+        /** @var LoggerInterface $oLogger */
+        $oLogger = $this->get('logger');
+
         try {
             $oAltares = new Altares();
             $oResult  = $oAltares->getEligibility($iSIREN);
         } catch (\Exception $oException) {
-            $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
-            $oLogger->addRecord(ULogger::ALERT, $oException->getMessage(), array('siren' => $iSIREN));
+            $oLogger->error('Calling Altares::getEligibility() using SIREN ' . $iSIREN . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         if (false === empty($oResult->exception)) {
-            $oLogger = new ULogger('connection', $this->logPath, 'altares.log');
-            $oLogger->addRecord(ULogger::ALERT, $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur, array('siren' => $iSIREN));
+            $oLogger->error('Altares error code: ' . $oResult->exception->code . ' - Altares error description: ' . $oResult->exception->description . ' - Altares error: ' . $oResult->exception->erreur, array('class' => __CLASS__, 'function' => __FUNCTION__));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
@@ -915,7 +916,9 @@ class depot_de_dossierController extends bootstrap
 
     private function sendSubscriptionConfirmationEmail()
     {
-        $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+        /** @var \mail_templates $oMailTemplate */
+        $oMailTemplate = $this->loadData('mail_templates');
+        $oMailTemplate->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
         $aVariables = array(
             'prenom'               => empty($this->clients_prescripteur->id_client) ? $this->clients->prenom : $this->clients_prescripteur->prenom,
@@ -923,26 +926,19 @@ class depot_de_dossierController extends bootstrap
             'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
             'lien_fb'              => $this->like_fb,
             'lien_tw'              => $this->twitter,
-            'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
+            'sujet'                => htmlentities($oMailTemplate->subject, null, 'UTF-8'),
             'surl'                 => $this->surl,
             'url'                  => $this->url,
         );
 
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($this->mails_text->exp_email, utf8_decode($this->mails_text->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($this->mails_text->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($this->mails_text->content), $this->tnmp->constructionVariablesServeur($aVariables))));
-
         $sRecipient = empty($this->clients_prescripteur->id_client) ? $this->clients->email : $this->clients_prescripteur->email;
         $sRecipient = $this->removeEmailSuffix(trim($sRecipient));
 
-        if ($this->Config['env'] === 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $sRecipient, $aNMPResponse);
-            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $aVariables);
+        $message->setTo($sRecipient);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 
     private function sendCommercialEmail($sEmailType)
@@ -951,7 +947,8 @@ class depot_de_dossierController extends bootstrap
             $this->users = $this->loadData('users');
             $this->users->get($this->projects->id_commercial, 'id_user');
 
-            $this->mails_text->get($sEmailType, 'lang = "' . $this->language . '" AND type');
+            $oMailTemplate = $this->loadData('mail_templates');
+            $oMailTemplate->get($sEmailType, 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
             $aReplacements = array(
                 '[ID_PROJET]'      => $this->projects->id_project,
@@ -960,13 +957,12 @@ class depot_de_dossierController extends bootstrap
                 '[SURL]'           => $this->surl
             );
 
-            $oEmail = $this->loadLib('email');
-            $oEmail->setFrom($this->mails_text->exp_email, $this->mails_text->exp_name);
-            $oEmail->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $this->mails_text->subject))));
-            $oEmail->setHTMLBody(str_replace(array_keys($aReplacements), array_values($aReplacements), $this->mails_text->content));
-            $oEmail->addRecipient(trim($this->users->email));
-
-            Mailer::send($oEmail, $this->mails_filer, $this->mails_text->id_textemail);
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $aReplacements, false);
+            $message->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $oMailTemplate->subject))));
+            $message->setTo(trim($this->users->email));
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
         }
     }
 
@@ -1083,8 +1079,8 @@ class depot_de_dossierController extends bootstrap
      */
     private function redirect($sPage, $iProjectStatus = null, $sRejectionMessage = '')
     {
-        /** @var \Unilend\Service\ProjectManager $oProjectManager */
-        $oProjectManager = $this->get('ProjectManager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+        $oProjectManager = $this->get('unilend.service.project_manager');
 
         if (false === is_null($iProjectStatus) && $this->projects_status->status != $iProjectStatus) {
             $oProjectManager->addProjectStatus(\users::USER_ID_FRONT, $iProjectStatus, $this->projects, 0, $sRejectionMessage);

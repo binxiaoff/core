@@ -5,9 +5,9 @@ class crongeckoboardController extends bootstrap
 
     var $Command;
 
-    function crongeckoboardController($command, $config)
+    public function initialize()
     {
-        parent::__construct($command, $config, 'default');
+        parent::initialize();
 
         $this->autoFireHeader = false;
         $this->autoFireHead = false;
@@ -18,15 +18,6 @@ class crongeckoboardController extends bootstrap
         /* Clé de l'API geckoboard unilend */
 
         $this->_sGBApiKey = "d0fb59cb37d352ae8f65629bb7e498a6";
-
-
-     /*   // Securisation des acces
-        if (isset($_SERVER['REMOTE_ADDR']) && !in_array($_SERVER['REMOTE_ADDR'], $this->Config['ip_admin'][$this->Config['env']]) && $_SERVER['REMOTE_ADDR'] != '86.217.44.230' && $_SERVER['REMOTE_ADDR'] != '92.132.178.196')
-        {
-            die;
-        }
-        */
-        //die;
     }
 
     //********************//
@@ -49,7 +40,7 @@ class crongeckoboardController extends bootstrap
         $jsonPayload = json_encode($_sWidgetPayload,TRUE);
         curl_setopt($oCurl, CURLOPT_POST, true);
         curl_setopt($oCurl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($oCurl, CURLOPT_POSTFIELDS,  $jsonPayload);
+        curl_setopt($oCurl, CURLOPT_POSTFIELDS, $jsonPayload);
 
         if (!$output = curl_exec($oCurl)){
             throw new Exception("missed curl");

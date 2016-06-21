@@ -34,9 +34,9 @@ THE SOFTWARE.
     $PGRUploaderExtension = "";
     if (PGRFileManagerConfig::$allowedExtensions == "") $PGRUploaderExtension = "*.*";
     else
-    foreach(explode("|", PGRFileManagerConfig::$allowedExtensions) as $key => $extension) { 
+    foreach(explode("|", PGRFileManagerConfig::$allowedExtensions) as $key => $extension) {
         if ($key > 0) $PGRUploaderExtension .= ";";
-        $PGRUploaderExtension .= "*." . $extension;   
+        $PGRUploaderExtension .= "*." . $extension;
     }
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -63,9 +63,9 @@ THE SOFTWARE.
   <script type="text/javascript" src="js/PGRSelectable.js"></script>
   <script type="text/javascript" src="js/PGRFileManager.js"></script>
   <script type="text/javascript" src="js/PGRFileManagerContent.js"></script>
-  
+
   </head>
-  <body>   
+  <body>
     <div id="container" class="ui-widget ui-widget-content">
       <div class="ui-dialog-titlebar ui-widget-header ui-corner-all ui-helper-clearfix">
         <span id="ui-dialog-title-dialog" class="ui-dialog-title">PGRFileManager</span>
@@ -101,7 +101,7 @@ THE SOFTWARE.
           <?php endif;?>
         </div>
         <div id="rightColumn">
-          <div id="fileList" class="unselectable">                      
+          <div id="fileList" class="unselectable">
           </div>
         </div>
       </div>
@@ -111,12 +111,12 @@ THE SOFTWARE.
         {
             return $.i18n._(str);
         }
-        $(function() {        	            
+        $(function() {
             var filemanager = new PGRFileManager({
-            	sId : "<?php echo session_id()?>", 
-                rootDir : "<?php echo PGRFileManagerConfig::$urlPath?>", 
-                allowedExtension : "<?php echo $PGRUploaderExtension?>", 
-                fileDescription : "<?php echo $PGRUploaderDescription?>", 
+            	sId : "<?php echo session_id()?>",
+                rootDir : "<?php echo PGRFileManagerConfig::$urlPath?>",
+                allowedExtension : "<?php echo $PGRUploaderExtension?>",
+                fileDescription : "<?php echo $PGRUploaderDescription?>",
                 filesType : "<?php echo $PGRUploaderType?>",
                 fileMaxSize : "<?php echo PGRFileManagerConfig::$fileMaxSize?> B",
                 lang: "<?php echo $PGRLang?>",
@@ -124,7 +124,7 @@ THE SOFTWARE.
                 allowEdit: <?php echo PGRFileManagerConfig::$allowEdit?'true':'false'?>
             });
             filemanager.init();
-        });    
-    </script>  
+        });
+    </script>
   </body>
 </html>

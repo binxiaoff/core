@@ -1,0 +1,42 @@
+parameters:
+    database_driver:                pdo_mysql
+
+    # Begin of parameters managed also by Ansible in parameters_extended.yml
+    database_host:                  localhost
+    database_port:                  ~
+    database_name:                  unilend
+    database_user:                  unilend
+    database_password:              myPassw0rd
+
+    mailjet.api_key:                ~
+    mailjet.api_secret:             ~
+    mailer_transport:               mail # mailjet for prod, mail for the rest of the environments
+
+    url.universign:                 'https://equipeit@unilend.fr:universign4unilend@ws.universign.eu/sign/rpc/'
+    url.host_admin:                 'dev.admin.unilend.fr' # for Front to know the url BO
+    url.host_default:               'dev.www.unilend.fr' # for BO to know the url Front
+    # End of parameters managed also by Ansible
+
+    dbal_wrapper_class:             Unilend\Bridge\Doctrine\DBAL\Connection
+    dbal_driver_class:              Facile\DoctrineMySQLComeBack\Doctrine\DBAL\Driver\PDOMySql\Driver
+
+    secret:                         440caf9a41b35b72dc75ec333e3a33b7cab2366b
+    locale:                         fr_FR
+
+    server1.memcache_host:          127.0.0.1
+    server1.memcache_port:          11211
+
+    image_resize:
+        projets:
+            authorized: [72, 169] # Authorized heights
+            height: 1365          #  Source image maximum height
+            width: 2048           #  Source image maximum width
+
+    router.request_context.scheme:  https
+
+    path.static:                    /data/sites/unilend/public/default/
+    path.user:                      /data/medias/nfs/var/
+    path.sftp:                      /data/medias/nfs/sftp/
+    path.payline:                   /data/sites/unilend/librairies/payline/
+
+    cms:                            iZicom

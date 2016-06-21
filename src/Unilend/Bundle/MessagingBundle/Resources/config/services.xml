@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+
+<container xmlns="http://symfony.com/schema/dic/services"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+
+    <services>
+        <!-- Swift Mailer and its bridges -->
+        <service id="swiftmailer.spool.db" alias="unilend.swiftmailer.db_spool" />
+        <service id="swiftmailer.mailer.default.spool.db" alias="unilend.swiftmailer.db_spool" />
+        <service id="mailjet" alias="swiftmailer.mailer.transport.mailjet" />
+
+        <service id="unilend.service.mail_queue" class="Unilend\Bundle\MessagingBundle\Service\MailQueueManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.swiftmailer.message_provider"/>
+        </service>
+
+        <service id="unilend.service.mail_template" class="Unilend\Bundle\MessagingBundle\Service\MailTemplateManager">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument type="service" id="unilend.service.mail_queue"/>
+            <argument>%kernel.default_locale%</argument>
+        </service>
+
+        <service id="unilend.swiftmailer.message_provider" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessageProvider">
+            <argument type="service" id="unilend.service.entity_manager"/>
+            <argument>Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage</argument>
+            <argument>%kernel.default_locale%</argument>
+        </service>
+
+        <service id="unilend.swiftmailer.db_spool" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool">
+            <argument type="service" id="unilend.service.mail_queue"/>
+        </service>
+
+        <service id="swiftmailer.mailer.transport.mailjet" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\MailjetTransport">
+            <argument type="service" id="swiftmailer.mailer.default.transport.eventdispatcher"/>
+            <argument type="service" id="mailjet.api.client"/>
+        </service>
+
+        <!-- Mailjet API -->
+        <service id="mailjet.api.client" class="Mailjet\Client" public="false">
+            <argument>%mailjet.api_key%</argument>
+            <argument>%mailjet.api_secret%</argument>
+        </service>
+    </services>
+
+</container>

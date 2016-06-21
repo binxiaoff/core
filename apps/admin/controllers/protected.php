@@ -2,17 +2,19 @@
 
 class protectedController extends bootstrap
 {
-    public function __construct($command, $config, $app)
-    {
-        parent::__construct($command, $config, $app);
+	var $Command;
 
-        $this->hideDecoration();
+	public function initialize()
+	{
+		parent::initialize();
 
-        $this->autoFireView = false;
-        $this->catchAll     = true;
+		$this->hideDecoration();
 
-        $this->users->checkAccess();
-    }
+		$this->autoFireView = false;
+		$this->catchAll     = true;
+
+		$this->users->checkAccess();
+	}
 
     public function _templates()
     {

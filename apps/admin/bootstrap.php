@@ -2,9 +2,10 @@
 
 class bootstrap extends Controller
 {
-    public function __construct($command, $config, $app)
+
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         if ($this->current_function != 'login') {
             $_SESSION['request_url'] = $_SERVER['REQUEST_URI'];
@@ -15,45 +16,18 @@ class bootstrap extends Controller
         $this->upload  = $this->loadLib('upload');
         $this->photos  = $this->loadLib('photos', array($this->spath, $this->surl));
 
-        $this->ln             = $this->loadData('textes');
-        $this->settings       = $this->loadData('settings');
-        $this->tree_elements  = $this->loadData('tree_elements');
-        $this->blocs          = $this->loadData('blocs');
-        $this->blocs_elements = $this->loadData('blocs_elements');
-        $this->elements       = $this->loadData('elements');
-        $this->tree           = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->Config['url'][$this->Config['env']]['default'], 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
-        $this->users          = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
-        $this->users_zones    = $this->loadData('users_zones');
-        $this->routages       = $this->loadData('routages', array('url' => $this->lurl));
-        $this->users_history  = $this->loadData('users_history');
-        $this->mails_filer    = $this->loadData('mails_filer');
-        $this->mails_text     = $this->loadData('mails_text');
-        $this->nmp            = $this->loadData('nmp');
-        $this->nmp_desabo     = $this->loadData('nmp_desabo');
-
-        $this->tnmp = $this->loadLib('tnmp', array($this->nmp, $this->nmp_desabo, $this->Config['env']));
-
-        // Recuperation des variables NMP
-        $this->settings->get('NMP Server API', 'type');
-        $this->serveur_api = $this->settings->value;
-
-        $this->settings->get('NMP Key', 'type');
-        $this->key_api = $this->settings->value;
-
-        $this->settings->get('NMP Login', 'type');
-        $this->login_api = $this->settings->value;
-
-        $this->settings->get('NMP Password', 'type');
-        $this->pwd_api = $this->settings->value;
-
-        $this->settings->get('NMP Mail', 'type');
-        $this->mail_api = $this->settings->value;
-
-        $this->settings->get('NMP From Mail', 'type');
-        $this->frommail_api = $this->settings->value;
-
-        $this->settings->get('NMP ID Clonage', 'type');
-        $this->id_clone_nmp = $this->settings->value;
+        $this->ln               = $this->loadData('textes');
+        $this->settings         = $this->loadData('settings');
+        $this->tree_elements    = $this->loadData('tree_elements');
+        $this->blocs            = $this->loadData('blocs');
+        $this->blocs_elements   = $this->loadData('blocs_elements');
+        $this->elements         = $this->loadData('elements');
+        $this->tree             = $this->loadData('tree', array('url' => $this->lurl, 'front' => $this->furl, 'surl' => $this->surl, 'tree_elements' => $this->tree_elements, 'blocs_elements' => $this->blocs_elements, 'upload' => $this->upload, 'spath' => $this->spath, 'path' => $this->path));
+        $this->users            = $this->loadData('users', array('config' => $this->Config, 'lurl' => $this->lurl));
+        $this->users_zones      = $this->loadData('users_zones');
+        //$this->routages       = $this->loadData('routages', array('url' => $this->lurl));
+        $this->users_history    = $this->loadData('users_history');
+        $this->mail_template    = $this->loadData('mail_templates');
 
         if (isset($_POST['captcha'])) {
             if (isset($_SESSION['captcha']) && $_SESSION['captcha'] == $_POST['captcha']) {
@@ -178,9 +152,6 @@ class bootstrap extends Controller
         // Recuperation du paging des tableaux
         $this->settings->get('Paging Tableaux', 'type');
         $this->nb_lignes = $this->settings->value;
-
-        // Recuperation de l'URL du front
-        $this->urlfront = $this->Config['url'][$this->Config['env']]['default'];
 
         // Recuperation de la liste des langues disponibles
         $this->lLangues = $this->Config['multilanguage']['allowed_languages'];

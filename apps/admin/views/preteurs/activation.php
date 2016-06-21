@@ -100,7 +100,7 @@
                 ?>
 
                 <tr class="<?= ($iRow % 2 == 1 ? '' : 'odd') ?> ">
-                    <td align="center" <?php if (false === empty($sBGColor)): ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?= $sGreenPointStatus ?>"><?= $c['id_client'] ?></td>
+                    <td align="center" <?php if (false === empty($sBGColor)): ?>style="border-radius: 7px; color: #ffffff; font-weight: bold; font-size: 14px; background-color: <?= $sBGColor ?>" <?php endif; ?> title="Statut Green Point : <?php $sGreenPointStatus ?>"><?php $c['id_client'] ?></td>
                     <td><?= $nom ?></td>
                     <td><?= $prenom ?></td>
                     <td align="center"><?= date('d/m/Y', strtotime($c['added'])) ?></td>

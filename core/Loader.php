@@ -1,6 +1,9 @@
 <?php
 namespace Unilend\core;
 
+use Doctrine\Bundle\DoctrineBundle\ConnectionFactory;
+use Symfony\Component\Yaml\Yaml;
+
 /**
  * Class Loader
  * @package Unilend\core
@@ -8,20 +11,42 @@ namespace Unilend\core;
 class Loader
 {
     /**
-     * @internal You should not call this method directly.
+     * @param       $object
+     * @param array $params
+     * @param null  $db
+     *
+     * @internal You cannot call this method directly.
+     *
+     * @return bool
      */
     public static function loadData($object, array $params = array(), $db = null)
     {
-        $config = self::loadConfig();
-
         if (null === $db) {
-            $db = \bdd::instance($config['bdd_config'][$config['env']], $config['bdd_option'][$config['env']]);
-        }
+            $params = Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters.yml'));
 
-        $path = $config['path'][$config['env']];
+            if (file_exists(__DIR__ . '/../app/config/parameters_extended.yml')) {
+                $params['parameters'] = array_merge($params['parameters'], Yaml::parse(file_get_contents(__DIR__ . '/../app/config/parameters_extended.yml'))['parameters']);
+            }
+
+            $connectionFactory = new ConnectionFactory([]);
+            $db                = $connectionFactory->createConnection(
+                [
+                    'driver'       => $params['parameters']['database_driver'],
+                    'host'         => $params['parameters']['database_host'],
+                    'dbname'       => $params['parameters']['database_name'],
+                    'user'         => $params['parameters']['database_user'],
+                    'password'     => $params['parameters']['database_password'],
+                    'charset'      => 'utf8',
+                    'wrapperClass' => $params['parameters']['dbal_wrapper_class'],
+                    'driverClass'  => $params['parameters']['dbal_driver_class'],
+                ]
+            );
+        }
+        $path = realpath(dirname(__FILE__) . '/..') . '/';
 
         if (false === file_exists($path . 'data/crud/' . $object . '.crud.php') && false === self::generateCRUD($object, $db, $path)
-            || false === file_exists($path . 'data/' . $object . '.data.php') && false === self::generateDATA($object, $db, $path)) {
+            || false === file_exists($path . 'data/' . $object . '.data.php') && false === self::generateDATA($object, $db, $path)
+        ) {
             return false;
         }
 
@@ -184,27 +209,9 @@ class Loader
         return false;
     }
 
-    /**
-     * @deprecated Limit its usage (Use it only in Services). Use Controller::get() instead. It will be removed with the project new infrastructure.
-     */
-    public static function loadService($sService, array $aParams = array())
-    {
-        $config = self::loadConfig();
-        $sPath  = $config['path'][$config['env']];
-
-        $sService = trim($sService, "/ \t\n\r\0\x0B");
-        if (false === file_exists($sPath . 'Service/' . $sService . '.php')) {
-            return false;
-        }
-        $sService   = str_replace('/', '\\', $sService);
-        $sClassName = 'Unilend\Service\\' . $sService;
-        return new $sClassName($aParams);
-    }
-
     public static function loadLib($sLibrary, array $aParams = array(), $bInstancing = true)
     {
-        $config       = self::loadConfig();
-        $sProjectPath = $config['path'][$config['env']];
+        $sProjectPath = realpath(dirname(__FILE__) . '/..') . '/';
         $sClassPath   = '';
         $aPath        = explode('/', $sLibrary);
 

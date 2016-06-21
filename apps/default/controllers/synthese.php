@@ -2,9 +2,9 @@
 
 class syntheseController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
@@ -249,8 +249,8 @@ class syntheseController extends bootstrap
         // statut client
         $this->clients_status->getLastStatut($this->clients->id_client);
 
-        /** @var \Unilend\Service\IRRManager $oIRRManager */
-        $oIRRManager                 = $this->get('IRRManager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\IRRManager $oIRRManager */
+        $oIRRManager                 = $this->get('unilend.service.irr_manager');
         $aLastUnilendIRR             = $oIRRManager->getLastUnilendIRR();
         $this->sIRRUnilend           = $this->ficelle->formatNumber((float) $aLastUnilendIRR['value']);
         $this->iDiversificationLevel = '';
@@ -312,8 +312,8 @@ class syntheseController extends bootstrap
         }
 
         //Ongoing Bids Widget
-        /** @var \Unilend\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
-        $oAutoBidSettingsManager             = $this->get('AutoBidSettingsManager');
+        /** @var \Unilend\Bundle\CoreBusinessBundle\Service\AutoBidSettingsManager $oAutoBidSettingsManager */
+        $oAutoBidSettingsManager             = $this->get('unilend.service.autobid_settings_manager');
         $this->bIsAllowedToSeeAutobid        = $oAutoBidSettingsManager->isQualified($this->lenders_accounts);
         $this->bFirstTimeActivation          = ! $oAutoBidSettingsManager->hasAutoBidActivationHistory($this->lenders_accounts);
         $this->iDisplayTotalNumberOfBids     = $this->bids->counter('id_lender_account = ' . $this->lenders_accounts->id_lender_account);
@@ -330,17 +330,16 @@ class syntheseController extends bootstrap
                     'id_bid DESC'
                 );
 
-                $this->aOngoingBidsByProject[$iKey]['aRejectedBid'] = array_shift(
-                    $this->bids->select(
-                        'id_project = ' . $aProject['id_project'] .
-                        ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
-                        ' AND status = ' . \bids::STATUS_BID_REJECTED,
-                        'id_bid DESC',
-                        null,
-                        '1'
-                    )
+                $bids = $this->bids->select(
+                    'id_project = ' . $aProject['id_project'] .
+                    ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
+                    ' AND status = ' . \bids::STATUS_BID_REJECTED,
+                    'id_bid DESC',
+                    null,
+                    '1'
                 );
 
+                $this->aOngoingBidsByProject[$iKey]['aRejectedBid'] = array_shift($bids);
                 $this->aOngoingBidsByProject[$iKey]['iNumberOfRejectedBids'] = $this->bids->counter('id_project = ' . $aProject['id_project'] .
                     ' AND id_lender_account = ' . $this->lenders_accounts->id_lender_account .
                     ' AND status = ' . \bids::STATUS_BID_REJECTED);
