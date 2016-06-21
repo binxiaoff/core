@@ -13,7 +13,7 @@ framework:
         engines: ['twig']
     assets:
         base_urls:
-            - "https://%router.request_context.host%"
+            - "%router.request_context.scheme%://%url.host_default%"
     translator:
         enabled: true
         fallbacks: ["fr_FR"]

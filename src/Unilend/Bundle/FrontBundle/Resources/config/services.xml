@@ -7,7 +7,7 @@
     <services>
         <service id="unilend_app.twig_extension" class="Unilend\Bundle\FrontBundle\Twig\FrontBundleExtension" public="false">
             <tag name="twig.extension" />
-            <argument>%router.request_context.host%</argument>
+            <argument>%url.host_default%</argument>
             <argument>%router.request_context.scheme%</argument>
             <argument type="service" id="unilend.service.statistics_manager" />
             <argument type="service" id="unilend.service.translation_manager" />
