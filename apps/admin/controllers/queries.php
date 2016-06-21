@@ -119,7 +119,7 @@ class queriesController extends bootstrap
         $this->sqlParams = $this->queries->super_unique($this->sqlParams);
 
         foreach ($this->sqlParams as $param) {
-            $this->queries->sql = str_replace($param[0], mysql_real_escape_string($_POST['param_' . str_replace('@', '', $param[0])], $this->bdd->connect_id), $this->queries->sql);
+            $this->queries->sql = str_replace($param[0], $this->bdd->quote($_POST['param_' . str_replace('@', '', $param[0])]), $this->queries->sql);
         }
 
         $this->result = $this->queries->run($this->params[0], $this->queries->sql);

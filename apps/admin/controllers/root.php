@@ -74,7 +74,8 @@ class rootController extends bootstrap
 
     public function _logout()
     {
-        // On place le redirect sur la home
+        $this->autoFireView = false;
+
         $_SESSION['request_url'] = $this->lurl;
 
         $this->users->handleLogout();
