@@ -611,7 +611,7 @@ class rootController extends bootstrap
 
         $this->users = $this->loadData('users');
 
-        if ($this->params[0] != '' && $this->params[1] != '') {
+        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
             $this->users->handleLoginFront($this->params[0], $this->params[1]);
         } else {
             $this->users->handleLogoutFront();
