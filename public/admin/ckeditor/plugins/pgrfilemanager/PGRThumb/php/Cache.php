@@ -27,26 +27,26 @@ class PGRThumb_Cache
 {
     /**
      * File mode
-     * 
+     *
      * @var string
      */
     static public $dirMode = 0755;
     /**
      * Dir depth structure
-     * 
+     *
      * @var int
      */
     static public $dirDepth = 2;
     /**
      * File mode
-     * 
+     *
      * @var string
      */
     static public $fileMode = 0600;
-    
+
     /**
      * Generate cached filename
-     * 
+     *
      * @param string $file
      * @return string
      */
@@ -59,15 +59,15 @@ class PGRThumb_Cache
         foreach (str_split($dir, strlen($dir) / self::$dirDepth) as $chunk) {
             $hashedFile .= '/' . md5($chunk);
         }
-        
+
         $hashedFile .= '/' . md5($filename . $params) . '.jpg';
-        
+
         return $hashedFile;
     }
-    
+
     /**
      * Save image to cache file
-     * 
+     *
      * @param PGRThumb_Image $image
      * @return bool
      */
@@ -77,38 +77,38 @@ class PGRThumb_Cache
         $cachedDir = dirname($cachedFile);
         if (!file_exists($cachedDir)) {
             $res = mkdir($cachedDir, PGRThumb_Cache::$dirMode, true);
-        }          
+        }
         if ($res) {
             return $image->saveImage($cachedFile, 75, 'JPEG'); //jpeg
-        }          
+        }
 
-        return false;        
+        return false;
     }
-    
+
     static public function outputCache($file)
-    {        
+    {
         if (headers_sent()) {
 			PGRThumb_UrlThumb::error('headers already sent');
-		}        
-	    				
+		}
+
         $modifiedDate  = filemtime($file);
-        
-		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && 
-		    ($modifiedDate == strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'])) && 
+
+		if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) &&
+		    ($modifiedDate == strtotime($_SERVER['HTTP_IF_MODIFIED_SINCE'])) &&
 		    $_SERVER['SERVER_PROTOCOL']) {
 			header($_SERVER['SERVER_PROTOCOL'].' 304 Not Modified');
 			exit(0);
-		} 
+		}
 
 		return false;
     }
-    
+
     static public function outputFile($file)
     {
     	if (headers_sent()) {
 			PGRThumb_UrlThumb::error('headers already sent');
-		}        
-	    				
+		}
+
 		header('Last-Modified: '.gmdate('D, d M Y H:i:s', @filemtime($file)).' GMT');
 		//header('Location: ' . $file . '?new');
 		header("Content-Type: image/jpg");

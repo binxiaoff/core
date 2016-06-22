@@ -1,10 +1,2 @@
-# TOUS LES MOTEURS
 User-agent: *
-
-
-# DESACTIVATION
-Disallow: /
-
-
-# ACTIVATION
-#Allow: /
+Allow: /
