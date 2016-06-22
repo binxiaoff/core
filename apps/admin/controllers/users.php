@@ -10,7 +10,7 @@ class usersController extends bootstrap
 
         $this->catchAll = true;
         $this->menu_admin = 'admin';
-        
+
         $this->users_zones       = $this->loadData('users_zones');
         $this->users_types       = $this->loadData('users_types');
         $this->users_types_zones = $this->loadData('users_types_zones');
@@ -205,8 +205,6 @@ class usersController extends bootstrap
 
                                 $_SESSION['user']['password']        = md5($_POST['new_pass']);
                                 $_SESSION['user']['password_edited'] = date('Y-m-d H:i:s');
-
-                                $this->mails_text->get('admin-nouveau-mot-de-passe', 'lang = "' . $this->language . '" AND type');
 
                                 $aVars = array(
                                     '$cms'      => $this->cms,

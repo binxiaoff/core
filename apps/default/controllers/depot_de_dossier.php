@@ -128,10 +128,8 @@ class depot_de_dossierController extends bootstrap
         try {
             $oAltares = new Altares();
             $oResult  = $oAltares->getEligibility($iSIREN);
-
-            $oLogger->info('Altares response: ' . var_export($oResult, true), array('class' => __CLASS__, 'function' => __FUNCTION__));
         } catch (\Exception $oException) {
-            $oLogger->error('Calling Altares::getEligibility() using siren=' . $iSIREN . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $iSIREN));
+            $oLogger->error('Calling Altares::getEligibility() using SIREN ' . $iSIREN . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $iSIREN));
 
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);

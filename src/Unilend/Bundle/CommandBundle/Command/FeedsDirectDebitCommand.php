@@ -74,7 +74,9 @@ class FeedsDirectDebitCommand extends ContainerAwareCommand
 
         foreach ($borrowerDirectDebits as $borrowerDirectDebit) {
             $sequence = 'RCUR';
-            if ($borrowerDirectDebit['num_prelevement'] > 1) {
+            // @todo Revert after 2016-06-30 (TMA-724)
+            // if ($borrowerDirectDebit['num_prelevement'] > 1) {
+            if ($borrowerDirectDebit['num_prelevement'] > 2 || $borrowerDirectDebit['num_prelevement'] == 2 && $borrowerDirectDebit['id_project'] != 33794) {
                 $lastDirectDebit = $directDebit->select('status = ' . \prelevements::STATUS_SENT . ' AND type = ' . \prelevements::CLIENT_TYPE_BORROWER . ' AND type_prelevement = 1 AND id_project = ' . $borrowerDirectDebit['id_project'], 'num_prelevement DESC', 0, 1);
                 $lastIban        = $lastDirectDebit[0]['iban'];
                 $lastBic         = $lastDirectDebit[0]['bic'];

@@ -39,7 +39,6 @@ class bootstrap extends Controller
         $this->blocs                   = $this->loadData('blocs');
         $this->mail_template           = $this->loadData('mail_templates');
         $this->ln                      = $this->loadData('textes');
-        //$this->routages                = $this->loadData('routages', array('url' => $this->lurl, 'route' => $this->Config['route_url']));
         $this->clients                 = $this->loadData('clients');
         $this->clients_adresses        = $this->loadData('clients_adresses');
         $this->clients_history         = $this->loadData('clients_history');
@@ -407,67 +406,51 @@ class bootstrap extends Controller
         }
 
         if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr') {
-
-            if ($this->Command->Name == 'root' && $this->Command->Function == 'capital') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'projects' && $this->Command->Function == 'detail') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'ajax') {
-                //echo 'ok';
+            if (
+                $this->Command->Name == 'root' && $this->Command->Function == 'capital'
+                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
+                || $this->Command->Name == 'projects' && $this->Command->Function == 'detail'
+                || $this->Command->Name == 'ajax'
+            ) {
             } else {
                 header('location: http://prets-entreprises-unilend.capital.fr/capital/');
                 die;
             }
-
-            //print_r($this->Command);
         } elseif ($this->lurl == 'http://partenaire.unilend.challenges.fr') {
-
-            if ($this->Command->Name == 'root' && $this->Command->Function == 'challenges') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'projects' && $this->Command->Function == 'detail') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'ajax') {
-                //echo 'ok';
+            if (
+                $this->Command->Name == 'root' && $this->Command->Function == 'challenges'
+                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
+                || $this->Command->Name == 'projects' && $this->Command->Function == 'detail'
+                || $this->Command->Name == 'ajax'
+            ) {
             } else {
                 header('location: http://partenaire.unilend.challenges.fr/challenges/');
                 die;
             }
-
-            //print_r($this->Command);
         } elseif ($this->lurl == 'http://lexpress.unilend.fr') {
-
-            if ($this->Command->Name == 'root' && $this->Command->Function == 'lexpress') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
-                // voir dans root autres restrictions
+            if (
+                $this->Command->Name == 'root' && $this->Command->Function == 'lexpress'
+                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
+            ) {
             } else {
-
                 header('location: ' . $this->surl);
                 die;
             }
         } elseif ($this->lurl == 'http://pret-entreprise.votreargent.lexpress.fr') {
-
-            if ($this->Command->Name == 'root' && $this->Command->Function == 'lexpress') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
-                // voir dans root autres restrictions
+            if (
+                $this->Command->Name == 'root' && $this->Command->Function == 'lexpress'
+                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
+            ) {
             } else {
-
                 header('location: ' . $this->surl);
                 die;
             }
         } elseif ($this->lurl == 'http://emprunt-entreprise.lentreprise.lexpress.fr') {
-
-            if ($this->Command->Name == 'root' && $this->Command->Function == 'lexpress') {
-                //echo 'ok';
-            } elseif ($this->Command->Name == 'root' && $this->Command->Function == 'default') {
-                // voir dans root autres restrictions
+            if (
+                $this->Command->Name == 'root' && $this->Command->Function == 'lexpress'
+                || $this->Command->Name == 'root' && $this->Command->Function == 'default'
+            ) {
             } else {
-
                 header('location: ' . $this->surl);
                 die;
             }
@@ -476,7 +459,6 @@ class bootstrap extends Controller
 
     public function handlePartenaire($params)
     {
-        // Chargement des datas
         $partenaires       = $this->loadData('partenaires');
         $promotions        = $this->loadData('promotions');
         $partenaires_clics = $this->loadData('partenaires_clics');

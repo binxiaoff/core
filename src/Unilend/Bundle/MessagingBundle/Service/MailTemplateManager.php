@@ -42,10 +42,9 @@ class MailTemplateManager
         $oMailTemplate->sender_email = $sSenderEmail;
         $oMailTemplate->subject      = $sSubject;
         $oMailTemplate->content      = $sContent;
-        $oMailTemplate->lang         = $this->defaultLanguage;
+        $oMailTemplate->locale       = $this->defaultLanguage;
         $oMailTemplate->status       = \mail_templates::STATUS_ACTIVE;
         $oMailTemplate->create();
-
     }
 
     /**

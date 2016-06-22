@@ -190,6 +190,16 @@ class inscription_preteurController extends bootstrap
 
         $this->checkSession();
 
+        if (isset($_SESSION['forms']['step-2']['error'])) {
+                $this->error_rib = $_SESSION['forms']['step-2']['error']['error_rib'];
+                $this->error_cni = $_SESSION['forms']['step-2']['error']['error_cni'];
+                $this->error_cni_verso = $_SESSION['forms']['step-2']['error']['error_cni_verso'];
+                $this->error_justificatif_domicile = $_SESSION['forms']['step-2']['error']['error_justificatif_domicile'];
+                $this->error_attestation_hebergement = $_SESSION['forms']['step-2']['error']['error_attestation_hebergement'];
+                $this->error_document_fiscal = $_SESSION['forms']['step-2']['error']['error_document_fiscal'];
+            unset($_SESSION['forms']['step-2']['error']);
+        }
+
         if (isset($this->params[0]) && $this->clients->get($this->params[0], 'status = 1 AND etape_inscription_preteur < 3 AND hash') || false === empty($this->clients->id_client)) {
             $this->lenders_accounts->get($this->clients->id_client, 'id_client_owner');
             $this->clients_adresses->get($this->clients->id_client, 'id_client');
@@ -1421,6 +1431,13 @@ class inscription_preteurController extends bootstrap
             }
             header('Location: ' . $this->lurl . '/inscription_preteur/etape3/' . $this->clients->hash);
             die;
+        } else {
+            $_SESSION['forms']['step-2']['error']['error_rib']                     = isset($this->error_rib) ? $this->error_rib : false ;
+            $_SESSION['forms']['step-2']['error']['error_cni']                     = isset($this->error_cni) ? $this->error_cni : false;
+            $_SESSION['forms']['step-2']['error']['error_cni_verso']               = $this->error_cni_verso;
+            $_SESSION['forms']['step-2']['error']['error_justificatif_domicile']   = $this->error_justificatif_domicile;
+            $_SESSION['forms']['step-2']['error']['error_attestation_hebergement'] = $this->error_attestation_hebergement;
+            $_SESSION['forms']['step-2']['error']['error_document_fiscal']         = $this->error_document_fiscal;
         }
     }
 

@@ -48,23 +48,65 @@ cache_adapter:
 monolog:
     channels: [console]
     handlers:
-        main:
+        error:
+            type: fingers_crossed
+            action_level: error
+            handler: error_handler
+        error_handler:
+            type: group
+            members: [file_error, slack_error]
+        file_error:
             type: rotating_file
-            path: "%kernel.logs_dir%/%kernel.environment%.log"
-            level: info
+            level: error
+            path: "%kernel.logs_dir%/error.%kernel.environment%.log"
             max_files: 90
-            file_permission: 0664
             date_format: 'Ymd'
-            channels: ['!console']
-        console:
-            type: rotating_file
-            path: "%kernel.logs_dir%/console-%kernel.environment%.log"
-            level: info
-            max_files: 90
             file_permission: 0664
-            date_format: 'Ymd'
-            channels: [console]
+        slack_error:
+            type: slack
+            level: error
+            token: xoxp-1234567890-0123456789-01234567890-1a2b3c4d5e
+            channel: '#it-releases'
+            bot_name: 'Symfony Bot'
 
+        console:
+            type: fingers_crossed
+            action_level: info
+            handler: console_handler
+        filter_console:
+            type: filter
+            handler: console
+            max_level: warning
+            channels: console
+        console_handler:
+            type: group
+            members: [file_console, console_console]
+        file_console:
+            type: rotating_file
+            path: "%kernel.logs_dir%/console.%kernel.environment%.log"
+            level: info
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Ymd'
+        console_console:
+            type: console
+
+        site:
+            type: fingers_crossed
+            action_level: info
+            handler: site_handler
+        filter_site:
+            type: filter
+            handler: site
+            max_level: warning
+            channels: !console
+        site_handler:
+            type: rotating_file
+            level: info
+            path: "%kernel.logs_dir%/site.%kernel.environment%.log"
+            max_files: 90
+            file_permission: 0664
+            date_format: 'Ymd'
 
 swiftmailer:
     transport: '%mailer_transport%'

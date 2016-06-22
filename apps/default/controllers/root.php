@@ -596,6 +596,8 @@ class rootController extends bootstrap
 
     public function _logout()
     {
+        $this->autoFireView = false;
+
         $this->clients->handleLogout();
     }
 
@@ -605,10 +607,11 @@ class rootController extends bootstrap
         $this->autoFireDebug  = false;
         $this->autoFireHead   = false;
         $this->autoFireFooter = false;
+        $this->autoFireView   = false;
 
         $this->users = $this->loadData('users');
 
-        if ($this->params[0] != '' && $this->params[1] != '') {
+        if (false === empty($this->params[0]) && false === empty($this->params[1])) {
             $this->users->handleLoginFront($this->params[0], $this->params[1]);
         } else {
             $this->users->handleLogoutFront();
@@ -1061,7 +1064,9 @@ class rootController extends bootstrap
         if ($this->clients->checkAccess() || isset($this->params[0]) && $this->clients->get($this->params[0], 'hash')) {
             $this->clients->checkAccessLender();
 
-            $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+            $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+            $listeAccept = array_shift($listeAccept);
+
             $id_tree_cgu = $listeAccept['id_legal_doc'];
 
             $contenu = $this->tree_elements->select('id_tree = "' . $id_tree_cgu . '" AND id_langue = "' . $this->language . '"');
@@ -1077,8 +1082,10 @@ class rootController extends bootstrap
                 header("Content-Type: application/force-download");
                 @readfile($this->surl . '/var/fichiers/' . $this->content['pdf-cgu']);
             } else {
-                $oCommandPdf    = new Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
-                $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
+                $oCommandPdf    = new \Command('pdf', 'cgv_preteurs', array($this->clients->hash), $this->language);
+                $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+                $oPdf->setContainer($this->container);
+                $oPdf->initialize();
                 $path           = $this->path . 'protected/pdf/cgv_preteurs/' . $this->clients->id_client . '/';
                 $sNamePdf       = 'cgv_preteurs-' . $this->clients->hash . '-' . $id_tree_cgu;
                 $sNamePdfClient = 'CGV-UNILEND-PRETEUR-' . $this->clients->id_client . '-' . $id_tree_cgu;
@@ -1122,7 +1129,9 @@ class rootController extends bootstrap
             if (isset($this->params[0]) && $this->params[0] == 'nosign') {
                 $dateAccept = '';
             } else {
-                $listeAccept = array_shift($this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1));
+                $listeAccept = $this->acceptations_legal_docs->select('id_client = ' . $this->clients->id_client, 'added DESC', 0, 1);
+                $listeAccept = array_shift($listeAccept);
+
                 $dateAccept  = 'Sign&eacute; &eacute;lectroniquement le ' . date('d/m/Y', strtotime($listeAccept['added']));
             }
 

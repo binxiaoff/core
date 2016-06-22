@@ -73,7 +73,6 @@
                     <li><a href="<?= $this->lurl ?>/settings" title="Paramètres">Paramètres</a></li>
                     <li><a href="<?= $this->lurl ?>/mails/emailhistory" title="Historique des Mails">Historique des Mails</a></li>
                     <li><a href="<?= $this->lurl ?>/users/logs" title="Historique des connexions">Logs connexions</a></li>
-                    <li><a href="<?= $this->lurl ?>/routages" title="Routage">Routage</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires" title="Campagnes">Campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/types" title="Types de campagnes">Types de campagnes</a></li>
                     <li><a href="<?= $this->lurl ?>/partenaires/medias" title="Medias de campagnes">Medias de campagnes</a></li>

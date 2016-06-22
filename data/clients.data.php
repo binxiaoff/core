@@ -766,7 +766,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     - SUM(`capital`)/100 AS montant,
-                    DATE(date_echeance)_reel AS date,
+                    DATE(date_echeance_reel) AS date,
                     "affectation-ra-preteur" AS type
                 FROM
                     `echeanciers`
