@@ -42,20 +42,20 @@ class PGRFileManagerUtils
         15 => 'WBMP',
         16 => 'XBM'
     );
-    
-    static public function formatBytes($bytes, $precision = 2) 
+
+    static public function formatBytes($bytes, $precision = 2)
     {
         $units = array('B', 'KB', 'MB', 'GB', 'TB');
-  
+
         $bytes = max($bytes, 0);
         $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
         $pow = min($pow, count($units) - 1);
-  
+
         $bytes /= pow(1024, $pow);
-  
+
         return round($bytes, $precision) . ' ' . $units[$pow];
     }
-    
+
     static public function getImageInfo($filename)
     {
         if ((list($width, $height, $type, $attr) = @getimagesize($filename) ) !== false ) {
@@ -67,14 +67,14 @@ class PGRFileManagerUtils
             );
         }
         return false;
-    }    
-    
+    }
+
     static public function getPhpThumb($params)
     {
         return PGRFileManagerConfig::$pgrThumbPath . '/pgrthumb.php?' . $params . '&hash=' . md5($params . PGRThumb_Config::$pass);
     }
-            
-    static public function deleteDirectory($dir) 
+
+    static public function deleteDirectory($dir)
     {
         if (!file_exists($dir)) return true;
         if (!is_dir($dir)) return unlink($dir);
@@ -84,23 +84,23 @@ class PGRFileManagerUtils
         }
         return rmdir($dir);
     }
-    
+
     static public function sendError($message)
     {
         echo json_encode(array(
             'res' => 'ERROR',
             'msg' => $message
         ));
-        
+
         die();
     }
-        
+
     static public function curPageURL() {
-        $pageURL = (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on'))?'https':'http'; 
+        $pageURL = (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on'))?'https':'http';
         $pageURL .= '://' . $_SERVER['SERVER_NAME'];
         if (isset($_SERVER['SERVER_PORT']) && ($_SERVER['SERVER_PORT'] != '80')) {
             $pageURL .= ':' . $_SERVER['SERVER_PORT'];
-        } 
+        }
         $pageURL .= $_SERVER['REQUEST_URI'];
         return $pageURL;
     }
