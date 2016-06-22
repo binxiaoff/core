@@ -1,10 +1,4 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: annabreyer
- * Date: 09/06/2016
- * Time: 14:42
- */
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
@@ -14,13 +8,26 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
 class StaticPagesController extends Controller
 {
+
+    /**
+     * @Route("/statistics", name="statistics")
+     *
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function statisticsShowAction()
+    {
+
+        return $this->render('pages/statistics.html.twig', array());
+
+    }
+
+
     /**
      * @Route("/questions-frequentes-emprunteur", name="borrower_faq")
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function faqBorrowerShowAction()
-    {
+    public function faqBorrowerShowAction()    {
 
     }
 
@@ -104,15 +111,6 @@ class StaticPagesController extends Controller
 
     }
 
-    /**
-     * @Route("/statistics", name="statistics")
-     *
-     * @return \Symfony\Component\HttpFoundation\Response
-     */
-    public function statisticsShowAction()
-    {
-
-    }
 
     /**
      * @Route("/la-presse-en-parle", name="press")

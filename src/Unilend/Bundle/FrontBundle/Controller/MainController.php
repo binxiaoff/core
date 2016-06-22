@@ -45,10 +45,10 @@ class MainController extends Controller
         //TODO replace switch by cookie check
         switch($type) {
             case 'lender' :
-                $sTemplateToRender = 'pages/homepage_preter.html.twig';
+                $sTemplateToRender = 'pages/homepage_lender.html.twig';
                 break;
             case 'borrower' :
-                $sTemplateToRender = 'pages/homepage_emprunter.html.twig';
+                $sTemplateToRender = 'pages/homepage_borrower.html.twig';
                 break;
             case 'acquisition':
             default:
