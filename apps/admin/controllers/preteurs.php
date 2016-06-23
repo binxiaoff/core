@@ -159,19 +159,23 @@ class preteursController extends bootstrap
         $this->SumInscription = $this->wallets_lines->getSumDepot($this->lenders_accounts->id_lender_account, '10');
 
         $this->echeanciers = $this->loadData('echeanciers');
-        $this->sumRembInte = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account), array(' = '));
-        $datetime          = new DateTime();
-        $sBeginDate        = $datetime->modify('first day of next month')->setTime(0, 0, 0)->format('Y-m-d H:i:s');
-        $datetime          = new DateTime();
-        $sEndDate          = $datetime->modify('last day of next month')->setTime(23, 59, 59)->format('Y-m-d H:i:s');
-        $this->nextRemb    = $this->echeanciers->getTotalAmount(array(
-                                                                        'id_lender'     => $this->lenders_accounts->id_lender_account,
-                                                                        'date_echeance' => '"' . $sBeginDate . '" AND "' . $sEndDate . '"',
-                                                                        'status'        => \echeanciers::STATUS_PENDING
-                                                                    ),
-                                                                array(' = ', ' BETWEEN ', ' = ')
-                                                                );
-        $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account), array(' = '));
+        $this->sumRembInte = $this->echeanciers->getRepaidInterests(array('id_lender' => $this->lenders_accounts->id_lender_account));
+        
+        try {
+            $this->nextRemb = $this->echeanciers->getNextRepaymentAmountInDateRange(
+                $this->lenders_accounts->id_lender_account,
+                (new \DateTime('first day of next month'))->format('Y-m-d 00:00:00'),
+                (new \DateTime('last day of next month'))->format('Y-m-d 23:59:59'),
+                array(\echeanciers::STATUS_PENDING)
+            );
+        } catch (\Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get next repayment amount (id_lender = ' . $this->lenders_accounts->id_lender_account . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->lenders_accounts->id_lender_account));
+            $this->nextRemb = 0;
+        }
+
+        $this->sumRembMontant = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account));
 
         $this->bids           = $this->loadData('bids');
         $this->avgPreteur     = $this->bids->getAvgPreteur($this->lenders_accounts->id_lender_account, 'amount', '1,2');

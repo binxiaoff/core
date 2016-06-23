@@ -522,8 +522,8 @@ class projectsController extends bootstrap
                     $this->AvgLoansPreteur  = $this->loans->getAvgLoansPreteur($this->projects->id_project, $this->lenders_accounts->id_lender_account);
                     $oProjectsStatusHistory = $this->loadData('projects_status_history');
                     $this->aStatusHistory   = $oProjectsStatusHistory->getHistoryDetails($this->projects->id_project);
-                    $this->sumRemb          = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $this->projects->id_project), array(' = ', ' = '));
-                    $this->sumRestanteARemb = $this->echeanciers->getOwedAmount(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $this->projects->id_project), array(' = ', ' = '));
+                    $this->sumRemb          = $this->echeanciers->getRepaidAmount(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $this->projects->id_project));
+                    $this->sumRestanteARemb = $this->echeanciers->getOwedAmount(array('id_lender' => $this->lenders_accounts->id_lender_account, 'id_project' => $this->projects->id_project));
                     $this->nbPeriod         = $this->echeanciers->counterPeriodRestantes($this->lenders_accounts->id_lender_account, $this->projects->id_project);
                 } else {
                     $this->bidsvalid = array('solde' => 0, 'nbValid' => 0);

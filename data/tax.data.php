@@ -43,15 +43,26 @@ class tax extends tax_crud
 
     /**
      * @param string $date yyyy-mm-dd date formated
+     * @param array $taxType
      * @return array of tax sum by tax type
      */
-    public function getDailyTax($date)
+    public function getDailyTax($date, array $taxType = [])
     {
+        if (false === empty($taxType)) {
+            $taxTypeWhere = ' AND id_tax_type IN (:tax_type) ';
+        } else {
+            $taxTypeWhere = null;
+        }
         $sql = 'SELECT SUM(amount) as daily_amount, id_tax_type
                 FROM tax
-                WHERE DATE(added) = :date GROUP BY id_tax_type';
-        $aResult = $this->bdd->executeQuery($sql, array('date' => $date), array('date' => \PDO::PARAM_STR), new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
-        $aDailyTax = array();
+                WHERE DATE(added) = :date ' . $taxTypeWhere . '
+                GROUP BY id_tax_type';
+        $aResult = $this->bdd->executeQuery(
+            $sql,
+            array('date' => $date, 'tax_type' => $taxType),
+            array('date' => \PDO::PARAM_STR, 'tax_type' => \Doctrine\DBAL\Connection::PARAM_INT_ARRAY),
+            new \Doctrine\DBAL\Cache\QueryCacheProfile(\Unilend\librairies\CacheKeys::LONG_TIME, md5(__METHOD__)))->fetchAll(\PDO::FETCH_ASSOC);
+        $aDailyTax = [];
         foreach ($aResult as $aRow) {
             $aDailyTax[$aRow['id_tax_type']] = $aRow['daily_amount'];
         }
@@ -144,7 +155,7 @@ class tax extends tax_crud
         $res      = array();
 
         while ($record = $this->bdd->fetch_array($result)) {
-            $res[$record['date']] = number_format($record['taxAmount'], 2, '.', '');
+            $res[$record['date']] = $record['taxAmount'];
         }
 
         return $res;

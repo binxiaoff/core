@@ -32,8 +32,8 @@ class loans extends loans_crud
 
     const TYPE_CONTRACT_BDC = 1;
     const TYPE_CONTRACT_IFP = 2;
-    const ACCEPTED_STATUS   = 0;
-    const REFUSED_STATUS    = 1;
+    const STATUS_ACCEPTED   = 0;
+    const STATUS_REJECTED   = 1;
 
     private $aAcceptedBids;
 
@@ -80,9 +80,9 @@ class loans extends loans_crud
 
     public function getBidsValid($id_project, $id_lender)
     {
-        $nbValid = $this->counter('id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::ACCEPTED_STATUS);
+        $nbValid = $this->counter('id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED);
 
-        $sql = 'SELECT SUM(amount) as solde FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::ACCEPTED_STATUS;
+        $sql = 'SELECT SUM(amount) as solde FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         $solde  = $this->bdd->result($result);
@@ -97,7 +97,7 @@ class loans extends loans_crud
 
     public function getNbPreteurs($id_project)
     {
-        $sql = 'SELECT count(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = ' . self::ACCEPTED_STATUS;
+        $sql = 'SELECT count(DISTINCT id_lender) FROM `loans` WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return (int)$this->bdd->result($result, 0, 0);
@@ -112,7 +112,7 @@ class loans extends loans_crud
                 GROUP_CONCAT(id_loan) AS loans
             FROM `loans`
             WHERE id_project = ' . $id_project . '
-                AND status = ' . self::ACCEPTED_STATUS . '
+                AND status = ' . self::STATUS_ACCEPTED . '
             GROUP BY id_lender';
 
         $resultat = $this->bdd->query($sql);
@@ -138,7 +138,7 @@ class loans extends loans_crud
             LEFT JOIN echeanciers e ON e.id_lender = l.id_lender AND e.id_project = l.id_project
             LEFT JOIN lenders_accounts la ON l.id_lender = la.id_lender_account
             LEFT JOIN clients c ON la.id_client_owner = c.id_client
-            WHERE l.id_project = ' . $id_project . ' AND l.status = ' . self::ACCEPTED_STATUS .
+            WHERE l.id_project = ' . $id_project . ' AND l.status = ' . self::STATUS_ACCEPTED .
             ' GROUP BY id_lender';
 
         $resultat = $this->bdd->query($sql);
@@ -151,7 +151,7 @@ class loans extends loans_crud
 
     public function getProjectsCount($id_lender)
     {
-        $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::ACCEPTED_STATUS;
+        $sql = 'SELECT count(DISTINCT id_project) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return (int)($this->bdd->result($result));
@@ -160,7 +160,7 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un projet
     public function getAvgLoans($id_project, $champ = 'amount')
     {
-        $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND status = ' . self::ACCEPTED_STATUS;
+        $sql = 'SELECT AVG(' . $champ . ') as avg FROM loans WHERE id_project = ' . $id_project . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         $avg    = $this->bdd->result($result);
@@ -174,7 +174,7 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un preteur sur un projet
     public function getAvgLoansPreteur($id_project, $id_lender)
     {
-        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::ACCEPTED_STATUS;
+        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_project = ' . $id_project . ' AND id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return $this->bdd->result($result);
@@ -183,7 +183,7 @@ class loans extends loans_crud
     // retourne la moyenne des prets validés d'un preteur
     public function getAvgPrets($id_lender)
     {
-        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::ACCEPTED_STATUS;
+        $sql = 'SELECT IFNULL(SUM(rate * amount) / SUM(amount), 0) AS avg FROM loans WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result = $this->bdd->query($sql);
         return $this->bdd->result($result);
@@ -192,7 +192,7 @@ class loans extends loans_crud
     // sum prêtée d'un lender
     public function sumPrets($id_lender)
     {
-        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::ACCEPTED_STATUS;
+        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED;
 
         $result  = $this->bdd->query($sql);
         $montant = (int)($this->bdd->result($result, 0, 0));
@@ -208,7 +208,7 @@ class loans extends loans_crud
     public function sumPretsByMonths($id_lender, $month, $year)
     {
 
-        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::ACCEPTED_STATUS . ' AND LEFT(added,7) = "' . $year . '-' . $month . '"';
+        $sql = 'SELECT SUM(amount) FROM `loans` WHERE id_lender = ' . $id_lender . ' AND status = ' . self::STATUS_ACCEPTED . ' AND LEFT(added,7) = "' . $year . '-' . $month . '"';
 
         $result  = $this->bdd->query($sql);
         $montant = (int)($this->bdd->result($result, 0, 0));

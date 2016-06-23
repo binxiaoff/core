@@ -623,7 +623,7 @@ class pdfController extends bootstrap
 
         $this->fCommissionRepayment = $this->aCommissionRepayment['commission_total'];
         $this->fCommissionProject   = $fProjectCommisionRate * $oLoans->amount / 100 / (1 + $fVat);
-        $this->fInterestTotal       = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan), array(' = '));
+        $this->fInterestTotal       = $this->echeanciers->getTotalInterests(array('id_loan' => $oLoans->id_loan));
 
         if (\loans::TYPE_CONTRACT_BDC == $oLoans->id_type_contract) {
             $this->blocs->get('pdf-contrat', 'slug');
@@ -948,15 +948,20 @@ class pdfController extends bootstrap
                 $this->date = date('d/m/Y', strtotime($this->projects_status_history_details->date));
             }
 
-            $this->echu         = (int)$this->echeanciers->getRepaidAmount(array(
-                                                                        'id_lender'     => $this->oLendersAccounts->id_lender_account,
-                                                                        'date_echeance' => '"2015-04-19 00:00:00" AND "' . date('Y-m-d H:i:s') . '"',
-                                                                        'id_loan'       => $this->oLoans->id_loan
-                                                                    ),
-                                                                        array(' = ', ' BETWEEN ', ' = ')
-                                                                    );
-            $this->echoir       = (int)$this->echeanciers->getTotalCapital(array('id_lender' => $this->oLendersAccounts->id_lender_account,'date_echeance' => '"' . date('Y-m-d') . '"','id_loan' => $this->oLoans->id_loan),array(' = ', ' > ', ' = '));
-            $this->total        = $this->echu + $this->echoir;
+            try {
+                $this->echu   = $this->echeanciers->getRepaidAmountInDateRange($this->oLendersAccounts->id_lender_account, '2015-04-19 00:00:00', date('Y-m-d H:i:s'), $this->oLoans->id_loan);
+                $this->echoir = $this->echeanciers->getTotalComingCapital($this->oLendersAccounts->id_lender_account, $this->oLoans->id_loan);
+            } catch (\Exception $exception) {
+                /** @var LoggerInterface $logger */
+                $logger = $this->get('logger');
+                $logger->error('Could not get coming capital or repaid amount (id_lender = ' .
+                    $this->oLendersAccounts->id_lender_account . ', id_loan = ' . $this->oLoans->id_loan . ') Exception message : '
+                    . $exception->getMessage() , array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $this->oLendersAccounts->id_lender_account));
+                $this->echoir = 0;
+                $this->echu   = 0;
+            }
+
+            $this->total        = bcadd($this->echu, $this->echoir, 2);
             $lastEcheance       = $this->echeanciers->select('id_lender = ' . $this->oLendersAccounts->id_lender_account . ' AND id_loan = ' . $this->oLoans->id_loan, 'ordre DESC', 0, 1);
             $this->lastEcheance = date('d/m/Y', strtotime($lastEcheance[0]['date_echeance']));
 

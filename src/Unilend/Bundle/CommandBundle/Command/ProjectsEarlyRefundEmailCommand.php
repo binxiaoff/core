@@ -68,7 +68,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
 
         $limit = $input->getOption('limit-project');
         $limit = $limit ? $limit : 1;
-        
+
         foreach ($earlyRepaymentEmail->select('statut = 0', 'added ASC', '', $limit) as $earlyRefundPendingEmail) {
             $sfpmeiFeedIncoming->get($earlyRefundPendingEmail['id_reception']);
             $project->get($sfpmeiFeedIncoming->id_project);
@@ -137,7 +137,7 @@ class ProjectsEarlyRefundEmailCommand extends ContainerAwareCommand
                             'nom_entreprise'       => $company->name,
                             'taux_bid'             => $ficelle->formatNumber($loan->rate),
                             'nbecheancesrestantes' => $remainingRepaymentsCount,
-                            'interetsdejaverses'   => $ficelle->formatNumber($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender']), array(' = ', ' = ', ' = ')) * 100),
+                            'interetsdejaverses'   => $ficelle->formatNumber(bcml($lenderRepaymentSchedule->getRepaidInterests(array('id_project' => $project->id_project, 'id_loan' => $projectLender['id_loan'], 'id_lender' => $projectLender['id_lender'])), 100, 2)),
                             'crdpreteur'           => $ficelle->formatNumber($lenderRemainingCapital) . ($lenderRemainingCapital >= 2 ? ' euros' : ' euro'),
                             'Datera'               => date('d/m/Y'),
                             'solde_p'              => $ficelle->formatNumber($accountBalance) . ($accountBalance >= 2 ? ' euros' : ' euro'),

@@ -502,17 +502,17 @@ class transfertsController extends bootstrap
         $this->clients           = $this->loadData('clients');
         $this->companies         = $this->loadData('companies');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
-        $oWelcomeOfferDetails    = $this->loadData('offres_bienvenues_details');
+        $oWelcomeOfferDetails = $this->loadData('offres_bienvenues_details');
         /** @var \transactions $oTransactions */
-        $oTransactions           = $this->loadData('transactions');
+        $oTransactions = $this->loadData('transactions');
         /** @var \wallets_lines $oWalletsLines */
-        $oWalletsLines           = $this->loadData('wallets_lines');
+        $oWalletsLines = $this->loadData('wallets_lines');
         /** @var \bank_unilend $oBankUnilend */
-        $oBankUnilend            = $this->loadData('bank_unilend');
+        $oBankUnilend = $this->loadData('bank_unilend');
         /** @var \lenders_accounts $oLendersAccounts */
-        $oLendersAccounts        = $this->loadData('lenders_accounts');
+        $oLendersAccounts = $this->loadData('lenders_accounts');
         /** @var \settings $oSettings */
-        $oSettings               = $this->loadData('settings');
+        $oSettings = $this->loadData('settings');
 
         if (isset($this->params[0])) {
             $this->clients->get($this->params[0]);

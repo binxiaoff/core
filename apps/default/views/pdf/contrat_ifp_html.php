@@ -279,7 +279,7 @@
                             Coût total du prêt pour l’Emprunteur :
                         </div>
                         <div class="col-small">
-                            <?= $this->ficelle->formatNumber($this->fCommissionRepayment + $this->fCommissionProject + $this->echeanciers->getTotalInterests(array('id_loan' => $this->oLoans->id_loan), array(' = '))) ?>&nbsp;&euro;
+                            <?= $this->ficelle->formatNumber($this->fCommissionRepayment + $this->fCommissionProject + $this->echeanciers->getTotalInterests(array('id_loan' => $this->oLoans->id_loan))) ?>&nbsp;&euro;
                         </div>
                         <div class="cl">&nbsp;</div>
                         <br/>

@@ -59,7 +59,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
             $entityManager->getRepository('tax_type');
 
             $time = $input->getArgument('day');
-            echo $time;
+
             if ($time) {
                 $time = strtotime($time);
 
@@ -248,18 +248,14 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                 if (strtotime($date . ' 00:00:00') < $InfeA) {
                     $interetNetPreteur = bcdiv($transaction->sum('type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . ' AND DATE(date_transaction) = "' . $date . '"', 'montant'), 100, 2);
 
-                    $aDailyTax = $tax->getDailyTax('id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . ' AND DATE(added) ="' . $date . '"');
+                    $aDailyTax = $tax->getDailyTax($date);
 
-                    $logger->info('Dailly tax array : ' . var_export($aDailyTax, true));
-                    $output->writeln(\GuzzleHttp\json_encode($aDailyTax));
-                    $retenuesFiscales = 0;
+                    $iTotalTaxAmount = 0;
                     foreach ($aDailyTax as $iTaxTypeId => $iTaxAmount) {
                         $aDailyTax[$iTaxTypeId] = bcdiv($iTaxAmount, 100, 2);
-                        $retenuesFiscales += $aDailyTax[$iTaxTypeId];
+                        $iTotalTaxAmount += $aDailyTax[$iTaxTypeId];
                     }
-                    $dailyRepaidCapital = $lenderRepayment->getRepaidCapital(array('date_echeance_reel' => '"' . $date . ' 00:00:00" AND "' . $date . ' 23:59:59"'), array(' BETWEEN '));
-
-                    $logger->info('daily repaid capital : ' . $dailyRepaidCapital);
+                    $dailyRepaidCapital = $lenderRepayment->getRepaidCapitalInDateRange(null, $date . ' 00:00:00', $date . ' 23:59:59');
 
                     $latva      = isset($listEcheances[$date]) ? $borrowerRepayment->sum('tva', 'id_echeancier_emprunteur IN(' . $listEcheances[$date] . ')') / 100 : 0;
                     $commission = isset($listEcheances[$date]) ? $borrowerRepayment->sum('commission', 'id_echeancier_emprunteur IN(' . $listEcheances[$date] . ')') / 100 + $latva : 0;
@@ -272,7 +268,7 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
                     $offrePromo = $offres_bienvenue[$date]['montant'] + $offres_bienvenue_retrait[$date]['montant'];
 
                     $entrees = $alimCB[$date]['montant'] + $alimVirement[$date]['montant'] + $alimPrelevement[$date]['montant'] + $rembEmprunteur[$date]['montant'] + $rembEmprunteurRegularisation[$date]['montant'] + $unilend_bienvenue[$date]['montant'] + $rejetrembEmprunteur[$date]['montant'] + $virementRecouv[$date]['montant'];
-                    $sorties = abs($virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend'] + $commission + $retenuesFiscales + abs($retraitPreteur[$date]['montant']);
+                    $sorties = abs($virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend'] + $commission + $iTotalTaxAmount + abs($retraitPreteur[$date]['montant']);
 
                     $sommeMouvements = $entrees - $sorties;
                     $newsoldeDeLaVeille += $sommeMouvements;
@@ -292,12 +288,12 @@ class FeedsDailyStateCommand extends ContainerAwareCommand
 
                     $ecartSoldes = $soldeTheorique - $leSoldeReel;
                     $soldeSFFPME += $virementEmprunteur[$date]['montant_unilend'] - $virementUnilend[$date]['montant'] + $commission;
-                    $soldeAdminFiscal += $retenuesFiscales - $virementEtat[$date]['montant'];
+                    $soldeAdminFiscal += $iTotalTaxAmount - $virementEtat[$date]['montant'];
 
                     $capitalPreteur = $dailyRepaidCapital + $rembRecouvPreteurs[$date]['montant'];
 
                     $affectationEchEmpr = isset($lrembPreteurs[$date]) ? $lrembPreteurs[$date]['montant'] + $lrembPreteurs[$date]['etat'] + $commission + $rembRecouvPreteurs[$date]['montant'] : 0;
-                    $ecartMouvInternes  = round($affectationEchEmpr - $commission - $retenuesFiscales - $capitalPreteur - $interetNetPreteur, 2);
+                    $ecartMouvInternes  = round($affectationEchEmpr - $commission - $iTotalTaxAmount - $capitalPreteur - $interetNetPreteur, 2);
                     $octroi_pret        = abs($virementEmprunteur[$date]['montant']) + $virementEmprunteur[$date]['montant_unilend'];
                     $virementsOK        = $bankTransfer->sumVirementsbyDay($date, 'status > 0');
                     $virementsAttente   = $virementUnilend[$date]['montant'];

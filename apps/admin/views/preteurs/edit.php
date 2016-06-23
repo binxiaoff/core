@@ -353,7 +353,7 @@
             foreach ($this->lEncheres as $e) :
                 $year = $this->dates->formatDate($e['added'], 'Y');
                 $this->projects->get($e['id_project'], 'id_project');
-                $sumMontant = $this->echeanciers->getTotalAmount(array('id_loan' => $e['id_loan']), array(' = '));
+                $sumMontant = $this->echeanciers->getTotalAmount(array('id_loan' => $e['id_loan']));
             ?>
                 <tr<?= ($i % 2 == 1 ? '' : ' class="odd"') ?>>
                     <td align="center"><?= $year ?></td>

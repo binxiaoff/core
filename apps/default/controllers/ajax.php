@@ -1159,9 +1159,9 @@ class ajaxController extends bootstrap
                     $a++;
                 }
 
-                $this->sumRembParAn   = $this->echeanciers->getRepaidCapitalInDateRange($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
-                $this->sumIntParAn    = $this->echeanciers->getRepaidInterestsInDateRange($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
-                $this->sumFiscalParAn = $tax->getTaxByYear($this->lenders_accounts->id_lender_account, $this->debut, $this->fin);
+                $this->sumRembParAn   = $this->echeanciers->getRepaidCapitalInDateRange($this->lenders_accounts->id_lender_account, $this->debut . '-01-01 00:00:00', $this->fin . '-12-31 23:59:59');
+                $this->sumIntParAn    = $this->echeanciers->getRepaidInterestsInDateRange($this->lenders_accounts->id_lender_account, $this->debut . '-01-01 00:00:00', $this->fin . '-12-31 23:59:59');
+                $this->sumFiscalParAn = number_format($tax->getTaxByYear($this->lenders_accounts->id_lender_account, $this->debut, $this->fin), 2, '.', '');
             }
         }
     }
