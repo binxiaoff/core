@@ -143,7 +143,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
                 $bank_unilend->etat                   = bcmul($Total_etat, 100);
                 $bank_unilend->type                   = \bank_unilend::TYPE_REPAYMENT_LENDER;
                 $bank_unilend->id_echeance_emprunteur = $echeanciers_emprunteur->id_echeancier_emprunteur;
-                $bank_unilend->status                 = \bank_unilend::STATUS_CREDITED_ON_UNILEND_ACCOUNT;
+                $bank_unilend->status                 = 1;
                 $bank_unilend->create();
 
                 $oAccountUnilend->addDueDateCommssion($echeanciers_emprunteur->id_echeancier_emprunteur);
@@ -215,7 +215,7 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
 
                 foreach ($lesRembEmprun as $leR) {
                     $bank_unilend->get($leR['id_unilend'], 'id_unilend');
-                    $bank_unilend->status = \bank_unilend::STATUS_CREDITED_ON_LENDER_ACCOUNT;
+                    $bank_unilend->status = 1;
                     $bank_unilend->update();
                 }
 
