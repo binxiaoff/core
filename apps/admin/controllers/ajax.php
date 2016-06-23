@@ -8,6 +8,8 @@ class ajaxController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
+        $this->users->checkAccess();
+
         $this->hideDecoration();
     }
 
