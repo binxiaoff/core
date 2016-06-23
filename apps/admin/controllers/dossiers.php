@@ -2105,7 +2105,7 @@ class dossiersController extends bootstrap
         $this->projects_status->get(\projects_status::REMBOURSEMENT_ANTICIPE, 'status');
         $this->montant_ra = 0;
 
-        if ($dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
+        if (true === isset($dernierStatut[0]['id_project_status']) && $dernierStatut[0]['id_project_status'] == $this->projects_status->id_project_status) {
             $this->montant_ra = $this->echeanciers->getEarlyRepaidCapital(array('id_loan' => $this->params[1]));
             $this->date_ra    = $dernierStatut[0]['added'];
         }

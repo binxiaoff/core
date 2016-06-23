@@ -141,7 +141,6 @@ class transfertsController extends bootstrap
         }
     }
 
-    // @todo duplicate function in cron.php
     private function updateEcheances($id_project, $montant)
     {
         $echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');

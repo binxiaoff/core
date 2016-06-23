@@ -72,7 +72,7 @@
                     <td><?= $this->ficelle->formatNumber($r['interets'] / 100) ?></td>
                     <td><?= $this->ficelle->formatNumber($r['interets_rembourses'] / 100) ?></td>
                     <td><?= $this->ficelle->formatNumber($r['tax'] / 100) ?></td>
-                    <td><?= $this->dates->formatDate($r['date_echeance'], 'd/m/Y') ?></td>
+                    <td><?= $this->dates->formatDate( ($r['status'] == \echeanciers::STATUS_REPAID) ? $r['date_echeance_reel'] : $r['date_echeance'], 'd/m/Y') ?></td>
                     <td><?php switch ($r['status']) {
                             case \echeanciers::STATUS_PENDING:
                                 echo 'A venir';
