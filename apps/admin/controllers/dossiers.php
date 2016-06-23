@@ -1935,8 +1935,7 @@ class dossiersController extends bootstrap
 
             // Early repayment
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
-                $id_reception        = $_POST['id_reception'];
-                $montant_crd_preteur = bcmul($_POST['montant_crd_preteur'] * 100);
+                $id_reception = $_POST['id_reception'];
 
                 $this->projects                      = $this->loadData('projects');
                 $this->echeanciers                   = $this->loadData('echeanciers');
@@ -1955,8 +1954,7 @@ class dossiersController extends bootstrap
                 $this->projects->get($this->receptions->id_project);
                 $this->companies->get($this->projects->id_company, 'id_company');
 
-                // on fait encore un dernier controle sur le montant
-                if ($montant_crd_preteur == $this->receptions->montant) {
+                if (bcmul($_POST['montant_crd_preteur'], 100) == $this->receptions->montant) {
                     $this->bdd->query('
                         UPDATE echeanciers_emprunteur SET
                             status_emprunteur = 1,
