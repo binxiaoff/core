@@ -61,7 +61,13 @@
 
 <div id="top" class="site">
     {% block siteHeader %}
-        {% include 'partials/site/header.html.twig' %}
+        {% if app.user is defined and is_granted('ROLE_LENDER') %}
+            {% include 'partials/site/header-dashboard.html.twig' %}
+        {% elseif app.user is defined and is_granted('ROLE_BORROWER') %}
+            {# TODO : add borrower header once DEV-768 done #}
+        {% else %}
+            {% include 'partials/site/header.html.twig' %}
+        {%  endif %}
     {% endblock %}
 
     <div class="site-content">
