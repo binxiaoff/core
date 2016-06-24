@@ -98,6 +98,8 @@ class clients extends clients_crud
     public $userMail = 'email';
     public $userPass = 'password';
 
+    //TODO delete all login and check access functions no longer needed
+
     public function handleLogin($button, $email, $pass)
     {
         if (isset($_POST[$button])) {
@@ -108,14 +110,20 @@ class clients extends clients_crud
                 $_SESSION['token']  = md5(md5(time() . $this->securityKey));
                 $_SESSION['client'] = $client;
 
-                // Mise à jour pour la derniere connexion du user
-                $sql = 'UPDATE ' . $this->userTable . ' SET lastlogin = "' . date('Y-m-d H:i:s') . '" WHERE email = "' . $_POST[$email] . '" AND password = "' . md5($_POST[$pass]) . '"';
-                $this->bdd->query($sql);
+                $this->saveLogin(new \DateTime('NOW'), $_POST[$email], md5($_POST[$pass]));
                 return true;
-            } else {
-                return false;
             }
+            return false;
         }
+    }
+
+    public function saveLogin(\DateTime $dateLogin, $eMail, $password)
+    {
+        $aBind = array('lastLogin' => $dateLogin->format('Y-m-d H:i:s'), 'email' => $eMail, 'password' => $password);
+        $aType = array('lastLogin' => \PDO::PARAM_STR, 'email' => \PDO::PARAM_STR, 'password' => \PDO::PARAM_STR);
+
+        $sQuery =  'UPDATE clients SET lastlogin = :lastLogin WHERE email = :email AND password = :password';
+        $this->bdd->executeUpdate($sQuery, $aBind, $aType);
     }
 
     public function handleLogout($bRedirect = true)

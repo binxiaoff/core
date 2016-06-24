@@ -15,14 +15,16 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     private $salt;
     private $roles;
     private $isActive;
+    private $clientId;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId)
     {
         $this->username                = $username;
         $this->password                = $password;
         $this->salt                    = $salt;
         $this->roles                   = $roles;
         $this->isActive                = $isActive;
+        $this->clientId                = $clientId;
     }
 
     /**
@@ -60,6 +62,11 @@ class BaseUser implements AdvancedUserInterface, EquatableInterface
     public function getIsActive()
     {
         return $this->isActive;
+    }
+
+    public function getClientId()
+    {
+        return $this->clientId;
     }
 
     /**

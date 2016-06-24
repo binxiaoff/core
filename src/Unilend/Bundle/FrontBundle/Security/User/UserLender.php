@@ -17,9 +17,9 @@ class UserLender extends BaseUser
     /** @var  int $notificationsUnread */
     private $notificationsUnread;
 
-    public function __construct($username, $password, $salt, array $roles, $balance, $initials, $firstName, $isActive, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $balance, $initials, $firstName, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread)
     {
-        parent::__construct($username, $password, $salt, $roles, $isActive);
+        parent::__construct($username, $password, $salt, $roles, $isActive, $clientId);
         $this->balance                 = $balance;
         $this->initials                = $initials;
         $this->firstName               = $firstName;

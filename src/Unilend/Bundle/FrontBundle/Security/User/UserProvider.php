@@ -56,10 +56,11 @@ class UserProvider implements UserProviderInterface
                     $client->password,
                     '',
                     $roles,
+                    $isActive,
+                    $client->id_client,
                     $balance,
                     $initials,
                     $client->prenom,
-                    $isActive,
                     $clientStatus,
                     $hasAcceptedCurrentTerms,
                     $notificationsUnread);
@@ -67,7 +68,7 @@ class UserProvider implements UserProviderInterface
 
             if ($this->clientManager->isBorrower($client)) {
                 $roles[] = 'ROLE_BORROWER';
-                return new UserBorrower($client->email, $client->password, '', $roles, $isActive);
+                return new UserBorrower($client->email, $client->password, '', $roles, $isActive, $client->id_client);
             }
         }
 
