@@ -661,22 +661,22 @@
                 }
             </style>
             <?php
-                if (false === empty($this->aTaxationCountryHistory)) {
-                    echo '<table class="tablesorter histo_status_client">';
-                    if (array_key_exists('error', $this->aTaxationCountryHistory)) {
-                        echo '<tr>
-                                <td>' . $this->aTaxationCountryHistory['error'] . '</td>
-                             </tr>';
-                    } else {
-                        foreach ($this->aTaxationCountryHistory as $aRow) {
-                            echo '<tr>
-                                    <td>Nouveau pays fiscal: <b>' . $aRow['country_name'] . '</b>. Modifié par ' . $aRow['user_firstname'] . ' ' . $aRow['user_name'] . ' le ' . date('d/m/Y H:i:s', strtotime($aRow['added'])) .'</td>
-                                 </tr>';
-                        }
-                    }
-                    echo '</table>';
-                }
-            ?>
+            if (false === empty($this->aTaxationCountryHistory)): ?>
+                <table class="tablesorter histo_status_client">
+                    <?php if (array_key_exists('error', $this->aTaxationCountryHistory)): ?>
+                        <tr>
+                            <td><?= $this->aTaxationCountryHistory['error'] ?></td>
+                        </tr>
+                    <?php else:
+                        foreach ($this->aTaxationCountryHistory as $aRow) { ?>
+                            <tr>
+                                <td>Nouveau pays fiscal: <b><?= $aRow['country_name'] ?></b>. Modifié par <?= $aRow['user_firstname'] ?> <?= $aRow['user_name'] ?> le <?= date('d/m/Y H:i:s', strtotime($aRow['added'])) ?>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    <?php endif; ?>
+                </table>
+            <?php endif; ?>
             <?php if (false === empty($this->lActions)) : ?>
                 <style>
                     .histo_status_client li {
