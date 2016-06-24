@@ -73,8 +73,8 @@ class universignController extends bootstrap
                         $variablesInternalMail = array(
                             '$surl'         => $this->surl,
                             '$id_projet'    => $projects->id_project,
-                            '$nomProjet'    => utf8_decode($projects->title_bo),
-                            '$nomCompany'   => utf8_decode($companies->name),
+                            '$nomProjet'    => $projects->title_bo,
+                            '$nomCompany'   => $companies->name,
                             '$lien_pouvoir' => $this->lurl . $projects_pouvoir->url_pdf,
                             '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf
                         );
@@ -144,8 +144,8 @@ class universignController extends bootstrap
                         $variablesInternalMail = array(
                             '$surl'         => $this->surl,
                             '$id_projet'    => $projects->id_project,
-                            '$nomProjet'    => utf8_decode($projects->title_bo),
-                            '$nomCompany'   => utf8_decode($companies->name),
+                            '$nomProjet'    => $projects->title_bo,
+                            '$nomCompany'   => $companies->name,
                             '$lien_pouvoir' => $this->lurl . $projects_pouvoir->url_pdf,
                             '$lien_mandat'  => $this->lurl . $clients_mandats->url_pdf
                         );

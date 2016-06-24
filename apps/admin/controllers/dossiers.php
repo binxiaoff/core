@@ -1945,7 +1945,7 @@ class dossiersController extends bootstrap
                 $this->lenders_accounts              = $this->loadData('lenders_accounts');
                 $this->clients                       = $this->loadData('clients');
                 $this->wallets_lines                 = $this->loadData('wallets_lines');
-                $this->mail_template                 = $this->loadData('mail_template');
+                $this->mail_template                 = $this->loadData('mail_templates');
                 $this->companies                     = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager                     = $this->get('unilend.service.project_manager');

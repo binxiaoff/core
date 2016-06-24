@@ -142,20 +142,19 @@ class TemplateMessage extends \Swift_Message
     public static function recipientsArray($recipients)
     {
         if (is_string($recipients)) {
-            $recipientsFormatted = '';
-
-            $recipients = str_replace(';', ',', $recipients);
-            $recipients = explode(',', $recipients);
+            $recipientsFormatted = [];
+            $recipients          = str_replace(';', ',', $recipients);
+            $recipients          = explode(',', $recipients);
 
             foreach ($recipients as $recipient) {
                 if (1 === preg_match('#^(?<name>.*)(\s|)\<(?<email>.*)\>$#', $recipient, $matches)) {
-                    $recipientsFormatted[$matches['email']] = $matches['name'];
+                    $recipientsFormatted[trim($matches['email'])] = trim($matches['name']);
                 } else {
-                    $recipientsFormatted[] = $recipient;
+                    $recipientsFormatted[] = trim($recipient);
                 }
             }
         } else {
-            $recipientsFormatted = $recipients;
+            $recipientsFormatted = trim($recipients);
         }
 
         return $recipientsFormatted;

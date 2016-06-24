@@ -66,7 +66,7 @@ class MailjetTransport implements \Swift_Transport
             'FromName'   => array_shift($aSenderName),
             'Subject'    => $oMessage->getSubject(),
             'Html-part'  => $oMessage->getBody(),
-            'Recipients' => [['Email' => array_shift($aRecipients)]]
+            'Recipients' => array_map(function($recipient) { return ['Email' => $recipient]; }, $aRecipients)
         ];
 
         return $this->oMailJetClient->post(Resources::$Email, ['body' => $body]);
