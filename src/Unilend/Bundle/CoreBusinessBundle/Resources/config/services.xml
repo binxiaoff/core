@@ -98,5 +98,9 @@
         <service id="unilend.service.welcome_offer_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager">
             <argument type="service" id="unilend.service.entity_manager"/>
         </service>
+
+        <service id="unilend.service.project_request_manager" class="Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+        </service>
     </services>
 </container>

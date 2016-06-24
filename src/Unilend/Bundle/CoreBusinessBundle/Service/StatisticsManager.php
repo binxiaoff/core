@@ -21,12 +21,12 @@ class StatisticsManager
     public function getAllStatistics()
     {
         $aStatistics = [
-            'numberProjects'           => $this->getNumberOfProjects(),
-            'numberLenders'            => $this->getNumberOfLenders(),
-            'amountBorrowedInMillions' => bcdiv($this->getAmountBorrowed(), 1000000),
-            'irrUnilend'               => $this->getUnilendIRR(),
-            'avgFundingTime'           => $this->getAverageFundingTime(),
-            'SuccessFullyFunded'       => $this->getAmountSuccessfullyFinancedProjects()
+            'numberProjects'               => $this->getNumberOfProjects(),
+            'numberLenders'                => $this->getNumberOfLenders(),
+            'amountBorrowedInMillions'     => bcdiv($this->getAmountBorrowed(), 1000000),
+            'irrUnilend'                   => $this->getUnilendIRR(),
+            'avgFundingTime'               => $this->getAverageFundingTime(),
+            'percentageSuccessFullyFunded' => $this->getPercentageSuccessfullyFinancedProjects(),
         ];
 
         return $aStatistics;
@@ -105,7 +105,7 @@ class StatisticsManager
         return $aLastUnilendIRR['value'];
     }
 
-    public function getAmountSuccessfullyFinancedProjects()
+    public function getPercentageSuccessfullyFinancedProjects()
     {
         /** @var \projects_status_history $projectStatusHistory */
         $projectStatusHistory = $this->entityManager->getRepository('projects_status_history');

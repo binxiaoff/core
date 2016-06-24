@@ -810,12 +810,28 @@ class ProjectManager
         return $aProjects;
     }
 
-    public function getPossibleLoanPeriods()
+    public function getPossibleProjectPeriods()
     {
         /** @var \settings $settings */
         $settings = $this->oEntityManager->getRepository('settings');
         $settings->get('Durée des prêts autorisées', 'type');
         return explode(',', $settings->value);
+    }
+
+    public function getMaxProjectAmount()
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Somme à emprunter max', 'type');
+        return (int)$settings->value;
+    }
+
+    public function getMinProjectAmount()
+    {
+        /** @var \settings $settings */
+        $settings = $this->oEntityManager->getRepository('settings');
+        $settings->get('Somme à emprunter min', 'type');
+        return (int)$settings->value;
     }
 
 }

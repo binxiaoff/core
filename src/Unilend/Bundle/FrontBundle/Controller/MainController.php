@@ -2,8 +2,13 @@
 
 namespace Unilend\Bundle\FrontBundle\Controller;
 
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
@@ -32,15 +37,15 @@ class MainController extends Controller
         $translationManager = $this->get('unilend.service.translation_manager');
 
         $aRateRange = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
-        $aTemplateVariables['projects'] = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC', $aRateRange);
+        $aTemplateVariables['projects']          = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC', $aRateRange);
         $aTemplateVariables['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
-        $aTemplateVariables['videoHeroes'] = [
+        $aTemplateVariables['videoHeroes']       = [
             'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
             'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
         ];
         $aTemplateVariables['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
-        $aTemplateVariables['loanPeriods'] = $projectManager->getPossibleLoanPeriods();
-        $aTemplateVariables['loanMotives'] = $translationManager->getTranslatedLoanMotiveList();
+        $aTemplateVariables['loanPeriods']      = $projectManager->getPossibleProjectPeriods();
+        $aTemplateVariables['loanMotives']      = $translationManager->getTranslatedLoanMotiveList();
 
         //TODO replace switch by cookie check
         switch($type) {
@@ -59,10 +64,64 @@ class MainController extends Controller
         return $this->render($sTemplateToRender, $aTemplateVariables);
     }
 
+    /**
+     * @Route("/esim-step-1", name="esim_step_1")
+     * @Method("POST")
+     */
+    public function projectSimulatorStepOneAction(Request $request)
+    {
+        if ($request->isXMLHttpRequest()) {
 
+            $period   = $request->request->get('period');
+            $amount   = $request->request->get('amount');
+            $motiveId = $request->request->get('motiveId');
 
+            /** @var ProjectRequestManager $projectRequestManager */
+            $projectRequestManager = $this->get('unilend.service.project_request_manager');
+            /** @var ProjectManager $projectManager */
+            $projectManager        = $this->get('unilend.service.project_manager');
+            /** @var TranslationManager $translationManager */
+            $translationManager = $this->get('unilend.service.translation_manager');
 
+            $aProjectPeriods   = $projectManager->getPossibleProjectPeriods();
+            $iProjectAmountMax = $projectManager->getMaxProjectAmount();
+            $iProjectAmountMin = $projectManager->getMinProjectAmount();
 
+            if (in_array($period, $aProjectPeriods)
+                && $amount >= $iProjectAmountMin
+                && $amount <= $iProjectAmountMax
+            ){
+                $estimatedRate                  = $projectRequestManager->getMonthlyRateEstimate();
+                $estimatedMonthlyRepayment      = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
+                $sTranslationComplement         = $translationManager->selectTranslation('home-borrower', 'simulator-step-2-text-segment-motive-' . $motiveId);
+                $bMotiveComplementToBeDisplayed = (7 === $motiveId) ? false : true; //TODO constant once table has been renamed in projectMotive
 
+                return new JsonResponse(array(
+                    'estimatedRate'                 => $estimatedRate,
+                    'estimatedMonthlyRepayment'     => $estimatedMonthlyRepayment,
+                    'translationComplement'         => $sTranslationComplement,
+                    'motiveComplementToBeDisplayed' => $bMotiveComplementToBeDisplayed,
+                    'period'                        => $period,
+                    'amount'                        => $amount
+                ));
+            }
+
+            return new JsonResponse('nok');
+        }
+        return new Response('not an ajax request');
+    }
+
+    /**
+     * @Route("/esim-step-2", name="esim_step_2")
+     * @Method("POST")
+     */
+    public function projectSimulatorStepTwoAction(Request $request)
+    {
+        $aFormData = $request->request->get('esim');
+        $session   = $request->getSession();
+        $session->set('SimulatorData', $aFormData);
+
+        return $this->redirectToRoute('project_request_step_1');
+    }
 
 }
