@@ -202,7 +202,7 @@
             <tr>
                 <td colspan="4">
                     <input type="checkbox" name="meme-adresse" id="meme-adresse" <?= ($this->meme_adresse_fiscal == 1 ? 'checked' : '') ?>>
-                    <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse de fiscale </label>
+                    <label for="meme-adresse">Mon adresse de correspondance est identique à mon adresse fiscale </label>
                 </td>
             </tr>
             <tr class="meme-adresse" style="display:none;">
@@ -654,6 +654,29 @@
         <div class="gauche">
             <br/><br/>
             <h2>Historique :</h2>
+            <style>
+                .histo_status_client li {
+                    margin-left: 15px;
+                    list-style: disc;
+                }
+            </style>
+            <?php
+                if (false === empty($this->aTaxationCountryHistory)) {
+                    echo '<table class="tablesorter histo_status_client">';
+                    if (array_key_exists('error', $this->aTaxationCountryHistory)) {
+                        echo '<tr>
+                                <td>' . $this->aTaxationCountryHistory['error'] . '</td>
+                             </tr>';
+                    } else {
+                        foreach ($this->aTaxationCountryHistory as $aRow) {
+                            echo '<tr>
+                                    <td>Nouveau pays fiscal: <b>' . $aRow['country_name'] . '</b>. Modifié par ' . $aRow['user_firstname'] . ' ' . $aRow['user_name'] . ' le ' . date('d/m/Y H:i:s', strtotime($aRow['added'])) .'</td>
+                                 </tr>';
+                        }
+                    }
+                    echo '</table>';
+                }
+            ?>
             <?php if (false === empty($this->lActions)) : ?>
                 <style>
                     .histo_status_client li {

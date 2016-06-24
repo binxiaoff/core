@@ -367,7 +367,8 @@ class preteursController extends bootstrap
             \clients_status::CLOSED_LENDER_REQUEST,
             \clients_status::CLOSED_BY_UNILEND
         );
-        $this->lActions                 = $this->clients_status_history->select('id_client = ' . $this->clients->id_client . ' AND id_client_status IN ( SELECT cs.id_client_status FROM  clients_status cs WHERE cs.status IN (' . implode(',', $aLenderStatusForQuery) . '))', 'added DESC');
+        $this->lActions = $this->clients_status_history->select('id_client = ' . $this->clients->id_client . ' AND id_client_status IN ( SELECT cs.id_client_status FROM  clients_status cs WHERE cs.status IN (' . implode(',', $aLenderStatusForQuery) . '))', 'added DESC');
+        $this->aTaxationCountryHistory = $this->getImpostionHistory($this->lenders_accounts->id_lender_account);
 
         $this->getMessageAboutClientStatus();
 
@@ -398,10 +399,17 @@ class preteursController extends bootstrap
                 ////////////////////////////////////
                 // On verifie meme adresse ou pas //
                 ////////////////////////////////////
+
+                $bTaxCountryChanged = false;
+
                 if ($_POST['meme-adresse'] != false) {
                     $this->clients_adresses->meme_adresse_fiscal = 1;
                 } else {
                     $this->clients_adresses->meme_adresse_fiscal = 0;
+                }
+
+                if ($this->clients_adresses->id_pays_fiscal != $_POST['id_pays_fiscal'] && false === empty($_POST['id_pays_fiscal'])) {
+                    $bTaxCountryChanged = true;
                 }
 
                 $this->clients_adresses->adresse_fiscal = $_POST['adresse'];
@@ -616,7 +624,7 @@ class preteursController extends bootstrap
                     $_SESSION['compte_valide'] = true;
                 }
 
-                if (isset($_POST['valider_pays']) && '' !== $_POST['valider_pays']) {
+                if (true === $bTaxCountryChanged) {
                     $this->foreignerTax($this->clients, $this->lenders_accounts, $this->clients_adresses);
                 }
 
@@ -819,6 +827,26 @@ class preteursController extends bootstrap
                 die;
             }
         }
+    }
+
+    /**
+     * @param $lenderId
+     * @return array
+     */
+    private function getImpostionHistory($lenderId)
+    {
+        /** @var \lenders_imposition_history $lendersImpositionHistory */
+        $lendersImpositionHistory = $this->loadData('lenders_imposition_history');
+        try {
+            $aResult = $lendersImpositionHistory->getImpositionHistory($lenderId);
+        } catch (Exception $exception) {
+            /** @var \Psr\Log\LoggerInterface $logger */
+            $logger = $this->get('logger');
+            $logger->error('Could not get lender imposition history (id_lender = ' . $lenderId . ') Exception message : ' . $exception->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_lender' => $lenderId));
+            $aResult = ['error' => 'Impossible de charger l\'historique de changement d\'adresse fiscale'];
+        }
+        
+        return $aResult;
     }
 
     /**

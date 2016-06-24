@@ -41,7 +41,7 @@ class lenders_account_stats extends lenders_account_stats_crud
 
                 SELECT
                     e.date_echeance_reel AS date,
-                    CASE WHEN e.status_ra = 1 THEN e.capital ELSE e.capital + e.interets END AS montant
+                    CASE WHEN e.status_ra = 1 THEN e.capital_rembourse ELSE e.capital_rembourse + e.interets_rembourses END AS montant
                 FROM
                     echeanciers e
                     INNER JOIN projects_last_status_history_materialized plshm ON e.id_project = plshm.id_project

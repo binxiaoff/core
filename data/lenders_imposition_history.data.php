@@ -79,4 +79,27 @@ class lenders_imposition_history extends lenders_imposition_history_crud
             WHERE id_lender = ' . $lenderId;
         return $this->get($this->bdd->result($this->bdd->query($sQuery), 0));
     }
+
+    /**
+     * @param int $lenderId
+     * @return array
+     * @throws Exception
+     */
+    public function getImpositionHistory($lenderId)
+    {
+        $sql = '
+        SELECT
+          lih.*,
+          p.fr AS country_name,
+          u.firstname AS user_firstname,
+          u.name as user_name
+        FROM lenders_imposition_history lih
+          INNER JOIN pays_v2 p ON p.id_pays = lih.id_pays
+          INNER JOIN users u ON u.id_user = lih.id_user
+        WHERE lih.id_lender = :id_lender
+        ORDER BY lih.added DESC
+        ';
+
+        return $this->bdd->executeQuery($sql, ['id_lender' => $lenderId], ['id_lender' => \PDO::PARAM_INT])->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
