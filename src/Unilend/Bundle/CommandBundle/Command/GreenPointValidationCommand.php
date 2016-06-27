@@ -116,12 +116,6 @@ EOF
 
                     if (false === empty($aQueryID) && is_array($aQueryID)) {
                         $aResult = $oGreenPoint->sendRequests();
-
-                        $oLogger->info(
-                            'Greenpoint request details: ' . var_export($aResult, true) . ' (client ' . $iClientId . ')',
-                            array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $iClientId)
-                        );
-
                         $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $aAttachmentsToRevalidate, $oEntityManager);
                         unset($aResult, $aQueryID);
                         greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);

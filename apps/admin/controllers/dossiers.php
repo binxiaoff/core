@@ -251,6 +251,8 @@ class dossiersController extends bootstrap
             if (isset($_POST['problematic_status']) && $this->current_projects_status->status != $_POST['problematic_status']) {
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['problematic_status'], $this->projects);
 
+                $this->projects_last_status_history->get($this->projects->id_project, 'id_project');
+                $this->projects_status_history->get($this->projects_last_status_history->id_project_status_history, 'id_project_status_history');
                 $this->updateProblematicStatus($_POST['problematic_status']);
             }
 
@@ -286,9 +288,6 @@ class dossiersController extends bootstrap
 
                 $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
                 $this->companies_actif_passif->create();
-
-                $this->company_balance->id_bilan = $this->companies_bilans->id_bilan;
-                $this->company_balance->create();
 
                 $this->projects->id_dernier_bilan = $this->companies_bilans->id_bilan;
                 $this->projects->update();
@@ -1927,8 +1926,7 @@ class dossiersController extends bootstrap
             }
 
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
-                $id_reception        = $_POST['id_reception'];
-                $montant_crd_preteur = bcmul($_POST['montant_crd_preteur'] * 100);
+                $id_reception = $_POST['id_reception'];
 
                 $this->projects               = $this->loadData('projects');
                 $this->echeanciers            = $this->loadData('echeanciers');
@@ -1947,8 +1945,7 @@ class dossiersController extends bootstrap
                 $this->projects->get($this->receptions->id_project);
                 $this->companies->get($this->projects->id_company, 'id_company');
 
-                // on fait encore un dernier controle sur le montant
-                if ($montant_crd_preteur == $this->receptions->montant) {
+                if (bcmul($_POST['montant_crd_preteur'], 100) == $this->receptions->montant) {
                     $this->bdd->query('
                         UPDATE echeanciers_emprunteur SET
                             status_emprunteur = 1,
@@ -2276,11 +2273,16 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $oClients    = $this->loadData('clients');
-        $oProjects   = $this->loadData('projects');
-        $oCompanies  = $this->loadData('companies');
+        /** @var \clients $oClients */
+        $oClients = $this->loadData('clients');
+        /** @var \projects $oProjects */
+        $oProjects = $this->loadData('projects');
+        /** @var \companies $oCompanies */
+        $oCompanies = $this->loadData('companies');
+        /** @var \project_cgv $oProjectCgv */
         $oProjectCgv = $this->loadData('project_cgv');
-        $oSettings   = $this->loadData('settings');
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
 
         if (false === isset($this->params[0]) || ! $oProjects->get($this->params[0], 'id_project')) {
             $this->result = 'project id invalid';
@@ -2359,18 +2361,18 @@ class dossiersController extends bootstrap
         }
 
         $oSettings->get('Facebook', 'type');
-        $lien_fb = $oSettings;
+        $facebookUrl = $oSettings->value;
 
         $oSettings->get('Twitter', 'type');
-        $lien_tw = $oSettings;
+        $twitterUrl = $oSettings->value;
 
         $varMail = array(
             'surl'                => $this->surl,
             'url'                 => $this->furl,
             'prenom_p'            => $oClients->prenom,
             'lien_cgv_universign' => $sCgvLink,
-            'lien_tw'             => $lien_tw,
-            'lien_fb'             => $lien_fb,
+            'lien_tw'             => $twitterUrl,
+            'lien_fb'             => $facebookUrl,
         );
 
         if (empty($oClients->email)) {

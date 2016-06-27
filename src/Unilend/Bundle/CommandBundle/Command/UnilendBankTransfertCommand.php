@@ -67,7 +67,7 @@ class UnilendBankTransfertCommand extends ContainerAwareCommand
                 $bank_unilend->id_project             = 0;
                 $bank_unilend->montant                = '-' . $total;
                 $bank_unilend->type                   = \bank_unilend::TYPE_DEBIT_UNILEND;
-                $bank_unilend->status                 = \bank_unilend::STATUS_DEBITED_UNILEND_ACCOUNT;
+                $bank_unilend->status                 = 3;
                 $bank_unilend->create();
 
                 $oAccountUnilend->id_transaction = $transactions->id_transaction;
