@@ -285,9 +285,6 @@ class dossiersController extends bootstrap
                 $this->companies_actif_passif->id_bilan = $this->companies_bilans->id_bilan;
                 $this->companies_actif_passif->create();
 
-                $this->company_balance->id_bilan = $this->companies_bilans->id_bilan;
-                $this->company_balance->create();
-
                 $this->projects->id_dernier_bilan = $this->companies_bilans->id_bilan;
                 $this->projects->update();
 
