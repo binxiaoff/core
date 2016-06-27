@@ -46,10 +46,10 @@ class UserProvider implements UserProviderInterface
             $roles                   = ['ROLE_USER'];
 
             if ($this->clientManager->isLender($client)) {
-                $roles[]                   = 'ROLE_LENDER';
-                $clientStatus              = $this->clientManager->getCurrentClientStatus($client);
-                $hasAcceptedCurrentTerms   = $this->clientManager->hasAcceptedCurrentTerms($client);
-                $notificationsUnread = $this->notificationManager->countUnreadNotificationsForClient($client);
+                $roles[]                 = 'ROLE_LENDER';
+                $clientStatus            = $this->clientManager->getCurrentClientStatus($client);
+                $hasAcceptedCurrentTerms = $this->clientManager->hasAcceptedCurrentTerms($client);
+                $notificationsUnread     = $this->notificationManager->countUnreadNotificationsForClient($client);
 
                 return new UserLender(
                     $client->email,
@@ -63,7 +63,8 @@ class UserProvider implements UserProviderInterface
                     $client->prenom,
                     $clientStatus,
                     $hasAcceptedCurrentTerms,
-                    $notificationsUnread);
+                    $notificationsUnread,
+                    $client->etape_inscription_preteur);
             }
 
             if ($this->clientManager->isBorrower($client)) {

@@ -111,4 +111,62 @@ class NotificationManager
         return $notifications->counter('id_lender = ' . $lenderAccount->id_lender_account . ' AND status = ' . \notifications::STATUS_UNREAD);
     }
 
+    public function generateDefaultNotificationSettings(\clients $oClient)
+    {
+        $aNotificationTypes = $this->getNotificationTypes();
+        /** @var \clients_gestion_notifications $clientNotificationSettings */
+        $clientNotificationSettings = $this->oEntityManager->getRepository('clients_gestion_notifications');
+
+        foreach ($aNotificationTypes as $notification) {
+            $clientNotificationSettings->id_client = $oClient->id_client;
+            $clientNotificationSettings->id_notif  = $notification['id_client_gestion_type_notif'];
+
+            if (in_array($notification['id_client_gestion_type_notif'],
+                array(
+                    \clients_gestion_type_notif::TYPE_BID_REJECTED,
+                    \clients_gestion_type_notif::TYPE_BANK_TRANSFER_CREDIT,
+                    \clients_gestion_type_notif::TYPE_CREDIT_CARD_CREDIT,
+                    \clients_gestion_type_notif::TYPE_DEBIT
+                ))) {
+                $clientNotificationSettings->immediatement = 1;
+            } else {
+                $clientNotificationSettings->immediatement = 0;
+            }
+
+            if (
+            in_array($notification['id_client_gestion_type_notif'],
+                array(
+                    \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                    \clients_gestion_type_notif::TYPE_BID_PLACED,
+                    \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED,
+                    \clients_gestion_type_notif::TYPE_REPAYMENT
+                ))) {
+                $clientNotificationSettings->quotidienne = 1;
+            } else {
+                $clientNotificationSettings->quotidienne = 0;
+            }
+
+            if ( in_array(
+                $notification['id_client_gestion_type_notif'],
+                array(
+                    \clients_gestion_type_notif::TYPE_NEW_PROJECT,
+                    \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED
+                ))) {
+                $clientNotificationSettings->hebdomadaire = 1;
+            } else {
+                $clientNotificationSettings->hebdomadaire = 0;
+            }
+
+            $clientNotificationSettings->mensuelle = 0;
+            $clientNotificationSettings->create();
+        }
+    }
+
+    public function getNotificationTypes()
+    {
+        /** @var \clients_gestion_type_notif $clientNotificationTypes */
+        $clientNotificationTypes = $this->oEntityManager->getRepository('clients_gestion_type_notif');
+        return $clientNotificationTypes->select();
+    }
+
 }

@@ -902,25 +902,12 @@ class ajaxController extends bootstrap
 
     public function _captcha_login()
     {
-        $this->autoFireView = false;
-
-        echo $captcha = '<iframe style="margin-top:-16px;margin-left:-5px;" class="captcha_login" width="133" height="33" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
+        //moved to login controller
     }
 
     public function _captcha()
     {
-        $this->autoFireView = false;
-
-        if (isset($_POST['security'])) {
-            if (strtolower($_POST['security']) != $_SESSION['securecode']) {
-                echo $captcha = '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
-                //echo $_SESSION['securecode'];
-            } else {
-                echo 'nok';
-            }
-        } else {
-            echo 'nok';
-        }
+        //moved to login controller
     }
 
     public function _contact_form()

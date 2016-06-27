@@ -27,10 +27,12 @@
         <service id="unilend.frontbundle.security.login_authenticator" class="Unilend\Bundle\FrontBundle\Security\LoginAuthenticator">
             <argument type="service" id="security.password_encoder"/>
             <argument type="service" id="router" />
+            <argument type="service" id="unilend.service.entity_manager" />
         </service>
 
         <service id="unilend.frontbundle.security_subscriber" class="Unilend\Bundle\FrontBundle\EventSubscriber\LoginSubscriber">
             <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.notification_manager" />
             <tag name ="kernel.event_subscriber" />
         </service>
     </services>

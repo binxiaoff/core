@@ -16,8 +16,10 @@ class UserLender extends BaseUser
     private $hasAcceptedCurrentTerms;
     /** @var  int $notificationsUnread */
     private $notificationsUnread;
+    /** @var  int */
+    private $subscriptionStep;
 
-    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $balance, $initials, $firstName, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread)
+    public function __construct($username, $password, $salt, array $roles, $isActive, $clientId, $balance, $initials, $firstName, $clientStatus, $hasAcceptedCurrentTerms, $notificationsUnread, $subscriptionStep)
     {
         parent::__construct($username, $password, $salt, $roles, $isActive, $clientId);
         $this->balance                 = $balance;
@@ -26,6 +28,7 @@ class UserLender extends BaseUser
         $this->clientStatus            = $clientStatus;
         $this->hasAcceptedCurrentTerms = $hasAcceptedCurrentTerms;
         $this->notificationsUnread     = $notificationsUnread;
+        $this->subscriptionStep        = $subscriptionStep;
     }
 
     public function getBalance()
@@ -56,6 +59,11 @@ class UserLender extends BaseUser
     public function getNotificationsUnread()
     {
         return $this->notificationsUnread;
+    }
+
+    public function getSubscriptionStep()
+    {
+        return $this->subscriptionStep;
     }
 
 }

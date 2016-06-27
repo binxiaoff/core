@@ -148,4 +148,9 @@ class ClientManager
         return in_array($sTermsAndConditionsLink, $aAcceptedTermsByClient);
     }
 
+    public function getClientSubscriptionStep(\clients $oClient)
+    {
+        return $oClient->etape_inscription_preteur;
+    }
+
 }

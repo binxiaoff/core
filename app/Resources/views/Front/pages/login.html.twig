@@ -24,11 +24,12 @@ permalink: route('user/access')
                             <h2 class="h3 text-align-left">{% trans %} connect-subscribe-page_login-box-title {% endtrans %}</h2>
                             <form action="{{ path('login-check') }}" method="post" class="form-connect" {# data-formvalidation data-formvalidation-notificationselem="#form-connect-notifications" #}>
                                 <div class="panel panel-connect">
-                                    {% if error %}
+                                    {% if error is not empty %}
                                     <div id="form-connect-notifications">
                                         {{ "connect-subscribe-page_login-box-error-message-#{ error.message }" | trans }}
                                     </div>
                                     {% endif %}
+
                                     <div class="panel-inner" data-equal-height="md lg">
                                         <div class="form-field">
                                             <label for="connect-access-email">{% trans %} connect-subscribe-page_login-box-email-field-label {% endtrans %}</label>
@@ -50,6 +51,27 @@ permalink: route('user/access')
                                                 <input type="password" id="connect-access-password" name="_password" value="" class="input-field" {# name="access[password]" data-formvalidation-input data-formvalidation-required="true" #}>
                                                 {# <ul class="ui-formvalidation-messages"></ul> #}
                                             </div><!-- /.input-group -->
+                                            {% if captchaInformation is defined and captchaInformation is not empty %}
+                                                {% if true == captchaInformation.displayCaptcha %}
+                                                    <iframe class="captcha_login" width="133" height="33"
+                                                            src="{{ path('show_captcha') }}">
+                                                    </iframe>
+                                                    <div id="captcha" class="form-field">
+                                                        <label for="connect-access-catpcha">{% trans %} translation captcha explanation to do {% endtrans %}</label>
+                                                            <div class="input-group set-left">
+                                                                <div class="btn-group">
+                                                                    <label for="connect-access-captcha"></label>
+                                                                </div>
+                                                            <input type="text" id="connect-access-captcha" name="captcha" value="" class="input-field">
+                                                        </div>
+                                                    </div>
+                                                {%  endif %}
+                                                {% if true == captchaInformation.displayWaitingPeriod %}
+                                                    <div id="form-connect-notifications">
+                                                        {% trans with { '%waitingPeriod%' : captchaInformation.waitingPeriod } %} connect-subscribe-page_waiting-period-message {% endtrans %}
+                                                    </div>
+                                                {% endif %}
+                                            {% endif %}
                                             <div class="field-help">
                                                 <p>
                                                     <a href="{{ route('user/forgotpassword') }}" class="link">{% trans %} connect-subscribe-page_login-box-password-forgotten-link {% endtrans %}</a>
