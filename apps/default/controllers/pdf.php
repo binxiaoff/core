@@ -985,6 +985,7 @@ class pdfController extends bootstrap
     private function GenerateLoansHtml()
     {
         $this->echeanciers = $this->loadData('echeanciers');
+        $this->loans       = $this->loadData('loans');
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');
