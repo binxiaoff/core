@@ -65,7 +65,7 @@ monolog:
         slack_error:
             type: slack
             level: error
-            token: xoxp-1234567890-0123456789-01234567890-1a2b3c4d5e
+            token: xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
             channel: '#it-releases'
             bot_name: 'Symfony Bot'
 
