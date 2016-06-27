@@ -807,7 +807,7 @@ class echeanciers extends echeanciers_crud
     }
 
     /**
-     * @param string $date
+     * @param DateTime $date
      * @return array|null
      * @throws Exception
      */
@@ -839,13 +839,13 @@ class echeanciers extends echeanciers_crud
               WHEN lte.year IS NULL THEN
                   lte.year
               ELSE
-                  concat(lte.year, \'-01-01\')
+                  CONCAT(lte.year, "-01-01")
           END AS debut_exoneration,
           CASE
               WHEN lte.year IS NULL THEN
                   lte.year
               ELSE
-                  concat(lte.year, \'-12-31\')
+                  CONCAT(lte.year, "-12-31")
           END AS fin_exoneration,
           e.id_project,
           e.id_loan,
@@ -854,7 +854,6 @@ class echeanciers extends echeanciers_crud
           REPLACE(e.montant, ".", ","),
           REPLACE(e.capital_rembourse, ".", ","),
           REPLACE(e.interets_rembourses, ".", ","),
-        
           REPLACE(ROUND(prelevements_obligatoires.amount / 100, 2), ".", ","),
           REPLACE(ROUND(retenues_source.amount / 100, 2), ".", ","),
           REPLACE(ROUND(csg.amount / 100, 2), ".", ","),
@@ -868,36 +867,24 @@ class echeanciers extends echeanciers_crud
           e.date_echeance_emprunteur,
           e.date_echeance_emprunteur_reel
         FROM echeanciers e
-          INNER JOIN loans l
-            ON l.id_loan = e.id_loan
-          INNER JOIN lenders_accounts la
-            ON la.id_lender_account = e.id_lender
-          INNER JOIN clients c
-            ON c.id_client = la.id_client_owner
-          LEFT JOIN lender_tax_exemption lte
-            ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance_reel)
-          INNER JOIN transactions t
-            ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
-          LEFT JOIN tax prelevements_obligatoires
-            ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
-          LEFT JOIN tax retenues_source
-            ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
-          LEFT JOIN tax csg
-            ON csg.id_transaction = t.id_transaction AND csg.id_tax_type = ' . \tax_type::TYPE_CSG . '
-          LEFT JOIN tax prelevements_sociaux
-            ON prelevements_sociaux.id_transaction = t.id_transaction AND prelevements_sociaux.id_tax_type = ' . \tax_type::TYPE_SOCIAL_DEDUCTIONS . '
-          LEFT JOIN tax contributions_additionnelles
-            ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
-          LEFT JOIN tax prelevements_solidarite
-            ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS . '
-          LEFT JOIN tax crds
-            ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . \tax_type::TYPE_CRDS . '
+          INNER JOIN loans l ON l.id_loan = e.id_loan
+          INNER JOIN lenders_accounts la ON la.id_lender_account = e.id_lender
+          INNER JOIN clients c ON c.id_client = la.id_client_owner
+          LEFT JOIN lender_tax_exemption lte ON lte.id_lender = e.id_lender AND lte.year = YEAR(e.date_echeance_reel)
+          INNER JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+          LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
+          LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
+          LEFT JOIN tax csg ON csg.id_transaction = t.id_transaction AND csg.id_tax_type = ' . \tax_type::TYPE_CSG . '
+          LEFT JOIN tax prelevements_sociaux ON prelevements_sociaux.id_transaction = t.id_transaction AND prelevements_sociaux.id_tax_type = ' . \tax_type::TYPE_SOCIAL_DEDUCTIONS . '
+          LEFT JOIN tax contributions_additionnelles ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
+          LEFT JOIN tax prelevements_solidarite ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS . '
+          LEFT JOIN tax crds ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . \tax_type::TYPE_CRDS . '
         WHERE DATE(e.date_echeance_reel) = :date
               AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID . ')
               AND e.status_ra = 0
         ORDER BY e.date_echeance ASC;
         ';
 
-        return $this->bdd->executeQuery($sql, ['date' => $date], ['date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
+        return $this->bdd->executeQuery($sql, ['date' => $date->format('Y-m-d')], ['date' => \PDO::PARAM_STR])->fetchAll(\PDO::FETCH_ASSOC);
     }
 }
