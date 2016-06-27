@@ -2311,11 +2311,16 @@ class dossiersController extends bootstrap
     {
         $this->hideDecoration();
 
-        $oClients    = $this->loadData('clients');
-        $oProjects   = $this->loadData('projects');
-        $oCompanies  = $this->loadData('companies');
+        /** @var \clients $oClients */
+        $oClients = $this->loadData('clients');
+        /** @var \projects $oProjects */
+        $oProjects = $this->loadData('projects');
+        /** @var \companies $oCompanies */
+        $oCompanies = $this->loadData('companies');
+        /** @var \project_cgv $oProjectCgv */
         $oProjectCgv = $this->loadData('project_cgv');
-        $oSettings   = $this->loadData('settings');
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
 
         if (false === isset($this->params[0]) || ! $oProjects->get($this->params[0], 'id_project')) {
             $this->result = 'project id invalid';
@@ -2394,18 +2399,18 @@ class dossiersController extends bootstrap
         }
 
         $oSettings->get('Facebook', 'type');
-        $lien_fb = $oSettings;
+        $facebookUrl = $oSettings->value;
 
         $oSettings->get('Twitter', 'type');
-        $lien_tw = $oSettings;
+        $twitterUrl = $oSettings->value;
 
         $varMail = array(
             'surl'                => $this->surl,
             'url'                 => $this->furl,
             'prenom_p'            => $oClients->prenom,
             'lien_cgv_universign' => $sCgvLink,
-            'lien_tw'             => $lien_tw,
-            'lien_fb'             => $lien_fb,
+            'lien_tw'             => $twitterUrl,
+            'lien_fb'             => $facebookUrl,
         );
 
         if (empty($oClients->email)) {
