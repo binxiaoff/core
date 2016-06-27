@@ -36,16 +36,16 @@ class MainController extends Controller
         /** @var TranslationManager $translationManager */
         $translationManager = $this->get('unilend.service.translation_manager');
 
-        $aRateRange = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
+        $aRateRange                              = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
         $aTemplateVariables['projects']          = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC', $aRateRange);
         $aTemplateVariables['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
         $aTemplateVariables['videoHeroes']       = [
             'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
             'Borrowers' => $testimonialService->getActiveVideoHeroes('emprunter')
         ];
-        $aTemplateVariables['showWelcomeOffer'] = $welcomeOfferManager->displayOfferOnHome();
-        $aTemplateVariables['loanPeriods']      = $projectManager->getPossibleProjectPeriods();
-        $aTemplateVariables['loanMotives']      = $translationManager->getTranslatedLoanMotiveList();
+        $aTemplateVariables['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
+        $aTemplateVariables['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
+        $aTemplateVariables['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
 
         //TODO replace switch by cookie check
         switch($type) {

@@ -132,9 +132,10 @@ permalink: route('emprunter')
                                         </div> -->
                                     </div>
                                     <div class="form-field col-lg-6 col-md-6">
-                                        <label for="esim-input-reason">{% trans %} home-borrower_simulator-loan-motif-title {% endtrans %}</label>
+                                        <label for="esim-input-reason">{% trans %} home-borrower_simulator-borrowing-motif-title {% endtrans %}</label>
                                         <select id="esim-input-reason" name="esim[reason]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
-                                            {% for id, motive in loanMotives %}
+                                            <option value="0">{% trans %} home-borrower_simulator-borrowing-motif-select {% endtrans %}</option>
+                                            {% for id, motive in borrowingMotives %}
                                                 <option value="{{ id }}">{{ motive }}</option>
                                             {% endfor %}
                                         </select>
@@ -142,7 +143,7 @@ permalink: route('emprunter')
                                 </div>
                                 <div class="row">
                                     <div class="form-field col-lg-12 col-md-12">
-                                        <label>{% trans %} home-borrower_simulator-loan-period-title {% endtrans %}</label>
+                                        <label>{% trans %} home-borrower_simulator-borrowing-period-title {% endtrans %}</label>
                                         <div class="custom-input-duration" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
                                             {% for period in loanPeriods %}
                                                 <label>

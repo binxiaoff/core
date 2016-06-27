@@ -25,11 +25,11 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-class loan_motive extends loan_motive_crud
+class borrowing_motive extends borrowing_motive_crud
 {
     public function __construct($bdd, $params = '')
     {
-        parent::loan_motive($bdd, $params);
+        parent::borrowing_motive($bdd, $params);
     }
 
     public function select($where = '', $order = '', $start = '', $nb = '')
@@ -42,7 +42,7 @@ class loan_motive extends loan_motive_crud
             $order = ' ORDER BY ' . $order;
         }
 
-        $sql = 'SELECT * FROM `loan_motive`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
+        $sql = 'SELECT * FROM `borrowing_motive`' . $where . $order . ($nb != '' && $start != '' ? ' LIMIT ' . $start . ',' . $nb : ($nb != '' ? ' LIMIT ' . $nb : ''));
 
         $result   = array();
         $resultat = $this->bdd->query($sql);
@@ -58,11 +58,11 @@ class loan_motive extends loan_motive_crud
             $where = ' WHERE ' . $where;
         }
 
-        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `loan_motive` ' . $where), 0, 0);
+        return (int) $this->bdd->result($this->bdd->query('SELECT COUNT(*) FROM `borrowing_motive` ' . $where), 0, 0);
     }
 
     public function exist($id, $field = 'id_motive')
     {
-        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `loan_motive` WHERE ' . $field . ' = "' . $id . '"')) > 0;
+        return $this->bdd->fetch_assoc($this->bdd->query('SELECT * FROM `borrowing_motive` WHERE ' . $field . ' = "' . $id . '"')) > 0;
     }
 }
