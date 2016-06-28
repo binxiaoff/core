@@ -1,0 +1,185 @@
+{# User / Preter / Apport - Retrait #}
+{% extends 'layouts/_dashboard.twig' %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+  id: 'user-preter-balance',
+  title: 'Prêteur / Apport - Retrait',
+  permalink: route('user/preter/balance'),
+  classNames: 'user-preter-balance'
+} %}
+
+{# See config/twig.json for the data value of `userProfile` #}
+
+{% block dashboardContent %}
+
+  <div class="dashboard-tabs tabs">
+
+    <div class="dashboard-tabs-nav">
+      <ul class="nav nav-dashboard-tabs">
+        <li role="presentation" class="active"><a href="#balance-deposit" role="tab" data-toggle="tab">Apport</a></li>
+        <li role="presentation"><a href="#balance-withdraw" role="tab" data-toggle="tab">Retrait</a></li>
+      </ul>
+    </div><!-- /.dashboard-tabs-nav -->
+
+    <div class="dashboard-tabs-content tab-content">
+      <article id="balance-deposit" role="tabpanel" class="tab-pane dashboard-tab-pane active ui-toggle-group" aria-multiselectable="true">
+        <section id="balance-deposit-1" role="tabpanel" class="panel collapse in" aria-expanded="true">
+          <div class="row reverse">
+            <div class="col-lg-6 col-md-6">
+              <div class="dashboard-balance ui-balance-positive ui-balance-low">
+                <dl>
+                  <dt>Solde disponible</dt>
+                  <dd>3,90€</dd>
+                </dl>
+                <div class="dashboard-balance-image">{{ svgimage('#promo-money', '', 160, 160) }}</div>
+              </div><!-- /.dashboard-balance -->
+
+              <div class="balance-payment-details balance-payment-transfer" style="display: none;">
+                <a href="#todo" class="btn-print"><span class="icon fa-print-u32"></span><span class="sr-only"> Print</span></a>
+                <h4>Informations relatives au virement</h4>
+                <ul class="list-block">
+                  <li class="ui-has-btn-copy">
+                    <div class="label">Identifiant de votre compte</div>
+                    <div id="balance-transfer-id" class="value">059815FL</div>
+                    <a href="javascript:;" data-clipboard-target="#balance-transfer-id" class="btn-copy btn-default btn-shape-xxs">Copier</a>
+                  </li>
+                  <li class="ui-has-btn-copy">
+                    <div class="label">IBAN</div>
+                    <div id="balance-transfer-iban" class="value">FR76 3000 4021 1800 0406 3100 792</div>
+                    <a href="javascript:;" data-clipboard-target="#balance-transfer-iban" class="btn-copy btn-default btn-shape-xxs">Copier</a>
+                  </li>
+                  <li>
+                    <div class="label">BIC</div>
+                    <div class="value">BNPAFRPPPBQ</div>
+                  </li>
+                  <li>
+                    <div class="label">Titulaire</div>
+                    <div class="value">Unilend Opérations</div>
+                  </li>
+                  <li>
+                    <div class="label">Domiciliation</div>
+                    <div class="value">SFPMEI - 29 rue du Louvre - 75002 Paris France</div>
+                  </li>
+                </ul>
+              </div><!-- /.balance-payment-details.balance-payment-transfer -->
+            </div>
+            <div class="dashboard-tab-pane-content col-lg-6 col-md-6">
+              <h3>Déposer de l'argent</h3>
+              <div class="form-field">
+                <ul class="list-input-values">
+                  <li>
+                    <label><input type="radio" id="balance-payment-cb-toggle" name="deposit[method]" value="cb" checked="checked" /> Par carte bancaire</label>
+                  </li>
+                  <li>
+                    <label><input type="radio" id="balance-payment-transfer-toggle" name="deposit[method]" value="transfer" /> Par virement</label>
+                  </li>
+                </ul><!-- /.list-input-values -->
+              </div><!-- /.form-field -->
+
+              <div class="balance-payment-cb">
+                <p>Vous allez être redirigé vers la page de versement Payline sécurisée par la technologie SSL.</p>
+                <img src="{{ siteurlmedia('dashboard/logo-payline.png') }}" alt="Payline" />
+
+                <div class="btn-controls">
+                  {# This is a dummy action to illustrate what happens next #}
+                  <a href="#todo" role="button" data-toggle="collapse" data-target="#balance-deposit-2" data-parent="#balance-deposit" class="btn-primary">Accéder au versement sécurisé</a>
+                </div><!-- /.btn-controls -->
+              </div><!-- /.balance-payment-cb -->
+
+              <div class="balance-payment-transfer" style="display: none;">
+                <p>Rendez-vous sur l'espace client de votre banque afin d'effectuer un virement sur le compte Unilend. Entrez les coordonnées bancaires Unilend nécessaires à la validation du virement. Selon  les banques, veuillez compter 48 à 72h pour que le virement soit effectif.</p>
+                <p><strong>Précisez impérativement l'identifiant de votre compte ci-joint dans le motif de votre ordre de virement.</strong></p>
+              </div><!-- /.balance-payment-transfer -->
+            </div><!-- /.dashboard-tab-pane-content -->
+          </div>
+        </section><!-- /.panel -->
+        <section id="balance-deposit-2" role="tabpanel" class="panel collapse" aria-expanded="false">
+          <h3>Félicitations!</h3>
+          <p>Le versement par carte bancaire à bien été effectué.</p>
+          <p>Votre compte Unilend à été crédité de <strong class="c-teal">200€</strong>.</p>
+          <p><a href="{{ route('user/preter/dashboard') }}" class="btn-primary">Tableau de bord</a></p>
+        </section><!-- /.panel -->
+      </article><!-- /.tab-pane -->
+
+      <article id="balance-withdraw" role="tabpanel" class="tab-pane dashboard-tab-pane ui-toggle-group" aria-multiselectable="true">
+        <section id="balance-withdraw-1" role="tabpanel" class="panel collapse in" aria-expanded="true">
+          <div class="row reverse">
+            <div class="col-lg-6 col-md-6">
+              {# Maybe there's a better way of doing this, rather than duplicating this code twice #}
+              <div class="dashboard-balance ui-balance-positive">
+                <dl>
+                  <dt>Solde disponible</dt>
+                  <dd>143,90€</dd>
+                </dl>
+                <div class="dashboard-balance-image">{{ svgimage('#promo-money', '', 190, 190) }}</div>
+              </div><!-- /.dashboard-balance -->
+
+              <div class="balance-payment-details balance-payment-myaccount">
+                <h4>Compte bancaire dépositaire</h4>
+                <ul class="list-block">
+                  <li>
+                    <div class="label">Titulaire</div>
+                    <div class="value">Pierre Dupond</div>
+                  </li>
+                  <li>
+                    <div class="label">No. Client</div>
+                    <div class="value">14589</div>
+                  </li>
+                  <li>
+                    <div class="label">No. de compte bancaire</div>
+                    <div class="value"><span class="c-t2">**** **** **** **** ****</span> 3100 792</div>
+                  </li>
+                  <li>
+                    <div class="label">Banque</div>
+                    <div class="value">BNP PARIBAS</div>
+                  </li>
+                </ul>
+                <p><a href="#todo" class="link">Vous avez changé de compte bancaire&nbsp;?</a></p>
+              </div><!-- /.balance-payment-details.balance-payment-transfer -->
+            </div>
+
+            <div class="dashboard-tab-pane-content col-lg-6 col-md-6">
+              <h3>Retirez de l'argent</h3>
+              <p>Pour transférer l'argent disponible sur votre compte Unilend vers votre compte bancaire, indiquez le montant souhaité et votre mot de passe.</p>
+              <form id="form-balance-withdraw" action="{{ route('user/preter/balance/withdraw') }}" method="post" class="form-balance-withdraw" data-formvalidation data-formvalidation-render="false" data-ajax>
+                <div class="row row-multi-col-computer">
+                  <div class="form-field col-lg-5 col-md-5">
+                    <label for="form-balance-withdraw-amount">Montant <span class="field-required">*<span class="sr-only"> Required</span></span></label>
+                    <div class="input-group set-left">
+                      <div class="btn-group">
+                        <span class="icon fa-euro"></span>
+                      </div>
+                      <input id="form-balance-withdraw-amount" type="number" min="0" max="143.90" step="any" name="amount" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-render="true" />
+                    </div>
+                  </div><!-- /.form-field -->
+                  <div class="form-field col-lg-7 col-md-7">
+                    <label for="form-balance-withdraw-password">Mot de passe <span class="field-required">*<span class="sr-only"> Required</span></span></label>
+                    <div class="input-group set-left">
+                      <div class="btn-group">
+                        <span class="icon fa-lock"></span>
+                      </div>
+                      <input id="form-balance-withdraw-password" type="password" name="password" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-render="true" />
+                    </div>
+                  </div><!-- /.form-field -->
+                </div>
+                <div class="btn-controls">
+                  <button class="btn-primary">Valider la transaction</button>
+                </div>
+              </form>
+            </div><!-- /.dashboard-tab-pane-content -->
+          </div>
+        </section><!-- /.panel -->
+        <section id="balance-withdraw-2" role="tabpanel" class="panel collapse" aria-expanded="false">
+          <h3>Félicitations!</h3>
+          <p>Votre demande de retrait à bien été prise en compte.</p>
+          <p>Vous recevrez votre argent sur le compte bancaire associé d'ici quelques jours.</p>
+          <p><a href="{{ route('user/preter/dashboard') }}" class="btn-primary">Tableau de bord</a></p>
+        </section><!-- /.panel -->
+      </article><!-- /.tab-pane -->
+    </div><!-- /.dashboard-tabs-content -->
+
+  </div><!-- /.dashboard-tabs -->
+
+{% endblock %}

@@ -1,0 +1,53 @@
+{# Simple page layout #}
+{% extends 'layouts/_layout.html.twig' %}
+{% set bodyClassNames = 'layout-page-simple' %}
+
+{# Page object #}
+{#
+page = {
+  id: {String} ID of the page e.g. 'unique-id',
+  classNames: {String} CSS class names to apply to the page, e.g. 'page-unique-id another-class-name',
+  title: {String} The title of the page, which goes into the HTML header <title>..</title>,
+  displayTitle: {String} The display title, i.e. what gets rendered in the viewable page header
+}
+#}
+
+{% block siteContent %}
+
+    <article{% if page.id is not empty %} id="{{ page.id }}"{% endif %} class="page page-simple{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
+
+        {% block pageHeader %}
+            <header class="page-header">
+                <div class="hero-wrap">
+                    <div class="site-wrap">
+                        <h1 class="page-title">{% if page.displayTitle is not empty %}{{ page.displayTitle }}{% else %}{{ page.title }}{% endif %}</h1>
+                        {% block extendPageHeader %}{% endblock %}
+                    </div><!-- /.site-wrap -->
+                    {{ render(controller('UnilendFrontBundle:StaticPages:renderSocialMedia')) }}
+                </div><!-- /.hero-wrap -->
+            </header><!-- /.page-header -->
+        {% endblock %}
+
+        <div class="site-wrap">
+            <div class="row">
+
+                {% block pageAside %}
+                    <aside class="col-lg-6 col-md-6 page-aside ui-sticky-bounds" data-equal-height="md lg" data-equal-height-group="content">
+                        {% block pageAsideBody %}&nbsp;{% endblock %}
+                    </aside><!-- /.page-aside -->
+                {% endblock %}
+
+                {% block pageContent %}
+                    <div class="col-lg-6 col-md-6 page-content" data-equal-height="md lg" data-equal-height-group="content">
+                        {% block pageContentBody %}
+                            {% include 'partials/error/not-found.twig' %}
+                        {% endblock %}
+                    </div><!-- /.page-content -->
+                {% endblock %}
+
+            </div><!-- /.row -->
+        </div><!-- /.site-wrap -->
+
+    </article><!-- /.page -->
+
+{% endblock %}

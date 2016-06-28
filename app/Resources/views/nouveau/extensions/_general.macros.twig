@@ -1,0 +1,80 @@
+{# General macros #}
+{# import 'extensions/_general.macros.twig' as general #}
+
+{# Check if route matches and output the 'active' class #}
+{# This is mainly for navigation <LI> elements which only have a single CSS class: either 'active' or empty #}
+{# @macro isRouteActiveClass #}
+{# @param {String} route The route's URL, e.g. `route('user/preter/dashboard')` #}
+{# @param {String} url The URL to match to the route's URL, e.g. `page.permalink` #}
+{# @returns {String} #}
+{% macro isRouteActiveClass(route, url, hideAttr) %}
+{% if route == url %}{% if hideAttr != true %}class="active"{% else %}active{% endif %}{% endif %}
+{% endmacro %}
+
+{# Generate a string from an object containing key-value pairs representing html attributes #}
+{# @macro attrsString #}
+{# @param {Object} attrs An object containing key-value pairs to represent the attributes for the element #}
+{% macro attrsString(attrs) %}
+  {# Generate attributes string #}
+  {% set attrsHtml = '' %}
+  {% if attrs is not empty %}
+    {% for key, value in attrs %}
+      {% set attrsHtml = attrsHtml ~ ' ' ~ key ~ '="' ~ value|escape('html_attr') ~ '"' %}
+    {% endfor %}
+    {% if attrsHtml is not empty %}{{ attrsHtml }}{% endif %}
+  {% endif %}
+{% endmacro %}
+
+{# Show a number pip #}
+{# If number is greater than 9, then shows a bullet point #}
+{# @macro pip #}
+{# @param {Int} number #}
+{# @param {Boolean} showMany #}
+{% macro pip(number, showMany) %}
+  {# Default showMany behaviour is true #}
+  {% set showMany = (showMany is not empty ? showMany : true) %}
+  <span class="pip{% if showMany and number > 9 %} pip-has-many{% endif %}"><span class="pip-number">{{ number }}</span></span>
+{% endmacro %}
+
+{# Output <option> elements for the days of a month #}
+{# @macro selectDayOptions #}
+{# @param {Int} defaultDay The index of the default day to have selected #}
+{% macro selectDayOptions(defaultDay) %}
+  {% for i in 1..31 %}
+  <option value="{{ i }}"{% if i == defaultDay %} selected="selected"{% endif %}>{{ i }}</option>
+  {% endfor %}
+{% endmacro %}
+
+{# Output <option> elements for the months of the year #}
+{# @macro selectMonthOptions #}
+{# @param {Int} defaultMonthIndex The index of the default month to have selected (zero-indexed) #}
+{% macro selectMonthOptions(defaultMonthIndex) %}
+  {% set months = [
+    'Janvier',
+    'Février',
+    'Mars',
+    'Avril',
+    'Mai',
+    'Juin',
+    'Juillet',
+    'Août',
+    'Septembre',
+    'Octobre',
+    'Novembre',
+    'Décembre'
+  ] %}
+  {% for i, name in months %}
+  <option value="{{ i }}"{% if i == defaultMonthIndex %} selected="selected"{% endif %}>{{ name }}</option>
+  {% endfor %}
+{% endmacro %}
+
+{# Output <option> elements representing the years #}
+{# @macro selectYearOptions #}
+{# @param {Int} defaultYear The index of the default year to have selected #}
+{% macro selectYearOptions(defaultYear, maxYear, minYear) %}
+  {% if maxYear is empty %}{% set maxYear = 2016 %}{% endif %}
+  {% if minYear is empty %}{% set minYear = 1900 %}{% endif %}
+  {% for i in maxYear..minYear %}
+  <option value="{{ i }}"{% if i == defaultYear %} selected="selected"{% endif %}>{{ i }}</option>
+  {% endfor %}
+{% endmacro %}

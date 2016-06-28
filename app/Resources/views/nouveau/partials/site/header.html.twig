@@ -1,0 +1,76 @@
+{# Site Header #}
+
+<header class="site-header">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+        <div class="site-wrap">
+            {% block siteHeaderMobileMenuOpen %}
+                <a href="javascript:;" tabindex="-1" class="site-mobile-menu-open" role="button">
+        <span role="presentation" class="icon menu">
+          <div class="menu-1"></div>
+          <div class="menu-2"></div>
+          <div class="menu-3"></div>
+        </span><span class="sr-only">{% trans %} header_mobile-header-menu {% endtrans %}</span>
+                </a><!-- /.site-mobile-menu-open -->
+            {% endblock %}
+
+            <h1 class="site-title">
+                <a href="{{ route('/') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a></h1>
+
+            {% block siteHeaderNav %}
+                <nav class="site-nav" role="navigation">
+                    <ul class="site-nav-menu">
+                        <li role="presentation"><a href="{{ route('preter') }}" tabindex="2">{% trans %} header_menu-item-lend {% endtrans %}</a></li>
+                        <li role="presentation"><a href="{{ route('emprunter') }}" tabindex="2">{% trans %} header_menu-item-borrow {% endtrans %}</a></li>
+                        <li role="presentation"><a href="{{ route('projects') }}" tabindex="2">{% trans %} header_menu-item-projects {% endtrans %}</a></li>
+                        <li role="presentation"><a href="{{ route('about') }}" tabindex="2">{% trans %} header_menu-item-about {% endtrans %}</a></li>
+                    </ul>
+                </nav><!-- /.site-nav -->
+            {% endblock siteHeaderNav %}
+
+            <div class="site-controls">
+
+                {% block siteHeaderControls %}
+                    <form action="{{ route('search') }}" method="get" class="site-search" role="search">
+                        <div class="form-field-inline">
+                            <label for="site-search-input" class="site-search-toggle">
+                                <span class="sr-only">{% trans %} site-general_search-label {% endtrans %}</span>
+                            </label>
+                            <div class="btn-group">
+                                <button class="btn-search" tabindex="-1">
+                                    <span class="sr-only">{% trans %} site-general_search-submit {% endtrans %}</span>
+                                </button>
+                            </div>
+                            <input id="site-search-input" type="text" name="s" placeholder="{% trans %} site-general_search-placeholder {% endtrans %}"
+                                   value="" tabindex="1" class="input-field site-search-input">
+
+                            <div class="autocomplete" aria-hidden="true">
+                                <ul class="autocomplete-results">
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> les prêteurs alimentent leur compte&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> prêter sur un projet&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> sont calculés les intérêts&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> l'argent des prêteurs est-il transféré à l'entreprise&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> savoir que mon portefeuille est performant&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> se met en place le remboursement du prêt&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> Unilend dépose sur le compte des prêteurs&nbsp;?</a></li>
+                                    <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> supprimer mon compte&nbsp;?</a></li>
+                                </ul>
+                                <div class="autocomplete-footer">
+                                    <button class="btn-primary btn-shape-md btn-size-full">{% trans %} site-general_search-show-all-results {% endtrans %}</button>
+                                </div>
+                            </div><!-- /.autocomplete -->
+                        </div><!-- /.form-field-inline -->
+                    </form><!-- /.site-search -->
+
+                    <div class="site-user">
+                        <a href="{{ path('login') }}" class="btn-site-login" tabindex="3"><span class="icon fa-lock"></span>
+                            <span class="label">{% trans %} header_site-user-register {% endtrans %}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+                                {% trans %} header_site-user-login {% endtrans %}</span></a>
+                    </div><!-- /.site-user -->
+                {% endblock %}
+
+            </div><!-- /.site-controls -->
+        </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+</header>

@@ -1,0 +1,37 @@
+{# Single page layout #}
+{% extends 'layouts/_layout.html.twig' %}
+
+{% set bodyClassNames = 'layout-page-single' %}
+
+{% block siteContent %}
+
+  <article{% if page.id is defined %} id="{{ page.id }}"{% endif %} class="page page-single{% if page.classNames is not empty %} {{ page.classNames }}{% endif %}">
+
+    {% block pageHeader %}
+    <header class="page-header">
+      <div class="hero-wrap">
+        <div class="site-wrap">
+          {% block pageHeaderInner %}
+          <h1 class="page-title">{% if page.displayTitle is defined %}{{ page.displayTitle }}{% else %}{{ page.title }}{% endif %}</h1>
+          {% block extendPageHeader %}{% endblock %}
+          {% endblock %}
+        </div><!-- /.site-wrap -->
+
+        {{ render(controller('UnilendFrontBundle:StaticPages:renderSocialMedia')) }}
+      </div><!-- /.hero-wrap -->
+    </header><!-- /.page-header -->
+    {% endblock %}
+
+    {% block pageContent %}
+    <div class="page-content">
+      {% block pageContentInner %}
+
+      {% endblock %}
+    </div><!-- /.page-content -->
+    {% endblock %}
+
+    {% block pageFooter %}{% endblock %}
+
+  </article><!-- /.page -->
+
+{% endblock %}

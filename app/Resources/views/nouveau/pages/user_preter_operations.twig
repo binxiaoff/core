@@ -1,0 +1,684 @@
+{# User / Preter / Operations #}
+{% extends 'layouts/_dashboard.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+  id: 'user-preter-operations',
+  title: 'Prêteur / Operations',
+  permalink: route('user/preter/operations'),
+  classNames: 'user-preter-operations'
+} %}
+
+{# Placeholder data #}
+{% set placeholderData = {
+  charts: {
+    preterOperations: {
+      type: 'preterOperations',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'pie',
+          width: 300,
+          height: 300,
+          marginTop: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          spacingTop: 0,
+          spacingBottom: 0,
+          spacingLeft: 0,
+          spacingRight: 0
+        },
+        title: {
+          text: ''
+        },
+        legend: {
+          enabled: false,
+          layout: 'vertical',
+          symbolRadius: 10,
+          align: 'right',
+          verticalAlign: 'middle'
+        },
+        tooltip: {
+          pointFormat: ' '
+        },
+        plotOptions: {
+          pie: {
+            innerSize: '50%',
+            showInLegend: true,
+            dataLabels: {
+              enabled: false
+            }
+          }
+        },
+        series: [{
+          name: '54 prêts',
+          data: [{
+            name: '6 remboursements terminés',
+            y: 6,
+            color: '#428890'
+          },{
+            name: '43 remboursements à jour',
+            y: 43,
+            color: '#5FC5D3'
+          },{
+            name: '5 défauts / retards',
+            y: 5,
+            color: '#F76965'
+          }]
+        }]
+      }
+    }
+  },
+  "stats": {
+    "loans": {
+      "all": 54,
+      "complete": 6,
+      "inProgress": 43,
+      "defaulted": 5
+    }
+  },
+  "filter": {
+    "operations": {
+      "slide": "",
+      "year": "",
+      "start": "",
+      "end": "",
+      "operation": "",
+      "project": ""
+    },
+    "loans": {
+      "status": "",
+      "date": ""
+    }
+  },
+  "operations": [{
+    "id": 1,
+    "typeId": 3,
+    "typeName": "Offre rejectée",
+    "contractId": 88533,
+    "projectId": 1,
+    "projectName": "Iena Consulting",
+    "date": "28 March 2016",
+    "amount": 20,
+    "balance": 43.54,
+    "details": false
+  },{
+    "id": 2,
+    "typeId": 3,
+    "typeName": "Offre rejectée",
+    "contractId": 45523,
+    "projectId": 2,
+    "projectName": "G Finance",
+    "date": "21 March 2016",
+    "amount": 20,
+    "balance": 23.54,
+    "details": false
+  },{
+    "id": 3,
+    "typeId": 4,
+    "typeName": "Remboursement",
+    "contractId": 45896,
+    "projectId": 3,
+    "projectName": "Maud Maquillage Permanence",
+    "date": "18 March 2016",
+    "amount": 0.54,
+    "balance": 3.54,
+    "details": {
+      "label": "Détails de remboursement",
+      "items": [{
+        "label": "Capital remboursé",
+        "value": 0.34
+      },{
+        "label": "Intérêts reçus",
+        "value": 0.06
+      },{
+        "label": "Prélèvements fiscaux et sociaux",
+        "value": -0.4
+      }]
+    }
+  },{
+    "id": 4,
+    "typeId": 4,
+    "typeName": "Remboursement",
+    "contractId": 78963,
+    "projectId": 4,
+    "projectName": "Parcome",
+    "date": "18 March 2016",
+    "amount": 0.58,
+    "balance": 2.80,
+    "details": {
+      "label": "Détails de remboursement",
+      "items": [{
+        "label": "Capital remboursé",
+        "value": 0.34
+      },{
+        "label": "Intérêts reçus",
+        "value": 0.06
+      },{
+        "label": "Prélèvements fiscaux et sociaux",
+        "value": -0.4
+      }]
+    }
+  },{
+    "id": 5,
+    "typeId": 4,
+    "typeName": "Remboursement",
+    "contractId": 15478,
+    "projectId": 5,
+    "projectName": "Novoprod",
+    "date": "18 March 2016",
+    "amount": 0.65,
+    "balance": 2.22,
+    "details": {
+      "label": "Détails de remboursement",
+      "items": [{
+        "label": "Capital remboursé",
+        "value": 0.34
+      },{
+        "label": "Intérêts reçus",
+        "value": 0.06
+      },{
+        "label": "Prélèvements fiscaux et sociaux",
+        "value": -0.4
+      }]
+    }
+  },{
+    "id": 6,
+    "typeId": 4,
+    "typeName": "Remboursement",
+    "contractId": 87456,
+    "projectId": 6,
+    "projectName": "Ed Distribution",
+    "date": "18 March 2016",
+    "amount": 0.44,
+    "balance": 1.66,
+    "details": {
+      "label": "Détails de remboursement",
+      "items": [{
+        "label": "Capital remboursé",
+        "value": 0.34
+      },{
+        "label": "Intérêts reçus",
+        "value": 0.06
+      },{
+        "label": "Prélèvements fiscaux et sociaux",
+        "value": -0.4
+      }]
+    }
+  },{
+    "id": 7,
+    "typeId": 4,
+    "typeName": "Remboursement",
+    "contractId": 88533,
+    "projectId": 7,
+    "projectName": "Jolie Doll",
+    "date": "18 March 2016",
+    "amount": 0.32,
+    "balance": 1.22,
+    "details": {
+      "label": "Détails de remboursement",
+      "items": [{
+        "label": "Capital remboursé",
+        "value": 0.34
+      },{
+        "label": "Intérêts reçus",
+        "value": 0.06
+      },{
+        "label": "Prélèvements fiscaux et sociaux",
+        "value": -0.4
+      }]
+    }
+  },{
+    "id": 8,
+    "typeId": 1,
+    "typeName": "Offre proposée",
+    "contractId": 88533,
+    "projectId": 7,
+    "projectName": "Jolie Doll",
+    "date": "12 March 2016",
+    "amount": -20,
+    "balance": 0.98,
+    "details": false
+  },{
+    "id": 9,
+    "typeId": 4,
+    "typeName": "Remboursement",
+    "contractId": 45523,
+    "projectId": 7,
+    "projectName": "Urban Factory",
+    "date": "10 March 2016",
+    "amount": 0.54,
+    "balance": 20.98,
+    "details": {
+      "label": "Détails de remboursement",
+      "items": [{
+        "label": "Capital remboursé",
+        "value": 0.34
+      },{
+        "label": "Intérêts reçus",
+        "value": 0.06
+      },{
+        "label": "Prélèvements fiscaux et sociaux",
+        "value": -0.4
+      }]
+    }
+  },{
+    "id": 10,
+    "typeId": 4,
+    "typeName": "Remboursement",
+    "contractId": 88533,
+    "projectId": 7,
+    "projectName": "Iena Consulting",
+    "date": "7 March 2016",
+    "amount": 0.58,
+    "balance": 20.45,
+    "details": {
+      "label": "Détails de remboursement",
+      "items": [{
+        "label": "Capital remboursé",
+        "value": 0.34
+      },{
+        "label": "Intérêts reçus",
+        "value": 0.06
+      },{
+        "label": "Prélèvements fiscaux et sociaux",
+        "value": -0.4
+      }]
+    }
+  },{
+    "id": 11,
+    "typeId": 2,
+    "typeName": "Offre acceptée",
+    "contractId": 78963,
+    "projectId": 7,
+    "projectName": "G Finance",
+    "date": "04 March 2016",
+    "amount": -50,
+    "balance": 19.95,
+    "details": false
+  }],
+  "loans": [{
+    "status": 1,
+    "statusName": "inprogress",
+    "projectId": 1,
+    "projectName": "Tibermont Antiquités",
+    "projectRating": 5,
+    "amount": 20,
+    "interest": 8,
+    "monthly": 0.98,
+    "nextPaymentDate": "28 March 2016",
+    "periodStart": "01 January 2014",
+    "periodEnd": "01 January 2017",
+    "periodLength": 36,
+    "documents": [{
+      "docType": "contract",
+      "docTypeName": "Contrat de prét",
+      "name": "contract-de-pret.pdf",
+      "url": "http://placehold.it/600x600.png",
+      "size": 123456789
+    }]
+  },{
+    "status": 2,
+    "statusName": "late",
+    "projectId": 2,
+    "projectName": "Manifestory",
+    "projectRating": 4,
+    "amount": 20,
+    "interest": 8,
+    "monthly": 0.54,
+    "nextPaymentDate": "21 March 2016",
+    "periodStart": "01 January 2016",
+    "periodEnd": "01 January 2017",
+    "periodLength": 12,
+    "documents": [{
+      "docType": "contract",
+      "docTypeName": "Contrat de prét",
+      "name": "contract-de-pret.pdf",
+      "url": "http://placehold.it/600x600.png",
+      "size": 123456789
+    }]
+  },{
+    "status": 3,
+    "statusName": "defaulted",
+    "projectId": 3,
+    "projectName": "Somega du centre",
+    "projectRating": 2,
+    "amount": 180,
+    "interest": 7.5,
+    "monthly": 2.80,
+    "nextPaymentDate": "18 March 2016",
+    "periodStart": "01 January 2015",
+    "periodEnd": "01 January 2017",
+    "periodLength": 24,
+    "documents": [{
+      "docType": "contract",
+      "docTypeName": "Contrat de prét",
+      "name": "contract-de-pret.pdf",
+      "type": "pdf",
+      "url": "http://placehold.it/600x600.png",
+      "size": 123456789
+    },{
+      "docType": "bond",
+      "docTypeName": "2 Bons de caisse",
+      "name": "bon-de-caisse.pdf",
+      "type": "pdf",
+      "url": "http://placehold.it/600x600.png",
+      "size": 123456789,
+      "number": 2
+    }]
+  },{
+    "status": 1,
+    "statusName": "inprogress",
+    "projectId": 4,
+    "projectName": "Maud Maquillage Permanence",
+    "projectRating": 5,
+    "amount": 1000,
+    "interest": 5.2,
+    "monthly": 167.22,
+    "nextPaymentDate": "18 March 2016",
+    "periodStart": "01 June 2016",
+    "periodEnd": "01 January 2017",
+    "periodLength": 6,
+    "documents": [{
+      "docType": "contract",
+      "docTypeName": "Contrat de prét",
+      "name": "contract-de-pret.pdf",
+      "url": "http://placehold.it/600x600.png",
+      "size": 123456789
+    }]
+  },{
+    "status": 4,
+    "statusName": "completed",
+    "projectId": 5,
+    "projectName": "Jolie Doll",
+    "projectRating": 5,
+    "amount": 333,
+    "interest": 4.5,
+    "monthly": 167.22,
+    "nextPaymentDate": "18 March 2016",
+    "periodStart": "01 June 2016",
+    "periodEnd": "01 January 2021",
+    "periodLength": 60,
+    "documents": [{
+      "docType": "contract",
+      "docTypeName": "Contrat de prét",
+      "name": "contract-de-pret.pdf",
+      "url": "http://placehold.it/600x600.png",
+      "size": 123456789
+    },{
+      "docType": "bond",
+      "docTypeName": "Bon de caisse",
+      "name": "bon-de-caisse.pdf",
+      "type": "pdf",
+      "url": "http://placehold.it/600x600.png",
+      "size": 123456789,
+      "number": 1
+    }]
+  }]
+} %}
+{% set filterOperations = placeholderData.filter.operations %}
+{% set filterLoans = placeholderData.filter.loans %}
+{% set operations = placeholderData.operations %}
+{% set stats = placeholderData.stats %}
+{% set loans = placeholderData.loans %}
+
+{% block dashboardContent %}
+
+  <section class="dashboard-tabs tabs">
+    <div class="dashboard-tabs-nav">
+      <ul class="nav nav-dashboard-tabs">{#
+      #}<li role="presentation" class="active"><a href="#operations" role="tab" data-toggle="tab">Mes opérations</a></li>{#
+      #}<li role="presentation"><a href="#loans" role="tab" data-toggle="tab">Mes prêts</a></li>{#
+    #}</ul>
+    </div><!-- /.dashboard-tabs-nav -->
+
+    <div class="dashboard-tabs-content tab-content">
+
+      {# MY OPERATIONS #}
+      <article id="operations" role="tabpanel" class="dashboard-tab-pane tab-pane active">
+        <div class="panel panel-operations-operations">
+          <header class="panel-header">
+            <h3 class="panel-title">Toutes mes opérations</h3>
+            <div class="panel-controls">
+              <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> Imprimer</span></a>
+              <a href="#todo" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> CSV Export</span></a>
+            </div>
+          </header><!-- /.panel-header -->
+          <div class="panel-content">
+
+            <form id="form-filters-operations" action="{{ route('user/preter/operations/operations/filter') }}" method="post" class="form-filters" data-ajax>
+              <div id="filters" class="row row-multi-col-computer collapse in">
+                <div class="form-field col-lg-8 col-md-8">
+                  <div class="field-label">
+                    <label>Filtrer par période <span class="field-required">*<span class="sr-only"> Required</span></span></label>
+                  </div><!-- /.field-label -->
+                  <div class="row input-fields">
+                    <div class="col-lg-3 col-md-3 col-sm-4">
+                      <select name="filter[slide]" class="input-field">
+                        <option>Glissante</option>
+                      </select>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-4">
+                      <select name="filter[year]" class="input-field">
+                        <option>Année</option>
+                        {{ general.selectYearOptions() }}
+                      </select>
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-4">
+                      <div class="input-group set-right">
+                        <input type="text" id="filter-start" name="filter[start]" value="{{ filterOperations.start }}" placeholder="Début" class="input-field ui-has-datepicker" />
+                        <div class="btn-group">
+                          <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">Select start date</span></span></label>
+                        </div><!-- /.btn-group -->
+                      </div><!-- /.input-group -->
+                    </div>
+                    <div class="col-lg-3 col-md-3 col-sm-4">
+                      <div class="input-group set-right">
+                        <input type="text" id="filter-end" name="filter[end]" value="{{ filterOperations.end }}" placeholder="Fin" class="input-field ui-has-datepicker"/>
+                        <div class="btn-group">
+                          <label for="filter-end"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">Select end date</span></span></label>
+                        </div><!-- /.btn-group -->
+                      </div><!-- /.input-group -->
+                    </div>
+                  </div><!-- /.input-fields -->
+                </div><!-- /.form-field -->
+
+                <div class="form-field col-lg-4 col-md-4">
+                  <div class="field-label">
+                    <label>Filtrer par type <span class="field-required">*<span class="sr-only"> Required</span></span></label>
+                  </div><!-- /.field-label -->
+                  <div class="row input-fields">
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                      <select name="filter[operation]" class="input-field">
+                        <option>Opérations</option>
+                      </select>
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-4">
+                      <select name="filter[project]" class="input-field">
+                        <option>Projets</option>
+                      </select>
+                    </div>
+                  </div><!-- /.input-fields -->
+                </div><!-- /.form-field -->
+              </div>
+            </form><!-- /.form-operations-filters -->
+
+            <div class="table-scroll">
+              <table class="table table-myoperations" data-sortable>
+                <thead class="table-sortable-columns">
+                  <tr>
+                    <th class="table-sortable-column table-myoperations-item-type" data-sortable-by="type">
+                      <span class="label"><span class="sr-only">Sort by column </span>Opération</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-contract" data-sortable-by="contract">
+                      <span class="label"><span class="sr-only">Sort by column </span>No. Contrat</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-project" data-sortable-by="project">
+                      <span class="label"><span class="sr-only">Sort by column </span>Project</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-date" data-sortable-by="date">
+                      <span class="label"><span class="sr-only">Sort by column </span>Date</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-amount" data-sortable-by="amount">
+                      <span class="label"><span class="sr-only">Sort by column </span>Montant</span>
+                    </th>
+                    <th class="table-sortable-column table-myoperations-item-balance" data-sortable-by="balance">
+                      <span class="label"><span class="sr-only">Sort by column </span>Solde compte</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody data-sortable-content>
+                  {% for i, op in operations %}
+                    {% set classAmount = op.amount > 0 ? 'ui-amount-positive' : 'ui-amount-negative' %}
+                    {% set classBalance = op.balance > 0 ? 'ui-balance-positive' : 'ui-balance-negative' %}
+                    <tr {{ general.attrsString({
+                      'id': 'operation-' ~ op.id,
+                      'data-sortable-type': op.typeId,
+                      'data-sortable-contract': op.contractId,
+                      'data-sortable-project': op.projectId,
+                      'data-sortable-date': op.date|date('U'),
+                      'data-sortable-amount': op.amount,
+                      'data-sortable-balance': op.balance
+                    }) }}{% if op.details is not empty %} data-details='{{ op.details|json_encode|escape('html_attr') }}'{% endif %} class="table-myoperations-item {{ classAmount }} {{ classBalance }}">
+                      <td class="table-myoperations-item-type">{{ op.typeName }}</td>
+                      <td class="table-myoperations-item-contract">{{ op.contractId }}</td>
+                      <td class="table-myoperations-item-project"><div class="text-crop">{{ op.projectName }}</div></td>
+                      <td class="table-myoperations-item-date">{{ op.date|date('d/m/y') }}</td>
+                      <td class="table-myoperations-item-amount">{{ op.amount|__price(2)|nbsp }}€</td>
+                      <td class="table-myoperations-item-balance">{{ op.balance|__price(2)|nbsp }}€</td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table><!-- /.table-myoperations -->
+            </div><!-- /.table-scroll -->
+          </div><!-- /.panel-content -->
+        </div><!-- /.panel -->
+      </article><!-- /#myoperations.tab-pane -->
+
+      {# MY OPERATIONS #}
+      <article id="loans" role="tabpanel" class="dashboard-tab-pane tab-pane">
+        <div class="panel panel-operations-loans">
+          <header class="panel-header">
+            <h3 class="panel-title">{{ stats.loans.all }} prêts effectués</h3>
+            <div class="panel-controls">
+              <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> Imprimer</span></a>
+              <a href="#todo" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> CSV Export</span></a>
+            </div><!-- /.panel-controls -->
+          </header><!-- /.panel-header -->
+          <div class="panel-content">
+            {# I really hate how inconsistent this website design is #}
+            <div class="panel-before-table">
+              <div class="chart" data-chartview='{{ placeholderData.charts.preterOperations|json_encode|escape('html_attr') }}'></div>
+              {# Responsive issues, so I'm rendering the legend in the page itself, rather than in the chart above #}
+              <div class="chart-legend">
+                {% for i, series in placeholderData.charts.preterOperations.highcharts.series %}
+                {% for j, dataItem in series.data if dataItem.showInLegend != false %}
+                  <div class="chart-key">
+                    <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
+                    <div class="label">{{ dataItem.name|default(series.name) }}</div>
+                  </div>
+                {% endfor %}
+              {% endfor %}
+              </div>
+
+              <form id="form-filters-loans" action="{{ route('user/preter/operations/loans/filter') }}" method="post" class="form-filters" data-ajax>
+                <div class="row row-multi-col">
+                  <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
+                    <select id="filter-status" name="filter[status]" class="input-field">
+                      <option>Par statut</option>
+                    </select>
+                  </div>
+                  <div class="form-field col-lg-6 col-md-6 col-sm-4 col-xs-2">
+                    <select id="filter-next" name="filter[date]" class="input-field">
+                      <option>Par date</option>
+                    </select>
+                  </div>
+                </div>
+              </form><!-- /.form-filters -->
+            </div><!-- /.panel-before-table -->
+
+            <div class="table-scroll">
+              <table class="table table-myloans" data-sortable>
+                <thead>
+                  <tr>
+                    <th class="table-sortable-column table-myloans-item-project" data-sortable-by="project">
+                      <span class="label"><span class="sr-only">Sort by column </span>Projet</span>
+                    </th>
+                    <th class="table-sortable-column table-myloans-item-rating" data-sortable-by="rating">
+                      <span class="label"><span class="sr-only">Sort by column </span>Note</span>
+                    </th>
+                    <th class="table-sortable-column table-myloans-item-amount" data-sortable-by="amount">
+                      <span class="label"><span class="sr-only">Sort by column </span>Montant</span>
+                    </th>
+                    <th class="table-sortable-column table-myloans-item-interest" data-sortable-by="interest">
+                      <span class="label"><span class="sr-only">Sort by column </span>Taux</span>
+                    </th>
+                    <th class="table-sortable-column table-myloans-item-monthly" data-sortable-by="monthly">
+                      <span class="label"><span class="sr-only">Sort by column </span>Mensualité</span>
+                    </th>
+                    <th class="table-sortable-column table-myloans-item-next" data-sortable-by="next">
+                      <span class="label"><span class="sr-only">Sort by column </span>Prochaine</span>
+                    </th>
+                    <th class="table-sortable-column table-myloans-item-duration" data-sortable-by="duration">
+                      <span class="label"><span class="sr-only">Sort by column </span>Reste</span>
+                    </th>
+                    <th class="table-myloans-item-documents">
+                      <span class="label"><span class="sr-only">Sort by column </span>Documents</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody data-sortable-content>
+                  {% for i, loan in loans %}
+                    {% set classLoanStatus = 'ui-loan-status-' ~ loan.statusName %}
+                    <tr {{ general.attrsString({
+                      'data-sortable-status': loan.status,
+                      'data-sortable-project': loan.projectId,
+                      'data-sortable-rating': loan.projectRating,
+                      'data-sortable-amount': loan.amount,
+                      'data-sortable-interest': loan.interest,
+                      'data-sortable-monthly': loan.monthly,
+                      'data-sortable-next': loan.nextPaymentDate|date('U'),
+                      'data-sortable-duration': loan.periodLength
+                    }) }} class="table-myloans-item {{ classLoanStatus }}">
+                      <td class="table-myloans-item-project">
+                        <div class="text-crop">{{ loan.projectName }}</div>
+                      </td>
+                      <td class="table-myloans-item-rating">
+                        <span class="rating rating-{{ loan.projectRating|tostring|split('.')|join('-') }}"><span class="sr-only">Rated {{ loan.projectRating }} out of 5</span></span>
+                      </td>
+                      <td class="table-myloans-item-amount">
+                        {{ loan.amount|__price(2)|nbsp }}€
+                      </td>
+                      <td class="table-myloans-item-interest">
+                        {{ loan.interest|__num(1)|nbsp }}<sup>%</sup>
+                      </td>
+                      <td class="table-myloans-item-monthly">
+                        {{ loan.monthly|__price(2)|nbsp }}€
+                      </td>
+                      <td class="table-myloans-item-next">
+                        {{ loan.nextPaymentDate|date('d/m/y') }}
+                      </td>
+                      <td class="table-myloans-item-duration">
+                        <span class="ui-has-tooltip" title="Du {{ loan.periodStart|date('d/m/Y') }} au {{ loan.periodEnd|date('d/m/Y') }}" data-toggle="tooltip">{{ loan.periodLength }} mois</span>
+                      </td>
+                      <td class="table-myloans-item-documents">
+                        {% for j, doc in loan.documents %}
+                          <a href="#todo" class="loan-doc loan-doc-{{ doc.docType }}" title="{{ doc.docTypeName }}" data-toggle="tooltip">{% if doc.number > 1 %}{{ general.pip(doc.number) }}{% endif %}</a>
+                        {% endfor %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+                </tbody>
+              </table><!-- /.table-myloans -->
+            </div><!-- /.table-scroll -->
+          </div><!-- /.panel-content -->
+        </div><!-- /.panel -->
+      </article><!-- /#myloans.tab-pane -->
+
+    </div><!-- /.dashboard-tabs-content -->
+  </section><!-- /.dashboard-tabs -->
+
+{% endblock %}

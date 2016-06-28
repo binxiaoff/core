@@ -1,0 +1,616 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.html.twig' %}
+{% import 'extensions/_general.macros.twig' as general %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+title: 'Devenir Prêteur',
+permalink: route('preter/new')
+} %}
+
+{% block siteContent %}
+    <article id="devenir-preteur" class="page">
+
+        <div class="hero-wrap">
+
+            <header class="page-header">
+                <div class="site-wrap">
+                    <h1 id="preter-create-title" class="h1">{% trans %} lender-subscription_page-title {% endtrans %}</h1>
+                </div><!-- /.site-wrap -->
+            </header><!-- /.page-header -->
+
+            <div class="page-content">
+                <div class="site-wrap">
+                    <div class="tabs ui-tabs-progress">
+                        <div class="form-preter-nav tab-nav">
+                            <div class="row">
+                                <div class="col-lg-8 col-md-8">
+                                    <ul class="nav nav-progress">
+                                        <li id="preter-create-1" role="presentation" class="active">
+                                            <a href="#form-preter-1" role="tab" data-toggle="tab">
+                                                <span class="preter-create-progress-point">1.</span>
+                                                <span class="label">{% trans %} lender-subscription_part-1-title {% endtrans %}</span>
+                                            </a>
+                                        </li>
+                                        <li id="preter-create-2" role="presentation">
+                                            <a href="#form-preter-2" role="tab" data-toggle="tab">
+                                                <span class="preter-create-progress-point">2.</span>
+                                                <span class="label">{% trans %} lender-subscription_part-2-title {% endtrans %}</span>
+                                            </a>
+                                        </li>
+                                        <li id="preter-create-3" role="presentation">
+                                            <a href="#form-preter-3" role="tab" data-toggle="tab">
+                                                <span class="preter-create-progress-point">3.</span>
+                                                <span class="label">{% trans %} lender-subscription_part-3-title {% endtrans %}</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div><!-- /.form-preter-nav -->
+
+                        <div class="form-preter-content tab-content">
+                            <form id="form-preter-create" method="{{ path('lender_subscription') }}" action="post" class="form-preter-create" data-cacheform>
+                                {# Informations Personnelles #}
+                                <div id="form-preter-1" role="tabpanel" class="tab-pane active" aria-labelledby="preter-create-1 preter-create-title">
+                                    <div class="row">
+                                        <div class="col-form col-lg-8 col-md-8" data-formvalidation data-formvalidation-notificationselem="#form-preter-1-notifications">
+
+                                            <fieldset class="panel">
+                                                <div class="message-info">
+                                                    <p>{% trans %} lender-subscription_mandatory-documents-information {% endtrans %}</p>
+                                                </div><!-- /.message-alert -->
+
+                                                <div id="form-preter-1-notifications" class="ui-formvalidation-notifications"></div>
+
+                                                <h3 class="h3">{% trans %} lender-subscription_identity-section-title {% endtrans %}</h3>
+
+                                                <div class="row">
+                                                    <div class="form-field form-field-multi">
+                                                        <div class="field-label">
+                                                            <label>{% trans %} lender-subscription_identity-client-type-label {% endtrans %}
+                                                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span>
+                                                            </label>
+                                                        </div>
+                                                        <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                                                            <li>
+                                                                <label>
+                                                                    <input type="radio" name="identity[statut]" value="particular"
+                                                                    {% if formData.client.type in [constant('\clients::TYPE_PERSON'), constant('\clients::TYPE_PERSON_FOREIGNER')] %} checked {%  endif %} />
+                                                                    {% trans %} lender-subscription_identity-client-type-person-label {% endtrans %}
+                                                                </label>
+                                                            </li>
+                                                            <li>
+                                                                <label><input type="radio" name="identity[statut]" value="societe"/>
+                                                                    {% if formData.client.type in [constant('\clients::TYPE_LEGAL_ENTITY'), constant('\clients::TYPE_LEGAL_ENTITY_FOREIGNER')] %} checked {%  endif %} />
+                                                                    {% trans %} lender-subscription_identity-client-type-legal-entity-label {% endtrans %}
+                                                                </label>
+                                                            </li>
+                                                        </ul>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="form-field form-field-multi">
+                                                        <div class="field-label">
+                                                            <label>{% trans %} lender-subscription_identity-form-of-address-label {% endtrans %}
+                                                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        </div>
+                                                        <ul class="list-input-values" data-formvalidation-input data-formvalidation-required="true">
+                                                            <li>
+                                                                <label><input type="radio" name="identity[civilite]" value="madame"/>
+                                                                    {% trans %} lender-subscription_identity-form-of-address-mrs-label {% endtrans %}</label>
+                                                            </li>
+                                                            <li>
+                                                                <label><input type="radio" name="identity[civilite]" value="monsieur"/>
+                                                                    {% trans %} lender-subscription_identity-form-of-address-mr-label {% endtrans %}</label>
+                                                            </li>
+                                                        </ul>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-nom">{% trans %} lender-subscription_identity-form-family-name-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-nom" type="text" name="identity[nom]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-prenom">{% trans %} lender-subscription_identity-form-first-name-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-prenom" type="text" name="identity[prenom]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-email">{% trans %} lender-subscription_identity-form-email-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-email" type="email" name="identity[email]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-email-conf">{% trans %} lender-subscription_identity-form-email-confirmation-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <div class="input-group">
+                                                            <input id="form-preter-email-conf" type="email" name="identity[email_conf]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-preter-email"/>
+                                                        </div>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-passe">{% trans %} lender-subscription_identity-form-password-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-passe" type="password" name="identity[passe]" value="" class="input-field" data-passwordcheck data-formvalidation-input data-formvalidation-required="true" data-formvalidation-minlength="8"/>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-passe-conf">{% trans %} lender-subscription_identity-form-password-confirmation-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <div class="input-group">
+                                                            <input id="form-preter-passe-conf" type="password" name="identity[passe_conf]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-samevalueas="#form-preter-passe"/>
+                                                        </div>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                            </fieldset>
+
+                                            <fieldset class="panel">
+                                                <h3 class="h3">{% trans %} lender-subscription_address-form-title {% endtrans %}</h3>
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label for="form-preter-address-street">{% trans %} lender-subscription_address-form-fiscal-address-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-address-street" type="text" name="identity[address][street]" value="" class="input-field"
+                                                               placeholder="{% trans %} lender-subscription_address-form-fiscal-address-placeholder {% endtrans %}" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-address-code">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-code" type="text" name="identity[address][code]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-address-ville">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-address-ville" type="text" name="identity[address][ville]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-address-pays">{% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <select id="form-preter-address-pays" name="identity[address][pays]" class="input-field"
+                                                                data-formvalidation-input data-formvalidation-required="true">
+                                                            {% if defaultCountry is not defined %}{% set defaultCountry = constant('\pays_v2::COUNTRY_FRANCE') %}{% endif %}
+                                                            {% for country in countryList %}
+                                                                <option value="{{ country.id_pays }}" {% if defaultCountry == country.id_pays %} selected {% endif %}>
+                                                                    {{ country.fr }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-address-mobile">{% trans %} lender-subscription_address-form-mobile-phone-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <div class="input-group">
+                                                            <input id="form-preter-address-mobile" type="text" name="identity[address][mobile]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="telephone"/>
+                                                        </div>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="form-field form-field-single-checkbox">
+                                                        <label><input id="form-preter-address-is-correspondence" type="checkbox" name="identity[address][is_correspondence]" value="true" checked>
+                                                            <span class="label">{% trans %} lender-subscription_address-form-same-correspondance-address-checkbox {% endtrans %}</span></label>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+                                            </fieldset>
+
+                                            <fieldset id="form-preter-fieldset-correspondence" class="panel" style="display: none;">
+                                                <h3 class="h3">{% trans %} address-form-correspondance-address-title {% endtrans %}</h3>
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label for="form-preter-correspondence-street">{% trans %} lender-subscription_address-form-correspondance-address-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-correspondence-street" type="text" name="identity[correspondence][street]" value="" class="input-field" placeholder="Addresse utilisée pour vos avis d'imposition" data-formvalidation-input data-formvalidation-required="false"/>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-correspondence-code">{% trans %} lender-subscription_address-form-address-postcode-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-code" type="text" name="identity[correspondence][code]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="#form-preter-address-is-correspondence"/>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-correspondence-ville">{% trans %} lender-subscription_address-form-address-city-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-correspondence-ville" type="text" name="identity[correspondence][ville]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="false"/>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-correspondence-pays">{% trans %} lender-subscription_address-form-address-country-label {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <select id="form-preter-correspondence-pays" name="identity[correspondence][pays]" class="input-field"
+                                                                data-formvalidation-input data-formvalidation-required="false">
+                                                            {% for country in countryList %}
+                                                                <option value="{{ country.id_pays }}" {% if defaultCountry == country.id_pays %} selected {% endif %}>
+                                                                    {{ country.fr }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+                                            </fieldset>
+
+                                            <fieldset class="panel">
+                                                <h3 class="h3">{% trans %} lender-subscription_civil-state-section-title {% endtrans %}</h3>
+
+                                                <div class="message-info">
+                                                    <p>{% trans %} lender-subscription_mandatory-french-bank-account-message {% endtrans %}</p>
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-dob">{% trans %} lender-subscription_civil-state-section-birthday {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <div class="input-group set-right">
+                                                            <input id="form-preter-dob" type="text" name="identity[dob]" class="input-field ui-has-datepicker" value="" data-formvalidation-input data-formvalidation-type="date"/>
+                                                            <div class="btn-group">
+                                                                <label for="form-preter-dob" class="icon fa-calendar"></label>
+                                                            </div>
+                                                        </div>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-nationalite">{% trans %} lender-subscription_civil-state-section-nationality {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <select id="form-preter-nationalite" name="identity[nationalite]" class="input-field"
+                                                                data-formvalidation-input data-formvalidation-required="true">
+                                                            {% for nationality in nationalityList %}
+                                                                <option value="{{ nationality.id_nationalite }}"
+                                                                        {% if constant('nationalites_v2::NATIONALITY_FRENCH') == nationality.id_nationalite %} selected {% endif %}>
+                                                                    {{ nationality.fr_f }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-dob-pays">{% trans %} lender-subscription_civil-state-section-birth-country {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <select id="form-preter-dob-pays" name="identity[dob][pays]" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                            {% for country in countryList %}
+                                                                <option value="{{ country.id_pays }}" {% if defaultCountry == country.id_pays %} selected {% endif %}>
+                                                                    {{ country.fr }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-6 col-md-6">
+                                                        <label for="form-preter-dob-commune">{% trans %} lender-subscription_civil-state-birth-locality {% endtrans %}
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+                                                        <input id="form-preter-dob-commune" type="text" name="identity[dob][commune]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"/>
+                                                    </div><!-- /.form-field -->
+                                                </div>
+
+                                            </fieldset>
+
+                                            <fieldset class="panel">
+
+                                                <div class="row">
+                                                    <div class="form-field form-field-single-checkbox">
+                                                        <label><input type="checkbox" name="identity[accept_terms]" value="true" data-formvalidation-input data-formvalidation-required="true">
+                                                            <span class="label">{% trans %} lender-subscription_terms-of-use-acceptance {% endtrans %}
+                                                                <span class="field-required">* <span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></span></label>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="form-field form-field-single-checkbox">
+                                                        <label><input type="checkbox" name="identity[non_us]" value="true">
+                                                            <span class="label">{% trans %} lender-subscription_no-us-person-declaration {% endtrans %}</span></label>
+                                                    </div>
+                                                </div>
+
+                                            </fieldset>
+
+                                            <div class="row btn-controls tab-footer">
+                                                <div class="col-back col-lg-1 col-md-1">&nbsp;</div>
+                                                <div class="col-next col-lg-11 col-md-11">
+                                                    <a href="#form-preter-2" data-toggle="tab" class="btn-primary">{% trans %} lender-subscription_part1-validate-button {% endtrans %}
+                                                        <span class="icon fa-angle-right"></span></a>
+                                                </div>
+                                            </div><!-- /.btn-controls.tab-footer -->
+                                        </div>
+
+                                        <div class="col-promos col-lg-4 col-md-4">
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-francemap', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">
+                                                    <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                                                </h3>
+                                                <p>{% trans %} lender-subscription_step-1-statistics-1-text {% endtrans %}</p>
+                                            </div><!-- /.promo -->
+
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw}}
+                                                </div>
+                                                <h3 class="promo-highlight">
+                                                    <span class="ui-text-count" data-start-count="0" data-end-count="8.84" data-total-time="3000" data-limit-decimal="2" data-tween-count="easeOutCirc">8,84</span><sup>%</sup>
+                                                </h3>
+                                                <p>{% trans %} lender-subscription_step-1-statistics-2-text {% endtrans %}</p>
+                                            </div><!-- /.promo -->
+
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-clock', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">5</h3>
+                                                <p>{% trans %} lender-subscription_step-1-statistics-3-text {% endtrans %}</p>
+                                            </div><!-- /.promo -->
+                                        </div>
+
+                                    </div><!-- /.row -->
+                                </div><!-- /.tab-pane -->
+
+                                {# Justificatif #}
+                                <div id="form-preter-2" role="tabpanel" class="tab-pane" aria-labelledby="preter-create-2 preter-create-title">
+                                    <div class="row">
+                                        <div class="col-form col-lg-8 col-md-8" data-formvalidation data-formvalidation-notificationselem="#form-preter-2-notifications">
+                                            <fieldset class="panel">
+                                                <div id="form-preter-2-notifications" class="ui-formvalidation-notifications"></div>
+
+                                                <h3 class="h3">{% trans %} lender-subscription_step-2-title {% endtrans %}</h3>
+
+                                                <div class="row">
+                                                    <div class="form-field form-field-iban">
+                                                        <div id="form-preter-iban-add" data-toggle-group="iban" class="ui-toggle iban-add">
+                                                            <div class="message-info">
+                                                                <p>{% trans %} lender-subscription_step-2-bank-information-explanation {% endtrans %}</p>
+                                                            </div><!-- /.message-info -->
+
+                                                            <label for="form-preter-iban" class="form-field-label">IBAN
+                                                                <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                            <div class="input-group">
+                                                                <div class="custom-input-iban">
+                                                                    <input id="form-preter-iban" type="text" name="iban" value="" class="iban-input input-field"
+                                                                           data-formvalidation-input data-formvalidation-type="iban"/>
+                                                                </div>
+                                                            </div><!-- /.input-group -->
+
+                                                            <ul class="ui-formvalidation-messages"></ul>
+
+                                                            <p>
+                                                                <a href="#form-preter-iban-info" class="btn-primary">Ajouter</a>
+                                                            </p>
+                                                        </div><!-- /.iban-add -->
+                                                        <div id="form-preter-iban-info" data-toggle-group="iban" class="ui-toggle iban-info" style="display: none">
+                                                            <div class="iban-info-details">
+                                                                <div class="row">
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>IBAN</label>
+                                                                        <p>FR20 2524 1200 0127 3242 5P01 025</p>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>BIC</label>
+                                                                        <p>PSSTFRPPPAR</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="row">
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>Titulaire du compte</label>
+                                                                        <p>David Raux<br/>
+                                                                            27 avenue des Champs-Elysées<br/>
+                                                                            75008 Paris France</p>
+                                                                    </div>
+                                                                    <div class="col-lg-6 col-md-6">
+                                                                        <label>Nom de la banque</label>
+                                                                        <p>La Banque Postale</p>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <p>
+                                                                <a href="#form-preter-iban-add" class="btn-primary">Modifier</a>
+                                                            </p>
+                                                        </div><!-- /.iban-info -->
+                                                    </div><!-- /.form-field -->
+                                                </div>
+                                            </fieldset>
+
+                                            <fieldset class="panel">
+                                                <h3 class="h3">Justificatifs</h3>
+
+                                                <div class="message-info">
+                                                    <p>Fichiers acceptés : PDF, JPG, PNG, DOC, DOCX. Poids maximum par fichier : 8Mo</p>
+                                                </div><!-- /.message-info -->
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label>Pièce d'identité
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                        <div class="form-field">
+                                                            <div class="custom-input-file" id="form-preter-file-identite-cni-1" data-fileattach data-fileattach-inputname="fichier[identite][cni_a]" data-fileattach-maxfiles="1" data-fileattach-emptyfilelabel="CNI recto / page 2 du passeport" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_a][0]"]'></div><!-- /.ui-fileattach -->
+                                                        </div>
+                                                        <div class="form-field">
+                                                            <div class="custom-input-file" id="form-preter-file-identite-cni-2" data-fileattach data-fileattach-inputname="fichier[identite][cni_b]" data-fileattach-maxfiles="1" data-fileattach-emptyfilelabel="CNI verso / page 3 du passeport" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[identite][cni_b][0]"]'></div><!-- /.ui-fileattach -->
+                                                        </div>
+
+                                                        <div class="field-help">
+                                                            <p>Copie recto-verso de la CNI ou double page 2 et 3 du passeport</p>
+                                                        </div>
+
+                                                        <div class="form-field">
+                                                            <div class="custom-input-file" id="form-preter-file-identite-extra" data-fileattach data-fileattach-inputname="fichier[identite][extra]" data-fileattach-maxfiles="5"></div><!-- /.ui-fileattach -->
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label>Justificatif de domicile
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                        <div class="field-help">
+                                                            <p>Facture eau, électricité, gaz, internet/téléphone
+                                                                <strong>fixe</strong>, quittance assurance logement, quittance loyer, taxe habitation, pages 1 et 4 avis d'imposition (ou non imposition)
+                                                            </p>
+                                                        </div>
+
+                                                        <div class="custom-input-file" id="form-preter-file-domicile" data-fileattach data-fileattach-inputname="fichier[domicile]" data-fileattach-maxfiles="2" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[domicile][0]"]'></div><!-- /.ui-fileattach -->
+
+                                                        <ul class="ui-formvalidation-messages"></ul>
+                                                        <p>
+                                                            <a href="#todo" class="link">Le justificatif n'est pas à votre nom?</a>
+                                                        </p>
+                                                    </div>
+                                                </div>
+
+                                                <div class="row">
+                                                    <div class="form-field">
+                                                        <label for="form-preter-fichier-identité">Relévé d'identité bancaire (RIB)
+                                                            <span class="field-required">*<span class="sr-only"> {% trans %} lender-subscription_mandatory-field {% endtrans %}</span></span></label>
+
+                                                        <div class="custom-input-file" id="form-preter-file-file-rib" data-fileattach data-fileattach-inputname="fichier[rib]" data-fileattach-maxfiles="1" data-fileattach-emptyfilelabel="No file attached" data-formvalidation-input data-formvalidation-required='input[type="file"][name="fichier[rib][0]"]'></div><!-- /.ui-fileattach -->
+
+                                                        <ul class="ui-formvalidation-messages"></ul>
+
+                                                        <div class="field-help">
+                                                            <p>Correspondant au compte bancaire renseigné ci-dessus</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                            </fieldset>
+
+                      <div class="row reverse btn-controls tab-footer">
+                        <div class="col-submit col-lg-7 col-md-7">
+                          <a href="#form-preter-3" data-toggle="tab" class="btn-primary">Valider la création de mon compte <span class="icon fa-angle-right"></span></a>
+                        </div>
+                        <div class="col-back col-lg-5 col-md-5">
+                                                    <a href="#form-preter-1" data-toggle="tab" class="btn-default"><span class="icon fa-angle-left"></span> Modifier étape 1</a>
+                                                </div>
+                                            </div><!-- /.btn-controls.tab-footer -->
+                                        </div>
+
+                                        <div class="col-promos col-lg-4 col-md-4">
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-saving', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">
+                                                    <span class="ui-text-count" data-start-count="0" data-end-count="100" data-total-time="3000" data-round-float="round" data-tween-count="easeOutCirc">100</span><sup>%</sup>
+                                                </h3>
+                                                <p>100% des intérêts sont reversés aux prêteurs</p>
+                                            </div><!-- /.promo -->
+
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-linechart2', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">
+                                                    <span class="ui-text-count" data-start-count="0" data-end-count="5.30" data-total-time="3000" data-tween-count="easeOutQuint">5,30</span><sup>%</sup>
+                                                </h3>
+                                                <p>Taux de rendement de la plateforme</p>
+                                            </div><!-- /.promo -->
+
+                                            <div class="promo">
+                                                <div class="promo-image">
+                                                    {{ svgimage('#promo-pagestack', '', 190, 190, 'none') | raw }}
+                                                </div>
+                                                <h3 class="promo-highlight">20</h3>
+                                                <p>Prêt dès 20&nbsp;€ par projet</p>
+                                            </div><!-- /.promo -->
+                                        </div>
+                                    </div><!-- /.row -->
+                                </div><!-- /.tab-pane -->
+                            </form><!-- /.form-preter-create -->
+
+                            <form action="{{ route('user/preter/balance') }}" method="post" class="form-preter-deposit">
+                                {# Conformation #}
+                                <div id="form-preter-3" role="tabpanel" class="tab-pane" aria-labelledby="preter-create-3 preter-create-title">
+                                    <div class="row">
+                                        <div class="col-form col-lg-8 col-md-8">
+                                            <fieldset class="panel" data-formvalidation data-formvalidation-notificationselem="#form-preter-deposit-notifications">
+                                                <h3 class="h3">Félicitations&nbsp;!</h3>
+                                                <p>Votre compte est désormais en cours de validation.</p>
+                                                <p>Dés que vos justificatifs auront été vérifiés, vous recevrez un email d'ouverture de compte. Cette opération peut prendre quelques jours. Vous rejoindrez alors la communautè Unilend et pourrez commerncer à prêter aux différents projets en cours en vous connectant à votre espace personnel.</p>
+                                                <p>À bientôt sur Unilend.<br><br>&nbsp;</p>
+
+                                                <h3 class="h3">Gagnez du temps, alimentez dès maintenant votre compte</h3>
+                                                <div id="form-preter-deposit-notifications"></div>
+                                                <div class="row row-multi-col-computer">
+                                                    <div class="form-field col-lg-7 col-md-7">
+                                                        <label for="form-preter-amount-add">Montant à ajouter</label>
+                                                        <div class="input-group set-right">
+                                                            <input type="number" name="amount_add" value="" placeholder="Entrez un montant entre 20 et 10 000€" class="input-field" data-formvalidation-input data-formvalidation-required="true">
+                                                            <div class="btn-group">
+                                                                <span>€</span>
+                                                            </div>
+                                                        </div><!-- /.input-group -->
+                                                    </div><!-- /.form-field -->
+                                                    <div class="form-field col-lg-5 col-md-5">
+                                                        <label class="field-help">Cartes acceptées</label>
+                                                        <img src="{{ siteurlmedia('cards/cb.png') }}" alt="Carte Bancaire"/>
+                                                        <img src="{{ siteurlmedia('cards/visa.png') }}" alt="Visa"/>
+                                                        <img src="{{ siteurlmedia('cards/mastercard.png') }}" alt="Mastercard"/>
+                                                    </div>
+                                                </div>
+                                                <p>
+                                                    <button class="btn-primary">
+                                                        <span class="icon fa-lock"></span> Acceder au paiement sécurisé
+                                                    </button>
+                                                </p>
+                                            </fieldset>
+
+                                            <fieldset class="panel">
+                                                <div class="unilend-iban-info">
+                          <a href="#todo" class="btn-print"><span class="icon fa-print-u32"></span><span class="sr-only">Print</span></a>
+                                                    <dl class="list-2col">
+                                                        <dt>Libellé virement</dt>
+                                                        <dd>059815FL</dd>
+                                                        <dt>BIC</dt>
+                                                        <dd>BNPAFRPPPBQ</dd>
+                                                        <dt>IBAN</dt>
+                                                        <dd>FR76 3000 4021 1800 0406 3100 792</dd>
+                                                        <dt>Titulaire</dt>
+                                                        <dd>Unilend Opérations</dd>
+                                                        <dt>Domiciliation</dt>
+                                                        <dd>SFPMEI — 29 rue du Louvre — 75002 Paris</dd>
+                                                    </dl>
+                                                </div><!-- /.unilend-iban-info -->
+                        <p>Vous préferez alimenter votre compte plus tard ? Pas de problémes, rendez-vous simplement dans la rubrique "ajoutez de l'argent" de votre espace client ou effectuez directement un virement depuis votre compte bancaire vers le compte Unilend suivant.</p>
+                                            </fieldset>
+
+                                            <div class="row btn-controls tab-footer">
+                                                <div class="col-lg-1 col-md-1">&nbsp;</div>
+                                                <div class="col-lg-11 col-md-11">
+                                                    {# <a href="{{ route('search') }}" class="btn-default ui-open-site-search">Une question&nbsp;?</a> #}
+                                                    <a href="{{ route('projets') }}" class="btn-default">Voir les projets en cours</a>
+                                                    <a href="{{ route('user/preter/dashboard') }}" class="btn-primary">Accéder à mon espace</a>
+                                                </div>
+                                            </div><!-- /.btn-controls.tab-footer -->
+                                        </div>
+                                    </div><!-- /.row -->
+                                </div><!-- /.tab-pane -->
+                            </form><!-- /.form-preter-deposit -->
+                        </div><!-- /.form-preter-content -->
+                    </div><!-- /.tabs -->
+                </div><!-- /.site-wrap -->
+            </div><!-- /.page-content -->
+
+            {{ render(controller('UnilendFrontBundle:StaticPages:renderSocialMedia')) }}
+        </div><!-- /.hero-wrap -->
+
+    </article><!-- /.page -->
+{% endblock %}

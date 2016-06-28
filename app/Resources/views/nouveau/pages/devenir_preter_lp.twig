@@ -1,0 +1,276 @@
+{# Projects Index #}
+{% extends 'layouts/_layout.twig' %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+  title: 'Devenir Prêteur',
+  permalink: route('preter')
+} %}
+
+{# Get rid of the site nav and add in a tagline #}
+
+{# @note Temporary measure since Twig.JS has issues with overwriting embed blocks #}
+{# {% block siteHeader %}
+  <header class="site-header">
+    <div class="site-band"></div>
+
+    <div class="site-header-inner">
+      <div class="site-wrap">
+
+        <h1 class="site-title"><a href="{{ route('/') }}" class="site-logo" tabindex="2">{{ site.title|default('Unilend') }}</a></h1>
+
+        {% block siteHeaderNav %} {% endblock siteHeaderNav %}
+
+        <div class="site-controls">
+
+          {% block siteHeaderControls %}
+          <form action="{{ route('search') }}" method="get" class="site-search" role="search">
+            <div class="form-field-inline">
+              <label for="site-search-input" class="site-search-toggle"><span class="sr-only">{{ __('Search Unilend', 'siteSearchLabel') }}</span></label>
+              <div class="btn-group">
+                <button class="btn-search" tabindex="-1"><span class="sr-only">{{ __('Submit Search', 'siteSearchSubmitLabel') }}</span></button>
+              </div>
+              <input id="site-search-input" type="text" name="s" placeholder="{{ __('Got a question?', 'siteSearchInputPlaceholder')|e('html_attr') }}" value="" tabindex="1" class="input-field site-search-input">
+
+              <div class="autocomplete" aria-hidden="true">
+                <ul class="autocomplete-results">
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> les prêteurs alimentent leur compte&nbsp;?</a></li>
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> prêter sur un projet&nbsp;?</a></li>
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> sont calculés les intérêts&nbsp;?</a></li>
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> l'argent des prêteurs est-il transféré à l'entreprise&nbsp;?</a></li>
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> savoir que mon portefeuille est performant&nbsp;?</a></li>
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> se met en place le remboursement du prêt&nbsp;?</a></li>
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> Unilend dépose sur le compte des prêteurs&nbsp;?</a></li>
+                  <li><a href="#" tabindex="-1"><span class="highlight">Comment</span> supprimer mon compte&nbsp;?</a></li>
+                </ul>
+                <div class="autocomplete-footer">
+                  <button class="btn-primary btn-shape-md btn-size-full">{{ __('View all search results', 'siteSearchShowAllResultsLabel') }}</button>
+                </div>
+              </div><!-- /.autocomplete -->
+            </div><!-- /.form-field-inline -->
+          </form><!-- /.site-search -->
+
+          <div class="site-user">
+            <a href="{{ route('user/access') }}" class="btn-site-login" tabindex="3"><span class="label">{{ __('Register', 'siteUserRegisterLabel') }}&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;{{ __('Sign in', 'siteUserLoginLabel') }}</span></a>
+          </div><!-- /.site-user -->
+          {% endblock %}
+
+        </div><!-- /.site-controls -->
+      </div><!-- /.site-wrap -->
+    </div><!-- /.site-header-inner -->
+  </header>
+
+{% endblock %} #}
+
+{# @TODO I'm having troubles with Twig.js, so the below implementation should work better than the one above which just copy+pastes code #}
+{% block siteHeader %}
+  {% embed 'partials/site/header.twig' %}
+    {% block siteHeaderMobileMenuOpen %} {% endblock %}
+    {% block siteHeaderNav %} {% endblock %}
+    {% block siteHeaderControls %}
+      <div class="site-header-message hide-xs hide-sm small c-t2">N˚1 français du financement participatif pour les PME</div>
+    {% endblock %}
+  {% endembed %}
+{% endblock %}
+
+{% block siteContent %}
+  <article id="devenir-preteur" class="page page-lp">
+
+    <div class="hero-wrap">
+      <div class="page-content">
+        <div class="site-wrap">
+          <div class="row row-multi-col-computer">
+            <div class="col-lg-6 col-md-6">
+              <h2 class="h3">Prêtez votre argent directement aux entreprises, et recevez vos intérêts mensuels</h2>
+              <div class="block-copy-lp">
+                <p>Prêtez à des entreprises séléctionnées par nos soins, notamment pour leur capacité de remboursement. Choisissez un taux entre 4 et 10%, et recevez chaque mois vos intérêts.</p>
+                <p class="small">Taux de rendement moyen net des défauts: <span class="c-p1">4.27%</span><br/>
+                  Montant total financé depuis la création: <span class="c-p1">19M€</span></p>
+              </div>
+            </div>
+            <div class="push-lg-1 col-lg-5 push-md-1 col-md-5">
+
+              <div id="form-preter-lp-notifications"></div>
+
+              <form action="{{ route('preter/register') }}" method="post" class="form-preter-lp" data-formvalidation data-formvalidation-notificationselem="#form-preter-lp-notifications">
+
+                <div class="form-field row row-multi-col-computer">
+                  <div class="col-lg-2 col-md-3">
+                    <label for="form-preter-lp-nom" class="field-label">Nom<span class="field-required">* <span class="sr-only">Required</span></span></label>
+                  </div>
+                  <div class="col-lg-7 col-md-7">
+                    <input type="text" id="form-preter-lp-nom" name="nom" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
+                    <ul class="ui-formvalidation-messages"></ul>
+                  </div>
+                </div><!-- /.form-field -->
+
+                <div class="form-field row row-multi-col-computer">
+                  <div class="col-lg-2 col-md-3">
+                    <label for="form-preter-lp-prenom" class="field-label">Prenom<span class="field-required">* <span class="sr-only">Required</span></span></label>
+                  </div>
+                  <div class="col-lg-7 col-md-7">
+                    <input type="text" id="form-preter-lp-prenom" name="prenom" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
+                    <ul class="ui-formvalidation-messages"></ul>
+                  </div>
+                </div><!-- /.form-field -->
+
+                <div class="form-field row row-multi-col-computer">
+                  <div class="col-lg-2 col-md-3">
+                    <label for="form-preter-lp-email" class="field-label">Email<span class="field-required">* <span class="sr-only">Required</span></span></label>
+                  </div>
+                  <div class="col-lg-7 col-md-7">
+                    <input type="email" id="form-preter-lp-email" name="prenom" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
+                    <ul class="ui-formvalidation-messages"></ul>
+                  </div>
+                </div><!-- /.form-field -->
+
+                <footer class="form-preter-lp-footer row row-multi-col-computer">
+                  <div class="col-submit push-lg-2 col-lg-7 push-md-3 col-md-7">
+                    <button type="submit" class="btn-primary btn-size-full">Devenir prêteur</button>
+                  </div>
+                </footer><!-- /.form-preter-lp-footer -->
+
+                <div class="stamp bg-p1" data-watchscroll-action="enter" data-watchscroll-callback="addClass:ui-is-visible">
+                  <span class="lg">20<sup>€</sup><br/></span>
+                  <span class="md">offerts<br/></span>
+                  <span class="sm">pour toute<br/>
+                  ouverture<br/>
+                  de compte<sup>*</sup></span>
+                </div><!-- /.stamp -->
+              </form><!-- /.form-preter-lp -->
+
+            </div>
+          </div>
+
+          <div class="promos row">
+            <div class="promo col-lg-4 col-md-4">
+              <div class="promo-image">
+                {{ svgimage('#promo-clock', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="round-number">1</h3>
+              <p>Vous remplissez<br/>
+                le formulaire en 5 minutes</p>
+            </div><!-- /.promo -->
+
+            <div class="promo col-lg-4 col-md-4">
+              <div class="promo-image">
+                {{ svgimage('#promo-pagestack', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="round-number">2</h3>
+              <p>Vous prêtez à votre<br/>
+                première entreprise</p>
+            </div><!-- /.promo -->
+
+            <div class="promo col-lg-4 col-md-4">
+              <div class="promo-image">
+                {{ svgimage('#promo-money', '', 190, 190, 'none') }}
+              </div>
+              <h3 class="round-number">3</h3>
+              <p>Vous récoltez<br/>
+                vos intérêts</p>
+            </div><!-- /.promo -->
+          </div><!-- /.promos -->
+
+        </div><!-- /.site-wrap -->
+      </div><!-- /.page-content -->
+
+      {# include 'partials/components/list-socialmedia.twig' #}
+    </div><!-- /.hero-wrap -->
+
+    <div class="site-wrap block-copy-lp-footer">
+      <div class="row row-multi-col-computer">
+        <div class="col-info col-lg-8 col-md-8">
+          <div class="readable-wrap">
+            <p>Préter présente un risque de non-remboursement: répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</p>
+          </div>
+        </div>
+        <div class="col-conditions col-lg-4 col-md-4">
+          <p>* <a href="#dialog-conditions-content" class="fancybox-html">Conditions de l'offre</a></p>
+        </div>
+      </div>
+    </div><!-- /.block-copy-lp-footer -->
+
+    {# Hidden text until made visible through the fancybox #}
+    <div class="hide-accessible">
+
+      <div id="dialog-conditions-content" class="dialog-content readable-wrap text-align-center">
+        <h3>Conditions de l'offre</h3>
+        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ac vestibulum magna, quis egestas ex. Aliquam non molestie dolor. Sed quam enim, accumsan id commodo vitae, viverra sit amet lorem.</p>
+        <p>Cras augue libero, sollicitudin sed dolor at, facilisis cursus libero. In hac habitasse platea dictumst. Morbi sed aliquam felis, ut ornare nulla. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent ut pharetra dui.</p>
+        <p>Nam ullamcorper tortor arcu, rutrum venenatis felis congue vitae. Phasellus convallis erat quis purus scelerisque mollis. Praesent eu fermentum turpis. Phasellus tristique dignissim velit, a tincidunt lectus elementum vel.</p>
+      </div><!-- /#dialog-conditions-content -->
+
+    </div><!-- /.hide-accessible -->
+
+  </article><!-- /.page -->
+{% endblock %}
+
+{# Get rid of the site nav, and make the left and right columns empty without losing their floating status #}
+
+{# @note Temporary measure since Twig.JS has issues with overwriting embed blocks #}
+{% block siteFooter %}
+  <footer class="site-footer">
+    <div class="site-wrap">
+      {% block siteFooterNav %} {% endblock %}
+      <div class="row">
+        <div class="col-sub-left col-lg-4 col-md-4">
+          {% block siteFooterSubLeft %}&nbsp;{% endblock %}
+        </div>
+        <div class="col-sub-center col-lg-4 col-md-4">
+          {% block siteFooterSubCenter %}
+            <ul class="list-awards">
+              <li><img src="{{ siteurlmedia('awards/award-bpifrance-150x70.png') }}" alt="BPI France 2014"/></li>
+              <li><img src="{{ siteurlmedia('awards/award-fr-70x70.png') }}" alt="IFP France"/></li>
+            </ul>
+            <div class="site-tagline">Unilend. Vos intérêts se rencontrent.</div>
+            <p class="site-copyright">&copy;2016 - {{ __('All Rights Reserved', 'siteFooterCopyrightAllRights') }} - <a href="{{ route('legal') }}">Mentions&nbsp;légales</a></p>
+          {% endblock %}
+        </div>
+        <div class="col-sub-right col-lg-4 col-md-4">
+          {% block siteFooterSubRight %}&nbsp;{% endblock %}
+        </div>
+      </div>
+    </div><!-- /.site-wrap -->
+  </footer><!-- /.site-footer -->
+
+  {% block siteWarnings %}
+  <!-- Site Warning: No JS enabled -->
+  <noscript>
+    <div class="site-warning">
+      <div class="site-wrap">
+        <h1>Please enable JavaScript</h1>
+        <p>We've detected that you've disabled JavaScript in your browser. In order to use this website JavaScript will need to be enabled.</p>
+        <p>Please re-enable JavaScript in your browser and then reload the website.</p>
+        <div class="btn-toolbar">
+          <a href="{{ route('/') }}" class="btn-default">Reload website</a>
+        </div>
+      </div>
+    </div>
+  </noscript>
+
+  <!-- Site Warning: Unsupported IE -->
+  <!--[if lt IE 9]>
+  <div class="site-warning">
+    <div class="site-wrap">
+      <h1>Your browser is unsupported</h1>
+      <p>We've detected that your browser is an unsupported version of Internet Explorer. This means you may have issues when browsing this website.</p>
+      <div class="btn-toolbar">
+        <a href="{{ route('/') }}" class="btn-default">OK, I understand</a>
+        <a href="http://www.browsehappy.com/" target="_blank" class="btn-default">Get a new browser</a>
+      </div>
+    </div>
+  </div>
+  <![endif]-->
+  {% endblock %}
+{% endblock %}
+
+{# @TODO I'm having troubles with Twig.js, so the below implementation should work better than the one above which just copy+pastes code #}
+{# {% block siteFooter %}
+  {% embed 'partials/site/footer.twig' %}
+    {% block siteFooterNav %} {% endblock %}
+    {% block siteFooterSubLeft %}&nbsp;{% endblock %}
+    {% block siteFooterSubRight %}&nbsp;{% endblock %}
+    {% block siteMobileMenu %} {% endblock %}
+  {% endembed %}
+{% endblock %} #}

@@ -1,0 +1,18 @@
+{# Generic list socialmedia component #}
+{# Relies on the module listSharing macro #}
+{% import 'partials/modules/_list-sharing.macros.twig' as listSharing %}
+
+{{ listSharing.render({
+    className: 'list-socialmedia',
+    links: [{
+        className: 'facebook',
+        label: 'Facebook',
+        url: facebookUrl,
+        target: '_blank'
+    },{
+        className: 'twitter',
+        label: 'Twitter',
+        url: twitterUrl,
+        target: '_blank'
+    }]
+}) }}
