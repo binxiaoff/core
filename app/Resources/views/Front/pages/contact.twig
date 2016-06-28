@@ -4,9 +4,9 @@
 {# Page data #}
 {% set bodyId = '' %}
 {% set page = {
-  id: 'page-contact',
-  title: 'Contact',
-  permalink: route('contact')
+id: 'page-contact',
+title: 'Contact',
+permalink: route('contact')
 } %}
 
 {% block extendPageHeader %}
@@ -14,17 +14,19 @@
 {% endblock %}
 
 {% block pageAsideBody %}
-  <div class="page-aside-body h-card vcard">
-    <h4 class="p-name fn p-org org">Unilend</h4>
-    <address class="p-adr h-adr">
-      <span class="p-street-address">6 rue du Général Clergerie</span><br>
-      <span class="p-postal-code">75116</span> <span class="p-locality">Paris</span> &ndash; <span class="p-country-name">France</span>
-    </address>
-    <div><a href="mailto:contact@unilend.fr" title="Email" class="p-email">contact@unilend.fr</a></div>
-    <div>Tel. <a href="tel:+33182285120" title="Telephone" class="p-tel">01 82 28 51 20</a></div>
-    <div>Tel. <a href="tel:+33182836655" title="Telephone (emprunters)" class="p-tel">01 82 83 66 55</a> (emprunteurs)</div>
-  </div><!-- /.page-aside-body -->
-  <img src="{{ siteurlmedia('contact/officespace.jpg') }}" alt="">
+  <div class="sticky-wrapper ui-has-sticky">
+    <div class="page-aside-body h-card vcard">
+      <h4 class="p-name fn p-org org">Unilend</h4>
+      <address class="p-adr h-adr">
+        <span class="p-street-address">6 rue du Général Clergerie</span><br>
+        <span class="p-postal-code">75116</span> <span class="p-locality">Paris</span> &ndash; <span class="p-country-name">France</span>
+      </address>
+      <div><a href="mailto:contact@unilend.fr" title="Email" class="p-email">contact@unilend.fr</a></div>
+      <div>Tel. <a href="tel:+33182285120" title="Telephone" class="p-tel">01 82 28 51 20</a></div>
+      <div>Tel. <a href="tel:+33182836655" title="Telephone (emprunters)" class="p-tel">01 82 83 66 55</a> (emprunteurs)</div>
+    </div><!-- /.page-aside-body -->
+    <img src="{{ siteurlmedia('contact/officespace.jpg') }}" alt="">
+  </div>
 {% endblock %}
 
 {% block pageContentBody %}

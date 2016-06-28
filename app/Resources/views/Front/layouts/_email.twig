@@ -7,271 +7,271 @@
 
 {# Colors as used in stylesheets (see sass/common/_colors.scss) #}
 {% set color = {
-  "purple":    "#b20066",
-  "purple_f":  "#d67aa7",
-  "purple_d":  "#9a1d5a",
-  "purple_d2": "#6d1f4f",
-  "purple_d3": "#4e203c",
-  "purple_l":  "#FCD4EB",
-  "purple_l2": "#fcf4f9",
-  "purple_l3": "#ffd0eb",
-  "green":     "#85C085",
-  "green_l":   "#B8CEB9",
-  "teal":      "#2cbaa4",
-  "orange":    "#f47070",
-  "red":       "#DE2F4C",
-  "red_l":     "#ECA2AF",
-  "red_l2":    "#F5D5DB",
-  "black":     "#302a32",
-  "black_r":   "#000000",
-  "grey":      "#787679",
-  "grey_l":    "#9f9d9f",
-  "grey_l2":   "#dedcdf",
-  "grey_l3":   "#eceaed",
-  "grey_l4":   "#f8f6f8",
-  "grey_l5":   "#fdfcfe",
-  "white":     "#ffffff"
+"purple":    "#b20066",
+"purple_f":  "#d67aa7",
+"purple_d":  "#9a1d5a",
+"purple_d2": "#6d1f4f",
+"purple_d3": "#4e203c",
+"purple_l":  "#FCD4EB",
+"purple_l2": "#fcf4f9",
+"purple_l3": "#ffd0eb",
+"green":     "#85C085",
+"green_l":   "#B8CEB9",
+"teal":      "#2cbaa4",
+"orange":    "#f47070",
+"red":       "#DE2F4C",
+"red_l":     "#ECA2AF",
+"red_l2":    "#F5D5DB",
+"black":     "#302a32",
+"black_r":   "#000000",
+"grey":      "#787679",
+"grey_l":    "#9f9d9f",
+"grey_l2":   "#dedcdf",
+"grey_l3":   "#eceaed",
+"grey_l4":   "#f8f6f8",
+"grey_l5":   "#fdfcfe",
+"white":     "#ffffff"
 } %}
 
 {# Site color presets #}
 {% set c = {
-  "p1":    color.purple,
-  "p2":    color.purple_d2,
-  "t1":    color.black,
-  "t2":    color.grey,
-  "t3":    color.grey_l,
-  "bg1":   color.grey_l2,
-  "bg2":   color.grey_l3,
-  "bg3":   color.grey_l4,
-  "bg4":   color.grey_l5,
-  "bg5":   color.white
+"p1":    color.purple,
+"p2":    color.purple_d2,
+"t1":    color.black,
+"t2":    color.grey,
+"t3":    color.grey_l,
+"bg1":   color.grey_l2,
+"bg2":   color.grey_l3,
+"bg3":   color.grey_l4,
+"bg4":   color.grey_l5,
+"bg5":   color.white
 } %}
 
 {# Putting these in as Twig variables to save as shorthand style definitions to easily inline styles as per email HTML #}
 {# Ensure each CSS style has no . at the start and has one semi-colon at the end! #}
 {% set css = {
-  "table_reset": "border-collapse: collapse; padding: 0; margin: 0; border: 0 none;",
-  "td_reset": "border-collapse: collapse; padding: 0; margin: 0; border: 0 none; vertical-align: top;",
-  "image_reset": "display: block; vertical-align: top; border: 0 none;",
-  "link_reset": "text-decoration: none; border: 0 none;",
-  "hr_reset": "padding: 0; margin: 20px 0; display: block; clear: both; border: 0 none; width: 60px; height: 2px;",
-  "no_spacing": "padding: 0; margin: 0; line-height: 1em; border: 0 none;",
-  "no_border": "border: 0 none;",
-  "ff_base": "font-family: 'Cabin', 'Helvetica', 'Arial', sans-serif;",
-  "fs_lg": "font-size: 20px; line-height: 1.2em;",
-  "fs_md": "font-size: 18px; line-height: 1.5em;",
-  "fs_sm": "font-size: 16px; line-height: 1.3em;",
-  "fs_xs": "font-size: 13px; line-height: 1.3em;",
-  "ff_title": "font-family: 'Cabin', 'Helvetica', 'Arial', sans-serif; font-weight: normal;",
-  "fs_title_lg": "font-size: 35px; line-height: 0.8em;",
-  "fs_title_md": "font-size: 24px; line-height: 1em;",
-  "fs_title_sm": "font-size: 20px; line-height: 1.2em;",
-  "ff_alternate": "font-family: 'Raleway', 'Cabin', 'Helvetica', 'Arial', sans-serif;",
-  "bg_p1": "background-color: " ~ c.p1 ~ ";",
-  "bg_p2": "background-color: " ~ c.p2 ~ ";",
-  "bg_t1": "background-color: " ~ c.t1 ~ ";",
-  "bg_t2": "background-color: " ~ c.t2 ~ ";",
-  "bg_t3": "background-color: " ~ c.t3 ~ ";",
-  "bg_bg1": "background-color: " ~ c.bg1 ~ ";",
-  "bg_bg2": "background-color: " ~ c.bg2 ~ ";",
-  "bg_bg3": "background-color: " ~ c.bg3 ~ ";",
-  "bg_bg4": "background-color: " ~ c.bg4 ~ ";",
-  "bg_bg5": "background-color: " ~ c.bg5 ~ ";",
-  "bg_white": "background-color: " ~ color.white ~ ";",
-  "c_p1": "color: " ~ c.p1 ~ ";",
-  "c_p2": "color: " ~ c.p2 ~ ";",
-  "c_t1": "color: " ~ c.t1 ~ ";",
-  "c_t2": "color: " ~ c.t2 ~ ";",
-  "c_t3": "color: " ~ c.t3 ~ ";",
-  "c_bg1": "color: " ~ c.bg1 ~ ";",
-  "c_bg2": "color: " ~ c.bg2 ~ ";",
-  "c_bg3": "color: " ~ c.bg3 ~ ";",
-  "c_bg4": "color: " ~ c.bg4 ~ ";",
-  "c_bg5": "color: " ~ c.bg5 ~ ";",
-  "c_white": "color: " ~ color.white ~ ";",
-  "inline": "display: inline;",
-  "block": "display: block;",
-  "spacer": "display: block; padding: 0; margin: 0; width: 100%; height: 20px; background: transparent; border: 0 none;",
-  "button": "background-color: " ~ c.p1 ~ "; color: " ~ color.white ~ "; padding: 0; margin: 0;",
-  "button_cell": "background-color: " ~ c.p1 ~ "; color: " ~ color.white ~ "; padding: 0; margin: 0;",
-  "button_link": "background-color: " ~ c.p1 ~ ";color: " ~ color.white ~ "; padding: 0 20px; text-decoration: none !important;",
-  "p_block": "padding: 0; margin: 0; margin-top: 20px; margin-bottom: 20px;",
-  "outline_block": "display: block; border: solid 2px " ~ c.bg2 ~ "; padding: 25px; clear: both; width: auto; height: auto;"
+"table_reset": "border-collapse: collapse; padding: 0; margin: 0; border: 0 none;",
+"td_reset": "border-collapse: collapse; padding: 0; margin: 0; border: 0 none; vertical-align: top;",
+"image_reset": "display: block; vertical-align: top; border: 0 none;",
+"link_reset": "text-decoration: none; border: 0 none;",
+"hr_reset": "padding: 0; margin: 20px 0; display: block; clear: both; border: 0 none; width: 60px; height: 2px;",
+"no_spacing": "padding: 0; margin: 0; line-height: 1em; border: 0 none;",
+"no_border": "border: 0 none;",
+"ff_base": "font-family: 'Cabin', 'Helvetica', 'Arial', sans-serif;",
+"fs_lg": "font-size: 20px; line-height: 1.2em;",
+"fs_md": "font-size: 18px; line-height: 1.5em;",
+"fs_sm": "font-size: 16px; line-height: 1.3em;",
+"fs_xs": "font-size: 13px; line-height: 1.3em;",
+"ff_title": "font-family: 'Cabin', 'Helvetica', 'Arial', sans-serif; font-weight: normal;",
+"fs_title_lg": "font-size: 35px; line-height: 0.8em;",
+"fs_title_md": "font-size: 24px; line-height: 1em;",
+"fs_title_sm": "font-size: 20px; line-height: 1.2em;",
+"ff_alternate": "font-family: 'Raleway', 'Cabin', 'Helvetica', 'Arial', sans-serif;",
+"bg_p1": "background-color: " ~ c.p1 ~ ";",
+"bg_p2": "background-color: " ~ c.p2 ~ ";",
+"bg_t1": "background-color: " ~ c.t1 ~ ";",
+"bg_t2": "background-color: " ~ c.t2 ~ ";",
+"bg_t3": "background-color: " ~ c.t3 ~ ";",
+"bg_bg1": "background-color: " ~ c.bg1 ~ ";",
+"bg_bg2": "background-color: " ~ c.bg2 ~ ";",
+"bg_bg3": "background-color: " ~ c.bg3 ~ ";",
+"bg_bg4": "background-color: " ~ c.bg4 ~ ";",
+"bg_bg5": "background-color: " ~ c.bg5 ~ ";",
+"bg_white": "background-color: " ~ color.white ~ ";",
+"c_p1": "color: " ~ c.p1 ~ ";",
+"c_p2": "color: " ~ c.p2 ~ ";",
+"c_t1": "color: " ~ c.t1 ~ ";",
+"c_t2": "color: " ~ c.t2 ~ ";",
+"c_t3": "color: " ~ c.t3 ~ ";",
+"c_bg1": "color: " ~ c.bg1 ~ ";",
+"c_bg2": "color: " ~ c.bg2 ~ ";",
+"c_bg3": "color: " ~ c.bg3 ~ ";",
+"c_bg4": "color: " ~ c.bg4 ~ ";",
+"c_bg5": "color: " ~ c.bg5 ~ ";",
+"c_white": "color: " ~ color.white ~ ";",
+"inline": "display: inline;",
+"block": "display: block;",
+"spacer": "display: block; padding: 0; margin: 0; width: 100%; height: 20px; background: transparent; border: 0 none;",
+"button": "background-color: " ~ c.p1 ~ "; color: " ~ color.white ~ "; padding: 0; margin: 0;",
+"button_cell": "background-color: " ~ c.p1 ~ "; color: " ~ color.white ~ "; padding: 0; margin: 0;",
+"button_link": "background-color: " ~ c.p1 ~ ";color: " ~ color.white ~ "; padding: 0 20px; text-decoration: none !important;",
+"p_block": "padding: 0; margin: 0; margin-top: 20px; margin-bottom: 20px;",
+"outline_block": "display: block; border: solid 2px " ~ c.bg2 ~ "; padding: 25px; clear: both; width: auto; height: auto;"
 } %}
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html lang="fr" xmlns="http://www.w3.org/1999/xhtml">
-  {# The head is usually stripped from email clients, left here only for in-browser viewing #}
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+{# The head is usually stripped from email clients, left here only for in-browser viewing #}
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
-    {# For iOS #}
-    <meta name="format-detection" content="telephone=no">
+  {# For iOS #}
+  <meta name="format-detection" content="telephone=no">
 
-    <title>{{ email.subject }} — Unilend</title>
-  </head>
-  <body>
-    {# Excerpt #}
-    {# @note This is primarily for visually impaired users who use screen readers to read their email.
-             In particular, this is a technique to target Siri to read out a preview of the email in their inbox
-             See: http://www.emailaudience.com/this-is-how-you-make-your-emails-apple-siri-proof/
+  <title>{{ email.subject }} — Unilend</title>
+</head>
+<body>
+{# Excerpt #}
+{# @note This is primarily for visually impaired users who use screen readers to read their email.
+         In particular, this is a technique to target Siri to read out a preview of the email in their inbox
+         See: http://www.emailaudience.com/this-is-how-you-make-your-emails-apple-siri-proof/
 
-             This also should have the added benefit of acting as "preview text"
-             See: https://litmus.com/blog/the-ultimate-guide-to-preview-text-support #}
-    {% if email.excerpt is not empty %}<span style="clip: rect(0px, 0px, 0px, 0px); height: 1px; max-height: 1px;
+         This also should have the added benefit of acting as "preview text"
+         See: https://litmus.com/blog/the-ultimate-guide-to-preview-text-support #}
+{% if email.excerpt is not empty %}<span style="clip: rect(0px, 0px, 0px, 0px); height: 1px; max-height: 1px;
 display: block; margin: -1px; overflow: hidden; padding: 0;position: absolute;
 width: 1px; mso-hide: all;">{{ email.excerpt }}</span>{% endif %}
 
-    <style type="text/css">
-      {# Generic element reset CSS styles #}
-      body {
-        background: {{ c.bg3 }};
-        background-color: {{ c.bg3 }};
-        color: {{ c.t1 }};
-        margin: 0;
-        padding: 0;
-        {{ css.ff_base }}
-        {{ css.fs_md }}
+<style type="text/css">
+  {# Generic element reset CSS styles #}
+  body {
+    background: {{ c.bg3 }};
+    background-color: {{ c.bg3 }};
+    color: {{ c.t1 }};
+    margin: 0;
+    padding: 0;
+  {{ css.ff_base }}
+  {{ css.fs_md }}
 
-        {# Reduce thickness of fonts when viewed in browser #}
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
-      }
+  {# Reduce thickness of fonts when viewed in browser #}
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
-      img {
-        border: 0 none;
-        {# height: auto; #}
-        line-height: 100%;
-        outline: none;
-        text-decoration: none;
-      }
+  img {
+    border: 0 none;
+  {# height: auto; #}
+    line-height: 100%;
+    outline: none;
+    text-decoration: none;
+  }
 
-      a img {
-        border: 0 none;
-      }
+  a img {
+    border: 0 none;
+  }
 
-      table, td {
-        border-collapse: collapse;
-      }
+  table, td {
+    border-collapse: collapse;
+  }
 
-      #body {
-        height: 100% !important;
-        margin: 0;
-        padding: 0;
-        width: 100% !important;
-      }
+  #body {
+    height: 100% !important;
+    margin: 0;
+    padding: 0;
+    width: 100% !important;
+  }
 
-      {# Outlook / Hotmail resets #}
-      .ExternalClass {
-        width: 100%;
-      }
+  {# Outlook / Hotmail resets #}
+  .ExternalClass {
+    width: 100%;
+  }
 
-      .ExternalClass * {
-        line-height: 100%;
-      }
+  .ExternalClass * {
+    line-height: 100%;
+  }
 
-      #outlook a {
-        padding: 0;
-      }
+  #outlook a {
+    padding: 0;
+  }
 
-      table {
-        mso-table-lspace: 0pt;
-        mso-table-rspace: 0pt;
-      }
+  table {
+    mso-table-lspace: 0pt;
+    mso-table-rspace: 0pt;
+  }
 
-      img {
-        -ms-interpolation-mode: bicubic;
-      }
+  img {
+    -ms-interpolation-mode: bicubic;
+  }
 
-      {# iOS / Webkit and Microsoft Phone resets #}
-      body {
-        -webkit-text-size-adjust: 100%;
-        -ms-text-size-adjust: 100%;
-      }
+  {# iOS / Webkit and Microsoft Phone resets #}
+  body {
+    -webkit-text-size-adjust: 100%;
+    -ms-text-size-adjust: 100%;
+  }
 
-      .appleBlueLinks a {color: {{ c.p1 }} !important; text-decoration:none !important; pointer-events:none !important;}
+  .appleBlueLinks a {color: {{ c.p1 }} !important; text-decoration:none !important; pointer-events:none !important;}
 
-      {# Generate CSS classes which are defined above in `css` object #}
-      {% for i, def in css %}
-      .{{ i }} { {{ def }} }
-      {% endfor %}
-    </style>
+  {# Generate CSS classes which are defined above in `css` object #}
+  {% for i, def in css %}
+  .{{ i }} { {{ def }} }
+  {% endfor %}
+</style>
 
-    {# Body #}
-    <table id="body" border="0" width="100%" height="100%" align="center" cellpadding="0" cellspacing="0" class="table_reset" style="{{ css.table_reset }}{{ css.bg_bg3 }} width: 100%; height: 100%;">
-      <tr>
-        <td align="center" valign="top" style="{{ css.bg_bg3 }}{{ css.c_t1 }}">
-          {# Body Content #}
-          <table id="body_content" border="0" width="600" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }} width: 600px; margin: 0 auto;">
-            <tr>
-              <td align="center" valign="top" style="{{ css.td_reset }}">
+{# Body #}
+<table id="body" border="0" width="100%" height="100%" align="center" cellpadding="0" cellspacing="0" class="table_reset" style="{{ css.table_reset }}{{ css.bg_bg3 }} width: 100%; height: 100%;">
+  <tr>
+    <td align="center" valign="top" style="{{ css.bg_bg3 }}{{ css.c_t1 }}">
+      {# Body Content #}
+      <table id="body_content" border="0" width="600" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }} width: 600px; margin: 0 auto;">
+        <tr>
+          <td align="center" valign="top" style="{{ css.td_reset }}">
 
-                {# Band #}
-                <table border="0" width="100%" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }}">
-                  <tr>
-                    <td align="center" valign="top" style="{{ css.td_reset }}"><img src="{{ siteurlmedia('email/band.gif') }}" width="100%" height="5" class="image_fix" style="{{ css.image_reset }} width: 100%; height: 5px;" alt="" /></td>
-                  </tr>
-                </table>
-                {# /Band #}
+            {# Band #}
+            <table border="0" width="100%" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }}">
+              <tr>
+                <td align="center" valign="top" style="{{ css.td_reset }}"><img src="{{ siteurlmedia('email/band.gif') }}" width="100%" height="5" class="image_fix" style="{{ css.image_reset }} width: 100%; height: 5px;" alt="" /></td>
+              </tr>
+            </table>
+            {# /Band #}
 
-                {# Email Content #}
-                {% block emailContent %}
-                <table id="email_content" border="0" width="100%" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }}{{ css.bg_white }}">
-                  <tr>
-                    <td align="left" valign="top" style="{{ css.td_reset }}{{ css.c_t1 }}{{ css.bg_white }}">
-                      {% block emailContentInner %}
-                        <h1>Error!</h1>
-                        <p>You need to override block <code>emailContent</code> or <code>emailContentInner</code> to continue</p>
-                      {% endblock %}
-                    </td>
-                  </tr>
-                </table>
-                {% endblock %}
-                {# /Email Content #}
+            {# Email Content #}
+            {% block emailContent %}
+              <table id="email_content" border="0" width="100%" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }}{{ css.bg_white }}">
+                <tr>
+                  <td align="left" valign="top" style="{{ css.td_reset }}{{ css.c_t1 }}{{ css.bg_white }}">
+                    {% block emailContentInner %}
+                      <h1>Error!</h1>
+                      <p>You need to override block <code>emailContent</code> or <code>emailContentInner</code> to continue</p>
+                    {% endblock %}
+                  </td>
+                </tr>
+              </table>
+            {% endblock %}
+            {# /Email Content #}
 
-                {# Email Footer #}
-                {% block emailFooter %}
-                <table id="body_footer" border="0" width="100%" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }}{{ css.bg_p1 }}">
-                  <tr>
-                    <td colspan="4" class="td_reset" style="{{ css.td_reset }}{{ css.bg_p1 }}{{ css.c_bg5 }}">
-                      <img src="{{ siteurlmedia('email/1x1.gif') }}" width="100%" height="40" border="0" alt="" style="{{ css.image_reset }} width: 100%; height: 40px;">
-                    </td>
-                  </tr>
-                  <tr>
-                    <td width="55" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: 55px; text-align: left;"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="55" height="50" border="0" alt="" style="{{ css.image_reset }} width: 55px; height: 50px;"></td>
-                    <td width="245" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: 245px; text-align: left;">
-                      <span style="{{ css.ff_base }}{{ css.fs_md }}{{ css.c_white }}">Nous contacter</span><br/>
+            {# Email Footer #}
+            {% block emailFooter %}
+              <table id="body_footer" border="0" width="100%" align="center" cellpadding="0" cellspacing="0" style="{{ css.table_reset }}{{ css.bg_p1 }}">
+                <tr>
+                  <td colspan="4" class="td_reset" style="{{ css.td_reset }}{{ css.bg_p1 }}{{ css.c_bg5 }}">
+                    <img src="{{ siteurlmedia('email/1x1.gif') }}" width="100%" height="40" border="0" alt="" style="{{ css.image_reset }} width: 100%; height: 40px;">
+                  </td>
+                </tr>
+                <tr>
+                  <td width="55" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: 55px; text-align: left;"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="55" height="50" border="0" alt="" style="{{ css.image_reset }} width: 55px; height: 50px;"></td>
+                  <td width="245" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: 245px; text-align: left;">
+                    <span style="{{ css.ff_base }}{{ css.fs_md }}{{ css.c_white }}">Nous contacter</span><br/>
                       <span style="{{ css.ff_base }}{{ css.fs_sm }} color: {{ color.purple_l3 }};">6 rue du Général Clergerie<br/>
                         75116 Paris - France</span>
-                    </td>
-                    <td width="245" align="right" valign="top" class="td_reset" style="{{ css.td_reset }} width: 245px; text-align: right;">
-                      <div style="margin-bottom: 10px;"><a href="{{ social.facebook.profileUrl }}"><img src="{{ siteurlmedia('email/logo-facebook-39x38.gif') }}" border="0" width="39" height="38" alt="{{ social.facebook.label|escape('html_attr') }}" style="width: 39px; height: 38px; line-height: 38px;"></a><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="20" height="38" alt="" style="width: 20px; height: 38px; line-height: 38px;"><a href="{{ social.twitter.profileUrl }}"><img src="{{ siteurlmedia('email/logo-twitter-39x38.gif') }}" border="0" width="39" height="38" alt="{{ social.twitter.label|escape('html_attr') }}" style="width: 39px; height: 38px; line-height: 38px;"></a></div>
-                      <div style="{{ css.ff_base }}{{ css.fs_xs }} color: {{ color.purple_f }}">&copy; Unilend 2016. Tous droits réservés.</div>
-                    </td>
-                    <td width="55" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: 55px;"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="55" height="50" border="0" alt="" style="{{ css.image_reset }} width: 55px; height: 50px;"></td>
-                  </tr>
-                  <tr>
-                    <td colspan="4" class="td_reset" style="{{ css.td_reset }}{{ css.bg_p1 }}{{ css.c_bg5 }}"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="100%" height="40" border="0" alt="" style="{{ css.image_reset }} width: 100%; height: 40px;"></td>
-                  </tr>
-                </table>
+                  </td>
+                  <td width="245" align="right" valign="top" class="td_reset" style="{{ css.td_reset }} width: 245px; text-align: right;">
+                    <div style="margin-bottom: 10px;"><a href="{{ social.facebook.profileUrl }}"><img src="{{ siteurlmedia('email/logo-facebook-39x38.gif') }}" border="0" width="39" height="38" alt="{{ social.facebook.label|escape('html_attr') }}" style="width: 39px; height: 38px; line-height: 38px;"></a><img src="{{ siteurlmedia('email/1x1.gif') }}" border="0" width="20" height="38" alt="" style="width: 20px; height: 38px; line-height: 38px;"><a href="{{ social.twitter.profileUrl }}"><img src="{{ siteurlmedia('email/logo-twitter-39x38.gif') }}" border="0" width="39" height="38" alt="{{ social.twitter.label|escape('html_attr') }}" style="width: 39px; height: 38px; line-height: 38px;"></a></div>
+                    <div style="{{ css.ff_base }}{{ css.fs_xs }} color: {{ color.purple_f }}">&copy; Unilend 2016. Tous droits réservés.</div>
+                  </td>
+                  <td width="55" align="left" valign="top" class="td_reset" style="{{ css.td_reset }} width: 55px;"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="55" height="50" border="0" alt="" style="{{ css.image_reset }} width: 55px; height: 50px;"></td>
+                </tr>
+                <tr>
+                  <td colspan="4" class="td_reset" style="{{ css.td_reset }}{{ css.bg_p1 }}{{ css.c_bg5 }}"><img src="{{ siteurlmedia('email/1x1.gif') }}" width="100%" height="40" border="0" alt="" style="{{ css.image_reset }} width: 100%; height: 40px;"></td>
+                </tr>
+              </table>
 
-                {% block emailFooterExtend %}
+              {% block emailFooterExtend %}
                 <p style="{{ css.ff_base }}{{ css.fs_sm }} color: {{ c.t3 }}; padding-top: 20px; padding-left: 60px; padding-right: 60px; padding-bottom: 60px;">Prêter présente un risque de non-remboursement: répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</p>
-                {% endblock %}
+              {% endblock %}
 
-                {% endblock %}
-                {# /Email Footer #}
-              </td>
-            </tr>
-          </table>
-          {# /Content #}
-        </td>
-      </tr>
-    </table>
-    {# /Body #}
+            {% endblock %}
+            {# /Email Footer #}
+          </td>
+        </tr>
+      </table>
+      {# /Content #}
+    </td>
+  </tr>
+</table>
+{# /Body #}
 
-  </body>
+</body>
 </html>

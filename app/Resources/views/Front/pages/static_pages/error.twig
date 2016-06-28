@@ -5,13 +5,13 @@
 {% set bodyId = '' %}
 {% set page = {
   id: 'page-error',
-  title: 'Error',
+  title: 'Error 404',
   permalink: route('error')
 } %}
 
 {% block pageAsideBody %}
-  <div class="page-aside-body hide-xs hide-sm">
-    <img src="{{ siteurlmedia('error/icon-map.png') }}" alt="">
+  <div class="page-aside-body hide-xs hide-sm c-p1" style="text-align: center">
+    {{ svgimage('#misc-mapcompass', 'Error', 500, 500) }}
   </div><!-- /.page-aside-body -->
 {% endblock %}
 

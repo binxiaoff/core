@@ -2,14 +2,14 @@
 
 <article class="{% block panelClassNames %}dashboard-panel{% endblock %}" {% block panelAttributes %}{% endblock %}>
   <header class="dashboard-panel-header">
-  {% block panelHeader %}
-    <h3 class="dashboard-panel-title">{% block panelTitle %}{% endblock %}</h3>
-    <div class="dashboard-panel-controls">
-      {% block panelControls %}
-      <a href="javascript:;" class="btn-close"><span class="sr-only">Close panel</span></a>
-      {% endblock %}
-    </div>
-  {% endblock %}
+    {% block panelHeader %}
+      <h3 class="dashboard-panel-title">{% block panelTitle %}{% endblock %}</h3>
+      <div class="dashboard-panel-controls">
+        {% block panelControls %}
+          <a href="javascript:;" class="btn-close"><span class="sr-only">Close panel</span></a>
+        {% endblock %}
+      </div>
+    {% endblock %}
   </header>
   <div class="dashboard-panel-content">
     {% block panelContent %}{% endblock %}

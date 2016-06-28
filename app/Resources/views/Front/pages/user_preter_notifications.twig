@@ -1,0 +1,74 @@
+{# User / Preter / Notifications #}
+{% extends 'layouts/_dashboard.twig' %}
+{% import 'partials/modules/_list-notifications.macros.twig' as listNotifications %}
+
+{# Page data #}
+{% set bodyId = '' %}
+{% set page = {
+  id: 'user-preter-notifications',
+  title: 'Prêteur / Notifications',
+  permalink: route('user/preter/notifications'),
+  classNames: 'user-preter-notifications'
+} %}
+
+{% set placeholderData = {
+  notifications: [{
+    type: 'offer-rejected',
+    title: 'Offre refusée',
+    datetime: 'now'|date_modify('-5 minutes')|time_diff,
+    content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
+    image: svgimage('#notification-offer-rejected', 'Offre refusée', 100, 100, 'none'),
+    status: 'unread'
+  },{
+    type: 'remboursement',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-2 hours')|time_diff,
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
+    status: 'unread'
+  },{
+    type: 'offer-accepted',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-3 days')|date('j F, H:i'),
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-offer-accepted', 'Offre acceptée', 100, 100, 'none'),
+    status: 'unread'
+  },{
+    type: 'account',
+    title: 'Solde bas',
+    datetime: 'now'|date_modify('-4 days')|date('j F, H:i'),
+    content: '',
+    image: svgimage('#notification-account-lowbalance', 'Solde bas', 100, 100, 'none'),
+    status: 'read'
+  },{
+    type: 'remboursement',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-5 days 8 hours 35 minutes')|date('j F, H:i'),
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
+    status: 'read'
+  },{
+    type: 'remboursement',
+    title: 'Remboursement',
+    datetime: 'now'|date_modify('-5 days 15 hours 20 minutes')|date('j F, H:i'),
+    content: 'Vous avez reçu un remboursement de 12,35€ de Garage Toniol.',
+    image: svgimage('#notification-remboursement', 'Remboursement', 100, 100, 'none'),
+    status: 'read'
+  },{
+    type: 'project-added',
+    title: 'Nouveau projet',
+    datetime: 'now'|date_modify('-6.5 days')|date('j F, H:i'),
+    content: 'Created a new project.',
+    image: svgimage('#notification-project-added', 'Nouveau projet', 100, 100, 'none'),
+    status: 'read'
+  }]
+} %}
+
+{% block dashboardNotifications %}{# Overwrite the side navigation notifications as they will be displayed below #}{% endblock %}
+
+{% block dashboardContent %}
+  {{ listNotifications.render({
+    id: 'profile-notifications',
+    notifications: placeholderData.notifications
+  }) }}
+{% endblock %}

@@ -190,7 +190,7 @@ var getRouteUrl = function (input, isInvalidRoute) {
     // }
     return replaceKeywords(matchedRoute.url, keywords)
 
-  // Invalid route
+    // Invalid route
   } else {
     if (debug) console.log('Twig.extentions.getRouteUrl: invalid route given (' + input + ')')
     if (!isInvalidRoute) {
@@ -203,7 +203,7 @@ var getRouteUrl = function (input, isInvalidRoute) {
 }
 
 // Use SVG item from SVG symbol set (see {build}/media/icons.svg)
-// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.html.twig)
+// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.twig)
 // ID corresponds to {foldername-filename}
 // e.g. SVG hosted in media/svg/example-folder/filename.svg
 //      will translate to:
@@ -238,7 +238,7 @@ var svgImage = function (id, title, width, height, sizing) {
       usesIds.push(useId)
       uses.push('<use xlink:href="' + url + id[i] + '" class="svg-file-' + useId + '"/>')
 
-    // Reference to other SVG file
+      // Reference to other SVG file
     } else {
       if (/#/.test(id[i])) {
         useId = id[i].split('#').pop()
@@ -259,8 +259,20 @@ var svgImage = function (id, title, width, height, sizing) {
   var titleAttr = (title ? ' title="' + title + '"' : '')
   var widthAttr = (width ? ' width="' + width + '"' : '' )
   var heightAttr = (height ? ' height="' + height + '"' : '' )
-  var preserveAspectRatioAttr = (sizing ? ' preserveAspectRatio="' + sizes[sizing] + '"' : '')
-  var svgHtml = '<svg role="img"' + titleAttr + widthAttr + heightAttr + preserveAspectRatioAttr + ' class="svg-icon' + usesIds + '"' + svgHeaders + '>' + uses.join('') + '</svg>'
+  // @note don't need these set anymore as it is set in the individual SVGs
+  var preserveAspectRatioAttr = ''//(sizing ? ' preserveAspectRatio="' + sizes[sizing] + '"' : '')
+  var viewBoxAttr = ''// ' viewBox="' + viewBox + '"'
+
+  // @note setting width/height attrs doesn't work well for IE
+  // var svgHtml = '<svg role="img"' + titleAttr + widthAttr + heightAttr + viewBoxAttr + preserveAspectRatioAttr + ' class="svg-icon' + usesIds + '"' + svgHeaders + '>' + uses.join('') + '</svg>'
+
+  // @note but only having viewBox isn't the best either...
+  var svgHtml = '<svg role="img"' + titleAttr + viewBoxAttr + preserveAspectRatioAttr + ' class="svg-icon' + usesIds + '"' + svgHeaders + '>' + uses.join('') + '</svg>'
+
+  // @note so let's wrap it with a div that has a max-width
+  // @note found that it's not enough, so add in a canvas element which does the responsive auto scaling
+  var canvasAspectHtml = '<canvas class="svg-icon-aspect" width="' + width + '" height="' + height + '"></canvas>'
+  svgHtml = '<div class="svg-icon-wrap" style="max-width: ' + width + 'px">' + canvasAspectHtml + svgHtml + '</div>'
 
   // @debug
   // if (debug) {
@@ -276,15 +288,12 @@ var svgImage = function (id, title, width, height, sizing) {
   //   })
   // }
 
-  // Don't display SVG if it has been disabled
-  if (!useSVG) return '<span class="icon fa-question-circle" title="SVG disabled"><span class="sr-only">SVG disabled</span></span>'
-
   // Output SVG code
   return svgHtml
 }
 
 // Use SVG item from SVG symbol set (see {build}/media/icons.svg)
-// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.html.twig)
+// (SVG symbol set is loaded in via ./src/twig/layouts/_layout.twig)
 // Outputs the URL link to an inline SVG file with ID refering to specific symbol
 var svgUrl = function (id, width, height, sizing) {
   return 'url(\'data:image/svg+xml,' + encodeURIComponent(svgImage(id, false, width, height, sizing)) + '\')';
@@ -399,7 +408,7 @@ var timeDiff = function (input, endTime) {
         outputDiff = Math.round(Math.abs(diffSeconds) / u.min)
         output = sprintf((outputDiff === 1 ? u.single : u.plural), outputDiff)
 
-      // No minimum amount given, so assume no need to put number within unit output (reference only single)
+        // No minimum amount given, so assume no need to put number within unit output (reference only single)
       } else {
         output = u.single
       }
@@ -546,11 +555,6 @@ var TwigExtensions = function (Twig) {
     params = params || []
     params.unshift(input)
     return jsonPrettyPrint.apply(this, params)
-  })
-
-  // Global check for disabled SVG
-  Twig.exports.extendFunction('caniuse_svg', function (input) {
-    return useSVG
   })
 
   // Time difference

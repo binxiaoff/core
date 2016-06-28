@@ -15,6 +15,8 @@
     {# Default Settings #}
     {% set settings = {
     showMap: true,
+    mapview: {},
+
     showFilters: true,
     showPagination: true,
 
@@ -107,20 +109,40 @@
 {# @macro renderfilterItem #}
 {# @param {Object} filterItem The filter item to display #}
 {# @param {Object} settings the Project List's settings #}
+{# @param {Object} paginationSettings the pagination's settings #}
 {% macro renderFilterItem(filterItem, settings) %}
-    <div class="project-list-item-{{ filterItem.column|e('html_attr') }} project-list-filter"{% if filterItem.sortBy != false %} data-sort-by="{{ filterItem.column|e('html_attr') }}"{% endif %}>
-        <a href="javascript:;">{{ filterItem.label }}{% if filterItem.sortBy != false %}
-                <span class="project-list-filter-order"></span>{% endif %}
-        </a>
+    <div class="project-list-item-{{ filterItem.column|e('html_attr') }} project-list-filter"{% if filterItem.sortBy != false %} data-sortable-by="{{ filterItem.column|e('html_attr') }}"{% endif %}>
+      <a href="javascript:;"><span class="label">{{ filterItem.label }}</span>{% if filterItem.sortBy != false %} <span class="project-list-filter-order"></span>{% endif %}</a>
     </div><!-- /.project-list-filter -->
 {% endmacro %}
 
 {# Display project list map view #}
 {# @macro renderMap #}
 {# @param {Object} settings the Project List's settings #}
-{% macro renderMap(settings) %}
+{% macro renderMap(listItems, settings, paginationSettings) %}
+  {% import _self as projectList %}
+  {% import 'partials/modules/_pagination.macros.twig' as pagination %}
+
     <div class="project-list-map">
-        @TODO
+    <div id="project-list-map-view" class="project-list-map-view ui-has-mapview" {# data-mapview #}{% if settings.mapview is not empty %}="{{ settings.mapview|json_encode|escape('html_attr') }}"{% endif %}></div>
+    <div class="project-list-map-list">
+      <ul class="list-projects">
+        {% for i, listItem in listItems if listItems is not empty %}
+        {{ projectList.renderMapListItem(listItem, settings) }}
+
+        {% else %}
+        <li class="project project-empty">
+          <p>No projects to show!</p>
+          <a href="{{ route('project/new') }}" class="btn-primary">Create a new project</a>
+        </li>
+        {% endfor %}
+
+        {# Pagination #}
+        {% if listItems is not empty and settings.showPagination == true %}
+          {{ pagination.render(paginationSettings) }}
+        {% endif %}
+      </ul>
+    </div>
     </div><!-- /.project-list-map -->
 {% endmacro %}
 
@@ -132,7 +154,7 @@
 {% macro renderListItems(projects, filterItems, settings) %}
     {% import _self as projectList %}
 
-    <div class="project-list-items">
+    <div class="project-list-items" data-sortable-content>
         {% for project in projects %}
             {# Only show list item if settings support it #}
             {{ projectList.renderListItem(project, filterItems, settings) }}
@@ -143,18 +165,18 @@
 {# Display a single project list item #}
 {# @macro renderListItem #}
 {# @param {Object} listItem The list item to display #}
-{# @param {Object} filterItems The list of filterItems to generate data-sort-{x} attributes with #}
+{# @param {Object} filterItems The list of filterItems to generate data-sortable-{x} attributes with #}
 {# @param {Object} settings the Project List's settings #}
 {% macro renderListItem(project, filterItems, settings) %}
     {% import _self as projectList %}
     {% import 'extensions/_general.macros.twig' as general %}
 
-    {# Build data-sort-{column} attributes #}
+  {# Build data-sortable-{column} attributes #}
     {% set sortAttrs = '' %}
     {% if settings.showFilters == true and filterItems is not empty %}
         {% for filterItem in filterItems %}
             {% if filterItem.sortBy != false %}
-                {% set sortAttrs = sortAttrs ~ ' data-sort-' ~ (filterItem.column|e('html_attr')) ~ '="' ~ (listItem[filterItem.sortBy]|e('html_attr') ~ '"') %}
+                {% set sortAttrs = sortAttrs ~ ' data-sortable-' ~ (filterItem.column|e('html_attr')) ~ '="' ~ (listItem[filterItem.sortBy]|e('html_attr') ~ '"') %}
             {% endif %}
         {% endfor %}
     {% endif %}
@@ -201,6 +223,19 @@
                 <strong>{{ project.number_bids }}</strong> {% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
             </div><!-- /.project-list-item-offers -->
             {% if project.currentUserOffers is defined and project.currentUserOffers | length > 0 %}
+
+
+        {# Mark that Autolend was applied #}
+        {% set attrHasAutolend = 'class="project-list-item-useroffers"' %}
+        {% if listItem.currentUserOffersAutolend is not empty and listItem.currentUserOffersAutolend > 0 %}
+          {% set autolendTooltip = __('%d offres made with Autolend', 'projectListItemOffersAutolend')|format(listItem.currentUserOffersAutolend) %}
+          {% set autolendTooltipHtml = autolendTooltip ~ " <span class='icon fa-autolend-u32 c-p1'></span>" %}
+          {% set attrHasAutolend = 'class="project-list-item-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="' ~ autolendTooltipHtml ~ '"' %}
+        {% endif %}
+
+        <div {{ attrHasAutolend }}>
+          {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 %}
+
                 <div class="project-list-item-useroffers">
                     {% for statusOffer, numOffers in project.currentUserOffers if numOffers > 0 %}
                         {% if statusOffer == constant('\bids::STATUS_BID_ACCEPTED') %}
@@ -226,8 +261,7 @@
         </div>
         <div class="project-list-item-period">
             {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
-                <span class="icon fa-clock-o"></span>
-                <span class="ui-time-count" data-time-count-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
+                <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
             {% elseif project.daysLeft == 0 %}
                 {% trans %} project-list_project-finished {% endtrans %}
             {% else %}
@@ -237,7 +271,104 @@
         <div class="project-list-item-view">
             <a href="{{ project.slug }}"><span class="icon fa-angle-right"></span><span class="sr-only">{% trans %} project-list_view-project-label {% endtrans %}</span></a>
         </div>
-        {# Feel free to do something better here #}
-        <a href="{{ path('project_show', {'projectSlug' : project.slug }) }}" class="project-list-item-hotspot"></a>
     </article><!-- /.project-list-item -->
+{% endmacro %}
+
+{# Render a single map list item #}
+{# @macro renderMapListItem #}
+{# @param {Object} listItem The properties for the list item #}
+{# @param {Object} settings the Project List's settings #}
+{% macro renderMapListItem(listItem, settings) %}
+  {# Set the rating class for the .rating element #}
+  {% set classRating = listItem.rating|tostring|split('.')|join('-') %}
+
+  {# Set CSS class to show expired project #}
+  {% set classProjectExpired = '' %}
+  {% if settings.markExpired == true and listItem.daysLeft == 0 %}
+  {% set classProjectExpired = 'ui-project-expired' %}
+  {% endif %}
+
+  {# Set CSS class to show current user is involved in the project #}
+  {% set classUserInvolved = '' %}
+  {% if settings.markInvolved == true and listItem.currentUserInvolved == true %}
+  {% set classUserInvolved = 'ui-current-user-involved' %}
+  {% endif %}
+
+  {# Generate object for mapview to place marker on map #}
+  {% if listItem.lat is defined and listItem.lng is defined %}
+    {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
+    {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
+    {% set mapviewGroup = (listItem.daysLeft == 0 ? 'expired' : 'active') %}
+
+    {# Set the offer status to show the icon in the marker #}
+    {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
+    {% set mapviewOfferStatus = '' %}
+    {% if listItem.currentUserTotalOffers > 0 and listItem.currentUserOffers is not empty %}
+      {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}
+        {% set mapviewOfferStatus = statusOffer %}
+      {% endfor %}
+    {% endif %}
+
+    {% set mapviewItem = {
+      id: 'marker' ~ listItem.id,
+      categoryId: listItem.categoryId,
+      latLng: [listItem.lat, listItem.lng],
+      title: listItem.title,
+      description: '<div style="font-style: italic;">' ~ listItem.locationCity ~ ', ' ~ listItem.locationPostCode ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ listItem.rating ~ ' out of 5</span></span></div>',
+      status: (listItem.daysLeft == 0 ? 'expired' : 'active'),
+      offerStatus: mapviewOfferStatus|default(''),
+      groupName: mapviewGroup|default('all')
+    } %}
+  {% endif %}
+
+  <li class="project {{ classProjectExpired }} {{ classUserInvolved }}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
+    <div class="project-name"><a href="{{ listItem.permalink }}">{{ listItem.title }}</a></div>
+    <div class="project-location">{{ listItem.locationCity }}, {{ listItem.locationPostCode }}</div>
+    <div class="project-cost">{{ listItem.cost|__num|nbsp }}€</div>
+    <div class="project-rating">
+      <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectListItemRatingLabel')|format(listItem.rating) }}</span></span>
+    </div>
+    <div class="project-interest">{{ listItem.interest|__num(1) }}%</div>
+    <div class="project-period">
+      {% if listItem.daysLeft > 0 and listItem.daysLeft <= 2 %}
+        <span class="ui-has-timecount" data-timecount-to="{{ listItem.dateExpires|escape('html_attr') }}">{{ listItem.dateExpires|time_diff }} restants</span>
+      {% elseif listItem.daysLeft == 0 %}
+        {{ __('Project expired', 'projectListItemPeriodExpired') }}
+      {% else %}
+        {{ __('%d days left', 'projectListItemPeriodLabel')|format(listItem.daysLeft) }}
+      {% endif %}</div>
+    <div class="project-offers">
+      <strong>{{ listItem.totalOffers|__num|nbsp }}</strong> {% if listItem.totalOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %}
+
+      {% if listItem.currentUserTotalOffers > 0 and listItem.currentUserOffers is not empty %}
+        {# Mark that Autolend was applied #}
+        {% set attrHasAutolend = 'class="project-useroffers"' %}
+        {% if listItem.currentUserOffersAutolend is not empty and listItem.currentUserOffersAutolend > 0 %}
+          {% set autolendTooltip = __('%d offres made with Autolend', 'projectListItemOffersAutolend')|format(listItem.currentUserOffersAutolend) %}
+          {% set autolendTooltipHtml = autolendTooltip ~ " <span class='icon fa-autolend-u32 c-p1'></span>" %}
+          {% set attrHasAutolend = 'class="project-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="' ~ autolendTooltipHtml ~ '"' %}
+        {% endif %}
+
+        <div {{ attrHasAutolend }}>
+          {# Show stats for each type of offer #}
+          {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 %}
+            {% if statusOffer == 'accepted' %}
+              <div class="project-useroffers-accepted">
+                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('accepted', 'projectListItemOffersUserStatusAccepted') }}
+              </div><!-- /.project-useroffers-accepted -->
+            {% elseif statusOffer == 'rejected' %}
+              <div class="project-useroffers-rejected">
+                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('rejected', 'projectListItemOffersUserStatusRejected') }}
+              </div><!-- /.project-useroffers-rejected -->
+            {% elseif statusOffer == 'inProgress' %}
+              <div class="project-useroffers-inprogress">
+                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('in progress', 'projectListItemOffersUserStatusInProgress') }}
+              </div><!-- /.project-useroffers-inprogress -->
+            {% endif %}
+          {% endfor %}
+        </div><!-- /.project-useroffers -->
+      {% endif %}
+    </div>
+    <a href="{{ listItem.permalink }}" class="project-hotspot">&nbsp;</a>
+  </li>
 {% endmacro %}

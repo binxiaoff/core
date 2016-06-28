@@ -31,7 +31,9 @@
   author: {
     name: 'John Citizen',
     company: 'Example Company Name'
-  }
+  },
+  lat: 48.017028,
+  lng: -0.604248
 } %}
 
 {# Placeholder Data #}
@@ -41,6 +43,247 @@
     3: rejected
  #}
 {% set placeholderData = {
+  charts: {
+    projectOffers: {
+      type: 'projectOffers',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'areaspline',
+          plotBackgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+               [0, 'rgba(95, 196, 208, .2)'],
+               [1, 'rgba(95, 196, 208, 0)']
+            ]
+          }
+        },
+        title: {
+          margin: 20,
+          text: 'Synthèse des 720 offres en cours',
+          align: 'left',
+          style: {
+            fontSize: '16px'
+          }
+        },
+        subtitle: {
+          margin: 10,
+          useHTML: true,
+          text: '<span class="chart-key-icon" style="background: white; border: solid 3px #5FC5D1; width: 12px; height: 12px; line-height: 12px;"></span> Meilleur taux de prêt accepté par Unilend',
+          align: 'right',
+          style: {
+            color: '#5FC5D1',
+            fontSize: '14px'
+          }
+        },
+        xAxis: {
+          categories: ['4%', '4,5%', '5%', '5,5%', '6%', '6,5%', '7%', '7,5%', '8%', '8,5%', '9%', '9,5%', '10%'],
+          plotBands: [{
+            from: 8,
+            to: 12.5,
+            borderWidth: 0,
+            color: 'rgba(255, 255, 255, .5)',
+            zIndex: 1
+          }],
+          plotLines: [{
+            color: '#999999',
+            dashStyle: 'ShortDot',
+            value: 8,
+            width: 1
+          }]
+        },
+        yAxis: {
+          title: {
+            text: 'Nb offres en cours'
+          }
+        },
+        plotOptions: {
+          areaspline: {
+            dataLabels: {
+              enabled: false,
+              states: {
+                hover: {
+                  enabled: true
+                }
+              }
+            }
+          }
+        },
+        series: [{
+          name: 'Offres en cours',
+          color: '#5FC5D1',
+          fillOpacity: 0.25,
+          showInLegend: false,
+          data: [150, 256, 400, 450, 500, 744, {
+            y: 823,
+            marker: {
+              fillColor: 'white',
+              lineColor: '#5FC5D1',
+              lineWidth: 3,
+              enabled: true,
+              radius: 7
+            }
+          }, 88, 0, 0, 0, 0, 0]
+        }]
+      },
+      exportUrl: route('project/12345/export/offers')
+    },
+
+    projectOwnerIncome: {
+      type: 'projectOwnerIncome',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'spline',
+          plotBackgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+               [0, 'rgba(95, 196, 208, .1)'],
+               [1, 'rgba(95, 196, 208, 0)']
+            ]
+          }
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: [2013, 2014, 2015]
+        },
+        yAxis: {
+          title: {
+            text: 'Montant (en €)'
+          },
+          units: '€'
+        },
+        series: [{
+          name: "Chiffre d'affaires",
+          data: [842020, 508340, 732245]
+        },{
+          name: "Résultats bruts d'exposition",
+          data: [42020, 18340, 2245]
+        },{
+          name: "Résultats d'exploitation",
+          data: [32020, 12340, 1245]
+        },{
+          name: "Investissement",
+          data: [1020, 8340, 2245]
+        }]
+      },
+      exportUrl: route('project/12345/export/income')
+    },
+
+    projectOwnerBalanceActive: {
+      type: 'projectOwnerBalanceActive',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'spline',
+          plotBackgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+               [0, 'rgba(95, 196, 208, .1)'],
+               [1, 'rgba(95, 196, 208, 0)']
+            ]
+          }
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: [2013, 2014, 2015]
+        },
+        yAxis: {
+          title: {
+            text: 'Montant (en €)'
+          },
+          units: '€'
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Immobilisations corporelles',
+          data: [842020, 508340, 732245]
+        },{
+          name: 'Immobilisations incorporelles',
+          data: [42050, 18380, 2215]
+        },{
+          name: 'Immobilisations financières',
+          data: [32020, 12340, 1245]
+        },{
+          name: 'Stocks',
+          data: [1020, 8340, 3745]
+        },{
+          name: 'Créances',
+          data: [840020, 500340, 730245]
+        },{
+          name: 'Disponibilités',
+          data: [41020, 18040, 2045]
+        },{
+          name: 'Valeur mobilières de placement',
+          data: [30020, 12040, 1205]
+        },{
+          name: 'Stocks',
+          data: [1220, 8200, 4745]
+        }]
+      },
+      exportUrl: route('project/12345/export/balance/active')
+    },
+
+    projectOwnerBalancePassive: {
+      type: 'projectOwnerBalancePassive',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'spline',
+          plotBackgroundColor: {
+            linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+            stops: [
+               [0, 'rgba(95, 196, 208, .1)'],
+               [1, 'rgba(95, 196, 208, 0)']
+            ]
+          }
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: [2013, 2014, 2015]
+        },
+        yAxis: {
+          title: {
+            text: 'Montant (en €)'
+          },
+          units: '€'
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Capitaux propres',
+          data: [642020, 208340, 132245]
+        },{
+          name: 'Provisions pour risques & charges',
+          data: [32020, 19340, 3245]
+        },{
+          name: 'Amortissement sur immobilisations',
+          data: [12020, 16340, 1335]
+        },{
+          name: 'Dettes financières',
+          data: [2020, 6340, 8745]
+        },{
+          name: 'Dettes fournissers',
+          data: [542020, 208340, 532245]
+        },{
+          name: 'Autres dettes',
+          data: [22020, 16340, 1245]
+        }]
+      },
+      exportUrl: route('project/12345/export/balance/passive')
+    }
+  },
+
+  tables: {
   myoffers: {
     schema: [{
       name: 'id',
@@ -96,15 +339,15 @@
     data: [
       [1, 6.5, 200, 2],
       [2, 6.8, 400, 2],
-      [3, 7.0, 150, 2],
-      [4, 8.0, 120, 1],
-      [5, 6.8, 300, 1],
+        [3, 7.0, 150, 4],
+        [4, 8.0, 120, 2],
+        [5, 6.8, 300, 2],
       [6, 6.0, 1000, 3],
       [7, 6.8, 500, 3],
-      [8, 7.2, 650, 2],
+        [8, 7.2, 650, 4],
       [9, 6.3, 290, 3],
-      [10, 6.0, 300, 2],
-      [11, 7.2, 500, 2],
+        [10, 6.0, 300, 3],
+        [11, 7.2, 500, 4],
       [12, 7.1, 500, 1],
       [13, 6.8, 500, 1],
       [14, 7.7, 500, 2],
@@ -200,88 +443,11 @@
       label: false
     }],
     data: [
-      ["Chiffre d'affaires", 842020, 5.2, 508340, 3.1, 732245, -0.12],
-      ["Résultats bruts d'exposition", 42020, 12, 18340, 8.8, 2245, 5],
-      ["Résultats d'exploitation", 32020, 1, 12340, 3, 1245, 5],
-      ["Investissement", 1020, 10, 8340, 0, 2245, -3.1415]
+        ["Chiffre d'affaires", 842020, 5.2, 508340, 3.1, 732245, ''],
+        ["Résultats bruts d'exposition", 42020, 12, 18340, 8.8, 2245, ''],
+        ["Résultats d'exploitation", 32020, 1, 12340, 3, 1245, ''],
+        ["Investissement", 1020, 10, 8340, 0, 2245, '']
     ],
-    highcharts: {
-      chart: {
-        type: 'column'
-      },
-      title: {
-        text: ''
-      },
-      xAxis: [{
-        categories: ['2015', '2014', '2013'],
-        crosshair: true
-      }],
-      yAxis: [{
-        title: {
-          text: 'Montant'
-        },
-        units: '€'
-      },{
-        title: {
-          text: 'Difference',
-          style: {
-            color: '#b20066'
-          },
-        },
-        labels: {
-          style: {
-            color: '#b20066'
-          }
-        },
-        units: '%',
-        opposite: true
-      }],
-      series: [{
-        type: 'column',
-        name: "Chiffre d'affaires",
-        data: [842020, 508340, 732245],
-        yAxis: 0
-      },{
-        type: 'line',
-        name: "Chiffre d'affaires difference",
-        data: [5.2, 3.1, -0.12],
-        showInLegend: false,
-        yAxis: 1
-      },{
-        type: 'column',
-        name: "Résultats bruts d'exposition",
-        data: [42020, 18340, 2245],
-        yAxis: 0
-      },{
-        type: 'line',
-        name: "Résultats bruts d'exposition difference",
-        data: [12, 8.8, 5],
-        showInLegend: false,
-        yAxis: 1
-      },{
-        type: 'column',
-        name: "Résultats d'exploitation",
-        data: [32020, 12340, 1245],
-        yAxis: 0
-      },{
-        type: 'line',
-        name: "Résultats d'exploitation difference",
-        data: [1, 3, 5],
-        showInLegend: false,
-        yAxis: 1
-      },{
-        type: 'column',
-        name: "Investissement",
-        data: [1020, 8340, 2245],
-        yAxis: 0
-      },{
-        type: 'line',
-        name: "Investissement difference",
-        data: [10, 0, -3.1415],
-        showInLegend: false,
-        yAxis: 1
-      }]
-    },
     exportUrl: route('project/12345/export/income')
   },
 
@@ -314,191 +480,30 @@
       name: 'year-2013',
       type: 'float',
       label: '2013'
-    },{
-      name: 'diff-2013',
-      type: 'float',
-      label: false
     }],
     data: [
       ['title', 'Actif', '', '', ''],
-      ['', 'Immobilisations corporelles', 842020, 5.2, 508340, 4.3, 732245, 8.5],
-      ['', 'Immobilisations incorporelles', 42020, 6.2, 18340, 5.0, 2245, -2],
-      ['', 'Immobilisations financières', 32020, 8, 12340, -4.3, 1245, 5.0],
-      ['', 'Stocks', 1020, 9.2, 8340, -21.2, 3745, 33.333],
-      ['', 'Créances (clients & autres)', 842020, 3, 508340, -2.2, 732245, 4.5],
-      ['', 'Disponibilités', 42020, 9.2, 18340, 7.4, 2245, 6.5],
-      ['', 'Valeur mobilières de placement', 32020, -4.2, 12340, 6.8, 1245, 9.1],
-      ['total', 'Total actif', 4807975, 11, 4237129, 10, 4137892, 8],
+        ['', 'Immobilisations corporelles', 842020, 5.2, 508340, 4.3, 732245, ''],
+        ['', 'Immobilisations incorporelles', 42020, 6.2, 18340, 5.0, 2245, ''],
+        ['', 'Immobilisations financières', 32020, 8, 12340, -4.3, 1245, ''],
+        ['', 'Stocks', 1020, 9.2, 8340, -21.2, 3745, ''],
+        ['', 'Créances (clients & autres)', 842020, 3, 508340, -2.2, 732245, ''],
+        ['', 'Disponibilités', 42020, 9.2, 18340, 7.4, 2245, ''],
+        ['', 'Valeur mobilières de placement', 32020, -4.2, 12340, 6.8, 1245, ''],
+        ['total', 'Total actif', 4807975, 11, 4237129, 10, 4137892, ''],
       ['title', 'Passif', '', '', '', '', '', ''],
-      ['', 'Capitaux propres', 842020, 5, 508340, 3.34, 732245, 6.7],
-      ['', 'Provisions pour risques & charges', 42020, 3, 18340, -9.2, 2245, 10.1],
-      ['', 'Amortissement sur immobilisations', 32020, -6, 12340, 9.9, 1245, -11.23],
-      ['', 'Dettes financières', 1020, 4, 8340, 6.6, 3745, 7.2],
-      ['', 'Dettes fournissers', 842020, -22, 508340, -15.67, 732245, -12.5],
-      ['', 'Autres dettes', 42020, 5, 18340, 2, 2245, 12],
-      ['total', 'Total passif', 4207975, 0, 4137129, 0.2, 4037892, 4.4]
+        ['', 'Capitaux propres', 842020, 5, 508340, 3.34, 732245, ''],
+        ['', 'Provisions pour risques & charges', 42020, 3, 18340, -9.2, 2245, ''],
+        ['', 'Amortissement sur immobilisations', 32020, -6, 12340, 9.9, 1245, ''],
+        ['', 'Dettes financières', 1020, 4, 8340, 6.6, 3745, ''],
+        ['', 'Dettes fournissers', 842020, -22, 508340, -15.67, 732245, ''],
+        ['', 'Autres dettes', 42020, 5, 18340, 2, 2245, ''],
+        ['total', 'Total passif', 4207975, 0, 4137129, 0.2, 4037892, '']
     ],
-    highcharts: {
-      chart: {
-        type: 'column'
-      },
-      title: {
-        text: ''
-      },
-      xAxis: [{
-        categories: ['2015', '2014', '2013'],
-        crosshair: true
-      }],
-      yAxis: [{
-        title: {
-          text: 'Montant'
-        },
-        units: '€'
-      },{
-        title: {
-          text: 'Total Montant',
-          style: {
-            color: '#b20066'
-          },
-        },
-        labels: {
-          style: {
-            color: '#b20066'
-          }
-        },
-        units: '€',
-        opposite: true
-      }],
-      plotOptions: {
-        column: {
-          stacking: 'normal'
-        }
-      },
-      series: [{
-        type: 'column',
-        name: 'Immobilisations corporelles',
-        data: [842020, 508340, 732245],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'column',
-        name: 'Immobilisations incorporelles',
-        data: [42050, 18380, 2215],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'column',
-        name: 'Immobilisations financières',
-        data: [32020, 12340, 1245],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'column',
-        name: 'Stocks',
-        data: [1020, 8340, 3745],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'column',
-        name: 'Créances (clients & autres)',
-        data: [840020, 500340, 730245],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'column',
-        name: 'Disponibilités',
-        data: [41020, 18040, 2045],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'column',
-        name: 'Valeur mobilières de placement',
-        data: [30020, 12040, 1205],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'column',
-        name: 'Stocks',
-        data: [1220, 8200, 4745],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'actif'
-      },{
-        type: 'line',
-        name: 'Total Actif',
-        data: [4807975, 4237129, 4137892],
-        yAxis: 1
-      },
-
-      {
-        type: 'column',
-        name: 'Capitaux propres',
-        data: [642020, 208340, 132245],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'passif'
-      },{
-        type: 'column',
-        name: 'Provisions pour risques & charges',
-        data: [32020, 19340, 3245],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'passif'
-      },{
-        type: 'column',
-        name: 'Amortissement sur immobilisations',
-        data: [12020, 16340, 1335],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'passif'
-      },{
-        type: 'column',
-        name: 'Dettes financières',
-        data: [2020, 6340, 8745],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'passif'
-      },{
-        type: 'column',
-        name: 'Dettes fournissers',
-        data: [542020, 208340, 532245],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'passif'
-      },{
-        type: 'column',
-        name: 'Autres dettes',
-        data: [22020, 16340, 1245],
-        showInLegend: false,
-        yAxis: 0,
-        stack: 'passif'
-      },{
-        type: 'line',
-        name: 'Total Passif',
-        data: [4207975, 4137129, 4037892],
-        yAxis: 1
-      }]
-    },
     exportUrl: route('project/12345/export/balance')
   }
+  }
 } %}
-
-{# Put the data into the page for Highcharts (would ideally be done via AJAX?) #}
-{% block extendHead %}
-<script type="text/javascript">
-var chartJSON = {
-  income: '{{ placeholderData.income.highcharts|json_encode|escape('js') }}',
-  balance: '{{ placeholderData.balance.highcharts|json_encode|escape('js') }}'
-}
-</script>
-{% endblock %}
 
 {# Page data #}
 {% set bodyId = '' %}
@@ -515,12 +520,53 @@ var chartJSON = {
 
   <article id="project-single" class="page project-single project-category-{{ project.categoryId }}">
     <header class="project-single-header-wrap">
+      {# Generate object for mapview to place marker on map #}
+      {% if project.lat is defined and project.lng is defined %}
+        {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
+        {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
+        {% set mapviewGroup = (listItem.daysLeft == 0 ? 'expired' : 'active') %}
+
+        {# Set the offer status to show the icon in the marker #}
+        {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
+        {% set mapviewOfferStatus = '' %}
+        {% if project.currentUserTotalOffers > 0 and project.currentUserOffers is not empty %}
+          {% for statusOffer, numOffers in project.currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}
+            {% set mapviewOfferStatus = statusOffer %}
+          {% endfor %}
+        {% endif %}
+
+        {# Output map HTML #}
       <div class="project-single-map">
-        <div class="project-single-map-embed">
+          {# The MapView element #}
+          {% set mapview = {
+            target: '#project-map',
+            showFilters: false,
+            mapbox: {
+              center: [project.lat, project.lng],
+              zoom: 13
+            },
+            groups: ['all'],
+            markers: [{
+              id: 'marker' ~ project.id,
+              categoryId: project.categoryId,
+              latLng: [project.lat, project.lng],
+              title: project.title,
+              description: '<div style="font-style: italic;">' ~ project.locationCity ~ ', ' ~ project.locationPostCode ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.rating ~ ' out of 5</span></span></div>',
+              status: (project.daysLeft == 0 ? 'expired' : 'active'),
+              offerStatus: mapviewOfferStatus|default(''),
+              groupName: 'all'
+            }]
+          } %}
+
+          {# @note This MapView will only be initialised when it's first viewed, to reduce calls to Mapbox and lower API usage (see showProjectSingleMap function in main.dev.js) #}
+          <div id="project-map" class="project-single-map-embed">
           <a href="javascript:;" class="btn-close ui-project-single-map-toggle"><span class="label sr-only">Close Map</span></a>
-          <div id="project-map">Mapbox @TODO</div>
         </div>
+          <script type="text/javascript">
+            var projectMapViewSettings = '{{ mapview|json_encode|escape('js') }}'
+          </script>
       </div><!-- /.project-single-map -->
+      {% endif %}
 
       <div class="project-single-header">
         <div class="project-single-header-position">
@@ -534,12 +580,12 @@ var chartJSON = {
                 <div class="project-single-details">
                   <h1 class="project-single-title">{{ project.title }}</h1>
                   <div class="project-single-meta">
-                    <h4 class="project-single-location"><span class="icon fa-map-marker"></span> <span class="label">{{ project.locationCity }}, {{ project.locationPostCode }}</span> <a href="javascript:;" class="link ui-project-single-map-toggle"><span class="label">{{ __('View map', 'projectSingleMapShowLabel') }}</span></a></h4>
+                    <h4 class="project-single-location"><span class="icon fa-map-marker-u16"></span> <span class="label">{{ project.locationCity }}, {{ project.locationPostCode }}</span>{% if mapview is defined %} <a href="javascript:;" class="link ui-project-single-map-toggle"><span class="label">{{ __('View map', 'projectSingleMapShowLabel') }}</span></a>{% endif %}</h4>
                   </div><!-- /.project-single-meta -->
                 </div><!-- /.project-single-details -->
               </div>
 
-              <div class="col-lg-4 col-md-4">
+              <div class="col-lg-4 col-md-4 hide-xs">
                 <div class="project-single-rating">
                   <div class="label">La note Unilend</div>
                   <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectSingleRatingLabel')|format(project.rating) }}</span></span>
@@ -564,9 +610,9 @@ var chartJSON = {
               </div>
               {% endif %}
 
-              <div class="col-lg-5 col-md-5 col-sm-6 col-xs-3">
+              <div class="col-lg-5 col-md-5 col-sm-6">
                 <div class="project-single-period">
-                  <div class="project-single-period-countdown"><span class="icon fa-clock-o"></span> <span class="ui-timecount" data-timecount-to="{{ project.dateExpires|escape('html_attr') }}">&hellip;</span></div>
+                  <div class="project-single-period-countdown"><span class="icon fa-clock-u32"></span> <span class="ui-has-timecount" data-timecount-to="{{ project.dateExpires|escape('html_attr') }}">{{ project.dateExpires|time_diff }} restants</span></div>
                   <div class="project-single-period-expires">Fin des offres {{ project.dateExpires|date('l j F Y à H:i') }}</div>
                 </div><!-- /.project-single-period -->
 
@@ -591,6 +637,14 @@ var chartJSON = {
                     <strong>{{ project.totalOffers|__num|nbsp }}</strong> personnes ont fait une offre
                   </div>
                 </div><!-- /.project-single-offers -->
+
+                {# Responsive cheat #}
+                <div class="show-xs">
+                  <div class="project-single-rating">
+                    <div class="label">La note Unilend</div>
+                    <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectSingleRatingLabel')|format(project.rating) }}</span></span>
+                  </div><!-- /.project-single-rating -->
+                </div><!-- /.show-xs -->
               </div>
             </div>
           </div><!-- /.project-single-header-inner -->
@@ -608,31 +662,32 @@ var chartJSON = {
       <div class="project-single-info-position">
         <div class="project-single-info">
           <div class="project-single-cost">
-            <div class="project-single-cost-total"><span class="sr-only">Total cost of project is </span>{{ project.cost|__price|nbsp }}</div>
+            <div class="project-single-cost-total"><span class="sr-only">Total cost of project is </span>{{ project.cost|__price|nbsp }}€</div>
             <div class="project-single-cost-progress" title="Project is currently {{ (100 * project.percentFunded)|__num(0) }}% funded" data-toggle="tooltip">
               <div class="project-single-cost-progress-funded" style="width: {{ 100 * project.percentFunded }}%">
                 <span class="sr-only">Project is currently {{ (100 * project.percentFunded)|__num }}% funded</span>
               </div>
             </div><!-- /.project-single-cost-progress -->
             <div class="project-single-cost-amount">
-              <div class="project-single-cost-amount-funded">{{ project.costFunded|__price(0)|nbsp }} prêtés</div>
-              <div class="project-single-cost-amount-remaining">{{ project.costRemaining|__price(0)|nbsp }} restants</div>
+              <div class="project-single-cost-amount-funded">{{ project.costFunded|__price(0)|nbsp }}€ prêtés</div>
+              <div class="project-single-cost-amount-remaining">{{ project.costRemaining|__price(0)|nbsp }}€ restants</div>
             </div><!-- /.project-single-cost-amount -->
           </div><!-- /.project-single-cost -->
 
           <div class="row">
             <div class="project-single-interest">
-              <span class="icon fa-line-chart"></span> <span class="c-p1"><strong>{{ project.interest|__num(1) }}</strong>%</span>
+              <span class="icon fa-linechart-u32"></span> <span class="c-p1"><strong>{{ project.interest|__num(1) }}</strong>%</span>
               <div class="label">Taux Moyen</div>
             </div><!-- /.project-single-interest -->
 
             <div class="project-single-duration">
-              <span class="icon fa-calendar"></span> <span class="c-p1"><strong>{{ project.loanDuration }}</strong> mois</span>
+              <span class="icon fa-calendar-alt-u32"></span> <span class="c-p1"><strong>{{ project.loanDuration }}</strong> mois</span>
               <div class="label">Durée du prêt</div>
             </div><!-- /.project-single-duration -->
           </div>
 
           {# When user is logged in #}
+          {% if userProfile.loggedIn == true %}
           <form action="{{ siteurlajax('project/invest') }}" method="post" class="project-single-form project-single-form-invest">
             <div class="form-field">
               <label><span class="sr-only">Montant en euros</span>
@@ -653,37 +708,40 @@ var chartJSON = {
           </form><!-- /.project-single-form-invest -->
 
           {# When user is not logged in #}
-          {# @note Remove the `style="display: none"` when you figure out how/where you place it in #}
-          <form action="{{ siteurlajax('user/access') }}" method="post" class="project-single-form project-single-form-access" style="display: none">
+          {% else %}
+            <form action="{{ siteurlajax('user/access') }}" method="post" class="project-single-form project-single-form-access" data-formvalidation>
+              <div class="form-notice">
             <p>Veuillez vous connecter pour faire une offre sur ce projet</p>
+              </div><!-- /.form-notice -->
             <div class="form-field">
-              <label><span class="sr-only">E-mail</span>
+                <label for="form-access-email"><span class="sr-only">E-mail</span></label>
                 <div class="input-group set-left">
                   <div class="btn-group">
                     <span class="icon fa-envelope-o"></span>
                   </div>
-                  <input type="email" name="access[email]" placeholder="E-mail" value="" class="input-field" />
+                  <input id="form-access-email" type="email" name="access[email]" placeholder="E-mail" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" />
                 </div><!-- /.input-group -->
-              </label>
+                <ul class="ui-formvalidation-messages"></ul>
             </div><!-- /.form-field -->
             <div class="form-field">
-              <label><span class="sr-only">Mot de passe</span>
+                <label for="form-access-password"><span class="sr-only">Mot de passe</span></label>
                 <div class="input-group set-left">
                   <div class="btn-group">
-                    <span class="icon fa-lock"></span>
+                    <span class="icon fa-lock-u32"></span>
                   </div>
-                  <input type="password" name="access[password]" placeholder="Mot de passe" value="" class="input-field" />
+                  <input id="form-access-password" type="password" name="access[password]" placeholder="Mot de passe" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true"  />
                 </div><!-- /.input-group -->
+                <ul class="ui-formvalidation-messages"></ul>
                 <div class="field-help">
                   <p><a href="{{ route('user/forgotpassword') }}" class="link">Mot de passe oublié?</a></p>
                 </div>
-              </label>
             </div><!-- /.form-field -->
             <div class="btn-toolbar">
               <button type="submit" class="btn-primary btn-size-full">Connexion</button>
               <p><a href="{{ route('user/preter/new') }}"><span class="icon fa-angle-right"></span> Pas encore inscrit&nbsp;?</a></p>
             </div><!-- /.btn-toolbar -->
           </form><!-- /.project-single-form-access -->
+          {% endif %}
 
           {{ listSharing.render({
             className: 'list-sharing',
@@ -725,7 +783,7 @@ var chartJSON = {
             <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectSingleRatingLabel')|format(project.rating) }}</span></span>
           </div><!-- /.project-single-menu-title -->
           <div class="project-single-menu-col project-single-menu-period">
-            <span class="icon fa-clock-o"></span> <span class="ui-timecount" data-timecount-to="{{ project.dateExpires|escape('html_attr') }}">&hellip;</span>
+            <span class="icon fa-clock-u32"></span> <span class="ui-has-timecount" data-timecount-to="{{ project.dateExpires|escape('html_attr') }}">&hellip;</span>
           </div><!-- /.project-single-menu-period -->
           <div class="project-single-menu-col project-single-menu-top">
             <a href="#top" class="btn-nav-top"><span class="sr-only">Back to top</span></a>
@@ -762,7 +820,7 @@ var chartJSON = {
                   </div>
                   <div class="section-tabs-content tab-content">
                     {# My Offers - In Progress / Accepted #}
-                    {% set myoffers = placeholderData.myoffers %}
+                    {% set myoffers = placeholderData.tables.myoffers %}
                     {% set myoffersIds = [] %}
                     <div id="myoffers-inprogress" role="tabpanel" class="tab-pane active" aria-labelledby="project-myoffers-inprogress project-myoffers">
 
@@ -776,7 +834,7 @@ var chartJSON = {
                               <td class="table-myoffers-item-id">{{ item[0] }}</td>
                               <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
                               <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
-                              <td class="table-myoffers-item-view"><a href="{{ item[4] }}"><span class="icon fa-eye"><span class="sr-only">View your offer</span></span></a></td>
+                              <td class="table-myoffers-item-view"><a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a></td>
                             </tr>
                           {% else %}
                             <tr>
@@ -804,7 +862,7 @@ var chartJSON = {
                               <td class="table-myoffers-item-id">{{ item[0] }}</td>
                               <td class="table-myoffers-item-interest">{{ item[1]|__num(1) }}%</td>
                               <td class="table-myoffers-item-amount">{{ item[2]|__num(2)|nbsp }}€</td>
-                              <td class="table-myoffers-item-view"><a href="{{ item[4] }}"><span class="icon fa-eye"><span class="sr-only">View your offer</span></span></a></td>
+                              <td class="table-myoffers-item-view"><a href="{{ item[4] }}"><span class="icon fa-eye-u32"><span class="sr-only">View your offer</span></span></a></td>
                             </tr>
                           {% else %}
                             <tr>
@@ -837,7 +895,7 @@ var chartJSON = {
                   </div>
                   <div class="section-tabs-content tab-content">
                     {# All offers #}
-                    {% set alloffers = placeholderData.alloffers %}
+                    {% set alloffers = placeholderData.tables.alloffers %}
 
                     <div id="alloffers-list" role="tabpanel" class="tab-pane active" aria-labelledby="project-alloffers-all project-alloffers">
 
@@ -846,22 +904,22 @@ var chartJSON = {
                           <thead class="table-sortable-columns">
                             <tr>
                               <th class="table-sortable-column table-alloffers-item-id" data-sortable-by="id">
-                                <span class="sr-only">Sort by column </span>No</span>
+                                <span class="label"><span class="sr-only">Sort by column </span>No</span>
                               </th>
                               <th class="table-sortable-column table-alloffers-item-interest" data-sortable-by="interest">
-                                <span class="sr-only">Sort by column </span>Taux d'intérêt</span>
+                                <span class="label"><span class="sr-only">Sort by column </span>Taux d'intérêt</span>
                               </th>
                               <th class="table-sortable-column table-alloffers-item-amount" data-sortable-by="amount">
-                                <span class="sr-only">Sort by column </span>Montant</span>
+                                <span class="label"><span class="sr-only">Sort by column </span>Montant</span>
                               </th>
                               <th class="table-sortable-column table-alloffers-item-status" data-sortable-by="status">
-                                <span class="sr-only">Sort by column </span>Statut</span>
+                                <span class="label"><span class="sr-only">Sort by column </span>Statut</span>
                               </th>
                             </tr>
                           </thead>
 
                           <tbody data-sortable-content>
-                            {% for i, item in alloffers.data if item[3] > 0 %}
+                            {% for i, item in alloffers.data if item[3] > 0 and i < 10 %}
                               {# Mark if the current user is involved with the offer #}
                               {% set classCurrentUserInvolved = '' %}
                               {% if item[0] in myoffersIds %}
@@ -875,13 +933,16 @@ var chartJSON = {
                                 <td class="table-alloffers-item-status">
                                   {# In progress #}
                                   {% if item[3] == 1 %}
-                                  <span class="icon fa-clock-o"></span><span class="sr-only"> In progress</span></td>
+                                  <span class="icon fa-clock-u32"></span><span class="sr-only"> In progress</span></td>
                                   {# Accepted #}
                                   {% elseif item[3] == 2 %}
-                                  <span class="icon fa-check"></span><span class="sr-only"> Accepted</span></td>
+                                  <span class="icon fa-check-u32"></span><span class="sr-only"> Accepted</span></td>
                                   {# Rejected #}
                                   {% elseif item[3] == 3 %}
-                                  <span class="icon fa-ban"></span><span class="sr-only"> Rejected</span>
+                                  <span class="icon fa-ban-u32"></span><span class="sr-only"> Rejected</span>
+                                  {# Accepted - Autolend #}
+                                  {% elseif item[3] == 4 %}
+                                  <span class="icon fa-autolend-u32"></span><span class="sr-only"> Autolend offer accepted</span></td>
                                   {% endif %}
                                 </td>
                               </tr>
@@ -894,13 +955,22 @@ var chartJSON = {
                               </tr>
                             {% endfor %}
                           </tbody>
+                          {% if alloffers.data|length > 10 %}
+                          <tfoot>
+                            <tr>
+                              <td colspan="4" class="table-more">
+                                <a href="#todo">Afficher plus <span class="icon fa-angle-right"></span></a>
+                              </td>
+                            </tr>
+                          </tfoot>
+                          {% endif %}
                         </table><!-- /.table-alloffers -->
                       </div><!-- /.table-scroll -->
 
                     </div><!-- /.tab-pane -->
 
                     {# All offers #}
-                    {% set alloffersOverview = placeholderData.alloffersOverview %}
+                    {% set alloffersOverview = placeholderData.tables.alloffersOverview %}
 
                     <div id="alloffers-table" role="tabpanel" class="tab-pane" aria-labelledby="project-alloffers-table project-alloffers">
 
@@ -909,16 +979,16 @@ var chartJSON = {
                           <thead class="table-sortable-columns">
                               <tr>
                                 <th class="table-sortable-column table-alloffersoverview-item-interest" data-sortable-by="id">
-                                  <span class="sr-only">Sort by column </span>Taux</span>
+                                  <span class="label"><span class="sr-only">Sort by column </span>Taux</span>
                                 </th>
                                 <th class="table-sortable-column table-alloffersoverview-item-amount" data-sortable-by="amount">
-                                  <span class="sr-only">Sort by column </span>Montant total</span>
+                                  <span class="label"><span class="sr-only">Sort by column </span>Montant total</span>
                                 </th>
                                 <th class="table-sortable-column table-alloffersoverview-item-offers" data-sortable-by="offers">
-                                  <span class="sr-only">Sort by column </span>Nb offres</span>
+                                  <span class="label"><span class="sr-only">Sort by column </span>Nb offres</span>
                                 </th>
                                 <th class="table-sortable-column table-alloffersoverview-item-accepted" data-sortable-by="accepted">
-                                  <span class="sr-only">Sort by column </span>Offres en cours</span>
+                                  <span class="label"><span class="sr-only">Sort by column </span>Offres en cours</span>
                                 </th>
                               </tr>
                             </thead>
@@ -948,7 +1018,7 @@ var chartJSON = {
                                     {# My offers #}
                                     {% if item[4] > 0 %}
                                       <span class="table-alloffersoverview-item-myoffers">
-                                        <span class="icon fa-check"></span> {{ item[4] }} offres
+                                        <span class="icon fa-check-u32"></span> {{ item[4] }} offres
                                       </span>
                                     {% endif %}
                                   </td>
@@ -961,7 +1031,7 @@ var chartJSON = {
                     </div><!-- /.tab-pane -->
 
                     <div id="alloffers-graph" role="tabpanel" class="tab-pane">
-                      <div class="chart">Chart @TODO</div>
+                      <div class="chart" data-chartview='{{ placeholderData.charts.projectOffers|json_encode|escape('html_attr') }}'></div>
                     </div>
 
                   </div><!-- /.section-tabs-content -->
@@ -994,7 +1064,7 @@ var chartJSON = {
 
             <div id="history" data-watchscroll-nav>
               {# Income history #}
-              {% set income = placeholderData.income %}
+              {% set income = placeholderData.tables.income %}
 
               <section id="project-section-income" class="page-section">
                 <div class="tabs">
@@ -1036,8 +1106,12 @@ var chartJSON = {
                                   <span class="diff">{{ item[4]|__num(2) }}%</span>
                                 </td>
                                 <td class="table-income-item-year">
+                                  {% if item[7] is not empty %}
                                   <span class="amount">{{ item[5]|__num(2)|nbsp }}€</span>
                                   <span class="diff">{{ item[6]|__num(2) }}%</span>
+                                  {% else %}
+                                  {{ item[5]|__num(2)|nbsp }}€
+                                  {% endif %}
                                 </td>
                               </tr><!-- /.table-item -->
                             {% endfor %}
@@ -1048,20 +1122,20 @@ var chartJSON = {
                     </div><!-- /.tab-pane -->
 
                     <div id="income-graph" role="tabpanel" class="tab-pane">
-                      <div class="chart" data-chart="income">Loading...</div>
+                      <div class="chart" data-chartview='{{ placeholderData.charts.projectOwnerIncome|json_encode|escape('html_attr') }}'></div>
                     </div>
 
                   </div><!-- /.section-tabs-content -->
                 </div><!-- /tabs -->
 
                 <div class="btn-toolbar">
-                  <a href="{{ income.exportUrl }}" class="btn-default"><span class="icon fa-table"></span> Export CSV</a>
+                  <a href="{{ income.exportUrl }}" class="btn-default"><span class="icon fa-excel-u32"></span> Export CSV</a>
                 </div><!-- /.btn-toolbar -->
 
               </section><!-- /.page-section -->
 
               {# Balance history #}
-              {% set balance = placeholderData.balance %}
+              {% set balance = placeholderData.tables.balance %}
               <section id="project-section-balance" class="page-section">
                 <div class="tabs">
                   <div class="section-tabs-nav">
@@ -1110,8 +1184,12 @@ var chartJSON = {
                                     <span class="diff">{{ item[5]|__num(2) }}%</span>
                                   </td>
                                   <td class="table-income-item-year">
+                                    {% if item[7] is not empty %}
                                     <span class="amount">{{ item[6]|__num(2)|nbsp }}€</span>
                                     <span class="diff">{{ item[7]|__num(2) }}%</span>
+                                    {% else %}
+                                    {{ item[6]|__num(2)|nbsp }}€
+                                    {% endif %}
                                   </td>
                                 </tr><!-- /.table-item-total -->
 
@@ -1128,8 +1206,12 @@ var chartJSON = {
                                     <span class="diff">{{ item[5]|__num(2) }}%</span>
                                   </td>
                                   <td class="table-income-item-year">
+                                    {% if item[7] is not empty %}
                                     <span class="amount">{{ item[6]|__num(2)|nbsp }}€</span>
                                     <span class="diff">{{ item[7]|__num(2) }}%</span>
+                                    {% else %}
+                                    {{ item[6]|__num(2)|nbsp }}€
+                                    {% endif %}
                                   </td>
                                 </tr><!-- /.table-item -->
                               {% endif %}
@@ -1141,13 +1223,28 @@ var chartJSON = {
                     </div><!-- /.tab-pane -->
 
                     <div id="balance-graph" role="tabpanel" class="tab-pane">
-                      <div class="chart" data-chart="balance">Loading...</div>
+                      <div class="tabs nested-tabs">
+                        <div class="tabs-nav">
+                          <ul class="nav nav-tabs-text">{#
+                          #}<li role="presentation" class="active"><a href="#balance-graph-active" role="tab" data-toggle="tab">Active</a></li>{#
+                          #}<li role="presentation"><a href="#balance-graph-passive" role="tab" data-toggle="tab">Passive</a></li>{#
+                        #}</ul>
+                        </div><!-- /.tab-navigation -->
+                        <div class="tab-content">
+                          <div id="balance-graph-active" role="tabpanel" class="tab-pane active">
+                            <div class="chart" data-chartview='{{ placeholderData.charts.projectOwnerBalanceActive|json_encode|escape('html_attr') }}'></div>
+                          </div><!-- /.tab-pane -->
+                          <div id="balance-graph-passive" role="tabpanel" class="tab-pane">
+                            <div class="chart" data-chartview='{{ placeholderData.charts.projectOwnerBalancePassive|json_encode|escape('html_attr') }}'></div>
+                          </div><!-- /.tab-pane -->
                     </div>
+                      </div><!-- /.nested-tabs -->
+                    </div><!-- /.tab-pane -->
                   </div><!-- /.section-tabs-content -->
                 </div><!-- /tabs -->
 
                 <div class="btn-toolbar">
-                  <a href="{{ balance.exportUrl }}" class="btn-default"><span class="icon fa-table"></span> Export CSV</a>
+                  <a href="{{ balance.exportUrl }}" class="btn-default"><span class="icon fa-excel-u32"></span> Export CSV</a>
                 </div><!-- /.btn-toolbar -->
 
               </section><!-- /.page-section -->
@@ -1163,12 +1260,12 @@ L’endettement de 6 630 000 euros est réparti entre 430 000 euros de dettes à
 
               <div class="message-alert">
                 <p><strong>Prêter présente un risque de non-remboursement:</strong> répartissez bien vos prêts et ne prêtez que de l'argent dont vous n'avez pas besoin immédiatement.</p>
-                <a href="#" class="link">En savoir plus</a>
+                <a href="#todo" class="link">En savoir plus</a>
               </div>
 
               <div class="message-alert">
                 <p>Les personnes physiques peuvent bénéficier des dispositions fiscales de déduction des pertes en capital jusqu'à 1 0t00 euros prêtés par projet.</p>
-                <a href="#" class="link">En savoir plus</a>
+                <a href="#todo" class="link">En savoir plus</a>
               </div>
             </section><!-- /.page-section -->
 

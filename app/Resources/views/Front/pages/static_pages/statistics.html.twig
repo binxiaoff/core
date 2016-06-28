@@ -9,11 +9,450 @@ permalink: route('apropos/statistiques'),
 classNames: "page-single-apropos"
 } %}
 
-{% set bodyId = '' %}
-
-
 {# Placeholder Data #}
 {% set placeholderData = {
+  charts: {
+    preterStatisticsMap: {
+      type: 'preterStatisticsMap',
+      loadFirst: {
+        mapGeoJson: siteurljs('vendor/geojson/fr-all.geo.json')
+      },
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'map'
+        },
+        title: {
+          text: ''
+        },
+        mapNavigation: {
+          enabled: false
+        },
+        legend: {
+          enabled: false
+        },
+        tooltip: {
+          enabled: true,
+          headerFormat: '',
+          pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+          minColor: 'rgba(180,0,102,.1)',
+          maxColor: 'rgba(180,0,102,.8)'
+        },
+        series: [{
+          data: [{
+            "hc-key": "fr-t",
+            "value": 0
+          },{
+            "hc-key": "fr-h",
+            "value": 1
+          },{
+            "hc-key": "fr-e",
+            "value": 2
+          },{
+            "hc-key": "fr-r",
+            "value": 3
+          },{
+            "hc-key": "fr-u",
+            "value": 4
+          },{
+            "hc-key": "fr-n",
+            "value": 5
+          },{
+            "hc-key": "fr-p",
+            "value": 6
+          },{
+            "hc-key": "fr-o",
+            "value": 7
+          },{
+            "hc-key": "fr-v",
+            "value": 8
+          },{
+            "hc-key": "fr-s",
+            "value": 9
+          },{
+            "hc-key": "fr-g",
+            "value": 10
+          },{
+            "hc-key": "fr-k",
+            "value": 11
+          },{
+            "hc-key": "fr-a",
+            "value": 12
+          },{
+            "hc-key": "fr-c",
+            "value": 13
+          },{
+            "hc-key": "fr-f",
+            "value": 14
+          },{
+            "hc-key": "fr-l",
+            "value": 15
+          },{
+            "hc-key": "fr-d",
+            "value": 16
+          },{
+            "hc-key": "fr-b",
+            "value": 17
+          },{
+            "hc-key": "fr-i",
+            "value": 18
+          },{
+            "hc-key": "fr-q",
+            "value": 19
+          },{
+            "hc-key": "fr-j",
+            "value": 20
+          },{
+            "hc-key": "fr-m",
+            "value": 21
+          },{
+            "hc-key": "fr-re",
+            "value": 22
+          },{
+            "hc-key": "fr-yt",
+            "value": 23
+          },{
+            "hc-key": "fr-gf",
+            "value": 24
+          },{
+            "hc-key": "fr-mq",
+            "value": 25
+          },{
+            "hc-key": "fr-gp",
+            "value": 26
+          }],
+          joinBy: 'hc-key',
+          color: 'rgba(180,0,102,.2)',
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          showInLegend: false,
+          dataLabels: {
+            enabled: false
+          },
+          states: {
+            hover: {
+              color: '#B40066'
+            }
+          },
+          showInLegend: false
+        }]
+      }
+    },
+
+    emprunterStatisticsMap: {
+      type: 'emprunterStatisticsMap',
+      loadFirst: {
+        mapGeoJson: siteurljs('vendor/geojson/fr-all.geo.json')
+      },
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'map'
+        },
+        title: {
+          text: ''
+        },
+        mapNavigation: {
+          enabled: false
+        },
+        legend: {
+          enabled: false
+        },
+        tooltip: {
+          enabled: true,
+          headerFormat: '',
+          pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+          minColor: 'rgba(180,0,102,.1)',
+          maxColor: 'rgba(180,0,102,.8)'
+        },
+        series: [{
+          data: [{
+            "hc-key": "fr-t",
+            "value": 0
+          },{
+            "hc-key": "fr-h",
+            "value": 1
+          },{
+            "hc-key": "fr-e",
+            "value": 2
+          },{
+            "hc-key": "fr-r",
+            "value": 3
+          },{
+            "hc-key": "fr-u",
+            "value": 4
+          },{
+            "hc-key": "fr-n",
+            "value": 5
+          },{
+            "hc-key": "fr-p",
+            "value": 6
+          },{
+            "hc-key": "fr-o",
+            "value": 7
+          },{
+            "hc-key": "fr-v",
+            "value": 8
+          },{
+            "hc-key": "fr-s",
+            "value": 9
+          },{
+            "hc-key": "fr-g",
+            "value": 10
+          },{
+            "hc-key": "fr-k",
+            "value": 11
+          },{
+            "hc-key": "fr-a",
+            "value": 12
+          },{
+            "hc-key": "fr-c",
+            "value": 13
+          },{
+            "hc-key": "fr-f",
+            "value": 14
+          },{
+            "hc-key": "fr-l",
+            "value": 15
+          },{
+            "hc-key": "fr-d",
+            "value": 16
+          },{
+            "hc-key": "fr-b",
+            "value": 17
+          },{
+            "hc-key": "fr-i",
+            "value": 18
+          },{
+            "hc-key": "fr-q",
+            "value": 19
+          },{
+            "hc-key": "fr-j",
+            "value": 20
+          },{
+            "hc-key": "fr-m",
+            "value": 21
+          },{
+            "hc-key": "fr-re",
+            "value": 22
+          },{
+            "hc-key": "fr-yt",
+            "value": 23
+          },{
+            "hc-key": "fr-gf",
+            "value": 24
+          },{
+            "hc-key": "fr-mq",
+            "value": 25
+          },{
+            "hc-key": "fr-gp",
+            "value": 26
+          }],
+          joinBy: 'hc-key',
+          color: '#B40066',
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          showInLegend: false,
+          dataLabels: {
+            enabled: false
+          },
+          states: {
+            hover: {
+              color: '#B40066'
+            }
+          },
+          showInLegend: false
+        }]
+      }
+    },
+
+    emprunterStatisticsCategories: {
+      type: 'preterProjectsCategories',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'treemap',
+          spacing: [0, 0, 0, 0]
+        },
+        title: {
+          text: ''
+        },
+        plotOptions: {
+          treemap: {
+            borderColor: '#B40066',
+            borderWidth: 2,
+            dataLabels: {
+              useHTML: true,
+              zIndex: -1
+            }
+          }
+        },
+        tooltip: {
+          enabled: false,
+          useHTML: true
+        },
+        series: [{
+          type: 'treemap',
+          layoutAlgorithm: 'squarified',
+          data: [{
+            name: 'Agriculture',
+            value: 10,
+            svgIconId: '#category-sm-agriculture'
+          },{
+            name: 'Medical',
+            value: 2,
+            svgIconId: '#category-sm-medical'
+          },{
+            name: 'Other',
+            value: 15,
+            svgIconId: '#category-sm-autre'
+          },{
+            name: 'Consultation',
+            value: 3,
+            svgIconId: '#category-sm-consultation'
+          },{
+            name: 'Restauration',
+            value: 15,
+            svgIconId: '#category-sm-restauration'
+          },{
+            name: 'Media',
+            value: 4,
+            svgIconId: '#category-sm-media'
+          },{
+            name: 'Construction',
+            value: 33,
+            svgIconId: '#category-sm-construction'
+          },{
+            name: 'Communication',
+            value: 16,
+            svgIconId: '#category-sm-communication'
+          },{
+            name: 'Hotellerie',
+            value: 7,
+            svgIconId: '#category-sm-hotellerie'
+          },{
+            name: 'Health',
+            value: 3,
+            svgIconId: '#category-sm-health'
+          },{
+            name: 'Industrie',
+            value: 5,
+            svgIconId: '#category-sm-industrie'
+          },{
+            name: 'Informations Technologies',
+            value: 23,
+            svgIconId: '#category-sm-it'
+          },{
+            name: 'Transport',
+            value: 12,
+            svgIconId: '#category-sm-transport'
+          },{
+            name: 'Fashion & textile',
+            value: 12,
+            svgIconId: '#category-sm-textile'
+          }]
+        }]
+      }
+    },
+
+    overviewStatistics: {
+      type: 'preterProjectsOverview',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'pie',
+          height: 300,
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: null,
+          spacingTop: 0,
+          spacingBottom: 0
+        },
+        title: {
+          text: ''
+        },
+        subtitle: {
+          text: 'TRI positif au-delà de ce seuil',
+          color: '#999999',
+          floating: true,
+          useHTML: true,
+          verticalAlign: 'middle'
+        },
+        plotOptions: {
+          pie: {
+            borderColor: 'none',
+            borderWidth: 0,
+            showInLegend: true,
+            dataLabels: {
+              enabled: false
+            }
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Montant',
+          minSize: 120,
+          innerSize: '90%',
+          endAngle: 270,
+          data: [{
+            name: 'Montant Prêté',
+            color: '#5FC5D1',
+            y: 252
+          }]
+        },{
+          name: 'Capital',
+          size: '66%',
+          minSize: 100,
+          innerSize: '90%',
+          endAngle: 270,
+          data: [{
+            name: 'Capital remboursé',
+            color: '#1B88DB',
+            y: 52
+          },{
+            name: 'Capital en attente',
+            color: '#B6D4E4',
+            y: 200
+          },{
+            name: 'Capital en difficulté',
+            color: '#F76965',
+            y: 5
+          }]
+        },{
+          name: 'Intérêts',
+          minSize: 80,
+          size: '33%',
+          innerSize: '90%',
+          endAngle: 330,
+          data: [{
+            name: '',
+            color: '#eeeeee',
+            dataLabels: {
+              enabled: false
+            },
+            showInLegend: false,
+            y: 225,
+            tooltip: false
+          },{
+            name: 'Intérêts reçus',
+            color: '#F2980C',
+            y: 18
+          },{
+            name: 'Intérêts à recevoir',
+            color: '#FFCA2C',
+            y: 46
+          }]
+        }]
+      }
+    }
+  },
+
 "stats": {
 "gross": [{
 "label": "Capital emprunté",
@@ -179,12 +618,12 @@ classNames: "page-single-apropos"
 
     <nav class="page-navigation">
         <div class="site-wrap">
-            <ul data-nav-dropdown-menu="mobile">{
-                <li role="presentation"><a href="{{ route('apropos/quisommesnous') }}">Qui sommes-nous&nbsp;?</a></li>
-                <li role="presentation"><a href="{{ route('apropos/commentcamarche') }}">Comment ça marche&nbsp;?</a></li>
-                <li role="presentation"><a href="{{ route('apropos/chartdedeontologie') }}">Charte de déontologie</a></li>
-                <li role="presentation" class="active"><a href="{{ route('apropos/statistiques') }}">Statistiques</a></li>
-            </ul>
+    <ul data-nav-dropdown-menu="mobile">{#
+      #}<li role="presentation"><a href="{{ route('apropos/quisommesnous') }}">Qui sommes-nous&nbsp;?</a></li>{#
+      #}<li role="presentation"><a href="{{ route('apropos/commentcamarche') }}">Comment ça marche&nbsp;?</a></li>{#
+      #}<li role="presentation"><a href="{{ route('apropos/chartdedeontologie') }}">Charte de déontologie</a></li>{#
+      #}<li role="presentation" class="active"><a href="{{ route('apropos/statistiques') }}">Statistiques</a></li>{#
+    #}</ul>
         </div><!-- /.site-wrap -->
     </nav><!-- /.page-navigation -->
 
@@ -233,9 +672,9 @@ classNames: "page-single-apropos"
                     </div><!-- /.promos -->
                     <div class="stats-charts row">
                         <figure class="stats-chart stats-map">
-                            <div class="chart">
+            <div class="chart" data-chartview='{{ placeholderData.charts.preterStatisticsMap|json_encode|escape('html_attr') }}'>
                                 {# @todo Chart #}
-                                <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt=""/>
+              {# <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt="" /> #}
                             </div>
                             <figcaption><p>Répartition des prêteurs par région</p></figcaption>
                         </figure>
@@ -315,19 +754,13 @@ classNames: "page-single-apropos"
                     <div class="stats-charts row">
                         <div class="col-lg-6 col-md-6">
                             <figure class="stats-chart stats-map">
-                                <div class="chart">
-                                    {# @todo Chart #}
-                                    <img src="{{ siteurlmedia('apropos/statistiques/map-fr-repartition.png') }}" alt=""/>
-                                </div>
-                                <figcaption><p>Répartition des prêteurs par région</p></figcaption>
+              <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsMap|json_encode|escape('html_attr') }}'></div>
+              <figcaption><p>Répartition des emprunters par région</p></figcaption>
                             </figure>
                         </div>
                         <div class="col-lg-6 col-md-6">
                             <figure class="stats-chart stats-treemap">
-                                <div class="chart">
-                                    {# @todo Chart #}
-                                    <img src="{{ siteurlmedia('apropos/statistiques/chart-sectors.png') }}" alt=""/>
-                                </div>
+              <div class="chart" data-chartview='{{ placeholderData.charts.emprunterStatisticsCategories|json_encode|escape('html_attr') }}'></div>
                                 <figcaption><p>Répartition des emprunteurs par secteur d'activité</p></figcaption>
                             </figure>
                         </div>
@@ -409,35 +842,18 @@ classNames: "page-single-apropos"
                 <div class="row">
                     <h3 class="c-t1">Taux de rendement interne global Unilend</h3>
                     <div class="stats-chart stats-chart-unilend">
-                        <div class="chart">
-                            Chart @TODO
-                        </div>
+          <div class="chart" data-chartview='{{ placeholderData.charts.overviewStatistics|json_encode|escape('html_attr') }}'></div>
                         <div class="stats-chart-unilend-key">
                             <div class="row">
-                                <div class="chart-key chart-key-prete col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                    <div class="label">Montant prêté</div>
-                                    <div class="value">252€</div>
+              {% for i, series in placeholderData.charts.overviewStatistics.highcharts.series %}
+                {% for j, dataItem in series.data if dataItem.showInLegend != false %}
+                  <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
+                    <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
+                    <div class="label">{{ dataItem.name|default(series.name) }}</div>
+                    <div class="value">{{ dataItem.y|default(series.value) }}€</div>
                                 </div>
-                                <div class="chart-key chart-key-rembourse col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                    <div class="label">Capital remboursé</div>
-                                    <div class="value">52€</div>
-                                </div>
-                                <div class="chart-key chart-key-attente col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                    <div class="label">Capital en attente</div>
-                                    <div class="value">200€</div>
-                                </div>
-                                <div class="chart-key chart-key-recu col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                    <div class="label">Intérêts reçus</div>
-                                    <div class="value">18€</div>
-                                </div>
-                                <div class="chart-key chart-key-recevoir col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                    <div class="label">Intérêts à recevoir</div>
-                                    <div class="value">46€</div>
-                                </div>
-                                <div class="chart-key chart-key-difficulte col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                                    <div class="label">Capital en difficulté</div>
-                                    <div class="value">5€</div>
-                                </div>
+                {% endfor %}
+              {% endfor %}
                             </div>
                         </div><!-- /.stats-chart-unilend-key -->
                     </div><!-- /.stats-chart-unilend -->

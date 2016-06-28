@@ -2,7 +2,8 @@
 
 <footer class="site-footer">
     <div class="site-wrap">
-        <div class="row">
+    {% block siteFooterNav %}
+      <div class="row site-footer-nav">
             <div class="col-lg-3 col-md-3 col-sm-4">
                 <h4>{% trans %} footer_menu-item-lend {% endtrans %}</h4>
                 <ul class="list-block">
@@ -40,33 +41,31 @@
                 </ul>
             </div>
         </div>
+    {% endblock %}
         <div class="row">
-            <div class="col-lg-4 col-md-4">
-                {% include 'partials/components/list-socialmedia.html.twig' %}
+      <div class="col-sub-left col-lg-4 col-md-4">
+        {% block siteFooterSubLeft %}
+          {% include 'partials/components/list-socialmedia.twig' %}
+        {% endblock %}
             </div>
-            <div class="col-lg-4 col-md-4">
+      <div class="col-sub-center col-lg-4 col-md-4">
+        {% block siteFooterSubCenter %}
                 <ul class="list-awards">
-                    <li>
-                        {#{% image '@UnilendFrontBundle/Resources/public/media/awards/award-bpifrance-150x70.png' %}#}
-                        <img src="{{ asset('bundles/unilendfront/images/awards/award-bpifrance-150x70.png') }}" alt="BPI France 2014"/>{# svgimage
-                        ('award-bpi', 'BPI France', 153, 70) #}
-                        {#{% endimage %}#}
-                    </li>
-                    <li>
-                        {#{% image '@UnilendFrontBundle/Resources/public/media/awards/award-fr-70x70.png' %}#}
-                        {#<img src="{{ asset_url }}" alt="IFP France"/>#}{# svgimage('award-ifp', 'IFP France', 70, 70) #}
-                        {#{% endimage %}#}
-                    </li>
+            <li><img src="{{ siteurlmedia('awards/award-bpifrance-150x70.png') }}" alt="BPI France 2014"/>{# svgimage('award-bpi', 'BPI France', 153, 70) #}</li>
+            <li><img src="{{ siteurlmedia('awards/award-fr-70x70.png') }}" alt="IFP France"/>{# svgimage('award-ifp', 'IFP France', 70, 70) #}</li>
                 </ul>
                 <div class="site-tagline">{% trans %} footer_site-tagline {% endtrans %}</div>
-            </div>
-            <div class="col-lg-4 col-md-4">
+        {% endblock %}
+      </div>
+      <div class="col-sub-right col-lg-4 col-md-4">
+        {% block siteFooterSubRight %}
                 <div class="site-admin-nav">
                     <a href="{{ route('legal') }}">{% trans %} footer_small-mandatory-menu-legal-notice {% endtrans %}</a> | <a href="{{ route('cgu') }}">{% trans %} footer_small-mandatory-menu-terms {% endtrans %}</a> |
                     <a href="{{ route('securite') }}">{% trans %} footer_small-mandatory-menu-security {% endtrans %}</a> | <a href="{{ route('sitemap') }}">{% trans %} footer_small-mandatory-menu-sitemap {% endtrans %}</a>
                 </div>
                 <p class="site-copyright">{% trans %} footer_copyright-all-rights {% endtrans %}</p>
-            </div>
+        {% endblock %}
+      </div>
         </div>
     </div><!-- /.site-wrap -->
 </footer><!-- /.site-footer -->

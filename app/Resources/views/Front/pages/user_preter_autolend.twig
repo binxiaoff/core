@@ -91,9 +91,26 @@
               </div>
             </div>
             <div class="btn-controls col-lg-3 col-md-3">
-              <button class="btn-primary">Valider</button>
+              <button type="submit" class="btn-primary">Valider</button>
             </div>
           </div>
+
+          <div class="autolend-table-dialog" style="display:none">
+            <div class="autolend-table-dialog-position">
+              <div class="autolend-table-dialog-content">
+                <h3 class="dialog-title"><span class="icon fa-autolend-u"><span class="sr-only">Confirm your Autolend settings</span></span></h3>
+                <div class="dialog-message">
+                  <p>Êtes-vous sûr vouloir appliquer ces paramètres?<br/>
+                  Les offres Autolend prendront effet dès acceptation. Vous êtes libre de les modifier à tout moment</p>
+                </div>
+                <footer class="dialog-footer">
+                  <button type="submit" href="javascript:;" class="btn-outline ui-dialog-confirm">Valider</button>
+                  <a href="javascript:;" class="btn-outline btn-shape-clear ui-dialog-cancel">Annuler</a>
+                </footer>
+              </div>
+            </div>
+          </div><!-- /.autolend-table-dialog -->
+
         </section><!-- /.panel -->
         <label data-target="#autolend-table-config" data-toggle="collapse" class="ui-autolend-table-config-toggle {% if userProfile.autolend.enableTable == true %} ui-collapse-open{% endif %}">
           <span class="ui-autolend-table-is-visible">Moins de critères <span class="icon fa-angle-up"></span></span>

@@ -5,49 +5,51 @@
 {% set bodyId = '' %}
 {% set page = {
   id: 'page-sitemap',
-  title: 'Plan du page',
+  title: 'Plan du site',
   permalink: route('sitemap')
 } %}
 
+{% block extendPageHeader %}
+  <div class="page-header-image">{{ svgimage('#header-plandusite', 'Plan du site', 300, 300, 'contain') }}</div>
+{% endblock %}
+
 {% block pageAsideBody %}
-  <div class="page-aside-body hide-xs hide-sm">
-    <img src="{{ siteurlmedia('sitemap/icon-sitemap.png') }}" alt="">
+  <div class="page-aside-body hide-xs hide-sm c-p1" style="text-align: center;">
+    {{ svgimage('#misc-computermapmarker', 'Plan du site', 500, 500, 'contain') }}
   </div><!-- /.page-aside-body -->
 {% endblock %}
 
 {% block pageContentBody %}
   <section class="page-section">
-    <h2><a href="{{ route('/') }}" class="link">Home</a></h2>
+    <h2 class="link"><a href="{{ route('/') }}">Home</a></h2>
 
-    <h2><a href="{{ route('preter') }}" class="link">Prêter</a></h2>
+    <h2 class="link"><a href="{{ route('preter') }}">Prêter</a></h2>
     <ul class="list-links">
       <li><a href="{{ route('preter/guide') }}">Guide du prêteur</a></li>
       <li><a href="{{ route('preter/fiscalite') }}">Fiscalité</a></li>
-      <li><a href="{{ route('user/preter/dashboard') }}">Performance de vos prêts</a></li>
+      <li><a href="{{ route('preter/performance') }}">Performance de vos prêts</a></li>
       <li><a href="{{ route('preter/documents') }}">Documents à fournir</a></li>
       <li><a href="{{ route('preter/new') }}">Devenir prêteur</a></li>
     </ul>
 
-    <h2><a href="{{ route('emprunter') }}" class="link">Emprunter</a></h2>
+    <h2 class="link"><a href="{{ route('emprunter') }}">Emprunter</a></h2>
     <ul class="list-links">
-      <li><a href="{{ route('emprunter/guide') }}">Guide du prêteur</a></li>
-      <li><a href="{{ route('user/emprunter/dashboard') }}">Optimiser sa campagne</a></li>
+      <li><a href="{{ route('emprunter/guide') }}">Guide du emprunteur</a></li>
       <li><a href="{{ route('emprunter/testimonials') }}">Témoignages</a></li>
-      <li><a href="{{ route('emprunter/documents') }}">Documents à fournir</a></li>
       <li><a href="{{ route('emprunter/new') }}">Présenter un projet</a></li>
     </ul>
 
-    <h2><a href="{{ route('projets') }}" class="link">Projets</a></h2>
+    <h2 class="link"><a href="{{ route('projets') }}">Projets</a></h2>
 
-    <h2><a href="{{ route('apropos') }}" class="link">À propos</a></h2>
+    <h2 class="link"><a href="{{ route('apropos') }}">À propos</a></h2>
     <ul class="list-links">
-      <li><a href="{{ route('about/who') }}">Qui sommes nous&nbsp;?</a></li>
-      <li><a href="{{ route('about/how') }}">Comment ça marche&nbsp;?</a></li>
-      <li><a href="{{ route('about/ethics') }}">Charte de déontologie</a></li>
-      <li><a href="{{ route('about/statistics') }}">Statistiques</a></li>
+      <li><a href="{{ route('apropos/quisommesnous') }}">Qui sommes nous&nbsp;?</a></li>
+      <li><a href="{{ route('apropos/commentcamarche') }}">Comment ça marche&nbsp;?</a></li>
+      <li><a href="{{ route('apropos/chartededeontologie') }}">Charte de déontologie</a></li>
+      <li><a href="{{ route('apropos/statistiques') }}">Statistiques</a></li>
     </ul>
 
-    <h2><a href="{{ route('user/new') }}" class="link">Connexion / Inscription</a></h2>
+    <h2 class="link"><a href="{{ route('user/access') }}">Connexion / Inscription</a></h2>
     <ul class="list-links">
       <li><a href="{{ route('user/forgotpassword') }}">Mot de passe oublié</a></li>
     </ul>

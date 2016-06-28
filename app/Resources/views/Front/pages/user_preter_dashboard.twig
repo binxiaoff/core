@@ -11,6 +11,607 @@
   classNames: 'user-preter-dashboard'
 } %}
 
+{% set placeholderData = {
+  charts: {
+    preterProjectsOverview: {
+      type: 'preterProjectsOverview',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'pie',
+          plotBackgroundColor: null,
+          plotBorderWidth: null,
+          plotShadow: null
+        },
+        title: {
+          text: ''
+        },
+        subtitle: {
+          text: 'TRI positif au-delà de ce seuil',
+          color: '#999999',
+          floating: true,
+          useHTML: true,
+          verticalAlign: 'middle'
+        },
+        plotOptions: {
+          pie: {
+            borderColor: 'none',
+            borderWidth: 0,
+            showInLegend: true,
+            dataLabels: {
+              enabled: false
+            }
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Montant',
+          minSize: 120,
+          innerSize: '90%',
+          endAngle: 270,
+          data: [{
+            name: 'Montant Prêté',
+            color: '#5FC5D1',
+            y: 252
+          }]
+        },{
+          name: 'Capital',
+          size: '66%',
+          minSize: 100,
+          innerSize: '90%',
+          endAngle: 270,
+          data: [{
+            name: 'Capital remboursé',
+            color: '#1B88DB',
+            y: 52
+          },{
+            name: 'Capital en attente',
+            color: '#B6D4E4',
+            y: 200
+          },{
+            name: 'Capital en difficulté',
+            color: '#F76965',
+            y: 5
+          }]
+        },{
+          name: 'Intérêts',
+          minSize: 80,
+          size: '33%',
+          innerSize: '90%',
+          endAngle: 330,
+          data: [{
+            name: '',
+            color: '#eeeeee',
+            dataLabels: {
+              enabled: false
+            },
+            showInLegend: false,
+            y: 225,
+            tooltip: false
+          },{
+            name: 'Intérêts reçus',
+            color: '#F2980C',
+            y: 18
+          },{
+            name: 'Intérêts à recevoir',
+            color: '#FFCA2C',
+            y: 46
+          }]
+        }]
+      }
+    },
+
+    preterProjectsCategories: {
+      type: 'preterProjectsCategories',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'treemap',
+          marginTop: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          spacingTop: 0,
+          spacingBottom: 0,
+          spacingLeft: 0,
+          spacingRight: 0
+        },
+        title: {
+          text: ''
+        },
+        plotOptions: {
+          treemap: {
+            borderWidth: 2,
+            dataLabels: {
+              useHTML: true,
+              zIndex: -1
+            }
+          }
+        },
+        tooltip: {
+          enabled: false,
+          useHTML: true
+        },
+        series: [{
+          type: 'treemap',
+          layoutAlgorithm: 'squarified',
+          data: [{
+            name: 'Agriculture',
+            value: 10,
+            svgIconId: '#category-sm-agriculture'
+          },{
+            name: 'Medical',
+            value: 2,
+            svgIconId: '#category-sm-medical'
+          },{
+            name: 'Other',
+            value: 15,
+            svgIconId: '#category-sm-autre'
+          },{
+            name: 'Consultation',
+            value: 3,
+            svgIconId: '#category-sm-consultation'
+          },{
+            name: 'Restauration',
+            value: 15,
+            svgIconId: '#category-sm-restauration'
+          },{
+            name: 'Media',
+            value: 4,
+            svgIconId: '#category-sm-media'
+          },{
+            name: 'Construction',
+            value: 33,
+            svgIconId: '#category-sm-construction'
+          },{
+            name: 'Communication',
+            value: 16,
+            svgIconId: '#category-sm-communication'
+          },{
+            name: 'Hotellerie',
+            value: 7,
+            svgIconId: '#category-sm-hotellerie'
+          },{
+            name: 'Health',
+            value: 3,
+            svgIconId: '#category-sm-health'
+          },{
+            name: 'Industrie',
+            value: 5,
+            svgIconId: '#category-sm-industrie'
+          },{
+            name: 'Informations Technologies',
+            value: 23,
+            svgIconId: '#category-sm-it'
+          },{
+            name: 'Transport',
+            value: 12,
+            svgIconId: '#category-sm-transport'
+          },{
+            name: 'Fashion & textile',
+            value: 12,
+            svgIconId: '#category-sm-textile'
+          }]
+        }]
+      }
+    },
+
+    preterProjectsCategoriesMap: {
+      type: 'preterProjectsCategoriesMap',
+      loadFirst: {
+        mapGeoJson: siteurljs('vendor/geojson/fr-all.geo.json')
+      },
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'map',
+          marginTop: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          spacingTop: 0,
+          spacingBottom: 0,
+          spacingLeft: 0,
+          spacingRight: 0
+        },
+        title: {
+          text: ''
+        },
+        mapNavigation: {
+          enabled: false
+        },
+        legend: {
+          enabled: false
+        },
+        tooltip: {
+          enabled: true,
+          headerFormat: '',
+          pointFormat: '{point.name}: {point.value}%'
+        },
+        colorAxis: {
+          minColor: 'rgba(255,255,255,.2)',
+          maxColor: 'rgba(255,255,255,1)'
+        },
+        series: [{
+          data: [{
+            "hc-key": "fr-t",
+            "value": 0
+          },{
+            "hc-key": "fr-h",
+            "value": 1
+          },{
+            "hc-key": "fr-e",
+            "value": 2
+          },{
+            "hc-key": "fr-r",
+            "value": 3
+          },{
+            "hc-key": "fr-u",
+            "value": 4
+          },{
+            "hc-key": "fr-n",
+            "value": 5
+          },{
+            "hc-key": "fr-p",
+            "value": 6
+          },{
+            "hc-key": "fr-o",
+            "value": 7
+          },{
+            "hc-key": "fr-v",
+            "value": 8
+          },{
+            "hc-key": "fr-s",
+            "value": 9
+          },{
+            "hc-key": "fr-g",
+            "value": 10
+          },{
+            "hc-key": "fr-k",
+            "value": 11
+          },{
+            "hc-key": "fr-a",
+            "value": 12
+          },{
+            "hc-key": "fr-c",
+            "value": 13
+          },{
+            "hc-key": "fr-f",
+            "value": 14
+          },{
+            "hc-key": "fr-l",
+            "value": 15
+          },{
+            "hc-key": "fr-d",
+            "value": 16
+          },{
+            "hc-key": "fr-b",
+            "value": 17
+          },{
+            "hc-key": "fr-i",
+            "value": 18
+          },{
+            "hc-key": "fr-q",
+            "value": 19
+          },{
+            "hc-key": "fr-j",
+            "value": 20
+          },{
+            "hc-key": "fr-m",
+            "value": 21
+          },{
+            "hc-key": "fr-re",
+            "value": 22
+          },{
+            "hc-key": "fr-yt",
+            "value": 23
+          },{
+            "hc-key": "fr-gf",
+            "value": 24
+          },{
+            "hc-key": "fr-mq",
+            "value": 25
+          },{
+            "hc-key": "fr-gp",
+            "value": 26
+          }],
+          joinBy: 'hc-key',
+          color: 'rgba(255,255,255,.2)',
+          borderColor: 'rgba(0,0,0,.2)',
+          borderWidth: 2,
+          showInLegend: false,
+          dataLabels: {
+            enabled: true,
+            format: '{point.value}%',
+            color: '#ffffff',
+            style: {
+              textShadow: '0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2), 0 2px 2px rgba(0,0,0,.2)',
+              fontSize: '16px'
+            }
+          },
+          states: {
+            hover: {
+              color: 'rgba(255,255,255,.8)'
+            }
+          },
+          showInLegend: false
+        }]
+      }
+    },
+
+    preterProjectsAccount: {
+      type: 'preterProjectsAccount',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'pie',
+          marginTop: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          spacingTop: 0,
+          spacingBottom: 0,
+          spacingLeft: 0,
+          spacingRight: 0
+        },
+        title: {
+          text: ''
+        },
+        legend: {
+          enabled: false
+        },
+        plotOptions: {
+          pie: {
+            innerSize: '50%',
+            showInLegend: true,
+            dataLabels: {
+              enabled: false
+            }
+          }
+        },
+        series: [{
+          name: 'Répartition de mon compte',
+          data: [{
+            name: 'Capital restant à rembourser',
+            y: 800,
+            color: '#1C7ED5'
+          },{
+            name: 'Solde disponible',
+            y: 150,
+            color: '#24D6BF'
+          },{
+            name: 'Solde bloqué',
+            y: 50,
+            color: '#CFA3F3'
+          },{
+            name: 'Capital à risque',
+            y: 15,
+            color: '#F76965'
+          }]
+        }]
+      }
+    },
+
+    preterRemboursementsYear: {
+      type: 'preterRemboursements',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: [2013, 2014, 2015, 2016, 2017, 2018],
+          crosshair: true,
+          plotBands: [{
+            from: 2.5,
+            to: 5.5,
+            borderWidth: 0,
+            color: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: [
+                 [0, 'rgba(95, 196, 208, .5)'],
+                 [1, 'rgba(95, 196, 208, 0)']
+              ]
+            },
+            zIndex: 1,
+            label: {
+              text: 'Prévisions à titre indicatif',
+              style: {
+                color: '#294347'
+              }
+            }
+          }],
+          plotLines: [{
+            color: '#5FC4D0',
+            dashStyle: 'ShortDot',
+            value: 2.5,
+            width: 2
+          }]
+        },
+        yAxis: {
+          min: 0,
+          title: {
+            text: ''
+          },
+          units: '€',
+          gridLineColor: '#efefef'
+        },
+        plotOptions: {
+          column: {
+            stacking: 'normal'
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Capital remboursé',
+          data: [250, 200, 125, 100, 80, 60],
+          color: '#1A87DA'
+        },{
+          name: 'Intérêts reçus',
+          data: [50, 80, 100, 80, 60, 30],
+          color: '#EF980B'
+        },{
+          name: 'Prélèvements fiscaux',
+          data: [20, 50, 80, 60, 30, 10],
+          color: '#F76965'
+        }]
+      }
+    },
+    preterRemboursements3Mth: {
+      type: 'preterRemboursements',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: ['Jan-Mar 2013', 'Apr-Jun 2013', 'Jul-Sep 2013', 'Oct-Dec 2013', 'Jan-Mar 2014', 'Apr-Jun 2014', 'Jul-Sep 2014', 'Oct-Dec 2014', 'Jan-Mar 2015', 'Apr-Jun 2015', 'Jul-Sep 2015', 'Oct-Dec 2015', 'Jan-Mar 2016', 'Apr-Jun 2016', 'Jul-Sep 2016', 'Oct-Dec 2016', 'Jan-Mar 2017', 'Apr-Jun 2017', 'Jul-Sep 2017', 'Oct-Dec 2017', 'Jan-Mar 2018', 'Apr-Jun 2018', 'Jul-Sep 2018', 'Oct-Dec 2018'],
+          crosshair: true,
+          plotBands: [{
+            from: 11.5,
+            to: 24.5,
+            borderWidth: 0,
+            color: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: [
+                 [0, 'rgba(95, 196, 208, .5)'],
+                 [1, 'rgba(95, 196, 208, 0)']
+              ]
+            },
+            zIndex: 1,
+            label: {
+              text: 'Prévisions à titre indicatif',
+              style: {
+                color: '#294347'
+              }
+            }
+          }],
+          plotLines: [{
+            color: '#5FC4D0',
+            dashStyle: 'ShortDot',
+            value: 11.5,
+            width: 2
+          }]
+        },
+        yAxis: {
+          min: 0,
+          title: {
+            text: ''
+          },
+          units: '€',
+          gridLineColor: '#efefef'
+        },
+        plotOptions: {
+          column: {
+            stacking: 'normal'
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Capital remboursé',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#1A87DA'
+        },{
+          name: 'Intérêts reçus',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#EF980B'
+        },{
+          name: 'Prélèvements fiscaux',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#F76965'
+        }]
+      }
+    },
+    preterRemboursementsMth: {
+      type: 'preterRemboursements',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'column'
+        },
+        title: {
+          text: ''
+        },
+        xAxis: {
+          categories: ['Jan 2013', 'Feb 2013', 'Mar 2013', 'Apr 2013', 'May 2013', 'Jun 2013', 'Jul 2013', 'Aug 2013', 'Sep 2013', 'Oct 2013', 'Nov 2013', 'Dec 2013',
+                       'Jan 2014', 'Feb 2014', 'Mar 2014', 'Apr 2014', 'May 2014', 'Jun 2014', 'Jul 2014', 'Aug 2014', 'Sep 2014', 'Oct 2014', 'Nov 2014', 'Dec 2014',
+                       'Jan 2015', 'Feb 2015', 'Mar 2015', 'Apr 2015', 'May 2015', 'Jun 2015', 'Jul 2015', 'Aug 2015', 'Sep 2015', 'Oct 2015', 'Nov 2015', 'Dec 2015',
+                       'Jan 2016', 'Feb 2016', 'Mar 2016', 'Apr 2016', 'May 2016', 'Jun 2016', 'Jul 2016', 'Aug 2016', 'Sep 2016', 'Oct 2016', 'Nov 2016', 'Dec 2016',
+                       'Jan 2017', 'Feb 2017', 'Mar 2017', 'Apr 2017', 'May 2017', 'Jun 2017', 'Jul 2017', 'Aug 2017', 'Sep 2017', 'Oct 2017', 'Nov 2017', 'Dec 2017',
+                       'Jan 2018', 'Feb 2018', 'Mar 2018', 'Apr 2018', 'May 2018', 'Jun 2018', 'Jul 2018', 'Aug 2018', 'Sep 2018', 'Oct 2018', 'Nov 2018', 'Dec 2018'],
+          crosshair: true,
+          plotBands: [{
+            from: 35.5,
+            to: 72.5,
+            borderWidth: 0,
+            color: {
+              linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+              stops: [
+                 [0, 'rgba(95, 196, 208, .5)'],
+                 [1, 'rgba(95, 196, 208, 0)']
+              ]
+            },
+            zIndex: 1,
+            label: {
+              text: 'Prévisions à titre indicatif',
+              style: {
+                color: '#294347'
+              }
+            }
+          }],
+          plotLines: [{
+            color: '#5FC4D0',
+            dashStyle: 'ShortDot',
+            value: 35.5,
+            width: 2
+          }]
+        },
+        yAxis: {
+          min: 0,
+          title: {
+            text: ''
+          },
+          units: '€',
+          gridLineColor: '#efefef'
+        },
+        plotOptions: {
+          column: {
+            stacking: 'normal'
+          }
+        },
+        legend: {
+          symbolRadius: 10
+        },
+        series: [{
+          name: 'Capital remboursé',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60, 250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#1A87DA'
+        },{
+          name: 'Intérêts reçus',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60, 250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#EF980B'
+        },{
+          name: 'Prélèvements fiscaux',
+          data: [250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60, 250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60,250, 200, 125, 100, 80, 60],
+          color: '#F76965'
+        }]
+      }
+    }
+  }
+} %}
+
 {% block dashboardContent %}
 
   <div class="dashboard-panels-nav">
@@ -38,38 +639,22 @@
           <div class="value">143,<sup>90€</sup></div>
         </div>
         <div class="dashboard-myaccount-chart dashboard-panel-chart">
-          <div class="chart chart-myaccount">
-            Custom chart @TODO
-          </div>
+          <div class="chart chart-myaccount" data-chartview='{{ placeholderData.charts.preterProjectsOverview|json_encode|escape('html_attr') }}'></div>
           <div class="dashboard-panel-summary">
             <h3><span class="label">Gains attendus:</span> <span class="value">123€</span></h3>
           </div>
+          {# Include the legend as it's not included in the highchart due to rendering issues #}
           <div class="dashboard-myaccount-chart-key">
             <div class="row">
-              <div class="chart-key chart-key-prete col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                <div class="label">Montant prêté</div>
-                <div class="value">252€</div>
+              {% for i, series in placeholderData.charts.preterProjectsOverview.highcharts.series %}
+                {% for j, dataItem in series.data if dataItem.showInLegend != false %}
+                  <div class="chart-key col-lg-4 col-md-4 col-sm-4 col-xs-2">
+                    <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
+                    <div class="label">{{ dataItem.name|default(series.name) }}</div>
+                    <div class="value">{{ dataItem.y|default(series.value) }}€</div>
               </div>
-              <div class="chart-key chart-key-rembourse col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                <div class="label">Capital remboursé</div>
-                <div class="value">52€</div>
-              </div>
-              <div class="chart-key chart-key-attente col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                <div class="label">Capital en attente</div>
-                <div class="value">200€</div>
-              </div>
-              <div class="chart-key chart-key-recu col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                <div class="label">Intérêts reçus</div>
-                <div class="value">18€</div>
-              </div>
-              <div class="chart-key chart-key-recevoir col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                <div class="label">Intérêts à recevoir</div>
-                <div class="value">46€</div>
-              </div>
-              <div class="chart-key chart-key-difficulte col-lg-4 col-md-4 col-sm-4 col-xs-2">
-                <div class="label">Capital en difficulté</div>
-                <div class="value">5€</div>
-              </div>
+                {% endfor %}
+              {% endfor %}
             </div>
           </div><!-- /.dashboard-myaccount-chart-key -->
         </div><!-- /.dashboard-myaccount-chart -->
@@ -90,8 +675,11 @@
           <div class="value">6,82<sup>%</sup></div>
         </div>
         <div class="dashboard-panel-chart">
-          <div class="chart chart-userlevel">
-            User Level avatar @TODO
+          {% set userAvatarLevel = userProfile.level|default(1) %}
+          <div class="user-avatar">
+            <div class="user-avatar-level"></div>
+            <div class="user-avatar-initials">{{ userProfile.identity.prenom|first|upper }}{{ userProfile.identity.nom|first|upper }}</div>
+            <div class="user-avatar-stars">{% for i in 1..5 %}<span class="icon fa-star ui-user-level-star-{{ i }}"></span>{% endfor %}</div>
           </div>
         </div>
         <div class="dashboard-panel-summary">
@@ -115,9 +703,9 @@
         <div class="row tabs">
           <div class="dashboard-mywallet-nav col-lg-2 col-md-3 col-sm-8 col-xs-4">
             <ul class="nav nav-tabs-vertical">
-              <li role="presentation" class="active"><a href="#mywallet-sectors" role="tab" data-toggle="tab">Répartition sectorielle</a></li>
-              <li role="presentation"><a href="#mywallet-locations" role="tab" data-toggle="tab">Répartition géographique</a></li>
-              <li role="presentation"><a href="#mywallet-account" role="tab" data-toggle="tab">Répartition de mon compte</a></li>
+              <li role="presentation" class="active"><a href="#mywallet-sectors" role="tab" data-toggle="tab" data-equal-height="xs sm" data-equal-height-group="mywallet-tabs-nav"><span class="icon fa-table"></span><span class="label">Répartition sectorielle</span></a></li>
+              <li role="presentation"><a href="#mywallet-locations" role="tab" data-toggle="tab" data-equal-height="xs sm" data-equal-height-group="mywallet-tabs-nav"><span class="icon fa-map-marker-u16"></span><span class="label">Répartition géographique</span></a></li>
+              <li role="presentation"><a href="#mywallet-account" role="tab" data-toggle="tab" data-equal-height="xs sm" data-equal-height-group="mywallet-tabs-nav"><span class="icon fa-euro"></span><span class="label">Répartition de mon compte</span></a></li>
             </ul>
           </div><!-- /.dashboard-mywallet-nav -->
           <div class="dashboard-mywallet-content tab-content col-lg-10 col-md-9 col-sm-8 col-xs-4">
@@ -127,28 +715,70 @@
                   <h2>Alimentaire</h2>
                   <p>18% de mes prêts sont répartis dans ce secteur</p>
                   <dl>
+                    <div class="dl-group">
                     <dt>Capital prêté</dt>
                     <dd>784€</dd>
+                    </div>
+                    <div class="dl-group">
                     <dt>Taux moyen</dt>
                     <dd>7,1%</dd>
+                    </div>
+                    <div class="dl-group">
                     <dt>Entreprises</dt>
                     <dd>12</dd>
+                    </div>
                   </dl>
                 </div><!-- /.col-info -->
                 <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
-                  <div class="chart chart-treemap">
-                    Highcharts Treemap @TODO
-                  </div>
+                  <div class="chart" data-chartview='{{ placeholderData.charts.preterProjectsCategories|json_encode|escape('html_attr') }}'></div>
                 </div><!-- /.col-graph -->
               </div>
             </div><!-- /#mywallet-sectors -->
 
             <div id="mywallet-locations" role="tabpanel" class="tab-pane">
-              <p>Highcharts Map @TODO</p>
+              <div class="row">
+                <div class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
+                  <h2>Aquitaine-Limousin Poitou-Charentes</h2>
+                  <p>42% de mes prêts sont répartis dans cette région</p>
+                  <dl>
+                    <div class="dl-group">
+                      <dt>Capital prêté</dt>
+                      <dd>4&nbsp;240€</dd>
+                    </div>
+                    <div class="dl-group">
+                      <dt>Taux moyen</dt>
+                      <dd>6,1%</dd>
+                    </div>
+                    <div class="dl-group">
+                      <dt>Entreprises</dt>
+                      <dd>118</dd>
+                    </div>
+                  </dl>
+                </div><!-- /.col-info -->
+                <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
+                  <div class="chart" data-chartview='{{ placeholderData.charts.preterProjectsCategoriesMap|json_encode|escape('html_attr') }}'></div>
+                </div><!-- /.col-graph -->
+              </div>
             </div><!-- /#mywallet-location -->
 
             <div id="mywallet-account" role="tabpanel" class="tab-pane">
-              <p>Chart @TODO</p>
+              <div class="row">
+                <div class="col-info col-lg-3 col-md-4 col-sm-8 col-xs-4">
+                  <h2>Argent déposé<br/>
+                    1&nbsp;015,00€</h2>
+                  <dl>
+                    {% for i, data in placeholderData.charts.preterProjectsAccount.highcharts.series[0].data %}
+                      <div class="dl-group dl-group-full">
+                        <dt>{% if data.color %}<span class="chart-key-icon" style="background: {{ data.color }}"></span> <span class="label">{% endif %}{{ data.name }}</span></dt>
+                        <dd>{{ data.y|__num|nbsp }}€</dd>
+                      </div>
+                    {% endfor %}
+                  </dl>
+                </div><!-- /.col-info -->
+                <div class="col-graph col-lg-9 col-md-8 col-sm-8 col-xs-4">
+                  <div class="chart" data-chartview='{{ placeholderData.charts.preterProjectsAccount|json_encode|escape('html_attr') }}'></div>
+                </div><!-- /.col-graph -->
+              </div>
             </div><!-- /#mywallet-account -->
           </div><!-- /.dashboard-mywallet-content -->
         </div><!-- /.tabs -->
@@ -219,7 +849,7 @@
           {% for i in 1..6 %}
           <li class="project">
             <div class="project-name">Garage Toniol</div>
-            <div class="project-location">La Haie-Fouassière</div>
+            <div class="project-location">La Haie-Fouassière, 75000</div>
             <div class="project-cost">150&nbsp;000€</div>
             <div class="project-rating">
               <span class="rating rating-4-5"><span class="sr-only">Rated 4.5 out of 5</span></span>
@@ -244,10 +874,30 @@
       {% block panelTitle %}Mes remboursements{% endblock %}
       {% block panelContent %}
         <div class="dashboard-panel-chart">
-          <div class="chart chart-myremboursements">
-            My remboursements chart @TODO
-          </div>
-        </div>
+          <div class="tabs nested-tabs">
+            <div class="tab-navigation">
+              <ul class="nav nav-tabs-text">{#
+              #}<li role="presentation" class="active"><a href="#myrembourse-graph-mth" role="tab" data-toggle="tab">Mois</a></li>{#
+              #}<li role="presentation"><a href="#myrembourse-graph-3mth" role="tab" data-toggle="tab">Trimestre</a></li>{#
+              #}<li role="presentation"><a href="#myrembourse-graph-year" role="tab" data-toggle="tab">Année</a></li>{#
+            #}</ul>
+            </div><!-- /.tab-navigation -->
+            <div class="tab-content">
+              <div id="myrembourse-graph-mth" role="tabpanel" class="tab-pane active">
+                <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursementsMth|json_encode|escape('html_attr') }}'></div>
+              </div><!-- /.tab-pane -->
+              <div id="myrembourse-graph-3mth" role="tabpanel" class="tab-pane">
+                <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursements3Mth|json_encode|escape('html_attr') }}'></div>
+              </div><!-- /.tab-pane -->
+              <div id="myrembourse-graph-year" role="tabpanel" class="tab-pane">
+                <div class="chart chart-myremboursements" data-chartview='{{ placeholderData.charts.preterRemboursementsYear|json_encode|escape('html_attr') }}'></div>
+              </div><!-- /.tab-pane -->
+            </div><!-- /.tab-content -->
+          </div><!-- /.nested-tabs -->
+        </div><!-- /.dashboard-panel-chart -->
+      {% endblock %}
+      {% block panelFooter %}
+        <a href="#todo" class="link">Voir le détail de mes opérations</a>
       {% endblock %}
     {% endembed %}
 

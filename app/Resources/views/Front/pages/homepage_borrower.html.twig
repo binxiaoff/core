@@ -117,7 +117,7 @@ permalink: route('emprunter')
                         <div id="esim1" role="tabpanel" class="tab-pane active">
                             <fieldset class="emprunter-sim-pane-inner" data-formvalidation data-formvalidation-notificationselem=".form-validation-notifications">
                                 <div class="form-validation-notifications"></div>
-                                <div class="row">
+                <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-amount">{% trans %} home-borrower_simulator-amount-field-title {% endtrans %}
                                             <span class="c-t3">{% trans %} home-borrower_simulator-amount-field-addition {% endtrans %}</span></label>
@@ -141,7 +141,7 @@ permalink: route('emprunter')
                                         </select>
                                     </div>
                                 </div>
-                                <div class="row">
+                <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-12 col-md-12">
                                         <label>{% trans %} home-borrower_simulator-borrowing-period-title {% endtrans %}</label>
                                         <div class="custom-input-duration" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="duration">
@@ -166,14 +166,16 @@ permalink: route('emprunter')
                                         <p>{% trans %} home-borrower_simulator-step-2-text-fill-field {% endtrans %}</p>
                                     </div>
                                 </div>
-                                <div class="row">
+                <div class="row row-multicol-computer">
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="esim-input-siren">{% trans %} home-borrower_simulator-siren-field-label {% endtrans %}</label>
                                         <input type="text" id="esim-input-siren" name="esim[siren]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="siret">
                                     </div><!-- /.form-field -->
                                     <div class="form-field col-lg-6 col-md-6">
                                         <label for="i_esim_5">{% trans %} home-borrower_simulator-email-field-label {% endtrans %}</label>
-                                        <input type="email" id="esim-input-email" name="esim[email]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                        <div class="input-group">
+                                            <input type="email" id="esim-input-email" name="esim[email]" value="" class="input-field" data-formvalidation-input data-formvalidation-required="true" data-formvalidation-type="email">
+                                        </div><!-- /.input-group -->
                                     </div><!-- /.form-field -->
                                 </div>
                             </fieldset><!-- /.emprunter-sim-pane-inner -->
@@ -237,11 +239,8 @@ permalink: route('emprunter')
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {% if caniuse_svg() == true %}
                                     {{ svgimage('#promo-calendarweek', '', 190, 190, 'none')  | raw }}
-                                {% else %}
                                     <img src="{{ siteurlmedia('promos/promo-calendar-190x190.png') }}" alt="">
-                                {% endif %}
                             </div>
                             <h3 class="promo-highlight">
                                 <span class="ui-text-count" data-start-count="0" data-end-count="{{ stats.avgFundingTime.days }}" data-total-time="3000" data-round-float="ceil"
@@ -253,11 +252,8 @@ permalink: route('emprunter')
                     <div class="col-lg-4 col-md-4">
                         <div class="promo">
                             <div class="promo-image">
-                                {% if caniuse_svg() == true %}
                                     {{ svgimage('#promo-verified', '', 190, 190, 'none')  | raw }}
-                                {% else %}
                                     <img src="{{ siteurlmedia('promos/promo-certificate-190x190.png') }}" alt="">
-                                {% endif %}
                             </div>
                             <h3 class="promo-highlight"><span>0</span><sup>&nbsp;</sup></h3>
                             <p>{% trans %} home-borrower_why-borrow-fact-3-text {% endtrans %}</p>

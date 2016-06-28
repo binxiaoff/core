@@ -36,7 +36,7 @@
           </header>
           <section id="profile-info-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
             <section id="profile-info-view" role="tabpanel" class="profile-info-view collapse in">
-              <a href="#profile-info-edit" role="button" data-toggle="collapse" data-parent="#profile-info-section" class="btn-edit" aria-controls="#profile-info-edit" aria-expanded="false"><span class="icon fa-pencil"></span> <span class="label">Modifier</span></a>
+              <a href="#profile-info-edit" role="button" data-toggle="collapse" data-parent="#profile-info-section" class="btn-edit" aria-controls="#profile-info-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span> <span class="label">Modifier</span></a>
               <dl class="list-2col">
                 <dt>Statut</dt>
                 <dd id="profile-info-statut-output">{{ userProfile.identity.statutLabel }}</dd>
@@ -178,11 +178,11 @@
         <article id="panel-address" class="panel">
           <header class="panel-header">
             <h3>Mon adresse fiscale</h3>
-            <div id="profile-address-is-correspondence" class="{% if userProfile.identity.address.is_correspondence != true %}hide{% endif %}"><span class="icon fa-check"></span> Adresse de correspondance identique</div>
+            <div id="profile-address-is-correspondence" class="{% if userProfile.identity.address.is_correspondence != true %}hide{% endif %}"><span class="icon fa-check-u32"></span> Adresse de correspondance identique</div>
           </header>
           <section id="profile-address-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
             <section id="profile-address-view" role="tabpanel" class="profile-address-view collapse in">
-              <a href="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit" aria-controls="#profile-address-edit" aria-expanded="false"><span class="icon fa-pencil"></span> <span class="label">Modifier</span></a>
+              <a href="#profile-address-edit" role="button" data-toggle="collapse" data-parent="#profile-address-section" class="btn-edit" aria-controls="#profile-address-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span> <span class="label">Modifier</span></a>
               <dl class="list-2col">
                 <dt>Adresse</dt>
                 <dd id="profile-address-street-output">{{ userProfile.identity.address.street }}</dd>
@@ -266,7 +266,7 @@
           </header>
           <section id="profile-correspondence-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
             <section id="profile-correspondence-view" role="tabpanel" class="profile-correspondence-view collapse in">
-              <a href="#profile-correspondence-edit" role="button" data-toggle="collapse" data-parent="#profile-correspondence-section" class="btn-edit" aria-controls="#profile-correspondence-edit" aria-expanded="false"><span class="icon fa-pencil"></span> <span class="label">Modifier</span></a>
+              <a href="#profile-correspondence-edit" role="button" data-toggle="collapse" data-parent="#profile-correspondence-section" class="btn-edit" aria-controls="#profile-correspondence-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span> <span class="label">Modifier</span></a>
               <dl class="list-2col">
                 <dt>Adresse</dt>
                 <dd id="profile-correspondence-street-output">{{ userProfile.identity.correspondence.street|default(userProfile.identity.address.street) }}</dd>
@@ -333,7 +333,7 @@
           </header><!-- .panel-header -->
           <section id="profile-fiscalite-bank-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
             <section id="profile-fiscalite-bank-view" role="tabpanel" class="profile-bank-view collapse in">
-              <a href="#profile-fiscalite-bank-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-bank-section" class="btn-edit" aria-controls="#profile-fiscalite-bank-edit" aria-expanded="false"><span class="icon fa-pencil"></span> <span class="label">Modifier</span></a>
+              <a href="#profile-fiscalite-bank-edit" role="button" data-toggle="collapse" data-parent="#profile-fiscalite-bank-section" class="btn-edit" aria-controls="#profile-fiscalite-bank-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span> <span class="label">Modifier</span></a>
               <dl class="list-2col">
                 <dt>Origine des fonds</dt>
                 <dd id="profile-fiscalite-bank-origin-output">{{ userProfile.fiscalite.bank.origin }}</dd>
@@ -461,7 +461,7 @@
           </header><!-- .panel-header -->
           <section id="profile-security-identification-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
             <section id="profile-security-identification-view" role="tabpanel" class="profile-security-identification-view collapse in">
-              <a href="#profile-security-identification-edit" role="button" data-toggle="collapse" data-parent="#profile-security-identification-section" class="btn-edit" aria-controls="#profile-security-identification-edit" aria-expanded="false"><span class="icon fa-pencil"></span> <span class="label">Modifier</span></a>
+              <a href="#profile-security-identification-edit" role="button" data-toggle="collapse" data-parent="#profile-security-identification-section" class="btn-edit" aria-controls="#profile-security-identification-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span> <span class="label">Modifier</span></a>
               <dl class="list-2col">
                 <dt>E-mail</dt>
                 <dd id="profile-security-identification-email-output">{{ userProfile.access.email }}</dd>
@@ -519,7 +519,7 @@
           </header><!-- .panel-header -->
           <section id="profile-security-password-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
             <section id="profile-security-password-view" role="tabpanel" class="profile-security-password-view collapse in">
-              <a href="#profile-security-password-edit" role="button" data-toggle="collapse" data-parent="#profile-security-password-section" class="btn-edit" aria-controls="#profile-security-password-edit" aria-expanded="false"><span class="icon fa-pencil"></span> <span class="label">Changer mon mot de passe</span></a>
+              <a href="#profile-security-password-edit" role="button" data-toggle="collapse" data-parent="#profile-security-password-section" class="btn-edit" aria-controls="#profile-security-password-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span> <span class="label">Changer mon mot de passe</span></a>
               <dl class="list-2col">
                 <dt>Mot de passe</dt>
                 <dd>************</dd>
@@ -571,7 +571,7 @@
           <p>Cette question vous sera posée dans le cas où vous auriez oublié votre mot de passe.</p>
           <section id="profile-security-question-section" role="tablist" class="ui-toggle-group" aria-multiselectable="true">
             <section id="profile-security-question-view" role="tabpanel" class="profile-security-question-view collapse in">
-              <a href="#profile-security-question-edit" role="button" data-toggle="collapse" data-parent="#profile-security-question-section" class="btn-edit" aria-controls="#profile-security-question-edit" aria-expanded="false"><span class="icon fa-pencil"></span> <span class="label">Modifier</span></a>
+              <a href="#profile-security-question-edit" role="button" data-toggle="collapse" data-parent="#profile-security-question-section" class="btn-edit" aria-controls="#profile-security-question-edit" aria-expanded="false"><span class="icon fa-pencil-u32"></span> <span class="label">Modifier</span></a>
             </section>
 
             <section id="profile-security-question-edit" role="tabpanel" class="profile-security-question-view collapse">

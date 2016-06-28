@@ -13,6 +13,65 @@
 
 {# Placeholder data #}
 {% set placeholderData = {
+  charts: {
+    preterOperations: {
+      type: 'preterOperations',
+      background: 'none',
+      highcharts: {
+        chart: {
+          type: 'pie',
+          width: 300,
+          height: 300,
+          marginTop: 0,
+          marginBottom: 0,
+          marginLeft: 0,
+          marginRight: 0,
+          spacingTop: 0,
+          spacingBottom: 0,
+          spacingLeft: 0,
+          spacingRight: 0
+        },
+        title: {
+          text: ''
+        },
+        legend: {
+          enabled: false,
+          layout: 'vertical',
+          symbolRadius: 10,
+          align: 'right',
+          verticalAlign: 'middle'
+        },
+        tooltip: {
+          pointFormat: ' '
+        },
+        plotOptions: {
+          pie: {
+            innerSize: '50%',
+            showInLegend: true,
+            dataLabels: {
+              enabled: false
+            }
+          }
+        },
+        series: [{
+          name: '54 prêts',
+          data: [{
+            name: '6 remboursements terminés',
+            y: 6,
+            color: '#428890'
+          },{
+            name: '43 remboursements à jour',
+            y: 43,
+            color: '#5FC5D3'
+          },{
+            name: '5 défauts / retards',
+            y: 5,
+            color: '#F76965'
+          }]
+        }]
+      }
+    }
+  },
   "stats": {
     "loans": {
       "all": 54,
@@ -384,8 +443,8 @@
           <header class="panel-header">
             <h3 class="panel-title">Toutes mes opérations</h3>
             <div class="panel-controls">
-              <a href="#todo" class="btn-default"><span class="icon fa-print"></span><span class="label"> Imprimer</span></a>
-              <a href="#todo" class="btn-default"><span class="icon fa-table"></span><span class="label"> CSV Export</span></a>
+              <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> Imprimer</span></a>
+              <a href="#todo" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> CSV Export</span></a>
             </div>
           </header><!-- /.panel-header -->
           <div class="panel-content">
@@ -412,7 +471,7 @@
                       <div class="input-group set-right">
                         <input type="text" id="filter-start" name="filter[start]" value="{{ filterOperations.start }}" placeholder="Début" class="input-field ui-has-datepicker" />
                         <div class="btn-group">
-                          <label for="filter-start"><span class="icon fa-calendar c-p1"><span class="sr-only">Select start date</span></span></label>
+                          <label for="filter-start"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">Select start date</span></span></label>
                         </div><!-- /.btn-group -->
                       </div><!-- /.input-group -->
                     </div>
@@ -420,7 +479,7 @@
                       <div class="input-group set-right">
                         <input type="text" id="filter-end" name="filter[end]" value="{{ filterOperations.end }}" placeholder="Fin" class="input-field ui-has-datepicker"/>
                         <div class="btn-group">
-                          <label for="filter-end"><span class="icon fa-calendar c-p1"><span class="sr-only">Select end date</span></span></label>
+                          <label for="filter-end"><span class="icon fa-calendar-u32 c-p1"><span class="sr-only">Select end date</span></span></label>
                         </div><!-- /.btn-group -->
                       </div><!-- /.input-group -->
                     </div>
@@ -452,22 +511,22 @@
                 <thead class="table-sortable-columns">
                   <tr>
                     <th class="table-sortable-column table-myoperations-item-type" data-sortable-by="type">
-                      <span class="sr-only">Sort by column </span>Opération</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Opération</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-contract" data-sortable-by="contract">
-                      <span class="sr-only">Sort by column </span>No. Contrat</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>No. Contrat</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-project" data-sortable-by="project">
-                      <span class="sr-only">Sort by column </span>Project</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Project</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-date" data-sortable-by="date">
-                      <span class="sr-only">Sort by column </span>Date</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Date</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-amount" data-sortable-by="amount">
-                      <span class="sr-only">Sort by column </span>Montant</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Montant</span>
                     </th>
                     <th class="table-sortable-column table-myoperations-item-balance" data-sortable-by="balance">
-                      <span class="sr-only">Sort by column </span>Solde compte</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Solde compte</span>
                     </th>
                   </tr>
                 </thead>
@@ -505,15 +564,24 @@
           <header class="panel-header">
             <h3 class="panel-title">{{ stats.loans.all }} prêts effectués</h3>
             <div class="panel-controls">
-              <a href="#todo" class="btn-default"><span class="icon fa-print"></span><span class="label"> Imprimer</span></a>
-              <a href="#todo" class="btn-default"><span class="icon fa-table"></span><span class="label"> CSV Export</span></a>
+              <a href="#todo" class="btn-default"><span class="icon fa-print-u32"></span><span class="label"> Imprimer</span></a>
+              <a href="#todo" class="btn-default"><span class="icon fa-excel-u32"></span><span class="label"> CSV Export</span></a>
             </div><!-- /.panel-controls -->
           </header><!-- /.panel-header -->
           <div class="panel-content">
             {# I really hate how inconsistent this website design is #}
             <div class="panel-before-table">
-              <div class="chart">
-                Chart @TODO
+              <div class="chart" data-chartview='{{ placeholderData.charts.preterOperations|json_encode|escape('html_attr') }}'></div>
+              {# Responsive issues, so I'm rendering the legend in the page itself, rather than in the chart above #}
+              <div class="chart-legend">
+                {% for i, series in placeholderData.charts.preterOperations.highcharts.series %}
+                {% for j, dataItem in series.data if dataItem.showInLegend != false %}
+                  <div class="chart-key">
+                    <div class="icon" style="background-color: {{ dataItem.color|default(series.color) }}"></div>
+                    <div class="label">{{ dataItem.name|default(series.name) }}</div>
+                  </div>
+                {% endfor %}
+              {% endfor %}
               </div>
 
               <form id="form-filters-loans" action="{{ route('user/preter/operations/loans/filter') }}" method="post" class="form-filters" data-ajax>
@@ -537,28 +605,28 @@
                 <thead>
                   <tr>
                     <th class="table-sortable-column table-myloans-item-project" data-sortable-by="project">
-                      <span class="sr-only">Sort by column </span>Projet</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Projet</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-rating" data-sortable-by="rating">
-                      <span class="sr-only">Sort by column </span>Note</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Note</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-amount" data-sortable-by="amount">
-                      <span class="sr-only">Sort by column </span>Montant</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Montant</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-interest" data-sortable-by="interest">
-                      <span class="sr-only">Sort by column </span>Taux</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Taux</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-monthly" data-sortable-by="monthly">
-                      <span class="sr-only">Sort by column </span>Mensualité</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Mensualité</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-next" data-sortable-by="next">
-                      <span class="sr-only">Sort by column </span>Prochaine</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Prochaine</span>
                     </th>
                     <th class="table-sortable-column table-myloans-item-duration" data-sortable-by="duration">
-                      <span class="sr-only">Sort by column </span>Reste</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Reste</span>
                     </th>
                     <th class="table-myloans-item-documents">
-                      <span class="sr-only">Sort by column </span>Documents</span>
+                      <span class="label"><span class="sr-only">Sort by column </span>Documents</span>
                     </th>
                   </tr>
                 </thead>
