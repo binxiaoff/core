@@ -1405,7 +1405,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_client']) && isset($_POST['content']) && isset($_POST['liste'])) {
-            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['liste'])) . '</ul>' . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities(utf8_decode($_POST['content'])));
+            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['liste']) . '</ul>' . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities($_POST['content']));
             echo 'ok';
         } else {
             echo 'nok';
