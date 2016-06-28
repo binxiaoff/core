@@ -54,7 +54,8 @@ monolog:
             handler: error_handler
         error_handler:
             type: group
-            members: [file_error, slack_error]
+            members: [file_error]
+#            members: [file_error, slack_error]
         file_error:
             type: rotating_file
             level: error
