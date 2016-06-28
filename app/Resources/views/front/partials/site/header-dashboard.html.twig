@@ -3,7 +3,7 @@
 {#       See: partials/layouts/_dashboard.twig for more information #}
 
 {% import 'extensions/_general.macros.twig' as general %}
-<header class="site-header">
+<header class="site-header site-header-dashboard">
     <div class="site-band"></div>
 
     <div class="site-header-inner">
@@ -28,11 +28,16 @@
                                 </a>
                             </div><!-- /.profile-avatar -->
                             <a href="{{ route('user/preter/notifications') }}" class="profile-notifications">
-                                {% if app.user.notificationsUnread > 0 %}{{ general.pip(app.user.notificationsUnread) }}{% endif %}
+              {% set notificationsUnread = 0 %}
+              {% for i, item in notifications if item.status == 'unread' %}
+                {% set notificationsUnread = notificationsUnread + 1 %}
+              {% endfor %}
+              {% if notificationsUnread > 0 %}{{ general.pip(notificationsUnread) }}{% endif %}
                             </a><!-- /.profile-notifications -->
                             <div class="profile-name">{% trans with { '%firstName%' : app.user.firstName } %} header-connected_greeting {% endtrans %} </div>
                             <div class="profile-balance">
-                                {% trans with { '%balance%' : app.user.balance } %} header-connected_balance {% endtrans %}
+              <span class="label">Solde:</span>
+              <span class="value">{{ userProfile.balance|default(0)|__price(2)|nbsp }}€</span>
                             </div><!-- /.profile-balance -->
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} header-connected_logout {% endtrans %}</span></a>
                         </div><!-- /.site-user-profile -->
