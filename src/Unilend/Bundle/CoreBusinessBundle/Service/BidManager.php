@@ -116,6 +116,7 @@ class BidManager
         $oTransaction->id_project       = $iProjectId;
         $oTransaction->transaction      = \transactions::VIRTUAL;
         $oTransaction->type_transaction = \transactions_types::TYPE_LENDER_LOAN;
+        $oTransaction->ip_client        = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $oTransaction->create();
 
         $oWalletsLine->id_lender                = $oBid->id_lender_account;
