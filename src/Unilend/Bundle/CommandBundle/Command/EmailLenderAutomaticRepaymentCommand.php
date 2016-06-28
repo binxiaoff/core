@@ -50,7 +50,15 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
         /** @var \ficelle $ficelle */
         $ficelle = Loader::loadLib('ficelle');
 
-        $lEcheances = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
+        $lastProjectRepayment = [];
+        $lEcheances           = $echeanciers->selectEcheances_a_remb('status = 1 AND status_email_remb = 0 AND status_emprunteur = 1', '', 0, 300);
+        $sUrl                 = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+
+        $settings->get('Facebook', 'type');
+        $sFB      = $settings->value;
+
+        $settings->get('Twitter', 'type');
+        $sTwitter = $settings->value;
 
         foreach ($lEcheances as $e) {
             if (
@@ -58,24 +66,28 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                 && $lenders->get($e['id_lender'], 'id_lender_account')
                 && $clients->get($lenders->id_client_owner, 'id_client')
             ) {
+                $echeanciers->get($e['id_echeancier'], 'id_echeancier');
+
                 if (1 == $clients->status) {
-                    $dernierStatut     = $projects_status_history->select('id_project = ' . $e['id_project'], 'id_project_status_history DESC', 0, 1);
+                    $projects->get($e['id_project'], 'id_project');
+                    $companies->get($projects->id_company, 'id_company');
+                    $loans->get($e['id_loan'], 'id_loan');
+
+                    if (false === isset($lastProjectRepayment[$projects->id_project])) {
+                        $lastProjectRepayment[$projects->id_project] = (0 == $echeanciers->counter('id_project = ' . $projects->id_project . ' AND status = 0'));
+                    }
+
+                    $dernierStatut     = $projects_status_history->select('id_project = ' . $projects->id_project, 'id_project_status_history DESC', 0, 1);
                     $dateDernierStatut = $dernierStatut[0]['added'];
                     $timeAdd           = strtotime($dateDernierStatut);
                     $day               = date('d', $timeAdd);
                     $month             = $dates->tableauMois['fr'][date('n', $timeAdd)];
                     $year              = date('Y', $timeAdd);
                     $rembNet           = $e['rembNet'];
-
-                    $projects->get($e['id_project'], 'id_project');
-                    $companies->get($projects->id_company, 'id_company');
-
-                    $nbpret       = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
-                    $euros        = ($rembNet >= 2) ? ' euros' : ' euro';
-                    $rembNetEmail = $ficelle->formatNumber($rembNet) . $euros;
-                    $getsolde     = $transactions->getSolde($clients->id_client);
-                    $euros        = ($getsolde > 1) ? ' euros' : ' euro';
-                    $solde        = $ficelle->formatNumber($getsolde) . $euros;
+                    $nbpret            = $loans->counter('id_lender = ' . $e['id_lender'] . ' AND id_project = ' . $e['id_project']);
+                    $rembNetEmail      = $ficelle->formatNumber($rembNet) . ($rembNet != 1 ? ' euros' : ' euro');
+                    $getsolde          = $transactions->getSolde($clients->id_client);
+                    $solde             = $ficelle->formatNumber($getsolde) . ($getsolde != 1 ? ' euros' : ' euro');
 
                     $notifications->type       = \notifications::TYPE_REPAYMENT;
                     $notifications->id_lender  = $e['id_lender'];
@@ -95,12 +107,6 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                         $clients_gestion_mails_notif->immediatement = 1;
                         $clients_gestion_mails_notif->update();
 
-                        $settings->get('Facebook', 'type');
-                        $sFB      = $settings->value;
-                        $settings->get('Twitter', 'type');
-                        $sTwitter = $settings->value;
-                        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
-
                         $varMail = array(
                             'surl'                  => $sUrl,
                             'url'                   => $sUrl,
@@ -113,19 +119,48 @@ class EmailLenderAutomaticRepaymentCommand extends ContainerAwareCommand
                             'solde_p'               => $solde,
                             'motif_virement'        => $clients->getLenderPattern($clients->id_client),
                             'lien_fb'               => $sFB,
-                            'lien_tw'               => $sTwitter
+                            'lien_tw'               => $sTwitter,
+                            'annee'                 => date('Y'),
+                            'date_pret'             => $dates->formatDateComplete($loans->added)
                         );
 
-                        /** @var TemplateMessage $message */
-                        $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                        if ($lastProjectRepayment[$projects->id_project]) {
+                            /** @var TemplateMessage $message */
+                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement', $varMail);
+                        } else {
+                            /** @var TemplateMessage $message */
+                            $message = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-remboursement', $varMail);
+                        }
+
                         $message->setTo($clients->email);
                         $mailer = $this->getContainer()->get('mailer');
                         $mailer->send($message);
                     }
                 }
-                $echeanciers->get($e['id_echeancier'], 'id_echeancier');
                 $echeanciers->status_email_remb = 1;
                 $echeanciers->update();
+            }
+        }
+
+        $settings->get('Adresse controle interne', 'type');
+        $mailBO = $settings->value;
+
+        foreach ($lastProjectRepayment as $idProject => $isLastRepayment) {
+            if ($isLastRepayment) {
+                $projects->get($idProject);
+                $companies->get($projects->id_company);
+
+                $varMail = array(
+                    '$nom_projet' => $projects->title,
+                    '$id_projet'  => $projects->id_project
+                );
+
+                /** @var TemplateMessage $messageBO */
+                $messageBO = $this->getContainer()->get('unilend.swiftmailer.message_provider')->newMessage('preteur-dernier-remboursement-controle', $varMail);
+                $messageBO->setTo($mailBO);
+
+                $mailer = $this->getContainer()->get('mailer');
+                $mailer->send($messageBO);
             }
         }
     }
