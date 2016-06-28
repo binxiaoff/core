@@ -1,6 +1,5 @@
 {# Projet Single #}
 {% extends 'layouts/_layout.html.twig' %}
-{% import 'extensions/_general.macros.twig' as general %}
 {% import 'partials/modules/_list-sharing.macros.twig' as listSharing %}
 
 {# Placeholder Data #}
@@ -572,7 +571,7 @@
         <div class="project-single-header-position">
           <div class="project-single-header-inner">
             <div class="project-single-category">
-              {{ general.projectCategoryIcon(project.categoryId) }}
+              {{ svgimage('#category-' ~ categorie, '', 160, 160) | raw }}
             </div><!-- /.project-single-category -->
 
             <div class="row">
