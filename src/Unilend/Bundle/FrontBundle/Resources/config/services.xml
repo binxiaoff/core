@@ -35,5 +35,9 @@
             <argument type="service" id="unilend.service.notification_manager" />
             <tag name ="kernel.event_subscriber" />
         </service>
+
+        <service id="unilend.service.subscription_manager" class="Unilend\Bundle\FrontBundle\Service\SubscriptionManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+        </service>
     </services>
 </container>

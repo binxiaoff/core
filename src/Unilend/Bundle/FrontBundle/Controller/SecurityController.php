@@ -89,7 +89,7 @@ class SecurityController extends Controller
         $response->headers->set('Pragma', 'no-cache');
         $response->headers->set('Cache-Control', 'no-cache');
 
-        $request->getSession()->set('captchaInformation', array('captchaCode' => $code));
+        $request->getSession()->set('captchaInformation/captchaCode', $code);
 
         return $response;
     }
