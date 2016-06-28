@@ -3,9 +3,9 @@
 {% set bodyClassNames = '' %}
 
 <!DOCTYPE html>
-<!--[if lt IE 9]><html lang="{{ lang }}" class="lt-ie9 no-js"><![endif]-->
-<!--[if IE 9]><html lang="{{ lang }}" class="ie9 no-js"><![endif]-->
-<!--[if gt IE 9]><!--><html lang="{{ lang }}" class="no-js"><!--<![endif]-->
+<!--[if lt IE 9]><html lang="{{ app.request.locale }}" class="lt-ie9 no-js"><![endif]-->
+<!--[if IE 9]><html lang="{{ app.request.locale }}" class="ie9 no-js"><![endif]-->
+<!--[if gt IE 9]><!--><html lang="{{ app.request.locale }}" class="no-js"><!--<![endif]-->
 <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
@@ -25,10 +25,10 @@
         <!-- CSS Dependencies -->
     {# <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.css" media="all" /> #}
     <link rel="stylesheet" type="text/css" href="{{ siteurlmedia('fonts/unilend-fontawesome/style.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ siteurljs('vendor/videojs/video-js.min.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ siteurljs('vendor/swiper/css/swiper.min.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ siteurljs('vendor/fancybox/css/jquery.fancybox.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ siteurljs('vendor/jquery-ui/themes/base/minified/jquery-ui.min.css') }}" media="all" />
+    <link rel="stylesheet" type="text/css" href="{{ ('vendor/videojs/video-js.min.css') }}" media="all" />
+    <link rel="stylesheet" type="text/css" href="{{ ('vendor/swiper/css/swiper.min.css') }}" media="all" />
+    <link rel="stylesheet" type="text/css" href="{{ ('vendor/fancybox/css/jquery.fancybox.css') }}" media="all" />
+    <link rel="stylesheet" type="text/css" href="{{ ('vendor/jquery-ui/themes/base/minified/jquery-ui.min.css') }}" media="all" />
     {# <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}dependencies{% if env != 'dev' %}.min{% endif %}.css" media="all" /> #}
 
     {# Mapbox #}
@@ -39,14 +39,14 @@
 
     <!-- CSS Site -->
     {% block cssFiles %}
-    <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}screen{% if env != 'dev' %}.min{% endif %}.css" media="screen,projection">
-    <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}print{% if env != 'dev' %}.min{% endif %}.css" media="print">
-    <!--[if IE]><link rel="stylesheet" type="text/css" href="{{ site.assets.css }}ie{% if env != 'dev' %}.min{% endif %}.css" media="screen,projection"><![endif]-->
+    <link rel="stylesheet" type="text/css" href="{#{{ site.assets.css }}#}screen{% if app.environment != 'dev' %}.min{% endif %}.css" media="screen,projection">
+    <link rel="stylesheet" type="text/css" href="{#{{ site.assets.css }}#}print{% if app.environment != 'dev' %}.min{% endif %}.css" media="print">
+    <!--[if IE]><link rel="stylesheet" type="text/css" href="{#{{ site.assets.css }}#}ie{% if app.environment != 'dev' %}.min{% endif %}.css" media="screen,projection"><![endif]-->
     {% endblock %}
 
     <!-- JS -->
     <script type="text/javascript">
-      var site = JSON.parse('{{ site|json_encode|escape('js') }}')
+      {#var site = JSON.parse('{{ site|json_encode|escape('js') }}')#}
     </script>
 
     {% block extendHead %}{% endblock %}
@@ -143,10 +143,10 @@
 {% endblock %}
 
     {# Scripts at bottom #}
-    <script type="text/javascript" src="{{ site.assets.js }}dependencies{% if env != 'dev' %}.min{% endif %}.js"></script>
+    <script type="text/javascript" src="{#{{ site.assets.js }}#}dependencies{% if app.environment != 'dev' %}.min{% endif %}.js"></script>
     <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
     <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
-    <script type="text/javascript" src="{{ site.assets.js }}main{% if env != 'dev' %}.min{% endif %}.js"></script>
+    <script type="text/javascript" src="{#{{ site.assets.js }}#}main{% if app.environment != 'dev' %}.min{% endif %}.js"></script>
 {% block extendFoot %}{% endblock %}
 
 </body>
