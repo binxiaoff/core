@@ -180,7 +180,11 @@ class LoginAuthenticator extends AbstractFormLoginAuthenticator
 
     private function checkCaptcha($credentials)
     {
-        return $credentials['captchaInformation']['captchaCode'] == strtolower($credentials['captcha']);
+        if (isset($credentials['captchaInformation']['captchaCode']) && isset($credentials['captcha'])) {
+            return $credentials['captchaInformation']['captchaCode'] == strtolower($credentials['captcha']);
+        }
+
+        return true;
     }
 
 }
