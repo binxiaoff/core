@@ -66,6 +66,8 @@ class BidManager
         $oWalletsLine = $this->oEntityManager->getRepository('wallets_lines');
         /** @var \offres_bienvenues_details $oWelcomeOfferDetails */
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
+        /** @var \projects_status $oProjectStatus */
+        $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
 
         $this->oEntityManager->getRepository('transactions_types'); //load for constant use
 
@@ -83,6 +85,11 @@ class BidManager
         }
 
         if ($fRate > \bids::BID_RATE_MAX || $fRate < \bids::BID_RATE_MIN) {
+            return false;
+        }
+
+        $oProjectStatus = $oProjectStatus->getLastStatut($iProjectId);
+        if (false === in_array($oProjectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
             return false;
         }
 
