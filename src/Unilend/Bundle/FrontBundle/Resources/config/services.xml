@@ -39,5 +39,10 @@
         <service id="unilend.service.subscription_manager" class="Unilend\Bundle\FrontBundle\Service\SubscriptionManager">
             <argument type="service" id="unilend.service.entity_manager" />
         </service>
+
+        <service id="unilend.service.static_content_manager" class="Unilend\Bundle\FrontBundle\Service\StaticContentManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="memcache.default" />
+        </service>
     </services>
 </container>

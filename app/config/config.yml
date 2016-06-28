@@ -27,7 +27,7 @@ framework:
 twig:
     strict_variables: "%kernel.debug%"
     paths:
-        - "%kernel.root_dir%/Resources/views/Front/"
+        - "%kernel.root_dir%/Resources/views/front/"
     exception_controller:  UnilendFrontBundle:Compatibility:dispatch
 
 assetic:

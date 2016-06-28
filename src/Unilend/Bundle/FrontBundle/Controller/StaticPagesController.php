@@ -4,6 +4,7 @@ namespace Unilend\Bundle\FrontBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Unilend\Bundle\FrontBundle\Service\StaticContentManager;
 
 
 class StaticPagesController extends Controller
@@ -27,13 +28,28 @@ class StaticPagesController extends Controller
         return $this->render('front/partials/home/reviews.html.twig', array());
     }
 
+    /**
+     * @Route("/social-media", name="list_social_media")
+     * @return \Symfony\Component\HttpFoundation\Response
+     */
+    public function renderSocialMediaAction()
+    {
+        /** @var StaticContentManager $staticContentManager */
+        $staticContentManager = $this->get('unilend.service.static_content_manager');
+        $facebookUrl          = $staticContentManager->getFacebookLink();
+        $twitterUrl           = $staticContentManager->getTwitterLink();
+
+        return $this->render('partials/components/list-socialmedia.html.twig', array('facebookUrl' => $facebookUrl, 'twitterUrl' => $twitterUrl));
+    }
+
 
     /**
      * @Route("/questions-frequentes-emprunteur", name="borrower_faq")
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function faqBorrowerShowAction()    {
+    public function faqBorrowerShowAction()
+    {
 
     }
 

@@ -1,8 +1,0 @@
-{# Generic list sharing component #}
-{# Relies on the module listSharing macro #}
-{% import 'partials/modules/_list-sharing.macros.twig' as listSharing %}
-
-{{ listSharing.render({
-  shareTitle: page.title|default(title),
-  shareUrl: page.permalink|default(siteurl(''))
-}) }}
