@@ -1,7 +1,6 @@
 {# Site Header for Dashboard #}
 {# @note This file is produced as a workaround since Twig.JS doesn't correctly support embed tags #}
 {#       See: partials/layouts/_dashboard.twig for more information #}
-
 {% import 'extensions/_general.macros.twig' as general %}
 <header class="site-header site-header-dashboard">
     <div class="site-band"></div>
@@ -28,16 +27,18 @@
                                 </a>
                             </div><!-- /.profile-avatar -->
                             <a href="{{ route('user/preter/notifications') }}" class="profile-notifications">
-              {% set notificationsUnread = 0 %}
-              {% for i, item in notifications if item.status == 'unread' %}
-                {% set notificationsUnread = notificationsUnread + 1 %}
-              {% endfor %}
-              {% if notificationsUnread > 0 %}{{ general.pip(notificationsUnread) }}{% endif %}
+                                {% set notificationsUnread = 0 %}
+                                {#{% for i, item in notifications if item.status == 'unread' %}#}
+                                    {#{% set notificationsUnread = notificationsUnread + 1 %}#}
+                                {#{% endfor %}#}
+                                {# TODO: check after DEV-574 if this iteration on all notification is of any use #}
+                                {% if app.user.notificationsUnread > 0 %}{{ general.pip(app.user.notificationsUnread) }}{% endif %}
                             </a><!-- /.profile-notifications -->
                             <div class="profile-name">{% trans with { '%firstName%' : app.user.firstName } %} header-connected_greeting {% endtrans %} </div>
                             <div class="profile-balance">
-              <span class="label">Solde:</span>
-              <span class="value">{{ userProfile.balance|default(0)|__price(2)|nbsp }}€</span>
+                                <span class="label">Solde:</span>
+                                <span class="value">{{ userProfile.balance|default(0)|nbsp }}€</span>
+                                {#{{ userProfile.balance|default(0)|__price(2)|nbsp }}#}
                             </div><!-- /.profile-balance -->
                             <a href="{{ path('logout') }}" class="profile-logout link"><span class="label">{% trans %} header-connected_logout {% endtrans %}</span></a>
                         </div><!-- /.site-user-profile -->
