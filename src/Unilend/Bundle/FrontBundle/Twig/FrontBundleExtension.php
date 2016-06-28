@@ -76,12 +76,6 @@ class FrontBundleExtension extends \Twig_Extension
         return $this->sUrl . '/bundles/unilendfront/images/' . $sPath;
     }
 
-    public function canUseSvg()
-    {
-        //var useSVG = GLOBAL.Unilend.config.useSVG || false
-        return true;
-    }
-
     public function getStatistics()
     {
         return $this->statisticsManager->getAllStatistics();
@@ -100,7 +94,6 @@ class FrontBundleExtension extends \Twig_Extension
             new \Twig_SimpleFunction('svgimage', array($this, 'svgImageFunction')),
             new \Twig_SimpleFunction('__', array($this, 'temporaryTranslateFunction')),
             new \Twig_SimpleFunction('siteurlmedia', array($this, 'completeUrlMediaFunction')),
-            new \Twig_SimpleFunction('caniuse_svg', array($this, 'canUseSvg')),
             new \Twig_SimpleFunction('getStatistics', array($this, 'getStatistics')),
             new \Twig_SimpleFunction('getCategories', array($this, 'getCategoriesForSvg'))
         );
