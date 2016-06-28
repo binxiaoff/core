@@ -1146,7 +1146,8 @@ class MailerManager
                         /** @var TemplateMessage $message */
                         $message = $this->messageProvider->newMessage($sMail, $aReplacements);
                         $message->setTo($oCustomer->email);
-                            $this->mailer->send($message);
+
+                        $this->mailer->send($message);
                     }
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
@@ -1284,8 +1285,8 @@ class MailerManager
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
                     $message->setTo($oCustomer->email);
-                    $this->mailer->send($message);
 
+                    $this->mailer->send($message);
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
@@ -1422,8 +1423,8 @@ class MailerManager
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
                     $message->setTo($oCustomer->email);
-                    $this->mailer->send($message);
 
+                    $this->mailer->send($message);
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
@@ -1598,8 +1599,8 @@ class MailerManager
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
                     $message->setTo($oCustomer->email);
-                    $this->mailer->send($message);
 
+                    $this->mailer->send($message);
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
@@ -1796,8 +1797,8 @@ class MailerManager
                     /** @var TemplateMessage $message */
                     $message = $this->messageProvider->newMessage($sMail, $aReplacements);
                     $message->setTo($oCustomer->email);
-                    $this->mailer->send($message);
 
+                    $this->mailer->send($message);
                 } catch (\Exception $oException) {
                     if ($this->oLogger instanceof LoggerInterface) {
                         $this->oLogger->error(
