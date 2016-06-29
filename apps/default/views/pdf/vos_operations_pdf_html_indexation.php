@@ -76,7 +76,7 @@
                 }
 
                 // Remb preteur
-                if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
+                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                     $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
                     ?>

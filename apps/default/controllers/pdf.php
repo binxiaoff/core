@@ -1161,12 +1161,12 @@ class pdfController extends bootstrap
         );
 
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23',
+            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
             2 => '3,4,7,8',
             3 => '3,4,7',
             4 => '8',
             5 => '2',
-            6 => '5,23'
+            6 => '5,23,26'
         );
 
         if (isset($post_tri_type_transac)) {
