@@ -225,7 +225,7 @@ class MailerManager
         }
 
         // Taux moyen pondéré
-        $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate());
+        $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1);
 
         // Pas de mail si le compte est desactivé
         if ($oBorrower->status == 1) {
@@ -283,7 +283,7 @@ class MailerManager
         $oBorrower->get($oCompany->id_client_owner, 'id_client');
 
         if ($oBorrower->status == 1) {
-            $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate());
+            $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1);
 
             $oBorrowerPaymentSchedule->get($oProject->id_project, 'ordre = 1 AND id_project');
             $fMonthlyPayment = $oBorrowerPaymentSchedule->montant + $oBorrowerPaymentSchedule->commission + $oBorrowerPaymentSchedule->tva;
@@ -334,7 +334,7 @@ class MailerManager
         $oCompany->get($oProject->id_company, 'id_company');
         $this->oSettings->get('Adresse notification projet funde a 100', 'type');
         $sRecipient       = $this->oSettings->value;
-        $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate());
+        $fWeightedAvgRate = $this->oFicelle->formatNumber($oProject->getAverageInterestRate(), 1);
         $iBidTotal        = $oBid->getSoldeBid($oProject->id_project);
         if ($iBidTotal > $oProject->amount) {
             $iBidTotal = $oProject->amount;
