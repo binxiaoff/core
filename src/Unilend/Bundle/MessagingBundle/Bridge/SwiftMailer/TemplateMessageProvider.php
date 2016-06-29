@@ -65,8 +65,7 @@ class TemplateMessageProvider
 
         /** @var TemplateMessage $message */
         $message = new $this->templateMessageClass($mailTemplate->id_mail_template);
-        $message->setLogger($this->logger)
-                ->setVariables($variables)
+        $message->setVariables($variables)
                 ->setFrom($mailTemplate->sender_email, $fromName)
                 ->setSubject($subject)
                 ->setBody($body, 'text/html');
