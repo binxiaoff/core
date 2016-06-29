@@ -750,14 +750,17 @@ class statsController extends bootstrap
                 c.id_client,
                 c.prenom,
                 c.nom,
-                SUM(e.interets),
-                SUM(e.retenues_source),
-                SUM(ROUND(e.prelevements_obligatoires, 2))
+                SUM(e.interets_rembourses),
+                SUM(ROUND(retenues_source.amount / 100, 2)),
+                SUM(ROUND(prelevements_obligatoires.amount / 100, 2))
               FROM lenders_accounts la
                 INNER JOIN clients c ON (la.id_client_owner = c.id_client)
                 LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . '
+                LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
               WHERE YEAR(e.date_echeance_reel) = ' . $annee . '
-                AND e.status = 1
+                AND e.status IN (' . \echeanciers::STATUS_REPAID . ', ' . \echeanciers::STATUS_PARTIALLY_REPAID .  ')
                 AND e.status_ra = 0
               GROUP BY c.id_client';
         $resultat = $this->bdd->query($sql);
@@ -935,7 +938,7 @@ class statsController extends bootstrap
 
     public function _tous_echeanciers_pour_projet()
     {
-        if ($_POST['form_envoi_params'] == "ok" && $_POST['id_projet'] != "" && isset($_POST['id_projet'])) {
+        if (isset($_POST['form_envoi_params']) && $_POST['form_envoi_params'] == "ok" && false == empty($_POST['id_projet'])) {
             $this->autoFireView = false;
             $this->hideDecoration();
 
@@ -945,29 +948,38 @@ class statsController extends bootstrap
             $csv = "";
             $csv .= $header . " \n";
 
-            $sql = '
-                SELECT e.id_echeancier,
-                    e.id_lender,
-                    e.id_project,
-                    e.id_loan,
-                    e.ordre,
-                    e.montant,
-                    e.capital,
-                    (select sum(capital - capital_rembourse) FROM echeanciers e2 where e2.id_project = e.id_project and e2.id_lender = e.id_lender and e2.id_loan = e.id_loan and e2.ordre > e.ordre) as capitalRestant,
-                    e.interets,
-                    e.prelevements_obligatoires,
-                    e.retenues_source,
-                    e.csg,
-                    e.prelevements_sociaux,
-                    e.contributions_additionnelles,
-                    e.prelevements_solidarite,
-                    e.crds,date_echeance,
-                    e.date_echeance_reel,
-                    e.date_echeance_emprunteur,
-                    e.date_echeance_emprunteur_reel,
-                    status
-                FROM echeanciers e
-                WHERE e.id_project=' . $_POST['id_projet'];
+            $sql = 'SELECT 
+                      e.id_echeancier,
+                      e.id_lender,
+                      e.id_project,
+                      e.id_loan,
+                      e.ordre,
+                      e.montant,
+                      e.capital,
+                      SUM(e.capital - e.capital_rembourse) AS capitalRestant,
+                      e.interets,
+                      ROUND(prelevements_obligatoires.amount / 100, 2) AS prelevements_obligatoires,
+                      ROUND(retenues_source.amount / 100, 2) AS retenues_source,
+                      ROUND(csg.amount / 100, 2) AS csg,
+                      ROUND(prelevements_sociaux.amount / 100, 2) AS prelevements_sociaux,
+                      ROUND(contributions_additionnelles.amount / 100, 2) AS contributions_additionnelles,
+                      ROUND(prelevements_solidarite.amount / 100, 2) AS prelevements_solidarite,
+                      ROUND(crds.amount / 100, 2) AS crds,
+                      e.date_echeance,
+                      e.date_echeance_reel,
+                      e.date_echeance_emprunteur,
+                      e.date_echeance_emprunteur_reel,
+                      status
+                  FROM echeanciers e
+                      LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND t.type_transaction = ' . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . '
+                      LEFT JOIN tax prelevements_obligatoires ON prelevements_obligatoires.id_transaction = t.id_transaction AND prelevements_obligatoires.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX . '
+                      LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = ' . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE. '
+                      LEFT JOIN tax csg ON csg.id_transaction = t.id_transaction AND csg.id_tax_type = ' . \tax_type::TYPE_CSG . '
+                      LEFT JOIN tax prelevements_sociaux ON prelevements_sociaux.id_transaction = t.id_transaction AND prelevements_sociaux.id_tax_type = ' . \tax_type::TYPE_SOCIAL_DEDUCTIONS . '
+                      LEFT JOIN tax contributions_additionnelles ON contributions_additionnelles.id_transaction = t.id_transaction AND contributions_additionnelles.id_tax_type = ' . \tax_type::TYPE_ADDITIONAL_CONTRIBUTION_TO_SOCIAL_DEDUCTIONS . '
+                      LEFT JOIN tax prelevements_solidarite ON prelevements_solidarite.id_transaction = t.id_transaction AND prelevements_solidarite.id_tax_type = ' . \tax_type::TYPE_SOLIDARITY_DEDUCTIONS . '
+                      LEFT JOIN tax crds ON crds.id_transaction = t.id_transaction AND crds.id_tax_type = ' . \tax_type::TYPE_CRDS . '
+                  WHERE e.id_project=' . $_POST['id_projet'];
 
             $resultat = $this->bdd->query($sql);
             while ($record = $this->bdd->fetch_array($resultat)) {
@@ -1168,12 +1180,21 @@ class statsController extends bootstrap
         $iSum82 = 0;
         $iSum118 = 0;
 
-        $sql = "SELECT la.id_lender_account, e.interets, e.retenues_source, e.date_echeance_reel, e.status_ra, e.capital, c.type
+        $sql = "SELECT
+                  la.id_lender_account,
+                  e.interets,
+                  ROUND(retenues_source.amount / 100, 2), as retenues_source
+                  e.date_echeance_reel,
+                  e.status_ra,
+                  e.capital,
+                  c.type
                 FROM lenders_accounts la
-                  INNER JOIN clients c ON (la.id_client_owner = c.id_client)
-                  LEFT JOIN echeanciers e ON (e.id_lender = la.id_lender_account)
+                  INNER JOIN clients c ON la.id_client_owner = c.id_client
+                  LEFT JOIN echeanciers e ON e.id_lender = la.id_lender_account
+                  LEFT JOIN transactions t ON t.id_echeancier = e.id_echeancier AND " . \transactions_types::TYPE_LENDER_REPAYMENT_INTERESTS . "
+                  LEFT JOIN tax retenues_source ON retenues_source.id_transaction = t.id_transaction AND retenues_source.id_tax_type = " . \tax_type::TYPE_INCOME_TAX_DEDUCTED_AT_SOURCE . "
                 WHERE YEAR(e.date_echeance_reel) = $iYear
-                  AND e.status = 1
+                  AND e.status = IN (" . \echeanciers::STATUS_REPAID . ", " . \echeanciers::STATUS_PARTIALLY_REPAID .  ")
                   AND c.id_client = $iClient";
 
         $resultat = $this->bdd->query($sql);
