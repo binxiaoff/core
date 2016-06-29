@@ -318,6 +318,10 @@ class rootController extends bootstrap
                 }
             }
 
+            if ($paramSlug === 'validation-virement') {
+                $this->page = 'alimentation';
+            }
+
             // restriction pour capital
             if ($this->lurl == 'http://prets-entreprises-unilend.capital.fr' && $this->tree->id_template != 14) {
                 header('Location: http://prets-entreprises-unilend.capital.fr/capital/');
@@ -1333,7 +1337,7 @@ class rootController extends bootstrap
             $destinataire = $this->settings->value;
 
             $infos = '<ul>';
-            $infos .= '<li>Type demande : ' . $objet . '</li>';
+            $infos .= '<li>Type demande : ' . $objets[$this->demande_contact->demande] . '</li>';
             if ($this->demande_contact->demande == 5) {
                 $infos .= '<li>Preciser :' . $this->ficelle->speChar2HtmlEntities($this->demande_contact->preciser) . '</li>';
             }
@@ -1349,9 +1353,9 @@ class rootController extends bootstrap
                 '$surl'   => $this->surl,
                 '$url'    => $this->lurl,
                 '$email'  => $this->demande_contact->email,
-                '$nom'    => utf8_decode($this->demande_contact->nom),
-                '$prenom' => utf8_decode($this->demande_contact->prenom),
-                '$objet'  => ($objets[$this->demande_contact->demande]),
+                '$nom'    => $this->demande_contact->nom,
+                '$prenom' => $this->demande_contact->prenom,
+                '$objet'  => $objets[$this->demande_contact->demande],
                 '$infos'  => $infos
             );
 

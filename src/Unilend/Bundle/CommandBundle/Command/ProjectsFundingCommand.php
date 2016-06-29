@@ -70,7 +70,6 @@ class ProjectsFundingCommand extends ContainerAwareCommand
                         $projectManager->createPaymentSchedule($project);
 
                         $mailerManager->sendFundedAndFinishedToBorrower($project);
-                        $mailerManager->sendFundedToStaff($project);
                         $mailerManager->sendBidAccepted($project);
                     } else {
                         $projectManager->treatFundFailed($project);

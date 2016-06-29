@@ -922,41 +922,6 @@ class preteursController extends bootstrap
         }
     }
 
-    public function _liste_preteurs_non_inscrits()
-    {
-        $this->loadGestionData();
-
-        $nonValide = 2;
-        $this->clients = $this->loadData('clients');
-
-        if (isset($_POST['form_search_preteur'])) {
-            // Recuperation de la liste des clients searchPreteurs
-            $this->lPreteurs = $this->clients->searchPreteurs($_POST['id'], $_POST['nom'], $_POST['email'], $_POST['prenom'], $_POST['raison_sociale'], $nonValide);
-
-            // Mise en session du message
-            $_SESSION['freeow']['title']   = 'Recherche d\'un prêteur non inscript';
-            $_SESSION['freeow']['message'] = 'La recherche est termin&eacute;e !';
-        } else {
-            // On recupera les 10 derniers clients
-            $this->lPreteurs = $this->clients->searchPreteurs('', '', '', '', '', $nonValide, '0', '300');
-        }
-
-        if (isset($this->params[0]) && $this->params[0] == 'status') {
-            $iOriginForUserHistory = 12;
-            $oClient = $this->loadData('clients');
-            $oClient->get($this->params[1], 'id_client');
-
-            $this->changeClientStatus(
-                $oClient,
-                $this->params[2],
-                (($this->params[2] == \clients::STATUS_OFFLINE) ? \clients_status::CLOSED_BY_UNILEND : \clients_status::TO_BE_CHECKED),
-                $iOriginForUserHistory
-            );
-            header('Location: ' . $this->lurl . '/preteurs/gestion');
-            die;
-        }
-    }
-
     public function _activation()
     {
         $this->clients      = $this->loadData('clients');
@@ -1069,7 +1034,7 @@ class preteursController extends bootstrap
             $tabVars['[EMV DYN]' . $key . '[EMV /DYN]'] = $value;
         }
 
-        echo $texteMail = strtr(utf8_decode($this->mail_template->content), $tabVars);
+        echo strtr($this->mail_template->content, $tabVars);
         die;
     }
 

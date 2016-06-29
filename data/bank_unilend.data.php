@@ -34,11 +34,6 @@ class bank_unilend extends bank_unilend_crud
     const TYPE_DEBIT_UNILEND                   = 3;
     const TYPE_UNILEND_WELCOME_OFFER_PATRONAGE = 4;
 
-    const STATUS_CREDITED_ON_UNILEND_ACCOUNT = 0;
-    const STATUS_CREDITED_ON_LENDER_ACCOUNT  = 1;
-    const STATUS_DEBITED_UNILEND_ACCOUNT     = 3;
-    //NOTE : there is not status value 2
-
     public function __construct($bdd, $params = '')
     {
         parent::bank_unilend($bdd, $params);

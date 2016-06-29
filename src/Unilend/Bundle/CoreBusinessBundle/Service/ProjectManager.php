@@ -672,6 +672,10 @@ class ProjectManager
         $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         $oProjectStatus->get($iProjectStatus, 'status');
 
+        if ($this->oLogger instanceof LoggerInterface && empty($oProjectStatus->id_project_status)) {
+            $this->oLogger->error('Trying to insert empty status for project ' . $oProject->id_project . ' - Trace: ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), array('id_project' => $oProject->id_project));
+        }
+
         $oProjectsStatusHistory->id_project        = $oProject->id_project;
         $oProjectsStatusHistory->id_project_status = $oProjectStatus->id_project_status;
         $oProjectsStatusHistory->id_user           = $iUserId;
@@ -761,6 +765,7 @@ class ProjectManager
             $oProject->update();
 
             $this->oMailerManager->sendFundedToBorrower($oProject);
+            $this->oMailerManager->sendFundedToStaff($oProject);
         }
     }
 
