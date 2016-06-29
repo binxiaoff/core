@@ -19,17 +19,25 @@ class TemplateMessageProvider
     /**
      * TemplateMessageProvider constructor.
      *
-     * @param EntityManager   $entityManager
-     * @param string          $templateMessageClass
-     * @param string          $defaultLanguage
-     * @param LoggerInterface $logger
+     * @param EntityManager $entityManager
+     * @param string        $templateMessageClass
+     * @param string        $defaultLanguage
      */
-    public function __construct(EntityManager $entityManager, $templateMessageClass, $defaultLanguage, LoggerInterface $logger = null)
+    public function __construct(EntityManager $entityManager, $templateMessageClass, $defaultLanguage)
     {
         $this->entityManager        = $entityManager;
         $this->templateMessageClass = $templateMessageClass;
         $this->defaultLanguage      = $defaultLanguage;
-        $this->logger               = $logger;
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     * @return $this
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+        return $this;
     }
 
     /**
@@ -62,6 +70,10 @@ class TemplateMessageProvider
                 ->setFrom($mailTemplate->sender_email, $fromName)
                 ->setSubject($subject)
                 ->setBody($body, 'text/html');
+
+        if ($this->logger instanceof LoggerInterface) {
+            $message->setLogger($this->logger);
+        }
 
         return $message;
     }
