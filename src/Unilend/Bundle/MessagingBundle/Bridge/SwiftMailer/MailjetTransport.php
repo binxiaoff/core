@@ -72,10 +72,10 @@ class MailjetTransport implements \Swift_Transport
         if (false === empty($oMessage->getChildren())) {
             $body['Attachments'] = [];
             foreach ($oMessage->getChildren() as $child) {
-                if (1 === preg_match('/^(.*); name=(.*)$/', $child->getContentType(), $matches)) {
+                if (1 === preg_match('/^(?<content_type>.*); name=(?<file_name>.*)$/', $child->getHeaders()->get('Content-Type')->getFieldBody(), $matches)) {
                     $body['Attachments'][] = [
-                        'Content-Type' => $matches[1],
-                        'Filename'     => $matches[2],
+                        'Content-Type' => $matches['content_type'],
+                        'Filename'     => $matches['file_name'],
                         'content'      => base64_encode($child->getBody())
                     ];
                 }
