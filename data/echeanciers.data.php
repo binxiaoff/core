@@ -835,18 +835,9 @@ class echeanciers extends echeanciers_crud
               ELSE
                   1
           END AS exonere,
-          CASE
-              WHEN lte.year IS NULL THEN
-                  lte.year
-              ELSE
-                  CONCAT(lte.year, "-01-01")
-          END AS debut_exoneration,
-          CASE
-              WHEN lte.year IS NULL THEN
-                  lte.year
-              ELSE
-                  CONCAT(lte.year, "-12-31")
-          END AS fin_exoneration,
+          (SELECT group_concat(lte.year SEPARATOR ", ")
+           FROM lender_tax_exemption lte
+           WHERE lte.id_lender = la.id_lender_account) AS annees_exoneration,
           e.id_project,
           e.id_loan,
           l.id_type_contract,

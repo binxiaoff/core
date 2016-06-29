@@ -42,7 +42,7 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 
         $output->writeln('Generating repayment file for ' . $previousDay->format('Y-m-d'));
 
-        $headers       = "id_client;id_lender_account;type;iso_pays;exonere;debut_exoneration;fin_exoneration;id_project;id_loan;type_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
+        $headers       = "id_client;id_lender_account;type;iso_pays;exonere;annees_exoneration;id_project;id_loan;type_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
         $dayCSV        = '';
 
         $sftpPath      = $this->getContainer()->getParameter('path.sftp');
