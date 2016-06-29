@@ -20,17 +20,6 @@
     <!-- @todo pages can overwrite this block to inject meta tags per page -->
     {% endblock %}
     {% block cssDependencies %}
-        <!-- Fonts -->
-    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic|Raleway:400" media="all">
-        <!-- CSS Dependencies -->
-    {# <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.css" media="all" /> #}
-    <link rel="stylesheet" type="text/css" href="{{ siteurlmedia('fonts/unilend-fontawesome/style.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ ('vendor/videojs/video-js.min.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ ('vendor/swiper/css/swiper.min.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ ('vendor/fancybox/css/jquery.fancybox.css') }}" media="all" />
-    <link rel="stylesheet" type="text/css" href="{{ ('vendor/jquery-ui/themes/base/minified/jquery-ui.min.css') }}" media="all" />
-    {# <link rel="stylesheet" type="text/css" href="{{ site.assets.css }}dependencies{% if env != 'dev' %}.min{% endif %}.css" media="all" /> #}
-
     {# Mapbox #}
     <link href="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.css" rel="stylesheet" />
     <link href="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/MarkerCluster.css" rel="stylesheet" />
@@ -39,9 +28,15 @@
 
     <!-- CSS Site -->
     {% block cssFiles %}
-    <link rel="stylesheet" type="text/css" href="{#{{ site.assets.css }}#}screen{% if app.environment != 'dev' %}.min{% endif %}.css" media="screen,projection">
-    <link rel="stylesheet" type="text/css" href="{#{{ site.assets.css }}#}print{% if app.environment != 'dev' %}.min{% endif %}.css" media="print">
-    <!--[if IE]><link rel="stylesheet" type="text/css" href="{#{{ site.assets.css }}#}ie{% if app.environment != 'dev' %}.min{% endif %}.css" media="screen,projection"><![endif]-->
+        {% stylesheets
+        'bundles/unilendfront/css/*.css'
+        'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
+        'bundles/unilendfront/js/vendor/videojs/video-js.min.css'
+        'bundles/unilendfront/js/vendor/swiper/css/swiper.min.css'
+        'bundles/unilendfront/js/vendor/fancybox/css/jquery.fancybox.css'
+        'bundles/unilendfront/js/vendor/jquery-ui/themes/base/minified/jquery-ui.min.css' %}
+        <link rel="stylesheet" href="{{ asset_url }}" />
+        {% endstylesheets %}
     {% endblock %}
 
     <!-- JS -->
@@ -142,12 +137,17 @@
     {% endif %}
 {% endblock %}
 
+{% javascripts
+    'bundles/unilendfront/js/*' %}
+<script src="{{ asset_url }}"></script>
+{% endjavascripts %}
+
     {# Scripts at bottom #}
-    <script type="text/javascript" src="{#{{ site.assets.js }}#}dependencies{% if app.environment != 'dev' %}.min{% endif %}.js"></script>
     <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
     <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
-    <script type="text/javascript" src="{#{{ site.assets.js }}#}main{% if app.environment != 'dev' %}.min{% endif %}.js"></script>
-{% block extendFoot %}{% endblock %}
+
+{% block extendFoot %}
+{% endblock %}
 
 </body>
 </html>

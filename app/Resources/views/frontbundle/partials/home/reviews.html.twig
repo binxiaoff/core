@@ -89,7 +89,7 @@ image: '<img src="' ~ siteurlmedia('reviewers/svg/challenges.svg') ~ '" alt="Cha
       </div>
       <ul class="reviewers swiper-custom-pagination">
         {% for i, reviewer in reviewers %}
-          <li{% if i == 0 %} class="active"{% endif %}><a href="javascript:;">{{ reviewer.image }}</a></li>
+          <li{% if i == 0 %} class="active"{% endif %}><a href="javascript:;">{{ reviewer.image | raw }}</a></li>
         {% endfor %}
       </ul><!-- /.reviewers -->
     </div><!-- /.swiper-container -->
