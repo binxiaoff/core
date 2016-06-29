@@ -7,11 +7,15 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectRequestManager
 {
+    /** @var EntityManager  */
     private $entityManager;
+    /** @var  ProjectManager */
+    private $projectManager;
 
-    public function __construct(EntityManager $entityManager)
+    public function __construct(EntityManager $entityManager, ProjectManager $projectManager)
     {
-        $this->entityManager = $entityManager;
+        $this->entityManager  = $entityManager;
+        $this->projectManager = $projectManager;
     }
 
     public function getMonthlyRateEstimate()
@@ -37,6 +41,42 @@ class ProjectRequestManager
         $monthlyPayment = round($oFinancial->PMT($estimatedRate / 100 / 12, $period, -$amount) + $fCommission);
 
         return $monthlyPayment;
+    }
+
+    public function saveSimulatorRequest($aFormData)
+    {
+        /** @var \projects $project */
+        $project       = $this->entityManager->getRepository('projects');
+        /** @var \clients $client */
+        $client        = $this->entityManager->getRepository('clients');
+        /** @var \clients_adresses $clientAddress */
+        $clientAddress = $this->entityManager->getRepository('clients_adresses');
+        /** @var \companies $company */
+        $company       = $this->entityManager->getRepository('companies');
+
+        $client->id_langue = 'fr';
+        $client->email     = (true === $client->existEmail($aFormData['email'])) ? $aFormData['email'] : $aFormData['email'] . '-' . time();
+        $client->create();
+
+        $clientAddress->id_client = $client->id_client;
+        $clientAddress->create();
+
+        $company->id_client_owner               = $client->id_client;
+        $company->siren                         = $aFormData['siren'];
+        $company->status_adresse_correspondance = '1';
+        $company->email_dirigeant               = $aFormData['email'];
+        $company->create();
+
+        $project->id_company                           = $company->id_company;
+        $project->amount                               = $aFormData['amount'];
+        $project->period                               = $aFormData['period'];
+        $project->id_borrowing_motive                  = $aFormData['borrowingMotive'];
+        $project->ca_declara_client                    = 0;
+        $project->resultat_exploitation_declara_client = 0;
+        $project->fonds_propres_declara_client         = 0;
+        $project->create();
+
+        //TODO add special project status for simulator
     }
 
 }

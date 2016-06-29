@@ -118,6 +118,11 @@ class MainController extends Controller
     public function projectSimulatorStepTwoAction(Request $request)
     {
         $aFormData = $request->request->get('esim');
+
+        /** @var ProjectRequestManager $projectRequestManager */
+        $projectRequestManager = $this->get('unilend.service.project_request_manager');
+        $projectRequestManager->saveSimulatorRequest($aFormData);
+
         $session   = $request->getSession();
         $session->set('SimulatorData', $aFormData);
 
