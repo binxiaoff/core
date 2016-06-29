@@ -27,6 +27,8 @@
 // **************************************************************************************************** //
 class borrowing_motive extends borrowing_motive_crud
 {
+    const OTHER = 7;
+
     public function __construct($bdd, $params = '')
     {
         parent::borrowing_motive($bdd, $params);

@@ -13,6 +13,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class ProjectRequestController extends Controller
 {
@@ -21,9 +22,13 @@ class ProjectRequestController extends Controller
      */
     public function projectRequestStep1Action(Request $request)
     {
-        $aFormData = $request->getSession()->get('SimulatorData');
-        $request->getSession()->remove('SimulatorData');
-        var_dump($aFormData);
+        /** @var EntityManager $entityManager */
+        $entityManager = $this->get('unilend.service.entity_manager');
+        /** @var \projects $project */
+        $project  = $entityManager->getRepository('projects');
+        $project->get($request->getSession()->get('esim/project_id'));
+        $request->getSession()->remove('esim/project_id');
+        var_dump($project);
 
         return new Response('waiting for template ... ');
     }

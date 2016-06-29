@@ -76,7 +76,9 @@ class ProjectRequestManager
         $project->fonds_propres_declara_client         = 0;
         $project->create();
 
-        //TODO add special project status for simulator
+        $this->projectManager->addProjectStatus(\users::USER_ID_FRONT, \projects_status::DEMANDE_SIMULATEUR, $project);
+
+        return $project->id_project;
     }
 
 }

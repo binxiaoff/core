@@ -91,18 +91,18 @@ class MainController extends Controller
                 && $amount >= $iProjectAmountMin
                 && $amount <= $iProjectAmountMax
             ){
-                $estimatedRate                  = $projectRequestManager->getMonthlyRateEstimate();
-                $estimatedMonthlyRepayment      = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
-                $sTranslationComplement         = $translationManager->selectTranslation('home-borrower', 'simulator-step-2-text-segment-motive-' . $motiveId);
-                $bMotiveComplementToBeDisplayed = (7 === $motiveId) ? false : true; //TODO constant once table has been renamed in projectMotive
+                $estimatedRate                          = $projectRequestManager->getMonthlyRateEstimate();
+                $estimatedMonthlyRepayment              = $projectRequestManager->getMonthlyPaymentEstimate($amount, $period, $estimatedRate);
+                $sTranslationComplement                 = $translationManager->selectTranslation('home-borrower', 'simulator-step-2-text-segment-motive-' . $motiveId);
+                $bmotiveSentenceComplementToBeDisplayed = (\borrowing_motive::OTHER == $motiveId) ? false : true;
 
                 return new JsonResponse(array(
-                    'estimatedRate'                 => $estimatedRate,
-                    'estimatedMonthlyRepayment'     => $estimatedMonthlyRepayment,
-                    'translationComplement'         => $sTranslationComplement,
-                    'motiveComplementToBeDisplayed' => $bMotiveComplementToBeDisplayed,
-                    'period'                        => $period,
-                    'amount'                        => $amount
+                    'estimatedRate'                         => $estimatedRate,
+                    'estimatedMonthlyRepayment'             => $estimatedMonthlyRepayment,
+                    'translationComplement'                 => $sTranslationComplement,
+                    'motiveSentenceComplementToBeDisplayed' => $bmotiveSentenceComplementToBeDisplayed,
+                    'period'                                => $period,
+                    'amount'                                => $amount
                 ));
             }
 
@@ -121,10 +121,10 @@ class MainController extends Controller
 
         /** @var ProjectRequestManager $projectRequestManager */
         $projectRequestManager = $this->get('unilend.service.project_request_manager');
-        $projectRequestManager->saveSimulatorRequest($aFormData);
+        $iProjectID = $projectRequestManager->saveSimulatorRequest($aFormData);
 
         $session   = $request->getSession();
-        $session->set('SimulatorData', $aFormData);
+        $session->set('esim/project_id', $iProjectID);
 
         return $this->redirectToRoute('project_request_step_1');
     }
