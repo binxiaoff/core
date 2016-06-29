@@ -91,6 +91,7 @@
                     </tr>
                     <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                         <td colspan="7">
+                            <?php if (\transactions_types::TYPE_LENDER_REPAYMENT == $t['type_transaction']): ?>
                             <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>">
                                 <table class="soustable" width="100%">
                                     <tbody>
@@ -128,6 +129,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                        <?php endif; ?>
                         </td>
                     </tr>
                     <!-- fin transasction remb -->
