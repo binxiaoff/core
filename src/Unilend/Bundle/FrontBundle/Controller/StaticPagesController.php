@@ -35,7 +35,7 @@ class StaticPagesController extends Controller
     public function renderSocialMediaAction()
     {
         /** @var StaticContentManager $staticContentManager */
-        $staticContentManager = $this->get('unilend.service.static_content_manager');
+        $staticContentManager = $this->get('unilend.frontbundle.service.static_content_manager');
         $facebookUrl          = $staticContentManager->getFacebookLink();
         $twitterUrl           = $staticContentManager->getTwitterLink();
 
@@ -153,10 +153,4 @@ class StaticPagesController extends Controller
     {
 
     }
-
-
-
-
-
-
 }

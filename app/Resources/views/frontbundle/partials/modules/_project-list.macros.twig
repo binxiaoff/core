@@ -227,28 +227,31 @@
             <div class="project-list-item-offers">
                 <strong>{{ project.number_bids }}</strong> {% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
             </div><!-- /.project-list-item-offers -->
-            {% if project.currentUserOffers is defined and project.currentUserOffers | length > 0 %}
+            {% if project.currentUser.offers is defined and project.currentUser.offers.total > 0 %}
                 {# Mark that Autolend was applied #}
                 {% set attrHasAutolend = 'class="project-%list-item-useroffers"' %}
-                {% if listItem.currentUserOffersAutolend is defined and listItem.currentUserOffersAutolend > 0 %}
-                    {% set autolendTooltip %} {% trans with { '%currentUserOffersAutolend%' : listItem.currentUserOffersAutolend} %} project-list_autolend-tooltip {% endtrans %} {% endset %}
+                {% if project.currentUser.offers.autolend is defined and project.currentUser.offers.autolend > 0 %}
+                    {% set autolendTooltip %}
+                        {% transchoice project.currentUser.offers.autolend with { '%currentUserOffersAutolend%' : project.currentUser.offers.autolend } %}
+                        project-list_autolend-tooltip {% endtranschoice %}
+                    {% endset %}
                     {% set autolendTooltipHtml = autolendTooltip ~ " <span class='icon fa-autolend-u32 c-p1'></span>" %}
                     {% set attrHasAutolend = 'class="project-list-item-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="' ~ autolendTooltipHtml ~ '"' %}
                 {% endif %}
 
                 <div {{ attrHasAutolend }}>
-                    {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 %}
-                        {% if statusOffer == constant('\bids::STATUS_BID_ACCEPTED') %}
+                    {% for status, numOffers in project.currentUser.offers %}
+                        {% if status == 'inprogress' and numOffers > 0 %}
                             <div class="project-list-item-useroffers-accepted">
-                                {{ numOffers|__num|nbsp }} {% transchoice project.number_bids %} project-list_accepted-bids-label {% endtranschoice %}
+                                {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_accepted-bids-label {% endtranschoice %}
                             </div>
-                        {% elseif statusOffer == constant('\bids::STATUS_BID_REJECTED') %}
+                        {% elseif status == 'rejected' and numOffers > 0 %}
                             <div class="project-list-item-useroffers-rejected">
-                                {{ numOffers|__num|nbsp }} {% transchoice project.number_bids %} project-list_rejected-bids-label {% endtranschoice %}
+                                {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_rejected-bids-label {% endtranschoice %}
                             </div>
-                        {% elseif statusOffer == constant('\bids::STATUS_BID_PENDING') %}
+                        {% elseif status == 'accepted' and numOffers > 0 %}
                             <div class="project-list-item-useroffers-inprogress">
-                                {{ numOffers|__num|nbsp }} {% transchoice project.number_bids %} project-list_pending-bids-label {% endtranschoice %}
+                                {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_pending-bids-label {% endtranschoice %}
                             </div>
                         {% endif %}
                     {% endfor %}
@@ -303,9 +306,9 @@
         {# Set the offer status to show the icon in the marker #}
         {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
         {% set mapviewOfferStatus = '' %}
-        {% if project.currentUserTotalOffers > 0 and project.currentUserOffers is not empty %}
-            {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}
-                {% set mapviewOfferStatus = statusOffer %}
+        {% if project.currentUser.offers.total > 0 and project.currentUser.offers is not empty %}
+            {% for status, numOffers in project.currentUser.offers if project.currentUser.offers.total > 0 and status is not empty and status != 'rejected' %}
+                {% set mapviewOfferStatus = status %}
             {% endfor %}
         {% endif %}
 
@@ -326,7 +329,7 @@
         <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
         <div class="project-cost">{{ project.amount|__num|nbsp }}€</div>
         <div class="project-rating">
-            <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectListItemRatingLabel')|format(project.risk|convertRisk) }}</span></span>
+            <span class="rating rating-{{ project.risk|convertRisk|split('.')|join('-') }}"><span class="sr-only"></span></span>
         </div>
         <div class="project-interest">{{ project.avg_rate|__num(1) }}%</div>
         <div class="project-period">
@@ -339,32 +342,34 @@
             {% endif %}
         </div>
         <div class="project-offers">
-            <strong>{{ project.number_bids|__num|nbsp }}</strong> {% if project.number_bids == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %}
-
+            <strong>{{ project.number_bids }}</strong> {% transchoice project.number_bids %}project-list_offer-label{% endtranschoice %}
             {% if project.currentUserOffers is defined and project.currentUserOffers is not empty and project.currentUserTotalOffers > 0 %}
                 {# Mark that Autolend was applied #}
                 {% set attrHasAutolend = 'class="project-useroffers"' %}
-                {% if project.currentUserOffersAutolend is not empty and project.currentUserOffersAutolend > 0 %}
-                    {% set autolendTooltip = __('%d offres made with Autolend', 'projectListItemOffersAutolend')|format(project.currentUserOffersAutolend) %}
+                {% if project.currentUser.offers.autolend is not empty and project.currentUser.offers.autolend > 0 %}
+                    {% set autolendTooltip %}
+                        {% transchoice projects.currentUser.offers.autolend with { '%currentUserOffersAutolend%' : projects.currentUser.offers.autolend } %}
+                        project-list_autolend-tooltip {% endtranschoice %}
+                    {% endset %}
                     {% set autolendTooltipHtml = autolendTooltip ~ " <span class='icon fa-autolend-u32 c-p1'></span>" %}
                     {% set attrHasAutolend = 'class="project-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="' ~ autolendTooltipHtml ~ '"' %}
                 {% endif %}
 
                 <div {{ attrHasAutolend }}>
                     {# Show stats for each type of offer #}
-                    {% for statusOffer, numOffers in project.currentUserOffers if numOffers > 0 %}
-                        {% if statusOffer == 'accepted' %}
-                            <div class="project-useroffers-accepted">
-                                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('accepted', 'projectListItemOffersUserStatusAccepted') }}
-                            </div><!-- /.project-useroffers-accepted -->
-                        {% elseif statusOffer == 'rejected' %}
-                            <div class="project-useroffers-rejected">
-                                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('rejected', 'projectListItemOffersUserStatusRejected') }}
-                            </div><!-- /.project-useroffers-rejected -->
-                        {% elseif statusOffer == 'inProgress' %}
-                            <div class="project-useroffers-inprogress">
-                                {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('in progress', 'projectListItemOffersUserStatusInProgress') }}
-                            </div><!-- /.project-useroffers-inprogress -->
+                    {% for status, numOffers in project.currentUser.offers %}
+                        {% if status == 'inprogress' and numOffers > 0 %}
+                            <div class="project-list-item-useroffers-accepted">
+                                {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_accepted-bids-label {% endtranschoice %}
+                            </div>
+                        {% elseif status == 'rejected' and numOffers > 0 %}
+                            <div class="project-list-item-useroffers-rejected">
+                                {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_rejected-bids-label {% endtranschoice %}
+                            </div>
+                        {% elseif status == 'accepted' and numOffers > 0 %}
+                            <div class="project-list-item-useroffers-inprogress">
+                                {{ numOffers|__num|nbsp }} {% transchoice numOffers %} project-list_pending-bids-label {% endtranschoice %}
+                            </div>
                         {% endif %}
                     {% endfor %}
                 </div><!-- /.project-useroffers -->

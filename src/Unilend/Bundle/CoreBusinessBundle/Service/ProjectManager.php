@@ -794,26 +794,6 @@ class ProjectManager
         return $oBid->getBidsStatistics($oProject->id_project);
     }
 
-    public function getProjectsForDisplay(array $aProjectStatus, $sOrderBy, $aRateRange, $iLenderId = null)
-    {
-        /** @var \projects $projects */
-        $projects  = $this->oEntityManager->getRepository('projects');
-        /** @var \companies $company */
-        $company = $this->oEntityManager->getRepository('companies');
-        /** @var \bids $bids */
-        $bids = $this->oEntityManager->getRepository('bids');
-
-        $aProjects = $projects->selectProjectsByStatus(implode(',', $aProjectStatus), null, $sOrderBy, $aRateRange);
-
-        foreach ($aProjects as $key => $project) {
-            $aCompany = $company->select('id_company = ' . $project['id_company']);
-            $aProjects[$key]['company'] = array_shift($aCompany);
-            $aProjects[$key]['currentUserInvolved'] = isset($iLenderId) ? $this->oLenderManager->hasBidOnProject($iLenderId, $project['id_project']) :  false ;
-            $aProjects[$key]['currentUserOffers'] = isset($iLenderId) ? $bids->select('id_lender_account = ' . $iLenderId . ' AND id_project = ' . $project['id_project']) : array();
-        }
-
-        return $aProjects;
-    }
 
     public function getPossibleProjectPeriods()
     {

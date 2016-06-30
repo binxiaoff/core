@@ -7,7 +7,7 @@ security:
 
     providers:
         unilend_front_bundle:
-            id: unilend.security.user.user_provider
+            id: unilend.frontbundle.security.user_provider
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
