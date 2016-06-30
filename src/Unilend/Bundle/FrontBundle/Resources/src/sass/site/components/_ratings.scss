@@ -2,9 +2,21 @@
 // Unilend Ratings
 //
 
-@mixin rating-big($size-factor: 2) {
-  width: 70px * $size-factor;
-  height: 10px * $size-factor;
+@mixin rating-graphics-and-sizes($size-factor: 1) {
+  $width: 70 * $size-factor;
+  $height: 10 * $size-factor;
+  $strokeWidth: 2 * $size-factor;
+  $xPos: $height * .5;
+  $yPos: $height * .5;
+  $radius: 3.5 * $size-factor;
+  width: $width * 1px;
+  height: $height * 1px;
+
+  background-image: inline-svg-code('<svg width="140" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 20"><g id="circle" fill="none" stroke="#{$c-bg2}" stroke-width="4"><circle cx="10" cy="10" r="7"/><circle cx="40" cy="10" r="7"/><circle cx="70" cy="10" r="7"/><circle cx="100" cy="10" r="7"/><circle cx="130" cy="10" r="7"/></g></svg>');
+
+  &:before {
+    background-image: inline-svg-code('<svg width="140" height="20" version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 140 20"><g id="circle" fill="none" stroke="#{$c-p1}" stroke-width="4"><circle cx="10" cy="10" r="7"/><circle cx="40" cy="10" r="7"/><circle cx="70" cy="10" r="7"/><circle cx="100" cy="10" r="7"/><circle cx="130" cy="10" r="7"/></g></svg>');
+  }
 
   &.rating-0-5:before {
     width: 5px * $size-factor;
@@ -54,7 +66,6 @@
   overflow: hidden;
   position: relative;
 
-  background-image: inline-svg-code('<svg width="70" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 10" preserveAspectRatio="xMidYMid keep"><g id="circle" fill="none" stroke="#{$c-bg1}" stroke-width="2"><circle cx="5" cy="5" r="3.5"/><circle cx="20" cy="5" r="3.5"/><circle cx="35" cy="5" r="3.5"/><circle cx="50" cy="5" r="3.5"/><circle cx="65" cy="5" r="3.5"/></g></svg>');
   background-position: left top;
   background-repeat: no-repeat;
   background-size: cover;
@@ -71,54 +82,15 @@
     top: 0;
     bottom: 0;
 
-    background-image: inline-svg-code('<svg width="70" height="10" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 70 10" preserveAspectRatio="xMidYMid keep"><g id="rating" fill="none" stroke="#{$c-p1}" stroke-width="2"><circle id="rating-point-1" cx="5" cy="5" r="3.5"/><circle id="rating-point-2" cx="20" cy="5" r="3.5"/><circle id="rating-point-3" cx="35" cy="5" r="3.5"/><circle id="rating-point-4" cx="50" cy="5" r="3.5"/><circle id="rating-point-5" cx="65" cy="5" r="3.5"/></g></svg>');
     background-position: left top;
     background-repeat: no-repeat;
     background-size: cover;
   }
 
-  &.rating-0-5:before {
-    width: 5px;
-  }
-
-  &.rating-1:before {
-    width: 10px;
-  }
-
-  &.rating-1-5:before {
-    width: 20px;
-  }
-
-  &.rating-2:before {
-    width: 30px;
-  }
-
-  &.rating-2-5:before {
-    width: 35px;
-  }
-
-  &.rating-3:before {
-    width: 40px;
-  }
-
-  &.rating-3-5:before {
-    width: 50px;
-  }
-
-  &.rating-4:before {
-    width: 60px;
-  }
-
-  &.rating-4-5:before {
-    width: 65px;
-  }
-
-  &.rating-5:before {
-    width: 70px;
-  }
+  @include rating-graphics-and-sizes;
 
   &.rating-big {
-    @include rating-big;
+    @include rating-graphics-and-sizes(2);
   }
 }
 

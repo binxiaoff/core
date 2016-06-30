@@ -86,6 +86,7 @@
       top: 0;
 
       color: $c-t3;
+      font-size: 26px;
       line-height: 23px;
       text-align: center;
       vertical-align: middle;
@@ -311,7 +312,7 @@
   );
 
   &:after {
-    content: '\f06e';
+    content: $fa-eye-u;
     margin-left: 5px;
     color: $c-t3;
     font-family: $ff-icon;

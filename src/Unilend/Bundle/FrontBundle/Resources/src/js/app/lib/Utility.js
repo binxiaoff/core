@@ -39,7 +39,7 @@ var Utility = {
   // @method getActiveBreakpoints
   // @returns {String}
   getActiveBreakpoints: function () {
-    if (!window) console.log('Utility.getActiveBreakpoints: no window detected')
+    if (!window) console.error('Utility.getActiveBreakpoints: no window detected')
 
     var self = this
     var width = window.innerWidth
@@ -50,6 +50,21 @@ var Utility = {
     }
 
     return bp.join(' ')
+  },
+
+  // Check if a breakpoint keyword is currently active
+  // @method isBreakpointActive
+  // @returns {Boolean}
+  isBreakpointActive: function (input) {
+    if (!window) console.error('Utility.getActiveBreakpoints: no window detected')
+
+    var self = this
+    if (typeof input === 'string') input = new RegExp(input.replace(/[ ,]+/g, '|'), 'i')
+    if (input.test(window.currentBreakpoint || self.getActiveBreakpoints())) {
+      return true
+    }
+
+    return false
   },
 
   // Generate a random string
@@ -64,6 +79,7 @@ var Utility = {
   },
 
   // Check if a string selector is valid
+  // Ignores any string that starts with `javascript` because it fires jQuery errors
   checkSelector: function (input) {
     var output = input
 
@@ -116,6 +132,8 @@ var Utility = {
 
   // Convert an input value (most likely a string) into a primitive, e.g. number, boolean, etc.
   convertToPrimitive: function (input) {
+    var self = this
+
     // Non-string? Just return it straight away
     if (typeof input !== 'string') return input
 
@@ -125,10 +143,9 @@ var Utility = {
     // Number
     if (/^\-?(?:\d*[\.\,])*\d*(?:[eE](?:\-?\d+)?)?$/.test(input)) {
       return parseFloat(input)
-    }
 
     // Boolean: true
-    if (/^(true|1)$/.test(input)) {
+    } else if (/^(true|1)$/.test(input)) {
       return true
 
     // NaN
@@ -146,7 +163,12 @@ var Utility = {
     // Boolean: false
     } else if (/^(false|0)$/.test(input) || input === '') {
       return false
+
+    // JSON: starts with [ or { and ends with ] or }
+    } else if (/^[\[\{]/.test(input) && /[\]\}]$/.test(input)) {
+      return self.convertStringToJson(input)
     }
+
 
     // Default to string
     return input
@@ -167,6 +189,18 @@ var Utility = {
         console.error('Utility.convertStringToJson: Error parsing string JSON data', input)
       }
     }
+
+    return output
+  },
+
+  // Convert string to float
+  convertStringToFloat: function (input) {
+    if (typeof input === 'number') return input
+
+    var output = parseFloat((input + '').replace(/[^\d\-\.]+/g, ''))
+
+    // Infinity / NaN
+    if (input === Infinity || isNaN(output)) output = 0
 
     return output
   },
@@ -199,12 +233,8 @@ var Utility = {
   // Same as above, except returns the elements itself
   // @returns {Mixed} A {jQueryObject} containing the element(s), or {Boolean} false
   getElemIsOrHasParent: function (elem, selector) {
-    var $elem = $(elem)
-    if ($elem.is(selector)) return $elem
-
-    var $parents = $elem.parents(selector).first()
-    if ($parents.length > 0) return $parents
-
+    var $find = $(elem).closest(selector).first()
+    if ($find.length > 0) return $find
     return false
   },
 
@@ -344,6 +374,17 @@ var Utility = {
     return output
   },
 
+  // Get a time code
+  getTimecode: function (input) {
+    var self = this
+    var inputDate = self.getDate(input)
+    var timeCode = []
+    timeCode.push(Utility.leadingZero(Math.abs(inputDate.getHours())))
+    timeCode.push(Utility.leadingZero(Math.abs(inputDate.getMinutes())))
+    timeCode.push(Utility.leadingZero(Math.abs(inputDate.getSeconds())))
+    return timeCode.join(':')
+  },
+
   // Get an object's length
   getObjectLength: function (obj) {
     var len = 0
@@ -385,12 +426,421 @@ var Utility = {
     return isHidden
   },
 
+  // Check if an element exists in the DOM
   elemExists: function (elem) {
     var $elem = $(elem)
     // {jQueryObject} length must be greater than zero and document must contain the HTMLElement
     if ($elem.length > 0 && $.contains(document, $elem[0])) return true
     return false
+  },
+
+  // Special debug object to take place of console
+  // debug: {
+  //   // Log a message (includes a timecode at the start too)
+  //   log: function () {
+  //     // Error: no console or console.log method found
+  //     if (!console || !console.log) return
+
+  //     // Turn the arguments into an array to use in `apply`
+  //     var args = Array.prototype.slice.call(arguments)
+  //     if (args.length === 0) return
+
+  //     // Build timecode
+  //     var timeCode = Utility.getTimecode()
+
+  //     // Add to start of args
+  //     args.unshift('[' + timeCode + ']')
+
+  //     // Fire the console log method
+  //     console.log.apply(console, args)
+  //   }
+  // }
+
+  // Get an element's absolute offset, taking in account any parents' scrollTop/Left values
+  elemOffsetAbsolute: function (elem) {
+    var $elem = $(elem).first()
+    var output = {
+      top: 0,
+      left: 0
+    }
+    if ($elem.length === 0) return output
+
+    // Get the raw offset value
+    offset = $elem.offset()
+
+    // Offset the offset by any parent's scroll values
+    $elem.parents().each(function (i, parent) {
+      var $parent = $(parent)
+      offset.top += $parent.scrollTop()
+      offset.left += $parent.scrollLeft()
+    })
+
+    return offset
+  },
+
+  // Get the space between an element and its parent
+  elemOffsetBetween: function (elem, parentElem) {
+    var self = this
+    var $elem = $(elem).first()
+    var $parent = $(parentElem).last()
+
+    // Just get the offset
+    if (!$parent.length || $.isWindow($parent) || $parent.is('html, body')) {
+      return $elem.offset()
+    }
+    if (!$elem.length) {
+      return $parent.offset()
+    }
+
+    // Calculate the distance
+    var elemPos = $elem.position()
+    var parentPos = $parent.position()
+
+    return {
+      top: elemPos.top - parentPos.top,
+      left: elemPos.left - parentPos.left
+    }
+  },
+
+  // Same as above, negating any scrollLeft/Top values
+  elemOffsetBetweenAbsolute: function (elem, parentElem) {
+    var self = this
+    var offset = self.elemOffsetBetween(elem, parentElem)
+    var $elem = $(elem).first()
+    var $parentElem = $elem.closest(parentElem).last()
+
+    $elem.parents().each(function (i, parent) {
+      var $parent = $(parent)
+      offset.top += $parent.scrollTop()
+      offset.left += $parent.scrollLeft()
+
+      if ($parent.is($parentElem)) return false
+    })
+
+    return offset
+  },
+
+  // Scroll an element to a specific target within (either number or a child element)
+  scrollTo: function (target, cb, time, elem) {
+    var self = this
+
+    // Get target to scroll to
+    var $elem = $(elem || 'html, body')
+    if ($elem.length === 0) return
+
+    var elemScrollTop = $elem.scrollTop()
+
+    // Get the target details
+    var $target
+    var toScrollTop
+
+    // Point in element
+    if (typeof target === 'number') {
+      toScrollTop = parseInt(target, 10)
+
+    // Get point from target in element
+    } else {
+      $target = $elem.find(target).filter(':visible').first()
+
+      // Don't scroll to invisible elements
+      if ($target.length === 0) return
+
+      // Get the location to scroll to
+      if ($elem.is('html, body') || $.isWindow($elem)) {
+        toScrollTop = $target.offset().top
+
+        // Take site header height into account
+        var siteHeaderHeight = $('.site-header').outerHeight()
+        toScrollTop -= siteHeaderHeight + 25 // + buffer
+
+      } else {
+        toScrollTop = self.elemOffsetBetweenAbsolute($target, $elem).top
+      }
+    }
+
+    // @debug
+    // console.log('scrollTo', $target, toScrollTop)
+
+    // Calculate time to animate by the difference in distance
+    if (typeof time === 'undefined') time = (Math.max(elemScrollTop, toScrollTop) - Math.min(elemScrollTop, toScrollTop)) * 0.1
+    if (time > 0 && time < 300) time = 300
+
+    // Animate the scroll
+    if ($elem.length > 0) {
+      $elem.animate({
+        scrollTop: toScrollTop + 'px',
+        skipGSAP: true
+      }, time, 'swing', cb)
+    }
+  },
+
+  /*
+   * Reveal element
+   * @note due to nested nature of collapses and tabs, this function enables
+   *       crawling back through the DOM to show all hidden parent collapse or tab elements
+   */
+  revealElem: function (elem, cb) {
+    var $elem = $(elem)
+    if ($elem.length === 0) return
+
+    // @debug
+    // console.log('revealElem', $elem)
+
+    $elem.each(function (i, item) {
+      var $item = $(item)
+      var targetSelector = '#' + $item.attr('id')
+      var $parents = $elem.parents('.collapse, .collapsing, [role="tabpanel"], .tab-pane')
+
+      // Reveal parents
+      if ($parents.length > 0) Utility.revealElem($parents)
+
+      // Show collapse
+      if ($item.is('.collapse, .collapsing')) {
+        $item.collapse('show')
+      }
+
+      // Show tab
+      if ($item.is('[role="tabpanel"], .tab-pane')) {
+        // Get the first tab target to perform control operation on
+        $('[href="' + targetSelector + '"][role="tab"]').first().tab('show')
+      }
+    })
+
+    // Fire the callback
+    if (typeof cb === 'function') cb()
+  },
+
+  /*
+   * Dismiss element
+   * @note due to nested nature of collapses and tabs, this function enables
+   *       crawling back through the DOM to show all hidden parent collapse or tab elements
+   */
+  dismissElem: function (elem, cb) {
+    var $elem = $(elem)
+    if ($elem.length === 0) return
+    var $target
+
+    // @debug
+    // console.log('dismissElem', $elem)
+
+    $elem.each(function (i, item) {
+      var $item = $(item)
+      var targetSelector = ($item.attr('id') ? '#' + $item.attr('id') : '')
+
+      // Dismiss message
+      if ($item.is('.message, .message-alert, .message-info, .message-success, .message-error')) {
+        // Slide the message up and remove it
+        $item.slideUp(function () {
+          $(this).remove()
+        })
+      }
+
+      // Hide collapse
+      if ($item.is('.collapse, .collapsing')) {
+        $item.collapse('hide')
+      }
+
+      // Hide tab
+      if ($item.is('[role="tabpanel"], .tab-pane')) {
+        // Get the first tab target to perform control operation on
+        $('[href="' + targetSelector + '"][role="tab"]').first().tab('hide')
+      }
+    })
+
+    // Fire the callback
+    if (typeof cb === 'function') cb()
+  },
+
+  /* Use SVG item from SVG symbol set (see {build}/media/icons.svg)
+   * (SVG symbol set is loaded in via ./src/twig/layouts/_layout.twig)
+   * ID corresponds to {foldername-filename}
+   * e.g. SVG hosted in media/svg/example-folder/another-folder/filename.svg
+   *      will translate to:
+   *      svgImage('#example-folder-another-folder-filename', 'Example')
+   * You can also specify multiple IDs (or URLs) to layer SVG symbols
+   */
+  // @note same used in `src/twig/extensions/twig.extensions.js`, just with minor modifications to reference the `window.site.assets.media` value for default URL
+  svgImage: function (id, title, width, height, sizing) {
+    // Default URL
+    var url = (window.site ? window.site.assets.media + 'svg/icons.svg' : '/media/svg/icons.svg')
+    var svgHeaders = ' version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"'
+    var uses = []
+    var usesIds = []
+
+    // Supported sizing sizes, using preserveAspectRatio
+    var sizes = {
+      'none': '',
+      'stretch': 'none',
+      'cover': 'xMidYMid slice',
+      'contain': 'xMidYMid meet'
+    }
+
+    // Fallback to 'contain' aspect ratio if invalid option given
+    if (sizing && !sizes.hasOwnProperty(sizing)) sizing = 'contain'
+
+    // Specify multiple IDs or items to stack within the SVG image
+    if (!(id instanceof Array)) id = [id]
+    for (var i = 0; i < id.length; i++) {
+      var useId = ''
+
+      // Reference to ID
+      if (/^#/.test(id[i])) {
+        useId = id[i].replace('#', '')
+        usesIds.push(useId)
+        uses.push('<use xlink:href="' + url + id[i] + '" class="svg-file-' + useId + '"/>')
+
+      // Reference to other SVG file
+      } else {
+        if (/#/.test(id[i])) {
+          useId = id[i].split('#').pop()
+          usesIds.push(useId)
+        }
+        uses.push('<use xlink:href="' + id[i] + '" ' + (useId ? 'class="svg-file-' + useId + '"' : '') + '/>')
+      }
+    }
+
+    // List of IDs
+    if (usesIds.length > 0) {
+      usesIds = ' svg-file-' + usesIds.join(' svg-file-')
+    } else {
+      usesIds = ''
+    }
+
+    // Set attributes
+    var titleAttr = (title ? ' title="' + title + '"' : '')
+    var widthAttr = (width ? ' width="' + width + '"' : '' )
+    var heightAttr = (height ? ' height="' + height + '"' : '' )
+    var viewBox = '0 0 ' + width + ' ' + height
+    // @note don't need this set anymore as it is set in the individual SVGs
+    var viewBoxAttr = ''// ' viewBox="' + viewBox + '"'
+    var preserveAspectRatioAttr = (sizing ? ' preserveAspectRatio="' + sizes[sizing] + '"' : '')
+
+    // @note setting width/height attrs doesn't work well for IE
+    // var svgHtml = '<svg role="img"' + titleAttr + widthAttr + heightAttr + viewBoxAttr + preserveAspectRatioAttr + ' class="svg-icon' + usesIds + '"' + svgHeaders + '>' + uses.join('') + '</svg>'
+
+    // @note but only having viewBox isn't the best either...
+    var svgHtml = '<svg role="img"' + titleAttr + viewBoxAttr + preserveAspectRatioAttr + ' class="svg-icon' + usesIds + '"' + svgHeaders + '>' + uses.join('') + '</svg>'
+
+    // @note so let's wrap it with a div that has a max-width set
+    // @note also found that it's not enough, so add in a canvas element which does the responsive auto scaling work
+    var canvasAspectHtml = '<canvas class="svg-icon-aspect" width="' + width + '" height="' + height + '"></canvas>'
+    svgHtml = '<div class="svg-icon-wrap" style="max-width: ' + width + 'px">' + canvasAspectHtml + svgHtml + '</div>'
+
+    // Output SVG code
+    return svgHtml
+  },
+
+  // Set's an object's property according to the propChain and
+  // will automatically create the objects in the propChain if they don't exist
+  // Saves having to write multiple typeof x === 'undefined' conditions
+  // @param {Boolean} extend Extends the final prop's object instead of setting
+  setObjProp: function (obj, propChain, value, extend) {
+    var self = this
+    var traverseObj = obj
+    var setProp
+
+    // Make sure the propChain is set
+    if (!propChain) return
+
+    // Format the prop's key
+    function getPropKey (key) {
+      // Support array objects which are indicated by integers
+      if (/^\d+$/.test(key + '')) key = parseInt(key, 10)
+      return key
+    }
+
+    // Traverse the object along the propChain, setting objects along the way like a boss
+    propChain = (propChain.match(/[\[\]\.]/) ? propChain.split(/[\[\]\.]+/) : [propChain])
+    for (var i = 0; i < propChain.length - 1; i++) {
+      var propKey = getPropKey(propChain[i])
+
+      // Check if the point in the object is defined
+      if (typeof traverseObj[propKey] === 'undefined') {
+        // Add arrays/objects until getting to the last property
+        traverseObj[propKey] = (typeof propKey === 'string' ? {} : [])
+      }
+
+      // Jump to the next level
+      traverseObj = traverseObj[propKey]
+    }
+
+    // Set the value to the last traversed object
+    var lastKey = getPropKey(propChain[propChain.length - 1])
+
+    // Extend the last traversed obj prop with the properties of the value
+    if (extend && typeof value === 'object') {
+      if (typeof setProp === 'undefined') {
+        traverseObj[lastKey] = (typeof lastKey === 'string' ? {} : [])
+      }
+      traverseObj[lastKey] = $.extend(traverseObj[lastKey], value)
+
+    // Set
+    } else {
+      traverseObj[lastKey] = value
+    }
+
+    // @debug
+    // console.log('Utility.setObjProp: extend='+extend, traverseObj, lastKey, traverseObj[lastKey])
+    return traverseObj[lastKey]
+  },
+
+  // Shortcut alias to above with extend set to true
+  // @returns {Mixed} {Undefined} if it doesn't, or else it returns the value of the prop
+  extendObjProp: function (obj, propChain, value) {
+    var self = this
+    return self.setObjProp.apply(self, [obj, propChain, value, true])
+  },
+
+  // Check if object has a prop via a propChain
+  objHasProp: function (obj, propChain) {
+    var self = this
+    var traverseObj = obj
+
+    // Make sure the propChain is set
+    if (!propChain) return
+
+    // Format the prop's key
+    function getPropKey (key) {
+      // Support array objects which are indicated by integers
+      if (/^\d+$/.test(key + '')) key = parseInt(key, 10)
+      return key
+    }
+
+    // Traverse the object along the propChain, setting objects along the way like a boss
+    propChain = (propChain.match(/[\[\]\.]/) ? propChain.split(/[\[\]\.]+/) : [propChain])
+    for (var i = 0; i < propChain.length; i++) {
+      var propKey = getPropKey(propChain[i])
+
+      // Check if the point in the object is defined
+      if (typeof traverseObj[propKey] === 'undefined') {
+        return undefined
+      }
+
+      // Jump to the next level
+      traverseObj = traverseObj[propKey]
+    }
+
+    // Since it didn't break above, consider it a success
+    return traverseObj
   }
+}
+
+/*
+ * jQuery Plugins
+ */
+// Utility.scrollTo shorthand on an element
+// @jquery-plugin $(selector).uiScrollTo()
+// @param {Mixed} options Can be {String} target selector to scroll element to, or an {Object} containing different settings to apply to the Utility.scrollTo method
+$.fn.uiScrollTo = function (options) {
+  var args = Array.prototype.slice.call(arguments)
+
+  return this.each(function (i, elem) {
+    if (args.length === 1) {
+      Utility.scrollTo(args[0], undefined, undefined, elem)
+    } else if (args.length > 1) {
+      Utility.scrollTo.apply(Utility, args)
+    }
+  })
 }
 
 module.exports = Utility

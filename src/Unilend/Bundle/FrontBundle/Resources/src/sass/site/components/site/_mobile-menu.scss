@@ -117,7 +117,7 @@
       font-family: $ff-icon;
 
       &:before {
-        content: '\f002'; // Search icon
+        content: $fa-search; // Search icon
       }
     }
 
@@ -169,7 +169,8 @@
         color: $c-black;
 
         &:before {
-          content: '\f00d'; // Close icon
+          // content: '\f00d'; // Close icon
+          content: $fa-close-u;
         }
       }
 

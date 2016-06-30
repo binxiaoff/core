@@ -9,8 +9,8 @@
 
     color: $icon-color;
     font-family: $ff-icon;
-    font-size: 45px;
-    line-height: 45px;
+    font-size: 50px;
+    line-height: 50px;
     text-align: center;
     vertical-align: middle;
   }
@@ -18,10 +18,11 @@
 
 @mixin message-md-icon {
   padding-left: 120px;
+  min-height: 100px;
 
   &:before {
     width: 50px;
-    padding: 30px 0 30px 40px;
+    padding: 25px 0 25px 40px;
 
     position: absolute;
     left: 0;
@@ -33,6 +34,7 @@
 }
 
 @mixin message($bg-color: $c-purple-l2, $text-color: $c-t1, $icon-color: $c-p1, $show-icon: false) {
+  box-sizing: border-box;
   display: block;
   padding: 20px;
   margin-bottom: 20px;
@@ -83,6 +85,7 @@
 // Generic
 .message {
   @include message;
+  min-height: 0;
 }
 
 // Info
@@ -90,7 +93,8 @@
   @include message($show-icon: true);
 
   &:before {
-    content: '\f05a';
+    // content: '\f05a'; // Info
+    content: $fa-info-u64;
   }
 }
 
@@ -99,7 +103,8 @@
   @include message($show-icon: true);
 
   &:before {
-    content: '\f06a';
+    // content: '\f06a'; // Exclamation
+    content: $fa-alert-u64;
   }
 }
 
@@ -108,7 +113,8 @@
   @include message($bg-color: lighten($c-success, 30%), $icon-color: darken($c-success, 30%), $show-icon: true);
 
   &:before {
-    content: '\f00c';
+    //content: '\f00c'; // Check
+    content: $fa-check-u64;
   }
 }
 
@@ -117,7 +123,8 @@
   @include message($bg-color: $c-error, $text-color: $c-white, $icon-color: $c-white, $show-icon: true);
 
   &:before {
-    content: '\f00d';
+    // content: '\f00d'; // cross
+    content: $fa-cross-u64;
   }
 
   a {

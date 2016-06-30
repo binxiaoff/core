@@ -67,9 +67,12 @@
   transition: opacity .5s;
 
   .btn-close {
+    @include button-color-default;
+
     position: absolute;
     right: 0;
     top: 0;
+    z-index: $depth-tooltip - 10;
   }
 
   iframe {
@@ -307,20 +310,37 @@
 
 // Rating
 .project-single-rating {
-  width: 50%;
-
-  position: absolute;
-  right: 30px;
-  bottom: 30px;
-
+  width: 100%;
   color: $c-t3;
-  text-align: right;
+  text-align: center;
 
   .label {
     display: block;
     margin-bottom: 5px;
     font-size: 14px;
     font-style: italic;
+  }
+
+  @include devices('xs') {
+    margin-top: 20px;
+    margin-bottom: 20px;
+
+    .label {
+      font-size: 16px;
+      margin-bottom: 0;
+    }
+  }
+
+  @include devices('sm') {
+    width: 50%;
+    position: absolute;
+    right: 30px;
+    bottom: 30px;
+    text-align: right;
+
+    .rating {
+      @include rating-graphics-and-sizes(2);
+    }
   }
 }
 
@@ -333,6 +353,10 @@
 .project-single-period {
   margin-bottom: 15px;
   text-align: left;
+
+  @include devices('xs') {
+    text-align: center;
+  }
 }
 
 .project-single-period-countdown {
@@ -355,6 +379,10 @@
 // Offers
 .project-single-offers {
   text-align: left;
+
+  @include devices('xs') {
+    text-align: center;
+  }
 }
 
 .project-single-useroffers-accepted,
@@ -371,13 +399,13 @@
   // color: $c-success;
 
   &:before {
-    content: '\f00c';
+    content: $fa-check-u;
   }
 }
 
 .project-single-useroffers-inprogress {
   &:before {
-    content: '\f017';
+    content: $fa-clock-u;
   }
 }
 
@@ -385,7 +413,7 @@
   // color: $c-error;
 
   &:before {
-    content: '\f00d';
+    content: $fa-rejected-u;
   }
 }
 
@@ -465,7 +493,7 @@
   .icon {
     display: none;
     color: $c-t3;
-    font-size: $fs-h3;
+    font-size: $fs-h2 * .8;
   }
 
   strong {
@@ -492,7 +520,7 @@
   .icon {
     display: none;
     color: $c-t3;
-    font-size: $fs-h3;
+    font-size: $fs-h2 * .8;
   }
 
   strong {
@@ -511,6 +539,10 @@
 // .project-single-form-invest
 // .project-single-form-access
 .project-single-form {
+  .form-notice {
+    line-height: 1.3em;
+  }
+
   .form-field {
     margin-bottom: 10px;
   }
@@ -541,6 +573,11 @@
       @include text-inputs($inheritance: '>') {
         padding-right: 3em;
       }
+    }
+
+    &:after {
+      padding-top: 5px;
+      padding-bottom: 5px;
     }
   }
 
@@ -705,6 +742,36 @@
   margin-bottom: 30px;
 }
 
+// Nested tabs
+.project-single .nested-tabs.tabs {
+  .tabs-nav {
+    margin-bottom: 20px;
+    background: fade-out($c-white, .5);
+    text-align: center;
+
+    @include devices('md', 'lg') {
+      margin: 10px;
+      margin-top: -10px;
+      padding: 0;
+
+      position: absolute;
+      right: 0;
+      top: 0;
+      z-index: $depth-tooltip - 10;
+
+      border-radius: 4px;
+      font-size: $fs-base * .8;
+      text-align: right;
+    }
+  }
+
+  .tabs-content {
+    .chart {
+      padding-top: 60px !important;
+    }
+  }
+}
+
 // Small devices
 @include devices('sm') {
   .project-single-rating {
@@ -716,7 +783,7 @@
     }
 
     .rating {
-      transform: scale(2);
+      @include rating-graphics-and-sizes(2);
     }
   }
 }
@@ -841,7 +908,7 @@
     }
 
     .rating {
-      transform: scale(2);
+      @include rating-graphics-and-sizes(2);
     }
   }
 

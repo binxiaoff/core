@@ -8,19 +8,33 @@
 }
 
 // Column
+#{$js-sortable-column},
 .sortable-column {
 
   // Icons
   &:after {
     font-family: $ff-icon;
-    content: '\f0dc'; // Both
+    // content: '\f0dc'; // Both
+    content: $fa-sort-u;
   }
 
   &#{$js-sortable-direction-asc}:after {
-    content: '\f0de'; // Asc
+    // content: '\f0de'; // Asc
+    content: $fa-sort-asc-u;
   }
 
   &#{$js-sortable-direction-desc}:after {
-    content: '\f0dd'; // Desc
+    // content: '\f0dd'; // Desc
+    content: $fa-sort-desc-u;
+  }
+}
+
+// Responsive filters
+#{$js-sortable-responsivefilters} {
+  display: none;
+  margin-bottom: 8px;
+
+  @include devices('xs', 'sm') {
+    display: block;
   }
 }

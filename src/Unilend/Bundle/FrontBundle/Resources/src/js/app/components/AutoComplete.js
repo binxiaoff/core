@@ -1,5 +1,7 @@
 /*
  * Unilend Autocomplete
+ * @note this was the first JS component that I made, so it differs slightly from the others as
+ *       I developed and improved my API planning and implentation as time went on
  */
 
 /*
@@ -8,6 +10,8 @@
 */
 
 var $ = require('jquery')
+var Utility = require('Utility')
+var ElementAttrsObject = require('ElementAttrsObject')
 
 // Case-insensitive selector `:Contains()`
 jQuery.expr[':'].Contains = function(a, i, m) {
@@ -15,16 +19,16 @@ jQuery.expr[':'].Contains = function(a, i, m) {
 };
 
 // AutoComplete Language
-//var Dictionary = require('Dictionary')
-//var AUTOCOMPLETE_LANG = require('../../../lang/AutoComplete.lang.json')
-//var __ = new Dictionary(AUTOCOMPLETE_LANG)
+var Dictionary = require('Dictionary')
+var AUTOCOMPLETE_LANG = require('../../../lang/AutoComplete.lang.json')
+var __ = new Dictionary(AUTOCOMPLETE_LANG)
 
 /*
  * AutoComplete
  * @class
  */
-// var autoComplete = new AutoComplete( elemOrSelector, {..});
-var AutoComplete = function ( elem, options ) {
+// var autoComplete = new AutoComplete(elemOrSelector, {..});
+var AutoComplete = function (elem, options) {
   var self = this
 
   /*
@@ -38,7 +42,18 @@ var AutoComplete = function ( elem, options ) {
     minTermLength: 3, // The minimum character length of a term to find
     showEmpty: false, // Show autocomplete with messages if no results found
     showSingle: true // Show the autocomplete if only one result found
-  }, options)
+  },
+  // Options set via the element attributes
+  ElementAttrsObject(elem, {
+    target: 'data-autocomplete-target',
+    ajaxUrl: 'data-autocomplete-ajaxurl',
+    delay: 'data-autocomplete-delay',
+    minTermLength: 'data-autocomplete-mintermlength',
+    showEmpty: 'data-autocomplete-showempty',
+    showSingle: 'data-autocomplete-showsingle'
+  }),
+  // Options set via JS
+  options)
 
   // Properties
   // -- Use jQuery to select elem, distinguish between string, HTMLElement and jQuery Object
@@ -48,9 +63,12 @@ var AutoComplete = function ( elem, options ) {
   // Needs an input element to be valid
   if ( self.$input.length === 0 ) return self.error('input element doesn\'t exist')
 
+  // Already has behaviours applied
+  if (self.$input[0].hasOwnProperty('AutoComplete')) return false
+
   // Create a new target element for the results
   if ( !self.options.target || self.$target.length === 0 ) {
-    self.$target = $('<div class="autocomplete"><ul class="autocomplete-results"></ul></div>')
+    self.$target = $('<div class="autocomplete" data-autocomplete-target><ul class="autocomplete-results"></ul></div>')
     self.$input.after(self.$target)
   }
 
@@ -58,6 +76,9 @@ var AutoComplete = function ( elem, options ) {
   self.input = self.$input[0]
   self.target = self.$target[0]
   self.timer = undefined
+
+  // UI
+  self.$input.addClass('uni-autocomplete') // This is `uni-autocomplete` since `ui-autocomplete` is taken by jquery-ui
 
   /*
    * Events
@@ -74,13 +95,13 @@ var AutoComplete = function ( elem, options ) {
   })
 
   // Hide autocomplete
-  self.$input.on('autocomplete-hide', function ( event ) {
+  self.$input.on('AutoComplete:hide, autocomplete-hide', function ( event ) {
     // console.log('autocomplete-hide', self.input)
     self.hide()
   })
 
   // Click result to complete the input
-  self.$target.on('click', '.autocomplete-results a', function ( event ) {
+  self.$target.on(Utility.clickEvent, '.autocomplete-results a', function ( event ) {
     event.preventDefault()
     self.$input.val($(this).text())
     self.hide()
@@ -288,12 +309,31 @@ var AutoComplete = function ( elem, options ) {
    * Initialise
    */
   // Assign direct AutoComplete reference to the input and target elems
-  self.input.AutoComplete = self
-  self.target.AutoComplete = self
+  self.$input[0].AutoComplete = self
+  self.$target[0].AutoComplete = self
 
   // Return the AutoComplete object
   return self
 }
 
-// module.exports = AutoComplete
+/*
+ * jQuery Plugin
+ */
+$.fn.uiAutoComplete = function (op) {
+  return this.each(function (i, elem) {
+    if (!elem.hasOwnProperty('AutoComplete')) {
+      new AutoComplete(elem, op)
+    }
+  })
+}
+
+/*
+ * jQuery Events
+ */
+$(document)
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-autocomplete]').not('.uni-autocomplete').uiAutoComplete()
+  })
+
 module.exports = AutoComplete

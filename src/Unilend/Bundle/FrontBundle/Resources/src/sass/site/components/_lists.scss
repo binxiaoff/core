@@ -12,10 +12,11 @@
     list-style-type: none;
 
     &:before {
-      content: '\f00c';
-      font-family: $ff-icon;
+      content: $fa-check-u16;
       position: absolute;
       left: 0;
+      font-family: $ff-icon;
+      line-height: 1em;
     }
   }
 }
@@ -24,16 +25,16 @@
   @include block-list;
 
   > li {
-    padding-left: 1em;
+    padding-left: .8em;
     margin-bottom: 15px;
     position: relative;
     list-style-type: none;
 
     &:before {
-      content: '\f105';
-      font-family: $ff-icon;
+      content: $fa-angle-right;
       position: absolute;
       left: 0;
+      font-family: $ff-icon;
     }
 
     &:last-child {
@@ -88,5 +89,17 @@
     background-image: image-url('dashboard/file-pdf-60x80.png');
     background-position: left top;
     background-repeat: no-repeat;
+  }
+}
+
+.list-sociallinks {
+  @include inline-block-list;
+
+  a {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    line-height: 32px;
+    vertical-align: middle;
   }
 }

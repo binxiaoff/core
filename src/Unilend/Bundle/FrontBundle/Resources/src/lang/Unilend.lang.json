@@ -21,7 +21,7 @@
     "timeUnitYears": "ans",
 
     "timeCountAgo": "Il y a %s",
-    "timeCountRemaining": "%s restantes",
+    "timeCountRemaining": "%s restants",
 
     "siteMobileMenuOpenLabel": "Ouvrir le menu",
     "siteMobileMenuCloseLabel": "Fermer le menu",
@@ -57,6 +57,7 @@
     "projectListItemOffersUserStatusInProgress": "en cours",
     "projectListItemOffersUserStatusAccepted": "accepté",
     "projectListItemOffersUserStatusRejected": "rejeté",
+    "projectListItemOffersAutolend": "dont %s offres Autolend",
     "projectListItemRatingLabel": "Rated %d sur 5",
     "projectListItemPeriodLabel": "%d jours",
     "projectListItemPeriodExpired": "Projet terminée",

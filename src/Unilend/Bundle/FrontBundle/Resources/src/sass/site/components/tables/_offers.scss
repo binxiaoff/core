@@ -50,7 +50,9 @@
   tbody {
     tr {
       // Accepted
-      &[data-sortable-status="2"] {
+      &[data-sortable-status="2"],
+      // Autolend Accepted
+      &[data-sortable-status="4"] {
         .icon {
           color: $c-p1;
         }
@@ -66,6 +68,17 @@
   td.table-alloffers-item-status {
     .icon {
       font-size: 28px;
+    }
+  }
+
+  td.table-more {
+    background-color: $c-bg2;
+    text-align: center;
+
+    a {
+      display: block;
+      padding-top: 10px;
+      padding-bottom: 5px;
     }
   }
 }

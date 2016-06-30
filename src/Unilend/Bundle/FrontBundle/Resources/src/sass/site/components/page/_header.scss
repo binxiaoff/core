@@ -20,7 +20,7 @@
   .page-title {
     font-size: $fs-h2;
 
-    @include devices('sm', 'md', 'lg') {
+    @include devices('md', 'lg') {
       font-size: $fs-h1;
     }
   }

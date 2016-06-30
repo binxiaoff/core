@@ -8,7 +8,7 @@
 
 .job-description {
   color: $c-t1;
-  font-size: 16px;
+  font-size: $fs-base * .9;
 }
 
 // List of jobs
@@ -40,7 +40,7 @@
       width: 32px;
       height: 32px;
       margin-top: -16px;
-      content: '\f107'; // Angle down
+      content: $fa-angle-d-u; // Angle down
 
       position: absolute;
       right: 0;

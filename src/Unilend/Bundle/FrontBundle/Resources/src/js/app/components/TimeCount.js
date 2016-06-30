@@ -3,7 +3,6 @@
  */
 
 // @TODO get the right text showing when outputting the time difference direction
-// @TODO fix project index time counters
 
 var $ = require('jquery')
 var sprintf = require('sprintf-js').sprintf
@@ -29,7 +28,7 @@ var TimeCount = function (elem, options) {
 
   // The related element
   self.$elem = $(elem)
-  if (self.$elem.length === 0) return
+  if (self.$elem.length === 0 || elem.hasOwnProperty('TimeCount')) return
 
   // Settings
   self.settings = $.extend({
@@ -40,10 +39,7 @@ var TimeCount = function (elem, options) {
     // Callbacks
     onupdate: self.outputTime, // {Function} function (timeDiff) {}
     onstart: undefined, // {Function}
-    oncomplete: function () { // {Function}
-      var self = this
-      self.$elem.text('Complete!')
-    }
+    oncomplete: undefined // {Function}
   }, ElementAttrsObject(elem, {
     startDate: 'data-timecount-from',
     endDate: 'data-timecount-to',
@@ -85,9 +81,6 @@ var TimeCount = function (elem, options) {
   if (typeof self.settings.onstart === 'function') {
     self.settings.onstart.apply(self)
   }
-
-  // @debug
-  // console.log('new TimeCount', self)
 
   // @trigger elem `TimeCount:starting`
   self.$elem.trigger('TimeCount:starting', [self, self.track.timeDiff])
@@ -172,9 +165,9 @@ TimeCount.prototype.outputTime = function (timeDiff) {
   }
 
   // @debug
-  if (self.settings.startDate && self.settings.endDate) {
-    console.log('TimeCount.outputTime', self.$elem[0], output, timeDiff, self.track.countDirection)
-  }
+  // if (self.settings.startDate && self.settings.endDate) {
+  //   console.log('TimeCount.outputTime', self.$elem[0], output, timeDiff, self.track.countDirection)
+  // }
 
   if (output) self.$elem.text(output)
 }
@@ -230,7 +223,7 @@ $.fn.uiTimeCount = function (op) {
  * jQuery Initialisation
  */
 $(document)
-  // Initalise any element with the [data-timecount] attribute
-  .on('ready', function () {
-    $('[data-timecount]').uiTimeCount()
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-timecount]').not('.ui-timecount').uiTimeCount()
   })

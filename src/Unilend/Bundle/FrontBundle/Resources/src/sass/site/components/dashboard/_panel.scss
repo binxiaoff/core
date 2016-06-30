@@ -9,8 +9,8 @@ $height-panel-footer-md: ((20px * 2) + $fs-base);
 $height-panel-header-lg: ((30px * 2) + $fs-h3);
 $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
-@mixin dashboard-panel {
-  margin: 0 0 20px;
+@mixin dashboard-panel($padding: 15px, $spacing: 20px) {
+  margin: 0 0 $spacing;
   color: $c-t2;
   font-size: $fs-base * .9;
   line-height: 1.3em;
@@ -23,20 +23,23 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
   }
 
   .dashboard-panel-title {
+    height: 1.5em;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    height: 1.5em;
   }
 
   .dashboard-panel-controls {
     display: block;
+
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
-    vertical-align: middle;
+
+    color: $c-t2;
     line-height: $height-panel-header-sm;
+    vertical-align: middle;
 
     a {
       display: inline-block;
@@ -66,13 +69,17 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
       &.btn-close {
         border: 0;
+
+        &:before {
+          font-size: $fs-base * 1.2;
+        }
       }
     }
 
     // Hide close buttons
     @include devices('xs', 'sm') {
       .custom-input-switch {
-        margin-right: 20px;
+        margin-right: $spacing;
       }
 
       .btn-close {
@@ -102,24 +109,24 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
     margin: 0;
 
     .dashboard-panel-header {
-      margin-left: 20px;
-      margin-top: 20px;
-      margin-right: 20px;
+      margin-left: $spacing;
+      margin-top: $spacing;
+      margin-right: $spacing;
       margin-bottom: 0;
     }
 
     .dashboard-panel-content {
-      margin-left: 20px;
+      margin-left: $spacing;
       margin-top: 0;
-      margin-right: 20px;
+      margin-right: $spacing;
       margin-bottom: 0;
     }
 
     .dashboard-panel-footer {
-      margin-left: 20px;
+      margin-left: $spacing;
       margin-top: 0;
-      margin-right: 20px;
-      margin-bottom: 20px;
+      margin-right: $spacing;
+      margin-bottom: $spacing;
     }
   }
 
@@ -128,19 +135,18 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
   .message-alert,
   .message-success,
   .message-error {
-    padding-top: 15px;
-    padding-bottom: 15px;
+    padding: $padding;
     margin-bottom: 0;
   }
 }
 
 // Small
-@mixin dashboard-panel-sm {
-  @include dashboard-panel;
+@mixin dashboard-panel-sm($padding: 20px) {
+  @include dashboard-panel($padding: $padding);
 
   .dashboard-panel-header {
     height: $height-panel-header-md;
-    padding: 20px;
+    padding: $padding;
 
     background-color: $c-white;
     border-bottom: solid 1px $c-bg2;
@@ -167,12 +173,12 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
   }
 
   .dashboard-panel-content {
-    padding: 20px;
+    padding: $padding;
   }
 
   .dashboard-panel-footer {
     min-height: $height-panel-footer-md;
-    padding: 20px;
+    padding: $padding;
 
     color: $c-t2;
     line-height: 1em;
@@ -188,12 +194,12 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 }
 
 // Medium
-@mixin dashboard-panel-md {
-  @include dashboard-panel;
+@mixin dashboard-panel-md($padding: 20px) {
+  @include dashboard-panel($padding: $padding);
 
   .dashboard-panel-header {
     height: $height-panel-header-md;
-    padding: 20px;
+    padding: $padding;
 
     background-color: $c-white;
     border-bottom: solid 2px $c-bg2;
@@ -220,12 +226,12 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
   }
 
   .dashboard-panel-content {
-    padding: 20px;
+    padding: $padding;
   }
 
   .dashboard-panel-footer {
     min-height: $height-panel-footer-md;
-    padding: 20px;
+    padding: $padding;
 
     color: $c-t2;
     line-height: 1em;
@@ -241,14 +247,14 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 }
 
 // Large
-@mixin dashboard-panel-lg {
-  @include dashboard-panel;
-  @include dashboard-panel-md;
+@mixin dashboard-panel-lg($padding: 30px) {
+  @include dashboard-panel($padding);
+  @include dashboard-panel-md($padding);
   font-size: $fs-base;
 
   .dashboard-panel-header {
     height: $height-panel-header-lg;
-    padding: 30px;
+    padding: $padding;
   }
 
   .dashboard-panel-title {
@@ -265,12 +271,12 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
   }
 
   .dashboard-panel-content {
-    padding: 30px;
+    padding: $padding;
   }
 
   .dashboard-panel-footer {
     min-height: $height-panel-footer-lg;
-    padding: 30px;
+    padding: $padding;
   }
 }
 
@@ -349,15 +355,14 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
   @include devices('md', 'lg') {
     .dashboard-panel-controls {
       &:before {
-        content: '\f047';
+        content: $fa-grip-u;
         padding-left: 15px;
         padding-right: 15px;
 
-        color: $c-t3;
         cursor: move;
         cursor: grab;
         font-family: $ff-icon;
-        font-size: $fs-base;
+        font-size: $fs-base * 1.2;
         user-select: none;
         vertical-align: middle;
       }
@@ -396,10 +401,21 @@ $height-panel-footer-lg: ((30px * 2) + $fs-base);
 
 // Chart
 .dashboard-panel-chart {
+  position: relative;
   text-align: center;
+  min-height: 400px;
 
   .chart {
     min-height: none;
+  }
+
+  @include devices('md', 'lg') {
+    .nested-tabs .tab-navigation {
+      position: absolute;
+      right: 0;
+      top: 0;
+      margin-top: -10px;
+    }
   }
 }
 

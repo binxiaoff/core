@@ -256,9 +256,29 @@ $breakpoints: ('xs', 'sm', 'md', 'lg', 'mobile', 'mobile-p', 'mobile-l', 'tablet
   }
 }
 
+// Same as above for this one
+@mixin max-width-readable {
+  box-sizing: border-box;
+  max-width: $width-readable-wrap-xs;
+  margin-left: auto;
+  margin-right: auto;
+
+  @include devices('sm') {
+    max-width: $width-readable-wrap-sm;
+  }
+
+  @include devices('md') {
+    max-width: $width-readable-wrap-md;
+  }
+
+  @include devices('lg') {
+    max-width: $width-readable-wrap-lg;
+  }
+}
+
 // Default wrap classes
 // Please note that depending on use-case there are specific overrides of these classes
-// due to the volatile nature of the designer's indifference to design standards
+// due to the volatile nature of the designers' indifference to design standards or logic
 .hero-wrap {
   @include hero-wrap;
   position: relative;
@@ -270,5 +290,5 @@ $breakpoints: ('xs', 'sm', 'md', 'lg', 'mobile', 'mobile-p', 'mobile-l', 'tablet
 }
 
 .readable-wrap {
-  max-width: $width-readable-wrap;
+  @include max-width-readable;
 }

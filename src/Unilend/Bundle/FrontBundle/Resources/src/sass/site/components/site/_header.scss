@@ -4,6 +4,101 @@
 // development. It needs refactoring, so if you see this message I haven't had the
 // time to do it yet! --Matt
 
+@mixin site-logo-mobile {
+  $image-path: 'logo/logo-and-type-unilend-132x25-purple.png';
+  $image: get-image-url($image-path);
+  $width: 135px;
+  $height: 25px;
+
+  background-color: transparent;
+  background-image: image-url($image-path);
+  background-repeat: no-repeat;
+  background-position: left top;
+  width: $width;
+  height: $height;
+  line-height: $height;
+
+  @include retina {
+    $image-path: 'logo/logo-and-type-unilend-132x25-purple@2x.png';
+    background-image: image-url($image-path);
+    @include background-size(contain);
+  }
+}
+
+@mixin site-logo-full {
+  $image-path: 'logo/logo-and-type-unilend-209x44-purple.png';
+  $image: get-image-url($image-path);
+  $width: 209px;
+  $height: 44px;
+
+  display: inline-block;
+  width: $width;
+  height: $height;
+  overflow: hidden;
+
+  background-color: transparent;
+  background-image: image-url($image-path);
+  background-repeat: no-repeat;
+  background-position: left top;
+  line-height: $height;
+  text-align: left;
+  text-indent: -9999em;
+  vertical-align: top;
+
+  @include retina {
+    $image-path: 'logo/logo-and-type-unilend-209x44-purple@2x.png';
+    background-image: image-url($image-path);
+    @include background-size(contain);
+  }
+
+  @include devices('lg') {
+    $image-path: 'logo/logo-and-type-unilend-245x52-purple.png';
+    $image: get-image-url($image-path);
+    $width: 245px;
+    $height: 52px;
+
+    background-image: image-url($image-path);
+    width: $width;
+    height: $height;
+    line-height: $height;
+
+    @include retina {
+      $image-path: 'logo/logo-and-type-unilend-245x52-purple@2x.png';
+      background-image: url($image-path);
+      @include background-size(contain);
+    }
+  }
+}
+
+@mixin site-logo-fixed {
+  $image-path: 'logo/logo-unilend-65x65-white.png';
+  $image: get-image-url($image-path);
+  $width: 65px;
+  $height: 65px;
+
+  width: $width;
+  height: $width;
+
+  background-color: transparent;
+  background-image: image-url($image-path);
+  background-repeat: no-repeat;
+  background-position: left top;
+  text-align: left;
+  text-indent: -9999em;
+  vertical-align: top;
+
+  @include retina {
+    $image-path: 'logo/logo-unilend-65x65-white@2x.png';
+    background-image: image-url($image-path);
+    @include background-size(contain);
+  }
+}
+
+// Site Logo
+.site-logo {
+  @include site-logo-full;
+}
+
 // Site header
 .site-header {
   // Default is mobile
@@ -19,6 +114,7 @@
   z-index: $depth-site-header; // Fancybox overlay is 8010
 
   background-color: $c-white;
+  background-clip: padding-box;
   text-align: center;
 
   // Site Band
@@ -46,33 +142,28 @@
     }
   }
 
-  // Site logo additions
-  .site-logo {
-    // Change artwork based on breakpoints
-    @include devices('xs', 'sm') {
-      $image-path: 'logo/logo-and-type-unilend-132x25-purple.png';
-      $image: get-image-url($image-path);
-      $width: image-width($image);
-      $height: image-height($image);
-
-      background-image: image-url($image-path);
-      width: $width;
-      height: $height;
-      line-height: $height;
-
-      @include retina {
-        $image-path: 'logo/logo-and-type-unilend-132x25-purple@2x.png';
-        background-image: image-url($image-path);
-        @include background-size(contain);
-      }
-    }
-  }
-
   // Site title
   .site-title {
     display: inline-block;
     padding: 15px 0 0;
     margin: 0;
+  }
+
+  // Site logo
+  .site-logo {
+    @include site-logo-mobile;
+  }
+
+  &.site-header-dashboard {
+    text-align: left;
+
+    .site-title {
+      padding: 0;
+    }
+
+    .site-logo {
+      @include site-logo-fixed;
+    }
   }
 
   // Open site mobile menu button
@@ -169,9 +260,12 @@
         )
       );
 
-      > .icon {
-        margin: 0;
-        padding: 0;
+      &:before {
+        content: $fa-lock-u;
+        display: inline;
+        font-family: $ff-icon;
+        font-size: 28px;
+        line-height: 1em;
       }
 
       // This is a special case for responsive stuff here
@@ -238,6 +332,7 @@
       }
 
       .profile-notifications {
+        display: block;
         text-decoration: none;
       }
     }
@@ -312,10 +407,15 @@
         }
 
         .profile-notifications {
+          display: block;
+          box-sizing: border-box;
+          width: 30px;
+          height: 30px;
+          padding: 6px;
           margin: 0;
           position: absolute;
-          top: $height-site-header - 20px;
-          right: $height-site-header - 20px;
+          top: 34px;
+          right: 34px;
         }
 
         .profile-logout {
@@ -324,13 +424,13 @@
           height: $height-site-header;
           float: left;
 
-          &:before {
-            content: '\f08b';
-            font-size: $fs-h3;
-            line-height: $height-site-header;
-            text-align: center;
-            vertical-align: middle;
-          }
+          // &:before {
+          //   // content: '\f08b'; // sign out
+          //   font-size: $fs-h3;
+          //   line-height: $height-site-header;
+          //   text-align: center;
+          //   vertical-align: middle;
+          // }
 
           .label {
             @include hide-accessible;
@@ -345,6 +445,7 @@
 @mixin site-header-full {
   position: relative;
   height: $height-site-header-full;
+  text-align: left;
 
   // Hide the mobile menu open button
   .site-mobile-menu-open {
@@ -356,9 +457,16 @@
     display: block;
   }
 
-  .site-title {
+  .site-title,
+  &.site-header-dashboard .site-title {
     display: block;
     padding: 50px 20px 0 0;
+  }
+
+  // Site logo
+  .site-logo,
+  &.site-header-dashboard .site-logo {
+    @include site-logo-full;
   }
 
   .site-title,
@@ -421,7 +529,7 @@
       left: 0;
 
       &:before {
-        content: '\f002';
+        content: $fa-search;
         font-family: $ff-icon;
         line-height: $height-btn;
       }
@@ -437,9 +545,15 @@
         width: 100%;
         padding-left: 0;
         padding-right: 0;
+        color: transparent; // Hidden when not visible
         font-size: 16px;
+        transition: color .2s;
 
         @include input-placeholder {
+          color: transparent;
+        }
+
+        &:hover {
           color: transparent;
         }
       }
@@ -459,8 +573,13 @@
 
         > .input-field {
           padding-left: $height-btn;
+          color: $c-t1;
 
           @include input-placeholder {
+            color: $c-t1;
+          }
+
+          &:hover {
             color: $c-t1;
           }
         }
@@ -468,7 +587,8 @@
     }
 
     // Site search is open
-    #{$js-site-search-open} & {
+    #{$js-site-search-open} &,
+    #{$js-site-header-fixed}#{$js-site-search-open} & {
       transform: translateY(0);
       width: 350px;
     }
@@ -484,8 +604,11 @@
       height: auto;
       font-size: 16px;
 
-      > .icon {
-        padding-right: 12px;
+      &:before {
+        content: $fa-lock-u;
+        font-size: 22px;
+        line-height: 0em;
+        margin-right: 12px;
       }
 
       > .label {
@@ -595,7 +718,15 @@
     top: 0;
     right: 0;
 
-    border-bottom: solid 2px $c-bg2;
+    border-bottom: solid 2px fade-out($c-bg1, .5);
+
+    .show-fixed {
+      display: block;
+    }
+
+    .hide-fixed {
+      display: none;
+    }
 
     .site-band {
       display: none;
@@ -605,23 +736,9 @@
       padding-top: 0;
     }
 
-    .site-logo {
-      $image-path: 'logo/logo-unilend-65x65-white.png';
-      $image: get-image-url($image-path);
-      $width: image-width($image);
-      $height: image-height($image);
-
-      width: $width;
-      height: $width;
-
-      background-image: image-url($image-path);
-      background-position: center center;
-
-      @include retina {
-        $image-path: 'logo/logo-unilend-65x65-white@2x.png';
-        background-image: image-url($image-path);
-        @include background-size(contain);
-      }
+    .site-logo,
+    &.site-header-dashboard .site-logo {
+      @include site-logo-fixed;
     }
 
     .site-nav-menu {
@@ -655,10 +772,27 @@
           border-top-width: 0;
           border-bottom-width: 0;
           border-right-width: 0;
+          color: $c-t1;
           line-height: $height-fixed-menu;
+
+          @include input-placeholder {
+            color: $c-t1;
+          }
+
+          &:hover {
+            color: $c-t1;
+          }
         }
       }
     }
+
+    // // Fixed header and open site search
+    // #{$js-site-search-open} &,
+    // #{$js-site-header-fixed}#{$js-site-search-open} & {
+    //   .site-search {
+    //     width: 350px;
+    //   }
+    // }
 
     .site-user {
       .btn-site-login {
@@ -723,13 +857,6 @@
     }
   }
 
-  // Fixed header and open site search
-  #{$js-site-header-fixed}#{$js-site-search-open} & {
-    .site-search {
-      width: 350px;
-    }
-  }
-
   // Fixed header hides when other fixed menus come into view
   // @note the other menu just gets displayed over the top now
   // #{$js-project-single-menu-fixed}#{$js-site-header-fixed} & {
@@ -763,8 +890,13 @@
 
       > .input-field {
         padding-left: $height-btn;
+        color: $c-t1;
 
         @include input-placeholder {
+          color: $c-t1;
+        }
+
+        &:hover {
           color: $c-t1;
         }
       }
@@ -774,7 +906,7 @@
   // Fixed header modifications
   #{$js-site-header-fixed} & {
     .site-search {
-      width: 250px;
+      width: 200px;
     }
 
     .site-user {
@@ -784,11 +916,17 @@
       }
     }
   }
+
+  // // Site search is open
+  // #{$js-site-header-fixed}#{$js-site-search-open} & {
+  //   .site-search {
+  //     width: 350px;
+  //   }
+  // }
 }
 
 // Further modifications to the site header for large devices
 @mixin site-header-full-lg {
-  @include site-header-full;
   @include site-header-full-md;
 
   // Site controls (search, user)
@@ -808,7 +946,7 @@
   }
 
   .site-search {
-    width: 250px;
+    width: 200px;
 
     .form-field-inline {
       > .btn-group {
@@ -818,8 +956,17 @@
 
       > .input-field {
         @include input-size-lg;
-        font-size: 18px;
         padding-left: $height-input-lg;
+        color: $c-t1;
+        font-size: 18px;
+
+        @include input-placeholder {
+          color: $c-t1;
+        }
+
+        &:hover {
+          color: $c-t1;
+        }
       }
     }
   }
@@ -834,7 +981,7 @@
   // Fixed header modifications
   #{$js-site-header-fixed} & {
     .site-search {
-      width: 250px;
+      width: 200px;
 
       .form-field-inline {
         > .btn-group {
@@ -843,6 +990,7 @@
 
         > .input-field {
           padding-left: $height-input-lg;
+          color: $c-t1;
         }
       }
     }
@@ -858,6 +1006,13 @@
       }
     }
   }
+
+  // // Site search is open
+  // #{$js-site-header-fixed}#{$js-site-search-open} & {
+  //   .site-search {
+  //     width: 350px;
+  //   }
+  // }
 }
 
 // Enable the full site header with certain modifications for the following devices...
@@ -876,51 +1031,5 @@
 @include devices('desktop') {
   .site-header {
     @include site-header-full-lg;
-  }
-}
-
-// Site Logo
-.site-logo {
-  $image-path: 'logo/logo-and-type-unilend-209x44-purple.png';
-  $image: get-image-url($image-path);
-  $width: image-width($image);
-  $height: image-height($image);
-
-  display: inline-block;
-  width: $width;
-  height: $height;
-  overflow: hidden;
-
-  background-color: transparent;
-  background-image: image-url($image-path);
-  background-repeat: no-repeat;
-  background-position: left top;
-  line-height: $height;
-  text-align: left;
-  text-indent: -9999em;
-  vertical-align: top;
-
-  @include retina {
-    $image-path: 'logo/logo-and-type-unilend-209x44-purple@2x.png';
-    background-image: image-url($image-path);
-    @include background-size(contain);
-  }
-
-  @include devices('lg') {
-    $image-path: 'logo/logo-and-type-unilend-245x52-purple.png';
-    $image: get-image-url($image-path);
-    $width: image-width($image);
-    $height: image-height($image);
-
-    background-image: image-url($image-path);
-    width: $width;
-    height: $height;
-    line-height: $height;
-
-    @include retina {
-      $image-path: 'logo/logo-and-type-unilend-245x52-purple@2x.png';
-      background-image: url($image-path);
-      @include background-size(contain);
-    }
   }
 }

@@ -3,17 +3,29 @@
  */
 
 var $ = require('jquery')
+var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
 var Tween = require('Tween')
 var __ = require('__')
 
+function isFloat (input) {
+  input = Utility.convertStringToFloat(input)
+
+  // Has a decimal point?
+  if (/\./.test(input + '')) return true
+
+  return false
+}
+
+// @class TextCount
 var TextCount = function (elem, options) {
   var self = this
+  self.$elem = $(elem)
+  if (self.$elem.length === 0 || elem.hasOwnProperty('TextCount')) return false
 
   /*
    * Properties
    */
-  self.$elem = $(elem)
   self.elem = self.$elem[0]
   self.timer = false
   self.track = {}
@@ -22,19 +34,47 @@ var TextCount = function (elem, options) {
    * Options
    */
   self.settings = $.extend({
+    // Properties
     fps: 60,
-    startCount: parseFloat(self.$elem.text()), // int/float
-    endCount: 0, // int/float
+    startCount: undefined, // int/float
+    endCount: undefined, // int/float
     totalTime: 0, // in ms
-    roundFloat: false, // how to round the float (and if)
-    formatOutput: false
+    roundFloat: false, // how to round the float: {Booelan} false or {String} 'round', 'floor', 'ceil'
+    limitDecimal: 0,
+    isPrice: false,
+    tweenCount: false,
+    debug: false,
+
+    // Custom event methods
+    // -- Use the default prototype formatOutput function
+    formatOutput: self.formatOutput
   }, ElementAttrsObject(elem, {
     fps: 'data-fps',
     startCount: 'data-start-count',
     endCount: 'data-end-count',
     totalTime: 'data-total-time',
-    roundFloat: 'data-round-float'
+    roundFloat: 'data-round-float',
+    limitDecimal: 'data-limit-decimal',
+    isPrice: 'data-is-price',
+    tweenCount: 'data-tween-count',
+    debug: 'data-debug'
   }), options)
+
+  // Get start/end time within element text if not set
+  if (typeof self.settings.startCount === 'undefined' && typeof self.settings.endCount !== 'undefined') self.settings.startCount = Utility.convertStringToFloat(self.$elem.text())
+  if (typeof self.settings.endCount === 'undefined' && typeof self.settings.startCount !== 'undefined') self.settings.endCount = Utility.convertStringToFloat(self.$elem.text())
+
+  // Limit decimal for prices
+  if (self.settings.isPrice && typeof self.settings.limitDecimal === 'undefined') {
+    self.settings.limitDecimal = 2
+  }
+
+  // Invalid tween count function name
+  if (typeof self.settings.tweenCount !== 'undefined') {
+    if (!Tween.hasOwnProperty(self.settings.tweenCount)) {
+      self.settings.tweenCount = false
+    }
+  }
 
   /*
    * UI
@@ -50,7 +90,8 @@ var TextCount = function (elem, options) {
   // Set the initial tracking values
   self.resetCount()
 
-  // @debug console.log( self )
+  // @debug
+  if (self.settings.debug) console.log('new TextCount', self)
 
   return self
 }
@@ -66,9 +107,9 @@ TextCount.prototype.resetCount = function () {
   // Reset the tracking vars
   self.track = {
     fps:        parseInt(self.settings.fps, 10) || 60,      // int
-    start:      parseFloat(String(self.settings.startCount).replace(/[^\d\-\.]+/g, '')) || 0,  // can be int/float
+    start:      Utility.convertStringToFloat(self.settings.startCount) || 0,  // can be int/float
     current:    0,
-    end:        parseFloat(self.settings.endCount) || 0,    // can be int/float
+    end:        Utility.convertStringToFloat(self.settings.endCount) || 0,    // can be int/float
     total:      parseInt(self.settings.totalTime, 10) || 0, // int
     progress:   0 // float: from 0 to 1
   }
@@ -79,15 +120,25 @@ TextCount.prototype.resetCount = function () {
 
   // Reset the count
   self.setText(self.track.current)
+
+  // @trigger elem `TextCount:resetted` [{TextCount}]
+  self.$elem.trigger('TextCount:resetted', [self])
 }
 
 // Start counting
 TextCount.prototype.startCount = function () {
   var self = this
-  if ( self.countDirection() !== 0 && self.track.start != self.track.end ) {
-    self.timer = setInterval( function () {
+
+  // @debug
+  if (self.settings.debug) console.log('TextCount.startCount: started=%s, ended=%s, direction=%s', self.started()+'', self.ended()+'', self.countDirection()+'')
+
+  if (!self.started() && !self.ended() && self.countDirection() !== 0 && self.track.start != self.track.end) {
+    self.timer = setInterval(function () {
       self.incrementCount()
-    }, self.track.timeIncrement )
+    }, self.track.timeIncrement)
+
+    // @trigger elem `TextCount:started` [{TextCount}]
+    self.$elem.trigger('TextCount:started', [self])
   }
 }
 
@@ -121,22 +172,24 @@ TextCount.prototype.incrementCount = function () {
   self.setText(count)
 
   // End the count at end of progress
-  if ( (self.countDirection() ===  1 && self.track.current < self.track.end) ||
-       (self.countDirection() === -1 && self.track.current > self.track.end)    ) {
-    self.endCount()
-  }
+  if (self.ended()) self.endCount()
 }
 
 // Set the text
-TextCount.prototype.setText = function ( count ) {
+TextCount.prototype.setText = function (count) {
   var self = this
+  var output = count
+
   // Format the count
-  if ( typeof self.settings.formatOutput === 'function' ) {
-     count = self.settings.formatOutput.apply(self, [count])
+  if (typeof self.settings.formatOutput === 'function') {
+    output = self.settings.formatOutput.apply(self, [count])
   }
 
+  // @debug
+  if (self.settings.debug) console.log('TextCount.setText', count, output)
+
   // Set the element's text
-  self.$elem.text(count)
+  self.$elem.text(output)
 }
 
 // Stop counting
@@ -144,6 +197,9 @@ TextCount.prototype.stopCount = function () {
   var self = this
   clearTimeout(self.timer)
   self.timer = false
+
+  // @trigger elem `TextCount:stopped` [{TextCount}]
+  self.$elem.trigger('TextCount:stopped', [self])
 }
 
 // Seek to end
@@ -153,6 +209,9 @@ TextCount.prototype.endCount = function () {
   self.track.progress = 1
   self.track.current = self.track.end
   self.setText(self.track.end)
+
+  // @trigger elem `TextCount:ended` [{TextCount}]
+  self.$elem.trigger('TextCount:ended', [self])
 }
 
 // Check if has started
@@ -167,15 +226,41 @@ TextCount.prototype.stopped = function () {
   return !self.timer
 }
 
+// Check if has ended
+TextCount.prototype.ended = function () {
+  var self = this
+  return ((self.countDirection() ===  1 && self.track.current < self.track.end) ||
+          (self.countDirection() === -1 && self.track.current > self.track.end))
+}
+
 // Get direction of count
 // 1: upward
 // -1: downward
 // 0: nowhere
 TextCount.prototype.countDirection = function () {
   var self = this
-  if ( self.track.start > self.track.end ) return  1
-  if ( self.track.start < self.track.end ) return -1
+  if (self.track.start > self.track.end) return  1
+  if (self.track.start < self.track.end) return -1
   return 0
+}
+
+// Default format output function
+TextCount.prototype.formatOutput = function (count) {
+  var self = this
+  var newCount = count
+
+  // Tween the count
+  if (self.settings.tweenCount) {
+    newCount = Tween[self.settings.tweenCount].apply(this, [self.track.progress, self.track.start, Math.max(self.track.start, self.track.end) - Math.min(self.track.start, self.track.end), 1])
+  }
+
+  // Format the output number
+  var output = __.formatNumber(newCount, self.settings.limitDecimal, self.settings.isPrice)
+
+  // @debug
+  if (self.settings.debug) console.log('TextCount.formatOutput', count, newCount, output)
+
+  return output
 }
 
 /*
@@ -184,53 +269,36 @@ TextCount.prototype.countDirection = function () {
 $.fn.uiTextCount = function (op) {
   op = op || {}
 
-  return this.each(function (i, elem) {
-    // @debug
-    // console.log('assign TextCount', elem)
+  // Fire a command to the TextCount object, e.g. $('[data-textcount]').uiTextCount('startCount')
+  if (typeof op === 'string' && /^(startCount|stopCount|resetCount|setText)$/.test(op)) {
+    // Get further additional arguments to apply to the matched command method
+    var args = Array.prototype.slice.call(arguments)
+    args.shift()
 
-    // Already assigned, ignore elem
-    if (elem.hasOwnProperty('TextCount')) return
-
-    var $elem = $(elem)
-    var isPrice = /[\$\€\£]/.test($elem.text())
-    var limitDecimal = $elem.attr('data-round-float') ? 0 : 2 // Set site-wide defaults here
-    var tweenCount = $elem.attr('data-tween-count') || false // Set site-wide defaults here
-    var debug = $elem.attr('data-debug') === 'true' // Output debug values for this item
-    if (tweenCount && !Tween.hasOwnProperty(tweenCount)) tweenCount = false
-
-    // Use separate functions here to reduce load within formatOutput callback
-    if (tweenCount) {
-      op.formatOutput = function (count) {
-        // Tween the number
-        var newCount = Tween[tweenCount].apply(this, [this.track.progress, this.track.start, Math.max(this.track.start, this.track.end) - Math.min(this.track.start, this.track.end), 1])
-
-        // @debug if (debug) console.log(this.track.progress, count + ' => ' + newCount)
-
-        // Format the output number
-        return __.formatNumber(newCount, limitDecimal, isPrice)
+    // Fire command on each returned elem instance
+    return this.each(function (i, elem) {
+      if (elem.hasOwnProperty('TextCount') && typeof elem.TextCount[op] === 'function') {
+        elem.TextCount[op].apply(elem.TextCount, args)
       }
-    } else {
-      op.formatOutput = function (count) {
-        // Format the output number
-        return __.formatNumber(count, limitDecimal, isPrice)
+    })
+
+  // Set up a new TextCount instance per elem (if one doesn't already exist)
+  } else {
+    return this.each(function (i, elem) {
+      if (!elem.hasOwnProperty('TextCount')) {
+        new TextCount(elem, op)
       }
-    }
-
-    // Initialise the text count
-    new TextCount(elem, op)
-
-    // @debug
-    // console.log('initialised TextCount', elem.TextCount)
-  })
+    })
+  }
 }
 
 /*
  * jQuery Events
  */
 $(document)
-  // Initalise any element with the [data-textcount] attribute
-  .on('ready', function () {
-    $('[data-textcount]').uiTextCount()
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-textcount]').not('.ui-textcount').uiTextCount()
   })
 
 module.exports = TextCount

@@ -28,6 +28,9 @@ var PasswordCheck = function (input, options) {
     return
   }
 
+  // Error: behaviours already applied
+  if (input.hasOwnProperty('PasswordCheck')) return false
+
   // Settings
   self.settings = $.extend(
   // Default settings
@@ -316,7 +319,9 @@ PasswordCheck.prototype.templates = {
  */
 $.fn.uiPasswordCheck = function (options) {
   return this.each(function (i, elem) {
-    new PasswordCheck(elem, options)
+    if (!elem.hasOwnProperty('PasswordCheck')) {
+      new PasswordCheck(elem, options)
+    }
   })
 }
 
@@ -324,9 +329,9 @@ $.fn.uiPasswordCheck = function (options) {
  * jQuery Events
  */
 $(document)
-  // Auto-assign functionality to elements with [data-passwordcheck] attribute
-  .on('ready', function () {
-    $('[data-passwordcheck]').uiPasswordCheck()
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-passwordcheck]').not('.ui-passwordcheck').uiPasswordCheck()
   })
 
 module.exports = PasswordCheck

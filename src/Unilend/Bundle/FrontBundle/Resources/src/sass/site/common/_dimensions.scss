@@ -27,7 +27,7 @@ $width-sm:             $width-mobile-l;
 $width-xs-max:         $width-mobile-p-max;
 $width-xs:             0;
 
-// Site/hero wrap widths
+// Site/hero/readable wrap widths
 // Grid
 $width-hero-wrap-xs:   100%;
 $width-hero-wrap-sm:   100%;
@@ -38,6 +38,11 @@ $width-site-wrap-xs:   100%;
 $width-site-wrap-sm:   100%;
 $width-site-wrap-md:   $width-laptop;
 $width-site-wrap-lg:   1400px;
+
+$width-readable-wrap-xs: 500px;
+$width-readable-wrap-sm: 600px;
+$width-readable-wrap-md: 700px;
+$width-readable-wrap-lg: 800px;
 
 // Devices
 $width-hero-wrap-mobile-p:    $width-hero-wrap-xs;
@@ -54,10 +59,17 @@ $width-site-wrap-tablet-l:    $width-site-wrap-md;
 $width-site-wrap-laptop:      $width-site-wrap-md;
 $width-site-wrap-desktop:     $width-site-wrap-lg;
 
+$width-readable-wrap-mobile-p: $width-readable-wrap-xs;
+$width-readable-wrap-mobile-l: $width-readable-wrap-sm;
+$width-readable-wrap-tablet-p: $width-readable-wrap-sm;
+$width-readable-wrap-tablet-l: $width-readable-wrap-md;
+$width-readable-wrap-laptop:   $width-readable-wrap-md;
+$width-readable-wrap-desktop:  $width-readable-wrap-lg;
+
 // Default
 $width-hero-wrap:      $width-hero-wrap-xs;
 $width-site-wrap:      $width-site-wrap-xs;
-$width-readable-wrap:  700px;
+$width-readable-wrap:  $width-readable-wrap-xs;
 
 // The site margin (minimum distance between site content edge to browser window edge)
 // Devices
@@ -126,3 +138,4 @@ $depth-site-header: 8000;
 $depth-media-overlay: 8010; // Fancybox
 $depth-site-mobile-menu: 9999;
 $depth-sticky-aside: 6000;
+$depth-drop: 8005;

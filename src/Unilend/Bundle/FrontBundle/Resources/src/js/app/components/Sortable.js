@@ -7,6 +7,12 @@
 var $ = require('jquery')
 var Utility = require('Utility')
 var ElementAttrsObject = require('ElementAttrsObject')
+var Templating = require('Templating')
+
+// Dictionary
+var Dictionary = require('Dictionary')
+var SORTABLE_LANG = require('../../../lang/Sortable.lang.json')
+var __ = new Dictionary(SORTABLE_LANG, 'fr')
 
 /*
  * Sortable class
@@ -21,7 +27,7 @@ var Sortable = function (elem, options) {
   self.$elem = $(elem).first()
 
   // Error: no element
-  if (self.$elem.length === 0) return
+  if (self.$elem.length === 0 || elem.hasOwnProperty('Sortable')) return false
 
   // Settings
   self.settings = $.extend({
@@ -34,13 +40,17 @@ var Sortable = function (elem, options) {
     // Save the original order
     saveOriginalOrder: true,
 
+    // Add responsive filter (control visibility by targeting `[data-sortable-responsive-filters]` in CSS)
+    responsiveFilters: true,
+
     // Sorting function
-    onsortcompare: self.sortCompare,
+    onsortcompare: self.sortCompare
   },
   // -- Override with options set on the element
   ElementAttrsObject(elem, {
     columns: 'data-sortable-columns',
     content: 'data-sortable-content',
+    responsiveFilter: 'data-sortable-responsivefilters',
     saveOriginalOrder: 'data-sortable-saveoriginalorder'
   }),
   // -- Override with options set via JS
@@ -49,6 +59,7 @@ var Sortable = function (elem, options) {
   // Properties
   self.$columns = undefined
   self.columnNames = []
+  self.columns = []
   self.$content = undefined
   self.sortedColumn = false
   self.sortedDirection = false
@@ -86,7 +97,15 @@ var Sortable = function (elem, options) {
   // Get/set the column names
   self.$columns.each(function (i, elem) {
     var columnName = $(elem).attr('data-sortable-by')
-    if (columnName) self.columnNames.push(columnName)
+    if (columnName) {
+      self.columnNames.push(columnName)
+      self.columns.push({
+        name: columnName,
+        // Because this picks up the `.sr-only` span text, we need to remove it
+        label: $(elem).text().replace($(elem).find('.sr-only').text(), '').trim(),
+        value: columnName
+      })
+    }
   })
 
   // Get/set the content
@@ -115,6 +134,49 @@ var Sortable = function (elem, options) {
     throw new Error('Sortable.setup error: no content defined. Make sure you set the sortable content with the HTML attribute `[data-sortable-content]`')
   }
 
+  // Build the responsive filters
+  if (self.settings.responsiveFilters) {
+    // Create ID
+    if (!self.$elem.attr('id')) {
+      self.$elem.attr('id', 'sortable-' + Utility.randomString(16))
+    }
+
+    // Build the filters from the column names
+    var responsiveFilters = []
+
+    // -- Place this one before all the filters
+    $.each(self.columns, function (i, column) {
+      responsiveFilters.push(Templating.replace(self.templates.responsiveFiltersItem, [{
+        id: self.$elem.attr('id') + '-filter-' + column.name,
+        name: column.name,
+        label: column.label,
+        value: column.name
+      }, __]))
+    })
+
+    // Reset filters item
+    var resetFiltersItem = ''
+    if (self.settings.saveOriginalOrder) {
+      resetFiltersItem = Templating.replace(self.templates.responsiveFiltersItem, [{
+        id: self.$elem.attr('id') + '-filter-reset',
+        name: 'reset',
+        label: __.__('Clear filters', 'resetFiltersLabel'),
+        value: 'reset'
+      }, __])
+    }
+
+    // Build the responsive filters element
+    var $responsiveFilters = Templating.replace(self.templates.responsiveFilters, [{
+      elemId: '#' + self.$elem.attr('id'),
+      id: self.$elem.attr('id') + '-filters',
+      items: responsiveFilters.join(''),
+      resetFiltersItem: resetFiltersItem
+    }, __])
+
+    // Place the filters above the sortable element
+    self.$elem.before($responsiveFilters)
+  }
+
   // Set single content element
   self.$content = self.$content.first()
 
@@ -128,7 +190,7 @@ var Sortable = function (elem, options) {
   /*
    * UI
    */
-  self.$elem.addClass('ui-sortable')
+  self.$elem.addClass('ui-sortable') // Avoid class clash with jquery-ui
 
   // Attach instance to element
   self.$elem[0].Sortable = self
@@ -137,6 +199,14 @@ var Sortable = function (elem, options) {
   self.$elem.trigger('Sortable:ready')
 
   return self
+}
+
+/*
+ * Templates
+ */
+Sortable.prototype.templates = {
+  responsiveFilters: '<div class="ui-sortable-responsivefilters"><select id="{{ id }}" class="input-field" data-sortable-responsivefilters data-parent="{{ elemId }}"><optgroup label="{{ applyFiltersLabel }}">{{ items }}</optgroup>{{ resetFiltersItem }}</select></div>',
+  responsiveFiltersItem: '<option id="{{ id }}" value="{{ value }}">{{ label }} {{ direction }}</option>'
 }
 
 /*
@@ -152,13 +222,15 @@ Sortable.prototype.sort = function (columnName, direction) {
   var self = this
 
   // Defaults
-  columnName = columnName || 'original-order'
+  columnName = columnName || 'originalorder'
   direction = direction || 'asc'
 
   // Toggle sort direction
   if (self.sortedColumn === columnName || direction === 'toggle') {
     direction = (self.sortedDirection === 'asc' ? 'desc' : 'asc')
   }
+
+  // console.log('Sortable:sort', columnName, direction)
 
   // Don't need to sort
   if (columnName === self.sortedColumn && direction === self.sortedDirection) return self
@@ -169,7 +241,7 @@ Sortable.prototype.sort = function (columnName, direction) {
   // @debug console.log('Sortable.sort:', columnName, direction)
 
   // @trigger .ui-sortable `Sortable:sort:before`
-  self.$elem.trigger('sortable:sort:before', [columnName, direction])
+  self.$elem.trigger('Sortable:sort:before', [columnName, direction])
 
   // Do the sort in the UI
   self.$content.children().detach().sort(function (a, b) {
@@ -186,6 +258,13 @@ Sortable.prototype.sort = function (columnName, direction) {
   self.$elem
     .removeClass('ui-sortable-direction-asc ui-sortable-direction-desc')
     .addClass('ui-sortable-direction-' + direction)
+
+  // Update responsive filters
+  if (self.settings.responsiveFilters) {
+    var $respFilters = $(self.$elem.attr('id') + '-filters')
+    $respFilters.find('option[selected]').removeAttr('selected')
+    $respFilters.find('option[value="' + columnName + '"]').attr('selected', 'selected')
+  }
 
   // @trigger .ui-sortable `Sortable:sort:after`
   self.$elem.trigger('Sortable:sort:after', [columnName, direction])
@@ -252,7 +331,7 @@ Sortable.prototype.reset = function () {
   if (self.settings.saveOriginalOrder) {
     // @trigger .ui-sortable `Sortable:reset`
     self.$elem.trigger('Sortable:reset')
-    return self.sort('original-order', 'asc')
+    return self.sort('originalorder', 'asc')
   }
 
   return self
@@ -298,9 +377,42 @@ $.fn.uiSortable = function (op) {
   }
 }
 
-// Auto-assign functionality to components with [data-sortable] attribute
-$(document).on('ready', function () {
-  $('[data-sortable]').uiSortable()
-})
+/*
+ * jQuery Events
+ */
+$(document)
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-sortable]').not('.uni-sortable').uiSortable()
+  })
+
+  // User interaction sort columns
+  .on(Utility.clickEvent, '[data-sortable-by]', function (event) {
+    var $target = $(this)
+    var columnName = $target.attr('data-sortable-by')
+
+    event.preventDefault()
+    $(this).parents('[data-sortable]').uiSortable('sort', columnName)
+  })
+
+  // Responsive filters
+  .on('change', '[data-sortable-responsivefilters][data-parent]', function (event) {
+    var $target = $($(this).attr('data-parent'))
+    var sortBy = $(this).val()
+
+    // No target
+    if ($target.length === 0) return false
+
+    // Sort the sortable
+    event.preventDefault()
+    if (sortBy) {
+      // Reset
+      if (sortBy === 'reset') {
+        $target.uiSortable('reset')
+      } else {
+        $target.uiSortable('sort', sortBy, 'asc')
+      }
+    }
+  })
 
 module.exports = Sortable

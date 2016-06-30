@@ -56,7 +56,7 @@
       clear: both;
 
       &:before {
-        content: '\f067';
+        content: $fa-plus-u;
         display: inline-block;
         font-family: $ff-icon;
         font-size: 26px;
@@ -136,7 +136,7 @@
     }
 
     &:before {
-      content: '\f016';
+      content: $fa-file-o;
       display: block;
       width: 1em;
       padding: 5px;
@@ -179,7 +179,7 @@
 
     &:hover {
       &:before {
-        content: '\f044';
+        content: $fa-edit-u;
         color: $c-p1;
       }
     }
@@ -200,14 +200,14 @@
   &[data-fileattach-item-type="jpeg"],
   &[data-fileattach-item-type="gif"] {
     &:before {
-      content: '\f1c5'
+      content: $fa-file-image-o;
     }
   }
 
   // PDF
   &[data-fileattach-item-type="pdf"] {
     &:before {
-      content: '\f1c1'
+      content: $fa-file-pdf-o;
     }
   }
 
@@ -215,7 +215,7 @@
   &[data-fileattach-item-type="txt"],
   &[data-fileattach-item-type="rtf"] {
     &:before {
-      content: '\f0f6'
+      content: $fa-file-text-o;
     }
   }
 
@@ -223,7 +223,7 @@
   &[data-fileattach-item-type="doc"],
   &[data-fileattach-item-type="docx"] {
     &:before {
-      content: '\f1c2'
+      content: $fa-file-word-o;
     }
   }
 
@@ -234,18 +234,7 @@
   &[data-fileattach-item-type="tar"],
   &[data-fileattach-item-type="gz"] {
     &:before {
-      content: '\f1c6'
-    }
-  }
-
-  // ZIP
-  &[data-fileattach-item-type="zip"],
-  &[data-fileattach-item-type="rar"],
-  &[data-fileattach-item-type="7z"],
-  &[data-fileattach-item-type="tar"],
-  &[data-fileattach-item-type="gz"] {
-    &:before {
-      content: '\f1c6'
+      content: $fa-file-zip-o;
     }
   }
 }
@@ -335,7 +324,7 @@
   text-align: center;
 
   &:before {
-    content: '\f071';
+    content: $fa-error-u;
     display: block;
     box-sizing: border-box;
 

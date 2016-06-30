@@ -126,6 +126,15 @@
   }
 
   // Stats
+  // -- Treemap
+  .stats-treemap {
+    .chart {
+      box-sizing: border-box;
+      border: solid 5px $c-p1;
+      color: $c-p1;
+    }
+  }
+
   // -- Unilend chart
   .stats-chart-unilend {
     max-width: 600px;
@@ -225,17 +234,39 @@
 
         .stats-map {
           width: 100%;
-          float: left;
+          float: none;
           clear: both;
           text-align: center;
+          margin-bottom: 60px;
         }
 
         .stats-members,
         .stats-enterprises {
-          width: 50%;
-          float: left;
-          clear: none;
+          box-sizing: border-box;
+          width: 100%;
+          float: none;
+          clear: both;
           text-align: center;
+        }
+
+        .stats-members {
+          margin-bottom: 60px;
+        }
+
+        @include devices('mobile-l', 'tablet-p') {
+          .stats-members {
+            width: 50%;
+            float: left;
+            clear: none;
+            padding-right: 10px;
+          }
+
+          .stats-enterprises {
+            width: 50%;
+            float: left;
+            clear: none;
+            padding-left: 10px;
+          }
         }
 
         // Position extra elements relative to middle of this block
@@ -254,6 +285,7 @@
             height: 150px;
             margin-left: -450px;
             margin-top: -75px;
+            margin-bottom: 0;
             float: none;
 
             position: absolute;
@@ -266,6 +298,7 @@
             height: 150px;
             margin-left: 250px;
             margin-top: -75px;
+            margin-bottom: 0;
             float: none;
 
             position: absolute;
@@ -280,6 +313,7 @@
             min-height: 500px;
             margin-left: auto;
             margin-right: auto;
+            margin-bottom: 0;
             float: none;
           }
 
@@ -288,6 +322,7 @@
             height: 150px;
             margin-left: -500px;
             margin-top: -75px;
+            margin-bottom: 0;
             float: none;
 
             position: absolute;
@@ -300,6 +335,7 @@
             height: 150px;
             margin-left: 300px;
             margin-top: -75px;
+            margin-bottom: 0;
             float: none;
 
             position: absolute;

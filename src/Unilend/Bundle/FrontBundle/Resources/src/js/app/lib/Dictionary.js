@@ -81,38 +81,47 @@ Dictionary.prototype.supportsLang = function (lang) {
 // Adapted from: http://www.mredkj.com/javascript/nfbasic.html
 Dictionary.prototype.addNumberSeps = function (number, milliSep, decimalSep, limitDecimal, padDecimal) {
   var self = this
-  var a = ''
-  var b = ''
   var x = (number + '').split(/\./)
+  var a = x[0]
+  var b = ''
+
+  milliSep = milliSep || ','
+  decimalSep = decimalSep || '.'
+
+  // @debug
+  // console.log('Dictionary.addNumberSeps', number, milliSep, decimalSep, limitDecimal, padDecimal)
 
   // Default limit decimal
   if (limitDecimal && typeof limitDecimal !== 'number') limitDecimal = 2
 
   // Add the milliSep
-  a = x[0]
   var rgx = /(\d+)(\d{3})/
   while (rgx.test(a)) {
-    a = a.replace(rgx, '$1' + (milliSep || ',') + '$2')
+    a = a.replace(rgx, '$1' + milliSep + '$2')
   }
 
   // Limit the decimal
-  if (limitDecimal > 0) {
+  // -- Don't
+  if (!limitDecimal && limitDecimal !== 0 && x.length > 1) {
+    b = x[1]
+
+  // -- Do!
+  } else if (limitDecimal > 0) {
     b = (x.length > 1 ? x[1].substr(0, limitDecimal) : '')
-
-    // Pad the decimal
-    if (padDecimal && b.length < limitDecimal) {
-      while (b.length < limitDecimal) {
-        b += '0'
-      }
-    }
-
-    // Add the decimalSep
-    if (b.length > 0) {
-      b = (decimalSep || '.') + b
-    }
-  } else {
-    b = ''
   }
+
+  // Pad the decimal
+  if (padDecimal && limitDecimal > 0) {
+    while (b.length < limitDecimal) {
+      b += '0'
+    }
+  }
+
+  // Add the decimalSep
+  if (b && b.length > 0) b = decimalSep + b
+
+  // Output
+  var output = a + b
 
   // @debug
   // console.log('Dictionary.addNumberSeps', {
@@ -120,14 +129,15 @@ Dictionary.prototype.addNumberSeps = function (number, milliSep, decimalSep, lim
   //   milliSep: milliSep,
   //   decimalSep: decimalSep,
   //   limitDecimal: limitDecimal,
-  //   padDecimal: padDecimal
+  //   padDecimal: padDecimal,
+  //   output: output
   // })
 
-  return a + b
+  return output
 }
 
-// Format a number (adds punctuation, currency)
-Dictionary.prototype.formatNumber = function (input, limitDecimal, isPrice, lang) {
+// Format a number (adds correct punctuation, pads decimals, etc.)
+Dictionary.prototype.formatNumber = function (input, limitDecimal, padDecimal, lang) {
   var self = this
   var number = parseFloat(input + ''.replace(/[^\d\-\.]+/, ''))
 
@@ -139,41 +149,22 @@ Dictionary.prototype.formatNumber = function (input, limitDecimal, isPrice, lang
   var numberMilli = self.__(',', 'numberMilli', lang)
   // var numberCurrency = self.__('$', 'numberCurrency', lang)
 
-  // Is price
-  // -- If not set, detect if has currency symbol in input
-  // @note doesn't add the currency character anymore, only detects to set isPrice for padDecimal
-  // var currency = numberCurrency
-  if (typeof isPrice === 'undefined') {
-    isPrice = /^[\$\€\£]|[\$\€\£]$/.test(input)
-    // if (isPrice) {
-    //   currency = input.replace(/[^\$\€\£]+/g, '')
-    // }
+  // Pad decimal
+  // If detects there's a money sign, will pad decimal to 2
+  if (typeof padDecimal === 'undefined') {
+    padDecimal = /^[\$\€\£]|[\$\€\£]$/.test(input)
+  }
+
+  // Limit the decimals shown
+  if (typeof limitDecimal === 'undefined' && padDecimal) {
+    limitDecimal = 2
   }
 
   // Default output
   var output = input
 
-  // Limit the decimals shown
-  if (typeof limitDecimal === 'undefined') {
-    limitDecimal = isPrice ? 2 : 0
-  }
-
   // Output the formatted number
-  output = self.addNumberSeps(number, numberMilli, numberDecimal, limitDecimal, isPrice)
-
-  // @debug
-  // console.log({
-  //   input: input,
-  //   number: number,
-  //   limitDecimal: limitDecimal,
-  //   isPrice: isPrice,
-  //   lang: lang,
-  //   numberDecimal: numberDecimal,
-  //   numberMilli: numberMilli,
-  //   // numberCurrency: numberCurrency,
-  //   // currency: currency,
-  //   output: output
-  // })
+  output = self.addNumberSeps(number, numberMilli, numberDecimal, limitDecimal, padDecimal)
 
   return output
 }

@@ -26,7 +26,7 @@
 
   &:before {
     color: $c-white;
-    content: '\f04b';
+    content: $fa-play; // Play
     font-family: $ff-icon;
     font-size: $fs-btn-media;
     text-indent: 6px;
@@ -251,6 +251,26 @@
     .vjs-big-play-button {
       display: block;
       z-index: 6;
+    }
+  }
+
+  // Mini player
+  @include devices('xs') {
+    .vjs-progress-control,
+    .vjs-volume-menu-button .vjs-menu,
+    .vjs-current-time,
+    .vjs-time-control,
+    .vjs-duration {
+      display: none !important;
+    }
+
+    .vjs-volume-menu-button,
+    .vjs-fullscreen-control {
+      float: right !important;
+    }
+
+    .vjs-volume-menu-button {
+      width: 4em !important;
     }
   }
 }

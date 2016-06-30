@@ -2,18 +2,29 @@
 // Unilend IE fixes
 //
 
-.ie9 {
-  .page-header-hero,
-  .cta-video-hero {
-    .list-sharing {
-      text-align: right;
-
-      > li {
-        text-align: right;
-      }
+.link,
+.link-1,
+.link-2 {
+  &,
+  &:link,
+  &:visited
+  &:hover,
+  &:active {
+    &:before {
+      text-decoration: none !important;
     }
   }
+}
 
+.page-section {
+  h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4 {
+    a {
+      display: inline-block;
+    }
+  }
+}
+
+.ie9 {
   .project-list-item {
     height: 100%;
   }

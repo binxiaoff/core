@@ -9,7 +9,9 @@ var ElementAttrsObject = require('ElementAttrsObject')
 var DashboardPanel = function (elem, options) {
   var self = this
   self.$elem = $(elem)
-  if (self.$elem.length === 0) return
+
+  // Error
+  if (self.$elem.length === 0 || elem.hasOwnProperty('DashboardPanel')) return false
 
   // Needs an ID number
   self.id = self.$elem.attr('id') || randomString()
@@ -86,16 +88,19 @@ var DashboardPanel = function (elem, options) {
  */
 $.fn.uiDashboardPanel = function (op) {
   return this.each(function (i, elem) {
-    new DashboardPanel(elem, op)
+    if (!elem.hasOwnProperty('DashboardPanel')) {
+      new DashboardPanel(elem, op)
+    }
   })
 }
 
 /*
- * jQuery Initialisation
+ * jQuery Events
  */
 $(document)
-  .on('ready', function () {
-    $('.dashboard-panel, [data-dashboardpanel]').uiDashboardPanel()
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('.dashboard-panel, [data-dashboardpanel]').not('.ui-dashboard-panel').uiDashboardPanel()
   })
 
   // Toggle the panel via the toggle option

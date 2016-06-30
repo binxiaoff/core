@@ -11,6 +11,12 @@
   > table {
     margin-bottom: 0;
   }
+
+  #{$js-sortable-responsivefilters} {
+    background: $c-bg2;
+    padding: 8px 8px 0;
+    margin-bottom: 0;
+  }
 }
 
 // Base table
@@ -50,6 +56,16 @@ td {
   margin: 0;
   font-size: 14px;
   line-height: 1.3em;
+
+  // Weird bug in iOS Safari
+  @include devices('xs') {
+    -webkit-text-size-adjust: 100%;
+    font-size: 14px !important;
+
+    &[colspan] {
+      font-size: 14px !important;
+    }
+  }
 
   @include devices('sm', 'laptop', 'lg') {
     padding: 10px 30px;
@@ -114,13 +130,24 @@ td {
 thead.table-sortable-columns {
   display: none;
 
-  @include devices('sm', 'md', 'lg') {
+  @include devices('md', 'lg') {
     display: table-header-group;
   }
 }
 
 .table-sortable-column {
   cursor: pointer;
+  line-height: 1em;
+  vertical-align: middle;
+
+  .label {
+    display: inline-block;
+    max-width: 80%;
+    height: 1em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   // Currently sorted column
   &#{$js-current-sortable-column} {
@@ -130,16 +157,18 @@ thead.table-sortable-columns {
   // Sort order icon
   &:after {
     font-family: $ff-icon;
-    content: '\f0dc';
+    content: $fa-sort-u;
   }
 
   // Ascending
   &#{$js-sortable-direction-asc}:after {
-    content: '\f0de';
+    // content: '\f0de'; // Sort asc
+    content: $fa-sort-asc-u;
   }
 
   // Descending
   &#{$js-sortable-direction-desc}:after {
-    content: '\f0dd';
+    // content: '\f0dd'; // Sort desc
+    content: $fa-sort-desc-u;
   }
 }

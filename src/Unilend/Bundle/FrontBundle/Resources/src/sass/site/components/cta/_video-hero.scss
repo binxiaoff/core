@@ -3,11 +3,11 @@
 //
 
 .cta-video-hero {
-  margin-left: auto;
-  margin-right: auto;
+  @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0);
   min-height: 400px;
 
   .video-hero-wrapper {
+    @include hero-wrap($enable-padding: true, $padding-xs: 0, $padding-sm: 0, $padding-md: 0, $padding-lg: 0);
     position: relative;
   }
 
@@ -240,19 +240,9 @@
   }
 
   @include devices('md') {
-    max-width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-
     .list-socialmedia,
     .list-sharing {
       display: block;
-    }
-
-    // Size of .list-sharing buttons (50px)
-    .video-hero-wrapper {
-      padding-left: 50px;
-      padding-right: 50px;
     }
 
     .swiper-container,
@@ -262,24 +252,14 @@
   }
 
   @include devices('lg') {
-    max-width: 1680px;
-    margin-left: auto;
-    margin-right: auto;
-
     .list-socialmedia,
     .list-sharing {
       display: block;
     }
 
-    // Size of .list-sharing buttons (60px)
-    .video-hero-wrapper {
-      padding-left: 60px;
-      padding-right: 60px;
-    }
-
     .swiper-container,
     .video-hero {
-      min-height: 550px;
+      min-height: 600px;
     }
   }
 }

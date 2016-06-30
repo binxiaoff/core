@@ -139,12 +139,13 @@
 
 {% javascripts
     'bundles/unilendfront/js/*' %}
+<script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
+<script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
 <script src="{{ asset_url }}"></script>
 {% endjavascripts %}
 
     {# Scripts at bottom #}
-    <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/v2.4.0/mapbox.js"></script>
-    <script type="text/javascript" src="https://api.mapbox.com/mapbox.js/plugins/leaflet-markercluster/v0.4.0/leaflet.markercluster.js"></script>
+
 
 {% block extendFoot %}
 {% endblock %}

@@ -23,7 +23,7 @@ var CacheForm = {
   supportedFormFields: 'input[name], select[name], textarea[name]',
 
   // Specific unsupported form field types to not save values from
-  unsupportedFormFields: '[type="password"], [type="file"]',
+  unsupportedFormFields: '[type="password"], [type="file"], [data-cacheform-ignore], .ui-cacheform-ignore',
 
   /*
    * Methods

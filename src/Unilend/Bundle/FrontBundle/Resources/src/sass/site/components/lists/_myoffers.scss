@@ -64,7 +64,7 @@
 
     &.myoffer-autolend {
       .myoffer-amount:before {
-        content: '\f085';
+        content: $fa-autolend-u; // Autolend
         display: inline-block;
         margin-right: 3px;
         color: $c-p1;

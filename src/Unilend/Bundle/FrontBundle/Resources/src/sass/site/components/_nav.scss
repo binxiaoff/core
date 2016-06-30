@@ -16,7 +16,7 @@
       @if $show-icon {
         &:after {
           box-sizing: border-box;
-          content: '\f142';
+          content: $fa-ellipsis-h; // ellipsis
           display: block;
           width: $height;
           height: $height;
@@ -249,20 +249,6 @@
 }
 
 
-// Tabbable tabs
-// -------------------------
-
-// Hide tabbable panes to start, show them when `.active`
-.tab-content {
-  > .tab-pane {
-    display: none;
-  }
-  > .active {
-    display: block;
-  }
-}
-
-
 // Dropdowns
 // -------------------------
 
@@ -433,9 +419,63 @@
   }
 }
 
+// No buttons, just simple text
+.nav-tabs-text {
+  @include inline-block-list;
 
-// Progress (devenir-preter)
+  > li {
+    display: inline-block;
 
+    // Actual tabs (as links, not buttons)
+    > a {
+      padding-left: 10px;
+      padding-right: 10px;
+      border-right: solid 1px $c-bg2;
+
+      @include link-states(
+        $link: (
+          color: $c-t3,
+          text-decoration: none
+        ),
+        $hover: (
+          color: $c-t3,
+          text-decoration: none
+        ),
+        $active: (
+          color: $c-t3,
+          text-decoration: none
+        )
+      );
+    }
+
+    // Active state, and its :hover to override normal :hover
+    &.active > a {
+      &,
+      &:hover,
+      &:focus {
+        color: $c-t1;
+      }
+    }
+
+    &:first-child > a {
+      // padding-left: 0;
+    }
+
+    &:last-child > a {
+      // padding-right: 0;
+      border-right-width: 0;
+    }
+  }
+
+  // pulling this in mainly for less shorthand
+  &.nav-justified {
+    @extend .nav-justified;
+    @extend .nav-tabs-justified;
+  }
+}
+
+
+// Progress (devenir-preter && projet-new)
 .nav-progress {
   display: table;
   width: 100%;
@@ -496,10 +536,11 @@
         &:before {
           display: inline-block;
           margin-right: 5px;
-          content: '\f00c';
+          content: $fa-check-u16;
           color: $c-p1;
           font-family: $ff-icon;
-          font-size: 21px;
+          // font-size: 21px;
+          line-height: 1em;
         }
       }
     }

@@ -20,7 +20,9 @@ var __ = new Dictionary(AUTOLEND_LANG)
 var AutolendTable = function (elem, options) {
   var self = this
   self.$elem = $(elem)
-  if (self.$elem.length === 0) return
+
+  // Error
+  if (self.$elem.length === 0 || elem.hasOwnProperty('AutolendTable')) return false
 
   // Settings
   self.settings = $.extend({
@@ -110,7 +112,7 @@ AutolendTable.prototype.templates = {
   // Info intro
   infoIntro: '<div class="info-intro">\
     <h4 class="info-title">{{ infoIntroTitle }}</h4>\
-    <div class="info-icon"><span class="icon icon-huge fa-cogs"></span></div>\
+    <div class="info-icon"><span class="icon icon-huge fa-autolend-u64"></span></div>\
     <div class="info-description">\
       <p>{{ infoIntroDescription }}</p>\
     </div>\
@@ -243,7 +245,7 @@ AutolendTable.prototype.updateCell = function (cellIndex, newData, activate) {
 
   // Ensure types
   if (typeof cell.data.interest !== 'number') cell.data.interest = parseFloat(cell.data.interest)
-  if (cell.data.interest < 1) cell.data.interest = 1
+  if (cell.data.interest < 4) cell.data.interest = 4
   if (cell.data.interest > 10) cell.data.interest = 10
 
   // Update the cell view
@@ -452,7 +454,7 @@ $.fn.uiAutolendTable = function (op) {
 
     // Fire command on each returned elem instance
     return this.each(function (i, elem) {
-      if (elem.hasOwnProperty('AutolendTable') && elem.AutolendTable && typeof elem.AutolendTable[op] === 'function') {
+      if (elem.hasOwnProperty('AutolendTable') && typeof elem.AutolendTable[op] === 'function') {
         elem.AutolendTable[op].apply(elem.AutolendTable, args)
       }
     })
@@ -471,10 +473,15 @@ $.fn.uiAutolendTable = function (op) {
  * jQuery Events
  */
 $(document)
-  // Initialise on read
-  .on('ready', function () {
-    $('[data-autolendtable-data]').uiAutolendTable()
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-autolendtable-data]').not('.ui-autolendtable').uiAutolendTable()
   })
+
+  // Initialise on parent UI view made visible
+  // .on('UI:visible', function (event) {
+  //   $(event.target).find('[data-autolendtable-data]').uiAutolendTable()
+  // })
 
   /*
    * Generic UI events
@@ -616,23 +623,72 @@ $(document)
     return false
   })
 
+  // Show the dialog
+  .on(Utility.clickEvent, 'form button[type="submit"]', function (event) {
+    var $elem = $(this)
+
+    // Show dialog
+    if ($elem.is('.ui-dialog-confirm')) {
+      // @todo Do the funky AJAX chicken here
+      var $dialog = $(this).parents('.autolend-table-dialog').first()
+      $dialog.fadeOut()
+
+    } else {
+      $('#autolend-table .autolend-table-dialog').fadeIn()
+      event.preventDefault()
+      return false
+    }
+  })
+
+  // Close the dialog
+  .on(Utility.clickEvent, '.ui-dialog-cancel', function (event) {
+    var $dialog = $(this).parents('.autolend-table-dialog').first()
+    $dialog.fadeOut()
+  })
+
   // AJAX submit
+  // @TODO enable AJAX submission
   .on('submit', 'form#form-user-autolend', function (event) {
-    // @TODO enable AJAX submission
     event.preventDefault()
     // console.log('AutolendTable form submit')
     return false
   })
 
+  // Toggle autolend config
+  .on('change', 'input#form-autolend-enable', function (event) {
+    var $elem = $(this)
+
+    if ($elem.is(':checked')) {
+      $('#autolend-config.collapse').collapse('show')
+    } else {
+      $('#autolend-config.collapse').collapse('hide')
+    }
+  })
+
+  // Toggle autolend table config and general autolend interest rate
+  .on('change', 'input#autolend-table-config-enable', function (event) {
+    var $elem = $(this)
+    var $interest = $('input#autolend-interest')
+
+    // Disable the general interest rate
+    if ($elem.is(':checked')) {
+      $interest.attr('disabled', 'disabled')
+    } else {
+      $interest.removeAttr('disabled')
+    }
+  })
+
   // Hook into CacheForm events
-  // Because the AutolendTable is rendered after this event goes, we need to updated to the restored the data before it renders
+  // Because the AutolendTable is rendered after this event fires, we need to update the form to the restored data before it renders
+  // @todo haven't entirely finished, may need testing too
+  // @note may not be needed too! Hence why I didn't finish it
   .on('CacheForm:restoreFormState:restored', 'form#form-user-autolend', function (event, params) {
     var $form = $(this)
     var $autolendTable = $form.find('.autolendtable').first()
 
     // AutolendTable hasn't initialised yet, so change the data in the [data-autolendtable-data] attribute
     if ($autolendTable.is('[data-autolendtable-data]')) {
-      // Only process fields which represent autolend table cells, e.g. 'data[\d+][interest]'
+      // Only process named fields which represent autolend table cells, e.g. 'data[10][interest]'
       var autolendTableData = Utility.convertStringToJson($autolendTable.attr('data-autolendtable-data'))
       for (var i = 0; i < params.formData.length; i++) {
         if (/data\[\d+\]\[(interest|enable)\]/.test(params.formData[i].name)) {

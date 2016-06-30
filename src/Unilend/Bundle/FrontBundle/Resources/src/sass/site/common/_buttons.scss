@@ -144,6 +144,7 @@
 @mixin button-shape-round-xs {
   min-width: $height-btn-xs;
   height: $height-btn-xs;
+  min-height: 0;
   padding: padding-height($height-btn-xs, 21px) 0;
   font-size: 16px;
   line-height: 21px;
@@ -155,6 +156,7 @@
 @mixin button-shape-round-sm {
   min-width: $height-btn-sm;
   height: $height-btn-sm;
+  min-height: 0;
   padding: padding-height($height-btn-sm, 22px) 0;
   font-size: 18px;
   line-height: 22px;
@@ -166,6 +168,7 @@
 @mixin button-shape-round-md {
   min-width: $height-btn-md;
   height: $height-btn-md;
+  min-height: 0;
   padding: padding-height($height-btn-md, 24px) 0;
   font-size: 21px;
   line-height: 24px;
@@ -177,6 +180,7 @@
 @mixin button-shape-round-lg {
   min-width: $height-btn-lg;
   height: $height-btn-lg;
+  min-height: 0;
   padding: padding-height($height-btn-lg, 24px) 0;
   font-size: 24px;
   line-height: 24px;
@@ -204,6 +208,7 @@
 
   width: $size-btn-media;
   height: $size-btn-media;
+  min-height: 0;
   padding: 0;
   margin: ($size-btn-media-hover - $size-btn-media) * .5;
   font-size: $fs-btn-media;
@@ -255,6 +260,7 @@
 @mixin button-shape-sq-xs {
   min-width: $height-btn-xs;
   height: $height-btn-xs;
+  min-height: 0;
   padding: padding-height($height-btn-xs, 21px) 0;
   font-size: 16px;
   line-height: 21px;
@@ -266,6 +272,7 @@
 @mixin button-shape-sq-sm {
   min-width: $height-btn-sm;
   height: $height-btn-sm;
+  min-height: 0;
   padding: padding-height($height-btn-sm, 22px) 0;
   font-size: 16px;
   line-height: 22px;
@@ -277,6 +284,7 @@
 @mixin button-shape-sq-md {
   min-width: $height-btn-md;
   height: $height-btn-md;
+  min-height: 0;
   padding: padding-height($height-btn-md, 22px) 0;
   font-size: 18px;
   line-height: 24px;
@@ -288,6 +296,7 @@
 @mixin button-shape-sq-lg {
   min-width: $height-btn-lg;
   height: $height-btn-lg;
+  min-height: 0;
   padding: padding-height($height-btn-lg, 24px) 0;
   font-size: 22px;
   line-height: 24px;
@@ -299,6 +308,7 @@
 @mixin button-shape-sq-hg {
   min-width: $height-btn-hg;
   height: $height-btn-hg;
+  min-height: 0;
   padding: padding-height($height-btn-hg, 32px) 0;
   font-size: 32px;
   line-height: 32px;
@@ -543,7 +553,7 @@
   );
 
   &:before {
-    content: '\f09a';
+    content: $fa-facebook-f;// '\f09a'; // facebook
     display: inline-block;
     font-family: $ff-icon;
     // font-size: 21px;
@@ -572,7 +582,7 @@
   );
 
   &:before {
-    content: '\f099';
+    content: $fa-twitter;// '\f099'; // twitter
     display: inline-block;
     font-family: $ff-icon;
     // font-size: 21px;
@@ -601,7 +611,7 @@
   );
 
   &:before {
-    content: '\f0e0';
+    content: $fa-envelope;// '\f0e0'; // Envelop
     display: inline-block;
     font-family: $ff-icon;
     // font-size: 21px;
@@ -633,9 +643,9 @@
   background-image: none;
 
   &:before {
-    content: '\f00d';
+    content: $fa-close-u;
     font-family: $ff-icon;
-    font-size: 24px;
+    font-size: inherit;// 24px;
   }
 }
 
@@ -668,7 +678,7 @@
 .btn-nav-previous,
 .btn-nav-back {
   &:before {
-    content: '\f104';
+    content: $fa-angle-l-u; // '\f104'; // fa-angle-l
   }
 }
 
@@ -676,21 +686,21 @@
 .btn-nav-next,
 .btn-nav-forward {
   &:before {
-    content: '\f105';
+    content: $fa-angle-r-u; // '\f105';
   }
 }
 
 .btn-nav-up,
 .btn-nav-top {
   &:before {
-    content: '\f106';
+    content: $fa-angle-u-u; // '\f106';
   }
 }
 
 .btn-nav-down,
 .btn-nav-bottom {
   &:before {
-    content: '\f107';
+    content: $fa-angle-d-u; // '\f107';
   }
 }
 
@@ -738,7 +748,7 @@
   );
 
   &:before {
-    content: '\f002';
+    content: $fa-search; // '\f002';
     font-family: $ff-icon;
   }
 }
@@ -767,7 +777,7 @@
   );
 
   &:before {
-    content: '\f1de';
+    content: $fa-settings-u; // sliders
     font-family: $ff-icon;
   }
 }

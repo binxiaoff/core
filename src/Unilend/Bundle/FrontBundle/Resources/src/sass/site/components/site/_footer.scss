@@ -195,8 +195,31 @@
   color: mix($c-purple-l, $c-p1, 50%);
   font-size: 14px;
 
+  a {
+    cursor: pointer;
+
+    @include link-states(
+      $link: (
+        color: mix($c-purple-l, $c-p1, 50%),
+        text-decoration: none
+      ),
+      $hover: (
+        color: mix($c-purple-l, $c-p1, 50%),
+        text-decoration: none
+      ),
+      $active: (
+        color: mix($c-purple-l, $c-p1, 50%),
+        text-decoration: none
+      )
+    );
+  }
+
   @include devices('md', 'lg') {
     text-align: right;
+  }
+
+  .site-footer .col-sub-center & {
+    text-align: center;
   }
 }
 

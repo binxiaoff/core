@@ -191,7 +191,7 @@ var FormValidation = function (elem, options) {
   self.$elem = $(elem)
 
   // Error
-  if (self.$elem.length === 0) return
+  if (self.$elem.length === 0 || elem.hasOwnProperty('FormValidation')) return false
 
   // Settings
   self.settings = $.extend({
@@ -697,9 +697,11 @@ FormValidation.prototype.rules = {
     // Can also match to a {String} selector to test if field is required
     // e.g. '#checkbox:checked'
     if (typeof isRequired === 'string' && isRequired !== 'true' && isRequired !== 'false') {
-      console.log(isRequired, $(isRequired).length, getFieldValue(isRequired))
+      // @debug
+      // console.log(isRequired, $(isRequired).length, getFieldValue(isRequired))
       isRequired = ($(isRequired).length === 0 || Utility.isEmpty(getFieldValue(isRequired)))
-      console.log('isRequired:', isRequired)
+      // @debug
+      // console.log('isRequired:', isRequired)
     }
 
     // Field is required
@@ -832,7 +834,7 @@ FormValidation.prototype.rules = {
           // Allowed: +33 644 911 250
           //          (0) 12.34.56.78.90
           //          856-6688
-          if (!/^\+?[0-9\-\. ]{6,}$/.test(inputValidation.value)) {
+          if (!/^\+?[0-9\-\. \(\)]{6,}$/.test(inputValidation.value)) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid telephone number', 'errorFieldInputTypeTelephone')
@@ -853,6 +855,18 @@ FormValidation.prototype.rules = {
           }
           break
 
+        case 'date':
+        case 'datetime':
+          // Use built-in date object for validation
+          var testDate = new Date(inputValidation.value)
+          if (!testDate || testDate.toString() === 'Invalid Date' || testDate.getTime() === NaN) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Not a valid date', 'errorFieldInputTypeDate')
+            })
+          }
+          break
+
         case 'iban':
           // Uses npm library `iban` to validate
           if (!Iban.isValid(inputValidation.value.replace(/\s+/g, ''))) {
@@ -864,11 +878,27 @@ FormValidation.prototype.rules = {
           break
 
         case 'siret':
+          // @debug
+          // console.log('siret validation', inputValidation.value.replace(/\s+/g, '').length)
+
           // Siret just has to be 14 characters long
-          if (inputValidation.value.replace(/\s+/g, '').length === 14) {
+          if (inputValidation.value.replace(/\s+/g, '').length !== 14) {
             inputValidation.errors.push({
               type: 'inputType',
               description: __.__('Not a valid SIRET number. Please ensure you have entered your number in correctly', 'errorFieldInputTypeSiret')
+            })
+          }
+          break
+
+        case 'siren':
+          // @debug
+          // console.log('siren validation', inputValidation.value.replace(/\s+/g, '').length)
+
+          // Siren just has to be 9 characters long
+          if (inputValidation.value.replace(/\s+/g, '').length !== 9) {
+            inputValidation.errors.push({
+              type: 'inputType',
+              description: __.__('Not a valid SIREN number. Please ensure you have entered your number in correctly', 'errorFieldInputTypeSiren')
             })
           }
           break
@@ -898,7 +928,7 @@ FormValidation.prototype.rules = {
     }
   },
 
-  // Custom
+  // Custom function to validate
   custom: function (inputValidation, custom) {
     // FormValidation
     var self = this
@@ -991,7 +1021,7 @@ $.fn.uiFormValidation = function (op) {
 
     // Fire command on each returned elem instance
     return this.each(function (i, elem) {
-      if (elem.FormValidation && typeof elem.FormValidation[op] === 'function') {
+      if (elem.hasOwnProperty('FormValidation') && typeof elem.FormValidation[op] === 'function') {
         elem.FormValidation[op].apply(elem.FormValidation, args)
       }
     })
@@ -999,7 +1029,7 @@ $.fn.uiFormValidation = function (op) {
   // Set up a new FormValidation instance per elem (if one doesn't already exist)
   } else {
     return this.each(function (i, elem) {
-      if (!elem.FormValidation) {
+      if (!elem.hasOwnProperty('FormValidation')) {
         new FormValidation(elem, op)
       } else {
         $(elem).uiFormValidation('validate')
@@ -1012,9 +1042,9 @@ $.fn.uiFormValidation = function (op) {
  * jQuery Events
  */
 $(document)
-  // -- Instatiate any element with [data-formvalidation] on ready
-  .on('ready', function () {
-    $('[data-formvalidation]').uiFormValidation()
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-formvalidation]').not('.ui-formvalidation').uiFormValidation()
   })
 
 module.exports = FormValidation

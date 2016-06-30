@@ -42,3 +42,28 @@
     }
   }
 }
+
+// Dialog
+.fancybox-type-inline {
+  background-color: $c-white;
+
+  .dialog-content {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    font-size: $fs-base * .8;
+    line-height: 1.3em;
+
+    @include devices('sm') {
+      padding: 30px;
+    }
+
+    @include devices('md', 'lg') {
+      padding: 40px;
+      font-size: $fs-base * .9;
+      line-height: 1.5em;
+    }
+  }
+}

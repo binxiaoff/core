@@ -267,7 +267,7 @@ function setupBundles () {
  */
 gulp.task('default', ['build', 'watch'])
 gulp.task('watch', ['watchfiles'])
-gulp.task('build', ['clean', 'cssdependencies', 'scss', 'modernizr', 'jsdependencies', 'jsbundles', 'copy'])
+gulp.task('build', ['clean', 'cssdependencies', 'scss', 'modernizr', 'jsdependencies', 'jsbundles', 'copy', 'fonts'])
 
 // Clean build directory
 gulp.task('clean', function () {
@@ -371,17 +371,14 @@ gulp.task('cssdependencies', function () {
 //       Additionally, use browserify-shim in the package.json to set global variables to use within bundled files
 gulp.task('jsdependencies', function () {
   return gulp.src([getSrc('js/app/modernizr/modernizr.js'),
-    goodPath('./node_modules/jquery/dist/jquery.js'),
-    getSrc('js/vendor/jquery.caret.js'),
-    getSrc('js/vendor/videojs/video.js'),
-    goodPath('./node_modules/videojs-youtube/dist/Youtube.js'),
-    goodPath('./node_modules/fancybox/dist/js/jquery.fancybox.js'),
-    goodPath('./node_modules/fancybox/dist/helpers/js/jquery.fancybox-media.js'),
-    getSrc('js/vendor/swiper/js/swiper.jquery.js'),
-    getSrc('js/vendor/highcharts/highstock.src.js'),
-    getSrc('js/vendor/highcharts/modules/map.src.js'),
-    // goodPath('./node_modules/draggabilly/dist/draggabilly.pkgd.js')
-  ])
+                   goodPath('./node_modules/jquery/dist/jquery.js'),
+                   getSrc('js/vendor/jquery.caret.js'),
+                   getSrc('js/vendor/videojs/video.js'),
+                   goodPath('./node_modules/videojs-youtube/dist/Youtube.js'),
+                   goodPath('./node_modules/fancybox/dist/js/jquery.fancybox.js'),
+                   goodPath('./node_modules/fancybox/dist/helpers/js/jquery.fancybox-media.js'),
+                   getSrc('js/vendor/swiper/js/swiper.jquery.js')
+                   ])
 
   // Concat into single `dependencies.js` to save on network IO
       .pipe(concat('dependencies.js'))
@@ -416,6 +413,12 @@ gulp.task('modernizr', function () {
 
       // Put this in the src as it gets referenced by jsdependencies
       .pipe(gulp.dest(getSrc('js/app/modernizr')))
+})
+
+// Move fonts file
+gulp.task('fonts', function() {
+  gulp.src('./src/fonts/**')
+      .pipe(gulp.dest('./public/fonts/'));
 })
 
 // SCSS

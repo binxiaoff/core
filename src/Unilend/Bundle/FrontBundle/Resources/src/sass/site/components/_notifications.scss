@@ -23,26 +23,29 @@
 
   .notification-image {
     display: block;
-    width: 40px;
-    height: 40px;
+    width: 50px;
+    height: 50px;
     overflow: hidden;
 
     position: absolute;
-    right: -15px;
+    right: -20px;
     top: 0;
 
     color: $c-t3;
+    user-select: none;
 
-    svg.svg-icon {
-      display: block;
-      width: 80px;
-      max-width: none;
-      height: 80px;
-      max-height: none;
-      margin-left: -20px;
-      margin-top: -20px;
+    .svg-icon-wrap {
+      width: 70px;
+      height: 70px;
+      margin: -35px 0 0 -35px;
 
-      stroke-width: 2px;
+      position: absolute;
+      left: 50%;
+      top: 50%;
+
+      svg {
+        stroke-width: 2px;
+      }
     }
   }
 
@@ -101,6 +104,95 @@
       .notification-content {
         display: block;
       }
+    }
+  }
+}
+
+// Drop notification
+.drop-profile-notifications.drop-element {
+  max-width: 280px;
+  z-index: $depth-drop;
+  background-color: $c-white;
+  border-radius: 4px;
+  filter: drop-shadow(0 0 10px fade-out($c-grey-l, .1));
+
+  // Arrow
+  &:before {
+    content: '';
+    display: none;
+    width: 30px;
+    height: 20px;
+    position: absolute;
+    right: 10px;
+    top: -20px;
+    z-index: $depth-drop + 1;
+
+    background-color: transparent;
+    background-image: inline-svg-code('<svg width="30" height="20" viewBox="0 0 30 20" version="1.1" xmlns="http://www.w3.org/2000/svg"><path style="fill:#{$c-white}" d="M0 20 L 15 0 L 30 20 L 0 20" /></svg>');
+    background-repeat: no-repeat;
+    background-position: center center;
+  }
+
+  // Text overflow gradient
+  // @note b0rks on IE
+  // &:after {
+  //   content: '';
+  //   display: none;
+  //   position: fixed;
+  //   left: 0;
+  //   right: 0;
+  //   top: 0;
+  //   z-index: $depth-drop + 2;
+  //   height: 15px;
+  //   user-select: none;
+  //   @include background-image(-svg(linear-gradient(to bottom, $c-white 0%, fade-out($c-white, 1) 100%)));
+  //   border-top-left-radius: 4px;
+  //   border-top-right-radius: 4px;
+  // }
+
+  .drop-content {
+    position: relative;
+    max-height: 300px;
+    overflow: auto;
+  }
+
+  .notification {
+    // Extra padding on right for scroll
+    padding: 15px 25px 15px 15px;
+  }
+
+  // Drop animation & visibility
+  transform: translateZ(0);
+  transform-origin: top right;
+  transition: opacity 100ms;
+  opacity: 0;
+
+  & .drop-content {
+    transition: transform 0.3s cubic-bezier(0, 0, 0.265, 1.55);
+    transform: scale(0) translateZ(0);
+    transform-origin: top right;
+  }
+  &.drop-open {
+    display: none;
+  }
+  &.drop-open-transitionend {
+    display: block;
+  }
+  &.drop-after-open {
+    transition: none;
+    opacity: 1;
+
+    &:before,
+    &:after {
+      display: block;
+    }
+  }
+  &.drop-after-open .drop-content {
+    transform: scale(1) translateZ(0);
+
+    &:before,
+    &:after {
+      display: block;
     }
   }
 }

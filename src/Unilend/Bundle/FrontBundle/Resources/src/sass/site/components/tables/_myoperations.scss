@@ -86,7 +86,7 @@
 
     .table-myoperations-item-type {
       &:after {
-        content: '\f107'; // Angle down
+        content: $fa-angle-d-u; // Angle down
         display: inline-block;
         width: $fs-base;
         height: $fs-base;

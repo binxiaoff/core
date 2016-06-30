@@ -92,6 +92,10 @@
     @include devices('lg') {
       padding-right: ($width-site-margin-lg * 2);
     }
+
+    &.ui-sticky-bounds {
+      position: static;
+    }
   }
 
   .page-aside-body {
@@ -132,6 +136,11 @@
     //     margin-top: $height-fixed-menu + 20px;
     //   }
     // }
+
+    // @note I built one! Let's animate the transition coz it's jerky
+    &.ui-has-sticky {
+      transition: all .2s;
+    }
   }
 
   .page-navigation {

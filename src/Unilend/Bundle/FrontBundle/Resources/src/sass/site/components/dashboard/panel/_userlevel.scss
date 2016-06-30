@@ -2,12 +2,27 @@
 // Unilend - Dashboard Panel - User Level
 //
 
+$js-user-level-star: '.icon.fa-star';
+
 @mixin colorize-userlevel($set-color: $c-level-1) {
   @include user-level-colors($to-color: $set-color) {
     .dashboard-panel-summary {
       .value {
         color: $c-level;
       }
+    }
+
+    .user-avatar {
+      background-color: $c-level-d;
+      color: $c-white;
+
+      .icon {
+        color: $c-level-l5;
+      }
+    }
+
+    .user-avatar-level {
+      background-color: $c-level;
     }
   }
 }
@@ -17,23 +32,310 @@
   //   min-height: 500px - $height-panel-header-md - $height-panel-footer-md;
   // }
 
+  .dashboard-panel-chart {
+    min-height: 0;
+    max-height: none;
+  }
+
+  .user-avatar {
+    margin: 50px auto;
+    width: 250px;
+    height: 250px;
+    border-radius: 250px;
+    font-size: 120px;
+    line-height: 200px;
+    vertical-align: middle;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+    transition: background-color .2s;
+
+    @include devices('mobile-l', 'tablet-l', 'md') {
+      width: 300px;
+      height: 300px;
+      border-radius: 300px;
+    }
+
+    @include devices('tablet-p', 'lg') {
+      width: 400px;
+      height: 400px;
+      border-radius: 400px;
+    }
+  }
+
+  .user-avatar-level {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1;
+    transition: height .2s, background-color .2s;
+  }
+
+  .user-avatar-initials {
+    width: 100%;
+    height: 120px;
+    margin: -60px 0 0 0;
+    position: absolute;
+    left: 0;
+    top: 50%;
+    z-index: 2;
+    font-size: 70px;
+    line-height: 120px;
+
+    transition: font-size .2s;
+
+    @include devices('sm') {
+      font-size: 90px;
+    }
+
+    @include devices('md', 'lg') {
+      font-size: 120px;
+    }
+  }
+
+  .user-avatar-stars {
+    // Didn't finish it, hence why magic is hidden
+    display: none;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 3;
+  }
+
+  #{$js-user-level-star} {
+    display: block;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    margin: -15px 0 0 -15px;
+    position: absolute;
+    left: 50%;
+    top: 75%;
+    z-index: 4;
+    font-size: 30px;
+    line-height: 30px;
+    text-align: center;
+    vertical-align: middle;
+    opacity: 0;
+
+    transition: left .2s, top .2s, opacity .2s, transform .2s;
+
+    @include devices('sm') {
+      width: 35px;
+      height: 35px;
+      margin: -17.5px 0 0 -17.5px;
+      font-size: 35px;
+      line-height: 35px;
+    }
+
+    @include devices('md') {
+      width: 40px;
+      height: 40px;
+      margin: -20px 0 0 -20px;
+      font-size: 40px;
+      line-height: 40px;
+    }
+
+    @include devices('lg') {
+      width: 50px;
+      height: 50px;
+      margin: -25px 0 0 -25px;
+      font-size: 50px;
+      line-height: 50px;
+    }
+  }
+
   #{$js-user-level-1} & {
     @include colorize-userlevel($c-level-1);
+
+    // Stars
+    #{$js-user-level-star} {
+      &.ui-user-level-star-1 {
+        left: 50%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      // Off
+      &.ui-user-level-star-2,
+      &.ui-user-level-star-3,
+      &.ui-user-level-star-4,
+      &.ui-user-level-star-5 {
+        opacity: 0;
+        left: 50%;
+        top: 75%;
+        transform: scale(0);
+      }
+    }
+
+    // Level
+    .user-avatar-level {
+      height: 20%;
+    }
   }
 
   #{$js-user-level-2} & {
     @include colorize-userlevel($c-level-2);
+
+    // Stars
+    #{$js-user-level-star} {
+      &.ui-user-level-star-1 {
+        left: 40%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-2 {
+        left: 60%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      // Off
+      &.ui-user-level-star-3,
+      &.ui-user-level-star-4,
+      &.ui-user-level-star-5 {
+        left: 50%;
+        top: 75%;
+        opacity: 0;
+        transform: scale(0);
+      }
+    }
+
+    // Level
+    .user-avatar-level {
+      height: 40%;
+    }
   }
 
   #{$js-user-level-3} & {
     @include colorize-userlevel($c-level-3);
+
+    // Stars
+    #{$js-user-level-star} {
+      &.ui-user-level-star-1 {
+        left: 30%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-2 {
+        left: 50%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-3 {
+        left: 70%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      // Off
+      &.ui-user-level-star-4,
+      &.ui-user-level-star-5 {
+        left: 50%;
+        top: 75%;
+        opacity: 0;
+        transform: scale(0);
+      }
+    }
+
+    // Level
+    .user-avatar-level {
+      height: 60%;
+    }
   }
 
   #{$js-user-level-4} & {
     @include colorize-userlevel($c-level-4);
+
+    // Stars
+    #{$js-user-level-star} {
+      &.ui-user-level-star-1 {
+        left: 20%;
+        top: 65%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-2 {
+        left: 40%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-3 {
+        left: 60%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-4 {
+        left: 80%;
+        top: 65%;
+        opacity: 1;
+      }
+
+      // Off
+      &.ui-user-level-star-5 {
+        opacity: 0;
+        left: 75%;
+        top: 0;
+        transform: scale(0);
+      }
+    }
+
+    // Level
+    .user-avatar-level {
+      height: 80%;
+    }
   }
 
   #{$js-user-level-5} & {
     @include colorize-userlevel($c-level-5);
+
+    // Stars
+    #{$js-user-level-star} {
+      &.ui-user-level-star-1 {
+        left: 15%;
+        top: 55%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-2 {
+        left: 29%;
+        top: 70%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-3 {
+        left: 50%;
+        top: 75%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-4 {
+        left: 71%;
+        top: 70%;
+        opacity: 1;
+      }
+
+      &.ui-user-level-star-5 {
+        left: 85%;
+        top: 55%;
+        opacity: 1;
+      }
+    }
+
+    // Level
+    .user-avatar-level {
+      height: 100%;
+    }
   }
 }

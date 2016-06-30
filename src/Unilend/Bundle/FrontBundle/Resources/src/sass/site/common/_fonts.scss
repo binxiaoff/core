@@ -25,7 +25,7 @@ $ff-alternate:      'Raleway', 'Cabin', 'Helvetica Neue', Helvetica, Arial, sans
 $ff-input:          $ff-base; // Font Family - Input
 $ff-button:         $ff-base; // Font Family - Button
 $ff-mono:           'Andale Mono', 'Courier New', Courier, mono; // Font Family - Mono
-$ff-icon:           'FontAwesome'; // Font Family - Icon
+$ff-icon:           'unilend-fontawesome', 'FontAwesome'; // Font Family - Icon
 
 // Set the font size
 @mixin font-size ($font-size, $line-height) {

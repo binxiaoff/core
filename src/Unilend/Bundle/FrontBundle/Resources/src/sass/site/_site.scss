@@ -8,11 +8,13 @@
 @import 'common/dimensions';
 @import 'common/colors';
 @import 'common/fonts';
+@import 'common/icons';
 @import 'common/responsive';
 @import 'common/typography';
 @import 'common/buttons';
 @import 'common/forms';
 @import 'common/lists';
+@import 'common/utility';
 @import 'common/base';
 @import 'common/showhide';
 @import 'common/bootstrap';
@@ -27,6 +29,7 @@
 @import 'components/pagination';
 @import 'components/forms';
 @import 'components/grid';
+@import 'components/tabs';
 @import 'components/video';
 @import 'components/messages';
 @import 'components/reviews';
@@ -38,17 +41,25 @@
 @import 'components/password-check';
 @import 'components/file-attach';
 @import 'components/form-validation';
+@import 'components/map-view';
+@import 'components/chart-view';
 @import 'components/notifications';
 @import 'components/lists';
 @import 'components/lists/projects';
 @import 'components/lists/myoffers';
 @import 'components/jobs';
+@import 'components/mosaic';
+@import 'components/feature';
+@import 'components/person';
+@import 'components/blocks';
 @import 'components/charts';
 @import 'components/tables';
 @import 'components/tables/offers';
 @import 'components/tables/finance';
 @import 'components/tables/myoperations';
 @import 'components/tables/myloans';
+
+// -- Dashboard
 @import 'components/dashboard/panel';
 @import 'components/dashboard/panel/notifications';
 @import 'components/dashboard/panel/mywallet';

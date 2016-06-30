@@ -3,6 +3,7 @@
 //
 
 $colors: (
+  'none':      transparent,
   'purple':    #b20066,
   'purple-d':  #9a1d5a,
   'purple-d2': #6d1f4f,
@@ -47,6 +48,7 @@ $colors: (
 
 // Shorthand reference to colours (SCSS doesn't support dynamic variable setting)
 // Shorthand makes it easier than always typing `map-get(..)`
+$c-none:      map-get($colors, 'none');
 $c-purple:    map-get($colors, 'purple');
 $c-purple-d:  map-get($colors, 'purple-d');
 $c-purple-d2: map-get($colors, 'purple-d2');
@@ -82,7 +84,11 @@ $c-level-4:   map-get($colors, 'level-4');
 $c-level-5:   map-get($colors, 'level-5');
 
 // Colours for the site (primary, text, backgrounds, validation messages)
+// These also get turned into `.c-` and `.bg-` classes to use within HTML, e.g. `.c-white`, `.bg-bg3`, etc.
 $colors-site: (
+  'white':     $c-white,
+  'black':     $c-black,
+
   'p1':        $c-purple,       // Color Primary 1
   'p1-hover':  $c-purple-d,     // Color Primary 1 Hover
   'p2':        $c-purple-d2,    // Color Primary 2

@@ -42,10 +42,12 @@
 .emprunter-sim-pane-inner {
   padding: 40px 20px;
 
-  > .row {
-    > * {
-      padding-left: 20px;
-      padding-right: 20px;
+  @include devices('tablet-p', 'md', 'lg') {
+    > .row {
+      > * {
+        padding-left: 20px;
+        padding-right: 20px;
+      }
     }
   }
 }

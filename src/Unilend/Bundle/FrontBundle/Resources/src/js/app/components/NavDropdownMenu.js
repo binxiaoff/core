@@ -1,5 +1,6 @@
 /*
  * Unilend Nav Dropdown Menu
+ * @note This component is structured differently to others as it doesn't need to manage much aside from class and some custom events
  * @note of course it doesn't *have* to be styled as a dropdown, it can be whatever...
  */
 

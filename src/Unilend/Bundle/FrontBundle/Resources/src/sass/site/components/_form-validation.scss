@@ -23,6 +23,12 @@
         transition: width .2s;
         user-select: none;
       }
+
+      &.set-right {
+        > .btn-group {
+          padding-right: 2em;
+        }
+      }
     }
 
     &:hover {
@@ -35,7 +41,7 @@
   // Form field validated successfully
   &.ui-formvalidation-success {
     .input-group:after {
-      content: '\f00c'; // Check / Tick
+      content: $fa-check-u16;
       color: $c-success;
     }
 
@@ -59,7 +65,7 @@
     }
 
     .input-group:after {
-      content: '\f12a'; // Exclamation mark
+      content: $fa-exclamation; // Exclamation mark
       color: $c-error;
     }
   }

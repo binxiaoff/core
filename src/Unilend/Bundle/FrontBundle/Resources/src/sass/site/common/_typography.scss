@@ -143,13 +143,18 @@ a {
 .link-1,
 .link-2 {
   &:before {
-    content: '\f105';
+    content: $fa-angle-right; // '\f105'; //
     display: inline-block;
     font-family: $ff-icon;
     padding-right: 5px;
     text-decoration: none !important;
   }
+}
 
+// For IE
+a.link,
+a.link-1,
+a.link-2 {
   @include link-states(
     $link: (
       text-decoration: none
@@ -345,7 +350,7 @@ h3.round-number {
 
   width: 90px;
   height: 90px;
-  padding: 12px 0;
+  padding: 7px 0;
 
   background-color: $c-white;
   border: solid 2px $c-p1;
@@ -360,7 +365,7 @@ h3.round-number {
   .lg {
     display: block;
     font-size: $fs-title;
-    line-height: 1em;
+    line-height: .8em;
   }
 
   .md {
@@ -375,10 +380,15 @@ h3.round-number {
     line-height: 1em;
   }
 
-  // Animate stamp when visible
+  &.bg-p1 {
+    background-color: $c-p1;
+    color: $c-white;
+  }
+
   @include devices('md', 'lg') {
     width: 124px;
     height: 124px;
+    padding: 12px 0;
     border-radius: 126px;
 
     .sm {
@@ -389,6 +399,7 @@ h3.round-number {
       line-height: .8em;
     }
 
+    // Animate stamp when visible
     .has-cssanimations & {
       opacity: 0;
 
@@ -408,5 +419,16 @@ h3.round-number {
   100% {
     opacity: 1;
     transform: rotate(-20deg) scale(1);
+  }
+}
+
+@include keyframes(stampisvisiblereverse) {
+  0% {
+    opacity: 0;
+    transform: rotate(90deg) scale(1.5);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(20deg) scale(1);
   }
 }

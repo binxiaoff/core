@@ -55,10 +55,10 @@ function getFileSizeWithUnits (fileSizeInBytes) {
 // @class FileAttach
 var FileAttach = function (elem, options) {
   var self = this
-  self.$elem = $(elem)
+  self.$elem = $(elem).first()
 
   // Error
-  if (self.$elem.length === 0) return
+  if (self.$elem.length === 0 || elem.hasOwnProperty('FileAttach')) return false
 
   // Settings
   // -- Defaults
@@ -374,8 +374,42 @@ FileAttach.prototype.templates = {
   errorMessage: '<div class="ui-fileattach-error"><div class="ui-fileattach-error-title">{{ error }}</div><div class="ui-fileattach-error-message">{{ message }}</div></div>'
 }
 
-// Events
+/*
+ * jQuery Plugin
+ */
+$.fn.uiFileAttach = function (op) {
+  // Fire a command to the FileAttach object, e.g. $('[data-fileattach]').uiFileAttach('add', {..})
+  if (typeof op === 'string' && /^add|attach|remove|clear|populate$/.test(op)) {
+    // Get further additional arguments to apply to the matched command method
+    var args = Array.prototype.slice.call(arguments)
+    args.shift()
+
+    // Fire command on each returned elem instance
+    return this.each(function (i, elem) {
+      if (elem.hasOwnProperty('FileAttach') && typeof elem.FileAttach[op] === 'function') {
+        elem.FileAttach[op].apply(elem.FileAttach, args)
+      }
+    })
+
+  // Set up a new FileAttach instance per elem (if one doesn't already exist)
+  } else {
+    return this.each(function (i, elem) {
+      if (!elem.hasOwnProperty('FileAttach')) {
+        new FileAttach(elem, op)
+      }
+    })
+  }
+}
+
+/*
+ * jQuery Events
+ */
 $(document)
+  // Auto-init component behaviours on document ready, or when parent element (or self) is made visible with `UI:visible` custom event
+  .on('ready UI:visible', function (event) {
+    $(event.target).find('[data-fileattach]').not('.ui-fileattach').uiFileAttach()
+  })
+
   // -- Click add button
   .on(Utility.clickEvent, '.ui-fileattach-add-btn', function (event) {
     event.preventDefault()
@@ -401,34 +435,5 @@ $(document)
   .on('change', '.ui-fileattach input[type="file"]', function (event) {
     if ($(this).val()) $(this).parents('.ui-fileattach').uiFileAttach('attach', this)
   })
-
-  // -- Document ready: auto-apply functionality to elements with [data-fileattach] attribute
-  .on('ready', function () {
-    $('[data-fileattach]').uiFileAttach()
-  })
-
-$.fn.uiFileAttach = function (op) {
-  // Fire a command to the FileAttach object, e.g. $('[data-fileattach]').uiFileAttach('add', {..})
-  if (typeof op === 'string' && /^add|attach|remove|clear|populate$/.test(op)) {
-    // Get further additional arguments to apply to the matched command method
-    var args = Array.prototype.slice.call(arguments)
-    args.shift()
-
-    // Fire command on each returned elem instance
-    return this.each(function (i, elem) {
-      if (elem.FileAttach && typeof elem.FileAttach[op] === 'function') {
-        elem.FileAttach[op].apply(elem.FileAttach, args)
-      }
-    })
-
-  // Set up a new FileAttach instance per elem (if one doesn't already exist)
-  } else {
-    return this.each(function (i, elem) {
-      if (!elem.FileAttach) {
-        new FileAttach(elem, op)
-      }
-    })
-  }
-}
 
 module.exports = FileAttach

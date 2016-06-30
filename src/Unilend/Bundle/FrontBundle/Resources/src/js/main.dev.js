@@ -15,12 +15,15 @@ var Swiper = require('Swiper')
 var Iban = require('iban')
 var raf = require('raf')
 var Clipboard = require('clipboard')
+var Tether = require('tether')
+var Drop = require('tether-drop')
 
 // UI stuff
 require('jquery-ui')
 // @note due to browserify and global jQuery object, I can't require these like normal :(
 // require('jquery-ui/draggable')
 // require('jquery-ui/sortable')
+// @note since I've integrated the datepicker too, it requires a few jQuery UI modules within
 
 // @note Bootstrap stuff after jQuery UI
 // See: http://stackoverflow.com/questions/17458224/uncaught-error-no-such-method-show-for-tooltip-widget-instance
@@ -36,6 +39,7 @@ var Tween = require('Tween')
 var ElementBounds = require('ElementBounds')
 var ElementAttrsObject = require('ElementAttrsObject')
 var CacheData = require('CacheData')
+var Templating = require('Templating')
 
 // Components & behaviours
 var AutoComplete = require('AutoComplete')
@@ -50,16 +54,18 @@ var DashboardPanel = require('DashboardPanel')
 var CacheForm = require('CacheForm')
 var AutolendTable = require('AutolendTable')
 var NavDropdownMenu = require('NavDropdownMenu')
-// var Sticky = require('Sticky') // @note unfinished
+var MapView = require('MapView')
+var ChartView = require('ChartView')
 
 // @debug
-CacheData.clearAll()
+// CacheData.clearAll()
 
 //
 $(document).ready(function ($) {
   // Main vars/elements
   var $doc = $(document)
   var $html = $('html')
+  var $body = $('body')
   var $win = $(window)
   var $siteHeader = $('.site-header')
   var $siteContent = $('.site-content')
@@ -67,18 +73,50 @@ $(document).ready(function ($) {
   var Modernizr = window.Modernizr
   raf.polyfill()
 
-  window.__ = __
+  // @debug
+  // window.__ = __
+  // window.Utility = Utility
 
   // Remove HTML
   $html.removeClass('no-js')
 
+  // Track the current breakpoints (also updated in updateWindow())
+  var currentBreakpoint = window.currentBreakpoint = Utility.getActiveBreakpoints()
+
+  /*
+   * Test for IE
+   */
+  function isIE (version) {
+    var versionNum = ~~(version + ''.replace(/\D+/g, ''))
+    if (/^\</.test(version)) {
+      version = 'lt-ie' + versionNum
+    } else {
+      version = 'ie' + versionNum
+    }
+    return $html.is('.' + version)
+  }
+
+  /*
+   * I hate IE
+   */
+  if (isIE(9)) {
+    // Specific fixes for IE
+    $('.project-list-item .project-list-item-category').each(function (i, item) {
+      $(this).wrapInner('<div style="width: 100%; height: 100%; position: relative"></div>')
+    })
+  }
+
   // TWBS setup
   // $.support.transition = false
   // Bootstrap Tooltips
-   $('.ui-tooltip, [data-toggle="tooltip"]').tooltip()
+   $('.ui-has-tooltip, [data-toggle="tooltip"]').tooltip()
 
-  // Track the current breakpoints (also updated in updateWindow())
-  var currentBreakpoint = Utility.getActiveBreakpoints()
+  /*
+   * jQuery UI Date Picker
+   */
+  $('.ui-has-datepicker, [data-ui-datepicker]').datepicker({
+    format: 'dd/mm/yy'
+  })
 
   // VideoJS
   // Running a modified version to customise the placement of items in the control bar
@@ -263,7 +301,7 @@ $(document).ready(function ($) {
   }
 
   /*
-   * Open search (auto-detects which)
+   * Open search (auto-detects whether mobile search or normal search to open)
    */
   function openSearch() {
     // Mobile site search
@@ -287,7 +325,17 @@ $(document).ready(function ($) {
   /*
    * FancyBox
    */
+  // Generic fancybox
   $('.fancybox').fancybox()
+
+  // Show HTML content in fancybox (use href='#target-id' to indicate the content. See `src/twig/devenir_preter_lp.twig` for an example)
+  $('.fancybox-html').fancybox({
+    maxWidth: 800,
+    maxHeight: 600,
+    autoSize: true
+  })
+
+  // Open up media
   $('.fancybox-media').each(function (i, elem) {
     var $elem = $(elem)
     if ($elem.is('.fancybox-embed-videojs')) {
@@ -419,7 +467,7 @@ $(document).ready(function ($) {
   //       you should only use the `.ui-textcount` class if you want to explicitly set the behaviours
   //       through JS otherwise rely on automatic invocation through the attribute [data-textcount]
   // @todo Remove this call when the Twig views have been updated
-  $('.ui-textcount, .ui-text-count').uiTextCount()
+  $('.ui-text-count, .ui-has-textcount').uiTextCount()
 
   // @debug
   // @todo remove for production
@@ -446,17 +494,14 @@ $(document).ready(function ($) {
     })
     .on(Utility.clickEvent, '#restart-text-counters', function (event) {
       event.preventDefault()
-      $('.ui-text-count, .ui-textcount, [data-textcount]').each(function (i, elem) {
-        elem.TextCount.resetCount()
-        elem.TextCount.startCount()
-      })
+      $('.ui-text-count, .ui-textcount, [data-textcount]').uiTextCount('resetCount').uiTextCount('startCount')
     })
 
   /*
    * Time counters
    */
   // Set different update/complete function for these time counters
-  $('.project-list-item .ui-timecount, .project-single .ui-timecount').uiTimeCount({
+  $('.project .ui-has-timecount, .project-list-item .ui-has-timecount, .project-single .ui-has-timecount').uiTimeCount({
     onupdate: function (timeDiff) {
       var elemTimeCount = this
       var outputTime
@@ -492,6 +537,11 @@ $(document).ready(function ($) {
       } else if (elemTimeCount.$elem.parents('.project-single').length > 0) {
         elemTimeCount.$elem.parents('.project-single').addClass('ui-project-expired')
         elemTimeCount.$elem.text(__.__('Project expired', 'projectSinglePeriodExpired'))
+
+      // Project
+      } else {
+        elemTimeCount.$elem.parents('.project').addClass('ui-project-expired')
+        elemTimeCount.$elem.text(__.__('Project expired', 'projectListItemPeriodExpired'))
       }
     }
   })
@@ -503,19 +553,28 @@ $(document).ready(function ($) {
   var watchWindow = new WatchScroll.Watcher(window)
     // Fix site nav
     .watch(window, 'scrollTop>50', function () {
-      $html.addClass('ui-site-header-fixed')
+      if (!$html.is('.ui-site-header-fixed')) {
+        // @debug
+        // console.log('add ui-site-header-fixed')
+        $html.addClass('ui-site-header-fixed')
+        debounceUpdateWindow()
+      }
     })
 
     // Unfix site nav
     .watch(window, 'scrollTop<=50', function () {
-      $html.removeClass('ui-site-header-fixed')
+      if ($html.is('.ui-site-header-fixed')) {
+        // @debug
+        // console.log('remove ui-site-header-fixed')
+        $html.removeClass('ui-site-header-fixed')
+        debounceUpdateWindow()
+      }
     })
 
     // Start text counters
-    .watch('.ui-text-count, .ui-textcount, [data-textcount]', 'enter', function () {
-      if (this.hasOwnProperty('TextCount')) {
-        if (!this.TextCount.started()) this.TextCount.startCount()
-      }
+    .watch('[data-textcount], .ui-has-textcount, .ui-textcount', 'enter', function () {
+      // console.log('WatchScroll enter', this)
+      $(this).uiTextCount('startCount')
     })
 
   // Dynamic watchers specified through view attributes (single action per element)
@@ -606,27 +665,57 @@ $(document).ready(function ($) {
     }
 
     // Make sure the tab is scrolled to
-    scrollTo($tab)
+    Utility.scrollTo($tab)
   })
 
   // Validate any groups/fields within the tabbed area before going on to the next stage
   $doc.on(Utility.clickEvent + ' show.bs.tab', '.tabs.ui-tabs-progress [data-toggle="tab"], .tabs.ui-tabs-progress [role="tab"]', function (event) {
-    var $target = $(event.target)
-    var $tabs = Utility.getElemIsOrHasParent($target, '.tabs').first()
-    var $currentTab = $tabs.find('[role="tabpanel"].active').first()
-    var $nextTab = $tabs.find($target.attr('href'))
+    var $nextTab = $(this)
+    var $tabsElem = $nextTab.closest('.tabs').first()
+    var $allTabPanels = $tabsElem.find('[role="tabpanel"]')
+    var $currentTabPanel = $allTabPanels.filter('.active').first()
+
+    // Don't do anymore bro
+    if ('#' + $currentTabPanel.attr('id') === $nextTab.attr('href')) return
+
+    var $nextTabPanel = $allTabPanels.filter($nextTab.attr('href')).first()
+    var $currentTab = $tabsElem.find('[href="#' + $currentTabPanel.attr('id') + '"][role="tab"]').first()
+    var currentTabIndex = $allTabPanels.index($currentTabPanel)
+    var nextTabIndex = $allTabPanels.index($nextTabPanel)
+
+    // @debug
+    // console.log(currentTabIndex, nextTabIndex)
 
     // Validate the form within the current tab before continuing
-    if ($currentTab.length > 0 && $nextTab.length > 0 && $nextTab[0] !== $currentTab[0] && $currentTab.find('[data-formvalidation]').length > 0) {
-      var fa = $currentTab.find('[data-formvalidation]').first()[0].FormValidation
-      var validation = fa.validate()
+    // (moving backward is free though)
+    if (nextTabIndex > currentTabIndex) {
+      if ($currentTabPanel.is('[data-formvalidation]') || $currentTabPanel.find('[data-formvalidation]').length > 0) {
+        var fvElem
 
-      // Validation Errors: prevent going to the next tab
-      if (validation.erroredFields.length > 0) {
-        event.preventDefault()
-        event.stopPropagation()
-        scrollTo(fa.$notifications)
-        return false
+        // Get the right validation elem to pluck instance from
+        if ($currentTabPanel.is('[data-formvalidation]')) {
+          fvElem = $currentTabPanel[0]
+        } else {
+          fvElem = $currentTabPanel.find('[data-formvalidation]').first()[0]
+        }
+
+        // FormValidation hasn't been loaded yet so reject the event
+        if (!fvElem.hasOwnProperty('FormValidation')) {
+          event.preventDefault()
+          event.stopPropagation()
+          return false
+        }
+
+        // Validate the form
+        var validation = fvElem.FormValidation.validate()
+
+        // Validation Errors: prevent going to the next tab
+        if (validation.erroredFields.length > 0) {
+          event.preventDefault()
+          event.stopPropagation()
+          Utility.scrollTo(validation.$notifications)
+          return false
+        }
       }
     }
   })
@@ -655,9 +744,6 @@ $(document).ready(function ($) {
    * Emprunter Sim
    */
   $doc
-    .on('shown.bs.tab', '.emprunter-sim', function () {
-      // console.log('shown tab')
-    })
     // Step 1
     .on('FormValidation:validate:error', '#esim1', function () {
       // Hide the continue button
@@ -683,105 +769,18 @@ $(document).ready(function ($) {
   /*
    * Project List
    */
-  // Set original order for each list
-  $('.project-list').each(function (i, elem) {
-    var $elem = $(elem)
-    var $items = $elem.find('.project-list-item')
+  $doc.on(Utility.clickEvent, '.project-list-item', function (event) {
+    var $target = $(event.target)
+    var href = $target.closest('.project-list-item').find('.project-list-item-title a').first().attr('href')
 
-    $items.each(function (j, item) {
-      $(item).attr('data-original-order', j)
-    })
+    // Not an anchor link? Let's go...
+    if ($target.closest('a, [data-toggle="tooltip"]').length === 0) {
+      event.preventDefault()
+
+      // Go to the project page
+      window.location = href
+    }
   })
-
-  // Reorder project list depending on filtered column and sort direction
-  $doc.on(Utility.clickEvent, '.project-list-filter[data-sort-by]', function (event) {
-    var $elem = $(this)
-    var $projectList = $elem.parents('.project-list')
-    var $filters = $projectList.find('.project-list-filter')
-    var $list = $projectList.find('.project-list-items')
-    var $items = $list.find('.project-list-item')
-    var sortColumn = false
-    var sortDirection = false
-    event.preventDefault()
-
-    // Get column to sort by
-    sortColumn = $elem.attr('data-sort-by')
-
-    // Get direction to sort by
-    if ($elem.is('.ui-project-list-sort-asc')) {
-      sortDirection = 'desc'
-    } else {
-      sortDirection = 'asc'
-    }
-
-    // Error if invalid values
-    if (!sortColumn || !sortDirection) return
-
-    // Reset all sorting filters
-    $filters.removeClass('ui-project-list-sort-asc ui-project-list-sort-desc')
-
-    // Sorting
-    switch (sortDirection) {
-      case 'asc':
-        $items.sort(function (a, b) {
-          a = parseFloat($(a).attr('data-sort-' + sortColumn))
-          b = parseFloat($(b).attr('data-sort-' + sortColumn))
-          switch (a > b) {
-            case true:
-              return 1
-            case false:
-              return -1
-            default:
-              return 0
-          }
-        })
-        break
-
-      case 'desc':
-        $items.sort(function (a, b) {
-          a = parseFloat($(a).attr('data-sort-' + sortColumn))
-          b = parseFloat($(b).attr('data-sort-' + sortColumn))
-          switch (a < b) {
-            case true:
-              return 1
-            case false:
-              return -1
-            default:
-              return 0
-          }
-        })
-        break
-    }
-
-    // Set sorted column to sort direction class
-    $elem.addClass('ui-project-list-sort-' + sortDirection)
-
-    // Change the DOM order of items
-    $items.detach().appendTo($list)
-  })
-
-  /*
-   * Test for IE
-   */
-  function isIE (version) {
-    var versionNum = ~~(version + ''.replace(/\D+/g, ''))
-    if (/^\</.test(version)) {
-      version = 'lt-ie' + versionNum
-    } else {
-      version = 'ie' + versionNum
-    }
-    return $html.is('.' + version)
-  }
-
-  /*
-   * I hate IE
-   */
-  if (isIE(9)) {
-    // Specific fixes for IE
-    $('.project-list-item .project-list-item-category').each(function (i, item) {
-      $(this).wrapInner('<div style="width: 100%; height: 100%; position: relative"></div>')
-    })
-  }
 
   /*
    * Responsive
@@ -877,6 +876,9 @@ $(document).ready(function ($) {
         $elem.height(equalHeights[groupName])
       }
     })
+
+    // @debug
+    // console.log('equalHeights', equalHeights)
   }
 
   /*
@@ -906,50 +908,28 @@ $(document).ready(function ($) {
       updateProjectSingleNavOffsetTop()
     }
 
+    // Adjust drops
+    if (profileNotificationsDrop) profileNotificationsDrop.position()
+
     // Set device heights
     setDeviceHeights()
 
     // Update equal heights
     setEqualHeights()
+
+    // Update the stickies (perform hardUpdate due to resize/orientationchange)
+    updateStickyWatchers(1)
+
+    // Trigger UI:update event to signal to any other elements that need to update on this event
+    // @trigger elem `UI:update`
+    $doc.trigger('UI:update')
   }
+  // @bind document `UI:updateWindow` Fire debounceUpdateWindow to update any elements due to repaint/reflow
+  $doc.on('UI:updateWindow', debounceUpdateWindow)
 
-  // Scroll the window to a point, or an element on the page
-  function scrollTo (point, cb, time) {
-    // Get element to scroll too
-    var $elem = $(point)
-    var winScrollTop = $win.scrollTop()
-    var toScrollTop = 0
-    var diff
-
-    // Try numeric value
-    if ($elem.length === 0) {
-      toScrollTop = parseInt(point, 10)
-    } else {
-      toScrollTop = $elem.eq(0).offset().top - 80 // Fixed header space
-    }
-    if (toScrollTop < 0) toScrollTop = 0
-
-    if (toScrollTop !== winScrollTop) {
-      diff = Math.max(toScrollTop, winScrollTop) - Math.min(toScrollTop, winScrollTop)
-
-      // Calculate time to animate by the difference in distance
-      if (typeof time === 'undefined') time = diff * 0.1
-      if (time < 300) time = 300
-
-      // @debug
-      // console.log('scrollTo', {
-      //   point: point,
-      //   toScrollTop: toScrollTop,
-      //   time: time
-      // })
-
-      $('html, body').animate({
-        scrollTop: toScrollTop + 'px',
-        skipGSAP: true
-      }, time, 'swing', cb)
-    }
-  }
-
+  /*
+   * Smooth scrolling to point on screen or specific element
+   */
   // Scroll to an item which has been referenced on this page
   $doc.on(Utility.clickEvent, 'a[href^="#"]', function (event) {
     var elemId = $(this).attr('href').replace(/^[^#]*/, '')
@@ -970,90 +950,67 @@ $(document).ready(function ($) {
         }
 
         // event.preventDefault()
-        scrollTo(elemId)
+        Utility.scrollTo(elemId)
       }
     }
   })
 
-  /*
-   * Sortables
-   */
-  // User interaction sort columns
-  $doc.on(Utility.clickEvent, '[data-sortable-by]', function (event) {
-    var $target = $(this)
-    var columnName = $target.attr('data-sortable-by')
+  // When showing a tab/collapse/any other element which is `display:none`, check to see if any render components inside
+  $doc.on('shown.bs.tab shown.bs.collapse', function (event) {
+    var $target = $(event.target)
 
-    event.preventDefault()
-    $(this).parents('[data-sortable]').uiSortable('sort', columnName)
-  })
+    // BS tabs treats visible tab as link rather than panel, so let's adjust that...
+    if (!$target.is('[role="tabpane"], .collapse')) {
+      var $actualTarget = $($target.attr('data-target') || $target.attr('href'))
+      if ($actualTarget.length > 0) $target = $actualTarget
+    }
 
-  /*
-   * Charts
-   */
-  // Convert chart placeholder JSON data to Chart Data
-  var chartJSON = window.chartJSON || {}
-  var chartData = {}
-  for (var i in chartJSON) {
-    chartData[i] = JSON.parse(chartJSON[i])
-  }
+    // Trigger the updateWindow since the collapse/tab content may cause widths/heights to change
+    debounceUpdateWindow()
 
-  // Build charts
-  function renderCharts() {
-    $('[data-chart]:visible').not('[data-highcharts-chart]').each(function (i, elem) {
-      // Get the data
-      var $elem = $(elem)
-      var chartDataKey = $elem.attr('data-chart')
-
-      // Has data
-      if (chartData.hasOwnProperty(chartDataKey)) {
-        chartData[chartDataKey].credits = {
-          enabled: false,
-          text: ''
-        }
-        $elem.highcharts(chartData[chartDataKey])
-      }
-    })
-  }
-
-  // When viewing a tab, see if any charts need to be rendered inside
-  $doc.on('shown.bs.tab', function (event) {
-    renderCharts()
-
-    // Scroll to the tab in the view too
-    // @note currently disabling for fun
-    // if ($(event.target).attr('href')) {
-    //   scrollTo($(event.target).attr('href'))
-    // }
+    // Child components bind to the `UI:visible` event in order to render themselves when their parent is visible (i.e. not `display:none`). This is used primarily for items which require "physical" space to render, like maps and charts
+    $target.trigger('UI:visible')
   })
 
   /*
    * Project Single Fixed Menu
    */
   var projectSingleNavOffsetTop = 0
+  var $projectSingleMenu = $('.project-single-menu')
 
   function updateProjectSingleNavOffsetTop () {
-    if ($('.project-single-menu').length > 0) {
+    if ($projectSingleMenu.length > 0) {
       projectSingleNavOffsetTop = $('.project-single-content .project-single-nav').first().offset().top - (parseInt($siteHeader.height(), 10) * 0.5)
     } else {
       projectSingleNavOffsetTop = undefined
     }
   }
 
-  if ($('.project-single-menu').length > 0) {
+  // Add to window WatchScroll watcher means to make project-single-menu fixed
+  if ($projectSingleMenu.length > 0) {
     updateProjectSingleNavOffsetTop()
     watchWindow
       .watch(window, function (params) {
         // @debug console.log($win.scrollTop() >= projectSingleNavOffsetTop)
         if (typeof projectSingleNavOffsetTop !== 'undefined' && $win.scrollTop() >= projectSingleNavOffsetTop) {
-          $html.addClass('ui-project-single-menu-fixed')
+          if (!$html.is('.ui-project-single-menu-fixed')) {
+            // @debug
+            // console.log('add ui-project-single-menu-fixed')
+            $html.addClass('ui-project-single-menu-fixed')
+          }
         } else {
-          $html.removeClass('ui-project-single-menu-fixed')
+          if ($html.is('.ui-project-single-menu-fixed')) {
+            // @debug
+            // console.log('remove ui-project-single-menu-fixed')
+            $html.removeClass('ui-project-single-menu-fixed')
+          }
         }
       })
   }
 
   /*
    * Project Single Map
+   * @todo should be refactored out to own app component
    */
   $doc
     // -- Click to show map
@@ -1088,6 +1045,21 @@ $(document).ready(function ($) {
     if (!$html.is('.ui-project-single-map-open')) {
       $html.removeClass('ui-project-single-map-opening ui-project-single-map-closing').addClass('ui-project-single-map-open')
       $('.ui-project-single-map-toggle .label').text(__.__('Hide map', 'projectSingleMapHideLabel'))
+
+      // Initialise the project map using the settings JSON object
+      if (projectMapViewSettings) {
+        projectMapViewSettings = Utility.convertStringToJson(projectMapViewSettings)
+
+        // Initialise the map only if an object was given
+        if (typeof projectMapViewSettings === 'object') {
+          // Ensure target is set
+          if (!projectMapViewSettings.target) projectMapViewSettings.target = '#project-map'
+          $(projectMapViewSettings.target).uiMapView(projectMapViewSettings)
+        }
+      }
+
+      // Manually trigger refreshMapbox on the MapView
+      $('[data-mapview], .ui-mapview').uiMapView('refreshMapbox')
     }
   }
 
@@ -1095,6 +1067,9 @@ $(document).ready(function ($) {
     // @debug console.log('hideProjectSingleMap')
     $html.removeClass('ui-project-single-map-opening ui-project-single-map-open ui-project-single-map-closing')
     $('.ui-project-single-map-toggle .label').text(__.__('View map', 'projectSingleMapShowLabel'))
+
+    // Manually trigger refreshMapbox on the MapView
+    $('[data-mapview], .ui-mapview').uiMapView('refreshMapbox')
   }
 
   function toggleProjectSingleMap () {
@@ -1106,20 +1081,42 @@ $(document).ready(function ($) {
   }
 
   /*
-   * Project Single Fixed Info
+   * Sticky things
+   */
+  // @todo probably needs a lot of refactoring. Trickiest thing is all the responsive stuff
+
+  // Offset sticky by marginTop
+  var doStickyOffset = function ($elem, amount) {
+    if (amount !== false) {
+      $elem.css('marginTop', amount + 'px')
+    } else {
+      $elem.css('marginTop', '')
+    }
+  }
+
+  // Offset sticky by CSS transform
+  if ($html.is('.has-csstransforms')) {
+    doStickyOffset = function ($elem, amount) {
+      if (amount !== false) {
+        $elem.css('transform', 'translateY(' + amount + 'px)')
+      } else {
+        $elem.css('transform', '')
+      }
+    }
+  }
+
+  /*
+   * Sticky Project Single Info
+   * @note Slightly more complex than normal sticky because of the project-single-map and negative margins everywhere!
+   * @todo potentially use the Sticky class for this, but there might be trouble with the bounds (try using the onbeforehardupdate to calculate the top buffer using the negative margins... ?)
    */
   var $projectSingleInfoWrap = $('.project-single-info-wrap')
   var $projectSingleInfoPos = $('.project-single-info-position')
   var $projectSingleInfo = $('.project-single-info')
 
-  // Debounce update to reduce jank
-  if ($projectSingleInfoWrap.length > 0) {
-    watchWindow.watch(window, offsetProjectSingleInfo)
-  }
-
   function offsetProjectSingleInfo () {
     // Only do if within the md/lg breakpoint
-    if ($projectSingleInfo && $projectSingleInfo.length === 1 && /md|lg/.test(currentBreakpoint)) {
+    if ($projectSingleInfo.length === 1 && /md|lg/.test(currentBreakpoint)) {
       var bufferTop = 25
       var bufferBottom = 100
       var siteHeaderHeight = $siteHeader.outerHeight()
@@ -1139,27 +1136,257 @@ $(document).ready(function ($) {
         }
       }
 
-      // @debug
-      // console.log({
-      //   winScrollTop: winScrollTop,
-      //   translateAmount: translateAmount,
-      //   offsetInfo: offsetInfo,
-      //   infoHeight: infoHeight,
-      //   startInfoFixed: startInfoFixed,
-      //   endInfoFixed: endInfoFixed
-      // })
-
       // Apply offset
-      $projectSingleInfo.css('marginTop', offsetInfo + 'px')
+      doStickyOffset($projectSingleInfo, offsetInfo)
 
     // Reset
     } else {
-      $projectSingleInfo.css('marginTop', '')
+      doStickyOffset($projectSingleInfo, false)
     }
   }
 
+  // Debounce update to reduce jank
+  if ($projectSingleInfoWrap.length > 0) {
+    watchWindow.watch(window, offsetProjectSingleInfo)
+    offsetProjectSingleInfo()
+  }
+
+  /*
+   * Sticky stuff
+   */
+  var STICKY_WATCHERS = []
+
+  // This will go and update any stickied element on the page
+  function updateStickyWatchers (hardUpdate) {
+    $.each(STICKY_WATCHERS, function (i, sticky) {
+      sticky.update(hardUpdate)
+    })
+  }
+
+  /*
+   * Sticky
+   * @class
+   */
+  var Sticky = function (elem, options) {
+    var self = this
+    self.$elem = $(elem)
+    if (self.$elem.length === 0) return false
+
+    // Settings
+    self.settings = $.extend({
+      breakpoints: /md|lg/,
+      bufferTop: 25,
+      bufferBottom: 0,
+
+      // The parent to detect scrollTop from
+      scrollParent: window,
+      bounds: undefined,
+
+      // Fires before recalculating necessary values
+      onbeforehardupdate: function () {
+        // Ensure the (fixed) siteHeaderHeight modifies the buffers too
+        var siteHeaderHeight = $siteHeader.outerHeight()
+        this.track.buffer.top = this.settings.bufferTop + siteHeaderHeight
+        this.track.buffer.bottom = this.track.buffer.top + this.settings.bufferBottom
+      }
+    },
+    // Override with element's attribute settings
+    ElementAttrsObject(elem, {
+      bufferTop: 'data-sticky-buffertop',
+      bufferBottom: 'data-sticky-bufferbottom',
+      scrollParent: 'data-sticky-scrollparent',
+      bounds: 'data-sticky-bounds'
+    }),
+    // Override with JS instantiation settings
+    options)
+
+    // Track
+    self.track = {
+      buffer: {
+        top: 0,
+        bottom: 0
+      },
+      scrollParent: {
+        scroll: {
+          top: 0,
+          left: 0
+        }
+      },
+      bounds: {
+        height: 0,
+        offset: {
+          top: 0,
+          left: 0
+        }
+      },
+      elem: {
+        height: 0
+      },
+      sticky: {
+        start: 0,
+        end: 0,
+        amount: 0,
+        offset: 0
+      }
+    }
+
+    // Elements
+
+    // @todo Support non-window scroll parent elements (if necessary -- pretty tricky with managing offsets with nested scrollTop values)
+    self.$scrollParent = $(self.settings.scrollParent || window)
+
+    // Bounds element sets the area that the sticky can stick into
+    if (!self.settings.bounds || $(self.settings.bounds).length === 0) {
+      self.$elem.parents().each(function (i, parent) {
+        var $parent = $(parent)
+        var posType = $parent.css('position')
+        if ($parent.is('.ui-sticky-bounds') || posType === 'relative') {
+          self.settings.bounds = parent
+          return false
+        }
+      })
+
+      // Still no bounds? Use the scrollParent
+      if (!self.settings.bounds) self.settings.bounds = self.settings.scrollParent
+    }
+    self.$bounds = $(self.settings.bounds)
+
+    // Methods
+
+    /*
+     * Offset the element by margin
+     *
+     * @method _offsetMargin
+     * @param {Mixed} amount The {Int} pixel amount to offset by, or {Boolean} false to remove any CSS offset
+     * @return {Void}
+     */
+    self._offsetMargin = function (amount) {
+      if (amount !== false) {
+        self.$elem.css('marginTop', amount + 'px')
+      } else {
+        self.$elem.css('marginTop', '')
+      }
+    }
+
+    /*
+     * Offset the element by CSS3 transform
+     *
+     * @method _offsetTransform
+     * @param {Mixed} amount The {Int} pixel amount to offset by, or {Boolean} false to remove any CSS offset
+     * @return {Void}
+     */
+    self._offsetTransform = function (amount) {
+      if (amount !== false) {
+        self.$elem.css('transform', 'translateY(' + amount + 'px)')
+      } else {
+        self.$elem.css('transform', '')
+      }
+    }
+
+    /*
+     * Offset the element (chooses from either _offsetMargin or _offsetTransform depending on
+     * the device's capabilities)
+     *
+     * @method offset
+     * @param {Mixed} amount The amount to offset by, or {Boolean} false to remove any CSS offset
+     * @return {Void}
+     */
+    if ($html.is('.has-csstransforms')) {
+      self.offset = self._offsetTransform
+    } else {
+      self.offset = self._offsetMargin
+    }
+
+    /*
+     * Update the element (and calculate the necessary offsets)
+     *
+     * @method update
+     * @param {Boolean} hardUpdate Whether to update all the values before calculating the offset
+     * @return {Void}
+     */
+    self.update = function (hardUpdate) {
+      if (Utility.isBreakpointActive(self.settings.breakpoints)) {
+        // Hard Update recalculates all the main values
+        if (hardUpdate) {
+          // Update bounds values
+          self.track.bounds.offset = self.$bounds.offset()
+          self.track.bounds.height = self.$bounds.outerHeight()
+
+          // Update elem values
+          self.track.elem.height = self.$elem.outerHeight()
+
+          // Set the buffer top/bottom
+          self.track.buffer.top = self.settings.bufferTop
+          self.track.buffer.bottom = self.settings.bufferBottom
+
+          // Run function before hardupdate
+          if (self.settings.onbeforehardupdate) self.settings.onbeforehardupdate.call(self)
+
+          // Figure out sticky start/end
+          self.track.sticky.start = self.track.bounds.offset.top - self.track.buffer.top
+          self.track.sticky.end = self.track.bounds.offset.top + self.track.bounds.height - self.track.elem.height - self.track.buffer.bottom
+        }
+
+        // Calculate the offset amount based on parent's scrollTop
+        self.track.scrollParent.scroll.top = self.$scrollParent.scrollTop()
+        self.track.sticky.amount = self.track.scrollParent.scroll.top - self.track.sticky.start
+
+        // Constrain within the sticky's start/end
+        if (self.track.scrollParent.scroll.top > self.track.sticky.start) {
+          if (self.track.scrollParent.scroll.top < self.track.sticky.end) {
+            self.track.sticky.offset = self.track.sticky.amount
+          } else {
+            self.track.sticky.offset = self.track.sticky.end - self.track.sticky.start
+          }
+
+          // Apply the offset
+          // console.log('apply offset', self.track.sticky.offset)
+          self.offset(self.track.sticky.offset)
+
+        // Reset the offset
+        } else {
+          // console.log('reset offset')
+          self.offset(false)
+        }
+
+        // @debug
+        // console.log('Sticky.update %s', (hardUpdate ? '(hard)' : ''), self.track.sticky.offset, self.track)
+      } else {
+        self.offset(false)
+      }
+    }
+
+    // Initialise
+    self.$elem.addClass('ui-sticky')
+    self.$elem[0].Sticky = self
+    STICKY_WATCHERS.push(self)
+
+    // Don't forget to update yerself before you try to stick yerself!
+    self.update(1)
+
+    return self
+  }
+
+  /*
+   * jQuery Plugin for Sticky
+   */
+  $.fn.uiSticky = function (op) {
+    return this.each(function (i, elem) {
+      if (!elem.hasOwnProperty('Sticky')) {
+        new Sticky(elem, op)
+      }
+    })
+  }
+
+  // Instantiate any stickies
+  $('[data-sticky], .ui-has-sticky').uiSticky()
+
+  // Watch the window scroll
+  watchWindow.watch(window, updateStickyWatchers)
+
   /*
    * Debug
+   * @todo remove for production
    */
   if ($('#invalid-route').length > 0 && window.location.search) {
     var queryVars = []
@@ -1195,7 +1422,6 @@ $(document).ready(function ($) {
   })
 
   function checkAddressIsCorrespondence () {
-    var address = ['street', 'code', 'ville', 'pays', 'telephone', 'mobile']
     if ($('input#form-preter-address-is-correspondence').is(':checked')) {
       // Set required inputs to false
       $('#form-preter-fieldset-correspondence [data-formvalidation-required]').attr('data-formvalidation-required', false)
@@ -1215,6 +1441,7 @@ $(document).ready(function ($) {
 
   /*
    * Validate IBAN Input
+   * @todo should be refactored out to own app component
    */
   function checkIbanInput (event) {
     // Default: check all on the page
@@ -1263,8 +1490,281 @@ $(document).ready(function ($) {
   $doc.on('keyup', '.custom-input-iban .iban-input', checkIbanInput)
   checkIbanInput()
 
+
+  /*
+   * Presenter un projet
+   */
+  var $projectExtraFilesElem = $('#form-project-create-finance-extrafiles')
+  var $projectExtraFilesList = $('.form-project-create-extrafiles-list')
+  var $projectExtraFilesToggle = $('input#form-project-create-extrafiles-toggle')
+  var projectExtraFileTemplate = $('#form-project-create-extrafiles-template').html()
+
+  // Toggle extra files
+  $doc.on('change', 'input#form-project-create-extrafiles-toggle', function (event) {
+    checkProjectHasExtraFiles()
+  })
+
+  function checkProjectHasExtraFiles () {
+    if ($projectExtraFilesToggle.is(':checked')) {
+      $projectExtraFilesElem.slideDown()
+    } else {
+      $projectExtraFilesElem.slideUp()
+    }
+  }
+
+  // Add extra files item
+  $doc.on(Utility.clickEvent, '.ui-form-project-create-extrafiles-add', function (event) {
+    event.preventDefault()
+    addProjectExtraFile()
+  })
+
+  function addProjectExtraFile () {
+    var totalExtraFiles = $projectExtraFilesList.find('.file-upload-extra').length
+
+    // Prepare the template
+    template = projectExtraFileTemplate.replace(/__NUM__/g, totalExtraFiles - 1)
+
+    // Make the new one and add to the list
+    var $extraFile = $(template).appendTo($projectExtraFilesList)
+    var $extraFileAttach = $extraFile.find('[data-fileattach], .ui-has-fileattach, .ui-fileattach')
+
+    // Make sure the FileAttach behaviours are loaded
+    if ($extraFileAttach.length > 0) $extraFileAttach.uiFileAttach()
+  }
+
+  // Show the collapse
+  if ($projectExtraFilesElem.length > 0) {
+    checkProjectHasExtraFiles()
+
+    // Add one to prompt the user
+    addProjectExtraFile()
+  }
+
+  // Esim
+  // @note the following is a guide on how it could be done
+  //       I'm not devving it next to you guys so I dunno what your thinking is
+  var $projectEsim = $('.form-project-create .emprunter-sim-mini')
+  var esimEstimate = {
+    step: 0,
+    amount: '10 000€',
+    duration: '2 jours',
+    monthly: '2 887 / 3 285€'
+  }
+
+  // Step 0: reset everything
+  function setEsimStep0 () {
+    // @debug
+    // console.log('setEsimStep0')
+
+    esimEstimate.step = 0
+
+    // Ensure visible!
+    $projectEsim.show()
+
+    // Reset the outputs
+    $projectEsim.find('#esim-output-amount').text('')
+    $projectEsim.find('#esim-output-duration').text('')
+    $projectEsim.find('#esim-output-monthly').text('')
+
+    // Show the content & footer (displays a message about step 2)
+    $projectEsim.find('.emprunter-sim-mini-content, footer').hide()
+  }
+
+  // Step 1a: Changed form values instigate AJAX
+  function setEsimStep1a () {
+    // @debug
+    // console.log('setEsimStep1a')
+
+    esimEstimate.step = 1
+
+    // Ensure visible!
+    $projectEsim.show()
+
+    // Set the outputs
+    $projectEsim.find('#esim-output-amount').text('...')
+    $projectEsim.find('#esim-output-duration').text('...')
+
+    // Hide the footer
+    $projectEsim.find('footer').hide()
+
+    // Show the content (what a person can expect to see from ajax)
+    $projectEsim.find('.emprunter-sim-mini-content').show()
+
+    // @todo Do whatever AJAX you need to get and show the esimEstimate
+    //       monthly value using the setEsimValues1b function, e.g.
+    // var simData = {
+    //   amount: $('#form-project-create-amount').val(),
+    //   duration: $('#form-project-create-duration').val()
+    // }
+    // if (simData.amount && simData.duration) {
+    //   $.ajax( ??? ).then(function (data) {
+    //     esimEstimate = data
+    //     setEsimStep1b()
+    //   })
+    // }
+
+    // @debug
+    setTimeout(function () {
+      setEsimStep1b()
+    }, 1000)
+  }
+
+  // Step 1b: AJAX then populated into sim
+  function setEsimStep1b () {
+    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
+    if (!$projectEsim.is(':visible')) return
+
+    // @debug
+    // console.log('setEsimStep1b')
+
+    esimEstimate.step = 1.1
+
+    // Ensure visible!
+    $projectEsim.show()
+
+    // Set the outputs
+    $projectEsim.find('#esim-output-amount').text(esimEstimate.amount)
+    $projectEsim.find('#esim-output-duration').text(esimEstimate.duration)
+
+    // Show the content & footer (displays a message about step 2)
+    $projectEsim.find('.emprunter-sim-mini-content, footer').show()
+  }
+
+  function setEsimStep2a () {
+    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
+    if (!$projectEsim.is(':visible')) return
+
+    // @debug
+    // console.log('setEsimStep2a')
+
+    esimEstimate.step = 2
+
+    // Ensure visible!
+    $projectEsim.show()
+
+    // Set the outputs
+    $projectEsim.find('#esim-output-monthly').text('...')
+
+    // Hide the footer
+    $projectEsim.find('footer').hide()
+
+    // Hide the monthly fields
+    $projectEsim.find('.emprunter-sim-mini-content, #esim-label-monthly, #esim-output-monthly').show()
+
+    // @todo Do whatever AJAX you need to get the esimEstimate
+    //       monthly value using the setEsimValues2b function, e.g.
+    // var simData = {
+    //   amount: $('#form-project-create-amount').val(),
+    //   duration: $('#form-project-create-duration').val()
+    // }
+    // if (simData.amount && simData.duration) {
+    //   $.ajax( ??? ).then(function (data) {
+    //     esimEstimate = data
+    //     setEsimStep2b()
+    //   })
+    // }
+
+    // @debug
+    setTimeout(function () {
+      setEsimStep2b()
+    }, 1000)
+  }
+
+  function setEsimStep2b () {
+    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
+    if (!$projectEsim.is(':visible')) return
+
+    // @debug
+    // console.log('setEsimStep2b')
+
+    esimEstimate.step = 2.1
+
+    // Ensure visible!
+    $projectEsim.show()
+
+    // Set the outputs
+    $projectEsim.find('#esim-output-monthly').text(esimEstimate.monthly)
+
+    // Hide the footer
+    $projectEsim.find('footer').hide()
+
+    // Show the monthly fields
+    $projectEsim.find('.emprunter-sim-mini-content, #esim-label-monthly, #esim-output-monthly').show()
+  }
+
+  function setEsimStep3 () {
+    // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
+    if (!$projectEsim.is(':visible')) return
+
+    // @debug
+    // console.log('setEsimStep3')
+
+    esimEstimate.step = 3
+
+    // Ensure hidden!
+    $projectEsim.hide()
+  }
+
+  if ($projectEsim.length > 0) {
+    setEsimStep0()
+
+    // Tie into the tab events to show/fire esim stuff
+    $doc.on(Utility.clickEvent + ' show.bs.tab', '.form-project-create [data-toggle="tab"], .form-project-create [role="tab"]', function (event) {
+      var $tab = $(this)
+      var tabId = $tab.attr('href') || $tab.attr('data-target') || '#' + $tab.attr('id')
+
+      // Don't do anything if it isn't visible (not visible for xs/sm breakpoints)
+      if ($projectEsim.is(':visible')) {
+        if (tabId === '#form-project-create-1') {
+          setEsimStep1a()
+
+        } else if (tabId === '#form-project-create-2') {
+          if (esimEstimate.step < 1.1) {
+            setEsimStep1a()
+            event.stopPropagation()
+            event.preventDefault()
+            return false
+          }
+          setEsimStep2a()
+
+        } else if (tabId === '#form-project-create-3') {
+          setEsimStep3()
+        }
+      }
+    })
+
+    // Change value which fires setEsimStep1b
+    $doc
+      .on('change', '#form-project-create-amount, #form-project-create-duration', function (event) {
+        // @debug
+        setTimeout(function () {
+          setEsimStep1b()
+        }, 1000)
+      })
+  }
+
+  /*
+   * Custom Input Duration
+   * User can click/drag around to select the range
+   */
+  $doc
+    .on('mousedown touchstart', '.custom-input-duration', function (event) {
+      $(this).addClass('ui-interact-is-down')
+    })
+    .on('mouseup touchend', '.custom-input-duration', function (event) {
+      $(this).removeClass('ui-interact-is-down')
+    })
+    .on('mousemove touchmove', '.custom-input-duration', function (event) {
+      // Only do when interaction is down
+      if ($(this).is('.ui-interact-is-down')) {
+        $(event.target).closest('label').first().click()
+      }
+    })
+
   /*
    * Packery
+   * @note was used for dashboard panels, but wasn't ideal
+   * (didn't work with jquery-ui sortable)
    */
   // $('[data-packery]').each(function (i, elem) {
   //   var $elem = $(elem)
@@ -1293,9 +1793,162 @@ $(document).ready(function ($) {
   // })
 
   /*
+   * User Preter Notifications popup
+   */
+  var $profileNotificationsToggle = $('.site-header .site-user a.profile-notifications')
+  var profileNotificationsDrop = undefined
+  if ($profileNotificationsToggle.length > 0) {
+    profileNotificationsDrop = new Drop({
+      target: $profileNotificationsToggle[0],
+      content: '',
+      classes: 'drop-profile-notifications',
+      position: 'bottom center',
+      openOn: 'click',
+      tetherOptions: {
+        attachment: 'top right',
+        targetAttachment: 'bottom center',
+        offset: '-15px -25px'
+      }
+    })
+    var profileNotificationsItems = []
+
+    $doc
+      // Stop link from going to page on md/lg responsive
+      .on(Utility.clickEvent, '.site-user a.profile-notifications[href]', function (event) {
+        // Show/hide of drop is handled with "openOn: click" above
+        // This behaviour below is if user on mobile/tablet
+        if (/(xs|mobile)/.test(currentBreakpoint)) {
+          event.preventDefault()
+          event.stopPropagation()
+          window.location = $(this).attr('href')
+          return false
+        }
+      })
+
+    // HTML Templates
+    var profileNotificationsTemplates = {
+      frame: '<div class="profile-notifications">\
+        <ul class="profile-notifications-list list-notifications">{{ listItems }}</ul>\
+      </div>',
+      list: '<ul class="profile-notifications-list list-notifications">{{ listItems }}</ul>',
+      listItem: '<li class="notification notification-type-{{ type }} ui-notification-status-{{ status }}">\
+        <header class="notification-header">\
+          <h5 class="notification-datetime">{{ datetime }}</h5>\
+          <h4 class="notification-title">{{ title }}</h4>\
+          <div class="notification-image">{{ image }}</div>\
+        </header>\
+        <div class="notification-content">\
+          <p>{{ content }}</p>\
+        </div>\
+      </li>',
+      emptyItem: '<li class="notification notification-type-empty">\
+        <div class="notification-content">\
+          <p>{{ profileNotificationsEmptyLabel }}</p>\
+        </div>\
+      </li>'
+    }
+
+    function buildProfileNotificationsContent (notifications, pushOrReplace) {
+      // Compiled list items to render
+      var notificationsHTML = []
+
+      // Get any notifications on the page to populate
+      // Reason why I have this is to pick up any other notifications on the page and collate them all here first before building the element
+      if (notifications === undefined) {
+        var $notifications = $('#profile-notifications .notification.ui-notification-status-unread')
+        notifications = []
+
+        // Build the object from the element
+        $notifications.each(function (i, notification) {
+          var $n = $(notification)
+          var notificationObj = {
+            type: $n[0].className.replace(/^.*notification-type-([^ ]+).*/, '$1') || 'default',
+            status: $n[0].className.replace(/^.*notification-status-([^ ]+).*$/, '$1') || 'unread',
+            datetime: $n.find('.notification-datetime').html(),
+            title: $n.find('.notification-title').html(),
+            image: $n.find('.notification-image').html(),
+            content: $n.find('.notification-content').html()
+          }
+          notifications.push(notificationObj)
+        })
+
+        // console.log('buildProfileNotificationsContent auto-detected notifications', notifications)
+      }
+
+      // Show empty
+      if (notifications instanceof Array && notifications.length === 0 && !pushOrReplace) {
+        pushOrReplace = false // Replace
+        notificationsHTML.push(Templating.replace(profileNotificationsTemplates.emptyItem, [__]))
+
+      // Render the notifications to the list
+      // This script assumes notifications is ordered by most recent first
+      } else {
+        $.each(notifications, function (i, notification) {
+          // Requires notifications to be structured as such:
+          /*
+          {
+            type: 'offer-rejected',
+            status: 'unread',
+            datetime: 'Il y a 5 minutes',
+            title: 'Offre refusée',
+            content: 'Votre offre de prêt de 45€ au taux de 9,4% à Garage Toniol a été refusée.',
+            image: '<svg role="img" title="Offre refusée" width="100" height="100" preserveAspectRatio="" class="svg-icon svg-file-notification-offer-rejected" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve"><use xlink:href="/media/svg/icons.svg#notification-offer-rejected" class="svg-file-notification-offer-rejected"></use></svg>'
+          }
+          */
+          notificationsHTML.push(Templating.replace(profileNotificationsTemplates.listItem, [notification, __]))
+        })
+      }
+
+      // console.log('buildProfileNotificationsContent notificationsHTML', notificationsHTML)
+
+      // No notifications to render, don't do anything
+      if (notificationsHTML.length === 0) return
+
+      // Push new items
+      if (pushOrReplace) {
+        // console.log('buildProfileNotificationsContent pushing new items')
+        profileNotificationsItems = notificationsHTML.concat(profileNotificationsItems)
+
+      // Replace with new items
+      } else {
+        // console.log('buildProfileNotificationsContent replacing items')
+        profileNotificationsItems = notificationsHTML
+      }
+
+      // Change the content in the drop
+      profileNotificationsDrop.content.innerHTML = Templating.replace(profileNotificationsTemplates.list, {
+        listItems: profileNotificationsItems.join('')
+      })
+
+      // Update the drop's position if it's open and new content was applied
+      if ($body.is('.drop-open')) {
+        profileNotificationsDrop.position()
+      }
+
+      // console.log('buildProfileNotificationsContent update drop content', profileNotificationsDrop.content)
+    }
+
+    // Show the profile notifications drop
+    function showProfileNotifications (notifications, pushOrReplace) {
+      buildProfileNotificationsContent(notifications, pushOrReplace)
+      profileNotificationsDrop.open()
+    }
+
+    // Hide the profile notifications drop
+    function hideProfileNotifications () {
+      profileNotificationsDrop.close()
+    }
+
+    // Initialise any profile notifications into the drop on ready
+    if ($('.list-notifications .notification').length > 0) {
+      buildProfileNotificationsContent()
+    }
+  }
+
+  /*
    * Movable content area
    * Any [data-draggable] elements within this element can be dragged and sorted
-   * Uses jquery-ui Draggable and Sortable
+   * @note requires jquery-ui Draggable and Sortable modules
    */
   $('[data-movable-content]').each(function (i, elem) {
     var $elem = $(elem)
@@ -1364,12 +2017,12 @@ $(document).ready(function ($) {
   // Technically these operations should be fired from a successful AJAX result
   function successBalanceDeposit() {
     $('#balance-deposit-2').collapse('show')
-    scrollTo('#user-preter-balance')
+    Utility.scrollTo('#user-preter-balance')
   }
 
   function successBalanceWithdraw() {
     $('#balance-withdraw-2').collapse('show')
-    scrollTo('#user-preter-balance')
+    Utility.scrollTo('#user-preter-balance')
   }
 
   // Temp implementation for front-end staging demo
@@ -1399,17 +2052,61 @@ $(document).ready(function ($) {
   })
 
   /*
-   * User Preter Autolend
+   * User Preter Operations
    */
-  // Show/hide config
-  $doc.on('change', 'input#form-autolend-enable', function (event) {
-    var $elem = $(this)
+  // Show/hide details
+  $doc.on(Utility.clickEvent, '.table-myoperations-item[data-details]', function (event) {
+    var $item = $(this)
+    var $table = $item.parents('tbody').first()
+    var $details = $table.find('.table-myoperations-details[data-parent="' + $item.attr('id') + '"]')
+    event.preventDefault()
 
-    if ($elem.is(':checked')) {
-      $('#autolend-config').collapse('show')
+    // Hide details
+    if ($item.is('.ui-operation-details-open')) {
+      if ($details.length > 0) {
+        $details.slideUp(200, function () {
+          $item.removeClass('ui-operation-details-open')
+        })
+      } else {
+        $item.removeClass('ui-operation-details-open')
+      }
+
+    // Show details
     } else {
-      $('#autolend-config').collapse('hide')
+      if ($details.length === 0) {
+        // Get the details
+        var details = Utility.convertStringToJson($item.attr('data-details'))
+        var detailsItemsHtml = '';
+
+        // Build the list of items
+        $.each(details.items, function (i, item) {
+          // @todo may need to programmatically change the currency here
+          // @note this relies on the backend to supply the correcly translated text for labels
+          var classItem = (item.value >= 0 ? 'ui-value-positive' : 'ui-value-negative')
+          detailsItemsHtml += '<dt>' + item.label + '</dt><dd><span class="' + classItem + '">' + __.formatNumber(item.value, 2, true) + '€</span></dd>'
+        })
+
+        // Build element and add to DOM
+        $details = $('<tr class="table-myoperations-details" data-parent="' + $item.attr('id') + '" style="display: none;"><td colspan="2">' + details.label + '</td><td colspan="3">' + detailsItemsHtml + '</td><td>&nbsp;</td></tr>')
+        $item.after($details)
+      }
+
+      // Show
+      $item.addClass('ui-operation-details-open')
+      $details.slideDown(200)
     }
+  })
+
+  // Remove details before sorting
+  $doc.on('Sortable:sort:before', 'table.table-myoperations', function (event, elemSortable, columnName, direction) {
+    var $table = $(this)
+    var $details = $table.find('.table-myoperations-details')
+
+    // Find any details rows and remove them before the sorting occurs
+    if ($details.length > 0) $details.remove()
+
+    // Find any items which are "open" and remove the class
+    $table.find('.ui-operation-details-open').removeClass('ui-operation-details-open')
   })
 
   /*
@@ -1462,27 +2159,6 @@ $(document).ready(function ($) {
     $siblings.collapse('hide')
   })
 
-  // Reveal an element (or elements)
-  function revealElem (elem) {
-    var $elem = $(elem)
-    if ($elem.length === 0) return
-
-    $elem.each(function (i, item) {
-      var targetSelector = '#' + $(item).attr('id')
-
-      // Show collapse
-      if ($elem.is('.collapse, .collapsing')) {
-        $elem.collapse('show')
-      }
-
-      // Show tab
-      if ($elem.is('[role="tabpanel"], .tab-pane')) {
-        // Get the first tab target
-        $('[href="' + targetSelector + '"][role="tab"]').first().tab('show')
-      }
-    })
-  }
-
   /*
    * Reveal an element on page init
    */
@@ -1490,13 +2166,14 @@ $(document).ready(function ($) {
     var $hash = $(window.location.hash)
     // Reveal the element
     if ($hash.length > 0) {
-      revealElem($hash)
-      scrollTo($hash)
+      Utility.revealElem($hash)
+      Utility.scrollTo($hash)
     }
   }
 
   // Scroll to tab/collapse element
-  $doc.on(Utility.clickEvent, '.ui-reveal', function (event) {
+  // @note setting a link with class `.ui-reveal` or attribute `[data-ui-reveal]` enables this behaviour
+  $doc.on(Utility.clickEvent, '.ui-reveal, [data-ui-reveal]', function (event) {
     var $elem = $(this)
     var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))
     var $target
@@ -1505,23 +2182,20 @@ $(document).ready(function ($) {
     if (!targetSelector) return
     $target = $(targetSelector)
 
-    // Scroll to the target
+    // Reveal!
     if ($target.length > 0) {
-      var $parents = $target.parents('.collapse, .collapsing, [role="tabpanel"], .tab-pane')
-
-      // Go through targets parents
-      if ($parents.length > 0) revealElem($parents)
 
       // Reveal the element
-      revealElem($target)
+      Utility.revealElem($target)
 
-      // Scroll to the target
-      scrollTo($target)
+      // Scroll to the target (will always just be the first)
+      Utility.scrollTo($target)
     }
   })
 
   // Close/dismiss an element
-  $doc.on(Utility.clickEvent, '.ui-dismiss', function (event) {
+  // @note setting a link with class `.ui-dismiss` or attribute `[data-ui-dismiss]` enables this behaviour
+  $doc.on(Utility.clickEvent, '.ui-dismiss, [data-ui-dismiss]', function (event) {
     var $elem = $(this)
     var targetSelector = Utility.checkSelector($elem.attr('data-target') || $elem.attr('href'))
     var $target
@@ -1534,28 +2208,20 @@ $(document).ready(function ($) {
       $target = $(targetSelector)
     }
 
-    // Hide message
-    if ($target.is('.message, .message-alert, .message-info, .message-success, .message-error')) {
-      // Slide the message up and remove it
-      $target.slideUp(function () {
-        $(this).remove()
-      })
-    }
-
-    // Hide collapse
-    if ($target.is('.collapse, .collapsing')) {
-      $target.collapse('hide')
-    }
-
-    // Hide tab
-    if ($target.is('[role="tabpanel"], .tab-pane')) {
-      // Get the first tab target
-      $('[href="' + targetSelector + '"][role="tab"]').first().tab('hide')
-    }
+    if ($target && $target.length > 0) Utility.dismissElem($target)
   })
+
+  // @debug
+  $('#test-svg1').html(Utility.svgImage('#misc-computermapmarker', '', 300, 300))
+  $('#test-svg2').html(Utility.svgImage('#header-fiscalite', '', 300, 300))
+  $('#test-svg3').html(Utility.svgImage('#category-medical', '', 300, 300))
 
   // Perform on initialisation
   svg4everybody()
-  renderCharts()
-  updateWindow()
+  debounceUpdateWindow()
+
+  // Battle FOUT with a setTimeout! Not perfect...
+  setTimeout(function () {
+    debounceUpdateWindow()
+  }, 1000)
 })

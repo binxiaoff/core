@@ -89,6 +89,8 @@
             color: $c-t1
           )
         );
+
+        font-size: 42px;
       }
 
       &.active {
@@ -130,8 +132,15 @@
   margin-bottom: 20px;
 }
 
+// Sortable responsive filters
+#{$js-sortable-responsivefilters} {
+  margin-bottom: 0;
+  padding-bottom: 10px;
+  background-color: $c-bg2;
+}
+
 .project-list-filters {
-  display: none;
+  display: table;
   width: 100%;
   background-color: $c-bg2;
 
@@ -166,9 +175,9 @@
     padding-right: 10px;
   }
 
-  // Only make visible for tablet-l and up
-  @include devices('tablet-l', 'computer') {
-    display: table;
+  // Make invisible for the drop-down filters that Sortable puts above the table
+  @include devices('xs', 'sm') {
+    display: none;
   }
 }
 
@@ -177,39 +186,47 @@
   padding-left: 0;
   padding-right: 0;
   padding-bottom: 18px;
-  font-size: 13px;
-  letter-spacing: .05em;
+  font-size: 11px;
+  letter-spacing: 2px;
   line-height: 1em;
+  overflow: hidden;
   text-align: center !important;
   text-transform: uppercase;
+  vertical-align: middle;
 
-  .project-list-filter-order {
+  @include devices('sm', 'laptop', 'lg') {
+    font-size: 13px;
+  }
+
+  .label {
+    display: inline-block;
+    max-width: 80%;
+    height: 1em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  // Currently sorted column
+  &#{$js-current-sortable-column} {
+    color: $c-t1;
+  }
+
+  // Sort order icon
+  .project-list-filter-order:after {
+    content: $fa-sort-u;
     font-family: $ff-icon;
-
-    &:before {
-      content: '\f0dc';
-    }
   }
 
-  // Sorting column by ascending
-  &#{$js-project-list-sort-asc} {
-    .project-list-filter-order:before {
-      color: $c-t1;
-      content: '\f0de';
-    }
+  // Ascending
+  &#{$js-sortable-direction-asc} .project-list-filter-order:after {
+    content: $fa-sort-asc-u;
   }
 
-  // Sorting column by descending
-  &#{$js-project-list-sort-desc} {
-    .project-list-filter-order:before {
-      color: $c-t1;
-      content: '\f0dd';
-    }
+  // Descending
+  &#{$js-sortable-direction-desc} .project-list-filter-order:after {
+    content: $fa-sort-desc-u;
   }
-
-  // &.project-list-item-category {
-  //   text-align: left;
-  // }
 }
 
 // Remove border from last item
@@ -223,6 +240,7 @@
   background-color: $c-white;
   border-bottom: solid 2px $c-bg2;
   position: relative;
+  cursor: pointer;
 
   // Interferes with linear-gradient on project-list-item-cost
   // transition: background-color .2s;
@@ -262,7 +280,19 @@
   }
 
   // Completed/expired project
-  &#{$js-expired-project} {
+  &#{$js-expired-project},
+  &#{$js-current-user-involved}#{$js-expired-project} {
+    opacity: .5;
+    background-color: $c-bg3;
+
+    .project-list-item-info .project-list-item-cost {
+      @include background-image(-svg(linear-gradient(to left, $c-bg3 0%, $c-bg3 90%, fade-out($c-bg3, 1) 100%)));
+    }
+
+    .project-list-item-info .project-list-item-description {
+      @include text-overflow-gradient($bg-color: $c-bg3, $height: $lh-base);
+    }
+
     .project-list-item-hotspot {
       background-color: $c-white;
       opacity: .5;
@@ -270,6 +300,7 @@
 
     .project-list-item-location .icon,
     .project-list-item-interest,
+    .project-list-item-useroffers,
     .project-list-item-view a {
       color: $c-t1 !important;
     }
@@ -278,6 +309,22 @@
     .project-list-item-category {
       @include filter(grayscale(100%));
     }
+
+    // &:hover,
+    // &:active,
+    // &#{$js-current-user-involved},
+    // &#{$js-current-user-involved}:hover,
+    // &#{$js-current-user-involved}:active {
+    //   background-color: $c-white;
+
+    //   .project-list-item-info .project-list-item-cost {
+    //     @include background-image(-svg(linear-gradient(to left, $c-white 0%, $c-white 90%, fade-out($c-white, 1) 100%)));
+    //   }
+
+    //   .project-list-item-info .project-list-item-description {
+    //     @include text-overflow-gradient($bg-color: $c-white, $height: $lh-base);
+    //   }
+    // }
   }
 
   > * {
@@ -384,12 +431,12 @@
           text-decoration: none
         ),
         $hover: (
-          color: $c-p1-hover,
-          text-decoration: underline
+          color: $c-t1,
+          text-decoration: none
         ),
         $active: (
-          color: $c-p2,
-          text-decoration: underline
+          color: $c-t1,
+          text-decoration: none
         )
       );
     }
@@ -492,13 +539,15 @@
     // color: $c-success;
 
     &:before {
-      content: '\f00c';
+      // content: '\f00c'; // check
+      content: $fa-check-u;
     }
   }
 
   .project-list-item-useroffers-inprogress {
     &:before {
-      content: '\f017';
+      // content: '\f017'; // clock
+      content: $fa-clock-u;
     }
   }
 
@@ -506,7 +555,8 @@
     // color: $c-error;
 
     &:before {
-      content: '\f00d';
+      // content: '\f00d'; // ban
+      content: $fa-rejected-u;
     }
   }
 
@@ -518,6 +568,12 @@
   // Time Period Left
   .project-list-item-period {
     line-height: 1.3em;
+
+    .ui-timecount:before {
+      content: $fa-clock-u;
+      margin-right: 5px;
+      font-family: $ff-icon;
+    }
   }
 
   // View project info
@@ -744,5 +800,145 @@
   .project-list-item-view {
     width: 10%;
     text-align: center;
+  }
+}
+
+
+// Project List Map
+.project-list-map {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+
+  @include devices('md') {
+    height: 600px;
+  }
+
+  @include devices('lg') {
+    height: 700px;
+  }
+
+  // Pagination overwrites
+  .pagination {
+    .col-pagination-index {
+      @include hide-accessible;
+    }
+
+    .col-pagination-info {
+      width: 100%;
+      text-align: center;
+    }
+
+    .pagination-next,
+    .pagination-location {
+      display: block;
+      margin: 0 0 5px;
+      clear: both;
+      text-align: center;
+    }
+  }
+}
+
+// Project List Map View
+.project-list-map-view {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  height: 400px;
+  padding: 0;
+  margin: 0;
+  position: relative;
+  overflow: hidden;
+
+  background-image: image-url('maps/map-generic-1600x1000.jpg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: cover;
+
+  img {
+    // display: block;
+    width: auto;
+    height: auto;
+    min-width: 0;
+    max-width: none;
+    min-height: 0;
+    max-height: none;
+  }
+
+  @include devices('sm') {
+    height: 500px;
+  }
+
+  @include devices('md', 'lg') {
+    width: 60%;
+    height: 100%;
+
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+  }
+}
+
+.project-list-map-list {
+  box-sizing: border-box;
+  display: block;
+  padding: 0;
+  margin: 0;
+
+  @include devices('md', 'lg') {
+    width: 40%;
+    padding-left: 8px;
+
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    overflow: auto;
+    background-color: $c-bg2;
+  }
+
+  .project {
+    border-left: solid 0px transparent;
+    transition: border-left .2s;
+
+    &:hover {
+      background-color: $c-bg4;
+    }
+
+    .project-hotspot {
+      width: auto;
+      height: auto;
+
+      position: absolute;
+      left: auto;
+      right: 0;
+      bottom: 0;
+      top: auto;
+    }
+
+    // Item is selected in the list
+    &#{$js-project-list-map-item-selected} {
+      border-left: solid 5px $c-p2;
+    }
+
+    // Expired project
+    &#{$js-expired-project} {
+      &:hover {
+        background-color: $c-bg2;
+      }
+
+      &#{$js-project-list-map-item-selected} {
+        border-left-color: $c-t2;
+      }
+    }
+
+    // Project has user involvement
+    &#{$js-current-user-involved} {
+      &:hover {
+        // background-color: $c-purple-l3;
+      }
+    }
   }
 }

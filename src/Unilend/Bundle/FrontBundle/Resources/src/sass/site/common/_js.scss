@@ -28,8 +28,17 @@ $js-project-list-sort-asc: '.ui-project-list-sort-asc';
 // Applied to .project-list-filter when the sorting has been changed to descending
 $js-project-list-sort-desc: '.ui-project-list-sort-desc';
 
+// Project List map item selected
+$js-project-list-map-item-selected: '.ui-project-list-map-item-selected';
+
 // Project single nav fixed class (applied to <head>)
 $js-project-single-menu-fixed: '.ui-project-single-menu-fixed';
+
+// Sortable column
+$js-sortable-column: '.ui-sortable-column';
+
+// Sortable responsive filters
+$js-sortable-responsivefilters: '.ui-sortable-responsivefilters';
 
 // Current sorted column
 $js-current-sortable-column: '.ui-sortable-current';
@@ -88,3 +97,7 @@ $js-operation-details-open: '.ui-operation-details-open';
 $js-value-positive: '.ui-value-positive';
 // Value is negative
 $js-value-negative: '.ui-value-negative';
+
+// ChartView
+$js-chartview-loading: '.ui-chartview-loading';
+$js-chartview-error: '.ui-chartview-error';
