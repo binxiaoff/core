@@ -284,51 +284,51 @@
 
     {# Set CSS class to show expired project #}
     {% set classProjectExpired = '' %}
-    {% if settings.markExpired == true and listItem.daysLeft == 0 %}
+    {% if settings.markExpired == true and project.daysLeft == 0 %}
         {% set classProjectExpired = 'ui-project-expired' %}
     {% endif %}
 
     {# Set CSS class to show current user is involved in the project #}
     {% set classUserInvolved = '' %}
-    {% if settings.markInvolved == true and listItem.currentUserInvolved == true %}
+    {% if settings.markInvolved == true and project.currentUserInvolved == true %}
         {% set classUserInvolved = 'ui-current-user-involved' %}
     {% endif %}
 
     {# Generate object for mapview to place marker on map #}
-    {% if listItem.lat is defined and listItem.lng is defined %}
+    {% if project.lat is defined and project.lng is defined %}
         {# Set the group based on active, expired, or offers inprogress, rejected or accepted #}
         {# @note MapView JS component & CSS relies on two groups named 'active' and 'expired' (case insensitive) #}
-        {% set mapviewGroup = (listItem.daysLeft == 0 ? 'expired' : 'active') %}
+        {% set mapviewGroup = (project.daysLeft == 0 ? 'expired' : 'active') %}
 
         {# Set the offer status to show the icon in the marker #}
         {# @note MapView CSS relies on offerStatuses named 'inprogress', 'rejected' and 'accepted' #}
         {% set mapviewOfferStatus = '' %}
-        {% if listItem.currentUserTotalOffers > 0 and listItem.currentUserOffers is not empty %}
+        {% if project.currentUserTotalOffers > 0 and project.currentUserOffers is not empty %}
             {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 and statusOffer is not empty and statusOffer != 'rejected' %}
                 {% set mapviewOfferStatus = statusOffer %}
             {% endfor %}
         {% endif %}
 
         {% set mapviewItem = {
-        id: 'marker' ~ listItem.id,
-        categoryId: listItem.categoryId,
-        latLng: [listItem.lat, listItem.lng],
-        title: listItem.title,
-        description: '<div style="font-style: italic;">' ~ listItem.locationCity ~ ', ' ~ listItem.locationPostCode ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ listItem.rating ~ ' out of 5</span></span></div>',
-        status: (listItem.daysLeft == 0 ? 'expired' : 'active'),
+        id: 'marker' ~ project.id,
+        categoryId: project.categoryId,
+        latLng: [project.lat, project.lng],
+        title: project.title,
+        description: '<div style="font-style: italic;">' ~ project.company.city ~ ', ' ~ project.company.zip ~ '</div><div class="rating rating-' ~ classRating ~ '"><span class="sr-only">Rated ' ~ project.rating ~ ' out of 5</span></span></div>',
+        status: (project.daysLeft == 0 ? 'expired' : 'active'),
         offerStatus: mapviewOfferStatus|default(''),
         groupName: mapviewGroup|default('all')
         } %}
     {% endif %}
 
     <li class="project {{ classProjectExpired }} {{ classUserInvolved }}"{% if mapviewItem is defined %} data-mapview-markerid="{{ mapviewItem.id }}" data-mapview-item='{{ mapviewItem|json_encode|escape('html_attr') }}'{% endif %}>
-        <div class="project-name"><a href="{{ listItem.permalink }}">{{ listItem.title }}</a></div>
-        <div class="project-location">{{ listItem.locationCity }}, {{ listItem.locationPostCode }}</div>
-        <div class="project-cost">{{ listItem.cost|__num|nbsp }}€</div>
+        <div class="project-name"><a href="{{ project.slug }}">{{ project.title }}</a></div>
+        <div class="project-location">{{ project.company.city }}, {{ project.company.zip }}</div>
+        <div class="project-cost">{{ project.amount|__num|nbsp }}€</div>
         <div class="project-rating">
-            <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectListItemRatingLabel')|format(listItem.rating) }}</span></span>
+            <span class="rating rating-{{ classRating }}"><span class="sr-only">{{ __('Rated %d out of 5', 'projectListItemRatingLabel')|format(project.risk|convertRisk) }}</span></span>
         </div>
-        <div class="project-interest">{{ listItem.interest|__num(1) }}%</div>
+        <div class="project-interest">{{ project.avg_rate|__num(1) }}%</div>
         <div class="project-period">
             {% if project.daysLeft > 0 and project.daysLeft <= 2 %}
                 <span class="ui-has-timecount" data-timecount-to="{{ project.date_retrait_full|escape('html_attr') }}">&hellip;</span>
@@ -339,20 +339,20 @@
             {% endif %}
         </div>
         <div class="project-offers">
-            <strong>{{ listItem.totalOffers|__num|nbsp }}</strong> {% if listItem.totalOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %}
+            <strong>{{ project.number_bids|__num|nbsp }}</strong> {% if project.number_bids == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %}
 
-            {% if listItem.currentUserTotalOffers > 0 and listItem.currentUserOffers is not empty %}
+            {% if project.currentUserOffers is defined and project.currentUserOffers is not empty and project.currentUserTotalOffers > 0 %}
                 {# Mark that Autolend was applied #}
                 {% set attrHasAutolend = 'class="project-useroffers"' %}
-                {% if listItem.currentUserOffersAutolend is not empty and listItem.currentUserOffersAutolend > 0 %}
-                    {% set autolendTooltip = __('%d offres made with Autolend', 'projectListItemOffersAutolend')|format(listItem.currentUserOffersAutolend) %}
+                {% if project.currentUserOffersAutolend is not empty and project.currentUserOffersAutolend > 0 %}
+                    {% set autolendTooltip = __('%d offres made with Autolend', 'projectListItemOffersAutolend')|format(project.currentUserOffersAutolend) %}
                     {% set autolendTooltipHtml = autolendTooltip ~ " <span class='icon fa-autolend-u32 c-p1'></span>" %}
                     {% set attrHasAutolend = 'class="project-useroffers ui-has-tooltip" data-toggle="tooltip" data-html="true" title="' ~ autolendTooltipHtml ~ '"' %}
                 {% endif %}
 
                 <div {{ attrHasAutolend }}>
                     {# Show stats for each type of offer #}
-                    {% for statusOffer, numOffers in listItem.currentUserOffers if numOffers > 0 %}
+                    {% for statusOffer, numOffers in project.currentUserOffers if numOffers > 0 %}
                         {% if statusOffer == 'accepted' %}
                             <div class="project-useroffers-accepted">
                                 {{ numOffers|__num|nbsp }} {% if numOffers == 1 %}{{ __('offer', 'projectListItemOffersLabelSingle') }}{% else %}{{ __('offers', 'projectListItemOffersLabelPlural') }}{% endif %} {{ __('accepted', 'projectListItemOffersUserStatusAccepted') }}
@@ -370,6 +370,6 @@
                 </div><!-- /.project-useroffers -->
             {% endif %}
         </div>
-        <a href="{{ listItem.permalink }}" class="project-hotspot">&nbsp;</a>
+        <a href="{{ project.slug }}" class="project-hotspot">&nbsp;</a>
     </li>
 {% endmacro %}
