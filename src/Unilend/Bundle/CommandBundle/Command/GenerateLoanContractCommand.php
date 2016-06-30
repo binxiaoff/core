@@ -97,9 +97,9 @@ EOF
                         $lenderCode = substr(trim($lenderCompany->zip), 0, 2);
                     }
 
-                    $basePath     = $sRootDir . '/../protected/pdf/cerfa/2062/' . substr($loan->added, 0, 4);
-                    $borrowerPath = $basePath . '/' . substr(trim($borrowerCompany->zip), 0, 2) . '/emprunteurs/' . $project->slug . '/';
-                    $lenderPath   = $basePath . '/' . $lenderCode . '/preteurs/' . $project->slug . '/';
+                    $basePath     = $sRootDir . '/../protected/pdf/cerfa/2062/';
+                    $borrowerPath = $basePath . substr($loan->added, 0, 4) . '/' . substr(trim($borrowerCompany->zip), 0, 2) . '/emprunteurs/' . $project->slug . '/';
+                    $lenderPath   = $basePath . substr($loan->added, 0, 4) . '/' . $lenderCode . '/preteurs/' . $project->slug . '/';
                     $fileName     = $borrowerCompany->siren . '-' . $lender->id_client_owner . '-' . $loan->id_loan . '.pdf';
 
                     if (false === is_dir($borrowerPath)) {
@@ -131,7 +131,7 @@ EOF
                         continue;
                     }
 
-                    $loan->fichier_declarationContratPret = $fileName;
+                    $loan->fichier_declarationContratPret = str_replace($basePath, '', $borrowerPath) . $fileName;
                     $loan->update();
 
                     $output->writeln('Loan contract PDF generated (loan ' . $loan->id_loan . ')');

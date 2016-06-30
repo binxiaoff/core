@@ -1,7 +1,5 @@
 <?php
-
 namespace Unilend\Bundle\CommandBundle\Command;
-
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
@@ -22,38 +20,37 @@ class AutomaticLenderRepaymentCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         /** @var EntityManager $entityManager */
-        $entityManager           = $this->getContainer()->get('unilend.service.entity_manager');
+        $entityManager = $this->getContainer()->get('unilend.service.entity_manager');
         /** @var \projects $projects */
-        $projects                = $entityManager->getRepository('projects');
+        $projects = $entityManager->getRepository('projects');
         /** @var \echeanciers_emprunteur $echeanciers_emprunteur */
-        $echeanciers_emprunteur  = $entityManager->getRepository('echeanciers_emprunteur');
+        $echeanciers_emprunteur = $entityManager->getRepository('echeanciers_emprunteur');
         /** @var \echeanciers $echeanciers */
-        $echeanciers             = $entityManager->getRepository('echeanciers');
+        $echeanciers = $entityManager->getRepository('echeanciers');
         /** @var \companies $companies */
-        $companies               = $entityManager->getRepository('companies');
+        $companies = $entityManager->getRepository('companies');
         /** @var \transactions $transactions */
-        $transactions            = $entityManager->getRepository('transactions');
+        $transactions = $entityManager->getRepository('transactions');
         /** @var \lenders_accounts $lenders */
-        $lenders                 = $entityManager->getRepository('lenders_accounts');
+        $lenders = $entityManager->getRepository('lenders_accounts');
         /** @var \projects_status_history $projects_status_history */
         $projects_status_history = $entityManager->getRepository('projects_status_history');
         /** @var \wallets_lines $wallets_lines */
-        $wallets_lines           = $entityManager->getRepository('wallets_lines');
+        $wallets_lines = $entityManager->getRepository('wallets_lines');
         /** @var \bank_unilend $bank_unilend */
-        $bank_unilend            = $entityManager->getRepository('bank_unilend');
+        $bank_unilend = $entityManager->getRepository('bank_unilend');
         /** @var \platform_account_unilend $oAccountUnilend */
-        $oAccountUnilend         = $entityManager->getRepository('platform_account_unilend');
+        $oAccountUnilend = $entityManager->getRepository('platform_account_unilend');
         /** @var \projects_remb_log $oRepaymentLog */
-        $oRepaymentLog           = $entityManager->getRepository('projects_remb_log');
+        $oRepaymentLog = $entityManager->getRepository('projects_remb_log');
         /** @var \projects_remb $oProjectRepayment */
-        $oProjectRepayment       = $entityManager->getRepository('projects_remb');
+        $oProjectRepayment = $entityManager->getRepository('projects_remb');
 
         //Load for constant Use only
         $entityManager->getRepository('transactions_types');
 
         /** @var \dates $dates */
         $dates = Loader::loadLib('dates');
-
 
         foreach ($oProjectRepayment->getProjectsToRepay(new \DateTime(), 1) as $r) {
             $oRepaymentLog->id_project       = $r['id_project'];
