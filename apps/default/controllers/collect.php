@@ -409,14 +409,14 @@ class collectController extends bootstrap
                 /** @var \settings $oSettings */
                 $oSettings = $this->loadData('settings');
                 $oSettings->get('Facebook', 'type');
-                $lien_fb = $oSettings;
+                $lien_fb = $oSettings->value;
                 $oSettings->get('Twitter', 'type');
-                $lien_tw = $oSettings;
+                $lien_tw = $oSettings->value;
 
                 $varMail = array(
                     'surl'           => $this->surl,
                     'url'            => $this->lurl,
-                    'prenom'         => utf8_decode($this->clients->prenom),
+                    'prenom'         => $this->clients->prenom,
                     'email_p'        => $this->clients->email,
                     'mdp'            => '',
                     'motif_virement' => $this->clients->getLenderPattern($this->clients->id_client),

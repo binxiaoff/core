@@ -6,11 +6,6 @@ use Psr\Log\LoggerInterface;
 class pdfController extends bootstrap
 {
     /**
-     * File's name for logger
-     */
-    const NAME_LOG = 'pdf.log';
-
-    /**
      * Path of tmp pdf file
      */
     const TMP_PATH_FILE = '/tmp/pdfUnilend/';
@@ -20,7 +15,7 @@ class pdfController extends bootstrap
      */
     private $oSnapPdf;
 
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $oLogger;
 
     /**
@@ -136,7 +131,8 @@ class pdfController extends bootstrap
         $this->oSnapPdf->generateFromHtml($this->sDisplay, $sPathPdf, array(), true);
 
         $iTimeEndPdf = microtime(true) - $iTimeStartPdf;
-        $this->oLogger->info($sTypePdf . ' pdf successfully generated in: ' . round($iTimeEndPdf, 2), array('class' => __CLASS__, 'function' => __FUNCTION__));
+
+        $this->oLogger->info($sTypePdf . ' PDF successfully generated in ' . round($iTimeEndPdf, 2) . ' seconds', array('class' => __CLASS__, 'function' => __FUNCTION__));
     }
 
     /**
@@ -149,10 +145,11 @@ class pdfController extends bootstrap
             $sPathPdf .= '.pdf';
         }
 
-        header("Content-disposition: attachment; filename=" . $sNamePdf . ".pdf");
-        header("Content-Type: application/force-download");
-        if (!readfile($sPathPdf)) {
-            $this->oLogger->error('File : ' . $sPathPdf . ' not readable', array('class' => __CLASS__, 'function' => __FUNCTION__));
+        header('Content-disposition: attachment; filename=' . $sNamePdf . '.pdf');
+        header('Content-Type: application/force-download');
+
+        if (false === readfile($sPathPdf)) {
+            $this->oLogger->error('File "' . $sPathPdf . '"" not readable', array('class' => __CLASS__, 'function' => __FUNCTION__));
         }
     }
 
@@ -213,7 +210,7 @@ class pdfController extends bootstrap
                 }
 
                 if (\clients_mandats::STATUS_SIGNED == $aMandat['status']) {
-                    $this->ReadPdf($aMandat['name'], $sNamePdfClient);
+                    $this->ReadPdf($sPath . $aMandat['name'], $sNamePdfClient);
                     die;
                 }
 
@@ -328,10 +325,9 @@ class pdfController extends bootstrap
                 $aProjectPouvoir        = $this->oProjectsPouvoir->select('id_project = ' . $this->projects->id_project, 'added ASC');
                 $aProjectPouvoirToTreat = (is_array($aProjectPouvoir) && false === empty($aProjectPouvoir)) ? array_shift($aProjectPouvoir) : null;
 
-                // Deleting authority, not necessary (Double authority)
                 if (is_array($aProjectPouvoir) && 0 < count($aProjectPouvoir)) {
                     foreach ($aProjectPouvoir as $aProjectPouvoirToDelete) {
-                        $this->oLogger->info('Deleting Pouvoir id : ' . $aProjectPouvoirToDelete['id_pouvoir'], array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
+                        $this->oLogger->info('Deleting proxy (' . $aProjectPouvoirToDelete['id_pouvoir'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $this->projects->id_project));
                         $this->oProjectsPouvoir->delete($aProjectPouvoirToDelete['id_pouvoir'], 'id_pouvoir');
                     }
                 }
@@ -369,7 +365,8 @@ class pdfController extends bootstrap
                 if (false === $bSigned) {
                     if (file_exists($sPath . $sFileName) && filesize($sPath . $sFileName) > 0 && date('Y-m-d', filemtime($sPath . $sFileName)) != date('Y-m-d')) {
                         unlink($sPath . $sFileName);
-                        $this->oLogger->info('File : ' . $sPath . $sFileName . ' deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
+
+                        $this->oLogger->info('File "' . $sPath . $sFileName . '" deleted', array('class' => __CLASS__, 'function' => __FUNCTION__));
 
                         $this->GenerateProxyHtml();
                         $this->WritePdf($sPath . $sFileName, 'authority');
@@ -489,11 +486,9 @@ class pdfController extends bootstrap
         $this->taux             = $this->projects->getAverageInterestRate();
         $this->nbLoansBDC       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_BDC . ' AND id_project = ' . $this->projects->id_project);
         $this->nbLoansIFP       = $this->oLoans->counter('id_type_contract = ' . \loans::TYPE_CONTRACT_IFP . ' AND id_project = ' . $this->projects->id_project);
-        $this->echeanceEmprun   = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project . ' AND ordre = 1');
-        $this->rembByMonth      = $this->echeanciers->getMontantRembEmprunteur($this->echeanceEmprun[0]['montant'], $this->echeanceEmprun[0]['commission'], $this->echeanceEmprun[0]['tva']);
-        $this->rembByMonth      = $this->rembByMonth / 100;
-        $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
         $this->lRemb            = $this->oEcheanciersEmprunteur->select('id_project = ' . $this->projects->id_project, 'ordre ASC');
+        $this->rembByMonth      = bcdiv($this->echeanciers->getMontantRembEmprunteur($this->lRemb[0]['montant'], $this->lRemb[0]['commission'], $this->lRemb[0]['tva']), 100, 2);
+        $this->dateLastEcheance = $this->echeanciers->getDateDerniereEcheancePreteur($this->projects->id_project);
 
         $this->capital = 0;
         foreach ($this->lRemb as $r) {
@@ -862,12 +857,23 @@ class pdfController extends bootstrap
             $repaymentBaseDate = date('Y-m-d H:i:00');
 
             for ($order = 1; $order <= $this->projects->period; $order++) {
+                $currentLenderRepaymentDates   = $lenderRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
+                $currentBorrowerRepaymentDates = $borrowerRepaymentSchedule->select('id_project = ' . $this->projects->id_project . ' AND ordre = ' . $order, '', 0, 1)[0];
+
                 $lenderRepaymentDate   = date('Y-m-d H:i:s', $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order));
                 $borrowerRepaymentDate = $this->dates->dateAddMoisJoursV3($repaymentBaseDate, $order);
                 $borrowerRepaymentDate = date('Y-m-d H:i:s', $jo->display_jours_ouvres($borrowerRepaymentDate, $daysOffset));
 
-                $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate, $borrowerRepaymentDate);
-                $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate);
+                if (
+                    substr($currentLenderRepaymentDates['date_echeance'], 0, 10) !== substr($lenderRepaymentDate, 0, 10)
+                    || substr($currentLenderRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)
+                ) {
+                    $lenderRepaymentSchedule->onMetAjourLesDatesEcheances($this->projects->id_project, $order, $lenderRepaymentDate, $borrowerRepaymentDate);
+                }
+
+                if (substr($currentBorrowerRepaymentDates['date_echeance_emprunteur'], 0, 10) !== substr($borrowerRepaymentDate, 0, 10)) {
+                    $borrowerRepaymentSchedule->onMetAjourLesDatesEcheancesE($this->projects->id_project, $order, $borrowerRepaymentDate);
+                }
             }
         }
     }
@@ -979,6 +985,7 @@ class pdfController extends bootstrap
     private function GenerateLoansHtml()
     {
         $this->echeanciers = $this->loadData('echeanciers');
+        $this->loans       = $this->loadData('loans');
 
         $this->aProjectsInDebt = $this->projects->getProjectsInDebt();
         $this->lSumLoans       = $this->loans->getSumLoansByProject($this->lenders_accounts->id_lender_account, 'debut DESC, p.title ASC');
@@ -1154,12 +1161,12 @@ class pdfController extends bootstrap
         );
 
         $array_type_transactions_liste_deroulante = array(
-            1 => '1,2,3,4,5,7,8,16,17,19,20,23',
+            1 => '1,2,3,4,5,7,8,16,17,19,20,23,26',
             2 => '3,4,7,8',
             3 => '3,4,7',
             4 => '8',
             5 => '2',
-            6 => '5,23'
+            6 => '5,23,26'
         );
 
         if (isset($post_tri_type_transac)) {

@@ -167,7 +167,7 @@ class ProjectManager
             $oBidLog->create();
         }
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' Check bid info: ' . var_export($aLogContext), array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info('Check bid info: ' . var_export($aLogContext) . ' (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
     }
 
@@ -259,7 +259,7 @@ class ProjectManager
         $this->addProjectStatus(\users::USER_ID_CRON, \projects_status::FUNDE, $oProject);
 
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info('Project ' . $oProject->id_project . ' is now changed to status funded', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         $aBidList    = $oBid->select('id_project = ' . $oProject->id_project . ' AND status = ' . \bids::STATUS_BID_PENDING, 'rate ASC, ordre ASC');
@@ -267,14 +267,16 @@ class ProjectManager
 
         $iBidNbTotal   = count($aBidList);
         $iTreatedBitNb = 0;
+
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . ' bids in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info($iBidNbTotal . ' bids created (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
+
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid']);
             if ($iBidBalance < $oProject->amount) {
                 $iBidBalance += ($aBid['amount'] / 100);
-                // Pour la partie qui depasse le montant de l'emprunt (ça c'est que pour le mec à qui on découpé son bid)
+
                 if ($iBidBalance > $oProject->amount) {
                     $fAmountToCredit = $iBidBalance - $oProject->amount;
                     $this->oBidManager->rejectPartially($oBid, $fAmountToCredit);
@@ -282,16 +284,18 @@ class ProjectManager
                     $oBid->status = \bids::STATUS_BID_ACCEPTED;
                     $oBid->update();
                 }
+
                 if ($this->oLogger instanceof LoggerInterface) {
-                    $this->oLogger->info('id_project=' . $oProject->id_project . ' : The bid (' . $aBid['id_bid'] . ') status has been updated to 1', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                    $this->oLogger->info('The bid status has been updated to 1' . $aBid['id_bid'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
                 }
-            } else { // Pour les encheres qui depassent on rend l'argent
-                // On regarde si on a pas deja un remb pour ce bid
+            } else {
                 $this->oBidManager->reject($oBid, true);
             }
+
             $iTreatedBitNb++;
+
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . ' bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
 
@@ -384,15 +388,16 @@ class ProjectManager
         $iTreatedBitNb = 0;
 
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iBidNbTotal . 'bids in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info($iBidNbTotal . 'bids in total (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         foreach ($aBidList as $aBid) {
             $oBid->get($aBid['id_bid'], 'id_bid');
             $this->oBidManager->reject($oBid, true);
             $iTreatedBitNb++;
+
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info($iTreatedBitNb . '/' . $iBidNbTotal . 'bids treated (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
         }
     }
@@ -452,16 +457,12 @@ class ProjectManager
 
             $iLoanNbTotal   = count($lLoans);
             $iTreatedLoanNb = 0;
+
             if ($this->oLogger instanceof LoggerInterface) {
-                $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iLoanNbTotal . ' in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+                $this->oLogger->info($iLoanNbTotal . ' in total (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
             }
 
-            // on parcourt les loans du projet en remboursement
             foreach ($lLoans as $l) {
-                //////////////////////////////
-                // Echeancier remboursement //
-                //////////////////////////////
-
                 $oLenderAccount->get($l['id_lender'], 'id_lender_account');
                 $oClient->get($oLenderAccount->id_client_owner, 'id_client');
 
@@ -536,8 +537,7 @@ class ProjectManager
                             $montant_prelevements_sociaux         = round($prelevements_sociaux * $e['interest'], 2);
                             $montant_retenues_source              = 0;
                         }
-                    } // entreprise
-                    else {
+                    } else {
                         $montant_prelevements_obligatoires    = 0;
                         $montant_contributions_additionnelles = 0;
                         $montant_crds                         = 0;
@@ -583,9 +583,10 @@ class ProjectManager
                 $oRepaymentSchedule->multiInsert($aRepaymentSchedule);
 
                 $iTreatedLoanNb++;
+
                 if ($this->oLogger instanceof LoggerInterface) {
                     $this->oLogger->info(
-                        'id_project=' . $oProject->id_project . ' : ' . $iTreatedLoanNb . '/' . $iLoanNbTotal . ' lender loan treated. ' . $k . ' repayment schedules created',
+                        $iTreatedLoanNb . '/' . $iLoanNbTotal . ' loans treated. ' . $k . ' repayment schedules created (project ' . $oProject->id_project . ' : ',
                         array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
                     );
                 }
@@ -618,15 +619,12 @@ class ProjectManager
         $iTreatedPaymentNb = 0;
 
         if ($this->oLogger instanceof LoggerInterface) {
-            $this->oLogger->info('id_project=' . $oProject->id_project . ' : ' . $iPaymentsNbTotal . ' in total', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
+            $this->oLogger->info($iPaymentsNbTotal . ' borrower repayments in total (project ' . $oProject->id_project . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project));
         }
 
         foreach ($aPaymentList as $iIndex => $aPayment) {
-            // Date d'echeance emprunteur
             $sPaymentDate = $this->oDate->dateAddMoisJoursV3($oProject->date_fin, $iIndex);
-            // on retire 6 jours ouvrés
             $sPaymentDate = $this->oWorkingDay->display_jours_ouvres($sPaymentDate, 6);
-
             $sPaymentDate = date('Y-m-d H:i', $sPaymentDate) . ':00';
 
             $oPaymentSchedule->id_project               = $oProject->id_project;
@@ -640,9 +638,10 @@ class ProjectManager
             $oPaymentSchedule->create();
 
             $iTreatedPaymentNb++;
+
             if ($this->oLogger instanceof LoggerInterface) {
                 $this->oLogger->info(
-                    'id_project=' . $oProject->id_project . ' : borrower echeance (' . $oPaymentSchedule->id_echeancier_emprunteur . ') has been created. ' . $iTreatedPaymentNb . '/' . $iPaymentsNbTotal . 'traited',
+                    'Borrower repayment ' . $oPaymentSchedule->id_echeancier_emprunteur . ' created. ' . $iTreatedPaymentNb . '/' . $iPaymentsNbTotal . 'treated (project ' . $oProject->id_project . ')',
                     array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oProject->id_project)
                 );
             }
@@ -672,6 +671,10 @@ class ProjectManager
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
         $oProjectStatus->get($iProjectStatus, 'status');
+
+        if ($this->oLogger instanceof LoggerInterface && empty($oProjectStatus->id_project_status)) {
+            $this->oLogger->error('Trying to insert empty status for project ' . $oProject->id_project . ' - Trace: ' . serialize(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3)), array('id_project' => $oProject->id_project));
+        }
 
         $oProjectsStatusHistory->id_project        = $oProject->id_project;
         $oProjectsStatusHistory->id_project_status = $oProjectStatus->id_project_status;
@@ -762,6 +765,7 @@ class ProjectManager
             $oProject->update();
 
             $this->oMailerManager->sendFundedToBorrower($oProject);
+            $this->oMailerManager->sendFundedToStaff($oProject);
         }
     }
 

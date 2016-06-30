@@ -9,7 +9,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class CheckIncomingSfpmeiFeedFile extends ContainerAwareCommand
 {
-    CONST FILE_ROOT_NAME = 'UNILEND-00040631007-';
+    const FILE_ROOT_NAME = 'UNILEND-00040631007-';
 
     protected function configure()
     {
@@ -26,7 +26,7 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/reception/' . self::FILE_ROOT_NAME . date('Ymd') . '.txt';
+        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/receptions/' . self::FILE_ROOT_NAME . date('Ymd') . '.txt';
         if (false === file_exists($sFilePath)) {
             $this->sendMissingReceptionFileMail();
         }

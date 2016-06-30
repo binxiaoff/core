@@ -224,17 +224,8 @@ class espace_emprunteurController extends bootstrap
             $this->aClientsProjects[$iKey]['mandat']  = $oClientsMandat->select('id_project = ' . $aProject['id_project'], 'updated DESC');
 
             foreach ($this->aClientsProjects[$iKey]['mandat'] as $iMandatKey => $aMandat) {
-                switch ($aMandat['status']) {
-                    case \clients_mandats::STATUS_PENDING:
-                        $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'mandat-en-cours';
-                        break;
-                    case \clients_mandats::STATUS_SIGNED:
-                    case \clients_mandats::STATUS_CANCELED:
-                    case \clients_mandats::STATUS_FAILED:
-                    case \clients_mandats::STATUS_ARCHIVED:
-                    default:
-                        $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'void';
-                        break;
+                if (\clients_mandats::STATUS_PENDING == $aMandat['status']) {
+                    $this->aClientsProjects[$iKey]['mandat'][$iMandatKey]['status-trad'] = 'mandat-en-cours';
                 }
             }
         }
@@ -408,7 +399,6 @@ class espace_emprunteurController extends bootstrap
         foreach ($aProjectsPostFunding as $iKey => $aProject) {
             $aProjectsPostFunding[$iKey]['AverageIR']              = $this->projects->getAverageInterestRate($aProject['id_project'], $aProject['project_status']);
             $aProjectsPostFunding[$iKey]['RemainingDueCapital']    = $this->calculateRemainingDueCapital($aProject['id_project']);
-
             $aNextRepayment                                        = $oRepaymentSchedule->select('status_emprunteur = 0 AND id_project = ' . $aProject['id_project'], 'date_echeance_emprunteur ASC', '', 1);
             $aNextRepayment                                        = array_shift($aNextRepayment);
             $aProjectsPostFunding[$iKey]['MonthlyPayment']         = ($aNextRepayment['montant'] + $aNextRepayment['commission'] + $aNextRepayment['tva']) / 100;
@@ -540,10 +530,14 @@ class espace_emprunteurController extends bootstrap
 
     public function _getPdfOperations()
     {
+        $this->hideDecoration();
         include $this->path . '/apps/default/controllers/pdf.php';
 
-        $oCommandPdf    = new Command('pdf', 'setDisplay', $this->language);
-        $oPdf           = new pdfController($oCommandPdf, $this->Config, 'default');
+        $oCommandPdf    = new \Command('pdf', 'setDisplay', $this->language);
+        $oPdf           = new \pdfController($oCommandPdf, $this->Config, 'default');
+        $oPdf->setContainer($this->container);
+        $oPdf->initialize();
+
         $sPath          = $this->path . 'protected/operations_export_pdf/' . $this->clients->id_client . '/';
         $sNamePdfClient = 'operations_emprunteur_' . date('Y-m-d') . '.pdf';
 
@@ -559,6 +553,7 @@ class espace_emprunteurController extends bootstrap
             $this->clients->id_client
         );
 
+        $oPdf->companies = $this->loadData('companies');
         $oPdf->companies->get($this->clients->id_client, 'id_client_owner');
         $oPdf->setDisplay('operations_emprunteur_pdf_html');
         $oPdf->WritePdf($sPath . $sNamePdfClient, 'operations');

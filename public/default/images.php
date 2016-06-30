@@ -15,15 +15,12 @@ require_once __DIR__ . '/../../app/AppKernel.php';
 include_once __DIR__ . '/../../config.php';
 
 error_reporting(E_ALL & ~E_DEPRECATED & ~E_NOTICE);
-ini_set('display_errors', 1);
+
+ini_set('display_errors', 0);
 ini_set('log_errors', 1);
 
 $kernel = new AppKernel('prod', false);
 $kernel->boot();
-
-$errorLogfile = $kernel->getLogDir() . '/error.' . date('Ymd') . '.log';
-\Unilend\core\ErrorHandler::enable($errorLogfile);
-
 
 $config = $kernel->getContainer()->getParameter('image_resize');
 
@@ -49,7 +46,7 @@ try {
     }
 
     if (false === file_exists($sSourceImagePath)) {
-        $oImagick = new \Imagick($sStaticPath . 'images/dyn/default.jpg');
+        $oImagick = new \Imagick($sStaticPath . 'images/default.jpg');
         $oImagick->scaleImage($iImageWidth, $iImageHeight);
 
         throw new ResizableImageException('Unable to find source image');

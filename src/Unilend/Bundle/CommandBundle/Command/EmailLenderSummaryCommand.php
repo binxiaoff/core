@@ -10,7 +10,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\MailerManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
-
 class EmailLenderSummaryCommand extends ContainerAwareCommand
 {
     const DAILY   = 'quotidienne';
@@ -76,8 +75,8 @@ EOF
                 $summaryType = self::MONTHLY;
                 break;
             default:
-                $output->writeln('unknown summary type');
-                $logger->warning('unknown summary type', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $output->writeln('Unknown summary type (' . $summaryType . ')');
+                $logger->warning('Unknown summary type (' . $summaryType . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
                 return;
         }
 
@@ -90,18 +89,18 @@ EOF
             case 'new_project': // run at 19:30 for daily, at 9:00 for weekly
                 $mailerManager->sendNewProjectsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_NEW_PROJECT), $summaryType);
                 break;
-            case 'placed_bid': // run at 20:00
+            case 'placed_bid': // run at 20:00 for daily
                 $mailerManager->sendPlacedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_BID_PLACED), $summaryType);
                 break;
-            case 'rejected_bid': // run at 20:15
+            case 'rejected_bid': // run at 20:15 for daily
                 $mailerManager->sendRejectedBidsSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_BID_REJECTED), $summaryType);
                 break;
-            case 'accepted_loan': // run at 20:30, at 9:30 for weekly and at 10::30 for monthly
+            case 'accepted_loan': // run at 20:30 for daily, at 9:30 for weekly and at 10::30 for monthly
                 $mailerManager->sendAcceptedLoansSummaryEmail($oCustomerNotificationSettings->getCustomersByNotification($summaryType, \clients_gestion_type_notif::TYPE_LOAN_ACCEPTED), $summaryType);
                 break;
             default:
-                $output->writeln('unknown notification type');
-                $logger->warning('unknown notification type', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $output->writeln('Unknown notification type (' . $notificationType . ')');
+                $logger->warning('Unknown notification type (' . $notificationType . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
                 return;
         }
     }

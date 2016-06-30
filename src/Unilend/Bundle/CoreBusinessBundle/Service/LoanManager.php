@@ -10,7 +10,7 @@ use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
  */
 class LoanManager
 {
-    /** @var  LoggerInterface */
+    /** @var LoggerInterface */
     private $oLogger;
     /** @var EntityManager  */
     private $oEntityManager;
@@ -60,8 +60,8 @@ class LoanManager
                         break;
                 }
                 $this->oLogger->info(
-                    'project : ' . $oLoan->id_project . ' : bid (' . $aAcceptedBid['bid_id'] . ') has been transferred to ' . $sType . ' contract loan (' . $oLoan->id_loan . ') with amount ' . $aAcceptedBid['amount'],
-                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oLoan->id_project)
+                    'Loan ' . $oLoan->id_loan . ' generated from bid ' . $aAcceptedBid['bid_id'] . ' with amount ' . $aAcceptedBid['amount'],
+                    array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $oLoan->id_project, 'id_loan' => $oLoan->id_loan, 'id_bid' => $aAcceptedBid['bid_id'])
                 );
             }
         }

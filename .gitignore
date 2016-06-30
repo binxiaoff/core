@@ -13,19 +13,16 @@ nbactions.xml
 nb-configuration.xml
 .nb-gradle/
 
-### Izinoa ###
-protected/*
-log/
-logs/
-tmp/
-public/admin/.htaccess
-public/default/.htaccess
-data/crud/*
-route.php
-*.rej
+# Izinoa
+/tmp/
+/public/admin/.htaccess
+/public/default/.htaccess
+/data/crud/*
+/route.php
 
-#Symfony 3
+# Symfony 3
 /app/config/parameters.yml
+/app/config/parameters_extended.yml
 /build/
 /phpunit.xml
 /var/*
@@ -47,5 +44,4 @@ route.php
 # Exceptions
 !public/default/styles/default/*
 !public/default/scripts/default/*
-!protected/sftp
 !/dev/public/

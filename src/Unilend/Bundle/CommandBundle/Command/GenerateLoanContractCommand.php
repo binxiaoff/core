@@ -103,15 +103,17 @@ EOF
                     try {
                         $oPdf->_declarationContratPret_html($aLoan['id_loan'], $path);
                     } catch (\Exception $exception) {
-                        $oLogger->error('Could not generate the loan contract pdf for id_loan=' . $aLoan['id_loan'] . ' and id_project=' . $aLoan['id_project'] .
-                            ' Exception message: ' . $exception->getMessage() . ' -In file: ' . $exception->getFile() . ' -At line: ' . $exception->getLine(),
-                            array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aLoan['id_project'], 'id_loan' => $aLoan['id_loan']));
+                        $oLogger->error(
+                            'Could not generate the loan contract PDF (loan ' . $aLoan['id_loan'] . ' - project ' . $aLoan['id_project'] . ') - Message: ' . $exception->getMessage() . ' - File: ' . $exception->getFile() . ' - Line: ' . $exception->getLine(),
+                            array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aLoan['id_project'], 'id_loan' => $aLoan['id_loan'])
+                        );
                         continue;
                     }
                     $loans->get($aLoan['id_loan'], 'id_loan');
                     $loans->fichier_declarationContratPret = $sDocumentName;
                     $loans->update();
-                    $oLogger->info('Loan contract pdf generated for id_loan=' . $aLoan['id_loan'] . ' ', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aLoan['id_project'], 'id_loan' => $aLoan['id_loan']));
+
+                    $oLogger->info('Loan contract PDF generated (loan ' . $aLoan['id_loan'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_project' => $aLoan['id_project'], 'id_loan' => $aLoan['id_loan']));
                 }
             }
         }

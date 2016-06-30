@@ -15,9 +15,9 @@ class MailTemplateManager
     /**
      * MailTextManager constructor.
      *
-     * @param EntityManager $entityManager
+     * @param EntityManager    $entityManager
      * @param MailQueueManager $mailQueueManager
-     * @param $defaultLanguage
+     * @param                  $defaultLanguage
      */
     public function __construct(EntityManager $entityManager, MailQueueManager $mailQueueManager, $defaultLanguage)
     {
@@ -42,14 +42,13 @@ class MailTemplateManager
         $oMailTemplate->sender_email = $sSenderEmail;
         $oMailTemplate->subject      = $sSubject;
         $oMailTemplate->content      = $sContent;
-        $oMailTemplate->lang         = $this->defaultLanguage;
+        $oMailTemplate->locale       = $this->defaultLanguage;
         $oMailTemplate->status       = \mail_templates::STATUS_ACTIVE;
         $oMailTemplate->create();
-
     }
 
     /**
-     * @param int $iTemplateID
+     * @param int    $iTemplateID
      * @param string $sType
      * @param string $sSender
      * @param string $sSenderEmail
@@ -61,7 +60,7 @@ class MailTemplateManager
         /** @var \mail_templates $oMailTemplate */
         $oMailTemplate = $this->entityManager->getRepository('mail_templates');
         $oMailTemplate->get($iTemplateID);
-        if ($this->mailQueueManager->existsInMailQueue($iTemplateID)){
+        if ($this->mailQueueManager->existsInMailQueue($iTemplateID)) {
             $this->archiveTemplate($oMailTemplate);
             $this->addTemplate($sType, $sSender, $sSenderEmail, $sSubject, $sContent);
         } else {
@@ -89,7 +88,7 @@ class MailTemplateManager
     public function getActiveMailTemplates()
     {
         /** @var \mail_templates $oMailTemplate */
-        $oMailTemplate  = $this->entityManager->getRepository('mail_templates');
+        $oMailTemplate = $this->entityManager->getRepository('mail_templates');
         return $oMailTemplate->getActiveMailTemplates();
     }
 

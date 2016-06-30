@@ -121,20 +121,23 @@ class depot_de_dossierController extends bootstrap
 
         $this->settings->get('Altares email alertes', 'type');
         $sAlertEmail = $this->settings->value;
+
         /** @var LoggerInterface $oLogger */
         $oLogger = $this->get('logger');
+
         try {
             $oAltares = new Altares();
             $oResult  = $oAltares->getEligibility($iSIREN);
-            $oLogger->info('Altares response: ' . var_export($oResult, true), array('class' => __CLASS__, 'function' => __FUNCTION__));
         } catch (\Exception $oException) {
-            $oLogger->error('Calling Altares::getEligibility() using siren=' . $iSIREN . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $iSIREN));
+            $oLogger->error('Calling Altares::getEligibility() using SIREN ' . $iSIREN . ' - Exception message: ' . $oException->getMessage(), array('class' => __CLASS__, 'function' => __FUNCTION__, 'siren' => $iSIREN));
+
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 2', 'Date ' . date('Y-m-d H:i:s') . '' . $oException->getMessage());
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
 
         if (false === empty($oResult->exception)) {
             $oLogger->error('Altares error code: ' . $oResult->exception->code . ' - Altares error description: ' . $oResult->exception->description . ' - Altares error: ' . $oResult->exception->erreur, array('class' => __CLASS__, 'function' => __FUNCTION__));
+
             mail($sAlertEmail, '[ALERTE] ERREUR ALTARES 1', 'Date ' . date('Y-m-d H:i:s') . 'SIREN : ' . $iSIREN . ' | ' . $oResult->exception->code . ' | ' . $oResult->exception->description . ' | ' . $oResult->exception->erreur);
             $this->redirect(self::PAGE_NAME_STEP_2, \projects_status::COMPLETUDE_ETAPE_2);
         }
@@ -956,7 +959,6 @@ class depot_de_dossierController extends bootstrap
 
             /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
             $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($oMailTemplate->type, $aReplacements, false);
-            $message->setSubject(stripslashes(utf8_decode(str_replace('[ID_PROJET]', $this->projects->id_project, $oMailTemplate->subject))));
             $message->setTo(trim($this->users->email));
             $mailer = $this->get('mailer');
             $mailer->send($message);

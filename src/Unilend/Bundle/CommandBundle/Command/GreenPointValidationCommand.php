@@ -56,7 +56,7 @@ EOF
             /** @var \lenders_accounts $oLendersAccount */
             $oLendersAccount = $oEntityManager->getRepository('lenders_accounts');
             /** @var greenPoint $oGreenPoint */
-            $oGreenPoint = new greenPoint($this->getParameter('kernel.environment'));
+            $oGreenPoint = new greenPoint($this->getContainer()->getParameter('kernel.environment'));
             /** @var \attachment $oAttachment */
             $oAttachment = $oEntityManager->getRepository('attachment');
             /** @var \attachment_type $oAttachmentType */
@@ -70,7 +70,6 @@ EOF
                 $aAttachmentsToRevalidate = array();
 
                 if (false === empty($aAttachments)) {
-                    $aError = array();
                     foreach ($aAttachments as $iAttachmentTypeId => $aAttachment) {
                         if ($oGreenPointAttachment->get($aAttachment['id'], 'id_attachment') && 0 == $oGreenPointAttachment->revalidate) {
                             continue;
@@ -81,9 +80,10 @@ EOF
                         $sFullPath       = realpath($sAttachmentPath);
 
                         if (false == $sFullPath) {
-                            $oLogger->error('Attachment not found - ID=' . $aAttachment['id'], array('class' => __CLASS__, 'function' => __FUNCTION__));
+                            $oLogger->error('Attachment not found (ID ' . $aAttachment['id'] . ')', array('class' => __CLASS__, 'function' => __FUNCTION__));
                             continue;
                         }
+
                         try {
                             switch ($iAttachmentTypeId) {
                                 case \attachment_type::CNI_PASSPORTE:
@@ -107,16 +107,15 @@ EOF
                                     break;
                             }
                         } catch (\Exception $oException) {
-                            $aError[$aAttachment['id']][$iAttachmentTypeId] = array('iErrorCode' => $oException->getCode(), 'sErrorMessage' => $oException->getMessage());
-                            unset($oException);
+                            $oLogger->error(
+                                'Greenpoint was unable to process data (client ' . $iClientId . ') - Message: ' . $oException->getMessage() . ' - Code: ' . $oException->getCode(),
+                                array('class' => __CLASS__, 'function' => __FUNCTION__, 'id_client' => $iClientId)
+                            );
                         }
                     }
-                    if (false === empty($aError)) {
-                        $oLogger->error('CLIENT_ID=' . $iClientId . ' - Catched Exceptions : ' . var_export($aError, 1), __METHOD__);
-                    }
+
                     if (false === empty($aQueryID) && is_array($aQueryID)) {
                         $aResult = $oGreenPoint->sendRequests();
-                        $oLogger->info('CLIENT_ID=' . $iClientId . ' - Request Details : ' . var_export($aResult, 1), array('class' => __CLASS__, 'function' => __FUNCTION__));
                         $this->processGreenPointResponse($iClientId, $aResult, $aQueryID, $aAttachmentsToRevalidate, $oEntityManager);
                         unset($aResult, $aQueryID);
                         greenPointStatus::addCustomer($iClientId, $oGreenPoint, $oGreenPointKyc);
@@ -137,7 +136,7 @@ EOF
     private function getGreenPointData($iClientId, $iAttachmentId, $sPath, array $aClient, $sType)
     {
         $aData = array(
-            'files'    => '@' . $sPath,
+            'files'    => new \CURLFile($sPath),
             'dossier'  => $iClientId,
             'document' => $iAttachmentId,
             'detail'   => 1,
