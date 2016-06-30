@@ -25,7 +25,7 @@ class StaticPagesController extends Controller
      */
     public function reviewFooterShowAction()
     {
-        return $this->render('partials/home/reviews.html.twig', array());
+        return $this->render('partials/site/reviews.html.twig', array());
     }
 
     /**
