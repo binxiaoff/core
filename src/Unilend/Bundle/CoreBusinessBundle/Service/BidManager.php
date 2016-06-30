@@ -68,6 +68,8 @@ class BidManager
         $oWelcomeOfferDetails = $this->oEntityManager->getRepository('offres_bienvenues_details');
         /** @var \projects_status $oProjectStatus */
         $oProjectStatus = $this->oEntityManager->getRepository('projects_status');
+        /** @var \projects $oProject */
+        $oProject = $this->oEntityManager->getRepository('projects');
 
         $this->oEntityManager->getRepository('transactions_types'); //load for constant use
 
@@ -90,6 +92,16 @@ class BidManager
 
         $oProjectStatus = $oProjectStatus->getLastStatut($iProjectId);
         if (false === in_array($oProjectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
+            return false;
+        }
+
+        $oProject->get($iProjectId);
+        $oCurrentDate = new \DateTime();
+        $oEndDate  = new \DateTime($oProject->date_retrait_full);
+        if ($oProject->date_fin != '0000-00-00 00:00:00') {
+            $oEndDate = new \DateTime($oProject->date_fin);
+        }
+        if ($oCurrentDate > $oEndDate) {
             return false;
         }
 
