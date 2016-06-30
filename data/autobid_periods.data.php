@@ -25,7 +25,6 @@
 //  Coupable : CM
 //
 // **************************************************************************************************** //
-use Unilend\librairies\Cache;
 
 class autobid_periods extends autobid_periods_crud
 {
@@ -82,21 +81,17 @@ class autobid_periods extends autobid_periods_crud
         return ($this->bdd->fetch_array($result, 0, 0) > 0);
     }
 
-    public function getDurations($iPeriodId)
+    public function getDurations($periodId)
     {
-        $oCache     = Cache::getInstance();
-        $sKey       = $oCache->makeKey('autobid_period', 'getDurations', $iPeriodId);
-        $mDurations = $oCache->get($sKey);
+        $sQuery = 'SELECT min, max FROM autobid_periods WHERE id_period = :periodId';
+        try {
+            $aDuration = $this->bdd->executeQuery($sQuery, array('periodId' => $periodId), array('periodId' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                ->fetch(PDO::FETCH_ASSOC);
 
-        if (false === $mDurations) {
-            if ($this->get($iPeriodId)) {
-                $mDurations['min'] = $this->min;
-                $mDurations['max'] = $this->max;
-                $oCache->set($sKey, $mDurations, Cache::LONG_TIME);
-            }
+        } catch (\Doctrine\DBAL\DBALException $exception) {
+            $aDuration = array();
         }
-
-        return $mDurations;
+        return $aDuration;
     }
 
     public function getPeriod($iDuration, $iStatus = self::STATUS_ACTIVE)

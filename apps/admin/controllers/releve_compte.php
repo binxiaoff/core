@@ -3,10 +3,10 @@
 class releve_compteController extends bootstrap
 {
 	var $Command;
-	
-	function releve_compteController($command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 		

@@ -33,13 +33,13 @@ class greenPoint
     /** @var array */
     private $aConfig;
 
-    public function __construct()
+    public function __construct($environment)
     {
         $this->iCustomerId = '';
         $this->aConfig     = Loader::loadConfig();
         $this->oSettings   = Loader::loadData('settings');
 
-        switch ($this->aConfig['env']) {
+        switch ($environment) {
             case 'prod':
                 $this->sUrl = self::PROD_URL;
 
@@ -49,7 +49,7 @@ class greenPoint
                 $this->oSettings->get('green_point_login_prod', 'type');
                 $this->sLogin = $this->oSettings->value;
                 break;
-            default :
+            default:
                 $this->sUrl = self::TEST_URL;
 
                 $this->oSettings->get('green_point_pw_test', 'type');

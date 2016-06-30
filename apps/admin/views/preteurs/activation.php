@@ -56,6 +56,9 @@
             <?php
             $iRow      = 1;
             foreach ($this->lPreteurs as $c) {
+                $sGreenPointStatus = '';
+                $sWaitingForGP = '';
+                $sBGColor      = '';
                 if (isset($this->aGreenPointStatus[$c['id_client']])) {
                     $sWaitingForGP     = '';
                     $sGreenPointStatus = $this->aGreenPointStatus[$c['id_client']];
@@ -70,9 +73,6 @@
                     }
                 } elseif (in_array($c['status_client'], array(clients_status::TO_BE_CHECKED, clients_status::COMPLETENESS_REPLY, clients_status::MODIFICATION))) {
                     $sWaitingForGP = '&nbsp;<span style="font-weight: bold; color: #f79232;">Attente Green Point</span>';
-                    $sBGColor      = '';
-                } else {
-                    $sWaitingForGP = '';
                     $sBGColor      = '';
                 }
 

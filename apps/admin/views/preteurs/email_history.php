@@ -54,45 +54,44 @@
     <div class="form-body">
         <div class="form-row">
             <table>
+                <thead></thead>
+                    <tr>
+                        <th width="auto"></th>
+                        <th width="100px"><br>Immédiatement</th>
+                        <th width="100px">Synthèse<br>quotidienne</th>
+                        <th width="100px">Synthèse<br>hebdomadaire</th>
+                        <th width="100px">Synthèse<br>Mensuelle</th>
+                        <th width="100px">Uniquement<br>notification</th>
+                    </tr>
+                </thead>
+                <tbody>
                 <?php foreach ($this->aInfosNotifications as $sGroup => $aNotificationGroup) : ?>
-
-                    <th width="auto"><span><br><?= $aNotificationGroup['title'] ?></span></th>
-                    <?php if ($sGroup === 'vos-offres-et-vos-projets') : ?>
-                <th width="100px"><br>Immédiatement</th>
-                <th width="100px"><p>Synthèse<br>quotidienne</p></th>
-                <th width="100px"><p>Synthèse<br>hebdomadaire</p></th>
-                <th width="100px"><p>Synthèse<br>Mensuelle</p></th>
-                <th width="100px"><p>Uniquement<br>notification</p></th>
-                    <?php else : ?>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                    <?php endif; ?>
+                    <tr>
+                        <th colspan="6"><span><br><?= $aNotificationGroup['title'] ?></span></th>
+                    </tr>
                     <?php foreach ($aNotificationGroup['notifications'] as $iTypes => $aNotification) : ?>
-                <tr>
-                    <td><?= $aNotification['title'] ?></td>
-                        <?php foreach ($this->aNotificationPeriode as $sPeriod) : ?>
-                    <td>
-                            <?php if (in_array($sPeriod, $aNotification['available_types'])) : ?>
-                                <?php if (1 == $this->aClientsNotifications[$iTypes][$sPeriod]) : ?>
-                                    <img alt="" src="<?=$this->surl?>/images/admin/check_on.png">
-                                <?php else: ?>
-                                    <img alt="" src="<?=$this->surl?>/images/admin/check_off.png">
-                                <?php endif; ?>
-                            <?php endif; ?>
-                    </td>
-                        <?php endforeach; ?>
-                </tr>
+                        <tr>
+                            <td><?= $aNotification['title'] ?></td>
+                            <?php foreach ($this->aNotificationPeriode as $sPeriod) : ?>
+                                <td>
+                                    <?php if (in_array($sPeriod, $aNotification['available_types'])) : ?>
+                                        <?php if (1 == $this->aClientsNotifications[$iTypes][$sPeriod]) : ?>
+                                            <img alt="" src="<?=$this->surl?>/images/admin/check_on.png">
+                                        <?php else: ?>
+                                            <img alt="" src="<?=$this->surl?>/images/admin/check_off.png">
+                                        <?php endif; ?>
+                                    <?php endif; ?>
+                                </td>
+                            <?php endforeach; ?>
+                        </tr>
                     <?php endforeach; ?>
                 <?php endforeach; ?>
+                </tbody>
             </table>
         </div>
     </div>
     <br><br>
     <H2>Historique des Emails</H2>
-    <p>(envoyés à l'adresse email : <?= $this->clients->email ?>)</p>
     <div class="date_picker_email_history">
         <form method="post" name="history_dates" id="history_dates" enctype="multipart/form-data" action="" target="_parent">
             <fieldset>
@@ -111,20 +110,20 @@
     <table class="tablesorter">
         <thead>
         <tr>
-            <th>Type de Mail</th>
+            <th>Date</th>
+            <th>From</th>
             <th>Sujet</th>
-            <th>Date d'envoi</th>
             <th>Visualiser</th>
         </tr>
         </thead>
         <tbody>
         <?php foreach ($this->aEmailsSentToClient as $aEmail) : ?>
             <tr>
-                <td><?= $aEmail['name'] ?></td>
-                <td><?= str_replace('_', ' ', utf8_encode(mb_decode_mimeheader($aEmail['subject']))) ?></td>
-                <td><?= $this->dates->formatDateMysqltoFr_HourIn($aEmail['added']) ?></td>
+                <td><?= $this->dates->formatDate($aEmail['sent_at'], 'd/m/Y H:i') ?></td>
+                <td><?= $aEmail['sender_name'] ?></td>
+                <td><?= $aEmail['subject'] ?></td>
                 <td style="text-align: center">
-                    <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_filermails'] ?>" class="thickbox">
+                    <a href="<?= $this->lurl ?>/preteurs/email_history_preview/<?= $aEmail['id_queue'] ?>" class="thickbox">
                         <img src="<?= $this->surl ?>/images/admin/mail.png" alt="previsualiser" height="13px" width="20px" />
                     </a>
                 </td>

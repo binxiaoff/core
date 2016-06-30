@@ -26,8 +26,6 @@
 //
 // **************************************************************************************************** //
 
-use Unilend\librairies\Cache;
-
 class bids extends bids_crud
 {
     const STATUS_BID_PENDING                  = 0;
@@ -35,8 +33,8 @@ class bids extends bids_crud
     const STATUS_BID_REJECTED                 = 2;
     const STATUS_AUTOBID_REJECTED_TEMPORARILY = 3;
 
-    const BID_RATE_MIN = 4;
-    const BID_RATE_MAX = 10;
+    const BID_RATE_MIN = 4.0;
+    const BID_RATE_MAX = 10.0;
 
     const CACHE_KEY_PROJECT_BIDS = 'bids-projet';
 
@@ -57,7 +55,7 @@ class bids extends bids_crud
 
         $resultat = $this->bdd->query($sql);
         $result   = array();
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $result[] = $record;
         }
         return $result;
@@ -87,7 +85,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project;
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result, 0, 0);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -100,7 +98,7 @@ class bids extends bids_crud
     {
         $sql    = 'SELECT AVG(amount) AS average FROM bids WHERE id_project = ' . $id_project;
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'average');
+        $avg    = $this->bdd->result($result);
 
         return empty($avg) ? 0 : $avg;
     }
@@ -114,7 +112,7 @@ class bids extends bids_crud
         $sql = 'SELECT AVG(' . $champ . ') as avg FROM bids WHERE id_lender_account = ' . $id_lender . $status;
 
         $result = $this->bdd->query($sql);
-        $avg    = $this->bdd->result($result, 0, 'avg');
+        $avg    = $this->bdd->result($result);
         if ($avg == '') {
             $avg = 0;
         } else {
@@ -131,7 +129,7 @@ class bids extends bids_crud
         $sql = 'SELECT SUM(amount) as solde FROM bids WHERE id_project = ' . $id_project . ' AND id_lender_account = ' . $id_lender . ' AND status = 0';
 
         $result = $this->bdd->query($sql);
-        $solde  = $this->bdd->result($result, 0, 'solde');
+        $solde  = $this->bdd->result($result);
         if ($solde == '') {
             $solde = 0;
         } else {
@@ -172,10 +170,20 @@ class bids extends bids_crud
         return (int)($this->bdd->result($result, 0, 0));
     }
 
-    public function getProjectMaxRate($iProjectId)
+    public function getProjectMaxRate(\projects $project)
     {
-        $result = $this->bdd->query('SELECT MAX(rate) FROM bids WHERE id_project = ' . $iProjectId . ' AND status = 0');
-        return round($this->bdd->result($result, 0, 0), 1);
+        $amount        = 0;
+        $projectAmount = (int) ($project->amount * 100);
+        $validBids     = $this->select('id_project = ' . $project->id_project . ' AND status = ' . self::STATUS_BID_PENDING, 'rate ASC, ordre ASC');
+
+        foreach ($validBids as $bid) {
+            $amount += (int) $bid['amount'];
+            if ($amount >= $projectAmount) {
+                return round($bid['rate'], 1);
+            }
+        }
+
+        return self::BID_RATE_MAX;
     }
 
     public function getLenders($iProjectId, $aStatus = array())
@@ -186,17 +194,23 @@ class bids extends bids_crud
             $sStatus = implode(',', $aStatus);
             $sStatus = $this->bdd->escape_string($sStatus);
         }
-        $sQuery = 'SELECT id_lender_account, count(*) as bid_nb, SUM(amount) as amount_sum FROM `bids` WHERE id_project = ' . $iProjectId;
+        $sQuery = '
+            SELECT id_lender_account,
+                COUNT(*) AS bid_nb,
+                SUM(amount) AS amount_sum
+            FROM bids
+            WHERE id_project = ' . $iProjectId;
 
         if ('' !== $sStatus) {
-            $sQuery .= ' AND status in (' . $sStatus . ')';
+            $sQuery .= ' AND status IN (' . $sStatus . ')';
         }
 
-        $sQuery .= 'Group BY id_lender_account';
+        $sQuery .= '
+            GROUP BY id_lender_account';
 
         $rQuery   = $this->bdd->query($sQuery);
         $aLenders = array();
-        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aLenders[] = $aRow;
         }
 
@@ -213,7 +227,7 @@ class bids extends bids_crud
 
         $rQuery = $this->bdd->query($sQuery);
         $aBids  = array();
-        while ($aRow = $this->bdd->fetch_array($rQuery)) {
+        while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
             $aBids[] = $aRow;
         }
 
@@ -222,46 +236,44 @@ class bids extends bids_crud
 
     public function getAcceptationPossibilityRounded()
     {
-        $oCache      = Cache::getInstance();
-        $sKey        = $oCache->makeKey('bids_getAcceptationPossibilityRounded');
-        $mPercentage = $oCache->get($sKey);
-
-        if (false === $mPercentage) {
-            $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
+        $sQuery = 'SELECT b.rate, count(DISTINCT b.id_bid) as count_bid
                         FROM bids b
                         INNER JOIN accepted_bids ab ON ab.id_bid = b.id_bid
                         INNER JOIN projects p ON p.id_project = b.id_project
                         INNER JOIN projects_last_status_history plsh ON plsh.id_project = p.id_project
                         INNER JOIN projects_status_history psh ON psh.id_project_status_history = plsh.id_project_status_history
                         INNER JOIN projects_status ps ON ps.id_project_status = psh.id_project_status
-                        WHERE ps.status >= ' . \projects_status::FUNDE . '
-                        AND ps.status != ' . \projects_status::FUNDING_KO . ' GROUP BY b.rate ORDER BY b.rate DESC';
-            $rQuery  = $this->bdd->query($sQuery);
-            $aResult = array();
-            $iTotal = 0;
-            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
-                $aResult[] = $aRow;
-                $iTotal += $aRow['count_bid'];
-            }
+                        WHERE ps.status >= :funded
+                        AND ps.status != :fundingKo GROUP BY b.rate ORDER BY b.rate DESC';
+        try {
+            $result = $this->bdd->executeQuery($sQuery, array('funded' => \projects_status::FUNDE, 'fundingKo' => \projects_status::FUNDING_KO), array('funded' => \PDO::PARAM_INT, 'fundingKo' => \PDO::PARAM_INT), new \Doctrine\DBAL\Cache\QueryCacheProfile(300, md5(__METHOD__)))
+                ->fetchAll(PDO::FETCH_ASSOC);
+        } catch (\Doctrine\DBAL\DBALException $ex) {
+            return false;
+        }
+        $iTotal = 0;
 
-            $mPercentage    = array();
-            $iSubTotal = 0;
-            foreach ($aResult as $aRate) {
-                $iSubTotal += $aRate['count_bid'];
-                $sRate = (string) number_format($aRate['rate'], 1);
-                $mPercentage[$sRate] = ($iSubTotal / $iTotal) * 100;
-                if ($mPercentage[$sRate] < 1) {
-                    $mPercentage[$sRate] = 1;
-                } elseif ($mPercentage[$sRate] > 99) {
-                    $mPercentage[$sRate] =  99;
-                } else {
-                    $mPercentage[$sRate] = (int) $mPercentage[$sRate];
-                }
-            }
-            $oCache->set($sKey, $mPercentage, Cache::MEDIUM_TIME);
+        foreach ($result as $aRow) {
+            $iTotal += $aRow['count_bid'];
         }
 
-        return $mPercentage;
+        $aPercentage = array();
+        $iSubTotal   = 0;
+
+        foreach ($result as $aRate) {
+            $iSubTotal += $aRate['count_bid'];
+            $sRate               = (string) number_format($aRate['rate'], 1);
+            $aPercentage[$sRate] = ($iSubTotal / $iTotal) * 100;
+
+            if ($aPercentage[$sRate] < 1) {
+                $aPercentage[$sRate] = 1;
+            } elseif ($aPercentage[$sRate] > 99) {
+                $aPercentage[$sRate] = 99;
+            } else {
+                $aPercentage[$sRate] = (int) $aPercentage[$sRate];
+            }
+        }
+        return $aPercentage;
     }
 
     public function shuffleAutoBidOrder($iProjectId)
@@ -280,15 +292,40 @@ class bids extends bids_crud
         $aBidsByRate = array();
         if ($iProjectId) {
             $sQuery = ' SELECT rate, SUM(amount / 100) as amount_total, SUM(IF(status = 2, 0, amount / 100))  as amount_active, count(*) as nb_bids
-                    FROM bids 
+                    FROM bids
                     WHERE id_project = ' . $iProjectId . '
                     GROUP BY rate ORDER BY rate DESC';
             $rQuery = $this->bdd->query($sQuery);
-            while ($aRow = $this->bdd->fetch_array($rQuery)) {
+            while ($aRow = $this->bdd->fetch_assoc($rQuery)) {
                 $aBidsByRate[] = $aRow;
             }
         }
 
         return $aBidsByRate;
+    }
+
+    /**
+     * @param int $projectId
+     * @param int $limit
+     * @param int $offset
+     * @return array
+     */
+    public function getLastProjectBidsByLender($projectId, $limit = 100, $offset = 0)
+    {
+        $bids = array();
+
+        // This only works with MySQL as long as non-agregated columns could not be use on other DB systems
+        $query = $this->bdd->query('
+            SELECT *
+            FROM (SELECT * FROM bids WHERE id_project = ' . $projectId . ' ORDER BY id_lender_account ASC, id_bid DESC) bids
+            GROUP BY id_lender_account
+            LIMIT ' . $limit . ' OFFSET ' . $offset
+        );
+
+        while ($row = $this->bdd->fetch_assoc($query)) {
+            $bids[] = $row;
+        }
+
+        return $bids;
     }
 }

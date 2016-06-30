@@ -17,7 +17,7 @@ class projects_last_status_history
      */
     public $id_project;
 
-    public function __construct(\bdd $bdd, $params = '')
+    public function __construct($bdd, $params = '')
     {
         $this->bdd = $bdd;
     }
@@ -26,7 +26,7 @@ class projects_last_status_history
     {
         $result = $this->bdd->query('SELECT * FROM  projects_last_status_history WHERE ' . $field . ' = "' . $id . '"');
 
-        if ($this->bdd->num_rows() == 1) {
+        if ($this->bdd->num_rows($result) == 1) {
             $record = $this->bdd->fetch_assoc($result);
 
             $this->id_project_status_history = $record['id_project_status_history'];

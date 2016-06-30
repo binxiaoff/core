@@ -127,7 +127,7 @@ class clients extends clients_crud
         unset($_SESSION['partenaire']);
 
         if ($bRedirect) {
-            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . $this->params['lng'] . $this->loginPage);
+            header('Location: http://' . $_SERVER['HTTP_HOST'] . '/' . (isset($this->params['lng']) ? $this->params['lng'] : '') . $this->loginPage);
         }
     }
 
@@ -812,7 +812,7 @@ class clients extends clients_crud
         $sql = 'SELECT
                     `id_project`,
                     - SUM(`capital`)/100 AS montant,
-                    DATE(date_echeance)_reel AS date,
+                    DATE(date_echeance_reel) AS date,
                     "affectation-ra-preteur" AS type
                 FROM
                     `echeanciers`
@@ -979,6 +979,10 @@ class clients extends clients_crud
                         WHERE
                             cs.status = '. \clients_status::VALIDATED . '
                             AND c.id_client = csh.id_client
+                        ORDER BY
+                            csh.added DESC
+                        LIMIT
+                            1
                     ) AS date_validation
                 FROM
                     clients c
@@ -1090,5 +1094,74 @@ class clients extends clients_crud
 
         $rQuery = $this->bdd->query($sQuery);
         return ($this->bdd->result($rQuery, 0));
+    }
+
+    public function getBorrowersSalesForce()
+    {
+        $sQuery = "SELECT
+                      c.id_client as 'IDClient',
+                      c.id_client as 'IDClient_2',
+                      c.id_langue as 'Langue',
+                      REPLACE(c.civilite,',','') as 'Civilite',
+                      REPLACE(c.nom,',','') as 'Nom',
+                      REPLACE(c.nom_usage,',','') as 'Nom_usage',
+                      REPLACE(c.prenom,',','') as 'Prenom',
+                      CONVERT(REPLACE(c.fonction,',','') USING utf8) as 'Fonction',
+                      CASE c.naissance
+                      WHEN '0000-00-00' then '2001-01-01'
+                      ELSE
+                        CASE SUBSTRING(c.naissance,1,1)
+                        WHEN '0' then '2001-01-01'
+                        ELSE c.naissance
+                        END
+                      END as 'DateNaissance',
+                      REPLACE(ville_naissance,',','') as 'VilleNaissance',
+                      ccountry.fr as 'PaysNaissance',
+                      nv2.fr_f as 'Nationalite',
+                      REPLACE(c.telephone,'\t','') as 'Telephone',
+                      c.mobile as 'Mobile',
+                      REPLACE(c.email,',','') as 'Email',
+                      c.etape_inscription_preteur as 'EtapeInscriptionPreteur',
+                      CASE c.type
+                      WHEN 1 THEN 'Physique'
+                      WHEN 2 THEN 'Morale'
+                      WHEN 3 THEN 'Physique'
+                      ELSE 'Morale'
+                      END as 'TypeContact',
+                      CASE c.status
+                      WHEN 1 THEN 'oui'
+                      ELSE 'non'
+                      END as 'Valide',
+                      CASE c.added
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE c.added
+                      END as 'date_inscription',
+                      CASE c.updated
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE c.updated
+                      END as 'DateMiseJour',
+                      CASE c.lastlogin
+                      WHEN '0000-00-00 00:00:00' then ''
+                      ELSE c.lastlogin
+                      END as 'DateDernierLogin',
+                      REPLACE(ca.adresse1,',','') as 'Adresse1',
+                      REPLACE(ca.adresse2,',','') as 'Adresse2',
+                      REPLACE(ca.adresse3,',','') as 'Adresse3',
+                      REPLACE(ca.cp,',','') as 'CP',
+                      REPLACE(ca.ville,',','') as 'Ville',
+                      acountry.fr as 'Pays',
+                      '012240000002G4e' as 'Sfcompte'
+                    FROM
+                      clients c
+                      INNER JOIN companies co on c.id_client = co.id_client_owner
+                      INNER JOIN projects p ON p.id_company = co.id_company
+                      LEFT JOIN clients_adresses ca on c.id_client = ca.id_client
+                      LEFT JOIN pays_v2 ccountry on c.id_pays_naissance = ccountry.id_pays
+                      LEFT JOIN pays_v2 acountry on ca.id_pays = acountry.id_pays
+                      LEFT JOIN nationalites_v2 nv2 on c.id_nationalite = nv2.id_nationalite
+                    group by
+                      c.id_client";
+
+        return $this->bdd->executeQuery($sQuery);
     }
 }

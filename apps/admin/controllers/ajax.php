@@ -2,11 +2,13 @@
 
 class ajaxController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $_SESSION['request_url'] = $this->url;
+
+        $this->users->checkAccess();
 
         $this->hideDecoration();
     }
@@ -306,16 +308,11 @@ class ajaxController extends bootstrap
                 $this->clients_adresses->update();
 
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-                if ($this->clients->counter('email = "' . $_POST['email_etape2'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
-                    $this->clients->email = $_POST['email_etape2'];
-                    $this->clients->email .= '-' . $this->projects->id_project;
-                } elseif ($this->clients->email != $_POST['email_etape2']) {
-                    $this->clients->email = $_POST['email_etape2'];
-                }
-                $this->clients->civilite = $_POST['civilite_etape2'];
-                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_etape2']);
-                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_etape2']);
-                $this->clients->fonction = $_POST['fonction_etape2'];
+                $this->clients->email     = $_POST['email_etape2'];
+                $this->clients->civilite  = $_POST['civilite_etape2'];
+                $this->clients->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
+                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
+                $this->clients->fonction  = $_POST['fonction_etape2'];
                 $this->clients->telephone = $_POST['phone_new_etape2'];
                 $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
                 $this->clients->update();
@@ -516,18 +513,19 @@ class ajaxController extends bootstrap
         $this->projects  = $this->loadData('projects');
         $this->companies = $this->loadData('companies');
         $this->clients   = $this->loadData('clients');
+        $oSettings       = $this->loadData('settings');
 
         if (isset($_POST['id_project']) && $this->projects->get($_POST['id_project'], 'id_project')) {
             $this->companies->get($this->projects->id_company, 'id_company');
             $this->clients->get($this->companies->id_client_owner, 'id_client');
 
-            $this->mails_text->get('confirmation-depot-de-dossier', 'lang = "' . $this->language . '" AND type');
+            $this->mail_template->get('confirmation-depot-de-dossier', 'status = ' . \mail_templates::STATUS_ACTIVE . ' AND locale = "' . $this->getParameter('locale') . '" AND type');
 
-            $this->settings->get('Facebook', 'type');
-            $lien_fb = $this->settings->value;
+            $oSettings->get('Facebook', 'type');
+            $lien_fb = $oSettings->value;
 
-            $this->settings->get('Twitter', 'type');
-            $lien_tw = $this->settings->value;
+            $oSettings->get('Twitter', 'type');
+            $lien_tw = $oSettings->value;
 
             $varMail = array(
                 'prenom'               => $this->clients->prenom,
@@ -535,29 +533,15 @@ class ajaxController extends bootstrap
                 'lien_reprise_dossier' => $this->surl . '/depot_de_dossier/reprise/' . $this->projects->hash,
                 'lien_fb'              => $lien_fb,
                 'lien_tw'              => $lien_tw,
-                'sujet'                => htmlentities($this->mails_text->subject, null, 'UTF-8'),
                 'surl'                 => $this->surl,
                 'url'                  => $this->url,
             );
 
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-
-            if ($this->Config['env'] === 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else {
-                $this->email->addRecipient(trim($this->clients->email));
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-            }
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('confirmation-depot-de-dossier', $varMail);
+            $message->setTo($this->clients->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
             $this->clients->password = md5($this->ficelle->generatePassword(8));
             $this->clients->status   = 1;
@@ -569,25 +553,15 @@ class ajaxController extends bootstrap
     public function _generer_mdp_new()
     {
         $this->autoFireView = false;
-
-        $clients = $this->loadData('clients');
+        $clients            = $this->loadData('clients');
+        $oSettings          = $this->loadData('settings');
 
         if (isset($_POST['id_client']) && $clients->get($_POST['id_client'], 'id_client')) {
+            $oSettings->get('Facebook', 'type');
+            $lien_fb = $oSettings->value;
 
-            //*************************//
-            //*** ENVOI DU MAIL MDP ***//
-            //*************************//
-
-            // Recuperation du modele de mail
-            $this->mails_text->get('mot-de-passe-oublie', 'lang = "' . $this->language . '" AND type');
-
-            // FB
-            $this->settings->get('Facebook', 'type');
-            $lien_fb = $this->settings->value;
-
-            // Twitter
-            $this->settings->get('Twitter', 'type');
-            $lien_tw = $this->settings->value;
+            $oSettings->get('Twitter', 'type');
+            $lien_tw = $oSettings->value;
 
             $varMail = array(
                 'surl'          => $this->surl,
@@ -599,24 +573,11 @@ class ajaxController extends bootstrap
                 'lien_tw'       => $lien_tw
             );
 
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-
-            if ($this->Config['env'] === 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $clients->email, $tabFiler);
-                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else {
-                $this->email->addRecipient(trim($clients->email));
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-            }
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('mot-de-passe-oublie', $varMail);
+            $message->setTo($clients->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
 
             echo 'ok';
         } else {
@@ -628,60 +589,35 @@ class ajaxController extends bootstrap
     public function _generer_mdp()
     {
         $this->autoFireView = false;
-
-        $this->clients = $this->loadData('clients');
+        $this->clients      = $this->loadData('clients');
+        /** @var \settings $oSettings */
+        $oSettings          = $this->loadData('settings');
 
         if (isset($_POST['id_client']) && $this->clients->get($_POST['id_client'], 'id_client')) {
             $pass = $this->ficelle->generatePassword(8);
-
             $this->clients->changePassword($this->clients->email, $pass);
 
-            //************************************//
-            //*** ENVOI DU MAIL GENERATION MDP ***//
-            //************************************//
+            $oSettings->get('Facebook', 'type');
+            $lien_fb = $oSettings->value;
 
-            // Recuperation du modele de mail
-            $this->mails_text->get('generation-mot-de-passe', 'lang = "' . $this->language . '" AND type');
-
-            $surl  = $this->surl;
-            $url   = $this->furl;
-            $login = $this->clients->email;
-            $mdp   = $pass;
-
-            $this->settings->get('Facebook', 'type');
-            $lien_fb = $this->settings->value;
-
-            $this->settings->get('Twitter', 'type');
-            $lien_tw = $this->settings->value;
+            $oSettings->get('Twitter', 'type');
+            $lien_tw = $oSettings->value;
 
             $varMail = array(
-                'surl'     => $surl,
-                'url'      => $url,
-                'login'    => $login,
+                'surl'     => $this->surl,
+                'url'      => $this->furl,
+                'login'    => $this->clients->email,
                 'prenom_p' => $this->clients->prenom,
-                'mdp'      => 'Mot de passe : ' . $mdp,
+                'mdp'      => 'Mot de passe : ' . $pass,
                 'lien_fb'  => $lien_fb,
                 'lien_tw'  => $lien_tw
             );
 
-            $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-            $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-            $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-            $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-            $this->email = $this->loadLib('email');
-            $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-            $this->email->setSubject(stripslashes($sujetMail));
-            $this->email->setHTMLBody(stripslashes($texteMail));
-
-            if ($this->Config['env'] === 'prod') {
-                Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-            } else {
-                $this->email->addRecipient(trim($this->clients->email));
-                Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-            }
+            /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+            $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('generation-mot-de-passe', $varMail);
+            $message->setTo($this->clients->email);
+            $mailer = $this->get('mailer');
+            $mailer->send($message);
         }
     }
 
@@ -766,8 +702,8 @@ class ajaxController extends bootstrap
             }
 
             if ($form_ok == true) {
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], $_POST['status'], $this->projects);
 
                 /** @var \projects_status_history $oProjectStatusHistory */
@@ -915,13 +851,14 @@ class ajaxController extends bootstrap
                     $oRejectionReason = $this->loadData('project_rejection_reason');
                     $oRejectionReason->get($_POST['rejection_reason']);
 
-                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
+                    /** @var \settings $oSettings */
+                    $oSettings = $this->loadData('settings');
 
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
+                    $oSettings->get('Facebook', 'type');
+                    $lien_fb = $oSettings->value;
 
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
+                    $oSettings->get('Twitter', 'type');
+                    $lien_tw = $oSettings->value;
 
                     $varMail = array(
                         'surl'                   => $this->surl,
@@ -932,24 +869,11 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] == 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $varMail);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
 
                 if (isset($oRejectionReason)) {
@@ -965,6 +889,9 @@ class ajaxController extends bootstrap
         }
     }
 
+    /**
+     *
+     */
     public function _valid_rejete_etape6()
     {
         $this->autoFireView = false;
@@ -1056,9 +983,8 @@ class ajaxController extends bootstrap
                     $this->projects_notes->create();
                 }
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
-
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('unilend.service.project_manager');
                 if ($_POST['status'] == 1) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::COMITE, $this->projects);
                 } elseif ($_POST['status'] == 2) {
@@ -1078,13 +1004,13 @@ class ajaxController extends bootstrap
                     $oRejectionReason = $this->loadData('project_rejection_reason');
                     $oRejectionReason->get($_POST['rejection_reason']);
 
-                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
+                    /** @var \settings $oSettings */
+                    $oSettings = $this->loadData('settings');
+                    $oSettings->get('Facebook', 'type');
+                    $lien_fb = $oSettings->value;
 
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
+                    $oSettings->get('Twitter', 'type');
+                    $lien_tw = $oSettings->value;
 
                     $varMail = array(
                         'surl'                   => $this->surl,
@@ -1095,24 +1021,11 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
-
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $varMail);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
                 }
 
                 //on recup le statut courant
@@ -1371,8 +1284,8 @@ class ajaxController extends bootstrap
                 $btn_etape7   = '';
                 $content_risk = '';
 
-                /** @var \Unilend\Service\ProjectManager $oProjectManager */
-                $oProjectManager = $this->get('ProjectManager');
+                /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
+                $oProjectManager = $this->get('unilend.service.project_manager');
 
                 if ($_POST['status'] == 1) {
                     $aProjects = $this->projects->select('id_company = ' . $this->projects->id_company);
@@ -1426,13 +1339,12 @@ class ajaxController extends bootstrap
                     $oRejectionReason = $this->loadData('project_rejection_reason');
                     $oRejectionReason->get($_POST['rejection_reason']);
 
-                    $this->mails_text->get('emprunteur-dossier-rejete', 'lang = "' . $this->language . '" AND type');
-
-                    $this->settings->get('Facebook', 'type');
-                    $lien_fb = $this->settings->value;
-
-                    $this->settings->get('Twitter', 'type');
-                    $lien_tw = $this->settings->value;
+                    /** @var \settings $oSettings */
+                    $oSettings = $this->loadData('settings');
+                    $oSettings->get('Facebook', 'type');
+                    $lien_fb = $oSettings->value;
+                    $oSettings->get('Twitter', 'type');
+                    $lien_tw = $oSettings->value;
 
                     $varMail = array(
                         'surl'                   => $this->surl,
@@ -1443,24 +1355,12 @@ class ajaxController extends bootstrap
                         'lien_tw'                => $lien_tw
                     );
 
-                    $tabVars = $this->tnmp->constructionVariablesServeur($varMail);
+                    /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+                    $message = $this->get('unilend.swiftmailer.message_provider')->newMessage('emprunteur-dossier-rejete', $varMail);
+                    $message->setTo($this->clients->email);
+                    $mailer = $this->get('mailer');
+                    $mailer->send($message);
 
-                    $sujetMail = strtr(utf8_decode($this->mails_text->subject), $tabVars);
-                    $texteMail = strtr(utf8_decode($this->mails_text->content), $tabVars);
-                    $exp_name  = strtr(utf8_decode($this->mails_text->exp_name), $tabVars);
-
-                    $this->email = $this->loadLib('email');
-                    $this->email->setFrom($this->mails_text->exp_email, $exp_name);
-                    $this->email->setSubject(stripslashes($sujetMail));
-                    $this->email->setHTMLBody(stripslashes($texteMail));
-
-                    if ($this->Config['env'] === 'prod') {
-                        Mailer::sendNMP($this->email, $this->mails_filer, $this->mails_text->id_textemail, $this->clients->email, $tabFiler);
-                        $this->tnmp->sendMailNMP($tabFiler, $varMail, $this->mails_text->nmp_secure, $this->mails_text->id_nmp, $this->mails_text->nmp_unique, $this->mails_text->mode);
-                    } else {
-                        $this->email->addRecipient(trim($this->clients->email));
-                        Mailer::send($this->email, $this->mails_filer, $this->mails_text->id_textemail);
-                    }
                 } elseif ($_POST['status'] == 4) {
                     $oProjectManager->addProjectStatus($_SESSION['user']['id_user'], \projects_status::REVUE_ANALYSTE, $this->projects);
 
@@ -1505,7 +1405,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_client']) && isset($_POST['content']) && isset($_POST['liste'])) {
-            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['liste'])) . '</ul>' . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities(utf8_decode($_POST['content'])));
+            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['liste']) . '</ul>' . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities($_POST['content']));
             echo 'ok';
         } else {
             echo 'nok';
@@ -1517,7 +1417,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_project']) && isset($_POST['content']) && isset($_POST['list'])) {
-            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['list'])) . '</ul>' . nl2br(htmlentities(utf8_decode($_POST['content'])));
+            $_SESSION['project_submission_files_list'][$_POST['id_project']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['list']) . '</ul>' . nl2br($_POST['content']);
             echo 'ok';
         } else {
             echo 'nok';
@@ -1752,15 +1652,14 @@ class ajaxController extends bootstrap
 
     private function sendEmailBorrowerArea($sTypeEmail, clients $oClients)
     {
-        $oMailsText = $this->loadData('mails_text');
-        $oMailsText->get($sTypeEmail, 'lang = "fr" AND type');
-
-        $this->settings->get('Facebook', 'type');
+        /** @var \settings $oSettings */
+        $oSettings = $this->loadData('settings');
+        $oSettings->get('Facebook', 'type');
         $sFacebookURL = $this->settings->value;
-
-        $this->settings->get('Twitter', 'type');
+        $oSettings->get('Twitter', 'type');
         $sTwitterURL = $this->settings->value;
 
+        /** @var \temporary_links_login $oTemporaryLink */
         $oTemporaryLink = $this->loadData('temporary_links_login');
         $sTemporaryLink = $this->surl . '/espace_emprunteur/securite/' . $oTemporaryLink->generateTemporaryLink($oClients->id_client);
 
@@ -1773,21 +1672,10 @@ class ajaxController extends bootstrap
             'prenom'                 => $oClients->prenom
         );
 
-        $sRecipient = $oClients->email;
-
-        $this->email = $this->loadLib('email');
-        $this->email->setFrom($oMailsText->exp_email, utf8_decode($oMailsText->exp_name));
-        $this->email->setSubject(stripslashes(utf8_decode($oMailsText->subject)));
-        $this->email->setHTMLBody(stripslashes(strtr(utf8_decode($oMailsText->content),
-
-        $this->tnmp->constructionVariablesServeur($aVariables))));
-
-        if ($this->Config['env'] == 'prod') {
-            Mailer::sendNMP($this->email, $this->mails_filer, $oMailsText->id_textemail, $sRecipient, $aNMPResponse);
-            $this->tnmp->sendMailNMP($aNMPResponse, $aVariables, $oMailsText->nmp_secure, $oMailsText->id_nmp, $oMailsText->nmp_unique, $oMailsText->mode);
-        } else {
-            $this->email->addRecipient($sRecipient);
-            Mailer::send($this->email, $this->mails_filer, $oMailsText->id_textemail);
-        }
+        /** @var \Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage $message */
+        $message = $this->get('unilend.swiftmailer.message_provider')->newMessage($sTypeEmail, $aVariables);
+        $message->setTo($oClients->email);
+        $mailer = $this->get('mailer');
+        $mailer->send($message);
     }
 }

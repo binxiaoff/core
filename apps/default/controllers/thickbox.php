@@ -2,9 +2,9 @@
 
 class thickboxController extends bootstrap
 {
-    public function __construct($command, $config, $app)
+    public function initialize()
     {
-        parent::__construct($command, $config, $app);
+        parent::initialize();
 
         $this->catchAll = true;
 
@@ -264,7 +264,7 @@ class thickboxController extends bootstrap
             $this->pretMin = $this->settings->value;
 
             $this->soldeBid    = $this->bids->getSoldeBid($this->projects->id_project);
-            $this->txLenderMax = $this->soldeBid >= $this->projects->amount ? $this->bids->getProjectMaxRate($this->projects->id_project) : 10;
+            $this->txLenderMax = $this->soldeBid >= $this->projects->amount ? $this->bids->getProjectMaxRate($this->projects) : 10;
         }
     }
 

@@ -27,7 +27,7 @@
 // **************************************************************************************************** //
 class --classe--
 {
-    /** @var \bdd */
+    /** @var \Unilend\Bridge\Doctrine\DBAL\Connection */
     protected $bdd;
 
     --declaration--
@@ -52,7 +52,7 @@ class --classe--
         $sql    = 'SELECT * FROM `--table--` WHERE 1=1 ' . $list . ' ';
         $result = $this->bdd->query($sql);
 
-        if ($this->bdd->num_rows() == 1) {
+        if ($this->bdd->num_rows($result) == 1) {
             $record = $this->bdd->fetch_array($result);
 
             --remplissage--

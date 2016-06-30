@@ -3,20 +3,20 @@
 class menusController extends bootstrap
 {
 	var $Command;
-	
-	function menusController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('edition');
 		
 		// Activation du menu
 		$this->menu_admin = 'edition';
 		
-		// Definition des types d'éléments
+		// Definition des types d'ï¿½lï¿½ments
 		$this->typesElements = array('L'=>'Lien Interne','LX'=>'Lien Externe');
 	}
 	
@@ -118,7 +118,7 @@ class menusController extends bootstrap
 				
 					$this->menus->get($this->params[1],'id_menu');
 					
-					// On supprime les données
+					// On supprime les donnï¿½es
 					$this->tree_menu->delete(array('id_menu'=>$this->params[1]));
 					$this->menus->delete($this->params[1],'id_menu');
 					

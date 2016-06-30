@@ -12,5 +12,5 @@
     <?php $this->callJs();?>
 </head>
 <body>
-<iframe src="<?=$this->urlfront?>/logAdminUser/<?=$_SESSION['user']['email']?>/<?=$_SESSION['user']['password']?>" frameborder="0" width="0" height="0"></iframe>
+<iframe src="<?=$this->furl?>/logAdminUser/<?=$_SESSION['user']['email']?>/<?=$_SESSION['user']['password']?>" frameborder="0" width="0" height="0"></iframe>
 <div id="contener">

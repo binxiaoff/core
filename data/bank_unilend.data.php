@@ -28,11 +28,11 @@
 
 class bank_unilend extends bank_unilend_crud
 {
-    const TYPE_THREE_PERCENT_VAT = 0;
-    const TYPE_REPAYMENT_BORROWER = 1;
-    const TYPE_REPAYMENT_LENDER = 3;
+    const TYPE_THREE_PERCENT_VAT               = 0;
+    const TYPE_REPAYMENT_BORROWER              = 1;
+    const TYPE_REPAYMENT_LENDER                = 2;
+    const TYPE_DEBIT_UNILEND                   = 3;
     const TYPE_UNILEND_WELCOME_OFFER_PATRONAGE = 4;
-
 
     public function __construct($bdd, $params = '')
     {

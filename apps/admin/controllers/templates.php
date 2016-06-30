@@ -3,14 +3,14 @@
 class templatesController extends bootstrap
 {
 	var $Command;
-	
-	function templatesController(&$command,$config,$app)
+
+	public function initialize()
 	{
-		parent::__construct($command,$config,$app);
+		parent::initialize();
 		
 		$this->catchAll = true;
 		
-		// Controle d'acces à la rubrique
+		// Controle d'acces ï¿½ la rubrique
 		$this->users->checkAccess('edition');
 		
 		// Activation du menu
@@ -85,7 +85,7 @@ class templatesController extends bootstrap
 			$this->templates->type = 0;
 			$this->templates->id_template = $this->templates->create();
 			
-			// Si le fichier n'existe pas on le créé
+			// Si le fichier n'existe pas on le crï¿½ï¿½
 			if(!file_exists($this->path.'apps/default/views/templates/'.$this->templates->slug.'.php'))
 			{	
 				// Creation de la vue
@@ -161,7 +161,7 @@ class templatesController extends bootstrap
 					@unlink($this->path.'apps/default/views/templates/'.$this->templates->slug.'.php');
 					@unlink($this->path.'apps/default/controllers/templates/'.$this->templates->slug.'.php');
 					
-					// On supprime les données
+					// On supprime les donnï¿½es
 					$this->blocs_templates->delete($this->params[1],'id_template');
 					$this->elements->delete($this->params[1],'id_template');
 					$this->templates->delete($this->params[1],'id_template');

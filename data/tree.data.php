@@ -1430,73 +1430,69 @@ class tree extends tree_crud
         return $this->sitemap;
     }
 
-    // --- recherche ---
-    public function search($search, $filtre_recherche, $langue = 'fr')
+    public function search($search, $langue = 'fr')
     {
+        $result = array();
         $search = $this->bdd->escape_string($search);
-
-        $sql = 'SELECT t.slug as slug,
-                t.title as title ,
-                t.id_template as id_template ,
-                t.id_parent as id_parent,
-                te.value as value
-                FROM ((tree_elements te
-                LEFT JOIN tree t ON t.id_tree = te.id_tree)
-                LEFT JOIN elements e ON e.id_element  = te.id_element)
-                WHERE t.status = 1
-                AND t.id_langue = "' . $langue . '"
-                AND lcase(te.value) LIKE "%' . strtolower($search) . '%"
-
-
-                AND t.id_tree NOT IN(16,130)';
-        if ($filtre_recherche != '') {
-            $sql .= 'AND e.name IN (' . $filtre_recherche . ') ';
-        }
-
-        $sql .= 'GROUP BY t.slug ORDER BY t.ordre ASC';
+        $sql    = '
+            SELECT t.slug AS slug,
+              t.title AS title ,
+              t.id_template AS id_template ,
+              t.id_parent AS id_parent,
+              te.value AS value
+            FROM tree_elements te
+            LEFT JOIN tree t ON t.id_tree = te.id_tree
+            LEFT JOIN elements e ON e.id_element  = te.id_element
+            WHERE t.status = 1
+              AND t.id_langue = "' . $langue . '"
+              AND lcase(te.value) LIKE "%' . strtolower($search) . '%"
+              AND t.id_tree NOT IN(16, 130)
+            GROUP BY t.slug
+            ORDER BY t.ordre ASC';
 
         $resultat = $this->bdd->query($sql);
 
-        // OR t.title LIKE "%'.$search.'%"
-        while ($record = $this->bdd->fetch_array($resultat)) {
+        while ($record = $this->bdd->fetch_assoc($resultat)) {
             $replace  = strip_tags($record['value']);
             $mystring = strtolower($replace);
             $findme   = strtolower($search);
             $pos      = strpos($mystring, $findme);
-            if ($pos === false) {
 
-            } else {
-                // sous contenu 2
+            if ($pos !== false) {
                 if ($record['id_template'] == 7) {
                     $this->get(array('id_tree' => $record['id_parent'], 'id_langue' => $langue));
-                    $result[$this->slug]['slug']  = $this->slug;
-                    $result[$this->slug]['title'] = $this->title;
+
+                    $result[$this->slug] = array(
+                        'slug'  => $this->slug,
+                        'title' => $this->title
+                    );
                 } else {
-                    $result[$record['slug']]['slug']  = $record['slug'];
-                    $result[$record['slug']]['title'] = $record['title'];
+                    $result[$record['slug']] = array(
+                        'slug'  => $record['slug'],
+                        'title' => $record['title']
+                    );
                 }
             }
         }
 
-        // les projets
-        $sql = 'SELECT
-        p.slug as slug,
-        p.title as title,
-        (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) as status
-        FROM projects p
-        WHERE p.status = 0
-        AND p.display = 0
-        AND p.title LIKE "%' . $search . '%"
-        HAVING status > 40
-        ORDER BY p.title ASC
-        ';
+        $sql = '
+            SELECT p.slug AS slug,
+              p.title AS title,
+              (SELECT ps.status FROM projects_status ps LEFT JOIN projects_status_history psh ON (ps.id_project_status = psh.id_project_status) WHERE psh.id_project = p.id_project ORDER BY psh.id_project_status_history DESC LIMIT 1) AS status
+            FROM projects p
+            WHERE p.status = 0
+              AND p.display = 0
+              AND p.title LIKE "%' . $search . '%"
+            HAVING status >= ' . \projects_status::EN_FUNDING . '
+            ORDER BY p.title ASC';
 
-        $result           = array();
         $resultatProjects = $this->bdd->query($sql);
 
-        while ($recordProjects = $this->bdd->fetch_array($resultatProjects)) {
-            $result[$recordProjects['slug']]['slug']  = '/projects/detail/' . $recordProjects['slug'];
-            $result[$recordProjects['slug']]['title'] = $recordProjects['title'];
+        while ($recordProjects = $this->bdd->fetch_assoc($resultatProjects)) {
+            $result[$recordProjects['slug']] = array(
+                'slug'  => 'projects/detail/' . $recordProjects['slug'],
+                'title' => $recordProjects['title']
+            );
         }
 
         ksort($result);
