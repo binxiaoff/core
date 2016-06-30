@@ -44,6 +44,10 @@ class rootController extends bootstrap
                 }
             }
 
+            if ($this->tree->id_tree == 1) {
+                $this->loadJs('default/jquery.carouFredSel-6.2.1-packed');
+            }
+
             // Redirection inscription preteur
             if ($this->tree->id_tree == 127) {
                 if ($this->clients->checkAccess() && $this->clients->isLender()) {

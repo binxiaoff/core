@@ -233,7 +233,7 @@
             }
         });
 
-        Highcharts.setOptions({
+        !window.Highcharts || Highcharts.setOptions({
             lang: {
                 decimalPoint: ","
             }
