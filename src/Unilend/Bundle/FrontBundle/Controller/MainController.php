@@ -11,6 +11,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectRequestManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\WelcomeOfferManager;
 use Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager;
+use Unilend\Bundle\FrontBundle\Security\User\BaseUser;
+use Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager;
 use Unilend\Bundle\FrontBundle\Service\TestimonialManager;
 use Unilend\Bundle\TranslationBundle\Service\TranslationManager;
 
@@ -28,7 +30,9 @@ class MainController extends Controller
         $aTemplateVariables = array();
 
         /** @var TestimonialManager $testimonialService */
-        $testimonialService = $this->get('unilend.service.testimonial_manager');
+        $testimonialService = $this->get('unilend.frontbundle.service.testimonial_manager');
+        /** @var ProjectDisplayManager $projectDisplayManager */
+        $projectDisplayManager = $this->get('unilend.frontbundle.service.project_display_manager');
         /** @var ProjectManager $projectManager */
         $projectManager     = $this->get('unilend.service.project_manager');
         /** @var WelcomeOfferManager $welcomeOfferManager */
@@ -37,7 +41,6 @@ class MainController extends Controller
         $translationManager = $this->get('unilend.service.translation_manager');
 
         $aRateRange                              = array(\bids::BID_RATE_MIN, \bids::BID_RATE_MAX);
-        $aTemplateVariables['projects']          = $projectManager->getProjectsForDisplay(array(\projects_status::EN_FUNDING), 'p.date_retrait_full ASC', $aRateRange);
         $aTemplateVariables['testimonialPeople'] = $testimonialService->getActiveBattenbergTestimonials();
         $aTemplateVariables['videoHeroes']       = [
             'Lenders'   => $testimonialService->getActiveVideoHeroes('preter'),
@@ -46,6 +49,25 @@ class MainController extends Controller
         $aTemplateVariables['showWelcomeOffer']  = $welcomeOfferManager->displayOfferOnHome();
         $aTemplateVariables['loanPeriods']       = $projectManager->getPossibleProjectPeriods();
         $aTemplateVariables['borrowingMotives']  = $translationManager->getTranslatedBorrowingMotiveList();
+
+        if ($this->get('security.authorization_checker')->isGranted('IS_AUTHENTICATED_FULLY')
+            && $this->get('security.authorization_checker')->isGranted('ROLE_LENDER')
+        ) {
+            /** @var BaseUser $user */
+            $user = $this->getUser();
+            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
+                array(\projects_status::EN_FUNDING),
+                'p.date_retrait_full ASC',
+                $aRateRange,
+                $user->getClientId());
+        } else {
+            $aTemplateVariables['projects'] = $projectDisplayManager->getProjectsForDisplay(
+                array(\projects_status::EN_FUNDING),
+                'p.date_retrait_full ASC',
+                $aRateRange);
+        }
+
+        //var_dump($aTemplateVariables['projects']);
 
         //TODO replace switch by cookie check
         switch($type) {

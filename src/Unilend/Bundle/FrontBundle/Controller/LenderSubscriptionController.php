@@ -19,7 +19,7 @@ class LenderSubscriptionController extends Controller
     public function lenderSubscriptionShow(Request $request)
     {
         /** @var SubscriptionManager $subscriptionManager */
-        $subscriptionManager = $this->get('unilend.service.subscription_manager');
+        $subscriptionManager = $this->get('unilend.frontbundle.service.subscription_manager');
 
         $aPageData = [
             'countryList'     => $subscriptionManager->getCountryList(),
@@ -46,7 +46,7 @@ class LenderSubscriptionController extends Controller
 
             var_dump($aFormData = $request->request);
             /** @var SubscriptionManager $subscriptionManager */
-            $subscriptionManager = $this->get('unilend.service.subscription_manager');
+            $subscriptionManager = $this->get('unilend.frontbundle.service.subscription_manager');
             $subscriptionManager->handleSubscriptionStepOneData($aFormData);
 
             $aSessionFormData = $this->addStep1FormDataToSession($aFormData);

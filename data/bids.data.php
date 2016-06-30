@@ -328,4 +328,15 @@ class bids extends bids_crud
 
         return $bids;
     }
+
+    public function countBidsOnProjectByStatusForLender($iLenderId, $iProjectID, $iStatus)
+    {
+        $aBind = array('lenderId' => $iLenderId, 'projectId' => $iProjectID, 'status' => $iStatus);
+        $aType = array('lenderId' => \PDO::PARAM_INT, 'projectId' => \PDO::PARAM_INT, 'status' => \PDO::PARAM_INT);
+
+        $sQuery = 'SELECT count(*) FROM bids WHERE id_lender_account = :lenderId AND id_project = :projectId and status = :status';
+        $oStatement = $this->bdd->executeQuery($sQuery, $aBind, $aType);
+
+        return $oStatement->fetchColumn(0);
+    }
 }

@@ -13,12 +13,12 @@
             <argument type="service" id="unilend.service.translation_manager" />
         </service>
 
-        <service id="unilend.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
+        <service id="unilend.frontbundle.service.testimonial_manager" class="Unilend\Bundle\FrontBundle\Service\TestimonialManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.translation_manager"/>
         </service>
 
-        <service id="unilend.security.user.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
+        <service id="unilend.frontbundle.security.user_provider" class="Unilend\Bundle\FrontBundle\Security\User\UserProvider">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.service.client_manager"/>
             <argument type="service" id="unilend.service.notification_manager"/>
@@ -36,13 +36,20 @@
             <tag name ="kernel.event_subscriber" />
         </service>
 
-        <service id="unilend.service.subscription_manager" class="Unilend\Bundle\FrontBundle\Service\SubscriptionManager">
+        <service id="unilend.frontbundle.service.subscription_manager" class="Unilend\Bundle\FrontBundle\Service\SubscriptionManager">
             <argument type="service" id="unilend.service.entity_manager" />
         </service>
 
-        <service id="unilend.service.static_content_manager" class="Unilend\Bundle\FrontBundle\Service\StaticContentManager">
+        <service id="unilend.frontbundle.service.static_content_manager" class="Unilend\Bundle\FrontBundle\Service\StaticContentManager">
             <argument type="service" id="unilend.service.entity_manager" />
             <argument type="service" id="memcache.default" />
         </service>
+
+        <service id="unilend.frontbundle.service.project_display_manager" class="Unilend\Bundle\FrontBundle\Service\ProjectDisplayManager">
+            <argument type="service" id="unilend.service.entity_manager" />
+            <argument type="service" id="unilend.service.lender_manager" />
+
+        </service>
+
     </services>
 </container>
