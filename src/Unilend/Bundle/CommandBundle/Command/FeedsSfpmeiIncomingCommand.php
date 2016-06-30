@@ -67,7 +67,7 @@ EOF
 
         switch ($sFileContent) {
             case false: {
-                $this->oLogger->error('No SFPMEI incoming file to process in "' . $sReceptionPath . '"', array('class' => __CLASS__, 'function' => __FUNCTION__));
+                $this->oLogger->info('No SFPMEI incoming file to process in "' . $sReceptionPath . '"', array('class' => __CLASS__, 'function' => __FUNCTION__));
                 break;
             }
             default : {
@@ -599,7 +599,7 @@ EOF
                             $varMail = array(
                                 'surl'            => $sStaticUrl,
                                 'url'             => $sUrl,
-                                'prenom_p'        => utf8_decode($clients->prenom),
+                                'prenom_p'        => $clients->prenom,
                                 'fonds_depot'     => $oFicelle->formatNumber(bcdiv($receptions->montant, 100, 2)),
                                 'solde_p'         => $oFicelle->formatNumber($transactions->getSolde($receptions->id_client)),
                                 'motif_virement'  => $sLenderPattern,

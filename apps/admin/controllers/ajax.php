@@ -8,6 +8,8 @@ class ajaxController extends bootstrap
 
         $_SESSION['request_url'] = $this->url;
 
+        $this->users->checkAccess();
+
         $this->hideDecoration();
     }
 
@@ -306,16 +308,11 @@ class ajaxController extends bootstrap
                 $this->clients_adresses->update();
 
                 $this->clients->get($this->companies->id_client_owner, 'id_client');
-                if ($this->clients->counter('email = "' . $_POST['email_etape2'] . '" AND id_client <> ' . $this->clients->id_client) > 0) {
-                    $this->clients->email = $_POST['email_etape2'];
-                    $this->clients->email .= '-' . $this->projects->id_project;
-                } elseif ($this->clients->email != $_POST['email_etape2']) {
-                    $this->clients->email = $_POST['email_etape2'];
-                }
-                $this->clients->civilite = $_POST['civilite_etape2'];
-                $this->clients->nom      = $this->ficelle->majNom($_POST['nom_etape2']);
-                $this->clients->prenom   = $this->ficelle->majNom($_POST['prenom_etape2']);
-                $this->clients->fonction = $_POST['fonction_etape2'];
+                $this->clients->email     = $_POST['email_etape2'];
+                $this->clients->civilite  = $_POST['civilite_etape2'];
+                $this->clients->nom       = $this->ficelle->majNom($_POST['nom_etape2']);
+                $this->clients->prenom    = $this->ficelle->majNom($_POST['prenom_etape2']);
+                $this->clients->fonction  = $_POST['fonction_etape2'];
                 $this->clients->telephone = $_POST['phone_new_etape2'];
                 $this->clients->naissance = empty($_POST['date_naissance_gerant']) ? '0000-00-00' : date('Y-m-d', strtotime(str_replace('/', '-', $_POST['date_naissance_gerant'])));
                 $this->clients->update();
@@ -1408,7 +1405,7 @@ class ajaxController extends bootstrap
         $this->autoFireView = false;
 
         if (isset($_POST['id_client']) && isset($_POST['content']) && isset($_POST['liste'])) {
-            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . utf8_decode($this->ficelle->speChar2HtmlEntities($_POST['liste'])) . '</ul>' . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities(utf8_decode($_POST['content'])));
+            $_SESSION['content_email_completude'][$_POST['id_client']] = '<ul>' . $this->ficelle->speChar2HtmlEntities($_POST['liste']) . '</ul>' . ($_POST['content'] != '' ? '<br>' : '') . nl2br(htmlentities($_POST['content']));
             echo 'ok';
         } else {
             echo 'nok';
