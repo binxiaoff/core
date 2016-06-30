@@ -1928,16 +1928,16 @@ class dossiersController extends bootstrap
             if (isset($_POST['spy_remb_anticipe']) && $_POST['id_reception'] > 0 && isset($_POST['id_reception'])) {
                 $id_reception = $_POST['id_reception'];
 
-                $this->projects               = $this->loadData('projects');
-                $this->echeanciers            = $this->loadData('echeanciers');
-                $this->receptions             = $this->loadData('receptions');
-                $this->echeanciers_emprunteur = $this->loadData('echeanciers_emprunteur');
-                $this->transactions           = $this->loadData('transactions');
-                $this->lenders_accounts       = $this->loadData('lenders_accounts');
-                $this->clients                = $this->loadData('clients');
-                $this->wallets_lines          = $this->loadData('wallets_lines');
-                $this->mail_template          = $this->loadData('mail_template');
-                $this->companies              = $this->loadData('companies');
+                $this->projects                      = $this->loadData('projects');
+                $this->echeanciers                   = $this->loadData('echeanciers');
+                $this->receptions                    = $this->loadData('receptions');
+                $this->echeanciers_emprunteur        = $this->loadData('echeanciers_emprunteur');
+                $this->transactions                  = $this->loadData('transactions');
+                $this->lenders_accounts              = $this->loadData('lenders_accounts');
+                $this->clients                       = $this->loadData('clients');
+                $this->wallets_lines                 = $this->loadData('wallets_lines');
+                $this->mail_template                 = $this->loadData('mail_templates');
+                $this->companies                     = $this->loadData('companies');
                 /** @var \Unilend\Bundle\CoreBusinessBundle\Service\ProjectManager $oProjectManager */
                 $oProjectManager= $this->get('unilend.service.project_manager');
 

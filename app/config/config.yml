@@ -54,7 +54,8 @@ monolog:
             handler: error_handler
         error_handler:
             type: group
-            members: [file_error, slack_error]
+            members: [file_error]
+#            members: [file_error, slack_error]
         file_error:
             type: rotating_file
             level: error
@@ -62,12 +63,12 @@ monolog:
             max_files: 90
             date_format: 'Ymd'
             file_permission: 0664
-        slack_error:
-            type: slack
-            level: error
-            token: xoxp-1234567890-0123456789-01234567890-1a2b3c4d5e
-            channel: '#it-releases'
-            bot_name: 'Symfony Bot'
+#        slack_error:
+#            type: slack
+#            level: error
+#            token: xoxb-54621264262-6EXEn7g59rpWe7vDxzHht5z5
+#            channel: '#it-releases'
+#            bot_name: 'Symfony Bot'
 
         console:
             type: fingers_crossed

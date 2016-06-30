@@ -141,7 +141,7 @@ foreach ($this->lTrans as $t) {
             <!-- debut transasction remb -->
             <tr class="transact remb_' . $t['id_transaction'] . ' ' . ($i % 2 == 1 ? '' : 'odd') . '">
                 <td>' . $t['libelle_operation'];
-        if (\transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT != $t['type_transaction']) {
+        if (\transactions_types::TYPE_LENDER_REPAYMENT == $t['type_transaction']) {
             $html .= '<span class="plusmoinsOperations"></span>';
         }
 

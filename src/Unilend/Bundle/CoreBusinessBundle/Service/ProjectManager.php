@@ -644,6 +644,7 @@ class ProjectManager
             $oProject->update();
 
             $this->oMailerManager->sendFundedToBorrower($oProject);
+            $this->oMailerManager->sendFundedToStaff($oProject);
         }
     }
 

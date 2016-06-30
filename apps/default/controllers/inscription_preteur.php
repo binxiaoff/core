@@ -539,8 +539,8 @@ class inscription_preteurController extends bootstrap
                             '$surl'       => $this->surl,
                             '$url'        => $this->lurl,
                             '$id_preteur' => $this->clients->id_client,
-                            '$nom'        => utf8_decode($this->clients->nom),
-                            '$prenom'     => utf8_decode($this->clients->prenom),
+                            '$nom'        => $this->clients->nom,
+                            '$prenom'     => $this->clients->prenom,
                             '$montant'    => ($response['payment']['amount'] / 100)
                         );
 

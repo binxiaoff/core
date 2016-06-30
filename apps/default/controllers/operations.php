@@ -34,7 +34,6 @@ class operationsController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->ifu                     = $this->loadData('ifu');
-        $this->loadData('transactions_types'); // @todo included for class constants
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
@@ -534,7 +533,8 @@ class operationsController extends bootstrap
                     foreach ($aTaxType as $aType) {
                         $aTax[$aType['id_tax_type']]['amount'] = 0;
                     }
-                    if ($t['type_transaction'] == \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT) {
+
+                    if ($t['type_transaction'] != \transactions_types::TYPE_LENDER_REPAYMENT) {
                         $this->echeanciers->capital = $t['montant_operation'];
                     } else {
                         $aTax = $oTax->getTaxListByRepaymentId($t['id_echeancier']);

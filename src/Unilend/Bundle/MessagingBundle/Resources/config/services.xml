@@ -13,6 +13,7 @@
         <service id="unilend.service.mail_queue" class="Unilend\Bundle\MessagingBundle\Service\MailQueueManager">
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument type="service" id="unilend.swiftmailer.message_provider"/>
+            <argument>%path.shared_tmp%</argument>
         </service>
 
         <service id="unilend.service.mail_template" class="Unilend\Bundle\MessagingBundle\Service\MailTemplateManager">
@@ -25,6 +26,9 @@
             <argument type="service" id="unilend.service.entity_manager"/>
             <argument>Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage</argument>
             <argument>%kernel.default_locale%</argument>
+            <call method="setLogger">
+                <argument type="service" id="logger" on-invalid="null"/>
+            </call>
         </service>
 
         <service id="unilend.swiftmailer.db_spool" class="Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\DatabaseSpool">

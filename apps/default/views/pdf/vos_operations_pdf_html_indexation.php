@@ -88,7 +88,7 @@
                 $solde = $t['solde'];
             }
 
-            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT))) {
+            if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT_CAPITAL, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                 $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                 ?>
                 <tr class="transact remb_<?= $t['id_transaction'] ?> <?= ($i % 2 == 1 ? '' : 'odd') ?>">
@@ -101,6 +101,7 @@
                 </tr>
                 <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                     <td colspan="7">
+                    <?php if (\transactions_types::TYPE_LENDER_REPAYMENT == $t['type_transaction']): ?>
                         <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>">
                             <table class="soustable" width="100%">
                                 <tbody>
@@ -138,6 +139,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php
@@ -213,7 +215,7 @@
 </table>
 
 <?php if ($asterix_on) : ?>
-    <div style="padding-left: 10px;">* <?= $this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-pdf'] ?></div>
+    <div style="padding-left: 10px;margin-top:20px;">* <?= $this->lng['preteur-operations-vos-operations']['offre-acceptee-asterix-pdf'] ?></div>
 <?php endif; ?>
 <br /><br />
 <div class="pdfFooter">

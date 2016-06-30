@@ -2,13 +2,19 @@
 
 namespace Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer;
 
+use Psr\Log\LoggerInterface;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
 
 class TemplateMessageProvider
 {
     /** @var EntityManager */
     private $entityManager;
+    /** @var string */
     private $templateMessageClass;
+    /** @var string */
+    private $defaultLanguage;
+    /** @var LoggerInterface */
+    private $logger;
 
     /**
      * TemplateMessageProvider constructor.
@@ -22,6 +28,16 @@ class TemplateMessageProvider
         $this->entityManager        = $entityManager;
         $this->templateMessageClass = $templateMessageClass;
         $this->defaultLanguage      = $defaultLanguage;
+    }
+
+    /**
+     * @param LoggerInterface $logger
+     * @return $this
+     */
+    public function setLogger(LoggerInterface $logger)
+    {
+        $this->logger = $logger;
+        return $this;
     }
 
     /**
@@ -53,6 +69,10 @@ class TemplateMessageProvider
                 ->setFrom($mailTemplate->sender_email, $fromName)
                 ->setSubject($subject)
                 ->setBody($body, 'text/html');
+
+        if ($this->logger instanceof LoggerInterface) {
+            $message->setLogger($this->logger);
+        }
 
         return $message;
     }

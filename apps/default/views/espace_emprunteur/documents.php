@@ -66,7 +66,7 @@
                     else : ?>
                         <a href="<?= $this->lurl . '/pdf/pouvoir/' . $this->clients->hash . '/' . $aProject['id_project'] ?>">
                             <img src="<?= $this->lurl . '/styles/default/images/pdf50.png' ?>"></a>
-                        <?= ($aProject['pouvoir'][0]['status'] = 0) ? $this->lng['espace-emprunteur']['pouvoir-a-signer'] : '' ?>
+                        <?= (\projects_pouvoir::STATUS_PENDING == $aProject['pouvoir'][0]['status']) ? $this->lng['espace-emprunteur']['pouvoir-a-signer'] : '' ?>
                     <?php endif; ?>
                 </td>
                 <td>
@@ -76,7 +76,7 @@
                     else: ?>
                         <a href="<?= $this->lurl . '/pdf/mandat/' . $this->clients->hash . '/' . $aProject['id_project'] ?>">
                             <img src="<?= $this->lurl . '/styles/default/images/pdf50.png' ?>"></a>
-                        <?= $this->lng['espace-emprunteur'][ $aProject['mandat'][0]['status-trad'] ] ?>
+                        <?= (isset($aProject['mandat'][0]['status-trad']) ? $this->lng['espace-emprunteur'][$aProject['mandat'][0]['status-trad']] : '' )?>
                     <?php endif; ?>
                 </td>
             </tr>
@@ -88,32 +88,32 @@
     <h2><?= $this->lng['espace-emprunteur']['factures'] ?></h2>
     <table class="invoices" width="100%">
         <thead>
-            <tr>
-                <th>
-                    <div class="th-wrap">
-                        <i class="tooltip-anchor icon-double"></i>
-                        <div><?= $this->lng['espace-emprunteur']['no-facture'] ?></div>
-                    </div>
-                </th>
-                <th>
-                    <div class="th-wrap">
+        <tr>
+            <th>
+                <div class="th-wrap">
+                    <i class="tooltip-anchor icon-double"></i>
+                    <div><?= $this->lng['espace-emprunteur']['no-facture'] ?></div>
+                </div>
+            </th>
+            <th>
+                <div class="th-wrap">
                     <i class="icon-person tooltip-anchor" style="margin-left:-15px;"></i>
-                        <div><?= $this->lng['espace-emprunteur']['identifiant-projet'] ?></div>
-                    </div>
-                    </th>
-                <th>
-                    <div class="th-wrap">
-                        <i class="icon-calendar tooltip-anchor" style="margin-left:-15px;" ></i>
-                        <div><?= $this->lng['espace-emprunteur']['date-facture'] ?></div>
-                    </div>
-                </th>
-                <th>
-                    <div class="th-wrap">
-                        <i class="tooltip-anchor icon-bdc"></i>
-                        <div><?= $this->lng['espace-emprunteur']['facture'] ?></div>
-                    </div>
-                </th>
-            </tr>
+                    <div><?= $this->lng['espace-emprunteur']['identifiant-projet'] ?></div>
+                </div>
+            </th>
+            <th>
+                <div class="th-wrap">
+                    <i class="icon-calendar tooltip-anchor" style="margin-left:-15px;"></i>
+                    <div><?= $this->lng['espace-emprunteur']['date-facture'] ?></div>
+                </div>
+            </th>
+            <th>
+                <div class="th-wrap">
+                    <i class="tooltip-anchor icon-bdc"></i>
+                    <div><?= $this->lng['espace-emprunteur']['facture'] ?></div>
+                </div>
+            </th>
+        </tr>
         </thead>
         <tbody>
         <?php foreach ($this->aClientsInvoices as $aInvoice) : ?>
