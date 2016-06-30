@@ -35,8 +35,10 @@ parameters:
     router.request_context.scheme:  https
 
     path.static:                    /data/sites/unilend/public/default/
-    path.user:                      /data/medias/nfs/var/
-    path.sftp:                      /data/medias/nfs/sftp/
+    path.shared:                    /data/medias/nfs/
+    path.shared_tmp:                %path.shared%tmp/
+    path.user:                      %path.shared%var/
+    path.sftp:                      %path.shared%sftp/
     path.payline:                   /data/sites/unilend/librairies/payline/
 
     cms:                            iZicom

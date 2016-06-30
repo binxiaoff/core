@@ -30,6 +30,8 @@ class GenerateCrudCommand extends ContainerAwareCommand
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $oLogger = $this->getContainer()->get('monolog.logger.console');
+
         /** @var EntityManager $entityManager */
         $entityManager      = $this->getContainer()->get('unilend.service.entity_manager');
         $generatedCruds      = [];
@@ -54,6 +56,7 @@ class GenerateCrudCommand extends ContainerAwareCommand
                         }
                     } catch (\Exception $exception) {
                         $generatedCruds[] = [$table, 'Failed'];
+                        $oLogger->error('Generate crud for ' . $table . ' failed. Reason: ' . $exception->getMessage());
                     }
                 }
             }

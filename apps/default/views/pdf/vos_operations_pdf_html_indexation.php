@@ -76,7 +76,7 @@
                 }
 
                 // Remb preteur
-                if ($t['type_transaction'] == 5 || $t['type_transaction'] == 23) {
+                if (in_array($t['type_transaction'], array(\transactions_types::TYPE_LENDER_REPAYMENT, \transactions_types::TYPE_LENDER_ANTICIPATED_REPAYMENT, \transactions_types::TYPE_LENDER_RECOVERY_REPAYMENT))) {
                     $this->echeanciers->get($t['id_echeancier'], 'id_echeancier');
                     $retenuesfiscals = $this->echeanciers->prelevements_obligatoires + $this->echeanciers->retenues_source + $this->echeanciers->csg + $this->echeanciers->prelevements_sociaux + $this->echeanciers->contributions_additionnelles + $this->echeanciers->prelevements_solidarite + $this->echeanciers->crds;
                     ?>
@@ -91,6 +91,7 @@
                     </tr>
                     <tr class="content_transact <?= ($i % 2 == 1 ? '' : 'odd') ?>" height="0">
                         <td colspan="7">
+                            <?php if (\transactions_types::TYPE_LENDER_REPAYMENT == $t['type_transaction']): ?>
                             <div class="div_content_transact content_remb_<?= $t['id_transaction'] ?>">
                                 <table class="soustable" width="100%">
                                     <tbody>
@@ -128,6 +129,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                        <?php endif; ?>
                         </td>
                     </tr>
                     <!-- fin transasction remb -->

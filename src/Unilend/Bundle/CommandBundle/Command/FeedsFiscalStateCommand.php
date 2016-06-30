@@ -257,7 +257,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
             $bank_unilend->id_project             = 0;
             $bank_unilend->montant                = -$etatRemb;
             $bank_unilend->type                   = \bank_unilend::TYPE_DEBIT_UNILEND;
-            $bank_unilend->status                 = \bank_unilend::STATUS_DEBITED_UNILEND_ACCOUNT;
+            $bank_unilend->status                 = 3;
             $bank_unilend->retrait_fiscale        = 1;
             $bank_unilend->create();
         }

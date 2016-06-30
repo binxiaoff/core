@@ -920,30 +920,23 @@ class ajaxController extends bootstrap
         $this->clients         = $this->loadData('clients');
         $this->demande_contact = $this->loadData('demande_contact');
 
-        if (isset($_POST['name']) && isset($_POST['prenom']) && isset($_POST['email'])) {
-            $form_ok = true;
+        if (isset($_POST['name'], $_POST['prenom'], $_POST['email'])) {
+            $this->lng['contact'] = $this->ln->selectFront('contact', $this->language, $this->App);
 
-            if (! isset($_POST['name']) || $_POST['name'] == '' || $_POST['name'] == $this->lng['contact']['nom']) {
-                $form_ok = false;
-            }
-
-            if (! isset($_POST['prenom']) || $_POST['prenom'] == '' || $_POST['prenom'] == $this->lng['contact']['prenom']) {
-                $form_ok = false;
-            }
-
-            if (! isset($_POST['email']) || $_POST['email'] == '' || $_POST['email'] == $this->lng['contact']['email']) {
-                $form_ok = false;
-            } elseif (! $this->ficelle->isEmail($_POST['email'])) {
-                $form_ok = false;
-            }
-
-            if (! isset($_POST['security']) || $_POST['security'] == '' || $_POST['security'] == $this->lng['contact']['captcha']) {
-                $form_ok = false;
-            } elseif ($_SESSION['securecode'] != strtolower($_POST['security'])) {
-                $form_ok = false;
-            }
-
-            if ($form_ok == true) {
+            if (
+                empty($_POST['name'])
+                || empty($_POST['prenom'])
+                || empty($_POST['email'])
+                || empty($_POST['security'])
+                || $_POST['name'] == $this->lng['contact']['nom']
+                || $_POST['prenom'] == $this->lng['contact']['prenom']
+                || $_POST['email'] == $this->lng['contact']['email']
+                || $_POST['security'] == $this->lng['contact']['captcha']
+                || false === $this->ficelle->isEmail($_POST['email'])
+                || $_SESSION['securecode'] != strtolower($_POST['security'])
+            ) {
+                echo 'nok';
+            } else {
                 $this->demande_contact->demande   = 2;
                 $this->demande_contact->nom       = $this->ficelle->majNom($_POST['name']);
                 $this->demande_contact->prenom    = $this->ficelle->majNom($_POST['prenom']);
@@ -979,16 +972,16 @@ class ajaxController extends bootstrap
 
                 $infos = '<ul>';
                 $infos .= '<li>Type demande : Demande preteur</li>';
-                $infos .= '<li>Nom : ' . utf8_decode($this->demande_contact->nom) . '</li>';
-                $infos .= '<li>Prenom : ' . utf8_decode($this->demande_contact->prenom) . '</li>';
-                $infos .= '<li>Email : ' . utf8_decode($this->demande_contact->email) . '</li>';
-                $infos .= '<li>telephone : ' . utf8_decode($this->demande_contact->telephone) . '</li>';
-                $infos .= '<li>Societe : ' . utf8_decode($this->demande_contact->societe) . '</li>';
-                $infos .= '<li>Message : ' . utf8_decode($this->demande_contact->message) . '</li>';
+                $infos .= '<li>Nom : ' . $this->demande_contact->nom . '</li>';
+                $infos .= '<li>Prenom : ' . $this->demande_contact->prenom . '</li>';
+                $infos .= '<li>Email : ' . $this->demande_contact->email . '</li>';
+                $infos .= '<li>telephone : ' . $this->demande_contact->telephone . '</li>';
+                $infos .= '<li>Societe : ' . $this->demande_contact->societe . '</li>';
+                $infos .= '<li>Message : ' . $this->demande_contact->message . '</li>';
                 $infos .= '</ul>';
 
                 $oSettings->get('Adresse preteur', 'type');
-                $destinataire = $this->settings->value;
+                $destinataire = $oSettings->value;
 
                 $varInternalMail = array(
                     '$infos'  => $infos
@@ -1000,9 +993,7 @@ class ajaxController extends bootstrap
                 $mailer = $this->get('mailer');
                 $mailer->send($message);
 
-                echo $captcha = '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
-            } else {
-                echo 'nok';
+                echo '<iframe width="133" src="' . $this->surl . '/images/default/securitecode.php"></iframe>';
             }
         } else {
             echo 'nok';
