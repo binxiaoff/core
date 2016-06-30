@@ -1,0 +1,14 @@
+{
+  "en": {
+    "directionAsc": "Ascending",
+    "directionDesc": "Descending",
+    "applyFiltersLabel": "Sort by...",
+    "resetFiltersLabel": "Clear filters"
+  },
+  "fr": {
+    "directionAsc": "Ascending",
+    "directionDesc": "Descending",
+    "applyFiltersLabel": "Sort by...",
+    "resetFiltersLabel": "Clear filters"
+  }
+}
