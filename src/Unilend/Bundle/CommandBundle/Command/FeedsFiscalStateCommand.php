@@ -82,7 +82,7 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $PhysiqueNoExo[1]               = isset($PhysiqueNoExo[1]) ? $PhysiqueNoExo[1] : array('prelevements_obligatoires' => 0, 'interets' => 0);
         $PhysiqueNoExo[2]               = isset($PhysiqueNoExo[2]) ? $PhysiqueNoExo[2] : array('prelevements_obligatoires' => 0, 'interets' => 0);
         $PhysiqueNonExoPourLaPeriode[1] = isset($PhysiqueNonExoPourLaPeriode[1]) ? $PhysiqueNonExoPourLaPeriode[1] : array('prelevements_obligatoires' => 0, 'interets' => 0);
-        $PhysiqueNonExoPourLaPeriode[2] = isset($PhysiqueNonExoPourLaPeriode[2]) ? $PhysiqueNonExoPourLaPeriode[1] : array('prelevements_obligatoires' => 0, 'interets' => 0);
+        $PhysiqueNonExoPourLaPeriode[2] = isset($PhysiqueNonExoPourLaPeriode[2]) ? $PhysiqueNonExoPourLaPeriode[2] : array('prelevements_obligatoires' => 0, 'interets' => 0);
 
         $prelevementRetenuSoucre[1]   = bcadd($Morale1[1]['retenues_source'], $etranger[1]['retenues_source'], 2);
         $lesPrelevSurPhysiqueNoExo[1] = bcadd(bcsub($PhysiqueNoExo[1]['prelevements_obligatoires'], $etranger[1]['prelevements_obligatoires'], 2), $PhysiqueNonExoPourLaPeriode[1]['prelevements_obligatoires'], 2);
