@@ -1,6 +1,4 @@
 <?php
-
-
 namespace Unilend\Bundle\CommandBundle\Command;
 
 use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
@@ -9,7 +7,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Unilend\Bundle\MessagingBundle\Bridge\SwiftMailer\TemplateMessage;
 use Unilend\core\Loader;
 use Unilend\Bundle\CoreBusinessBundle\Service\Simulator\EntityManager;
-
 
 class FeedsFiscalStateCommand extends ContainerAwareCommand
 {
@@ -45,25 +42,25 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $entityManager->getRepository('transactions_types');
 
         $settings->get('EQ-Acompte d\'impôt sur le revenu', 'type');
-        $prelevements_obligatoires = bcmul($settings->value, 100);
+        $prelevements_obligatoires = bcmul($settings->value, 100, 2);
 
         $settings->get('EQ-Contribution additionnelle au Prélèvement Social', 'type');
-        $txcontributions_additionnelles = bcmul($settings->value, 100);
+        $txcontributions_additionnelles = bcmul($settings->value, 100, 2);
 
         $settings->get('EQ-CRDS', 'type');
-        $txcrds = bcmul($settings->value, 100);
+        $txcrds = bcmul($settings->value, 100, 2);
 
         $settings->get('EQ-CSG', 'type');
-        $txcsg = bcmul($settings->value, 100);
+        $txcsg = bcmul($settings->value, 100, 2);
 
         $settings->get('EQ-Prélèvement de Solidarité', 'type');
-        $txprelevements_solidarite = bcmul($settings->value, 100);
+        $txprelevements_solidarite = bcmul($settings->value, 100, 2);
 
         $settings->get('EQ-Prélèvement social', 'type');
-        $txprelevements_sociaux = bcmul($settings->value, 100);
+        $txprelevements_sociaux = bcmul($settings->value, 100, 2);
 
         $settings->get('EQ-Retenue à la source', 'type');
-        $tauxRetenuSource = bcmul($settings->value, 100);
+        $tauxRetenuSource = bcmul($settings->value, 100, 2);
 
         $mois          = date('m');
         $annee         = date('Y');
@@ -87,22 +84,21 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $PhysiqueNonExoPourLaPeriode[1] = isset($PhysiqueNonExoPourLaPeriode[1]) ? $PhysiqueNonExoPourLaPeriode[1] : array('prelevements_obligatoires' => 0, 'interets' => 0);
         $PhysiqueNonExoPourLaPeriode[2] = isset($PhysiqueNonExoPourLaPeriode[2]) ? $PhysiqueNonExoPourLaPeriode[1] : array('prelevements_obligatoires' => 0, 'interets' => 0);
 
-        $prelevementRetenuSoucre[1]   = bcadd($Morale1[1]['retenues_source'], $etranger[1]['retenues_source']);
-        $lesPrelevSurPhysiqueNoExo[1] = bcadd(bcsub($PhysiqueNoExo[1]['prelevements_obligatoires'], $etranger[1]['prelevements_obligatoires']), $PhysiqueNonExoPourLaPeriode[1]['prelevements_obligatoires']);
-        $lesPrelevSurPhysiqueNoExo[2] = bcadd(bcsub($PhysiqueNoExo[2]['prelevements_obligatoires'] , $etranger[2]['prelevements_obligatoires']), $PhysiqueNonExoPourLaPeriode[2]['prelevements_obligatoires']);
-        $PhysiqueNoExoInte[1]         = bcdiv(bcadd(bcsub($PhysiqueNoExo[1]['interets'], $etranger[1]['interets']), $PhysiqueNonExoPourLaPeriode[1]['interets']), 100);
-        $PhysiqueNoExoInte[2]         = bcdiv(bcadd(bcsub($PhysiqueNoExo[2]['interets'], $etranger[2]['interets']), $PhysiqueNonExoPourLaPeriode[2]['interets']), 100);
-        $MoraleInte                   = bcdiv(bcadd(array_sum(array_column($Morale1, 'interets')), array_sum(array_column($etranger, 'interets'))), 100);
-        $PhysiqueExoInte              = bcdiv(array_sum(array_column($PhysiqueExo, 'interets')), 100);
+        $prelevementRetenuSoucre[1]   = bcadd($Morale1[1]['retenues_source'], $etranger[1]['retenues_source'], 2);
+        $lesPrelevSurPhysiqueNoExo[1] = bcadd(bcsub($PhysiqueNoExo[1]['prelevements_obligatoires'], $etranger[1]['prelevements_obligatoires'], 2), $PhysiqueNonExoPourLaPeriode[1]['prelevements_obligatoires'], 2);
+        $lesPrelevSurPhysiqueNoExo[2] = bcadd(bcsub($PhysiqueNoExo[2]['prelevements_obligatoires'] , $etranger[2]['prelevements_obligatoires'], 2), $PhysiqueNonExoPourLaPeriode[2]['prelevements_obligatoires'], 2);
+        $PhysiqueNoExoInte[1]         = bcdiv(bcadd(bcsub($PhysiqueNoExo[1]['interets'], $etranger[1]['interets'], 2), $PhysiqueNonExoPourLaPeriode[1]['interets'], 2), 100, 2);
+        $PhysiqueNoExoInte[2]         = bcdiv(bcadd(bcsub($PhysiqueNoExo[2]['interets'], $etranger[2]['interets'], 2), $PhysiqueNonExoPourLaPeriode[2]['interets'], 2), 100, 2);
+        $MoraleInte                   = bcdiv(bcadd(array_sum(array_column($Morale1, 'interets')), array_sum(array_column($etranger, 'interets')), 2), 100, 2);
+        $PhysiqueExoInte              = bcdiv(array_sum(array_column($PhysiqueExo, 'interets')), 100, 2);
         $lesPrelevSurPhysiqueExo      = array_sum(array_column($PhysiqueExo, 'prelevements_obligatoires'));
-        $PhysiqueInte                 = bcdiv(bcsub(array_sum(array_column($Physique, 'interets')), array_sum(array_column($etranger, 'interets'))), 100);
-        $lesPrelevSurPhysique         = bcsub(array_sum(array_column($Physique, 'prelevements_obligatoires')), array_sum(array_column($etranger, 'prelevements_obligatoires')));
-        $csg                          = bcsub(array_sum(array_column($Physique, 'csg')), array_sum(array_column($etranger, 'csg')));
-        $prelevements_sociaux         = bcsub(array_sum(array_column($Physique, 'prelevements_sociaux')), array_sum(array_column($etranger, 'prelevements_sociaux')));
-        $contributions_additionnelles = bcsub(array_sum(array_column($Physique, 'contributions_additionnelles')), array_sum(array_column($etranger, 'contributions_additionnelles')));
-        $prelevements_solidarite      = bcsub(array_sum(array_column($Physique, 'prelevements_solidarite')), array_sum(array_column($etranger, 'prelevements_solidarite')));
-        $crds                         = bcsub(array_sum(array_column($Physique, 'crds')), array_sum(array_column($etranger, 'crds')));
-
+        $PhysiqueInte                 = bcdiv(bcsub(array_sum(array_column($Physique, 'interets')), array_sum(array_column($etranger, 'interets')), 2), 100, 2);
+        $lesPrelevSurPhysique         = bcsub(array_sum(array_column($Physique, 'prelevements_obligatoires')), array_sum(array_column($etranger, 'prelevements_obligatoires')), 2);
+        $csg                          = bcsub(array_sum(array_column($Physique, 'csg')), array_sum(array_column($etranger, 'csg')), 2);
+        $prelevements_sociaux         = bcsub(array_sum(array_column($Physique, 'prelevements_sociaux')), array_sum(array_column($etranger, 'prelevements_sociaux')), 2);
+        $contributions_additionnelles = bcsub(array_sum(array_column($Physique, 'contributions_additionnelles')), array_sum(array_column($etranger, 'contributions_additionnelles')), 2);
+        $prelevements_solidarite      = bcsub(array_sum(array_column($Physique, 'prelevements_solidarite')), array_sum(array_column($etranger, 'prelevements_solidarite')), 2);
+        $crds                         = bcsub(array_sum(array_column($Physique, 'crds')), array_sum(array_column($etranger, 'crds')), 2);
 
         $table = '
         <style>
@@ -201,16 +197,15 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
                 <td class="right">' . $ficelle->formatNumber($crds) . '</td>
                 <td style="background-color:#DDDAF4;" class="right">' . $ficelle->formatNumber($txcrds) . '%</td>
             </tr>
-        </table>
-        ';
+        </table>';
 
-        $filename = 'Unilend_etat_fiscal_' . date('Ymd');
-        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/' . $filename . '.xls';
+        $sFilePath = $this->getContainer()->getParameter('path.sftp') . 'sfpmei/emissions/etat_fiscal/Unilend_etat_fiscal_' . date('Ymd') . '.xls';
         file_put_contents($sFilePath, $table);
 
         $settings->get('Adresse notification etat fiscal', 'type');
         $destinataire = $settings->value;
-        $sUrl     = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
+
+        $sUrl = $this->getContainer()->getParameter('router.request_context.scheme') . '://' . $this->getContainer()->getParameter('url.host_default');
 
         $varMail = array(
             '$surl' => $sUrl,
@@ -224,14 +219,11 @@ class FeedsFiscalStateCommand extends ContainerAwareCommand
         $mailer = $this->getContainer()->get('mailer');
         $mailer->send($message);
 
-        /////////////////////////////////////////////////////
-        // On retire de bank unilend la partie  pour letat //
-        /////////////////////////////////////////////////////
-        $dateRembtemp = mktime(date("H"), date("i"), date("s"), date("m") - 1, date("d"), date("Y"));
-        $dateRemb     = date("Y-m", $dateRembtemp);
-        $dateRembM    = date("m", $dateRembtemp);
-        $dateRembY    = date("Y", $dateRembtemp);
-        $etatRemb     = $bank_unilend->sumMontantEtat('status = 1 AND type IN(2) AND LEFT(added,7) = "' . $dateRemb . '"');
+        $dateRembtemp = mktime(date('H'), date('i'), date('s'), date('m') - 1, date('d'), date('Y'));
+        $dateRemb     = date('Y-m', $dateRembtemp);
+        $dateRembM    = date('m', $dateRembtemp);
+        $dateRembY    = date('Y', $dateRembtemp);
+        $etatRemb     = $bank_unilend->sumMontantEtat('status = 1 AND type = 2 AND LEFT(added, 7) = "' . $dateRemb . '"');
         $regulCom     = $transactions->sumByday(\transactions_types::TYPE_REGULATION_COMMISSION, $dateRembM, $dateRembY);
 
         $sommeRegulDuMois = 0;
