@@ -715,8 +715,7 @@ class inscription_preteurController extends bootstrap
         $this->unLoadJs('default/jquery.c2selectbox');
         $this->unLoadJs('default/livevalidation_standalone.compressed');
         $this->unLoadJs('default/jquery.colorbox-min');
-        $this->unLoadJs('default/jquery-ui-1.10.3.custom.min');
-        $this->unLoadJs('default/jquery-ui-1.10.3.custom2');
+        $this->unLoadJs('default/jqueryui-1.10.3.min');
         $this->unLoadJs('default/ui.datepicker-fr');
         $this->unLoadJs('default/highcharts.src');
         $this->unLoadJs('default/main');
