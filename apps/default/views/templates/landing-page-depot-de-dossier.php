@@ -159,13 +159,13 @@
         </section>
     <?php endif; ?>
     <section class="partners cf">
-        <span><img src="<?= $this->photos->display($this->content['lp-image-1-233'], '', 'partenaires_landing_page') ?>"></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-2-234'], '', 'partenaires_landing_page') ?>"></span>
-        <span><img src="<?= $this->photos->display($this->content['lp-image-3-235'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4-236'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5-237'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6-238'], '', 'partenaires_landing_page') ?>"></span>
-        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], '', 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-1-233'], 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-2-234'], 'partenaires_landing_page') ?>"></span>
+        <span><img src="<?= $this->photos->display($this->content['lp-image-3-235'], 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-4-236'], 'partenaires_landing_page') ?>"></span>
+        <span class="mobile-hidden"><img src="<?= $this->photos->display($this->content['lp-image-5-237'], 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-6-238'], 'partenaires_landing_page') ?>"></span>
+        <span class="tablet-hidden"><img src="<?= $this->photos->display($this->content['lp-image-7-239'], 'partenaires_landing_page') ?>"></span>
     </section>
 </div>
 <!--[if lte IE 9]>

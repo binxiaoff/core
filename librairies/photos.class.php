@@ -1,17 +1,4 @@
 <?php
-// ****************************************************************************** //
-// **************************** CLASSE PHOTO EQUINOA **************************** //
-// ****************************************************************************** //
-//
-//
-// Version 1.0
-//
-// C'est le complement de la classe upload pour les images.
-// Elle permet de gérer l'affichage, le recadrage et le retaillage des images.
-//
-//
-// ********************************************************************************* //
-// ********************************************************************************* //
 
 class photos
 {
@@ -27,282 +14,166 @@ class photos
         $this->spath   = $params[0];
         $this->surl    = $params[1];
         $this->formats = array(
-            'admin_comp'               => array('w' => 50, 'h' => 50),
-            'admin_imgs'               => array('w' => 100, 'h' => 60),
-            'img_contenu2'             => array('w' => 226, 'h' => 157),
-            'img_contenu1'             => array('w' => 270, 'h' => 158),
-            'img_contact'              => array('w' => 386, 'h' => 238),
             'bloc_home'                => array('w' => 148, 'h' => 47),
-            'picto_landing_page'       => array('w' => 105, 'h' => 93),
-            'partenaires_landing_page' => array('w' => 97, 'h' => 49)
+            'img_contact'              => array('w' => 386, 'h' => 238),
+            'img_contenu1'             => array('w' => 270, 'h' => 158),
+            'img_contenu2'             => array('w' => 226, 'h' => 157),
+            'partenaires_landing_page' => array('w' => 97, 'h' => 49),
+            'picto_landing_page'       => array('w' => 105, 'h' => 93)
         );
     }
 
-    // ************************************************************************************************************ //
-    // *********************************** Fonction pour l'affichage de l'image *********************************** //
-    // ************************************************************************************************************ //
-    // $file -> Nom du fichier a afficher (obligatoire)
-    // $type -> type du fichier (defini le dossier dans lequel se situe le fichier (ex: $type = maison -> images/maison)
-    // $format -> fait appel a la liste des formats pour appeler la bonne image dans sa bonne taille
-    // $w -> largeur max que l'on souhaite si pas dans format pour du one shot
-    // $h -> hauteur max que l'on souhaite si pas dans format pour du one shot
-    // $url -> utile si on a les tempaltes dans une appli mais qu'on appelle les pages dans une autre appli
-
-    public function display($file, $type = '', $format = '', $w = '', $h = '', $url = '', $cadre_fixe = false)
+    /**
+     * Fonction pour l'affichage de l'image
+     * @param string $file   Nom du fichier à afficher
+     * @param string $format Fait appel à la liste des formats pour appeler la bonne image dans sa bonne taille
+     * @return string
+     */
+    public function display($file, $format = '')
     {
-        if ($url == '') {
-            $url = $this->surl;
-        }
+        if (file_exists($this->spath . 'images/' . ($format != '' ? $format . '_' : '') . $file) && ! is_dir($this->spath . 'images/' . ($format != '' ? $format . '_' : '') . $file)) {
+            return $this->surl . '/var/images/' . ($format != '' ? $format . '_' : '') . $file;
+        } elseif (file_exists($this->spath . 'images/' . $file) && ! is_dir($this->spath . 'images/' . $file)) {
+            $this->uploadedFileName      = $file;
+            $this->upload_dir            = $this->spath . 'images/';
+            $this->uploadedFileExtension = pathinfo($this->upload_dir . $this->uploadedFileName)['extension'];
 
-        // Si le fichier appelé existe déjà
-        if (file_exists($this->spath . 'images/' . ($type != '' ? $type . '/' : '') . ($format != '' ? $format . '_' : '') . $file) && ! is_dir($this->spath . 'images/' . ($type != '' ? $type . '/' : '') . ($format != '' ? $format . '_' : '') . $file)) {
-            return $url . '/var/images/' . ($type != '' ? $type . '/' : '') . ($format != '' ? $format . '_' : '') . $file;
-        } // Si le fichier original existe mais pas le format demandé alors on le créé
-        elseif (file_exists($this->spath . 'images/' . ($type != '' ? $type . '/' : '') . $file) && ! is_dir($this->spath . 'images/' . ($type != '' ? $type . '/' : '') . $file)) {
-            $this->uploadedFileName = $file;
-            $this->upload_dir       = $this->spath . 'images/' . ($type != '' ? $type . '/' : '');
+            $this->resizeImageWH($format);
 
-            // Recuperation de l'extension
-            $extension                   = pathinfo($this->upload_dir . $this->uploadedFileName);
-            $extension                   = $extension['extension'];
-            $this->uploadedFileExtension = $extension;
-
-            $w = ($w == '' ? $this->formats[$format]['w'] : $w);
-            $h = ($h == '' ? $this->formats[$format]['h'] : $h);
-            $this->resizeImageWH($w, $h, $format, $cadre_fixe);
-
-            return $url . '/var/images/' . ($type != '' ? $type . '/' : '') . ($format != '' ? $format . '_' : '') . $file;
-        } // Sinon on recupere l'image par defaut
-        else {
-            return $url . '/var/images/' . ($type != '' ? $type . '/' : '') . ($format != '' ? $format . '_' : '') . 'default.png';
+            return $this->surl . '/var/images/' . ($format != '' ? $format . '_' : '') . $file;
+        } else {
+            return $this->surl . '/var/images/' . ($format != '' ? $format . '_' : '') . 'default.png';
         }
     }
 
-    // **************************************************** //
-    // RESIZE IMAGE AVEC UNE LARGEUR MAX ET UNE HAUTEUR MAX //
-    // **************************************************** //
-
-    // $w_max -> Largeur Max de la nouvelle Image
-    // $h_max -> Hauteur Max de la nouvelle Image
-    // $type -> Type de l'image (préfixe) -> facultatif
-
-    public function resizeImageWH($w_max, $h_max, $type = '', $cadre_fixe = false)
+    /**
+     * Reisze image avec une largeur max et une hauteur max
+     * @param string $format Type de l'image
+     */
+    public function resizeImageWH($format = '')
     {
-        $fichier = $this->upload_dir . $this->uploadedFileName;
-        $dossier = $this->upload_dir;
-        $nom     = $this->uploadedFileName;
+        $w_max   = $this->formats[$format]['w'];
+        $h_max   = $this->formats[$format]['h'];
 
-        if ($cadre_fixe) {
-            $w_cadre = $w_max;
-            $h_cadre = $h_max;
+        // Si aucun préfixe n'est spécifié, on écrase l'image au lieu d'en créer une nouvelle
+        if ($format != '') {
+            $this->uploadedFileName = $format . '_' . $this->uploadedFileName;
         }
 
-        // SI AUCUN TYPE SPECIFIE ON ECRASE L'IMAGE AU LIEU D'EN CREER UNE NOUVELLE
-        if ($type != '') {
-            $nom = $type . '_' . $nom;
-        }
+        $taille_image = getimagesize($this->upload_dir . $this->uploadedFileName);
 
-        // RECUPERATION TAILLE IMAGE ORIGINALE
-        $taille_image = @getimagesize($fichier);
+        if (false === $taille_image) {
+            trigger_error('Unable to get image size: ' . $this->uploadedFileName, E_USER_WARNING);
+            return;
+        }
 
         $w = $taille_image[0];
         $h = $taille_image[1];
 
-        // SI HAUTEUR IMG > LARGEUR IMG
         if ($h > $w) {
-            $w_tmp = ($h_max / $h) * $w;    // LARGEUR TEMP
-            $h_tmp = $h_max;                // HAUTEUR TEMP
+            $w_tmp = ($h_max / $h) * $w;
+            $h_tmp = $h_max;
 
-            // SI HAUTEUR IMG < HAUTEUR MAX
             if ($h < $h_max) {
-                // SI LARGEUR TEMP > LARGEUR MAX
                 if ($w_tmp > $w_max) {
-                    $width  = $w_max;                        // LARGEUR FINALE
-                    $height = ($w_max / $w_tmp) * $h_tmp;    // HAUTEUR FINALE
+                    $width  = $w_max;
+                    $height = ($w_max / $w_tmp) * $h_tmp;
                 } else {
-                    $width  = $w;    // LARGEUR FINALE
-                    $height = $h;    // HAUTEUR FINALE
+                    $width  = $w;
+                    $height = $h;
                 }
             } else {
-                // SI LARGEUR TEMP > LARGEUR MAX
                 if ($w_tmp > $w_max) {
-                    $width  = $w_max;                        // LARGEUR FINALE
-                    $height = ($w_max / $w_tmp) * $h_tmp;    // HAUTEUR FINALE
+                    $width  = $w_max;
+                    $height = ($w_max / $w_tmp) * $h_tmp;
                 } else {
-                    $width  = $w_tmp;    // LARGEUR FINALE
-                    $height = $h_tmp;    // HAUTEUR FINALE
+                    $width  = $w_tmp;
+                    $height = $h_tmp;
                 }
             }
-        } // SI LARGEUR IMG > HAUTEUR IMG
-        elseif ($w > $h) {
-            $w_tmp = $w_max;                // LARGEUR TEMP
-            $h_tmp = ($w_max / $w) * $h;    // LARGEUR TEMP
+        } elseif ($w > $h) {
+            $w_tmp = $w_max;
+            $h_tmp = ($w_max / $w) * $h;
 
-            // SI LARGEUR IMG < LARGEUR MAX
             if ($w < $w_max) {
-                // SI HAUTEUR TEMP > HAUTEUR MAX
                 if ($h_tmp > $h_max) {
-                    $width  = ($h_max / $h_tmp) * $w_tmp;    // LARGEUR FINALE
-                    $height = $h_max;                        // HAUTEUR FINALE
+                    $width  = ($h_max / $h_tmp) * $w_tmp;
+                    $height = $h_max;
                 } else {
-                    $width  = $w;    // LARGEUR FINALE
-                    $height = $h;    // HAUTEUR FINALE
+                    $width  = $w;
+                    $height = $h;
                 }
             } else {
-                // SI HAUTEUR TEMP > HAUTEUR MAX
                 if ($h_tmp > $h_max) {
-                    $width  = ($h_max / $h_tmp) * $w_tmp;    // LARGEUR FINALE
-                    $height = $h_max;                        // HAUTEUR FINALE
+                    $width  = ($h_max / $h_tmp) * $w_tmp;
+                    $height = $h_max;
                 } else {
-                    $width  = $w_tmp;    // LARGEUR FINALE
-                    $height = $h_tmp;    // HAUTEUR FINALE
+                    $width  = $w_tmp;
+                    $height = $h_tmp;
                 }
             }
-        } // SI LARGEUR IMG = HAUTEUR IMG
-        elseif ($w == $h) {
-            // SI HAUTEUR MAX < LARGEUR MAX
+        } else {
             if ($h_max < $w_max) {
-                // SI HAUTEUR IMG < HAUTEUR MAX
                 if ($h < $h_max) {
-                    $width  = $w;    // LARGEUR FINALE
-                    $height = $h;    // HAUTEUR FINALE
+                    $width  = $w;
+                    $height = $h;
                 } else {
-                    $width  = $h_max;    // LARGEUR FINALE
-                    $height = $h_max;    // HAUTEUR FINALE
+                    $width  = $h_max;
+                    $height = $h_max;
                 }
             } else {
-                // SI LARGEUR IMG < LARGEUR MAX
                 if ($w < $w_max) {
-                    $width  = $w;    // LARGEUR FINALE
-                    $height = $h;    // HAUTEUR FINALE
+                    $width  = $w;
+                    $height = $h;
                 } else {
-                    $width  = $w_max;    // LARGEUR FINALE
-                    $height = $w_max;    // HAUTEUR FINALE
+                    $width  = $w_max;
+                    $height = $w_max;
                 }
             }
         }
 
-        // CAS D'UN FICHIER GIF
-        if ($this->uploadedFileExtension == 'gif' || $this->uploadedFileExtension == 'GIF') {
-            if ($cadre_fixe) {
-                // PREPARATION DU FICHIER DE L'IMAGE FINALE
-                $img_tmp = imagecreatetruecolor($w_cadre, $h_cadre);
-                $color   = imagecolorallocate($img_tmp, 255, 255, 255);
-                imagefilledrectangle($img_tmp, 0, 0, $w_cadre, $h_cadre, $color);
+        if (in_array($this->uploadedFileExtension, array('gif', 'GIF', 'jpg', 'JPG', 'jpeg', 'JPEG', 'png', 'PNG'))) {
+            $img_tmp = imagecreatetruecolor($width, $height);
 
-                // DEFINITION DE L'IMAGE QUE L'ON VA RETAILLER
-                $img = imagecreatefromgif($fichier);
-
-                // ON REDIMENSIONNE L'IMAGE DANS LE FICHIER IMAGE FINALE
-                $x = ($w_cadre - $width) / 2;
-                $y = ($h_cadre - $height) / 2;
-                imagecopyresampled($img_tmp, $img, $x, $y, 0, 0, $width, $height, $w, $h);
-            } else {
-                // PREPARATION DU FICHIER DE L'IMAGE FINALE
-                $img_tmp = imagecreatetruecolor($width, $height);
-
-                // DEFINITION DE L'IMAGE QUE L'ON VA RETAILLER
-                $img = imagecreatefromgif($fichier);
-
-                // RESTITUTION DES EVENTUELLES TRANSPARENCES
-                imagealphablending($img_tmp, false);
-                imagesavealpha($img_tmp, true);
-                $transparent = imagecolorallocatealpha($img_tmp, 255, 255, 255, 127);
-                imagefilledrectangle($img_tmp, 0, 0, $width, $height, $transparent);
-
-                // ON REDIMENSIONNE L'IMAGE DANS LE FICHIER IMAGE FINALE
-                imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
+            switch ($this->uploadedFileExtension) {
+                case 'gif':
+                case 'GIF':
+                    $img = imagecreatefromgif($this->upload_dir . $this->uploadedFileName);
+                    imagealphablending($img_tmp, false);
+                    imagesavealpha($img_tmp, true);
+                    $transparent = imagecolorallocatealpha($img_tmp, 255, 255, 255, 127);
+                    imagefilledrectangle($img_tmp, 0, 0, $width, $height, $transparent);
+                    imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
+                    imagegif($img_tmp, $this->upload_dir . $this->uploadedFileName);
+                    break;
+                case 'jpg':
+                case 'JPG':
+                case 'jpeg':
+                case 'JPEG':
+                    $img = imagecreatefromjpeg($this->upload_dir . $this->uploadedFileName);
+                    imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
+                    imagejpeg($img_tmp, $this->upload_dir . $this->uploadedFileName, 100);
+                    break;
+                case 'png':
+                case 'PNG':
+                    $img = imagecreatefrompng($this->upload_dir . $this->uploadedFileName);
+                    imagealphablending($img_tmp, false);
+                    imagesavealpha($img_tmp, true);
+                    $transparent = imagecolorallocatealpha($img_tmp, 255, 255, 255, 127);
+                    imagefilledrectangle($img_tmp, 0, 0, $width, $height, $transparent);
+                    imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
+                    imagepng($img_tmp, $this->upload_dir . $this->uploadedFileName, 0);
+                    break;
+                default:
+                    trigger_error('Invalid image extension: ' . $this->uploadedFileExtension, E_USER_ERROR);
+                    return;
             }
 
-            // ON CREE LE FICHIER RETAILLE FINAL
-            imagegif($img_tmp, $dossier . $nom);
-
-            // ON DONNE UN ACCES TOTAL SUR LE FICHIER
-            chmod($dossier . $nom, 0777);
-
-            // ON DETRUIT LES FICHIERS TEMPORAIRES
+            chmod($this->upload_dir . $this->uploadedFileName, 0777);
             imagedestroy($img_tmp);
             imagedestroy($img);
-        }
-
-        // CAS D'UN FICHIER JPEG/JPG/PJPEG
-        if (in_array($this->uploadedFileExtension, array('jpg', 'JPG', 'jpeg', 'JPEG'))) {
-            if ($cadre_fixe) {
-                // PREPARATION DU FICHIER DE L'IMAGE FINALE
-                $img_tmp = imagecreatetruecolor($w_cadre, $h_cadre);
-                $color   = imagecolorallocate($img_tmp, 255, 255, 255);
-                imagefilledrectangle($img_tmp, 0, 0, $w_cadre, $h_cadre, $color);
-
-                // DEFINITION DE L'IMAGE QUE L'ON VA RETAILLER
-                $img = imagecreatefromjpeg($fichier);
-
-                // ON REDIMENSIONNE L'IMAGE DANS LE FICHIER IMAGE FINALE
-                $x = ($w_cadre - $width) / 2;
-                $y = ($h_cadre - $height) / 2;
-                imagecopyresampled($img_tmp, $img, $x, $y, 0, 0, $width, $height, $w, $h);
-            } else {
-                // PREPARATION DU FICHIER DE L'IMAGE FINALE
-                $img_tmp = imagecreatetruecolor($width, $height);
-
-                // DEFINITION DE L'IMAGE QUE L'ON VA RETAILLER
-                $img = imagecreatefromjpeg($fichier);
-
-                // ON REDIMENSIONNE L'IMAGE DANS LE FICHIER IMAGE FINALE
-                imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
-            }
-
-            // ON CREE LE FICHIER RETAILLE FINAL
-            imagejpeg($img_tmp, $dossier . $nom, 100);
-
-            // ON DONNE UN ACCES TOTAL SUR LE FICHIER
-            chmod($dossier . $nom, 0777);
-
-            // ON DETRUIT LES FICHIERS TEMPORAIRES
-            imagedestroy($img_tmp);
-            imagedestroy($img);
-        }
-
-        // CAS D'UN FICHIER PNG/X-PNG
-        if ($this->uploadedFileExtension == 'png' || $this->uploadedFileExtension == 'PNG') {
-            if ($cadre_fixe) {
-                // PREPARATION DU FICHIER DE L'IMAGE FINALE
-                $img_tmp = imagecreatetruecolor($w_cadre, $h_cadre);
-                $color   = imagecolorallocate($img_tmp, 255, 255, 255);
-                imagefilledrectangle($img_tmp, 0, 0, $w_cadre, $h_cadre, $color);
-
-                // DEFINITION DE L'IMAGE QUE L'ON VA RETAILLER
-                $img = imagecreatefrompng($fichier);
-
-                // ON REDIMENSIONNE L'IMAGE DANS LE FICHIER IMAGE FINALE
-                $x = ($w_cadre - $width) / 2;
-                $y = ($h_cadre - $height) / 2;
-                imagecopyresampled($img_tmp, $img, $x, $y, 0, 0, $width, $height, $w, $h);
-            } else {
-                // PREPARATION DU FICHIER DE L'IMAGE FINALE
-                $img_tmp = imagecreatetruecolor($width, $height);
-
-                // DEFINITION DE L'IMAGE QUE L'ON VA RETAILLER
-                $img = imagecreatefrompng($fichier);
-
-                // RESTITUTION DES EVENTUELLES TRANSPARENCES
-                imagealphablending($img_tmp, false);
-                imagesavealpha($img_tmp, true);
-                $transparent = imagecolorallocatealpha($img_tmp, 255, 255, 255, 127);
-                imagefilledrectangle($img_tmp, 0, 0, $width, $height, $transparent);
-
-                // ON REDIMENSIONNE L'IMAGE DANS LE FICHIER IMAGE FINALE
-                imagecopyresampled($img_tmp, $img, 0, 0, 0, 0, $width, $height, $w, $h);
-            }
-
-            // ON CREE LE FICHIER RETAILLE FINAL
-            imagepng($img_tmp, $dossier . $nom, 0);
-
-            // ON DONNE UN ACCES TOTAL SUR LE FICHIER
-            chmod($dossier . $nom, 0777);
-
-            // ON DETRUIT LES FICHIERS TEMPORAIRES
-            imagedestroy($img_tmp);
-            imagedestroy($img);
+        } else {
+            trigger_error('Invalid image extension: ' . $this->uploadedFileExtension, E_USER_ERROR);
         }
     }
 }
