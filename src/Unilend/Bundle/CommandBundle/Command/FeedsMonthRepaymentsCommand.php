@@ -42,8 +42,33 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
 
         $output->writeln('Generating repayment file for ' . $previousDay->format('Y-m-d'));
 
-        $headers       = "id_client;id_lender_account;type;iso_pays;exonere;annees_exoneration;id_project;id_loan;type_loan;ordre;montant;capital;interets;prelevements_obligatoires;retenues_source;csg;prelevements_sociaux;contributions_additionnelles;prelevements_solidarite;crds;date_echeance;date_echeance_reel;status_remb_preteur;date_echeance_emprunteur;date_echeance_emprunteur_reel;\n";
-        $dayCSV        = '';
+        $aHeader = array (
+            0 => 'id_client',
+            1 => 'id_lender_account',
+            2 => 'type',
+            3 => 'iso_pays',
+            4 => 'exonere',
+            5 => 'annees_exoneration',
+            6 => 'id_project',
+            7 => 'id_loan',
+            8 => 'type_loan',
+            9 => 'ordre',
+            10 => 'montant',
+            11 => 'capital',
+            12 => 'interets',
+            13 => 'prelevements_obligatoires',
+            14 => 'retenues_source',
+            15 => 'csg',
+            16 => 'prelevements_sociaux',
+            17 => 'contributions_additionnelles',
+            18 => 'prelevements_solidarite',
+            19 => 'crds',
+            20 => 'date_echeance',
+            21 => 'date_echeance_reel',
+            22 => 'status_remb_preteur',
+            23 => 'date_echeance_emprunteur',
+            24 => 'date_echeance_emprunteur_reel'
+        );
 
         $sftpPath      = $this->getContainer()->getParameter('path.sftp');
         $dayFileName   = 'echeances_' . $previousDay->format('Ymd') . '.csv';
@@ -69,14 +94,27 @@ class FeedsMonthRepaymentsCommand extends ContainerAwareCommand
             return;
         }
 
-        foreach ($aResult as $aRow) {
-            $dayCSV .= implode(';', $aRow) . "\n";
+        /** @var \PHPExcel $oDocument */
+        $document     = new \PHPExcel();
+        /** @var \PHPExcel_Worksheet $oActiveSheet */
+        $activeSheet = $document->setActiveSheetIndex(0);
+
+        foreach ($aHeader as $iIndex => $sColumn) {
+            $activeSheet->setCellValueByColumnAndRow($iIndex, 1, $sColumn);
         }
 
-        file_put_contents($dayFilePath . '/' . $dayFileName, $dayCSV);
-
+        foreach ($aResult as $iRowIndex => $aRow) {
+            $iColIndex = 0;
+            foreach ($aRow as $ColValue) {
+                $activeSheet->setCellValueByColumnAndRow($iColIndex++, $iRowIndex + 2, $ColValue);
+            }
+        }
+        /** @var \PHPExcel_Writer_CSV $writer */
+        $writer = \PHPExcel_IOFactory::createWriter($document, 'CSV');
+        $writer->setDelimiter(';')->save($dayFilePath . '/' . $dayFileName);
+        // Add the content of the daily file we generated at the en of the monthly file
         $outputFile = fopen($monthFilePath . $monthFileName, 'w');
-        fwrite($outputFile, $headers);
+
         foreach (glob($dayFilePath . '/echeances_*.csv') as $sFile) {
             fwrite($outputFile, file_get_contents($sFile));
         }
