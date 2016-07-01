@@ -34,11 +34,14 @@ class operationsController extends bootstrap
         $this->projects_status         = $this->loadData('projects_status');
         $this->indexage_vos_operations = $this->loadData('indexage_vos_operations');
         $this->ifu                     = $this->loadData('ifu');
+        $this->taxCountry              = $this->loadData('pays_v2');
+        $this->clients_adresses        = $this->loadData('clients_adresses');
 
         $this->lng['preteur-operations-vos-operations'] = $this->ln->selectFront('preteur-operations-vos-operations', $this->language, $this->App);
         $this->lng['preteur-operations-pdf']            = $this->ln->selectFront('preteur-operations-pdf', $this->language, $this->App);
         $this->lng['preteur-operations-detail']         = $this->ln->selectFront('preteur-operations-detail', $this->language, $this->App);
         $this->lng['profile']                           = $this->ln->selectFront('preteur-profile', $this->language, $this->App);
+        $this->lng['etape1']                            = $this->ln->selectFront('inscription-preteur-etape-1', $this->language, $this->App);
 
         // conf par defaut pour la date (1M)
         $date_debut_time = mktime(0, 0, 0, date('m') - 1, date('d'), date('Y'));
@@ -58,6 +61,13 @@ class operationsController extends bootstrap
         $this->lProjectsLoans = $this->indexage_vos_operations->get_liste_libelle_projet('id_client = ' . $this->clients->id_client . ' AND DATE(date_operation) >= "' . $this->date_debut . '" AND DATE(date_operation) <= "' . $this->date_fin . '"');
         $this->lLoans         = $this->loans->select('id_lender = ' . $this->lenders_accounts->id_lender_account . ' AND YEAR(added) = ' . date('Y') . ' AND status = 0', 'added DESC');
         $this->liste_docs     = $this->ifu->select('id_client =' . $this->clients->id_client . ' AND statut = 1', 'annee ASC');
+        $this->clients_adresses->get($this->clients->id_client, 'id_client');
+
+        if (false === empty($this->clients_adresses->id_pays_fiscal)) {
+            $this->taxCountry->get($this->clients_adresses->id_pays_fiscal, 'id_pays');
+        } else {
+            $this->taxCountry->get($this->clients_adresses->id_pays, 'id_pays');
+        }
 
         unset($_SESSION['filtre_vos_operations']);
         unset($_SESSION['id_last_action']);
