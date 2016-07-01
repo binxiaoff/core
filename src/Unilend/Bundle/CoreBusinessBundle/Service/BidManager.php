@@ -54,7 +54,7 @@ class BidManager
         $this->oLogger = $oLogger;
     }
 
-    public function bid(\bids $oBid, $bSendNotification)
+    public function bid(\bids $oBid, $bSendNotification = true)
     {
         /** @var \settings $oSettings */
         $oSettings = $this->oEntityManager->getRepository('settings');
@@ -90,7 +90,7 @@ class BidManager
             return false;
         }
 
-        $oProjectStatus = $oProjectStatus->getLastStatut($iProjectId);
+        $oProjectStatus->getLastStatut($iProjectId);
         if (false === in_array($oProjectStatus->status, array(\projects_status::A_FUNDER, \projects_status::EN_FUNDING))) {
             return false;
         }
